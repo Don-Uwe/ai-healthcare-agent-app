@@ -1,0 +1,77 @@
+{
+  "name": "@solana/wallet-adapter-nextjs-starter",
+  "version": "0.8.9",
+  "author": "Solana Maintainers <maintainers@solana.foundation>",
+  "repository": "https://github.com/solana-labs/wallet-adapter",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=16"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "public",
+    "src",
+    ".editorconfig",
+    ".eslintrc.json",
+    ".gitignore",
+    ".prettierignore",
+    ".prettierrc",
+    "LICENSE",
+    "next.config.js",
+    "next-env.d.ts",
+    "package.json",
+    "README.md",
+    "tsconfig.json"
+  ],
+  "scripts": {
+    "clean": "shx rm -rf .next .swc lib",
+    "dev": "NODE_OPTIONS='--inspect' next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@chakra-ui/react": "^2.3.1",
+    "@emotion/react": "^11",
+    "@emotion/styled": "^11",
+    "@project-serum/serum": "^0.13.65",
+    "@raydium-io/raydium-sdk": "../raydium-sdk/lib",
+    "@solana/spl-token": "^0.3.4",
+    "@solana/wallet-adapter-base": "^0.9.15",
+    "@solana/wallet-adapter-react": "^0.15.17",
+    "@solana/wallet-adapter-react-ui": "^0.9.15",
+    "@solana/wallet-adapter-wallets": "^0.18.4",
+    "@types/ramda": "^0.28.15",
+    "@typescript-eslint/eslint-plugin": "^5.36.2",
+    "big.js": "^6.2.1",
+    "decimal.js-light": "^2.5.1",
+    "framer-motion": "^6",
+    "immer": "^9.0.15",
+    "lodash": "^4.17.21",
+    "lru-cache": "^7.14.0",
+    "next": "^12.2.5",
+    "ramda": "^0.28.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-infinite-scroll-component": "^6.1.0",
+    "toformat": "^2.0.0",
+    "zustand": "^4.1.1"
+  },
+  "devDependencies": {
+    "@types/node-fetch": "^2.6.2",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "eslint": "^8.22.0",
+    "eslint-config-next": "^12.2.5",
+    "prettier": "^2.7.1",
+    "shx": "^0.3.4",
+    "typescript": "^4.7.4"
+  },
+  "browser": {
+    "fs": false,
+    "path": false,
+    "os": false
+  }
+}

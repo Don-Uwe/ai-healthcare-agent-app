@@ -1,0 +1,19 @@
+{
+	"arrowParens": "always",
+	"bracketSpacing": true,
+	"eslintIntegration": true,
+	"overrides": [
+		{
+			"files": ".prettierrc",
+			"options": {
+				"parser": "typescript"
+			}
+		}
+	],
+	"printWidth": 140,
+	"semi": false,
+	"singleQuote": true,
+	"tabWidth": 2,
+	"trailingComma": "none",
+	"useTabs": false
+}
