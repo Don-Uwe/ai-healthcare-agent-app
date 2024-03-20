@@ -4,7 +4,7 @@ import i18n from '@/i18n'
 export const isClient = () => typeof window !== 'undefined'
 export const isLocal = () => typeof window !== 'undefined' && window.location.host.includes('localhost')
 export const isDocumentVisible = () => isClient() && document.visibilityState === 'visible'
-export const isProdEnv = () => isClient() && window.location.host === 'xxx'
+export const isProdEnv = () => isClient() && window.location.host.includes('raydium.io')
 
 export const encodeStr = (str?: string, showNum = 3, dotNum = 2) => {
   if (!str) return ''
