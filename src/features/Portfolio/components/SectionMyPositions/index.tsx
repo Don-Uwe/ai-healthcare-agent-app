@@ -70,8 +70,18 @@ export default function SectionMyPositions() {
     noRewardClmmPos.current.add(poolId)
   })
 
-  const { handleHarvest, farmLpBasedData, stakedFarmMap, allFarmBalances, clmmBalanceInfo, totalPendingYield, isReady, isSending } =
-    useAllPositionInfo({})
+  const {
+    handleHarvest,
+    farmLpBasedData,
+    stakedFarmMap,
+    allFarmBalances,
+    clmmBalanceInfo,
+    isClmmLoading,
+    isFarmLoading,
+    totalPendingYield,
+    isReady,
+    isSending
+  } = useAllPositionInfo({})
 
   return (
     <>
@@ -145,9 +155,14 @@ export default function SectionMyPositions() {
       </Grid>
       {connected ? (
         isFocusClmmTab ? (
-          <ClmmMyPositionTabContent clmmBalanceInfo={clmmBalanceInfo} setNoRewardClmmPos={setNoRewardClmmPos} />
+          <ClmmMyPositionTabContent isLoading={isClmmLoading} clmmBalanceInfo={clmmBalanceInfo} setNoRewardClmmPos={setNoRewardClmmPos} />
         ) : isFocusStandardTab ? (
-          <MyPositionTabStandard allFarmBalances={allFarmBalances} lpBasedData={farmLpBasedData} stakedFarmMap={stakedFarmMap} />
+          <MyPositionTabStandard
+            isLoading={isFarmLoading}
+            allFarmBalances={allFarmBalances}
+            lpBasedData={farmLpBasedData}
+            stakedFarmMap={stakedFarmMap}
+          />
         ) : isFocusStake ? (
           <MyPositionTabStaked allFarmBalances={allFarmBalances} />
         ) : null

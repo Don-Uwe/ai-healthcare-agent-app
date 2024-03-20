@@ -1,5 +1,5 @@
 import { RAYMint } from '@raydium-io/raydium-sdk-v2'
-import { Flex, Text, Link, Button } from '@chakra-ui/react'
+import { Flex, Text, Link, Button, Skeleton } from '@chakra-ui/react'
 import { useTranslation } from 'react-i18next'
 import StandardPoolRowItem from './components/Standard/StandardPoolRowItem'
 import { FormattedFarmInfoV6 } from '@/hooks/farm/type'
@@ -12,8 +12,10 @@ import { FarmBalanceInfo } from '@/hooks/farm/type'
 export default function MyPositionTabStandard({
   lpBasedData,
   allFarmBalances,
-  stakedFarmMap
+  stakedFarmMap,
+  isLoading
 }: {
+  isLoading: boolean
   allFarmBalances: FarmBalanceInfo[]
   lpBasedData: Map<string, FarmPositionInfo>
   stakedFarmMap: Map<string, FormattedFarmInfoV6>
@@ -27,10 +29,9 @@ export default function MyPositionTabStandard({
     (d) => !(lpBasedData.has(d!.address.toString()) && lpBasedData.get(d!.address.toString())?.hasAmount)
   )
 
-  const { formattedData } = useFetchPoolByLpMint({
+  const { formattedData, isLoading: isPoolLoading } = useFetchPoolByLpMint({
     lpMintList: farmPositionList.map((f) => f[0]).concat(lpOnlyList.map((p) => p.address.toBase58()))
   })
-
   const hasData = farmPositionList.length > 0 || lpOnlyList.length > 0
   const allData = [...farmPositionList, ...lpOnlyList]
   allData.sort((a, b) => {
@@ -45,17 +46,19 @@ export default function MyPositionTabStandard({
         Array.isArray(data) ? (
           <StandardPoolRowItem
             key={`user-position-pool-${data[0]}`}
+            isLoading={isPoolLoading}
             allFarmBalances={allFarmBalances}
             stakedFarmMap={stakedFarmMap}
-            lpMint={data[0]}
             position={data[1]}
+            pool={formattedData?.find((p) => p.lpMint.address === data[0])}
           />
         ) : (
           <StandardPoolRowItem
             key={`user-position-pool-${data!.address.toBase58()}`}
+            isLoading={isPoolLoading}
             allFarmBalances={allFarmBalances}
             stakedFarmMap={stakedFarmMap}
-            lpMint={data!.address.toBase58()}
+            pool={formattedData?.find((p) => p.lpMint.address === data!.address.toBase58())}
             position={{
               hasAmount: true,
               hasV1Data: false,
@@ -67,32 +70,9 @@ export default function MyPositionTabStandard({
           />
         )
       )}
-      {/* {farmPositionList.map(([lpMint, position]) => (
-        <StandardPoolRowItem
-          key={`user-position-pool-${lpMint}`}
-          stakedFarmMap={stakedFarmMap}
-          lpMint={lpMint}
-          rpcFarmDataList={rpcFarmDataList}
-          position={position}
-        />
-      ))}
-      {lpOnlyList.map((data) => (
-        <StandardPoolRowItem
-          key={`user-position-pool-${data!.address.toBase58()}`}
-          stakedFarmMap={stakedFarmMap}
-          lpMint={data!.address.toBase58()}
-          rpcFarmDataList={rpcFarmDataList}
-          position={{
-            hasAmount: true,
-            hasV1Data: false,
-            lpMint: '',
-            totalLpAmount: '0',
-            totalV1LpAmount: '0',
-            data: []
-          }}
-        />
-      ))} */}
-      {!hasData ? (
+      {isLoading ? (
+        <Skeleton w="full" height="140px" rounded="lg" />
+      ) : !hasData ? (
         <Flex
           alignItems="center"
           justifyContent="center"

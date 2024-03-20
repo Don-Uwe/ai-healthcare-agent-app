@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, Flex, Grid, GridItem, HStack, Tag, Text, Tooltip } from '@chakra-ui/react'
+import { Box, Flex, Grid, GridItem, HStack, Tag, Text, Tooltip, Skeleton } from '@chakra-ui/react'
 import Link from 'next/link'
 import { PublicKey } from '@solana/web3.js'
 import Button from '@/components/Button'
@@ -19,11 +19,13 @@ import toPercentString from '@/utils/numberish/toPercentString'
 
 export function ClmmPositionItemsCard({
   poolInfo,
+  isLoading,
   initRpcPoolData,
   setNoRewardClmmPos,
   ...props
 }: {
   poolId: string | PublicKey
+  isLoading: boolean
   positions: PositionWithUpdateFn[]
   poolInfo?: FormattedPoolInfoConcentratedItem
   initRpcPoolData?: RpcPoolData
@@ -36,7 +38,7 @@ export function ClmmPositionItemsCard({
 
   if (poolInfo && rpcData.currentPrice) poolInfo.price = rpcData.currentPrice
   const handleClickToggle = useCallback(() => setBaseIn((val) => !val), [])
-  if (!poolInfo) return null
+  if (!poolInfo) return isLoading ? <Skeleton w="full" height="140px" rounded="lg" /> : null
 
   return (
     <Grid

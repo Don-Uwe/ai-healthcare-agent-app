@@ -6,15 +6,17 @@ import useFetchMultipleRpcClmmInfo from '@/hooks/pool/clmm/useFetchMultipleRpcCl
 import Button from '@/components/Button'
 import { ClmmDataWithUpdateFn } from '@/hooks/portfolio/useAllPositionInfo'
 import { colors } from '@/theme/cssVariables'
-import { Box, Flex, Text } from '@chakra-ui/react'
+import { Box, Flex, Text, Skeleton } from '@chakra-ui/react'
 import { ClmmPositionItemsCard } from './components/Clmm/ClmmPositionItemsCard'
 import { ApiV3PoolInfoConcentratedItem } from '@raydium-io/raydium-sdk-v2'
 import { deleteOpenCache } from './utils'
 
 export function ClmmMyPositionTabContent({
+  isLoading,
   clmmBalanceInfo,
   setNoRewardClmmPos
 }: {
+  isLoading: boolean
   clmmBalanceInfo: ClmmDataWithUpdateFn
   setNoRewardClmmPos: (val: string, isDelete?: boolean) => void
 }) {
@@ -45,6 +47,7 @@ export function ClmmMyPositionTabContent({
         allPositions.map((data) => (
           <ClmmPositionItemsCard
             key={data[0]}
+            isLoading={isLoading}
             poolId={data[0]}
             positions={data[1]}
             poolInfo={formattedDataMap[data[0]]}

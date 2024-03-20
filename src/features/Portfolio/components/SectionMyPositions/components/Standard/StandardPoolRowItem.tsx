@@ -1,12 +1,12 @@
 import { useCallback, useMemo, useState } from 'react'
-import { Box, Button, Collapse, GridItem, HStack, VStack, useDisclosure } from '@chakra-ui/react'
+import { Box, Button, Collapse, GridItem, HStack, VStack, useDisclosure, Skeleton } from '@chakra-ui/react'
 import { ApiV3Token, PoolFetchType } from '@raydium-io/raydium-sdk-v2'
 import MigrateFromStandardDialog from '@/features/Clmm/MigrateClmmFromStandardDialog/Dialog'
 import { FormattedFarmInfoV6 } from '@/hooks/farm/type'
 import { FormattedPoolInfoConcentratedItem } from '@/hooks/pool/type'
 import { FarmPositionInfo } from '@/hooks/portfolio/farm/useFarmPositions'
 import useFetchRpcPoolData from '@/hooks/pool/amm/useFetchRpcPoolData'
-import useFetchPoolByLpMint from '@/hooks/pool/useFetchPoolByLpMint'
+import { FormattedPoolInfoStandardItem } from '@/hooks/pool/type'
 import useFetchPoolByMint from '@/hooks/pool/useFetchPoolByMint'
 import ExpandUpIcon from '@/icons/misc/ExpandUpIcon'
 import { useAppStore, useFarmStore, useTokenAccountStore } from '@/store'
@@ -30,13 +30,14 @@ import { useTranslation } from 'react-i18next'
 import BN from 'bn.js'
 
 type PoolItemProps = {
-  lpMint: string
+  pool?: FormattedPoolInfoStandardItem
+  isLoading: boolean
   position: FarmPositionInfo
   stakedFarmMap: Map<string, FormattedFarmInfoV6>
   allFarmBalances: FarmBalanceInfo[]
 }
 
-export default function StandardPoolRowItem({ lpMint, position, stakedFarmMap, allFarmBalances }: PoolItemProps) {
+export default function StandardPoolRowItem({ pool, isLoading, position, stakedFarmMap, allFarmBalances }: PoolItemProps) {
   const { t } = useTranslation()
   const harvestAllFarmAct = useFarmStore((s) => s.harvestAllAct)
   const getTokenBalanceUiAmount = useTokenAccountStore((s) => s.getTokenBalanceUiAmount)
@@ -68,8 +69,8 @@ export default function StandardPoolRowItem({ lpMint, position, stakedFarmMap, a
     return [farm, farmLpAmount]
   }, [position.data, stakedFarms])
 
-  const { formattedData } = useFetchPoolByLpMint({ lpMintList: [lpMint] })
-  const pool = formattedData?.[0]
+  // const { formattedData, isLoading } = useFetchPoolByLpMint({ lpMintList: [lpMint] })
+  // const pool = formattedData?.[0]
   const { data: rpcPoolData, mutate: refreshRpcData } = useFetchRpcPoolData({
     shouldFetch: isRpcFetching,
     poolId: pool?.id,
@@ -158,6 +159,7 @@ export default function StandardPoolRowItem({ lpMint, position, stakedFarmMap, a
     return acc.add(cur.usd)
   }, new Decimal(0))
 
+  if (isLoading) return <Skeleton w="full" height="140px" rounded="lg" />
   if (!pool) return null
 
   const lpAmountUSD = allLpUiAmount.mul(pool.lpPrice ?? 0).toString()
