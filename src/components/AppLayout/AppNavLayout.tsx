@@ -41,6 +41,7 @@ import { VersionedTransactionSettingField } from './components/VersionedTransact
 import { TransactionFeeSetting } from './components/TransactionFeeSetting'
 import useSwr from 'swr'
 import axios from '@/api/axios'
+import { keyframes } from '@emotion/react'
 
 export interface NavSettings {
   // colorTheme: 'dark' | 'light'
@@ -60,6 +61,24 @@ function AppNavLayout({
   const { t } = useTranslation()
   const { pathname } = useRouter()
 
+  const betaTooltipRef = React.useRef<HTMLDivElement>(null)
+  const { isOpen, onClose } = useDisclosure({ defaultIsOpen: true })
+  const closeBetaTooltip = () => {
+    if (betaTooltipRef.current) {
+      betaTooltipRef.current.style.animation = `${fadeOut} 0.5s forwards`
+      setTimeout(() => onClose(), 500)
+    }
+  }
+
+  const fadeIn = keyframes`
+  from { transform: translateY(-100%); }
+  to { transform: translateY(0); }
+`
+
+  const fadeOut = keyframes`
+  from { transform: translateY(0); }
+  to { transform: translateY(-100%); }
+`
   return (
     <Flex
       direction="column"
@@ -71,6 +90,32 @@ function AppNavLayout({
       backgroundSize="800px 493px"
       backgroundRepeat="no-repeat"
     >
+      <Box
+        ref={betaTooltipRef}
+        display={isOpen ? 'flex' : 'none'}
+        animation={`${fadeIn} 0.5s`}
+        flexDirection="row"
+        bg={colors.backgroundLight}
+      >
+        <Box display="flex" alignItems="center" justifyContent="center" width="95%" mt="0.5em" mb="0.5em">
+          <a href="https://tally.so/r/n9WZZV" rel="noreferrer" target="_blank">
+            <Text as="span" textColor={colors.textSecondary} fontSize="0.85em" fontWeight="normal" color={colors.textSecondary}>
+              {t('common.beta_tooltip')}
+            </Text>
+          </a>
+        </Box>
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          cursor="pointer"
+          width="5%"
+          _hover={{ bg: colors.backgroundDark }}
+          onClick={() => closeBetaTooltip()}
+        >
+          ×
+        </Box>
+      </Box>
       <HStack
         flex="none"
         height={['64px', '80px']}

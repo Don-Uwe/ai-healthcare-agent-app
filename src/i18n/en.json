@@ -64,7 +64,8 @@
     "add_token": "Add token",
     "remove_token": "Remove token",
     "confirm_token": "Confirm Token",
-    "user_added": "User Added"
+    "user_added": "User Added",
+    "beta_tooltip": "This site is in Beta, updates are ongoing. Use at your own risk. Share feedback, earn RAY."
   },
   "button": {
     "deposit": "Deposit",
