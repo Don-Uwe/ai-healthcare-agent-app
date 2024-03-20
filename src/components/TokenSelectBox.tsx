@@ -28,7 +28,11 @@ export default function TokenSelectBox({ token, label, placeholder: _placeholder
   const { isOpen, onOpen, onClose } = useDisclosure()
   const { t } = useTranslation()
 
-  const placeholder = _placeholder ?? <Text color={colors.textTertiary}>{t('common.select')}</Text>
+  const placeholder = _placeholder ?? (
+    <Text as="span" color={colors.textTertiary}>
+      {t('common.select')}
+    </Text>
+  )
   const handleSelectValue = useCallback(
     (token: TokenInfo) => {
       onSelectToken(token, name)

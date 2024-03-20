@@ -37,6 +37,7 @@ const MyApp = ({ Component, pageProps, lng, ...props }: AppProps & { lng: string
     <>
       <Head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+        <title>Raydium</title>
       </Head>
       <DynamicProviders>
         <DynamicContent {...props}>
