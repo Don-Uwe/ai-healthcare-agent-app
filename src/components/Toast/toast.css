@@ -1,0 +1,10 @@
+@keyframes shrink {
+  from {
+    transform-origin: left center;
+    transform: scaleX(1);
+  }
+  to {
+    transform-origin: left center;
+    transform: scaleX(0);
+  }
+}

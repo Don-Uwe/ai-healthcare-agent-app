@@ -1,0 +1,28 @@
+.tvl {
+  color: #313149;
+  padding: 52px 70px 45px 70px;
+  display: inline-block;
+  margin: 75px 0;
+  position: relative;
+  z-index: 0;
+  box-shadow: inset 0px 0px 15.6531px #8f76f0, 0px 0px 17.18px rgba(142, 117, 240, 0.4), 0px 0px 15.6531px rgba(143, 117, 240, 0.38);
+  border-radius: 20px;
+}
+@media (max-width: 1000px) {
+  .tvl {
+    padding: 35px 25px 35px 25px;
+  }
+}
+.tvl:before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  padding: 2px;
+  border-radius: 20px;
+  background: linear-gradient(to right, #abc4ff, #7748fc);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}

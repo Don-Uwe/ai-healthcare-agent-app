@@ -1,49 +1,360 @@
-import { Raydium, RaydiumLoadParams } from '@raydium-io/raydium-sdk'
+import {
+  Connection,
+  PublicKey,
+  Transaction,
+  VersionedTransaction,
+  TransactionMessage,
+  EpochInfo,
+  clusterApiUrl,
+  Commitment
+} from '@solana/web3.js'
+import {
+  Raydium,
+  RaydiumLoadParams,
+  API_URLS,
+  API_URL_CONFIG,
+  DEV_API_URLS,
+  ProgramIdConfig,
+  ALL_PROGRAM_ID,
+  JupTokenType,
+  TxBuilder,
+  TxBuildData,
+  TxV0BuildData,
+  MultiTxBuildData,
+  MultiTxV0BuildData,
+  Owner,
+  AvailabilityCheckAPI3,
+  TxVersion
+} from '@raydium-io/raydium-sdk-v2'
+import { WalletAdapterNetwork } from '@solana/wallet-adapter-base'
+import { Wallet } from '@solana/wallet-adapter-react'
 import createStore from './createStore'
 import { useTokenStore } from './useTokenStore'
-import { useLiquidityStore } from './useLiquidityStore'
+import { toastSubject } from '@/hooks/toast/useGlobalToast'
+import axios from '@/api/axios'
+import { isValidUrl } from '@/utils/url'
+import { setStorageItem, getStorageItem } from '@/utils/localStorage'
+import { retry, isProdEnv } from '@/utils/common'
+
+export const defaultNetWork = WalletAdapterNetwork.Mainnet // Can be set to 'devnet', 'testnet', or 'mainnet-beta'
+export const defaultEndpoint = clusterApiUrl(defaultNetWork) // You can also provide a custom RPC endpoint
+export const EXPLORER_KEY = '_r_explorer_'
+export const supportedExplorers = [
+  {
+    name: 'Solscan',
+    icon: '/images/explorer-solscan.png',
+    host: 'https://solscan.io'
+  },
+  {
+    name: 'Explorer',
+    icon: '/images/explorer-solana.png',
+    host: 'https://explorer.solana.com'
+  },
+  {
+    name: 'SolanaFM',
+    icon: '/images/explorer-solanaFM.png',
+    host: 'https://solana.fm'
+  }
+]
+
+const RPC_URL_KEY = '_r_rpc_'
+const RPC_URL_PROD_KEY = '_r_rpc_pro_'
+export const FEE_KEY = '_r_fee_'
 
 interface AppState {
   raydium?: Raydium
+  connection?: Connection
+  signAllTransactions?: (<T extends Transaction | VersionedTransaction>(transaction: T[]) => Promise<T[]>) | undefined
+  publicKey?: PublicKey
+  explorerUrl: string
+  isMobile: boolean
+  isLaptop: boolean
+  aprMode: 'M' | 'D'
+  wallet?: Wallet
   initialing: boolean
   connected: boolean
+  chainTimeOffset: number
+  blockSlotCountForSecond: number
+  commitment: Commitment
+  transactionFee?: string
+  rpcNodeUrl?: string
+  rpcs: {
+    batch: boolean
+    name: string
+    url: string
+    weight: number
+  }[]
+  urlConfigs: typeof API_URLS & {
+    SWAP_HOST: string
+    SWAP_COMPUTE: string
+    SWAP_TX: string
+  }
+  programIdConfig: typeof ALL_PROGRAM_ID
+
+  jupTokenType: JupTokenType
+  displayTokenSettings: { official: boolean; jup: boolean; userAdded: boolean }
+
+  featureDisabled: Partial<AvailabilityCheckAPI3>
+
+  slippage: number
+  epochInfo?: EpochInfo
+  txVersion: TxVersion
+  tokenAccLoaded: boolean
+
+  getEpochInfo: () => Promise<EpochInfo | undefined>
   initRaydiumAct: (payload: RaydiumLoadParams) => Promise<void>
+  fetchChainTimeAct: () => void
+  fetchRpcsAct: () => Promise<void>
+  fetchBlockSlotCountAct: () => Promise<void>
+  setUrlConfigAct: (urls: API_URL_CONFIG) => void
+  setProgramIdConfigAct: (urls: ProgramIdConfig) => void
+  setRpcUrlAct: (url: string, skipToast?: boolean, skipError?: boolean) => Promise<boolean>
+
+  buildMultipleTx: (props: {
+    txBuildDataList: (TxBuildData | TxV0BuildData)[]
+  }) => Promise<MultiTxBuildData | MultiTxV0BuildData | undefined>
 }
 
 const appInitState = {
   raydium: undefined,
   initialing: false,
-  connected: false
+  connected: false,
+  chainTimeOffset: 0,
+  blockSlotCountForSecond: 0,
+  explorerUrl: getStorageItem(EXPLORER_KEY) || supportedExplorers[0].host,
+  isMobile: false,
+  isLaptop: false,
+  aprMode: 'M' as 'M' | 'D',
+  rpcs: [],
+  urlConfigs: {
+    ...API_URLS,
+    ...(!isProdEnv()
+      ? {
+          BASE_HOST: DEV_API_URLS.BASE_HOST,
+          SWAP_HOST: DEV_API_URLS.SWAP_HOST
+        }
+      : {})
+  },
+  programIdConfig: ALL_PROGRAM_ID,
+  jupTokenType: JupTokenType.Strict,
+  displayTokenSettings: { official: true, jup: true, userAdded: false },
+  featureDisabled: {},
+  slippage: 0.005,
+  txVersion: TxVersion.V0,
+  tokenAccLoaded: false,
+  commitment: 'confirmed' as Commitment,
+  transactionFee: getStorageItem(FEE_KEY) === null ? '0.005' : getStorageItem(FEE_KEY) || ''
+}
+
+let rpcLoading = false
+let epochInfoCache = {
+  time: 0,
+  loading: false
 }
 
 export const useAppStore = createStore<AppState>(
   (set, get) => ({
     ...appInitState,
     initRaydiumAct: async (payload) => {
-      const actionLog = { type: 'initRaydiumAct' }
-      if (get().initialing) return
-
-      set({ initialing: true }, false, actionLog)
-      const raydium = await Raydium.load(payload)
-      set({ raydium, initialing: false, connected: !!payload.owner }, false, actionLog)
-
+      const action = { type: 'initRaydiumAct' }
+      const { initialing, urlConfigs, rpcNodeUrl, jupTokenType, displayTokenSettings } = get()
+      if (initialing || !rpcNodeUrl) return
+      const connection = payload.connection || new Connection(rpcNodeUrl)
+      set({ initialing: true }, false, action)
+      const isDev = window.location.host === 'localhost:3002'
+      const raydium = await Raydium.load({
+        ...payload,
+        connection,
+        urlConfigs,
+        jupTokenType,
+        logRequests: !isDev,
+        disableFeatureCheck: true
+      })
+      useTokenStore.getState().extraLoadedTokenList.forEach((t) => {
+        const existed = raydium.token.tokenMap.has(t.address)
+        if (!existed) {
+          raydium.token.tokenList.push(t)
+          raydium.token.tokenMap.set(t.address, t)
+          raydium.token.mintGroup.official.add(t.address)
+        }
+      })
       useTokenStore.setState(
         {
-          tokenList: raydium.token.allTokens,
-          tokenMap: raydium.token.allTokenMap
+          tokenList: raydium.token.tokenList,
+          displayTokenList: raydium.token.tokenList.filter((token) => {
+            return (
+              (displayTokenSettings.official && raydium.token.mintGroup.official.has(token.address)) ||
+              (displayTokenSettings.jup && raydium.token.mintGroup.jup.has(token.address))
+            )
+          }),
+          tokenMap: raydium.token.tokenMap,
+          mintGroup: raydium.token.mintGroup
         },
         false,
-        actionLog
+        action
+      )
+      set({ raydium, initialing: false, connected: !!(payload.owner || get().publicKey) }, false, action)
+      set(
+        {
+          featureDisabled: {
+            swap: raydium.availability.swap === false,
+            createConcentratedPosition: raydium.availability.createConcentratedPosition === false,
+            addConcentratedPosition: raydium.availability.addConcentratedPosition === false,
+            addStandardPosition: raydium.availability.addStandardPosition === false,
+            removeConcentratedPosition: raydium.availability.removeConcentratedPosition === false,
+            removeStandardPosition: raydium.availability.removeStandardPosition === false,
+            addFarm: raydium.availability.addFarm === false,
+            removeFarm: raydium.availability.removeFarm === false
+          }
+        },
+        false,
+        action
       )
 
-      useLiquidityStore.setState(
-        {
-          poolList: raydium.liquidity.allPools,
-          poolMap: raydium.liquidity.allPoolMap
-        },
-        false,
-        actionLog
-      )
+      raydium.chainTimeOffset()
+    },
+    fetchChainTimeAct: () => {
+      const { raydium } = get()
+      if (!raydium) return
+      raydium
+        .chainTimeOffset()
+        .then((offset) => {
+          set({ chainTimeOffset: isNaN(offset) ? 0 : offset * 1000 }, false, { type: 'fetchChainTimeAct' })
+        })
+        .catch(() => {
+          set({ chainTimeOffset: 0 }, false, { type: 'fetchChainTimeAct' })
+        })
+    },
+    fetchBlockSlotCountAct: async () => {
+      const { raydium, connection } = get()
+      if (!raydium || !connection) return
+      const blockSlotCountForSecond = await raydium.api.getBlockSlotCountForSecond(connection.rpcEndpoint)
+      set({ blockSlotCountForSecond }, false, { type: 'fetchBlockSlotCountAct' })
+    },
+    setUrlConfigAct: (urls) => {
+      set({ urlConfigs: { ...get().urlConfigs, ...urls } }, false, { type: 'setUrlConfigAct' })
+    },
+    setProgramIdConfigAct: (urls) => {
+      set({ programIdConfig: { ...get().programIdConfig, ...urls } }, false, { type: 'setProgramIdConfigAct' })
+    },
+    fetchRpcsAct: async () => {
+      const { urlConfigs, setRpcUrlAct } = get()
+      if (rpcLoading) return
+      rpcLoading = true
+      try {
+        const {
+          data: { rpcs }
+        } = await axios.get(urlConfigs.BASE_HOST + urlConfigs.RPCS)
+        set({ rpcs }, false, { type: 'fetchRpcsAct' })
+
+        let i = 0
+        const checkAndSetRpcNode = async () => {
+          const success = await setRpcUrlAct(rpcs[i].url, true, i !== rpcs.length - 1)
+          if (!success) {
+            i++
+            checkAndSetRpcNode()
+          }
+        }
+
+        const localRpc = getStorageItem(isProdEnv() ? RPC_URL_PROD_KEY : RPC_URL_KEY)
+        if (localRpc && isValidUrl(localRpc)) {
+          const success = await setRpcUrlAct(localRpc, true, true)
+          if (!success) checkAndSetRpcNode()
+        } else {
+          checkAndSetRpcNode()
+        }
+      } finally {
+        rpcLoading = false
+      }
+    },
+    setRpcUrlAct: async (url, skipToast, skipError) => {
+      if (url === get().rpcNodeUrl) {
+        toastSubject.next({
+          status: 'info',
+          title: 'Switch Rpc Node',
+          description: 'Rpc node already in use'
+        })
+        return true
+      }
+      try {
+        if (!isValidUrl(url)) throw new Error('invalid url')
+        await retry<Promise<EpochInfo>>(() => axios.post(url, { method: 'getEpochInfo' }, { skipError: true }), { retryCount: 6 })
+        set({ rpcNodeUrl: url, tokenAccLoaded: false }, false, { type: 'setRpcUrlAct' })
+        setStorageItem(RPC_URL_KEY, url)
+        if (!skipToast)
+          toastSubject.next({
+            status: 'success',
+            title: 'Switch Rpc Node Success',
+            description: 'Rpc node switched'
+          })
+        return true
+      } catch {
+        if (!skipError)
+          toastSubject.next({
+            status: 'error',
+            title: 'Switch Rpc Node error',
+            description: 'Invalid rpc node'
+          })
+        return false
+      }
+    },
+
+    buildMultipleTx: async ({ txBuildDataList }) => {
+      if (!txBuildDataList.length) return
+
+      const { connection, publicKey: owner, signAllTransactions } = get()
+      if (!connection) {
+        toastSubject.next({
+          title: 'No connection',
+          description: 'please check rpc connection',
+          status: 'error'
+        })
+        return
+      }
+      if (!owner) {
+        toastSubject.next({
+          title: 'No Wallet',
+          description: 'please connect wallet',
+          status: 'error'
+        })
+        return
+      }
+
+      const currentBuildData = [...txBuildDataList]
+      const txBuilder = new TxBuilder({
+        connection,
+        feePayer: owner,
+        owner: new Owner(owner),
+        signAllTransactions
+      })
+
+      const firstBuildData = currentBuildData.shift()!
+      if (firstBuildData.transaction instanceof VersionedTransaction) {
+        txBuilder.addInstruction({
+          instructions: TransactionMessage.decompile(firstBuildData.transaction.message).instructions,
+          ...firstBuildData
+        })
+        return txBuilder.buildV0MultiTx({
+          buildProps: (firstBuildData as TxV0BuildData).buildProps,
+          extraPreBuildData: currentBuildData as TxV0BuildData[]
+        })
+      }
+      txBuilder.addInstruction({
+        instructions: firstBuildData.transaction.instructions,
+        ...firstBuildData
+      })
+      return txBuilder.buildMultiTx({ extraPreBuildData: currentBuildData as TxBuildData[] })
+    },
+    getEpochInfo: async () => {
+      const [connection, epochInfo] = [get().connection, get().epochInfo]
+      if (!connection) return undefined
+      if (epochInfo && Date.now() - epochInfoCache.time <= 30 * 1000) return epochInfo
+      if (epochInfoCache.loading) return epochInfo
+      epochInfoCache.loading = true
+      const newEpochInfo = await retry<Promise<EpochInfo>>(() => connection.getEpochInfo())
+      epochInfoCache = { time: Date.now(), loading: false }
+      set({ epochInfo: newEpochInfo }, false, { type: 'useAppStore.getEpochInfo' })
+      return newEpochInfo
     },
     reset: () => set(appInitState)
   }),

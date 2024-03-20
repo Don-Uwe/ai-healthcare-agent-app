@@ -1,16 +1,8 @@
-import { useEffect } from 'react'
-import { useLiquidityStore, useAppStore } from '../store'
-import Swap from '../features/Swap'
+import dynamic from 'next/dynamic'
+
+const Swap = dynamic(() => import('@/features/Swap'))
 
 function SwapPage() {
-  const loadPoolsAct = useLiquidityStore((s) => s.loadPoolsAct)
-  const raydium = useAppStore((s) => s.raydium)
-
-  useEffect(() => {
-    if (!raydium) return
-    loadPoolsAct()
-  }, [raydium])
-
   return <Swap />
 }
 

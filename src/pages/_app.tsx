@@ -1,62 +1,69 @@
-import type { FC, PropsWithChildren } from 'react'
-import { memo } from 'react'
-import type { AppProps, AppContext } from 'next/app'
+import { getCookie } from 'cookies-next'
+import type { AppContext, AppProps } from 'next/app'
 import App from 'next/app'
+import Head from 'next/head'
+import dynamic from 'next/dynamic'
+import { useRouter } from 'next/router'
+import { useMemo } from 'react'
+import Decimal from 'decimal.js'
 
-import { WalletProvider, ThemeProvider } from '../provider'
-import useInitConnection from '../hooks/useInitConnection'
+import i18n from '../i18n'
+import { isClient } from '../utils/common'
+import '@/components/Toast/toast.css'
+import '@/components/LandingPage/components/tvl.css'
+import '@/components/LandingPage/liquidity.css'
+import 'react-day-picker/dist/style.css'
 
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
-import { Api, RaydiumApiBatchRequestParams } from '@raydium-io/raydium-sdk'
-import LRU from 'lru-cache'
+const DynamicProviders = dynamic(() => import('@/provider').then((mod) => mod.Providers))
+const DynamicContent = dynamic(() => import('@/components/Content'))
+const DynamicAppNavLayout = dynamic(() => import('@/components/AppLayout/AppNavLayout'))
 
-// Use require instead of import since order matters
-require('@solana/wallet-adapter-react-ui/styles.css')
+const CONTENT_ONLY_PATH = ['/', '404']
+const OVERFLOW_HIDDEN_PATH = ['/liquidity-pools']
 
-type SSRData = Omit<RaydiumApiBatchRequestParams, 'api'>
+Decimal.set({ precision: 1e3 })
 
-const Content: FC<PropsWithChildren<SSRData>> = memo(({ children, ...props }) => {
-  useInitConnection(props)
-  return <>{children}</>
-})
+const MyApp = ({ Component, pageProps, lng, ...props }: AppProps & { lng: string }) => {
+  const { pathname } = useRouter()
 
-const MyApp = ({ Component, pageProps, defaultApiTokens, defaultApiLiquidityPools }: AppProps & SSRData) => {
+  const [onlyContent, overflowHidden] = useMemo(
+    () => [CONTENT_ONLY_PATH.includes(pathname), OVERFLOW_HIDDEN_PATH.includes(pathname)],
+    [pathname]
+  )
+  const lang = lng || (getCookie('i18next') as string) || 'en'
+  i18n.changeLanguage(lang)
+
   return (
-    <WalletProvider>
-      <ThemeProvider>
-        <Content defaultApiTokens={defaultApiTokens} defaultApiLiquidityPools={defaultApiLiquidityPools}>
-          <WalletMultiButton />
-          <Component {...pageProps} />
-        </Content>
-      </ThemeProvider>
-    </WalletProvider>
+    <>
+      <Head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+      </Head>
+      <DynamicProviders>
+        <DynamicContent {...props}>
+          {onlyContent ? (
+            <Component {...pageProps} />
+          ) : (
+            <DynamicAppNavLayout overflowHidden={overflowHidden}>
+              <Component {...pageProps} />
+            </DynamicAppNavLayout>
+          )}
+        </DynamicContent>
+      </DynamicProviders>
+    </>
   )
 }
 
-const ssrCache = new LRU({
-  max: 500,
-  ttl: 1000 * 60 * 10 // 5 mins
-})
-
 MyApp.getInitialProps = async (appContext: AppContext) => {
+  if (isClient()) return {}
   try {
     const ctx = await App.getInitialProps(appContext)
-    const api = new Api({ cluster: 'mainnet', timeout: 10 * 1000 })
+    let lng = getCookie('i18next', { req: appContext.ctx.req, res: appContext.ctx.res }) as string
+    lng = lng || 'en'
+    i18n.changeLanguage(lng)
 
-    let [defaultApiTokens, defaultApiLiquidityPools] = [ssrCache.get('defaultApiTokens'), ssrCache.get('defaultApiLiquidityPools')]
-    if (!defaultApiTokens) {
-      defaultApiTokens = await api.getTokens()
-      ssrCache.set('defaultApiTokens', defaultApiTokens)
-    }
-
-    if (!defaultApiLiquidityPools) {
-      defaultApiLiquidityPools = await api.getLiquidityPools()
-      ssrCache.set('defaultApiLiquidityPools', defaultApiLiquidityPools)
-    }
-
-    return { ...ctx, defaultApiTokens, defaultApiLiquidityPools }
-  } catch {
-    return { defaultApiTokens: [], defaultApiLiquidityPools: [] }
+    return { ...ctx, lng }
+  } catch (err) {
+    return {}
   }
 }
 

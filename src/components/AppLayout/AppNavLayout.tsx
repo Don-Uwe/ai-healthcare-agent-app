@@ -1,0 +1,305 @@
+import { useDisclosure } from '@/hooks/useDelayDisclosure'
+import RaydiumLogo from '@/icons/RaydiumLogo'
+import RaydiumLogoOutline from '@/icons/RaydiumLogoOutline'
+import ChevronDownIcon from '@/icons/misc/ChevronDownIcon'
+import Gear from '@/icons/misc/Gear'
+import { useAppStore } from '@/store'
+import { colors } from '@/theme/cssVariables'
+import { appLayoutPaddingX } from '@/theme/detailConfig'
+import { toUTC } from '@/utils/date'
+import {
+  Box,
+  Flex,
+  HStack,
+  Menu,
+  MenuButton,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalHeader,
+  ModalOverlay,
+  Text,
+  useBreakpointValue,
+  useColorMode
+} from '@chakra-ui/react'
+import Link from 'next/link'
+import { useRouter } from 'next/router'
+import React, { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
+import MobileDesktop, { Desktop, Mobile } from '../MobileDesktop'
+import SolWallet from '../SolWallet'
+import { MobileBottomNavbar } from './MobileBottomNavbar'
+import { ColorThemeSettingField } from './components/ColorThemeSettingField'
+import { DefaultExplorerSettingField } from './components/DefaultExplorerSettingField'
+import { LanguageSettingField } from './components/LanguageSettingField'
+import { NavMoreButtonMenuPanel } from './components/NavMoreButtonMenuPanel'
+import { RPCConnectionSettingField } from './components/RPCConnectionSettingField'
+import { Divider } from './components/SettingFieldDivider'
+import { SlippageToleranceSettingField } from './components/SlippageToleranceSettingField'
+import { VersionedTransactionSettingField } from './components/VersionedTransactionSettingField'
+import { TransactionFeeSetting } from './components/TransactionFeeSetting'
+import useSwr from 'swr'
+import axios from '@/api/axios'
+
+export interface NavSettings {
+  // colorTheme: 'dark' | 'light'
+}
+
+function AppNavLayout({
+  children,
+  overflowHidden
+}: {
+  children: ReactNode
+  /** use screen height */
+  overflowHidden?: boolean
+}) {
+  const { colorMode } = useColorMode()
+  const isDark = colorMode === 'dark'
+  const planetLeft = useBreakpointValue({ base: '40%', md: '60%' })
+  const { t } = useTranslation()
+  const { pathname } = useRouter()
+
+  return (
+    <Flex
+      direction="column"
+      id="app-layout"
+      height="full"
+      overflow={overflowHidden ? 'hidden' : 'auto'}
+      backgroundImage={isDark ? "url('/images/planet.png')" : undefined}
+      backgroundPosition={`top -5% left ${planetLeft}`}
+      backgroundSize="800px 493px"
+      backgroundRepeat="no-repeat"
+    >
+      <HStack
+        flex="none"
+        height={['64px', '80px']}
+        px={['20px', '38px']}
+        gap={['24px', 'max(64px, 6.1vw)']}
+        alignItems="center"
+        justifyContent="space-between"
+      >
+        {/* logo */}
+        <Desktop>
+          <Box flex={'none'}>
+            <RaydiumLogo />
+          </Box>
+        </Desktop>
+        <Mobile>
+          <HStack>
+            <RaydiumLogoOutline />
+            <Text fontSize="xl" fontWeight="medium" color={colors.textSecondary}>
+              {pathname === '/swap'
+                ? t('swap.title')
+                : pathname === '/liquidity-pools'
+                ? t('liquidity.title')
+                : pathname === '/portfolio'
+                ? t('portfolio.title')
+                : pathname === '/playground'
+                ? t('common.playground')
+                : pathname === '/staking'
+                ? t('staking.title')
+                : ''}
+            </Text>
+          </HStack>
+        </Mobile>
+
+        {/* nav routes */}
+        <Desktop>
+          <HStack flexGrow={1} justify="start" overflow={['auto', 'visible']} gap={15}>
+            <RouteLink href="/swap" isActive={pathname === '/swap'}>
+              {t('swap.title')}
+            </RouteLink>
+            <RouteLink href="/liquidity-pools" isActive={pathname.includes('/liquidity')}>
+              {t('liquidity.title')}
+            </RouteLink>
+            <RouteLink href="/portfolio" isActive={pathname === '/portfolio'}>
+              {t('portfolio.title')}
+            </RouteLink>
+            {/* <RouteLink href="/playground" isActive={pathname === '/playground'}>
+              {t('common.playground')}
+            </RouteLink> */}
+            <Menu size="lg">
+              <MenuButton fontSize={'lg'} px={4} py={2}>
+                <Flex align="center" gap={0.5} color={pathname === '/staking' ? colors.textSecondary : colors.textTertiary}>
+                  {pathname === '/staking' ? t('staking.title') : t('common.more')}
+                  <ChevronDownIcon width={16} height={16} />
+                </Flex>
+              </MenuButton>
+              <NavMoreButtonMenuPanel />
+            </Menu>
+          </HStack>
+        </Desktop>
+
+        {/* wallet button */}
+        <Flex gap={[0.5, 2]} align="center">
+          <SettingsMenu />
+          {/* <EVMWallet />  don't need currently yet*/}
+          <SolWallet />
+        </Flex>
+      </HStack>
+
+      <Box
+        px={appLayoutPaddingX}
+        pt={[0, 4]}
+        flex={1}
+        overflow={overflowHidden ? 'hidden' : 'auto'}
+        display="flex"
+        flexDirection="column"
+        justifyItems={'flex-start'}
+        sx={{
+          scrollbarGutter: 'stable',
+          contain: 'size',
+          '& > *': {
+            // for flex-col container
+            flex: 'none'
+          }
+        }}
+      >
+        {children}
+      </Box>
+
+      <Mobile>
+        <Box flex="none">
+          <MobileBottomNavbar />
+        </Box>
+      </Mobile>
+    </Flex>
+  )
+}
+
+function RouteLink(props: { isActive?: boolean; children: ReactNode; href: string }) {
+  return (
+    <MobileDesktop
+      pc={
+        <Link href={props.href}>
+          <Text
+            as="span"
+            textColor={props.isActive ? colors.textSecondary : colors.textTertiary}
+            fontSize="lg"
+            px={4}
+            py={2}
+            rounded="xl"
+            transition="200ms"
+            _hover={{ bg: colors.backgroundLight, color: colors.textSecondary }}
+          >
+            {props.children}
+          </Text>
+        </Link>
+      }
+      mobile={
+        props.isActive ? (
+          <Link href={props.href}>
+            <Text as="span" fontSize="xl" fontWeight={500} textColor={colors.textSecondary}>
+              {props.children}
+            </Text>
+          </Link>
+        ) : null
+      }
+    />
+  )
+}
+
+function SettingsMenu() {
+  const { isOpen, onClose, onOpen } = useDisclosure()
+  const triggerRef = React.useRef<HTMLDivElement>(null)
+  return (
+    <>
+      <Box
+        w={10}
+        h={10}
+        p="0"
+        onClick={() => onOpen()}
+        _hover={{ bg: colors.backgroundLight }}
+        rounded="full"
+        display="grid"
+        placeContent="center"
+        cursor="pointer"
+        ref={triggerRef}
+      >
+        <Gear />
+      </Box>
+      <SettingsMenuModalContent isOpen={isOpen} onClose={onClose} triggerRef={triggerRef} />
+    </>
+  )
+}
+
+function SettingsMenuModalContent(props: { isOpen: boolean; triggerRef: React.RefObject<HTMLDivElement>; onClose: () => void }) {
+  const contentRef = React.useRef<HTMLDivElement>(null)
+  const { t } = useTranslation()
+  const triggerPanelGap = 8
+  const isMobile = useAppStore((s) => s.isMobile)
+  const urlConfigs = useAppStore((s) => s.urlConfigs)
+  const getTriggerRect = () => props.triggerRef.current?.getBoundingClientRect()
+
+  const { data } = useSwr(
+    `${urlConfigs.BASE_HOST}${urlConfigs.VERSION}`,
+    (url) =>
+      axios.get<
+        any,
+        {
+          id: string
+          success: boolean
+          data: {
+            latest: string
+            least: string
+          }
+        }
+      >(url, { skipError: true }),
+    {
+      refreshInterval: 60 * 60 * 1000,
+      focusThrottleInterval: 60 * 60 * 1000,
+      dedupingInterval: 60 * 60 * 1000
+    }
+  )
+
+  return (
+    <Modal size={'lg'} isOpen={props.isOpen} onClose={props.onClose}>
+      <ModalOverlay />
+      <ModalContent
+        css={{
+          transform: (() => {
+            const triggerRect = getTriggerRect()
+            return (
+              triggerRect
+                ? `translate(${isMobile ? 0 : -(window.innerWidth - triggerRect.right)}px, ${
+                    triggerRect.bottom + triggerPanelGap
+                  }px) !important`
+                : undefined
+            ) as string | undefined
+          })()
+        }}
+        ref={contentRef}
+        marginTop={0}
+        marginRight={['auto', 0]}
+      >
+        <ModalHeader>{t('setting_board.panel_title')}</ModalHeader>
+        <ModalCloseButton />
+        <ModalBody>
+          <SlippageToleranceSettingField />
+          <Divider />
+          <VersionedTransactionSettingField />
+          <Divider />
+          <DefaultExplorerSettingField />
+          <Divider />
+          <TransactionFeeSetting />
+          <Divider />
+          <LanguageSettingField />
+          <Divider />
+          <ColorThemeSettingField />
+          <Divider />
+          <RPCConnectionSettingField />
+          <Divider />
+          <Flex fontSize="sm" color={colors.textTertiary} direction={['row', 'column']} columnGap={5} mt={3}>
+            {/* version */}
+            <Text>{data?.data.latest}</Text>
+            {/* **block chain** current time */}
+            <Text>{toUTC(Date.now())}</Text>
+          </Flex>
+        </ModalBody>
+      </ModalContent>
+    </Modal>
+  )
+}
+
+export default AppNavLayout

@@ -1,40 +1,77 @@
-import type { FC, PropsWithChildren } from 'react'
-import React, { useMemo } from 'react'
+import { FC, PropsWithChildren, useEffect } from 'react'
+import React, { useMemo, useState } from 'react'
 
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base'
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react'
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui'
+import { GlowWalletAdapter } from '@solana/wallet-adapter-glow'
+import { ExodusWalletAdapter } from '@solana/wallet-adapter-exodus'
+import { SlopeWalletAdapter } from '@solana/wallet-adapter-slope'
+import { SolflareWalletAdapter } from '@solflare-wallet/wallet-adapter'
 import {
-  GlowWalletAdapter,
   PhantomWalletAdapter,
-  SlopeWalletAdapter,
-  SolflareWalletAdapter,
   TorusWalletAdapter,
-  TrustWalletAdapter
+  TrustWalletAdapter,
+  LedgerWalletAdapter,
+  WalletConnectWalletAdapter,
+  MathWalletAdapter,
+  TokenPocketWalletAdapter,
+  CoinbaseWalletAdapter,
+  SolongWalletAdapter,
+  Coin98WalletAdapter,
+  SafePalWalletAdapter,
+  BitpieWalletAdapter,
+  BitKeepWalletAdapter
 } from '@solana/wallet-adapter-wallets'
-import { clusterApiUrl } from '@solana/web3.js'
+import { useAppStore, defaultNetWork, defaultEndpoint } from '../store/useAppStore'
 
-const App: FC<PropsWithChildren<{}>> = ({ children }) => {
-  // Can be set to 'devnet', 'testnet', or 'mainnet-beta'
-  const network = WalletAdapterNetwork.Mainnet
-
-  // You can also provide a custom RPC endpoint
-  const endpoint = useMemo(() => clusterApiUrl(network), [network])
+const App: FC<PropsWithChildren<any>> = ({ children }) => {
+  const [network] = useState<WalletAdapterNetwork>(defaultNetWork)
+  const rpcNodeUrl = useAppStore((s) => s.rpcNodeUrl)
+  // const [endpoint] = useState<string>(defaultEndpoint)
+  const [endpoint, setEndpoint] = useState<string>(rpcNodeUrl || defaultEndpoint)
 
   const wallets = useMemo(
     () => [
       new PhantomWalletAdapter(),
-      new GlowWalletAdapter(),
-      new SlopeWalletAdapter(),
-      new SolflareWalletAdapter({ network }),
+      ...(typeof window === 'undefined' ? [] : [new SolflareWalletAdapter()]),
+      new SlopeWalletAdapter({ endpoint }),
       new TorusWalletAdapter(),
-      new TrustWalletAdapter()
+      new LedgerWalletAdapter(),
+      new WalletConnectWalletAdapter({
+        network: network as WalletAdapterNetwork.Mainnet,
+        options: {
+          // TODO: register project to walletconnect.com and obtain project ID
+          projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PJ_ID,
+          metadata: {
+            name: 'Raydium',
+            description: 'Raydium',
+            url: 'https://raydium.io/',
+            icons: ['https://raydium.io/logo/logo-only-icon.svg']
+          }
+        }
+      }),
+      new GlowWalletAdapter(),
+      new TrustWalletAdapter(),
+      new MathWalletAdapter({ endpoint }),
+      new TokenPocketWalletAdapter(),
+      new CoinbaseWalletAdapter({ endpoint }),
+      new SolongWalletAdapter({ endpoint }),
+      new Coin98WalletAdapter({ endpoint }),
+      new SafePalWalletAdapter({ endpoint }),
+      new BitpieWalletAdapter({ endpoint }),
+      new BitKeepWalletAdapter({ endpoint }),
+      new ExodusWalletAdapter({ endpoint })
     ],
-    []
+    [network, endpoint]
   )
 
+  useEffect(() => {
+    if (rpcNodeUrl) setEndpoint(rpcNodeUrl)
+  }, [rpcNodeUrl])
+
   return (
-    <ConnectionProvider endpoint={endpoint}>
+    <ConnectionProvider endpoint={endpoint} config={{ disableRetryOnRateLimit: true }}>
       <WalletProvider wallets={wallets} autoConnect>
         <WalletModalProvider>{children}</WalletModalProvider>
       </WalletProvider>

@@ -1,0 +1,142 @@
+import { useState, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Box, Flex, Grid, GridItem, HStack, Tag, Text, Tooltip } from '@chakra-ui/react'
+import Link from 'next/link'
+import { PublicKey } from '@solana/web3.js'
+import Button from '@/components/Button'
+import TokenAvatarPair from '@/components/TokenAvatarPair'
+import { colors } from '@/theme/cssVariables'
+import { PositionWithUpdateFn } from '@/hooks/portfolio/useAllPositionInfo'
+import { FormattedPoolInfoConcentratedItem } from '@/hooks/pool/type'
+import useSubscribeClmmInfo, { RpcPoolData } from '@/hooks/pool/clmm/useSubscribeClmmInfo'
+import { trimTrailZero } from '@/utils/numberish/formatter'
+import Decimal from 'decimal.js'
+import SwapHorizontalIcon from '@/icons/misc/SwapHorizontalIcon'
+import { Desktop, Mobile } from '@/components/MobileDesktop'
+import { panelCard } from '@/theme/cssBlocks'
+import ClmmPositionAccountItem from './ClmmPositionAccountItem'
+import toPercentString from '@/utils/numberish/toPercentString'
+
+export function ClmmPositionItemsCard({
+  poolInfo,
+  initRpcPoolData,
+  setNoRewardClmmPos,
+  ...props
+}: {
+  poolId: string | PublicKey
+  positions: PositionWithUpdateFn[]
+  poolInfo?: FormattedPoolInfoConcentratedItem
+  initRpcPoolData?: RpcPoolData
+  setNoRewardClmmPos: (val: string, isDelete?: boolean) => void
+}) {
+  const { t } = useTranslation()
+  const data = useSubscribeClmmInfo({ poolInfo })
+  const [baseIn, setBaseIn] = useState(true)
+  const rpcData = initRpcPoolData || data
+
+  if (poolInfo && rpcData.currentPrice) poolInfo.price = rpcData.currentPrice
+  const handleClickToggle = useCallback(() => setBaseIn((val) => !val), [])
+  if (!poolInfo) return null
+
+  return (
+    <Grid
+      {...panelCard}
+      gridTemplate={[
+        `
+        "face " auto
+        "price " auto
+        "items " auto
+        "action" auto / 1fr
+      `,
+        `
+        "face price action " auto
+        "items items items  " auto / 1fr 1fr 1fr
+      `
+      ]}
+      py={[4, 5]}
+      px={[3, 8]}
+      bg={colors.backgroundLight}
+      gap={[2, 4]}
+      borderRadius="xl"
+      alignItems={'center'}
+    >
+      <GridItem area="face">
+        <HStack>
+          <TokenAvatarPair size={['smi', 'md']} token1={poolInfo.mintA} token2={poolInfo.mintB} />
+
+          <Text fontSize={['md', '20px']} fontWeight="500">
+            {poolInfo.poolName}
+          </Text>
+
+          <Tag size={['sm', 'md']} variant="rounded">
+            {toPercentString(poolInfo.feeRate * 100)}
+          </Tag>
+
+          {/* switch button */}
+          <Box alignSelf="center" ml={[0, 2]}>
+            <Tooltip label={t('portfolio.section_positions_clmm_switch_direction_tooltip')}>
+              <Box
+                onClick={handleClickToggle}
+                px={['12px', '12px']}
+                py={['5px', '6px']}
+                color={colors.secondary}
+                border="1px solid currentColor"
+                rounded={['8px', '8px']}
+                cursor="pointer"
+                display={'flex'}
+                alignItems={'center'}
+              >
+                <Desktop>
+                  <SwapHorizontalIcon height={18} width={18} />
+                </Desktop>
+                <Mobile>
+                  <SwapHorizontalIcon height={12} width={12} />
+                </Mobile>
+              </Box>
+            </Tooltip>
+          </Box>
+        </HStack>
+      </GridItem>
+
+      <GridItem area="price" justifySelf={['left', 'left']}>
+        <Text color={colors.textTertiary}>
+          {t('field.current_price')}:{' '}
+          <Text as="span" color={colors.textPrimary}>
+            {baseIn
+              ? trimTrailZero(poolInfo.price.toFixed(poolInfo.recommendDecimal(poolInfo.price)))
+              : trimTrailZero(
+                  new Decimal(1).div(poolInfo.price).toFixed(poolInfo.recommendDecimal(new Decimal(1).div(poolInfo.price).toString()))
+                )}
+          </Text>{' '}
+          {t('common.per_unit', {
+            subA: poolInfo[baseIn ? 'mintB' : 'mintA'].symbol,
+            subB: poolInfo[baseIn ? 'mintA' : 'mintB'].symbol
+          })}
+        </Text>
+      </GridItem>
+
+      <GridItem area={'action'} justifySelf={['center', 'right']}>
+        <Link href={`/clmm/create-position?pool_id=${poolInfo.id}`}>
+          <Button size="sm" variant="outline">
+            {t('clmm.create_new_position')}
+          </Button>
+        </Link>
+      </GridItem>
+
+      <GridItem area={'items'}>
+        <Flex flexDir="column" gap={3} mt={[1, 0]}>
+          {props.positions.map((position) => (
+            <ClmmPositionAccountItem
+              key={position.nftMint.toBase58()}
+              poolInfo={poolInfo!}
+              position={position}
+              baseIn={baseIn}
+              initRpcPoolData={initRpcPoolData}
+              setNoRewardClmmPos={setNoRewardClmmPos}
+            />
+          ))}
+        </Flex>
+      </GridItem>
+    </Grid>
+  )
+}
