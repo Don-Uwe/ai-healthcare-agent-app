@@ -29,8 +29,7 @@ export default function SectionOverview() {
   const {
     data: standardPoolList,
     standardPoolListByMint,
-    totalUSD: totalStandardPosition,
-    idleLpMintList
+    totalUSD: totalStandardPosition
   } = useAllStandardPoolPosition({ type: AssetType.STANDARD })
 
   const productiveBalance = totalClmmPosition.add(totalStandardPosition).toString()

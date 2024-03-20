@@ -1,5 +1,4 @@
 import Button from '@/components/Button'
-import SolWallet from '@/components/SolWallet'
 import TokenAvatar from '@/components/TokenAvatar'
 import ChevronRightIcon from '@/icons/misc/ChevronRightIcon'
 import { useAppStore } from '@/store/useAppStore'

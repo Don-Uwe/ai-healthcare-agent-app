@@ -24,18 +24,8 @@ export default function SubPageNote({
   const isMobile = useAppStore((s) => s.isMobile)
   const boxRef = useRef<HTMLDivElement>(null)
 
-  const {
-    isOpen: isCollapseOpen,
-    onOpen: onOpenCollapse,
-    onClose: onCloseCollapse,
-    onToggle: onToggleCollapse
-  } = useDisclosure({ defaultIsOpen: true })
-  const {
-    isOpen: isPanelOpen,
-    onOpen: onOpenPanel,
-    onClose: onClosePanel,
-    onToggle: onTogglePanel
-  } = useDisclosure({ defaultIsOpen: true })
+  const { isOpen: isCollapseOpen, onClose: onCloseCollapse, onToggle: onToggleCollapse } = useDisclosure({ defaultIsOpen: true })
+  const { isOpen: isPanelOpen, onClose: onClosePanel } = useDisclosure({ defaultIsOpen: true })
 
   useOutsideClick({
     ref: boxRef,

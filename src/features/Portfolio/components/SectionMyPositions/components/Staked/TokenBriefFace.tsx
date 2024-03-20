@@ -1,4 +1,4 @@
-import { Flex, Text, VStack } from '@chakra-ui/react'
+import { Text, VStack } from '@chakra-ui/react'
 import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 
 import TokenAvatar from '@/components/TokenAvatar'

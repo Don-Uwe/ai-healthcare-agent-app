@@ -12,7 +12,7 @@ interface FeatureCardProps {
   linkTitle: string
 }
 
-export default function FeatureCard({ title, desc, link, linkTitle }: FeatureCardProps) {
+export default function FeatureCard({ title, desc, linkTitle }: FeatureCardProps) {
   const { isOpen, onToggle } = useDisclosure()
 
   return (

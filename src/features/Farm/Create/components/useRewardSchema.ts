@@ -1,14 +1,10 @@
-import { useTranslation } from 'react-i18next'
 import * as yup from 'yup'
 import Decimal from 'decimal.js'
 import dayjs from 'dayjs'
 
 export default function useRewardSchema() {
-  // prepare for i18n usage
-  const { t } = useTranslation()
-
   return yup.object().shape({
-    speed: yup.mixed().test('is-amount-enough', 'Emission rewards is lower than min required', function (val) {
+    speed: yup.mixed().test('is-amount-enough', 'Emission rewards is lower than min required', function () {
       const minBoundary =
         this.parent.farmEnd && this.parent.farmStart && this.parent.token
           ? new Decimal((this.parent.farmEnd - this.parent.farmStart) / 1000).div(10 ** this.parent.token.decimals)

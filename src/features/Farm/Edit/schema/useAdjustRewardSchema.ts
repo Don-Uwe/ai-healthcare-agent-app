@@ -29,7 +29,7 @@ const schema = (t: TFunction<'translation', undefined, 'translation'>) =>
       .number()
       .transform((value) => (isNaN(value) ? 0 : value))
       .positive(t('error.enter_token_amount') ?? '')
-      .test('is-amount-valid', t('is_amount_valid') ?? '', function (val) {
+      .test('is-amount-valid', t('is_amount_valid') ?? '', function () {
         // if (new Decimal(val || 0).gt(this.parent.balance))
         //   return this.createError({
         //     message: ADJUST_REWARD_ERROR.BALANCE_INSUFFICIENT

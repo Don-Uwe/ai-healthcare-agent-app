@@ -81,7 +81,6 @@ function BottomNavbarItem({
 }) {
   const { colorMode } = useColorMode()
   const isDark = colorMode === 'dark'
-  const isLight = colorMode === 'light'
   const content = (
     <VStack spacing={0}>
       <Box>{shrinkToValue(icon, [colorMode])}</Box>

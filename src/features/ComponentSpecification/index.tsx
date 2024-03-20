@@ -486,7 +486,7 @@ function SearchExample() {
 }
 
 function ProgressExample() {
-  const [value, setValue] = useState(0.4)
+  const [value] = useState(0.4)
   return (
     <ComponentExamplePanel name="Progress">
       <HStack>

@@ -43,8 +43,6 @@ export default function AddressChip({
   canExternalLink = false,
 
   showDigitCount = 6,
-  addressType = 'account',
-  iconRowClassName,
   onCopied,
 
   ...restProps

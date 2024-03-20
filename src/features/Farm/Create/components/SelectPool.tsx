@@ -1,13 +1,12 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, Flex, HStack, Link, Spacer, Text, Tooltip, VStack, useDisclosure } from '@chakra-ui/react'
+import { Box, Flex, HStack, Link, Spacer, Text, VStack, useDisclosure } from '@chakra-ui/react'
 import { ApiV3PoolInfoItem, ApiV3PoolInfoConcentratedItem, toTokenInfo, PoolFetchType } from '@raydium-io/raydium-sdk-v2'
 import Button from '@/components/Button'
 import PoolSelectDialog from '@/features/Farm/Create/components/PoolSelectDialog'
 import TokenAvatarPair from '@/components/TokenAvatarPair'
 import { useEvent } from '@/hooks/useEvent'
 import CircleCheck from '@/icons/misc/CircleCheck'
-import QuestionCircleIcon from '@/icons/misc/QuestionCircleIcon'
 import SearchIcon from '@/icons/misc/SearchIcon'
 import { colors } from '@/theme/cssVariables'
 import formatNumber from '@/utils/numberish/formatNumber'
@@ -18,7 +17,7 @@ import { PublicKey } from '@solana/web3.js'
 import NextLink from 'next/link'
 import { Desktop } from '@/components/MobileDesktop'
 import { panelCard } from '@/theme/cssBlocks'
-import { QuestionToolTip } from '@/components/QuestionToolTip'
+// import { QuestionToolTip } from '@/components/QuestionToolTip'
 
 type SelectPoolProps = {
   selectedPoolType: CreateFarmType

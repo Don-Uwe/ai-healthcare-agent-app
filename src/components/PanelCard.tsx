@@ -6,6 +6,6 @@ export interface PanelCardProps extends BoxProps {
 }
 
 /** @deprecated just use block:{@link panelCard} */
-export default function PanelCard({ variant = 'dark', ...props }: PanelCardProps) {
+export default function PanelCard(props: PanelCardProps) {
   return <Box {...panelCard} display="flex" flexDir="column" {...props} />
 }

@@ -28,7 +28,6 @@ export default function Chart<T = any>({
 }) {
   const { t } = useTranslation()
   const isMobile = useAppStore((s) => s.isMobile)
-  const { colorMode } = useColorMode()
   return (
     <Box>
       {renderTabs && !isMobile && <Box mb={2}>{renderTabs}</Box>}

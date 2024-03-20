@@ -82,9 +82,7 @@ const lineStyle = definePartsStyle(() => {
   }
 })
 
-const squarePanelStyle = definePartsStyle((props) => {
-  const { colorScheme: c } = props // extract colorScheme from component props
-
+const squarePanelStyle = definePartsStyle(() => {
   return {
     root: {
       bg: colors.backgroundTransparent12,
@@ -113,9 +111,7 @@ const squarePanelStyle = definePartsStyle((props) => {
   }
 })
 
-const squarePanelDarkStyle = definePartsStyle((props) => {
-  const { colorScheme: c } = props // extract colorScheme from component props
-
+const squarePanelDarkStyle = definePartsStyle(() => {
   return {
     root: {
       bg: colors.backgroundDark,
@@ -253,9 +249,7 @@ const folderStyle = definePartsStyle({
   }
 })
 
-const roundedPlainStyle = definePartsStyle((props) => {
-  const { colorScheme: c } = props // extract colorScheme from component props
-
+const roundedPlainStyle = definePartsStyle(() => {
   return {
     root: {
       bg: colors.backgroundTransparent12,
@@ -279,7 +273,7 @@ const roundedPlainStyle = definePartsStyle((props) => {
   }
 })
 
-const roundedSwitchStyle = definePartsStyle((props) => {
+const roundedSwitchStyle = definePartsStyle(() => {
   return {
     root: {
       bg: colors.backgroundTransparent12,

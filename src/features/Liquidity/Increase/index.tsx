@@ -20,8 +20,6 @@ import PoolInfo from './components/PoolInfo'
 import PositionBalance from './components/PositionBalance'
 import StakeableHint from './components/StakeableHint'
 
-import { useRouter } from 'next/router'
-
 export type IncreaseLiquidityPageQuery = {
   pool_id?: string
   action?: string

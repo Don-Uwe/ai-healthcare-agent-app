@@ -422,7 +422,6 @@ export default function PoolListItem({
                     <Text fontSize="sm" color={colors.textSecondary}>
                       {t(`common.rewards`)}
                     </Text>
-                    <HStack spacing="2px">{pool.weeklyRewards.map((reward) => null)}</HStack>
                     <PoolListItemRewardStack rewards={pool.weeklyRewards} />
                   </HStack>
                 </VStack>

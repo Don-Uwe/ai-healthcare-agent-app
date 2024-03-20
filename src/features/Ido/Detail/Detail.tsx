@@ -1,4 +1,4 @@
-import { Flex, Link, Image } from '@chakra-ui/react'
+import { Flex, Link } from '@chakra-ui/react'
 import { useIdoStore } from '@/features/Ido/useIdoStore'
 import { useAppStore } from '@/store/useAppStore'
 import { formatLocaleStr } from '@/utils/numberish/formatter'

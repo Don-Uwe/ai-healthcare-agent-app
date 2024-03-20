@@ -18,7 +18,6 @@ import { useStateWithUrl } from '@/hooks/useStateWithUrl'
 import useAllPositionInfo from '@/hooks/portfolio/useAllPositionInfo'
 import { panelCard } from '@/theme/cssBlocks'
 import toUsdVolume from '@/utils/numberish/toUsdVolume'
-import { QuestionToolTip } from '@/components/QuestionToolTip'
 import { useEvent } from '@/hooks/useEvent'
 
 export type PositionTabValues = 'concentrated' | 'standard' | 'staked RAY'
@@ -132,12 +131,6 @@ export default function SectionMyPositions() {
                     <Text whiteSpace={'nowrap'} color={colors.textPrimary} fontWeight={500}>
                       {toUsdVolume(totalPendingYield.toString(), { decimals: 4, rounding: Rounding.ROUND_DOWN, decimalMode: 'trim' })}
                     </Text>
-                    {/* TODO not need now */}
-                    {/* <QuestionToolTip
-                      label={t('portfolio.harvest_all_tooltip')}
-                      iconType="info"
-                      iconProps={{ color: colors.textSecondary }}
-                    /> */}
                   </HStack>
                 </Flex>
                 <Button

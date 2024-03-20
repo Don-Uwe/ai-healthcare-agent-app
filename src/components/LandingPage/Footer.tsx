@@ -1,4 +1,4 @@
-import { Box, Center, Flex, Text, Wrap, WrapItem } from '@chakra-ui/react'
+import { Box, Center, Flex, Text } from '@chakra-ui/react'
 
 import FooterItem from './components/FooterItem'
 import FooterTitle from './components/FooterTitle'

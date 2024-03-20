@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, MouseEvent, KeyboardEvent, useRef, useDeferredValue } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Box, BoxProps, Flex, Text, Input, Popover, PopoverAnchor, PopoverContent, PopoverBody, HStack } from '@chakra-ui/react'
-import { ApiV3Token, solToWSol, USDCMint, USDTMint, RAYMint, SOLMint } from '@raydium-io/raydium-sdk-v2'
+import { ApiV3Token, solToWSol } from '@raydium-io/raydium-sdk-v2'
 import AddressChip from '@/components/AddressChip'
 import Close from '@/icons/misc/Close'
 import { debounce } from '@/utils/functionMethods'

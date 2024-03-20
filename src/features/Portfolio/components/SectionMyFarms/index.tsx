@@ -1,10 +1,7 @@
-import { useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Box, Flex, Grid, GridItem, Heading, useDisclosure } from '@chakra-ui/react'
 import Button from '@/components/Button'
-import { Desktop, Mobile } from '@/components/MobileDesktop'
-import { Select } from '@/components/Select'
-import Tabs, { TabItem } from '@/components/Tabs'
 import { CreatePoolEntryDialog } from '@/features/Create/components/CreatePoolEntryDialog'
 import useCreatedFarmInfo, { FarmCategory } from '@/hooks/portfolio/farm/useCreatedFarmInfo'
 import useFetchFarmInfoById from '@/hooks/farm/useFetchFarmInfoById'
@@ -18,36 +15,13 @@ export type CreateFarmTabValues = FarmCategory
 
 export default function SectionMyCreatedFarms() {
   const { t } = useTranslation()
-  const [filterType, setFilterConfig] = useStateWithUrl(FarmCategory.All, 'create_farm_tab', {
+  const [filterType] = useStateWithUrl(FarmCategory.All, 'create_farm_tab', {
     fromUrl: (v) => v,
     toUrl: (v) => v
   })
   const publicKey = useAppStore((s) => s.publicKey)
   const { formattedData } = useCreatedFarmInfo({ owner: publicKey })
   const hasCreatedFarm = Boolean(formattedData?.length)
-  const hasClmmFarm = formattedData?.some((f) => f.type === FarmCategory.Clmm)
-  const hasStandardFarm = formattedData?.some((f) => f.type === FarmCategory.Standard)
-  // const farmCategoryOptions = [
-  //   {
-  //     value: FarmCategory.Clmm,
-  //     label: t('portfolio.section_department_tab_clmm'),
-  //     disabled: !hasClmmFarm
-  //   },
-  //   {
-  //     value: FarmCategory.Standard,
-  //     label: t('portfolio.section_department_tab_standard'),
-  //     disabled: !hasStandardFarm
-  //   },
-  //   {
-  //     value: FarmCategory.All,
-  //     label: t('portfolio.section_department_tab_all'),
-  //     disabled: !(hasClmmFarm && hasStandardFarm)
-  //   }
-  // ] as TabItem[]
-
-  // const onTabChange = useCallback((type: FarmCategory) => {
-  //   setFilterConfig(type)
-  // }, [])
 
   const filteredData = useMemo(
     () => (filterType === FarmCategory.All ? formattedData : formattedData.filter((f) => f.type === filterType)),

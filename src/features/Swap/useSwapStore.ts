@@ -50,7 +50,7 @@ export interface ComputeParams {
 const initSwapState = {}
 
 export const useSwapStore = createStore<SwapStore>(
-  (set, get) => ({
+  () => ({
     ...initSwapState,
 
     swapTokenAct: async ({ swapResponse, ...txProps }) => {

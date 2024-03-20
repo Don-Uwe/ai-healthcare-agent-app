@@ -1,6 +1,5 @@
 import { useEffect, useMemo } from 'react'
 import { IdoKeysData } from '@raydium-io/raydium-sdk-v2'
-import { PublicKey } from '@solana/web3.js'
 import useSWR from 'swr'
 import shallow from 'zustand/shallow'
 import axios from '@/api/axios'

@@ -1,11 +1,9 @@
 import { Text, Button, Modal, ModalBody, ModalContent, ModalHeader, ModalOverlay, ModalFooter } from '@chakra-ui/react'
-import { useRouter } from 'next/router'
 import { useTranslation, Trans } from 'react-i18next'
 import CircleInfo from '@/icons/misc/CircleInfo'
 import { colors } from '@/theme/cssVariables'
 
 export default function HighRiskAlert({ isOpen, onClose, onConfirm }: { isOpen: boolean; onClose: () => void; onConfirm: () => void }) {
-  const router = useRouter()
   const { t } = useTranslation()
 
   return (

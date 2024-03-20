@@ -8,7 +8,7 @@ import { wsolToSolToken } from '@/utils/token'
 import { Box, Flex, Text, VStack } from '@chakra-ui/react'
 import { ApiV3PoolInfoConcentratedItem, WSOLMint } from '@raydium-io/raydium-sdk-v2'
 import { PublicKey } from '@solana/web3.js'
-import { useCallback, useEffect } from 'react'
+import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 
 export type TokenParams = { token1?: string; token2?: string }

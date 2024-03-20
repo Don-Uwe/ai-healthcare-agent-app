@@ -21,12 +21,6 @@ export function PoolListHeader({
   const { colorMode } = useColorMode()
   const isLight = colorMode === 'light'
 
-  const angleCss = useMemo(() => {
-    return {
-      rotate: order ? '180deg' : '0deg'
-    }
-  }, [order])
-
   return (
     <Flex
       w="100%"

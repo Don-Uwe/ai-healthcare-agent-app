@@ -1,13 +1,10 @@
-/* eslint-disable react/no-unescaped-entities */
 import { Box, Center, Flex, Heading, Wrap } from '@chakra-ui/react'
-
 import { colors } from '@/theme/cssVariables'
-
 import FeatureCard from './components/FeatureCard'
-import amm from './images/liquidity-amm.png'
-import chart from './images/liquidity-card-chart.png'
-import launch from './images/liquidity-launch.png'
-import swap from './images/liquidity-swap.png'
+// import amm from './images/liquidity-amm.png'
+// import chart from './images/liquidity-card-chart.png'
+// import launch from './images/liquidity-launch.png'
+// import swap from './images/liquidity-swap.png'
 
 export default function Feature() {
   const featureList = [

@@ -28,7 +28,7 @@ export type TabOptionsObj = {
 
 export type TabItem = TabOptionsObj | string
 
-type TabsProps<T extends TabItem> = Omit<_TabsProps, 'children' | 'onChange' | 'index' | 'defaultIndex'> & {
+type TabsProps = Omit<_TabsProps, 'children' | 'onChange' | 'index' | 'defaultIndex'> & {
   items: readonly TabItem[]
   variant?:
     | 'line' /* has line indicator style */
@@ -71,7 +71,7 @@ const CustomTab = forwardRef<HTMLButtonElement, CustomTabProps>(({ toolTipProps,
   )
 })
 
-export default function Tabs<T extends TabItem>({
+export default function Tabs({
   items: rawOptions,
   size = 'sm',
   variant = 'line',
@@ -83,7 +83,7 @@ export default function Tabs<T extends TabItem>({
   renderItem,
   tabItemSX,
   ...rest
-}: TabsProps<T>) {
+}: TabsProps) {
   const options = rawOptions.map((o) => (typeof o === 'string' ? { value: o, label: o } : o))
   const defaultValueIndex = useMemo(() => {
     const firstAvailableIndex = options.findIndex((option) => !option.disabled)

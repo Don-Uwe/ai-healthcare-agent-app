@@ -26,7 +26,7 @@ interface ToasterProps {
   onClose: () => void
 }
 
-export function Toast({ state, id, onClose }: ToasterProps) {
+export function Toast({ state, onClose }: ToasterProps) {
   const [countDownController, setCountDownController] = useState({
     isCountDown: true,
     remainTime: state.duration ?? toastDefaultConfig.duration,

@@ -1,4 +1,4 @@
-type SortConfigItem<T, P> = {
+type SortConfigItem<T> = {
   value: (item: T) => any | undefined
   compareFn?: (textA: any, textB: any, items: { itemA: any; itemB: any }) => number
   /**
@@ -7,15 +7,15 @@ type SortConfigItem<T, P> = {
   mode?: 'decrease' | 'increase'
 }
 
-export type SortOptions<T, P> = {
-  sortRules?: SortConfigItem<T, P>[]
+export type SortOptions<T> = {
+  sortRules?: SortConfigItem<T>[]
 }
 
 /**
  * pure js fn/
  * core of "sort" feature
  */
-export function sortItems<T, P>(items: T[], options?: SortOptions<T, P>): T[] {
+export function sortItems<T>(items: T[], options?: SortOptions<T>): T[] {
   if (!options) return items
   if (!options.sortRules) return items
   return [...items].sort((itemA, itemB) => {

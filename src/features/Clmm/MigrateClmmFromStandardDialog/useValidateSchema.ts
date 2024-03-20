@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
 import * as yup from 'yup'
 import Decimal from 'decimal.js'
 
@@ -7,8 +6,6 @@ const numberTransform = yup.number().transform((value) => (isNaN(value) ? 0 : va
 const numberSchema = (errMsg: string) => numberTransform.moreThan(0, errMsg)
 
 export default function useValidateSchema(props: { priceUpper: string; priceLower: string }) {
-  const { t } = useTranslation()
-
   const [error, setError] = useState<string | undefined>()
 
   const schema = yup.object().shape({

@@ -1,5 +1,5 @@
 import { numberRegExp } from '@/utils/numberish/regex'
-import { Flex, InputGroup, NumberInput, NumberInputField, NumberInputProps, SystemStyleObject, Text } from '@chakra-ui/react'
+import { Flex, InputGroup, NumberInput, NumberInputField, SystemStyleObject, Text } from '@chakra-ui/react'
 import React, { MouseEvent, KeyboardEvent, ReactNode, useCallback, useEffect, useMemo, useRef } from 'react'
 import Decimal from 'decimal.js'
 

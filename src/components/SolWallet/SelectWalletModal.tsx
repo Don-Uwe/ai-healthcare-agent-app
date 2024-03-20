@@ -43,6 +43,7 @@ type Network = { name: string; icon?: JSX.Element }
 
 export default function SelectWalletModal({ wallets, isOpen, onSelectWallet, onClose }: Props) {
   const { t } = useTranslation()
+  /*
   const networks: Network[] = [
     { name: 'Solana', icon: <SolanaNetworkIcon /> },
     { name: 'Avalanche', icon: <AvalancheNetworkIcon /> },
@@ -52,6 +53,7 @@ export default function SelectWalletModal({ wallets, isOpen, onSelectWallet, onC
   ]
   const [currentNetwork, setCurrentNetwork] = useState('Solana')
   const connectedNetworks = ['Solana', 'Avalanche']
+  */
   const [canShowUninstalledWallets, setCanShowUninstalledWallets] = useState(false)
 
   const { installedWallets, notInstalledWallets } = splitWallets(wallets)
@@ -162,8 +164,7 @@ export default function SelectWalletModal({ wallets, isOpen, onSelectWallet, onC
 function WalletItem({
   selectable = true,
   wallet,
-  onClick,
-  isCurrent
+  onClick
 }: {
   selectable?: boolean
   wallet: Wallet
@@ -192,7 +193,7 @@ function WalletItem({
     </Flex>
   )
 }
-
+/*
 function NetworkItem({
   network,
   onClick,
@@ -216,6 +217,7 @@ function NetworkItem({
     </Flex>
   )
 }
+*/
 function splitWallets(wallets: Wallet[]): { installedWallets: Wallet[]; notInstalledWallets: Wallet[] } {
   const supportedWallets = wallets.filter((w) => w.readyState !== WalletReadyState.Unsupported)
   const installedWallets = supportedWallets.filter((w) => w.readyState !== WalletReadyState.NotDetected && w.adapter.name !== 'Sollet')

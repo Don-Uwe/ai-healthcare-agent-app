@@ -11,7 +11,6 @@ export default function IntervalCircle({
   run = true,
   initPercent = 0,
   componentRef,
-  className,
   duration = 60 * 1000,
   strokeWidth = 3,
   updateDelay = 1000,

@@ -2,7 +2,6 @@ import { Box, Flex, Grid, GridItem, HStack, Text } from '@chakra-ui/react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import SolWallet from '@/components/SolWallet'
 import Tabs from '@/components/Tabs'
 import { useAppStore } from '@/store/useAppStore'
 import { colors } from '@/theme/cssVariables'

@@ -49,7 +49,7 @@ export default function CandleChart({ onPriceChange, baseMint, quoteMint, timeTy
       rightPriceScale: { borderColor: axisColor },
       timeScale: {
         borderColor: axisColor,
-        tickMarkFormatter: (time: number, tickMarkType: TickMarkType, locale: string) => {
+        tickMarkFormatter: (time: number, tickMarkType: TickMarkType) => {
           if (tickMarkType === 0)
             return dayjs(time * 1000)
               .utc()

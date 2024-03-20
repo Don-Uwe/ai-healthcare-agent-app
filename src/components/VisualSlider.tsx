@@ -14,7 +14,6 @@ export function VisualSlider(props: {
   const currBoxRef = useRef<HTMLDivElement>(null)
   const transitionCSS = '.3s ease-out'
 
-  const isInit = useRef(true)
   useRecordedLayoutEffect(
     ([prevContentIndex]) => {
       if (!boxRef.current) return

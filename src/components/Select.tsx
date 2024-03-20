@@ -17,7 +17,6 @@ import ChevronDownIcon from '@/icons/misc/ChevronDownIcon'
 import { colors } from '@/theme/cssVariables'
 import { isObject } from '@/utils/judges/judgeType'
 import { MayFn, shrinkToValue } from '@/utils/shrinkToValue'
-import { color } from 'framer-motion'
 
 type SelectorItemObj<T> = {
   value: T
@@ -48,7 +47,6 @@ export function Select<T>({
   onChange,
   renderItem,
   renderTriggerItem = renderItem,
-  placeholder,
   hasDivider = false,
   hasBorder = false,
   hasDownIcon = true,

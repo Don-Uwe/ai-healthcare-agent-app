@@ -1,5 +1,4 @@
 import { CircleCheckForStep } from '@/icons/misc/CircleCheckFill'
-import { useAppStore } from '@/store'
 import { panelCard } from '@/theme/cssBlocks'
 import { colors } from '@/theme/cssVariables'
 import { Box, Divider, Flex, HStack, SystemStyleObject, Text, useSteps } from '@chakra-ui/react'

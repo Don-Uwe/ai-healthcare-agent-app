@@ -3,7 +3,6 @@ import { Badge, Box, Button, Divider, Grid, GridItem, HStack, SimpleGrid, Text }
 import { useTranslation } from 'react-i18next'
 import TokenAvatar from '@/components/TokenAvatar'
 import useFetchFarmInfoById from '@/hooks/farm/useFetchFarmInfoById'
-import { FarmDecodeData } from '@/hooks/farm/farmUtils'
 import FarmRewardIcon from '@/icons/pool/FarmRewardIcon'
 import { colors } from '@/theme/cssVariables'
 import toUsdVolume from '@/utils/numberish/toUsdVolume'

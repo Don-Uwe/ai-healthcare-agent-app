@@ -1,12 +1,10 @@
 import {
   Box,
   BoxProps,
-  CircularProgress,
   Grid,
   GridItem,
   HStack,
   InputGroup,
-  InputRightElement,
   NumberInput,
   NumberInputField,
   Spacer,
@@ -16,12 +14,11 @@ import {
   useColorMode,
   useDisclosure
 } from '@chakra-ui/react'
-import { ApiV3Token, Price, TokenInfo } from '@raydium-io/raydium-sdk-v2'
+import { ApiV3Token, TokenInfo } from '@raydium-io/raydium-sdk-v2'
 import Decimal from 'decimal.js'
-import React, { ReactNode, useEffect, useState } from 'react'
+import React, { ReactNode, useState } from 'react'
 import useTokenPrice from '@/hooks/token/useTokenPrice'
 import { useEvent } from '@/hooks/useEvent'
-import { useSyncSignal } from '@/hooks/useSyncSignalState'
 import BalanceWalletIcon from '@/icons/misc/BalanceWalletIcon'
 import ChevronDownIcon from '@/icons/misc/ChevronDownIcon'
 import { useAppStore, useTokenAccountStore, useTokenStore } from '@/store'

@@ -84,7 +84,7 @@ export default function SelectPoolTokenAndFee({ completed, isLoading, onConfirm,
     timeout: 100
   })
 
-  const { data, mutate } = useFetchPoolByMint({
+  const { data } = useFetchPoolByMint({
     shouldFetch: !!token1 && !!token2,
     mint1: token1 ? solToWSol(token1.address).toString() : '',
     mint2: token2 ? solToWSol(token2.address || '').toString() : '',

@@ -86,7 +86,7 @@ function getNetworkIcon(network: string): ReactNode | undefined {
   }
 }
 
-export default function WalletRecentTransactionBoard({ wallet, address, isOpen = false, onClose, onDisconnect, menuSX }: WalletMenuProps) {
+export default function WalletRecentTransactionBoard({ wallet, address, isOpen = false, onClose, onDisconnect }: WalletMenuProps) {
   const { t } = useTranslation()
   const allRecords = getTxAllRecord()
 
@@ -105,6 +105,7 @@ export default function WalletRecentTransactionBoard({ wallet, address, isOpen =
     address,
     balanceUSD: 582.67
   }
+  /*
   const evmWalletInfo: WalletInfo | undefined = {
     adaptarName: 'Metamask',
     adaptarIcon: 'https://avatars.githubusercontent.com/u/11744586?s=200&v=4',
@@ -113,6 +114,7 @@ export default function WalletRecentTransactionBoard({ wallet, address, isOpen =
     address: '0x5A653077FB46D9652919d818c992Bc9fde52f21F',
     balanceUSD: 1234.23
   }
+  */
 
   const recentTransactions: RecentTransaction[] = address
     ? allRecords
@@ -218,6 +220,7 @@ export default function WalletRecentTransactionBoard({ wallet, address, isOpen =
   )
 }
 
+/*
 function AnotherWalletCard({ wallet }: { wallet: WalletInfo }) {
   return (
     <Box bg={colors.backgroundDark} rounded="lg" p={3}>
@@ -242,6 +245,7 @@ function AnotherWalletCard({ wallet }: { wallet: WalletInfo }) {
     </Box>
   )
 }
+*/
 
 function RecentTransactionCard({ transaction }: { transaction: RecentTransaction }) {
   const { isOpen, onToggle } = useDisclosure()

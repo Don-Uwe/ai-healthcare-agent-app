@@ -17,7 +17,6 @@ export default function useCallbackRef<T = unknown>(options?: UseCallbackRefOpti
     new Proxy(originalRef, {
       set(target, p, value) {
         const prev = target.current as T
-        const setResult = Reflect.set(target, p, value)
         if (p === 'current' && isExist(value)) {
           if (isExist(value)) options?.onAttach?.(value)
           if (!isExist(value)) options?.onDetach?.()

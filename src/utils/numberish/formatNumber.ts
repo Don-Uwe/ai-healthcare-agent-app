@@ -5,7 +5,7 @@ import { toString } from './toString'
 const stringNumberRegex = /(-?)([\d,_]*)\.?(\d*)/
 
 function toFixed(n: string /* a format of number */, maxDecimalCount: number): string {
-  const [, , , dec = ''] = n.match(/(-?)(\d*)\.?(\d*)/) ?? []
+  const [, , ,] = n.match(/(-?)(\d*)\.?(\d*)/) ?? []
   // if (!dec) return String(n)
   // if (dec.length < maxDecimalCount) return String(n)
   return Number(n).toFixed(maxDecimalCount) // TODO: imply this

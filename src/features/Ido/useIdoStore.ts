@@ -14,7 +14,7 @@ const initTokenSate = {
 }
 
 export const useIdoStore = createStore<TokenStore>(
-  (set, get) => ({
+  () => ({
     ...initTokenSate,
     loadIdoListAct: (forceUpdate?: boolean) => {
       const raydium = useAppStore.getState().raydium

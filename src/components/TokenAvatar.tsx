@@ -1,4 +1,4 @@
-import { AvatarProps, Text, Box, Image, forwardRef, useColorMode } from '@chakra-ui/react'
+import { AvatarProps, Box, Image, forwardRef, useColorMode } from '@chakra-ui/react'
 import { useMemo } from 'react'
 import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 import { colors } from '@/theme/cssVariables'

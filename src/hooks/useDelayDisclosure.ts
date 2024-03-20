@@ -1,10 +1,10 @@
 import { UseDisclosureProps, useDisclosure as _useDisclosure } from '@chakra-ui/react'
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import { useEvent } from './useEvent'
 
 /** like {@link _useDisclosure} but onOpen/onClose can also accept delay  */
 export function useDisclosure(props?: UseDisclosureProps) {
-  const { isOpen, onOpen, onClose, onToggle, ...restDisclosureControllers } = _useDisclosure(props)
+  const { isOpen, onOpen, onClose, ...restDisclosureControllers } = _useDisclosure(props)
   const delayActionTimoutId = useRef(0 as NodeJS.Timeout | number)
   const open = useEvent((options?: { delay?: number }) => {
     cancelDelay()

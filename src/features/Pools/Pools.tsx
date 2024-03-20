@@ -244,12 +244,7 @@ export default function Pools() {
 
   // secondary controller bar
   const { containerProps, titleContainerProps, scrollBodyProps } = useScrollTitleCollapse()
-  const {
-    isOpen: isCollapseOpen,
-    onOpen: showSubcontrollers,
-    onToggle: toggleSubcontrollers,
-    onClose: closeSubcontrollers
-  } = useDisclosure()
+  const { isOpen: isCollapseOpen, onToggle: toggleSubcontrollers } = useDisclosure()
 
   const [tvl, volume] = infoData ? [infoData.tvl, infoData.volume24] : ['0', '0']
 

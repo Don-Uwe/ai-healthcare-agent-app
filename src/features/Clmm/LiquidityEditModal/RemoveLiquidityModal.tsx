@@ -46,7 +46,7 @@ export default function RemoveLiquidityModal({
   const { t } = useTranslation()
   const featureDisabled = useAppStore((s) => s.featureDisabled.removeConcentratedPosition)
   const { getPriceAndAmount } = useClmmBalance({})
-  const sliderRef = useRef({ changeValue: (val: number) => {} })
+  const sliderRef = useRef({ changeValue: (_val: number) => {} })
   const focusARef = useRef(true)
   const [decimalA, decimalB] = [poolInfo.mintA.decimals, poolInfo.mintB.decimals]
   const { amountA, amountB } = getPriceAndAmount({ poolInfo, position })

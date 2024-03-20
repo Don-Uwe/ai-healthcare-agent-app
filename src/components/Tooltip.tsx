@@ -1,7 +1,7 @@
 import { useHover } from '@/hooks/useHover'
 import { useOutsideClick } from '@/hooks/useOutsideClick'
 import { colors } from '@/theme/cssVariables'
-import { Box, BoxProps, Popover, PopoverArrow, PopoverContent, PopoverProps, PopoverTrigger, Portal, forwardRef } from '@chakra-ui/react'
+import { Box, BoxProps, Popover, PopoverArrow, PopoverContent, PopoverProps, PopoverTrigger, forwardRef } from '@chakra-ui/react'
 import { ReactNode, useEffect, useMemo, useRef } from 'react'
 import { useDisclosure } from '../hooks/useDelayDisclosure'
 import { shrinkToValue } from '@/utils/shrinkToValue'
@@ -67,10 +67,13 @@ export default forwardRef(function Tooltip(
     }
   }, [isTooltipOpen])
 
-  useHover([tooltipTriggerRef, tooltipBoxRef], { onHoverStart: () => {
-    if(isMobile) return
-    open()
-  }, onHoverEnd: () => close({ delay: 300 }) })
+  useHover([tooltipTriggerRef, tooltipBoxRef], {
+    onHoverStart: () => {
+      if (isMobile) return
+      open()
+    },
+    onHoverEnd: () => close({ delay: 300 })
+  })
 
   const renderLabel = () => {
     const node = shrinkToValue(label, [tooltipHandlers])
@@ -80,10 +83,14 @@ export default forwardRef(function Tooltip(
   return (
     <Popover isOpen={isTooltipOpen} placement="top" defaultIsOpen={defaultIsOpen} {...restPopoverProps}>
       <PopoverTrigger>
-        <Box ref={tooltipTriggerRef} onClick={(e) => {
-          e.stopPropagation();
-          toggle()
-        }} cursor={label ? 'pointer' : undefined}>
+        <Box
+          ref={tooltipTriggerRef}
+          onClick={(e) => {
+            e.stopPropagation()
+            toggle()
+          }}
+          cursor={label ? 'pointer' : undefined}
+        >
           {shrinkToValue(children, [tooltipHandlers])}
         </Box>
       </PopoverTrigger>

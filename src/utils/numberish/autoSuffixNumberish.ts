@@ -24,7 +24,6 @@ export function toVolume(n: Numberish | Decimal, options?: ToVolumeOption): stri
   const num = toFraction(isDecimal(n) ? n.toString() : n)
   try {
     const int = num.toFixed(0)
-    const intNumberWeigth = int.length
     const numberWidth = int.length + (options?.decimals ?? 2)
     const needShortcut = options?.useShorterExpression || (options?.maxDigitsNumber != null && numberWidth > options?.maxDigitsNumber)
     return `${formatFn(num, needShortcut)}`

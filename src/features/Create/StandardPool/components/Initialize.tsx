@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState, useRef } from 'react'
 import { Box, Flex, HStack, NumberInput, NumberInputField, Text, VStack, useDisclosure } from '@chakra-ui/react'
-import { useRouter } from 'next/router'
 import shallow from 'zustand/shallow'
 import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 import FocusTrap from 'focus-trap-react'
@@ -35,8 +34,7 @@ type InitializeProps = {
   onGoBack?: () => void
 }
 
-export default function Initialize({ onGoBack, marketId, mintA, mintB }: InitializeProps) {
-  const router = useRouter()
+export default function Initialize({ marketId, mintA, mintB }: InitializeProps) {
   const { t } = useTranslation()
 
   const [tokenMap, getChainTokenInfo] = useTokenStore((s) => [s.tokenMap, s.getChainTokenInfo], shallow)

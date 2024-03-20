@@ -17,11 +17,7 @@ export function SwapKlinePanelMobileThumbnail({
   baseToken: ApiV3Token | undefined
   quoteToken: ApiV3Token | undefined
 }) {
-  const {
-    data,
-    currentPrice,
-    change24H = 0
-  } = useFetchPoolKLine({
+  const { currentPrice, change24H = 0 } = useFetchPoolKLine({
     base: baseToken?.address,
     quote: quoteToken?.address,
     timeType: '15m',

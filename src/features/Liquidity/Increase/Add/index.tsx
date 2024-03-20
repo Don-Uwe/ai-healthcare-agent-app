@@ -12,12 +12,12 @@ import useFetchRpcPoolData from '@/hooks/pool/amm/useFetchRpcPoolData'
 import { colors } from '@/theme/cssVariables'
 import { formatLocaleStr } from '@/utils/numberish/formatter'
 import { getMintSymbol, wSolToSolString } from '@/utils/token'
-import AutoSwapModal from './components/AutoSwapModal'
+// import AutoSwapModal from './components/AutoSwapModal'
 import StakeLpModal from './components/StakeLpModal'
 
 import Decimal from 'decimal.js'
 import shallow from 'zustand/shallow'
-import { QuestionToolTip } from '@/components/QuestionToolTip'
+// import { QuestionToolTip } from '@/components/QuestionToolTip'
 import { useEvent } from '@/hooks/useEvent'
 import { throttle } from '@/utils/functionMethods'
 import useRefreshEpochInfo from '@/hooks/app/useRefreshEpochInfo'
@@ -43,7 +43,7 @@ export default function AddLiquidity({
   const epochInfo = useAppStore((s) => s.epochInfo)
   useRefreshEpochInfo()
 
-  const { isOpen: isOpenAutoSwapModal, onOpen: onOpenAutoSwapModal, onClose: onCloseAutoSwapModal } = useDisclosure()
+  // const { isOpen: isOpenAutoSwapModal, onOpen: onOpenAutoSwapModal, onClose: onCloseAutoSwapModal } = useDisclosure()
   const { isOpen: isStakeLpOpen, onOpen: onOpenStakeLp, onClose: onCloseStakeLp } = useDisclosure()
   const { isOpen: isReverse, onToggle: onToggleReverse } = useDisclosure()
 
@@ -52,7 +52,7 @@ export default function AddLiquidity({
 
   const [computeFlag, setComputeFlag] = useState(Date.now())
   const [isTxSending, setIsTxSending] = useState(false)
-  const [autoSwap, setAutoSwap] = useState(true)
+  // const [autoSwap, setAutoSwap] = useState(true)
   const [pairAmount, setPairAmount] = useState<{ base: string; quote: string }>({ base: '', quote: '' })
   const computeAmountRef = useRef<{ base: string; quote: string }>({ base: '', quote: '' })
   const computedLpRef = useRef(new Decimal(0))

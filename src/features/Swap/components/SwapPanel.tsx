@@ -274,7 +274,6 @@ function SwapPriceUpdatedAlert({ onConfirm }: { onConfirm: () => void }) {
 function SwapIcon(props: { onClick?: () => void }) {
   const targetElement = useRef<HTMLDivElement | null>(null)
   const isHover = useHover(targetElement)
-  const isMobile = useAppStore((s) => s.isMobile)
   return (
     <SimpleGrid
       ref={targetElement}

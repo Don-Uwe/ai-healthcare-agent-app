@@ -64,7 +64,7 @@ const initFarmSate = {
 }
 
 export const useFarmStore = createStore<FarmStore>(
-  (set, get) => ({
+  () => ({
     ...initFarmSate,
 
     harvestAllAct: async ({ farmInfoList, execute = true, ...txProps }) => {
