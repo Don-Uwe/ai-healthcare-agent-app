@@ -431,7 +431,6 @@ export default function Pools() {
               <PoolItemLoadingSkeleton />
             ) : (
               <List
-                flexGrow={1}
                 controllerRef={listControllerRef}
                 {...scrollBodyProps}
                 increaseRenderCount={showFarms ? 100 : 50}

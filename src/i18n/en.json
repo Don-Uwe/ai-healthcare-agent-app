@@ -65,7 +65,8 @@
     "remove_token": "Remove token",
     "confirm_token": "Confirm Token",
     "user_added": "User Added",
-    "beta_tooltip": "This site is in Beta, updates are ongoing. Use at your own risk. Share feedback, earn RAY."
+    "beta_tooltip": "This site is in Beta, updates are ongoing. Use at your own risk. Share feedback, earn RAY.",
+    "days": "Days"
   },
   "button": {
     "deposit": "Deposit",
@@ -160,7 +161,8 @@
     "apr": "APR",
     "min": "Min",
     "max": "Max",
-    "start_time": "Start time"
+    "start_time": "Start time",
+    "total_value": "Total value"
   },
   "swap": {
     "title": "Swap",
@@ -294,7 +296,11 @@
   },
   "farm": {
     "create": "Create Farm",
-    "show_closed": "Show closed"
+    "show_closed": "Show closed",
+    "title_farm_created_success": "Create Farm TX success!!",
+    "info_farm_created_success": "Farm created successfully!",
+    "to_my_created_farms": "Go to My Created Farms",
+    "farm_id": "Farm ID"
   },
   "clmm": {
     "total_deposit": "Total Deposit",
@@ -488,7 +494,11 @@
     "placeholder_input_amm_id": "input AmmId / TVL"
   },
   "date_picker": {
-    "farm_will_end_at": "Farm will end at"
+    "farm_will_end_at": "Farm will end at",
+    "farm_period": "Farm period",
+    "start_on": "Start on",
+    "start_at": "Start at",
+    "duration": "Duration"
   },
   "transaction": {
     "title": "Transaction",
