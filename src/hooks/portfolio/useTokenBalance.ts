@@ -16,7 +16,7 @@ export default function useTokenBalance() {
   })
 
   const idleList: IdleType[] = useMemo(() => {
-    let allBalance =
+    const allBalance =
       tokenAccounts
         .filter((tokenAccount) => tokenAccount.isNative || tokenAccount.isAssociated)
         .map((tokenAccount) => {
