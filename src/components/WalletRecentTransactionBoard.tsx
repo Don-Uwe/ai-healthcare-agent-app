@@ -41,6 +41,8 @@ import TokenAvatar from './TokenAvatar'
 import { getTxAllRecord } from '@/utils/tx/historyTxStatus'
 import dayjs from 'dayjs'
 
+import useTokenBalance from '@/hooks/portfolio/useTokenBalance'
+
 interface WalletMenuProps {
   wallet: Wallet | null
   address: string
@@ -70,7 +72,7 @@ type WalletInfo = {
   network: string
   networkIcon?: string | ReactNode
   address: string
-  balanceUSD?: number
+  balanceUSD?: number | string
 }
 
 function getNetworkIcon(network: string): ReactNode | undefined {
@@ -89,6 +91,7 @@ function getNetworkIcon(network: string): ReactNode | undefined {
 export default function WalletRecentTransactionBoard({ wallet, address, isOpen = false, onClose, onDisconnect }: WalletMenuProps) {
   const { t } = useTranslation()
   const allRecords = getTxAllRecord()
+  const { idleBalance } = useTokenBalance()
 
   const handleDisConnect = useCallback(() => {
     onDisconnect()
@@ -103,7 +106,7 @@ export default function WalletRecentTransactionBoard({ wallet, address, isOpen =
     network: 'Solana',
     networkIcon: getNetworkIcon('Solana'),
     address,
-    balanceUSD: 582.67
+    balanceUSD: idleBalance.toDecimalPlaces(2).toString()
   }
   /*
   const evmWalletInfo: WalletInfo | undefined = {

@@ -91,7 +91,7 @@ export default function PortfolioIdle({ idleBalance, productiveBalance, idleList
             </GridItem>
 
             <GridItem area={'list'}>
-              <AssetsList idleList={idleList?.slice(0, 2)} />
+              <AssetsList idleList={idleList} />
             </GridItem>
           </Grid>
         ) : (
@@ -106,9 +106,10 @@ export default function PortfolioIdle({ idleBalance, productiveBalance, idleList
 
 function AssetsList(props: { idleList?: IdleType[] }) {
   const { t } = useTranslation()
+  console.log(123123666, props.idleList)
   return (
     <SimpleGrid rowGap={[4, '18px']}>
-      {props.idleList?.slice(0, 2)?.map((idle) => (
+      {props.idleList?.map((idle) => (
         <Grid
           key={idle.token?.name}
           fontSize={['sm', 'md']}
@@ -140,21 +141,23 @@ function AssetsList(props: { idleList?: IdleType[] }) {
             <Text color={colors.textSecondary}>{toUsdVolume(idle.amountInUSD)}</Text>
           </GridItem>
           <GridItem area={'btn'} justifySelf={'end'}>
-            <Button
-              size={'xs'}
-              variant="outline"
-              borderRadius="4px"
-              py={[2, 3]}
-              pr={1}
-              pl={2}
-              minWidth="none"
-              onClick={() => routeToPage('pools', { queryProps: { token: idle.token?.address } })}
-            >
-              {t('common.pools')}
-              <Box width={[3, 4]} height={[3, 4]} ml={[0.5, 1]}>
-                <ChevronRightIcon width={'100%'} height={'100%'} />
-              </Box>
-            </Button>
+            {idle.token?.address ? (
+              <Button
+                size={'xs'}
+                variant="outline"
+                borderRadius="4px"
+                py={[2, 3]}
+                pr={1}
+                pl={2}
+                minWidth="none"
+                onClick={() => routeToPage('pools', { queryProps: { token: idle.token!.address } })}
+              >
+                {t('common.pools')}
+                <Box width={[3, 4]} height={[3, 4]} ml={[0.5, 1]}>
+                  <ChevronRightIcon width={'100%'} height={'100%'} />
+                </Box>
+              </Button>
+            ) : null}
           </GridItem>
         </Grid>
       ))}

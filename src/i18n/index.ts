@@ -4,6 +4,7 @@ import LanguageDetector from 'i18next-browser-languagedetector'
 import en from './en.json'
 import zhTW from './zh-TW.json'
 import zhCN from './zh-CN.json'
+import jp from './jp.json'
 import es from './es.json'
 import fr from './fr.json'
 import ru from './ru.json'
@@ -22,6 +23,7 @@ i18n
       en: { translation: en },
       'zh-TW': { translation: zhTW },
       'zh-CN': { translation: zhCN },
+      jp: { translation: jp },
       es: { translation: es },
       fr: { translation: fr },
       ru: { translation: ru },

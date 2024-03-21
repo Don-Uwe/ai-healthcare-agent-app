@@ -75,26 +75,26 @@ export const useCreateMarketStore = createStore<CreateMarketState>(
         return { isValid: false }
       }
 
-      try {
-        const [mint1, mint2] = baseMint.toBase58() < quoteMint.toBase58() ? [baseMint, quoteMint] : [quoteMint, baseMint]
-        const { data } = await axios.get<ApiV3PageIns<ApiV3PoolInfoStandardItem>>(
-          BASE_HOST +
-            POOLS_KEY_BY_MINT_2.replace('{mint1}', mint1.toBase58())
-              .replace('{mint2}', mint2.toBase58())
-              .replace('{type}', 'standard')
-              .replace('{sort}', 'liquidity')
-              .replace('{order}', 'desc')
-              .replace('{page_size}', '100')
-              .replace('{page}', '1')
-        )
-        // if (data.data.some((p) => p.marketId === marketId)) {
-        //   toastSubject.next({ status: 'error', title: 'error', description: 'Pool already created' })
-        //   return { isValid: false }
-        // }
-      } catch (e: any) {
-        toastSubject.next({ status: 'error', title: 'error', description: e.message })
-        return { isValid: false }
-      }
+      // try {
+      // const [mint1, mint2] = baseMint.toBase58() < quoteMint.toBase58() ? [baseMint, quoteMint] : [quoteMint, baseMint]
+      // const { data } = await axios.get<ApiV3PageIns<ApiV3PoolInfoStandardItem>>(
+      //   BASE_HOST +
+      //     POOLS_KEY_BY_MINT_2.replace('{mint1}', mint1.toBase58())
+      //       .replace('{mint2}', mint2.toBase58())
+      //       .replace('{type}', 'standard')
+      //       .replace('{sort}', 'liquidity')
+      //       .replace('{order}', 'desc')
+      //       .replace('{page_size}', '100')
+      //       .replace('{page}', '1')
+      // )
+      // if (data.data.some((p) => p.marketId === marketId)) {
+      //   toastSubject.next({ status: 'error', title: 'error', description: 'Pool already created' })
+      //   return { isValid: false }
+      // }
+      // } catch (e: any) {
+      //   toastSubject.next({ status: 'error', title: 'error', description: e.message })
+      //   return { isValid: false }
+      // }
 
       if (!isVerifiedToken({ mint: baseMint, tokenInfo: tokenMap.get(baseMint.toString()) })) {
         toastSubject.next({ status: 'error', title: 'error', description: 'base token freeze authority enabled' })

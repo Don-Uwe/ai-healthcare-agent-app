@@ -8,6 +8,7 @@ const langMap = {
   English: 'en',
   繁體中文: 'zh-TW',
   简体中文: 'zh-CN',
+  日本語: 'jp',
   Español: 'es',
   Français: 'fr',
   Русский: 'ru',
