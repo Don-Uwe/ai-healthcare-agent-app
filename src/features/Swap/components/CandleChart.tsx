@@ -3,10 +3,10 @@ import { colors } from '@/theme/cssVariables/colors'
 import { AbsoluteCenter, Box, GridItem, Spinner, Text, useColorMode } from '@chakra-ui/react'
 import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 import dayjs from 'dayjs'
-import Decimal from 'decimal.js'
 import { ColorType, CrosshairMode, IChartApi, ISeriesApi, TickMarkType, createChart } from 'lightweight-charts'
 import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { formatCurrency } from '@/utils/numberish/formatter'
 
 interface Props {
   onPriceChange?: (val: { current: number; change: number } | undefined) => void
@@ -80,9 +80,7 @@ export default function CandleChart({ onPriceChange, baseMint, quoteMint, timeTy
       priceFormat: {
         type: 'custom',
         formatter: (val: number) => {
-          return val > 1
-            ? new Decimal(val).toDecimalPlaces(baseMint?.decimals ?? 2).toString()
-            : new Decimal(val).toDecimalPlaces(baseMint?.decimals ?? 2).toString()
+          return val ? formatCurrency(val, { maximumDecimalTrailingZeroes: 5 }) : val
         },
         minMove: 10 / 10 ** (baseMint?.decimals ?? 2)
       }
