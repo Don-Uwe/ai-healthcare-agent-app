@@ -65,7 +65,7 @@ export default function Initialize({ marketId, mintA, mintB }: InitializeProps) 
     .toDecimalPlaces(baseToken?.decimals ?? 6)
     .toString()
 
-  const error = useInitPoolSchema({ price: currentPrice, baseToken, quoteToken, tokenAmount, startTime: startDate })
+  const error = useInitPoolSchema({ baseToken, quoteToken, tokenAmount, startTime: startDate })
 
   useEffect(() => () => useLiquidityStore.setState({ newCreatedPool: undefined }), [])
 

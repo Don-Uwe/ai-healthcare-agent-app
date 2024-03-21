@@ -15,10 +15,9 @@ interface Props {
   tokenAmount?: { base: string; quote: string }
   quoteToken?: ApiV3Token
   baseToken?: ApiV3Token
-  price?: string
 }
 
-export default function useInitPoolSchema({ startTime, price, baseToken, quoteToken, tokenAmount }: Props) {
+export default function useInitPoolSchema({ startTime, baseToken, quoteToken, tokenAmount }: Props) {
   // prepare for i18n usage
   const { t } = useTranslation()
 
@@ -46,14 +45,12 @@ export default function useInitPoolSchema({ startTime, price, baseToken, quoteTo
       quoteAmount: numberSchema(t('error.should_input_positive_amount', { side: 'quote' })),
       baseAmount: numberSchema(t('error.should_input_positive_amount', { side: 'base' })),
       quoteToken: yup.mixed().required(t('error.select_token', { side: 'quote' }) ?? ''),
-      baseToken: yup.mixed().required(t('error.select_token', { side: 'base' }) ?? ''),
-      price: numberSchema(t('error.enter_starting_price'))
+      baseToken: yup.mixed().required(t('error.select_token', { side: 'base' }) ?? '')
     })
 
   useEffect(() => {
     try {
       schema(t).validateSync({
-        price,
         baseToken,
         quoteToken,
         baseAmount: tokenAmount?.base,
@@ -66,7 +63,7 @@ export default function useInitPoolSchema({ startTime, price, baseToken, quoteTo
     } catch (e: any) {
       setError(e.message)
     }
-  }, [price, baseToken, quoteToken, tokenAmount, startTime, baseBalance, quoteBalance])
+  }, [baseToken, quoteToken, tokenAmount, startTime, baseBalance, quoteBalance])
 
   return error
 }
