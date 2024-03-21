@@ -671,5 +671,10 @@
     "mode_M_title": "Multiplier Method",
     "mode_M_desc": "This method applies a multiplier, determined by the intersection of user price range and the historical price range of the pool, to calculate estimated APR.",
     "mode_M_desc_brief": "Estimated APR is calculated by the Multiplier Method. Click the ‘M’ icon to switch to the Delta Method or"
+  },
+  "create_market": {
+    "title": "Create Market",
+    "desc": "Create <sub>{{pair}}</sub> Market",
+    "create": "Create"
   }
 }

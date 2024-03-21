@@ -106,7 +106,6 @@ export default function PortfolioIdle({ idleBalance, productiveBalance, idleList
 
 function AssetsList(props: { idleList?: IdleType[] }) {
   const { t } = useTranslation()
-  console.log(123123666, props.idleList)
   return (
     <SimpleGrid rowGap={[4, '18px']}>
       {props.idleList?.map((idle) => (
@@ -135,7 +134,7 @@ function AssetsList(props: { idleList?: IdleType[] }) {
             <Text fontWeight="medium">{idle.token?.symbol}</Text>
           </GridItem>
           <GridItem area={'i1'}>
-            <Text color={colors.textSecondary}>{formatLocaleStr(idle.amount, 2)}</Text>
+            <Text color={colors.textSecondary}>{idle.amount ? formatLocaleStr(idle.amount, 2) : idle.amount}</Text>
           </GridItem>
           <GridItem area={'i2'}>
             <Text color={colors.textSecondary}>{toUsdVolume(idle.amountInUSD)}</Text>

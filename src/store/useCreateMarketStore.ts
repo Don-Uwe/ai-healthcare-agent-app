@@ -3,10 +3,13 @@ import { PublicKey } from '@solana/web3.js'
 import { useAppStore, useTokenAccountStore, useTokenStore } from './'
 import createStore from './createStore'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
-import { txStatusSubject } from '@/hooks/toast/useTxStatus'
+import { multiTxStatusSubject } from '@/hooks/toast/useTxStatus'
 import { TxCallbackProps } from '@/types/tx'
 import { isValidPublicKey } from '@/utils/common'
-import { wSolToSol } from '@/utils/token'
+import { wSolToSol, solToWSol, solToWsolString } from '@/utils/token'
+import { getTxMeta } from './configs/market'
+import { v4 as uuid } from 'uuid'
+import i18n from '@/i18n'
 
 interface CreateMarketState {
   checkMarketAct: (marketId: string) => Promise<{ isValid: boolean; mintA?: string; mintB?: string }>
@@ -123,48 +126,68 @@ export const useCreateMarketStore = createStore<CreateMarketState>(
         mintB: quoteMint.toString()
       }
     },
-    createMarketAct: async ({ baseToken, quoteToken, orderSize, priceTick, onSuccess, onError, onFinally }) => {
-      try {
-        const { raydium, programIdConfig, connection, txVersion } = useAppStore.getState()
-        if (!raydium || !connection) return { txId: [], marketId: '' }
-        const { execute, transactions, extInfo } = await raydium.marketV2.create({
-          baseInfo: {
-            mint: new PublicKey(baseToken.address),
-            decimals: baseToken.decimals
-          },
-          quoteInfo: {
-            mint: new PublicKey(quoteToken.address),
-            decimals: quoteToken.decimals
-          },
-          lotSize: Number(orderSize),
-          tickSize: Number(priceTick),
-          dexProgramId: programIdConfig.OPEN_BOOK_PROGRAM,
-          txVersion
-        })
-        return execute({
-          sequentially: true,
-          onTxUpdate: (data) => {
-            const txData = data[data.length - 1]
-            if (txData.status === 'sent') {
-              txStatusSubject.next({ txId: txData.txId })
-              if (data.length === transactions.length) onSuccess?.()
-            }
-            if (txData.status === 'error') onError?.()
-            if (data.length === transactions.length) onFinally?.()
+    createMarketAct: async ({ baseToken, quoteToken, orderSize, priceTick, onSuccess, onError, onFinally, onConfirmed }) => {
+      const { raydium, programIdConfig, connection, txVersion } = useAppStore.getState()
+      if (!raydium || !connection) return { txId: [], marketId: '' }
+      const { execute, transactions, extInfo } = await raydium.marketV2.create({
+        baseInfo: {
+          mint: new PublicKey(solToWSol(baseToken.address)!),
+          decimals: baseToken.decimals
+        },
+        quoteInfo: {
+          mint: new PublicKey(solToWSol(quoteToken.address)!),
+          decimals: quoteToken.decimals
+        },
+        lotSize: Number(orderSize),
+        tickSize: Number(priceTick),
+        dexProgramId: programIdConfig.OPEN_BOOK_PROGRAM,
+        txVersion
+      })
+
+      const meta = getTxMeta({
+        action: 'create',
+        values: { pair: `${solToWsolString(baseToken.symbol)} - ${solToWsolString(quoteToken.symbol)}` }
+      })
+
+      let toasted = false
+      let errorCalled = false
+
+      return execute({
+        sequentially: true,
+        onTxUpdate: (data) => {
+          if (data.some((tx) => tx.status === 'error') && !errorCalled) {
+            errorCalled = true
+            onError?.()
           }
+
+          if (data.length === transactions.length && !toasted) {
+            onSuccess?.()
+            toasted = true
+            multiTxStatusSubject.next({
+              toastId: uuid(),
+              ...meta,
+              subTxIds: data.map(({ txId }, idx) => {
+                const titleKey = idx !== data.length - 1 ? 'transaction_history.set_up' : 'create_market.create'
+                return {
+                  txId,
+                  status: 'success',
+                  title: i18n.t(titleKey),
+                  txHistoryTitle: titleKey
+                }
+              })
+            })
+          }
+        }
+      })
+        .then((r) => {
+          return { txId: r, marketId: extInfo.address.marketId.toString() || '' }
         })
-          .then((r) => {
-            return { txId: r, marketId: extInfo.address.marketId.toString() || '' }
-          })
-          .catch((e) => {
-            toastSubject.next({ txError: e })
-            return { txId: [], marketId: '' }
-          })
-          .finally(onFinally)
-      } catch (e: any) {
-        toastSubject.next({ txError: e })
-        return { txId: [], marketId: '' }
-      }
+        .catch((e) => {
+          onError?.()
+          toastSubject.next({ txError: e })
+          return { txId: [], marketId: '' }
+        })
+        .finally(onFinally)
     }
   }),
   'useCreateMarketStore'

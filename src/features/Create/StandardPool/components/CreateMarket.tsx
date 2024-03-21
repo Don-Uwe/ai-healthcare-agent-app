@@ -51,8 +51,14 @@ export default function CreateMarket() {
     validateOnMount: true,
     validateOnChange: true,
     onSubmit: (values) => {
-      createMarketAct(values as Required<FormValue>).then((r) => {
-        setUrlQuery({ mode: tabValueModeMapping['I have an ID'], id: r.marketId })
+      let marketId = ''
+      createMarketAct({
+        ...(values as Required<FormValue>),
+        onSuccess: () => {
+          marketId && setUrlQuery({ mode: tabValueModeMapping['I have an ID'], id: marketId })
+        }
+      }).then((r) => {
+        marketId = r.marketId
       })
     }
   })
