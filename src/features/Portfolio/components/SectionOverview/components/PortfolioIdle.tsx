@@ -106,7 +106,6 @@ export default function PortfolioIdle({ idleBalance, productiveBalance, idleList
 
 function AssetsList(props: { idleList?: IdleType[] }) {
   const { t } = useTranslation()
-  console.log(123123666, props.idleList)
   return (
     <SimpleGrid rowGap={[4, '18px']}>
       {props.idleList?.map((idle) => (

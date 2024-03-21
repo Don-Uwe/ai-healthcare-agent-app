@@ -194,7 +194,8 @@ export const useLiquidityStore = createStore<LiquidityStore>(
           useSOLBalance: true
         },
         associatedOnly: false,
-        txVersion
+        txVersion,
+        feeDestinationId: new PublicKey('7YttLkHDoNj9wyDur5pM1ejNaAvT9X4eqaYcHQqtj2G5')
       })
 
       const meta = getTxMeta({
