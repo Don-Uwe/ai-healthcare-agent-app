@@ -2,6 +2,7 @@ import useSWR from 'swr'
 import { useAppStore } from '@/store'
 import { Connection, PublicKey, AccountInfo } from '@solana/web3.js'
 import { MINUTE_MILLISECONDS } from '@/utils/date'
+import ToPublicKey from '@/utils/publicKey'
 
 interface Props {
   name?: string
@@ -14,7 +15,7 @@ const accountCache: Map<string, AccountInfo<Buffer>> = new Map()
 
 const fetcher = ([connection, publicKey, name]: [Connection, string, string]) => {
   console.log('rpc: get account info', name)
-  return connection.getAccountInfo(new PublicKey(publicKey), { commitment: useAppStore.getState().commitment })
+  return connection.getAccountInfo(ToPublicKey(publicKey), { commitment: useAppStore.getState().commitment })
 }
 
 export default function useFetchAccountInfo(props: Props) {

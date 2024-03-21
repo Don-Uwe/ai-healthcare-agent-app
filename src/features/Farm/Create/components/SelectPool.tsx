@@ -164,13 +164,6 @@ function SelectPoolStandardContentSelectedPool({
   onDeleteStandardValue: () => void
 }) {
   const { t } = useTranslation()
-  const [token1, token2] = useMemo(
-    () => [
-      toTokenInfo({ ...pool.mintA, mint: new PublicKey(pool.mintA.address), priority: 1 }),
-      toTokenInfo({ ...pool.mintB, mint: new PublicKey(pool.mintB.address), priority: 1 })
-    ],
-    [pool.id]
-  )
   const poolName = useMemo(() => `${pool.mintA.symbol}-${pool.mintB.symbol}`, [pool.id])
   return (
     <VStack align={'stretch'}>
@@ -184,7 +177,7 @@ function SelectPoolStandardContentSelectedPool({
         rounded={'md'}
         cursor={'pointer'}
       >
-        <TokenAvatarPair token1={token1} token2={token2} />
+        <TokenAvatarPair token1={pool.mintA} token2={pool.mintB} />
         <Text whiteSpace="nowrap" fontSize="xl" fontWeight={500}>
           {poolName}
         </Text>

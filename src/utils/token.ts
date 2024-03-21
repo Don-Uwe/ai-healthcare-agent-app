@@ -8,7 +8,7 @@ export const solToWsolString = (name?: string) => (name ? name.replace(/^SOL/gi,
 
 export const isSolWSol = (mint?: string | PublicKey) => {
   if (!mint) return false
-  return new PublicKey(mint).equals(WSOLMint) || new PublicKey(mint).equals(SOLMint)
+  return mint.toString() === TOKEN_WSOL.address || mint.toString() === SOL_INFO.address
 }
 
 export const solToWSolToken = (token: ApiV3Token): ApiV3Token => {

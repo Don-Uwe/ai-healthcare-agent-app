@@ -6,7 +6,7 @@ import { AxiosResponse } from 'axios'
 
 import axios from '@/api/axios'
 import { useAppStore } from '@/store'
-import { isValidPublicKey } from '@/utils/common'
+import { isValidPublicKey } from '@/utils/publicKey'
 import { MINUTE_MILLISECONDS } from '@/utils/date'
 import { formatFarmData, farmInfoCache } from './farmUtils'
 import { ConditionalFarmType } from './type'

@@ -5,7 +5,7 @@ import useSWR from 'swr'
 import shallow from 'zustand/shallow'
 import axios from '@/api/axios'
 import { useAppStore } from '@/store'
-import { isValidPublicKey } from '@/utils/common'
+import { isValidPublicKey } from '@/utils/publicKey'
 import { MINUTE_MILLISECONDS } from '@/utils/date'
 
 export interface OwnerFullData {

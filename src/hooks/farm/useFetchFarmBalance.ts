@@ -7,7 +7,7 @@ import { Connection, PublicKey } from '@solana/web3.js'
 import { useAppStore } from '@/store'
 import { addAccChangeCbk, removeAccChangeCbk } from '@/hooks/app/useTokenAccountInfo'
 import { MINUTE_MILLISECONDS } from '@/utils/date'
-
+import ToPublicKey from '@/utils/publicKey'
 import useFetchFarmInfoByRpc from './useFetchFarmInfoByRpc'
 import { FARM_TYPE, FarmDecodeData } from './farmUtils'
 import { FarmBalanceInfo } from './type'
@@ -17,7 +17,7 @@ import Decimal from 'decimal.js'
 
 const fetcher = ([connection, publicKey]: [Connection, string | PublicKey]) => {
   console.log('rpc: get farm ledger info')
-  return connection.getAccountInfo(new PublicKey(publicKey), { commitment: useAppStore.getState().commitment })
+  return connection.getAccountInfo(ToPublicKey(publicKey), { commitment: useAppStore.getState().commitment })
 }
 
 export default function useFetchFarmBalance(props: {
@@ -46,11 +46,11 @@ export default function useFetchFarmBalance(props: {
 
   const rpcInfoData = prefetchedFarmData || farmData
   const fetch = shouldFetch && farmInfo && publicKey && connection
-
+  // check fetch
   const ledger = fetch
     ? getAssociatedLedgerAccount({
-        programId: new PublicKey(farmInfo.programId),
-        poolId: new PublicKey(farmInfo.id),
+        programId: ToPublicKey(farmInfo.programId),
+        poolId: ToPublicKey(farmInfo.id),
         owner: publicKey,
         version: FARM_TYPE[farmInfo.programId].version
       })

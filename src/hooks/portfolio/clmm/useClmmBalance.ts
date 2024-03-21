@@ -15,6 +15,7 @@ import useSWR from 'swr'
 import useRefreshEpochInfo from '@/hooks/app/useRefreshEpochInfo'
 import { useAppStore, useTokenAccountStore, initTokenAccountSate } from '@/store'
 import { useEvent } from '@/hooks/useEvent'
+import ToPublicKey from '@/utils/publicKey'
 
 export type ClmmPosition = ReturnType<typeof PositionInfoLayout.decode>
 export type ClmmDataMap = Map<string, ClmmPosition[]>
@@ -24,7 +25,7 @@ let lastRefreshTag = initTokenAccountSate.refreshClmmPositionTag
 const fetcher = ([connection, publicKeyList]: [Connection, string[]]) => {
   console.log('rpc: get clmm position balance info')
   return connection.getMultipleAccountsInfo(
-    publicKeyList.map((publicKey) => new PublicKey(publicKey)),
+    publicKeyList.map((publicKey) => ToPublicKey(publicKey)),
     'confirmed'
   )
 }

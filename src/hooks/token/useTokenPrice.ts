@@ -1,6 +1,6 @@
 import axios from '@/api/axios'
 import { birdeyeAuthorizeKey, birdeyePriceUrl } from '@/utils/config/birdeyeAPI'
-import { isValidPublicKey } from '@/utils/common'
+import { isValidPublicKey } from '@/utils/publicKey'
 import { MINUTE_MILLISECONDS } from '@/utils/date'
 import { useTokenStore, TokenPrice } from '@/store'
 import { solToWSol, WSOLMint, RAYMint, USDCMint, USDTMint, mSOLMint } from '@raydium-io/raydium-sdk-v2'

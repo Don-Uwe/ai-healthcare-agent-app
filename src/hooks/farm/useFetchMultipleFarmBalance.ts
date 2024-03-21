@@ -2,11 +2,12 @@ import { useEffect } from 'react'
 import useSWR from 'swr'
 import shallow from 'zustand/shallow'
 import { ApiV3Token, getAssociatedLedgerAccount } from '@raydium-io/raydium-sdk-v2'
-import { Connection, PublicKey } from '@solana/web3.js'
+import { Connection } from '@solana/web3.js'
 
 import { useAppStore } from '@/store'
 import { addAccChangeCbk, removeAccChangeCbk } from '@/hooks/app/useTokenAccountInfo'
 import { MINUTE_MILLISECONDS } from '@/utils/date'
+import ToPublicKey from '@/utils/publicKey'
 import { FarmBalanceInfo } from './type'
 import useFetchMultipleFarmInfoByRpc from './useFetchMultipleFarmInfoByRpc'
 import { FARM_TYPE } from './farmUtils'
@@ -17,7 +18,7 @@ import Decimal from 'decimal.js'
 const fetcher = ([connection, publicKeyList]: [Connection, string[]]) => {
   console.log('rpc: get multiple farm balance info')
   return connection.getMultipleAccountsInfo(
-    publicKeyList.map((publicKey) => new PublicKey(publicKey)),
+    publicKeyList.map((publicKey) => ToPublicKey(publicKey)),
     { commitment: 'confirmed' }
   )
 }
@@ -41,11 +42,12 @@ export default function useFetchMultipleFarmBalance(props: {
 
   const fetch = shouldFetch && farmInfoList.length && publicKey && connection
 
+  // check fetch
   const ledgerList = fetch
     ? farmInfoList.map((farmInfo) =>
         getAssociatedLedgerAccount({
-          programId: new PublicKey(farmInfo.programId),
-          poolId: new PublicKey(farmInfo.id),
+          programId: ToPublicKey(farmInfo.programId),
+          poolId: ToPublicKey(farmInfo.id),
           owner: publicKey,
           version: FARM_TYPE[farmInfo.programId].version
         })

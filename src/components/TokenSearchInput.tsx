@@ -12,7 +12,7 @@ import { colors } from '@/theme/cssVariables/colors'
 import SearchIcon from '@/icons/misc/SearchIcon'
 import useResizeObserver from '@/hooks/useResizeObserver'
 import { filterTokenFn } from '@/utils/token'
-import { isValidPublicKey } from '@/utils/common'
+import { isValidPublicKey } from '@/utils/publicKey'
 import shallow from 'zustand/shallow'
 
 type SearchBarProps = {

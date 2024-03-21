@@ -3,9 +3,9 @@ import useSWR from 'swr'
 import { Connection, PublicKey } from '@solana/web3.js'
 import shallow from 'zustand/shallow'
 import { PoolInfoLayout, SqrtPriceMath } from '@raydium-io/raydium-sdk-v2'
-
+import ToPublicKey from '@/utils/publicKey'
 import { useAppStore } from '@/store'
-import { isValidPublicKey } from '@/utils/common'
+import { isValidPublicKey } from '@/utils/publicKey'
 import { MINUTE_MILLISECONDS } from '@/utils/date'
 import Decimal from 'decimal.js'
 
@@ -16,7 +16,7 @@ type PoolData = ReturnType<typeof PoolInfoLayout.decode> & {
 
 const fetcher = ([connection, publicKeyList]: [Connection, string[]]) => {
   console.log('rpc: get multiple clmm info')
-  return connection.getMultipleAccountsInfo(publicKeyList.map((publicKey) => new PublicKey(publicKey)))
+  return connection.getMultipleAccountsInfo(publicKeyList.map((publicKey) => ToPublicKey(publicKey)))
 }
 
 export default function useFetchMultipleRpcClmmInfo(props: {

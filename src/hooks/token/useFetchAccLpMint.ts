@@ -7,7 +7,7 @@ import { useTokenAccountStore, useAppStore } from '@/store'
 import useFetchPoolByLpMint from '@/hooks/pool/useFetchPoolByLpMint'
 import { MINUTE_MILLISECONDS } from '@/utils/date'
 import Decimal from 'decimal.js'
-
+import ToPublicKey from '@/utils/publicKey'
 interface Props<T> {
   shouldFetch?: boolean
   refreshInterval?: number
@@ -21,7 +21,7 @@ const poolLpAuthority = new Set(['5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1',
 const fetcher = async ([connection, publicKeyList]: [Connection, string[]]) => {
   const [newFetchList, fetchedList]: [PublicKey[], string[]] = [[], []]
   publicKeyList.forEach((p) => {
-    if (!preFetchMints.has(p)) newFetchList.push(new PublicKey(p))
+    if (!preFetchMints.has(p)) newFetchList.push(ToPublicKey(p))
     else fetchedList.push(p)
   })
   if (!newFetchList.length) return fetchedList.map((p) => preFetchMints.get(p)!)

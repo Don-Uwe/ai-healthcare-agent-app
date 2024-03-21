@@ -17,7 +17,7 @@ export function NavMoreButtonMenuPanel() {
     <MenuList>
       <Box py={3}>
         <MenuItem>
-          <Link as={NextLink} _hover={{ textDecoration: 'none' }} href="/staking">
+          <Link as={NextLink} _hover={{ textDecoration: 'none' }} w="full" href="/staking">
             <HStack>
               <StakingPageThumbnailIcon />
               <Text>{t('staking.title')}</Text>
@@ -26,7 +26,7 @@ export function NavMoreButtonMenuPanel() {
         </MenuItem>
         <MenuDivider />
         <MenuItem>
-          <Link as={NextLink} href="https://docs.raydium.io/raydium/" _hover={{ textDecoration: 'none' }} isExternal>
+          <Link as={NextLink} href="https://docs.raydium.io/raydium/" _hover={{ textDecoration: 'none' }} w="full" isExternal>
             <HStack>
               <DocThumbnailIcon />
               <Text>{t('common.nav_text_docs')}</Text>
@@ -35,7 +35,7 @@ export function NavMoreButtonMenuPanel() {
           </Link>
         </MenuItem>
         <MenuItem>
-          <Link as={NextLink} href="https://tally.so/r/n9WZZV" _hover={{ textDecoration: 'none' }} isExternal>
+          <Link as={NextLink} href="https://tally.so/r/n9WZZV" _hover={{ textDecoration: 'none' }} w="full" isExternal>
             <HStack>
               <FeedbackThumbnailIcon />
               <Text>{t('common.nav_text_feedback')}</Text>

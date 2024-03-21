@@ -116,17 +116,10 @@ function EmptyTokeSearchResult() {
 }
 
 export function PoolRowItem({ pool, onClick }: { pool: FormattedPoolInfoItem; onClick: (pool: FormattedPoolInfoItem) => void }) {
-  const [token1, token2] = useMemo(
-    () => [
-      toTokenInfo({ ...pool.mintA, mint: new PublicKey(pool.mintA.address), priority: 1 }),
-      toTokenInfo({ ...pool.mintB, mint: new PublicKey(pool.mintB.address), priority: 1 })
-    ],
-    [pool.id]
-  )
   return (
     <Flex justifyContent={'space-between'} alignItems="center" onClick={() => onClick?.(pool)} h={'fit-content'} cursor="pointer">
       <HStack spacing={3}>
-        <TokenAvatarPair token1={token1} token2={token2} size="md" />
+        <TokenAvatarPair token1={pool.mintA} token2={pool.mintB} size="md" />
         <Text fontSize="xl" fontWeight="medium">
           {pool.poolName}
         </Text>

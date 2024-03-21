@@ -5,7 +5,7 @@ import axios from '@/api/axios'
 import { AxiosResponse } from 'axios'
 import { FormatFarmInfoOut } from '@raydium-io/raydium-sdk-v2'
 import { useAppStore } from '@/store'
-import { isValidPublicKey } from '@/utils/common'
+import { isValidPublicKey } from '@/utils/publicKey'
 import { formatFarmData, farmInfoCache } from './farmUtils'
 import { ConditionalFarmType } from './type'
 

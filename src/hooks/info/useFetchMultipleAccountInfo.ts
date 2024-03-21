@@ -3,7 +3,7 @@ import { useAppStore } from '@/store'
 import { Connection, PublicKey, AccountInfo } from '@solana/web3.js'
 import { MINUTE_MILLISECONDS } from '@/utils/date'
 import { useMemo } from 'react'
-
+import ToPublicKey from '@/utils/publicKey'
 interface Props {
   name?: string
   publicKeyList?: (string | PublicKey)[]
@@ -15,7 +15,7 @@ const accountCache: Map<string, AccountInfo<Buffer>> = new Map()
 
 const fetcher = ([connection, publicKeyList, name]: [Connection, string[], string]) => {
   console.log('rpc: get multiple account info', name)
-  return connection.getMultipleAccountsInfo(publicKeyList.map((publicKey) => new PublicKey(publicKey)))
+  return connection.getMultipleAccountsInfo(publicKeyList.map((publicKey) => ToPublicKey(publicKey)))
 }
 
 export default function useFetchMultipleAccountInfo(props: Props) {
