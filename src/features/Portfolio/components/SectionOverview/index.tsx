@@ -1,12 +1,11 @@
 import { useMemo } from 'react'
 import { Heading, SimpleGrid } from '@chakra-ui/react'
-import { useTokenAccountStore, useTokenStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
 import useClmmPortfolioData from '@/hooks/portfolio/clmm/useClmmPortfolioData'
 import useAllStandardPoolPosition from '@/hooks/portfolio/useAllStandardPoolPosition'
-import useTokenPrice from '@/hooks/token/useTokenPrice'
-import PortfolioIdle, { IdleType } from './components/PortfolioIdle'
+import PortfolioIdle from './components/PortfolioIdle'
 import PortfolioInfo from './components/PortfolioInfo'
+import useTokenBalance from '@/hooks/portfolio/useTokenBalance'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'react-i18next'
 
@@ -17,13 +16,7 @@ export enum AssetType {
 }
 export default function SectionOverview() {
   const { t } = useTranslation()
-  const tokenMap = useTokenStore((s) => s.tokenMap)
-  const [getTokenBalanceUiAmount, tokenAccounts] = useTokenAccountStore((s) => [s.getTokenBalanceUiAmount, s.tokenAccounts])
-  const { data: tokenPrices } = useTokenPrice({
-    mintList: tokenAccounts
-      .filter((tokenAccount) => (tokenAccount.isNative || tokenAccount.isAssociated) && !tokenAccount.amount.isZero())
-      .map((a) => a.mint)
-  })
+  const { idleList, idleBalance } = useTokenBalance()
 
   const { data: clmmPoolAssets, totalUSD: totalClmmPosition, clmmBalanceByMint } = useClmmPortfolioData({ type: AssetType.CONCENTRATED })
   const {
@@ -33,50 +26,6 @@ export default function SectionOverview() {
   } = useAllStandardPoolPosition({ type: AssetType.STANDARD })
 
   const productiveBalance = totalClmmPosition.add(totalStandardPosition).toString()
-
-  const idleList: IdleType[] = useMemo(() => {
-    return (
-      tokenAccounts
-        .filter((tokenAccount) => tokenAccount.isNative || tokenAccount.isAssociated)
-        .map((tokenAccount) => {
-          const uiAmount = getTokenBalanceUiAmount({ mint: tokenAccount.mint })
-          const tokenMint = tokenAccount.mint.toString()
-          const token = tokenMap.get(tokenMint)
-          if (!token) {
-            return {
-              token: {
-                decimals: 0,
-                chainId: 101,
-                symbol: tokenMint.slice(0, 6),
-                address: tokenMint,
-                programId: '',
-                logoURI: '',
-                name: tokenMint.slice(0, 6),
-                tags: [],
-                extensions: {}
-              },
-              address: tokenAccount.mint.toString(),
-              isZero: true,
-              amount: uiAmount.text,
-              amountInUSD: '0'
-            }
-          }
-
-          return {
-            token,
-            address: tokenAccount.mint.toString(),
-            isZero: uiAmount.isZero,
-            amount: uiAmount.text,
-            amountInUSD: new Decimal(uiAmount.text).mul(tokenPrices[tokenMint]?.value || 0).toString()
-          } as IdleType & { isZero: boolean }
-        })
-        .filter((item) => !item.isZero)
-        // .concat(idleLpMintList)
-        .sort((a, b) => new Decimal(b.amountInUSD).sub(a.amountInUSD).toNumber()) ?? []
-    )
-  }, [tokenAccounts, getTokenBalanceUiAmount, tokenMap, tokenPrices])
-
-  const idleBalance = useMemo(() => idleList.reduce((acc, cur) => acc.add(cur.amountInUSD), new Decimal(0)), [idleList])
 
   const tokenAssetsNew = useMemo(() => {
     const total = { ...clmmBalanceByMint }

@@ -1,12 +1,12 @@
 import ChevronRightIcon from '@/icons/misc/ChevronRightIcon'
-import TealCircleCheckBadge from '@/icons/misc/TealCircleCheckBadge'
+// import TealCircleCheckBadge from '@/icons/misc/TealCircleCheckBadge'
 import WalletSelectEggIcon from '@/icons/misc/WalletSelectEggIcon'
 import WalletSelectWalletIcon from '@/icons/misc/WalletSelectWalletIcon'
-import AvalancheNetworkIcon from '@/icons/networks/AvalancheNetworkIcon'
-import BinanceNetworkIcon from '@/icons/networks/BinanceNetworkIcon'
-import EthereumNetworkIcon from '@/icons/networks/EthereumNetworkIcon'
-import PolygonNetworkIcon from '@/icons/networks/PolygonNetworkIcon'
-import SolanaNetworkIcon from '@/icons/networks/SolanaNetworkIcon'
+// import AvalancheNetworkIcon from '@/icons/networks/AvalancheNetworkIcon'
+// import BinanceNetworkIcon from '@/icons/networks/BinanceNetworkIcon'
+// import EthereumNetworkIcon from '@/icons/networks/EthereumNetworkIcon'
+// import PolygonNetworkIcon from '@/icons/networks/PolygonNetworkIcon'
+// import SolanaNetworkIcon from '@/icons/networks/SolanaNetworkIcon'
 import { colors } from '@/theme/cssVariables'
 import {
   Box,
