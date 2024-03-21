@@ -42,6 +42,7 @@ export default function CreateMarket() {
   const { t } = useTranslation()
   const createMarketAct = useCreateMarketStore((s) => s.createMarketAct)
   const { isOpen, onToggle } = useDisclosure()
+  const { isOpen: isSending, onOpen: onSending, onClose: offSending } = useDisclosure()
 
   const schema = useMarketSchema()
 
@@ -52,11 +53,13 @@ export default function CreateMarket() {
     validateOnChange: true,
     onSubmit: (values) => {
       let marketId = ''
+      onSending()
       createMarketAct({
         ...(values as Required<FormValue>),
         onSuccess: () => {
           marketId && setUrlQuery({ mode: tabValueModeMapping['I have an ID'], id: marketId })
-        }
+        },
+        onFinally: offSending
       }).then((r) => {
         marketId = r.marketId
       })
@@ -233,7 +236,7 @@ export default function CreateMarket() {
         </Flex>
       </Collapse>
 
-      <Button isDisabled={!!error} onClick={submitForm}>
+      <Button isDisabled={!!error} isLoading={isSending} onClick={submitForm}>
         {error || t('create_standard_pool.market_create_button')}
       </Button>
 

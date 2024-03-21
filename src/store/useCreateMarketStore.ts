@@ -126,7 +126,7 @@ export const useCreateMarketStore = createStore<CreateMarketState>(
         mintB: quoteMint.toString()
       }
     },
-    createMarketAct: async ({ baseToken, quoteToken, orderSize, priceTick, onSuccess, onError, onFinally, onConfirmed }) => {
+    createMarketAct: async ({ baseToken, quoteToken, orderSize, priceTick, onSuccess, onError, onFinally }) => {
       const { raydium, programIdConfig, connection, txVersion } = useAppStore.getState()
       if (!raydium || !connection) return { txId: [], marketId: '' }
       const { execute, transactions, extInfo } = await raydium.marketV2.create({

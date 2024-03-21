@@ -1,4 +1,4 @@
-import { AbsoluteCenter, Box, Center, HStack, Spinner, Text, useColorMode } from '@chakra-ui/react'
+import { AbsoluteCenter, Box, Center, HStack, Spinner, Text } from '@chakra-ui/react'
 import { ReactNode } from 'react'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis } from 'recharts'
 

@@ -35,7 +35,7 @@ export function useScrollTitleCollapse(): {
   const scrollBodyProps = {
     ref: (el: HTMLElement) => {
       if (!el) return
-      const handleScroll = (e: Event) => {
+      const handleScroll = () => {
         cancelAnimationFrame(rAFtimer.current)
         rAFtimer.current = requestAnimationFrame(() => {
           scrollHandler(el.scrollTop)
