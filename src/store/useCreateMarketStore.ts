@@ -1,10 +1,4 @@
-import {
-  ApiV3Token,
-  getAssociatedPoolKeys,
-  MARKET_STATE_LAYOUT_V3,
-  ApiV3PageIns,
-  ApiV3PoolInfoStandardItem
-} from '@raydium-io/raydium-sdk-v2'
+import { ApiV3Token, getAssociatedPoolKeys, MARKET_STATE_LAYOUT_V3 } from '@raydium-io/raydium-sdk-v2'
 import { PublicKey } from '@solana/web3.js'
 import { useAppStore, useTokenAccountStore, useTokenStore } from './'
 import createStore from './createStore'
@@ -13,7 +7,6 @@ import { txStatusSubject } from '@/hooks/toast/useTxStatus'
 import { TxCallbackProps } from '@/types/tx'
 import { isValidPublicKey } from '@/utils/common'
 import { wSolToSol } from '@/utils/token'
-import axios from '@/api/axios'
 
 interface CreateMarketState {
   checkMarketAct: (marketId: string) => Promise<{ isValid: boolean; mintA?: string; mintB?: string }>
@@ -34,12 +27,7 @@ export const useCreateMarketStore = createStore<CreateMarketState>(
         toastSubject.next({ status: 'error', title: 'error', description: `invalid market id: ${marketId}` })
         return { isValid: false }
       }
-      const {
-        raydium,
-        connection,
-        programIdConfig,
-        urlConfigs: { BASE_HOST, POOLS_KEY_BY_MINT_2 }
-      } = useAppStore.getState()
+      const { raydium, connection, programIdConfig } = useAppStore.getState()
 
       const getTokenBalanceUiAmount = useTokenAccountStore.getState().getTokenBalanceUiAmount
       const tokenMap = useTokenStore.getState().tokenMap
@@ -136,42 +124,47 @@ export const useCreateMarketStore = createStore<CreateMarketState>(
       }
     },
     createMarketAct: async ({ baseToken, quoteToken, orderSize, priceTick, onSuccess, onError, onFinally }) => {
-      const { raydium, programIdConfig, connection, txVersion } = useAppStore.getState()
-      if (!raydium || !connection) return { txId: [], marketId: '' }
-      const { execute, transactions, extInfo } = await raydium.marketV2.create({
-        baseInfo: {
-          mint: new PublicKey(baseToken.address),
-          decimals: baseToken.decimals
-        },
-        quoteInfo: {
-          mint: new PublicKey(quoteToken.address),
-          decimals: quoteToken.decimals
-        },
-        lotSize: Number(orderSize),
-        tickSize: Number(priceTick),
-        dexProgramId: programIdConfig.OPEN_BOOK_PROGRAM,
-        txVersion
-      })
-      return execute({
-        sequentially: true,
-        onTxUpdate: (data) => {
-          const txData = data[data.length - 1]
-          if (txData.status === 'sent') {
-            txStatusSubject.next({ txId: txData.txId })
-            if (data.length === transactions.length) onSuccess?.()
+      try {
+        const { raydium, programIdConfig, connection, txVersion } = useAppStore.getState()
+        if (!raydium || !connection) return { txId: [], marketId: '' }
+        const { execute, transactions, extInfo } = await raydium.marketV2.create({
+          baseInfo: {
+            mint: new PublicKey(baseToken.address),
+            decimals: baseToken.decimals
+          },
+          quoteInfo: {
+            mint: new PublicKey(quoteToken.address),
+            decimals: quoteToken.decimals
+          },
+          lotSize: Number(orderSize),
+          tickSize: Number(priceTick),
+          dexProgramId: programIdConfig.OPEN_BOOK_PROGRAM,
+          txVersion
+        })
+        return execute({
+          sequentially: true,
+          onTxUpdate: (data) => {
+            const txData = data[data.length - 1]
+            if (txData.status === 'sent') {
+              txStatusSubject.next({ txId: txData.txId })
+              if (data.length === transactions.length) onSuccess?.()
+            }
+            if (txData.status === 'error') onError?.()
+            if (data.length === transactions.length) onFinally?.()
           }
-          if (txData.status === 'error') onError?.()
-          if (data.length === transactions.length) onFinally?.()
-        }
-      })
-        .then((r) => {
-          return { txId: r, marketId: extInfo.address.marketId.toString() || '' }
         })
-        .catch((e) => {
-          toastSubject.next({ txError: e })
-          return { txId: [], marketId: '' }
-        })
-        .finally(onFinally)
+          .then((r) => {
+            return { txId: r, marketId: extInfo.address.marketId.toString() || '' }
+          })
+          .catch((e) => {
+            toastSubject.next({ txError: e })
+            return { txId: [], marketId: '' }
+          })
+          .finally(onFinally)
+      } catch (e: any) {
+        toastSubject.next({ txError: e })
+        return { txId: [], marketId: '' }
+      }
     }
   }),
   'useCreateMarketStore'

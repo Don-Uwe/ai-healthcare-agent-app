@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState, useRef } from 'react'
-import { Box, Flex, HStack, NumberInput, NumberInputField, Text, VStack, useDisclosure } from '@chakra-ui/react'
+import { useEffect, useState, useRef } from 'react'
+import { Box, Flex, HStack, Text, VStack, useDisclosure } from '@chakra-ui/react'
 import shallow from 'zustand/shallow'
 import FocusTrap from 'focus-trap-react'
 import { usePopper } from 'react-popper'
@@ -13,12 +13,10 @@ import Tabs from '@/components/Tabs'
 import { QuestionToolTip } from '@/components/QuestionToolTip'
 import HorizontalSwitchSmallIcon from '@/icons/misc/HorizontalSwitchSmallIcon'
 import AddLiquidityPlus from '@/icons/misc/AddLiquidityPlus'
-import { useTokenStore, useLiquidityStore } from '@/store'
+import { useLiquidityStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
 import { wSolToSolString, wsolToSolToken } from '@/utils/token'
-import { numberRegExp } from '@/utils/numberish/regex'
 import { TxErrorModal } from '@/components/Modal/TxErrorModal'
-import useTokenPrice from '@/hooks/token/useTokenPrice'
 
 import CreateSuccessModal from './CreateSuccessModal'
 import useInitPoolSchema from '../hooks/useInitPoolSchema'
@@ -61,10 +59,6 @@ export default function Initialize({ marketId, mintA, mintB }: InitializeProps) 
 
   const [startDateMode, setStartDateMode] = useState<'now' | 'custom'>('now')
   const isStartNow = startDateMode === 'now'
-
-  const { data: tokenPrices } = useTokenPrice({
-    mintList: [baseToken?.address, quoteToken?.address]
-  })
 
   const currentPrice = new Decimal(tokenAmount[baseIn ? 'quote' : 'base'] || 0)
     .div(tokenAmount[baseIn ? 'base' : 'quote'] || 1)
