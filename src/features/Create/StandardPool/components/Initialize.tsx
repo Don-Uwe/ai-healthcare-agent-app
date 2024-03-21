@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState, useRef } from 'react'
 import { Box, Flex, HStack, NumberInput, NumberInputField, Text, VStack, useDisclosure } from '@chakra-ui/react'
 import shallow from 'zustand/shallow'
-import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 import FocusTrap from 'focus-trap-react'
 import { usePopper } from 'react-popper'
 import { useTranslation } from 'react-i18next'
@@ -23,6 +22,7 @@ import useTokenPrice from '@/hooks/token/useTokenPrice'
 
 import CreateSuccessModal from './CreateSuccessModal'
 import useInitPoolSchema from '../hooks/useInitPoolSchema'
+import useTokenInfo from '@/hooks/token/useTokenInfo'
 
 import Decimal from 'decimal.js'
 import dayjs from 'dayjs'
@@ -37,7 +37,6 @@ type InitializeProps = {
 export default function Initialize({ marketId, mintA, mintB }: InitializeProps) {
   const { t } = useTranslation()
 
-  const [tokenMap, getChainTokenInfo] = useTokenStore((s) => [s.tokenMap, s.getChainTokenInfo], shallow)
   const [createPoolAct, newCreatedPool] = useLiquidityStore((s) => [s.createPoolAct, s.newCreatedPool], shallow)
 
   const [baseIn, setBaeIn] = useState(true)
@@ -51,11 +50,12 @@ export default function Initialize({ marketId, mintA, mintB }: InitializeProps) 
   const popper = usePopper(popperRef.current, popperElement, {
     placement: 'top-start'
   })
-  const [{ baseToken, quoteToken }, setMints] = useState<{ baseToken?: ApiV3Token; quoteToken?: ApiV3Token }>({
-    baseToken: tokenMap.get(mintA || ''),
-    quoteToken: tokenMap.get(mintB || '')
+  const { tokenInfo: baseToken } = useTokenInfo({
+    mint: mintA
   })
-  const [price, setPrice] = useState('')
+  const { tokenInfo: quoteToken } = useTokenInfo({
+    mint: mintB
+  })
   const [tokenAmount, setTokenAmount] = useState<{ base: string; quote: string }>({ base: '', quote: '' })
   const [baseSymbol, quoteSymbol] = [wSolToSolString(baseToken?.symbol), wSolToSolString(quoteToken?.symbol)]
 
@@ -66,25 +66,12 @@ export default function Initialize({ marketId, mintA, mintB }: InitializeProps) 
     mintList: [baseToken?.address, quoteToken?.address]
   })
 
-  const [basePrice, quotePrice] = baseIn
-    ? [tokenPrices[baseToken?.address || '']?.value ?? 0, tokenPrices[quoteToken?.address || '']?.value ?? 0]
-    : [tokenPrices[quoteToken?.address || '']?.value ?? 0, tokenPrices[baseToken?.address || '']?.value ?? 0]
-
-  const error = useInitPoolSchema({ price, baseToken, quoteToken, tokenAmount, startTime: startDate })
-
-  const currentPrice = new Decimal(basePrice || 0)
-    .div(quotePrice || 1)
+  const currentPrice = new Decimal(tokenAmount[baseIn ? 'quote' : 'base'] || 0)
+    .div(tokenAmount[baseIn ? 'base' : 'quote'] || 1)
     .toDecimalPlaces(baseToken?.decimals ?? 6)
     .toString()
 
-  useEffect(() => {
-    if (!tokenMap.size) return
-    const data: { baseToken?: ApiV3Token; quoteToken?: ApiV3Token } = {
-      baseToken: tokenMap.get(mintA || ''),
-      quoteToken: tokenMap.get(mintB || '')
-    }
-    setMints(data)
-  }, [mintA, mintB, tokenMap, getChainTokenInfo])
+  const error = useInitPoolSchema({ price: currentPrice, baseToken, quoteToken, tokenAmount, startTime: startDate })
 
   useEffect(() => () => useLiquidityStore.setState({ newCreatedPool: undefined }), [])
 
@@ -103,11 +90,6 @@ export default function Initialize({ marketId, mintA, mintB }: InitializeProps) 
       onFinally: offLoading
     })
   }
-
-  // const onGoBackClick = useCallback(() => {
-  //   router.back()
-  //   onGoBack?.()
-  // }, [onGoBack, router])
 
   return (
     <VStack borderRadius="20px" w="full" bg={colors.backgroundLight} p={6} spacing={5}>
@@ -143,39 +125,6 @@ export default function Initialize({ marketId, mintA, mintB }: InitializeProps) 
 
       {/* initial price */}
       <Flex direction="column" w="full" align={'flex-start'} gap={3}>
-        <HStack gap={1}>
-          <Text fontWeight="medium" fontSize="sm">
-            Initial price
-          </Text>
-          <QuestionToolTip iconType="info" label={t('create_standard_pool.initial_price_tooltip')} />
-        </HStack>
-        <Flex
-          w="full"
-          flex={1}
-          bg={colors.backgroundDark}
-          py={3}
-          px={4}
-          color={colors.textSecondary}
-          borderRadius="12px"
-          align="center"
-          justify={'space-between'}
-        >
-          <NumberInput
-            variant="clean"
-            value={price}
-            onChange={setPrice}
-            min={0}
-            flexGrow={1}
-            fontWeight="500"
-            fontSize="xl"
-            isValidCharacter={useCallback((val: string) => numberRegExp.test(val), [])}
-          >
-            <NumberInputField />
-          </NumberInput>
-          <Text fontWeight="400" fontSize="sm" opacity={0.5}>
-            {baseIn ? quoteSymbol : baseSymbol}/{baseIn ? baseSymbol : quoteSymbol}
-          </Text>
-        </Flex>
         <HStack spacing={1}>
           <Text fontWeight="400" fontSize="sm" color={colors.textTertiary}>
             {t('create_standard_pool.current_price')}:
@@ -194,44 +143,6 @@ export default function Initialize({ marketId, mintA, mintB }: InitializeProps) 
             <HorizontalSwitchSmallIcon fill={colors.secondary} cursor="pointer" onClick={() => setBaeIn((val) => !val)} />
           </Box>
         </HStack>
-      </Flex>
-
-      {/* Fee Tier */}
-      <Flex direction="column" w="full" align={'flex-start'} gap={3}>
-        <Text fontWeight="medium" fontSize="sm">
-          {t('field.fee_tier')}
-        </Text>
-        <Flex flexWrap="wrap" justifyContent="space-evenly" gap="2">
-          {/* TODO need fee tier data */}
-          {Object.values({
-            1: { id: '1', selected: false, tradeFeeRate: 0.25 },
-            2: { id: '2', selected: true, tradeFeeRate: 1 },
-            3: { id: '3', selected: false, tradeFeeRate: 4 },
-            4: { id: '4', selected: false, tradeFeeRate: 6 }
-          }).map((config) => {
-            const { selected, tradeFeeRate, id } = config
-            return (
-              <Flex
-                key={id}
-                flexDirection="column"
-                gap="2.5"
-                bg={colors.selectInactive}
-                px="16px"
-                py="8px"
-                borderRadius="41px"
-                textAlign="center"
-                fontSize="sm"
-                sx={{
-                  cursor: 'pointer',
-                  border: `1px solid ${selected ? colors.secondary : 'transparent'}`,
-                  fontWeight: `${selected ? 500 : 400}`
-                }}
-              >
-                <Text>{tradeFeeRate}%</Text>
-              </Flex>
-            )
-          })}
-        </Flex>
       </Flex>
 
       {/* start time */}
@@ -354,9 +265,6 @@ export default function Initialize({ marketId, mintA, mintB }: InitializeProps) 
         </Text>
       </Flex>
       <HStack w="full" spacing={4} mt={2}>
-        {/* <Button variant="outline" w="fit-content" onClick={onGoBackClick}>
-          {t('button.back')}
-        </Button> */}
         <Button w="full" isLoading={isLoading} isDisabled={!!error} onClick={onInitializeClick}>
           {t('create_standard_pool.button_initialize_liquidity_pool')}
         </Button>
