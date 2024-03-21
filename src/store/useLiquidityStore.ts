@@ -12,7 +12,7 @@ import { useAppStore } from './useAppStore'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
 import { txStatusSubject, multiTxStatusSubject } from '@/hooks/toast/useTxStatus'
 
-import { PublicKey, VersionedTransaction } from '@solana/web3.js'
+import { PublicKey } from '@solana/web3.js'
 import { TxCallbackProps } from '@/types/tx'
 import { formatLocaleStr } from '@/utils/numberish/formatter'
 

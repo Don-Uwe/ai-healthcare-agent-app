@@ -71,7 +71,7 @@ export default function useTokenBalance() {
           },
           address: '',
           isZero: !acc || new Decimal(acc.amountInUSD || 0).add(cur.amountInUSD).isZero(),
-          amount: '0',
+          amount: '',
           amountInUSD: new Decimal(acc?.amountInUSD || 0).add(cur.amountInUSD).toString()
         } as IdleType),
       {}

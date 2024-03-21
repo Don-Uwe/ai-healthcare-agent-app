@@ -1878,10 +1878,10 @@
     bs58 "^4.0.1"
     eventemitter3 "^4.0.7"
 
-"@raydium-io/raydium-sdk-v2@^2.0.1-rc.0":
-  version "2.0.1-rc.0"
-  resolved "https://registry.yarnpkg.com/@raydium-io/raydium-sdk-v2/-/raydium-sdk-v2-2.0.1-rc.0.tgz#184e464770f82c2fea5a5ab0e59fecaa02031920"
-  integrity sha512-aE5w786I+1F6hwDle9CidPFEQJMy77otOk5585JONsFvJ0vvYW4MtEG6Ni3KRB5Oq3zCyVWKCY0e5KSBNQ9Ycw==
+"@raydium-io/raydium-sdk-v2@^2.0.0-rc.2":
+  version "2.0.0-rc.2"
+  resolved "https://registry.yarnpkg.com/@raydium-io/raydium-sdk-v2/-/raydium-sdk-v2-2.0.0-rc.2.tgz#91dfb0da56c88aa80404176555aa3f202a1ad4f1"
+  integrity sha512-0Fr4dWqM1RMwAWWgyeXs30surdQvgI5CSDoAiu0KILd2kXACEkVTXnI7NCVPak1uq1RYi24AOjn7PwW8PlOMSQ==
   dependencies:
     "@project-serum/serum" "^0.13.65"
     "@solana/buffer-layout" "4.0.0"

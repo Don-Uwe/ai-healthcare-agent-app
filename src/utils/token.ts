@@ -2,6 +2,7 @@ import { TOKEN_WSOL, WSOLMint, SOLMint, ApiV3Token, SOL_INFO, TokenInfo } from '
 import { PublicKey } from '@solana/web3.js'
 
 export const wSolToSol = (key?: string): string | undefined => (key === WSOLMint.toBase58() ? SOLMint.toBase58() : key)
+export const solToWSol = (key?: string): string | undefined => (key === SOLMint.toBase58() ? WSOLMint.toBase58() : key)
 export const wSolToSolString = (name?: string) => (name ? name.replace(/WSOL/gi, 'SOL') : '')
 export const solToWsolString = (name?: string) => (name ? name.replace(/^SOL/gi, 'WSOL') : '')
 
