@@ -218,7 +218,7 @@ function TokenInput(props: TokenInputProps) {
   })
 
   const handleUnknownTokenConfirm = useEvent((token: TokenInfo | ApiV3Token) => {
-    setExtraTokenList({ token: token as TokenInfo, addToStorage: true, update: true })
+    setExtraTokenList({ token: { ...token, userAdded: true } as TokenInfo, addToStorage: true, update: true })
     onTokenChange?.(token)
     onCloseUnknownTokenConfirm()
   })

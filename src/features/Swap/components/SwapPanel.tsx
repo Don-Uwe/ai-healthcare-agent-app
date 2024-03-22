@@ -89,9 +89,18 @@ export function SwapPanel({
 
   useEffect(() => {
     const query = router.query as { inputMint?: string; outputMint?: string }
-    if (query.inputMint && tokenMap.get(query.inputMint)) setInputMint(query.inputMint)
-    if (query.outputMint && tokenMap.get(query.outputMint)) setOutputMint(query.outputMint)
-    setSwapPairCache(query)
+    if (query.inputMint && tokenMap.get(query.inputMint)) {
+      setInputMint(query.inputMint)
+      setSwapPairCache({
+        inputMint: query.inputMint
+      })
+    }
+    if (query.outputMint && tokenMap.get(query.outputMint)) {
+      setOutputMint(query.outputMint)
+      setSwapPairCache({
+        outputMint: query.outputMint
+      })
+    }
   }, [router.query, tokenMap])
 
   useEffect(() => {
@@ -112,16 +121,13 @@ export function SwapPanel({
 
   const handleSelectToken = useCallback((token: TokenInfo | ApiV3Token, side?: 'input' | 'output') => {
     if (side === 'input') {
-      setSwapPairCache({ inputMint: token.address })
       setInputMint(token.address)
       setOutputMint((mint) => (token.address === mint ? '' : mint))
     }
     if (side === 'output') {
       setOutputMint(token.address)
-      setSwapPairCache({ outputMint: token.address })
       setInputMint((mint) => {
         if (token.address === mint) {
-          setSwapPairCache({ inputMint: '' })
           return ''
         }
         return mint
