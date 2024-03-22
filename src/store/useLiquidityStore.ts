@@ -257,14 +257,24 @@ export const useLiquidityStore = createStore<LiquidityStore>(
           if (data.length === transactions.length && !toasted) {
             onSuccess?.()
             toasted = true
-            multiTxStatusSubject.next({
-              toastId: uuid(),
+
+            if (transactions.length > 1) {
+              multiTxStatusSubject.next({
+                toastId: uuid(),
+                ...migrateMeta,
+                subTxIds: data.map(({ txId, status }, idx) => ({
+                  txId,
+                  status: status !== 'sent' ? status : undefined,
+                  ...(idx === transactions.length - 1 ? migrateMeta : removeMeta)
+                }))
+              })
+              return
+            }
+            txStatusSubject.next({
+              txId: data[0].txId,
               ...migrateMeta,
-              subTxIds: data.map(({ txId, status }, idx) => ({
-                txId,
-                status: status !== 'sent' ? status : undefined,
-                ...(idx === transactions.length - 1 ? migrateMeta : removeMeta)
-              }))
+              onError,
+              onConfirmed: params.onConfirmed
             })
           }
         }

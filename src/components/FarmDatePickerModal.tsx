@@ -71,7 +71,7 @@ export default function FarmDatePickerModal({ isOpen, onConfirm, onClose, farmSt
   }, [startDate])
 
   return (
-    <ResponsiveModal size={'2xl'} title="Farm period" isOpen={isOpen} onClose={onClose}>
+    <ResponsiveModal size={'2xl'} title={t('date_picker.farm_period')} isOpen={isOpen} onClose={onClose}>
       <Grid
         gridTemplate={[
           `
@@ -91,7 +91,7 @@ export default function FarmDatePickerModal({ isOpen, onConfirm, onClose, farmSt
       >
         <GridItem area="calendar">
           <SimpleGrid autoFlow={'row'} gap={[4, 3]}>
-            <Title value="Start on" />
+            <Title value={t('date_picker.start_on')} />
             <Box bg={colors.backgroundDark} rounded={'12px'}>
               <DatePick mode="single" selected={startDate} onSelect={onDateSelect} required={true} />
             </Box>
@@ -100,7 +100,7 @@ export default function FarmDatePickerModal({ isOpen, onConfirm, onClose, farmSt
 
         <GridItem area="time">
           <SimpleGrid autoFlow={['column', 'row']} templateColumns={['20% 1fr', 'unset']} gap={[4, 3]} alignItems={'center'}>
-            <Title value="Start at" />
+            <Title value={t('date_picker.start_at')} />
             <HStack spacing={3}>
               <HourPick sx={{ flex: 1 }} value={startHour} defaultValues={hours} onChange={setStartHour} />
               <MinutePick sx={{ flex: 1 }} value={startMinute} onChange={setStartMinute} />
@@ -110,7 +110,7 @@ export default function FarmDatePickerModal({ isOpen, onConfirm, onClose, farmSt
 
         <GridItem area="duration">
           <SimpleGrid autoFlow={['column', 'row']} templateColumns={['20% 1fr', 'unset']} gap={[4, 3]} alignItems={'center'}>
-            <Title value="Duration" />
+            <Title value={t('date_picker.duration')} />
             <Flex borderRadius="12px" bg={colors.backgroundDark} p="16px 20px 16px 20px">
               <NumberInput variant="clean" min={7} max={90} step={1} value={durationDays} onChange={onDurationChange}>
                 <NumberInputField placeholder="7-90 Days" _placeholder={{ color: colors.textSecondary, fontSize: '20px', opacity: 0.5 }} />

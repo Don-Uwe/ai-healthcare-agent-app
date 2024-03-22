@@ -15,6 +15,8 @@ import useSWR from 'swr'
 import useRefreshEpochInfo from '@/hooks/app/useRefreshEpochInfo'
 import { useAppStore, useTokenAccountStore, initTokenAccountSate } from '@/store'
 import { useEvent } from '@/hooks/useEvent'
+import ToPublicKey from '@/utils/publicKey'
+import usePrevious from '@/hooks/usePrevious'
 
 export type ClmmPosition = ReturnType<typeof PositionInfoLayout.decode>
 export type ClmmDataMap = Map<string, ClmmPosition[]>
@@ -24,7 +26,7 @@ let lastRefreshTag = initTokenAccountSate.refreshClmmPositionTag
 const fetcher = ([connection, publicKeyList]: [Connection, string[]]) => {
   console.log('rpc: get clmm position balance info')
   return connection.getMultipleAccountsInfo(
-    publicKeyList.map((publicKey) => new PublicKey(publicKey)),
+    publicKeyList.map((publicKey) => ToPublicKey(publicKey)),
     'confirmed'
   )
 }
@@ -36,8 +38,8 @@ export default function useClmmBalance({
   programId?: string | PublicKey
   refreshInterval?: number
 }) {
-  const [connection, CLMM_PROGRAM_ID, tokenAccLoaded] = useAppStore(
-    (s) => [s.connection, s.programIdConfig.CLMM_PROGRAM_ID, s.tokenAccLoaded],
+  const [connection, CLMM_PROGRAM_ID, tokenAccLoaded, owner] = useAppStore(
+    (s) => [s.connection, s.programIdConfig.CLMM_PROGRAM_ID, s.tokenAccLoaded, s.publicKey],
     shallow
   )
   const clmmProgramId = programId || CLMM_PROGRAM_ID
@@ -47,6 +49,7 @@ export default function useClmmBalance({
   )
   useRefreshEpochInfo()
 
+  const prevOwner = usePrevious(owner?.toBase58())
   const [balanceData, setBalanceData] = useState<ClmmDataMap>(new Map())
 
   const balanceMints = useMemo(() => tokenAccountRawInfos.filter((acc) => acc.accountInfo.amount.eq(new BN(1))), [tokenAccountRawInfos])
@@ -103,7 +106,7 @@ export default function useClmmBalance({
     dedupingInterval: refreshInterval,
     focusThrottleInterval: refreshInterval,
     refreshInterval,
-    keepPreviousData: true
+    keepPreviousData: !!needFetch && !!owner
   })
 
   useEffect(() => {
@@ -124,6 +127,13 @@ export default function useClmmBalance({
     lastRefreshTag = refreshClmmPositionTag
     mutate()
   }, [refreshClmmPositionTag, mutate])
+
+  useEffect(
+    () => () => {
+      setBalanceData(new Map())
+    },
+    [owner?.toBase58()]
+  )
 
   return {
     clmmBalanceInfo: balanceData,

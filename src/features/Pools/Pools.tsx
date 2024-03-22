@@ -42,7 +42,7 @@ import OpenBookIcon from '@/icons/misc/OpenBookIcon'
 import { useAppStore, useTokenStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
 import { appLayoutPaddingX, revertAppLayoutPaddingX } from '@/theme/detailConfig'
-import { isValidPublicKey } from '@/utils/common'
+import { isValidPublicKey } from '@/utils/publicKey'
 import toPercentString from '@/utils/numberish/toPercentString'
 import { shakeUndefindedItem } from '@/utils/shakeUndefindedItem'
 import { useEffectWithUrl, useStateWithUrl } from '../../hooks/useStateWithUrl'
@@ -431,7 +431,6 @@ export default function Pools() {
               <PoolItemLoadingSkeleton />
             ) : (
               <List
-                flexGrow={1}
                 controllerRef={listControllerRef}
                 {...scrollBodyProps}
                 increaseRenderCount={showFarms ? 100 : 50}

@@ -69,7 +69,7 @@ export default function FarmItem({
         <Tvl tvl={data.tvl} decimals={isStandard ? standardFarm!.lpMint.decimals : clmmData!.poolDecimals} flex={1.5} minW="fit-content" />
         <Flex color={colors.textPrimary} direction="column" justify="flex-start" align={'flex-start'} gap={1}>
           <Text fontSize="sm" color={colors.textTertiary}>
-            APR
+            {t('field.apr')}
           </Text>
           <Text fontSize="sm" color={colors.textPrimary}>
             {toApr({ val: apr })}
@@ -109,6 +109,7 @@ function FarmItemHeader({ name, baseToken, quoteToken, id, type, feeRate }: Farm
   const isMobile = useAppStore((s) => s.isMobile)
   const explorerUrl = useAppStore((s) => s.explorerUrl)
   const { onCopy } = useClipboard(id)
+  const { t } = useTranslation()
 
   return (
     <HStack borderTopRadius="xl" bg={colors.backgroundTransparent07} px={[3, 9]} py={[4, 3]} justify={'space-between'}>
@@ -130,7 +131,7 @@ function FarmItemHeader({ name, baseToken, quoteToken, id, type, feeRate }: Farm
       <HStack spacing={0} ml={'auto'}>
         <Desktop>
           <Text mr={8} fontSize="xs" color={colors.textSecondary}>
-            Farm ID: {encodeStr(id, 8, 3)}
+            {t('farm.farm_id')}: {encodeStr(id, 8, 3)}
           </Text>
         </Desktop>
         <Mobile>

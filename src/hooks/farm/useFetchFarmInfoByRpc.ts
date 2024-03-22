@@ -6,12 +6,13 @@ import { Connection, PublicKey } from '@solana/web3.js'
 
 import { MINUTE_MILLISECONDS } from '@/utils/date'
 import { useAppStore } from '@/store'
+import ToPublicKey from '@/utils/publicKey'
 import { FARM_TYPE, updatePoolInfo, farmRpcInfoCache } from './farmUtils'
 import { useEvent } from '../useEvent'
 
 const fetcher = ([connection, publicKey]: [Connection, string | PublicKey]) => {
   console.log('rpc: get farm info')
-  return connection.getAccountInfo(new PublicKey(publicKey), { commitment: useAppStore.getState().commitment })
+  return connection.getAccountInfo(ToPublicKey(publicKey), { commitment: useAppStore.getState().commitment })
 }
 
 export default function useFetchFarmInfoByRpc(props: {

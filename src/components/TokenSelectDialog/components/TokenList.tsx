@@ -18,7 +18,7 @@ import AddressChip from '@/components/AddressChip'
 import TokenAvatar from '@/components/TokenAvatar'
 import Button from '@/components/Button'
 import useTokenInfo from '@/hooks/token/useTokenInfo'
-import { isValidPublicKey } from '@/utils/common'
+import { isValidPublicKey } from '@/utils/publicKey'
 
 const perPage = 30
 

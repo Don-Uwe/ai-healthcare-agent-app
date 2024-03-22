@@ -3,15 +3,15 @@ import useSWR from 'swr'
 import { Connection, PublicKey } from '@solana/web3.js'
 import shallow from 'zustand/shallow'
 import { PoolInfoLayout, SqrtPriceMath } from '@raydium-io/raydium-sdk-v2'
-
+import ToPublicKey from '@/utils/publicKey'
 import { useAppStore } from '@/store'
-import { isValidPublicKey } from '@/utils/common'
+import { isValidPublicKey } from '@/utils/publicKey'
 import { MINUTE_MILLISECONDS } from '@/utils/date'
 import Decimal from 'decimal.js'
 
 const fetcher = ([connection, publicKey]: [Connection, string]) => {
   console.log('rpc: get clmm account info')
-  return connection.getAccountInfo(new PublicKey(publicKey), { commitment: useAppStore.getState().commitment })
+  return connection.getAccountInfo(ToPublicKey(publicKey), { commitment: useAppStore.getState().commitment })
 }
 
 export default function useFetchRpcClmmInfo(props: { shouldFetch?: boolean; id?: string; refreshInterval?: number }) {

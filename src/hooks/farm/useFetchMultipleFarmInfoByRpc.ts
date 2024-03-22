@@ -3,7 +3,7 @@ import useSWR from 'swr'
 import shallow from 'zustand/shallow'
 import { splAccountLayout } from '@raydium-io/raydium-sdk-v2'
 import { Connection, PublicKey } from '@solana/web3.js'
-
+import ToPublicKey from '@/utils/publicKey'
 import { MINUTE_MILLISECONDS } from '@/utils/date'
 import { useAppStore } from '@/store'
 import { FARM_TYPE, FarmDecodeData, updatePoolInfo, farmRpcInfoCache } from './farmUtils'
@@ -11,7 +11,7 @@ import { FARM_TYPE, FarmDecodeData, updatePoolInfo, farmRpcInfoCache } from './f
 const fetcher = ([connection, publicKeyList, type]: [Connection, string[], 'farm' | 'farm lpVault']) => {
   console.log(`rpc: get multiple ${type} info`)
   return connection.getMultipleAccountsInfo(
-    publicKeyList.map((key) => new PublicKey(key)),
+    publicKeyList.map((key) => ToPublicKey(key)),
     { commitment: 'confirmed' }
   )
 }

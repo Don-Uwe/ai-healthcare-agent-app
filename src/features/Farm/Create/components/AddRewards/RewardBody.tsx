@@ -96,7 +96,7 @@ export default function RewardBody({ rewardInfo, tokenFilterFn, onChange }: Rewa
                   <Box flexGrow={1} height="1px" color={colors.backgroundLight} bg={colors.dividerDashGradient} />
                   <Box rounded="md" bg={colors.backgroundLight} py={1.5} px={[4, 10]} cursor="pointer" onClick={onOpen}>
                     <Text fontWeight="500" fontSize="sm">
-                      {(rewardInfo.farmEnd - rewardInfo.farmStart) / (60 * 60 * 24 * 1000)} Days
+                      {(rewardInfo.farmEnd - rewardInfo.farmStart) / (60 * 60 * 24 * 1000)} {t('common.days')}
                     </Text>
                   </Box>
                   <Box flexGrow={1} height="1px" color={colors.backgroundLight} bg={colors.dividerDashGradient} />

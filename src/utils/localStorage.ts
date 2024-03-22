@@ -5,9 +5,9 @@ export const getStorageItem = (key: string): string | null => {
   return localStorage.getItem(key)
 }
 
-export const setStorageItem = (key: string, value: string): void => {
+export const setStorageItem = (key: string, value: string | number): void => {
   if (!isClient()) return
-  return localStorage.setItem(key, value)
+  return localStorage.setItem(key, String(value))
 }
 
 export const deleteStorageItem = (key: string): void => {

@@ -8,22 +8,26 @@ export const retryCount = 5
 export const skipRetryStatus = new Set([400, 403, 404, 500])
 const logCount = 1000
 
+const isSkipLogs = (url?: string) => url?.includes('birdeye')
+
 axiosInstance.interceptors.response.use(
   (response) => {
     // 2xx
     const { config, data, status } = response
     const { url } = config
 
-    updateReqHistory({
-      status,
-      url: url || '',
-      params: config.params,
-      data: {
-        id: data.id,
-        success: data.success
-      },
-      logCount
-    })
+    if (!isSkipLogs(url)) {
+      updateReqHistory({
+        status,
+        url: url || '',
+        params: config.params,
+        data: {
+          id: data.id,
+          success: data.success
+        },
+        logCount
+      })
+    }
 
     return data
   },
@@ -33,16 +37,18 @@ axiosInstance.interceptors.response.use(
     const { config, response = {} } = error
     const { status } = response
     const { url } = config
-    updateReqHistory({
-      status,
-      url,
-      params: config.params,
-      data: {
-        id: response.data?.id,
-        success: error.message
-      },
-      logCount
-    })
+    if (!isSkipLogs(url)) {
+      updateReqHistory({
+        status,
+        url,
+        params: config.params,
+        data: {
+          id: response.data?.id,
+          success: error.message
+        },
+        logCount
+      })
+    }
 
     if (!config.skipError)
       toastSubject.next({

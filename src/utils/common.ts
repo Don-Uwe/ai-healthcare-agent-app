@@ -1,4 +1,3 @@
-import { PublicKey } from '@solana/web3.js'
 import i18n from '@/i18n'
 
 export const isClient = () => typeof window !== 'undefined'
@@ -12,15 +11,6 @@ export const encodeStr = (str?: string, showNum = 3, dotNum = 2) => {
 }
 
 export const emptyFunc = () => {}
-
-export const isValidPublicKey = (val: string | PublicKey): boolean => {
-  try {
-    new PublicKey(val)
-    return true
-  } catch {
-    return false
-  }
-}
 
 export const sleep = async (time?: number) => {
   return new Promise((resolve) => {

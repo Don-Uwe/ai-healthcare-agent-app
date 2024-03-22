@@ -60,6 +60,7 @@ export const supportedExplorers = [
 const RPC_URL_KEY = '_r_rpc_'
 const RPC_URL_PROD_KEY = '_r_rpc_pro_'
 export const FEE_KEY = '_r_fee_'
+export const SLIPPAGE_KEY = '_r_slippage_'
 
 interface AppState {
   raydium?: Raydium
@@ -139,7 +140,7 @@ const appInitState = {
   jupTokenType: JupTokenType.Strict,
   displayTokenSettings: { official: true, jup: true, userAdded: false },
   featureDisabled: {},
-  slippage: 0.005,
+  slippage: Number(getStorageItem(SLIPPAGE_KEY) || 0.005),
   txVersion: TxVersion.V0,
   tokenAccLoaded: false,
   commitment: 'confirmed' as Commitment,

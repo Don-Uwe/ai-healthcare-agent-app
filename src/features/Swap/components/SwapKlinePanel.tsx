@@ -5,11 +5,11 @@ import { colors } from '@/theme/cssVariables'
 import toPercentString from '@/utils/numberish/toPercentString'
 import { Grid, GridItem, HStack, Text, Box } from '@chakra-ui/react'
 import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
-import Decimal from 'decimal.js'
 import { useState } from 'react'
 import CandleChart from './CandleChart'
 import dayjs from 'dayjs'
 import SwapIcon from '@/icons/misc/SwapIcon'
+import { formatCurrency } from '@/utils/numberish/formatter'
 
 export function SwapKlinePanel({
   baseToken,
@@ -92,7 +92,7 @@ export function SwapKlinePanel({
             <GridItem gridArea="price" paddingTop="8px">
               <HStack spacing={2} alignItems="baseline">
                 <Text fontSize="28px" fontWeight={700} color={colors.textPrimary}>
-                  {price ? new Decimal(price.current).toDecimalPlaces(baseToken?.decimals ?? 2).toString() : price}
+                  {price ? formatCurrency(price.current, { symbol: '$', maximumDecimalTrailingZeroes: 5 }) : price}
                 </Text>
                 {price?.change && (
                   <Text

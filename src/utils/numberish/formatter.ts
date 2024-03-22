@@ -72,16 +72,23 @@ export interface FormatCurrencyParams {
   maximumDecimalTrailingZeroes?: number
 }
 
+const subscriptNumbers: string[] = ['₀', '₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉']
+function toSubscript(number: number): string {
+  return number
+    .toString()
+    .split('')
+    .map((digit) => subscriptNumbers[parseInt(digit, 10)])
+    .join('')
+}
 // Function to transform decimal trailing zeroes to exponent
 function decimalTrailingZeroesToExponent(formattedCurrency: string, maximumDecimalTrailingZeroes: number): string {
   const decimalTrailingZeroesPattern = new RegExp(`(\\.|,)(0{${maximumDecimalTrailingZeroes + 1},})(?=[1-9]?)`)
   return formattedCurrency.replace(
     decimalTrailingZeroesPattern,
-    (_match, separator, decimalTrailingZeroes) => `${separator}0<sub title="${formattedCurrency}">${decimalTrailingZeroes.length}</sub>`
+    (_match, separator, decimalTrailingZeroes) => `${separator}0${toSubscript(decimalTrailingZeroes.length)}`
   )
 }
 
-// Function to transform the output
 function formatCurrencyOverride(formattedCurrency: string, maximumDecimalTrailingZeroes?: number): string {
   if (typeof maximumDecimalTrailingZeroes !== 'undefined') {
     formattedCurrency = decimalTrailingZeroesToExponent(formattedCurrency, maximumDecimalTrailingZeroes)
@@ -120,9 +127,9 @@ function generateFormatter(symbol: string | undefined, abbreviated: boolean, num
 /**
  * @example
  * formatCurrency(1.83, { noDecimal: true }) // '2'
- * formatCurrency(0.00000000089912, {maximumDecimalTrailingZeroes: 5}) // result is '0.0<sub title="0.000000000899">9</sub>899';
- * formatCurrency(0.00000000089912, {symbol: '$', maximumDecimalTrailingZeroes: 5}) // result is '$0.0<sub title="$0.000000000899">9</sub>899';
- * formatCurrency(0.00000000000000655383766, { symbol: '$', maximumDecimalTrailingZeroes: 5 } )// result is $0.0<sub title="$0.00000000000000655383766">14</sub>655383766
+ * formatCurrency(0.00000000089912, {maximumDecimalTrailingZeroes: 5}) // result is '0.0₉899';
+ * formatCurrency(0.00000000089912, {symbol: '$', maximumDecimalTrailingZeroes: 5}) // result is '$0.0₉899';
+ * formatCurrency(0.00000000000000655383766, { symbol: '$', maximumDecimalTrailingZeroes: 5 } )// result is $0.0₁₄655383766
  * formatCurrency(1000.12345, {decimalPlaces: 3}) "1,000.123";
  * formatCurrency(3220.12345, { symbol: '$', decimalPlaces: 3 }) $3,220.123
  * formatCurrency(6553.83766, { symbol: '$',abbreviated:true, decimalPlaces: 3 }) $6.554k
@@ -145,7 +152,9 @@ export function formatCurrency(amount?: string | number, params: FormatCurrencyP
     return formatCurrencyOverride(currencyFormatterCustom.format(amountNumber), maximumDecimalTrailingZeroes)
   }
 
-  if (amountNumber >= 1000) {
+  if (amountNumber === 0.0) {
+    return amountNumber.toFixed(0)
+  } else if (amountNumber >= 1000) {
     // Large, show no decimal value
     return formatCurrencyOverride(currencyFormatterNoDecimal.format(amountNumber))
   } else if (amountNumber >= 50 && amountNumber < 1000) {

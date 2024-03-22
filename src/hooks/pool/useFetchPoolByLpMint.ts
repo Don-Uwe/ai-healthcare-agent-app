@@ -4,7 +4,7 @@ import useSWR, { KeyedMutator } from 'swr'
 import shallow from 'zustand/shallow'
 import { AxiosResponse } from 'axios'
 import axios from '@/api/axios'
-import { isValidPublicKey } from '@/utils/common'
+import { isValidPublicKey } from '@/utils/publicKey'
 import { MINUTE_MILLISECONDS } from '@/utils/date'
 
 import { FormattedPoolInfoStandardItem } from './type'

@@ -20,7 +20,7 @@ import shallow from 'zustand/shallow'
 import { FormattedPoolInfoConcentratedItem } from '@/hooks/pool/type'
 import TokenAvatarPair from '@/components/TokenAvatarPair'
 import { debounce } from '@/utils/functionMethods'
-import { formatLocaleStr } from '@/utils/numberish/formatter'
+import { formatLocaleStr, formatCurrency } from '@/utils/numberish/formatter'
 import toUsdVolume from '@/utils/numberish/toUsdVolume'
 import useClmmBalance, { ClmmPosition } from '@/hooks/portfolio/clmm/useClmmBalance'
 import { useAppStore, useClmmStore, useTokenAccountStore } from '@/store'
@@ -36,7 +36,6 @@ import useTokenPrice from '@/hooks/token/useTokenPrice'
 import { calRatio } from '../utils/math'
 import Decimal from 'decimal.js'
 import BN from 'bn.js'
-import PriceText from '@/components/PriceText'
 
 export default function AddLiquidityModal({
   isOpen,
@@ -210,7 +209,7 @@ export default function AddLiquidityModal({
                   {t('field.current_price')}
                 </Text>
                 <Text fontSize={['md', 'xl']} fontWeight="500">
-                  <PriceText>{currentPrice.toString()}</PriceText>
+                  {formatCurrency(currentPrice.toString(), { symbol: '$', maximumDecimalTrailingZeroes: 5 })}
                 </Text>
               </Box>
 

@@ -4,9 +4,9 @@ import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 import TokenAvatarPair from '@/components/TokenAvatarPair'
 import { colors } from '@/theme/cssVariables'
 import toPercentString from '@/utils/numberish/toPercentString'
+import { formatCurrency } from '@/utils/numberish/formatter'
 
 import useFetchPoolKLine from '@/hooks/pool/useFetchPoolKLine'
-import Decimal from 'decimal.js'
 
 export function SwapKlinePanelMobileThumbnail({
   untilDate,
@@ -52,7 +52,7 @@ export function SwapKlinePanelMobileThumbnail({
         <GridItem gridArea="price">
           <HStack spacing={2}>
             <Text fontSize={['md', 'xl']} fontWeight={500} color={colors.textPrimary}>
-              {currentPrice !== undefined ? new Decimal(currentPrice).toDecimalPlaces(baseToken?.decimals ?? 2).toString() : '--'}
+              {currentPrice !== undefined ? formatCurrency(currentPrice, { symbol: '$', maximumDecimalTrailingZeroes: 5 }) : '--'}
             </Text>
             <Text fontSize={['xs', 'sm']} color={change24H > 0 ? 'colors.teal' : change24H < 0 ? '#ff4ea3' : '#888888'}>
               {toPercentString(change24H, { alwaysSigned: true })}

@@ -19,8 +19,8 @@ import TokenAvatarPair from '@/components/TokenAvatarPair'
 import { colors } from '@/theme/cssVariables'
 import { TimeType } from '@/hooks/pool/useFetchPoolKLine'
 import CandleChart from './CandleChart'
-import Decimal from 'decimal.js'
 import toPercentString from '@/utils/numberish/toPercentString'
+import { formatCurrency } from '@/utils/numberish/formatter'
 import dayjs from 'dayjs'
 import SwapMobileIcon from '@/icons/misc/SwapMobileIcon'
 
@@ -98,7 +98,7 @@ function SwapKlinePanelMobileDrawerContent({
             <GridItem gridArea="price" pt={4} pl={3}>
               <HStack spacing={2} alignItems="baseline">
                 <Text fontSize="xl" fontWeight={700} color={colors.textPrimary}>
-                  {price ? new Decimal(price.current).toDecimalPlaces(baseToken?.decimals ?? 2).toString() : price}
+                  {price ? formatCurrency(price.current, { symbol: '$', maximumDecimalTrailingZeroes: 5 }) : price}
                 </Text>
                 <Text
                   fontSize="xs"
