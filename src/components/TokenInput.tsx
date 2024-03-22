@@ -16,7 +16,7 @@ import {
 } from '@chakra-ui/react'
 import { ApiV3Token, TokenInfo } from '@raydium-io/raydium-sdk-v2'
 import Decimal from 'decimal.js'
-import React, { ReactNode, useEffect, useState } from 'react'
+import React, { ReactNode, useState } from 'react'
 import useTokenPrice from '@/hooks/token/useTokenPrice'
 import { useEvent } from '@/hooks/useEvent'
 import BalanceWalletIcon from '@/icons/misc/BalanceWalletIcon'
@@ -93,7 +93,6 @@ export interface TokenInputProps extends Pick<TokenSelectDialogProps, 'filterFn'
   onFocus?: () => void
 }
 
-const confirmedList = new Set<String>()
 /**
  * dirty component, inner has tokenPrice store state and balance store state and tokenMap store state(in `<TokenSelectDialog />`)
  */
@@ -129,6 +128,7 @@ function TokenInput(props: TokenInputProps) {
     sx
   } = props
   const isMobile = useAppStore((s) => s.isMobile)
+  const setExtraTokenList = useTokenStore((s) => s.setExtraTokenList)
   const { colorMode } = useColorMode()
   const isLight = colorMode === 'light'
   const { isOpen, onOpen, onClose } = useDisclosure()
@@ -203,8 +203,7 @@ function TokenInput(props: TokenInputProps) {
     const isUnknown = !token.type || token.type === 'unknown' || token.tags.includes('unknown')
     const isTrusted = isUnknown && !!tokenMap.get(token.address)?.userAdded
     const isUserAddedTokenEnable = displayTokenSettings.userAdded
-    const hasConfirmed = confirmedList.has(token.address)
-    return isUnknown && (!isTrusted || !isUserAddedTokenEnable) && !hasConfirmed
+    return isUnknown && (!isTrusted || !isUserAddedTokenEnable)
   })
 
   const handleSelectToken = useEvent((token: TokenInfo) => {
@@ -219,7 +218,7 @@ function TokenInput(props: TokenInputProps) {
   })
 
   const handleUnknownTokenConfirm = useEvent((token: TokenInfo | ApiV3Token) => {
-    confirmedList.add(token.address)
+    setExtraTokenList({ token: token as TokenInfo, addToStorage: true, update: true })
     onTokenChange?.(token)
     onCloseUnknownTokenConfirm()
   })

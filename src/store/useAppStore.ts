@@ -142,7 +142,7 @@ const appInitState = {
   displayTokenSettings: {
     official: true,
     jup: true,
-    userAdded: getStorageItem(USER_ADDED_KEY) ? getStorageItem(USER_ADDED_KEY) === 'true' : false
+    userAdded: getStorageItem(USER_ADDED_KEY) ? getStorageItem(USER_ADDED_KEY) === 'true' : true
   },
   featureDisabled: {},
   slippage: Number(getStorageItem(SLIPPAGE_KEY) || 0.005),

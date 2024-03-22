@@ -14,9 +14,8 @@ import {
   Skeleton,
   Text
 } from '@chakra-ui/react'
-import { ApiV3Token, PoolFetchType, toTokenInfo } from '@raydium-io/raydium-sdk-v2'
-import { PublicKey } from '@solana/web3.js'
-import { useCallback, useMemo, useState } from 'react'
+import { ApiV3Token, PoolFetchType } from '@raydium-io/raydium-sdk-v2'
+import { useCallback, useState } from 'react'
 
 import { FormattedPoolInfoItem } from '@/hooks/pool/type'
 import useFetchPoolById from '@/hooks/pool/useFetchPoolById'
