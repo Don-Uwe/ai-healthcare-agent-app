@@ -92,7 +92,7 @@ export function SwapKlinePanel({
             <GridItem gridArea="price" paddingTop="8px">
               <HStack spacing={2} alignItems="baseline">
                 <Text fontSize="28px" fontWeight={700} color={colors.textPrimary}>
-                  {price ? formatCurrency(price.current, { maximumDecimalTrailingZeroes: 5 }) : price}
+                  {price ? formatCurrency(price.current, { symbol: '$', maximumDecimalTrailingZeroes: 5 }) : price}
                 </Text>
                 {price?.change && (
                   <Text

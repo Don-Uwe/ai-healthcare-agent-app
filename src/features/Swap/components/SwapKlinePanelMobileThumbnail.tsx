@@ -52,7 +52,7 @@ export function SwapKlinePanelMobileThumbnail({
         <GridItem gridArea="price">
           <HStack spacing={2}>
             <Text fontSize={['md', 'xl']} fontWeight={500} color={colors.textPrimary}>
-              {currentPrice !== undefined ? formatCurrency(currentPrice, { maximumDecimalTrailingZeroes: 5 }) : '--'}
+              {currentPrice !== undefined ? formatCurrency(currentPrice, { symbol: '$', maximumDecimalTrailingZeroes: 5 }) : '--'}
             </Text>
             <Text fontSize={['xs', 'sm']} color={change24H > 0 ? 'colors.teal' : change24H < 0 ? '#ff4ea3' : '#888888'}>
               {toPercentString(change24H, { alwaysSigned: true })}
