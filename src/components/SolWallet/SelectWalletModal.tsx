@@ -39,7 +39,7 @@ interface Props {
   onClose: () => void
 }
 
-type Network = { name: string; icon?: JSX.Element }
+// type Network = { name: string; icon?: JSX.Element }
 
 export default function SelectWalletModal({ wallets, isOpen, onSelectWallet, onClose }: Props) {
   const { t } = useTranslation()

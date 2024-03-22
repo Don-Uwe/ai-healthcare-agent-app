@@ -7,6 +7,7 @@ import { CandlestickData } from 'lightweight-charts'
 import { useMemo } from 'react'
 import useSWRInfinite from 'swr/infinite'
 import { useEvent } from '../useEvent'
+import usePrevious from '../usePrevious'
 
 export type TimeType = '15m' | '1H' | '4H' | '1D' | '1W'
 
@@ -78,6 +79,9 @@ export default function useFetchPoolKLine({
     propUntilDate > 0 ? (Math.abs(propUntilDate - lastFetchDate) * 1000 > refreshInterval ? propUntilDate : lastFetchDate) : lastFetchDate
   lastFetchDate = untilDate
 
+  const fetchKey = `${base}-${quote}-${timeType}`
+  const prevFetchKey = usePrevious(fetchKey)
+
   const shouldFetch = !!base && !!quote
   const { data, setSize, error, isLoading, ...swrProps } = useSWRInfinite(
     (index) =>
@@ -95,7 +99,8 @@ export default function useFetchPoolKLine({
       revalidateFirstPage: false,
       dedupingInterval: refreshInterval,
       focusThrottleInterval: refreshInterval,
-      refreshInterval
+      refreshInterval,
+      keepPreviousData: shouldFetch && fetchKey === prevFetchKey
     }
   )
 

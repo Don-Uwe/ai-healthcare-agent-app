@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import { useMemo } from 'react'
 import Decimal from 'decimal.js'
+import { isLocal } from '../utils/common'
 
 import i18n from '../i18n'
 import { isClient } from '../utils/common'
@@ -30,8 +31,11 @@ const MyApp = ({ Component, pageProps, lng, ...props }: AppProps & { lng: string
     () => [CONTENT_ONLY_PATH.includes(pathname), OVERFLOW_HIDDEN_PATH.includes(pathname)],
     [pathname]
   )
-  const lang = lng || (getCookie('i18next') as string) || 'en'
-  i18n.changeLanguage(lang)
+
+  if (isLocal()) {
+    const lang = lng || (getCookie('i18nextLng') as string) || 'en'
+    i18n.changeLanguage(lang)
+  }
 
   return (
     <>
@@ -58,11 +62,11 @@ MyApp.getInitialProps = async (appContext: AppContext) => {
   if (isClient()) return {}
   try {
     const ctx = await App.getInitialProps(appContext)
-    let lng = getCookie('i18next', { req: appContext.ctx.req, res: appContext.ctx.res }) as string
+    let lng = getCookie('i18nextLng', { req: appContext.ctx.req, res: appContext.ctx.res }) as string
     lng = lng || 'en'
     i18n.changeLanguage(lng)
 
-    return { ...ctx, lng }
+    return ctx
   } catch (err) {
     return {}
   }

@@ -98,18 +98,22 @@ export const useTokenStore = createStore<TokenStore>(
           false,
           action
         )
+        get().setDisplayTokenListAct()
       })
     },
 
     setDisplayTokenListAct: () => {
-      const { raydium, displayTokenSettings } = useAppStore.getState()
+      const { raydium, displayTokenSettings, jupTokenType } = useAppStore.getState()
       if (!raydium) return
+      const isJupAll = jupTokenType === JupTokenType.ALL
       set(
         {
           displayTokenList: get().tokenList.filter((token) => {
             return (
               (displayTokenSettings.official && raydium.token.mintGroup.official.has(token.address)) ||
-              (displayTokenSettings.jup && raydium.token.mintGroup.jup.has(token.address))
+              // eslint-disable-next-line
+              // @ts-ignore
+              (displayTokenSettings.jup && raydium.token.mintGroup.jup.has(token.address) && (isJupAll || !token.tags.includes('unknown')))
             )
           })
         },

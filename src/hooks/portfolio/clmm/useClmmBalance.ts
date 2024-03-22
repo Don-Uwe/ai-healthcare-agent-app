@@ -16,7 +16,6 @@ import useRefreshEpochInfo from '@/hooks/app/useRefreshEpochInfo'
 import { useAppStore, useTokenAccountStore, initTokenAccountSate } from '@/store'
 import { useEvent } from '@/hooks/useEvent'
 import ToPublicKey from '@/utils/publicKey'
-import usePrevious from '@/hooks/usePrevious'
 
 export type ClmmPosition = ReturnType<typeof PositionInfoLayout.decode>
 export type ClmmDataMap = Map<string, ClmmPosition[]>
@@ -49,7 +48,6 @@ export default function useClmmBalance({
   )
   useRefreshEpochInfo()
 
-  const prevOwner = usePrevious(owner?.toBase58())
   const [balanceData, setBalanceData] = useState<ClmmDataMap>(new Map())
 
   const balanceMints = useMemo(() => tokenAccountRawInfos.filter((acc) => acc.accountInfo.amount.eq(new BN(1))), [tokenAccountRawInfos])

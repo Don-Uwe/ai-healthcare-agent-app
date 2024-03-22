@@ -61,6 +61,7 @@ const RPC_URL_KEY = '_r_rpc_'
 const RPC_URL_PROD_KEY = '_r_rpc_pro_'
 export const FEE_KEY = '_r_fee_'
 export const SLIPPAGE_KEY = '_r_slippage_'
+export const USER_ADDED_KEY = '_r_u_added_'
 
 interface AppState {
   raydium?: Raydium
@@ -138,7 +139,11 @@ const appInitState = {
   },
   programIdConfig: ALL_PROGRAM_ID,
   jupTokenType: JupTokenType.Strict,
-  displayTokenSettings: { official: true, jup: true, userAdded: false },
+  displayTokenSettings: {
+    official: true,
+    jup: true,
+    userAdded: getStorageItem(USER_ADDED_KEY) ? getStorageItem(USER_ADDED_KEY) === 'true' : true
+  },
   featureDisabled: {},
   slippage: Number(getStorageItem(SLIPPAGE_KEY) || 0.005),
   txVersion: TxVersion.V0,

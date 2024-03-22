@@ -1,7 +1,6 @@
 import SortUpDownArrow from '@/components/SortUpDownArrow'
 import { colors } from '@/theme/cssVariables'
 import { Box, Flex, Hide, useColorMode } from '@chakra-ui/react'
-import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { poolListGrid } from '../cssBlocks'
 import { TimeBase } from '../util'

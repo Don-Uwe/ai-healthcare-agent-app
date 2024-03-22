@@ -128,6 +128,7 @@ function TokenInput(props: TokenInputProps) {
     sx
   } = props
   const isMobile = useAppStore((s) => s.isMobile)
+  const setExtraTokenList = useTokenStore((s) => s.setExtraTokenList)
   const { colorMode } = useColorMode()
   const isLight = colorMode === 'light'
   const { isOpen, onOpen, onClose } = useDisclosure()
@@ -170,7 +171,7 @@ function TokenInput(props: TokenInputProps) {
 
   const displayTokenSettings = useAppStore((s) => s.displayTokenSettings)
 
-  const [unknowToken, setUnknowToken] = useState<TokenInfo | ApiV3Token>()
+  const [unknownToken, setUnknownToken] = useState<TokenInfo | ApiV3Token>()
 
   const handleValidate = useEvent((value: string) => {
     return numberRegExp.test(value)
@@ -196,13 +197,19 @@ function TokenInput(props: TokenInputProps) {
     onChange?.(maxDecimal.div(2).toString(), maxDecimal.div(2).toNumber())
   })
 
-  const handleSelectToken = useEvent((token: TokenInfo) => {
-    const isUnknown = !token.type || token.type === 'unknown'
+  const isUnknownToken = useEvent((token: TokenInfo) => {
+    // eslint-disable-next-line
+    // @ts-ignore
+    const isUnknown = !token.type || token.type === 'unknown' || token.tags.includes('unknown')
     const isTrusted = isUnknown && !!tokenMap.get(token.address)?.userAdded
     const isUserAddedTokenEnable = displayTokenSettings.userAdded
-    const shouldShowUnknownTokenConfirm = isUnknown && (!isTrusted || !isUserAddedTokenEnable)
+    return isUnknown && (!isTrusted || !isUserAddedTokenEnable)
+  })
+
+  const handleSelectToken = useEvent((token: TokenInfo) => {
+    const shouldShowUnknownTokenConfirm = isUnknownToken(token)
     if (shouldShowUnknownTokenConfirm) {
-      setUnknowToken(token)
+      setUnknownToken(token)
       onOpenUnknownTokenConfirm()
     } else {
       onTokenChange?.(token)
@@ -211,6 +218,7 @@ function TokenInput(props: TokenInputProps) {
   })
 
   const handleUnknownTokenConfirm = useEvent((token: TokenInfo | ApiV3Token) => {
+    setExtraTokenList({ token: { ...token, userAdded: true } as TokenInfo, addToStorage: true, update: true })
     onTokenChange?.(token)
     onCloseUnknownTokenConfirm()
   })
@@ -358,11 +366,11 @@ function TokenInput(props: TokenInputProps) {
         </GridItem>
       </Grid>
       <TokenSelectDialog isOpen={isOpen} onClose={onClose} onSelectValue={handleSelectToken} filterFn={filterFn} />
-      {unknowToken != undefined && (
+      {unknownToken !== undefined && (
         <TokenUnknownAddDialog
           isOpen={isOpenUnknownTokenConfirm}
           onClose={onCloseUnknownTokenConfirm}
-          token={unknowToken}
+          token={unknownToken}
           onConfirm={handleUnknownTokenConfirm}
         />
       )}

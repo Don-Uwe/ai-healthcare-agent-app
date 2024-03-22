@@ -1,4 +1,4 @@
-import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
+import { ChangeEvent, useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import { TokenInfo } from '@raydium-io/raydium-sdk-v2'
 import { useTranslation } from 'react-i18next'
 import { PublicKey } from '@solana/web3.js'
@@ -13,7 +13,7 @@ import { filterTokenFn } from '@/utils/token'
 import { Box, Divider, Flex, Heading, Input, InputGroup, InputRightAddon, SimpleGrid, Text } from '@chakra-ui/react'
 import Decimal from 'decimal.js'
 import PopularTokenCell from './PopularTokenCell'
-import List from '@/components/List'
+import List, { ListPropController } from '@/components/List'
 import AddressChip from '@/components/AddressChip'
 import TokenAvatar from '@/components/TokenAvatar'
 import Button from '@/components/Button'
@@ -48,6 +48,11 @@ export default function TokenList({
   const [filteredList, setFilteredList] = useState<TokenInfo[]>(tokenList)
   const [displayList, setDisplayList] = useState<TokenInfo[]>([])
   const [search, setSearch] = useState('')
+
+  const listControllerRef = useRef<ListPropController>()
+  useEffect(() => {
+    listControllerRef.current?.resetRenderCount()
+  }, [filteredList.length])
 
   useEffect(() => {
     setDisplayList(tokenList.slice(0, perPage))
@@ -165,7 +170,7 @@ export default function TokenList({
           </Heading>
         </Flex>
         <Box overflow="hidden" mx="-12px">
-          <List height="100%" onLoadMore={showMoreData} preventResetOnChange items={displayList} getItemKey={(token) => token.name}>
+          <List height="100%" onLoadMore={showMoreData} preventResetOnChange items={displayList} getItemKey={(token) => token.address}>
             {renderTokenItem}
           </List>
         </Box>
@@ -197,7 +202,9 @@ function TokenRowItem({
   onRemoveUnknownTokenClick: (token: TokenInfo) => void
 }) {
   const { t } = useTranslation()
-  const isUnknown = !token.type || token.type === 'unknown'
+  // eslint-disable-next-line
+  // @ts-ignore
+  const isUnknown = !token.type || token.type === 'unknown' || token.tags.includes('unknown')
   const isTrusted = isUnknown && !!useTokenStore.getState().tokenMap.get(token.address)?.userAdded
 
   return (

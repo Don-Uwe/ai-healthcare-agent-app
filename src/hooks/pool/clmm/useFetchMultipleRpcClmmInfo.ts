@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react'
 import useSWR from 'swr'
-import { Connection, PublicKey } from '@solana/web3.js'
+import { Connection } from '@solana/web3.js'
 import shallow from 'zustand/shallow'
 import { PoolInfoLayout, SqrtPriceMath } from '@raydium-io/raydium-sdk-v2'
 import ToPublicKey from '@/utils/publicKey'

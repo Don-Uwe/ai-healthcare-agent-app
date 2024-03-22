@@ -10,7 +10,7 @@ import SwapChatIcon from '@/icons/misc/SwapChatIcon'
 import { useAppStore, useTokenStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
 import { getVHExpression } from '../../theme/cssValue/getViewportExpression'
-import { getSwapPairCache } from './util'
+import { getSwapPairCache, setSwapPairCache } from './util'
 import { SwapKlinePanel } from './components/SwapKlinePanel'
 import { SwapKlinePanelMobileDrawer } from './components/SwapKlinePanelMobileDrawer'
 import { SwapKlinePanelMobileThumbnail } from './components/SwapKlinePanelMobileThumbnail'
@@ -38,6 +38,10 @@ export default function Swap() {
   // reset directionReverse when inputMint or outputMint changed
   useIsomorphicLayoutEffect(() => {
     setDirectionReverse(false)
+    setSwapPairCache({
+      inputMint,
+      outputMint
+    })
   }, [inputMint, outputMint])
 
   useIsomorphicLayoutEffect(() => {
