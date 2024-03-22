@@ -72,8 +72,8 @@ export default function PortfolioIdle({ idleBalance, productiveBalance, idleList
             `
             ]}
             maxHeight={'40vh'}
-            columnGap={6}
-            rowGap={[1, 4]}
+            overflowY={'auto'}
+            columnGap={3}
           >
             <GridItem area={'pie'} w="full" placeSelf={'center'}>
               <PortfolioPieChart
@@ -107,7 +107,7 @@ export default function PortfolioIdle({ idleBalance, productiveBalance, idleList
 function AssetsList(props: { idleList?: IdleType[] }) {
   const { t } = useTranslation()
   return (
-    <SimpleGrid rowGap={[4, '18px']}>
+    <SimpleGrid mt="4" rowGap={[4, '12px']}>
       {props.idleList?.map((idle) => (
         <Grid
           key={idle.token?.name}

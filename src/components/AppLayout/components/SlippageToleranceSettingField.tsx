@@ -1,13 +1,14 @@
 import Button from '@/components/Button'
 import DecimalInput from '@/components/DecimalInput'
 import { useEvent } from '@/hooks/useEvent'
-import { useAppStore } from '@/store'
+import { useAppStore, SLIPPAGE_KEY } from '@/store'
 import { colors } from '@/theme/cssVariables'
 import toPercentString from '@/utils/numberish/toPercentString'
 import { Flex, Text } from '@chakra-ui/react'
 import { useTranslation } from 'react-i18next'
 import { SettingField } from './SettingField'
 import { SettingFieldToggleButton } from './SettingFieldToggleButton'
+import { setStorageItem } from '@/utils/localStorage'
 import { KeyboardEvent, useCallback, useState } from 'react'
 import Decimal from 'decimal.js'
 
@@ -19,8 +20,14 @@ export function SlippageToleranceSettingField() {
   const handleChange = useEvent((val: string | number) => {
     setCurrentSlippage(String(val))
   })
+  const handleUpdateSlippage = useEvent((val: string | number) => {
+    const setVal = Number(val ?? 0) / 100
+    setStorageItem(SLIPPAGE_KEY, setVal)
+    useAppStore.setState({ slippage: setVal }, false, { type: 'SlippageToleranceSettingField' })
+  })
   const handleBlur = useEvent(() => {
-    useAppStore.setState({ slippage: Number(currentSlippage ?? 0) / 100 }, false, { type: 'SlippageToleranceSettingField' })
+    if (!currentSlippage) handleChange(0)
+    handleUpdateSlippage(currentSlippage || 0)
   })
   const handleKeyDown = useCallback((event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
@@ -48,7 +55,7 @@ export function SlippageToleranceSettingField() {
                   variant="capsule-radio"
                   onClick={() => {
                     handleChange(v)
-                    useAppStore.setState({ slippage: Number(v ?? 0) / 100 }, false, { type: 'SlippageToleranceSettingField' })
+                    handleUpdateSlippage(v)
                   }}
                 >
                   {toPercentString(v)}
