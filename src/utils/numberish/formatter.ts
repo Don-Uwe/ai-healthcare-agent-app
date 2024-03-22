@@ -80,6 +80,12 @@ function toSubscript(number: number): string {
     .map((digit) => subscriptNumbers[parseInt(digit, 10)])
     .join('')
 }
+function formatSmallNumberWithFixed(number: number, fixedDigits: number): number {
+  const [base, exponent] = number.toExponential().split('e')
+  const baseFixed = parseFloat(base).toFixed(fixedDigits)
+  return parseFloat(`${baseFixed}e${exponent}`)
+}
+
 // Function to transform decimal trailing zeroes to exponent
 function decimalTrailingZeroesToExponent(formattedCurrency: string, maximumDecimalTrailingZeroes: number): string {
   const decimalTrailingZeroesPattern = new RegExp(`(\\.|,)(0{${maximumDecimalTrailingZeroes + 1},})(?=[1-9]?)`)
@@ -172,11 +178,17 @@ export function formatCurrency(amount?: string | number, params: FormatCurrencyP
   } else if (amountNumber >= 10 ** -9 && amountNumber < 10 ** -6) {
     // show 12 fraction digits
     const currencyFormatterVeryVerySmall: { format: (value: number) => string } = generateFormatter(symbol, abbreviated, 12)
-    return formatCurrencyOverride(currencyFormatterVeryVerySmall.format(amountNumber), maximumDecimalTrailingZeroes)
+    return formatCurrencyOverride(
+      currencyFormatterVeryVerySmall.format(formatSmallNumberWithFixed(amountNumber, 3)),
+      maximumDecimalTrailingZeroes
+    )
   } else {
     // too small show all fraction digits
     const digitsAfterPoint = amountString.length - 2
     const currencyFormatterTooSmall: { format: (value: number) => string } = generateFormatter(symbol, abbreviated, digitsAfterPoint)
-    return formatCurrencyOverride(currencyFormatterTooSmall.format(amountNumber), maximumDecimalTrailingZeroes)
+    return formatCurrencyOverride(
+      currencyFormatterTooSmall.format(formatSmallNumberWithFixed(amountNumber, 3)),
+      maximumDecimalTrailingZeroes
+    )
   }
 }
