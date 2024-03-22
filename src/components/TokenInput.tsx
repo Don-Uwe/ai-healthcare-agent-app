@@ -16,7 +16,7 @@ import {
 } from '@chakra-ui/react'
 import { ApiV3Token, TokenInfo } from '@raydium-io/raydium-sdk-v2'
 import Decimal from 'decimal.js'
-import React, { ReactNode, useState } from 'react'
+import React, { ReactNode, useEffect, useState } from 'react'
 import useTokenPrice from '@/hooks/token/useTokenPrice'
 import { useEvent } from '@/hooks/useEvent'
 import BalanceWalletIcon from '@/icons/misc/BalanceWalletIcon'
@@ -93,6 +93,7 @@ export interface TokenInputProps extends Pick<TokenSelectDialogProps, 'filterFn'
   onFocus?: () => void
 }
 
+const confirmedList = new Set<String>()
 /**
  * dirty component, inner has tokenPrice store state and balance store state and tokenMap store state(in `<TokenSelectDialog />`)
  */
@@ -170,7 +171,7 @@ function TokenInput(props: TokenInputProps) {
 
   const displayTokenSettings = useAppStore((s) => s.displayTokenSettings)
 
-  const [unknowToken, setUnknowToken] = useState<TokenInfo | ApiV3Token>()
+  const [unknownToken, setUnknownToken] = useState<TokenInfo | ApiV3Token>()
 
   const handleValidate = useEvent((value: string) => {
     return numberRegExp.test(value)
@@ -196,13 +197,20 @@ function TokenInput(props: TokenInputProps) {
     onChange?.(maxDecimal.div(2).toString(), maxDecimal.div(2).toNumber())
   })
 
-  const handleSelectToken = useEvent((token: TokenInfo) => {
-    const isUnknown = !token.type || token.type === 'unknown'
+  const isUnknownToken = useEvent((token: TokenInfo) => {
+    // eslint-disable-next-line
+    // @ts-ignore
+    const isUnknown = !token.type || token.type === 'unknown' || token.tags.includes('unknown')
     const isTrusted = isUnknown && !!tokenMap.get(token.address)?.userAdded
     const isUserAddedTokenEnable = displayTokenSettings.userAdded
-    const shouldShowUnknownTokenConfirm = isUnknown && (!isTrusted || !isUserAddedTokenEnable)
+    const hasConfirmed = confirmedList.has(token.address)
+    return isUnknown && (!isTrusted || !isUserAddedTokenEnable) && !hasConfirmed
+  })
+
+  const handleSelectToken = useEvent((token: TokenInfo) => {
+    const shouldShowUnknownTokenConfirm = isUnknownToken(token)
     if (shouldShowUnknownTokenConfirm) {
-      setUnknowToken(token)
+      setUnknownToken(token)
       onOpenUnknownTokenConfirm()
     } else {
       onTokenChange?.(token)
@@ -211,6 +219,7 @@ function TokenInput(props: TokenInputProps) {
   })
 
   const handleUnknownTokenConfirm = useEvent((token: TokenInfo | ApiV3Token) => {
+    confirmedList.add(token.address)
     onTokenChange?.(token)
     onCloseUnknownTokenConfirm()
   })
@@ -358,11 +367,11 @@ function TokenInput(props: TokenInputProps) {
         </GridItem>
       </Grid>
       <TokenSelectDialog isOpen={isOpen} onClose={onClose} onSelectValue={handleSelectToken} filterFn={filterFn} />
-      {unknowToken != undefined && (
+      {unknownToken !== undefined && (
         <TokenUnknownAddDialog
           isOpen={isOpenUnknownTokenConfirm}
           onClose={onCloseUnknownTokenConfirm}
-          token={unknowToken}
+          token={unknownToken}
           onConfirm={handleUnknownTokenConfirm}
         />
       )}
