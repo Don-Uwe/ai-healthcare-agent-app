@@ -17,7 +17,8 @@ i18n
 
   .init({
     detection: {
-      caches: ['cookie']
+      order: ['querystring', 'localStorage', 'cookie', 'sessionStorage', 'navigator', 'htmlTag', 'path', 'subdomain'],
+      caches: ['localStorage', 'cookie']
     },
     resources: {
       en: { translation: en },
