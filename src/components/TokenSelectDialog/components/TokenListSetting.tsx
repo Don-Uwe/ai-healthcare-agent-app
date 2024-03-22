@@ -6,6 +6,7 @@ import { colors } from '@/theme/cssVariables'
 import { Select } from '@/components/Select'
 import { useTranslation } from 'react-i18next'
 import { setStorageItem } from '@/utils/localStorage'
+import { ReactNode } from 'react'
 
 export default function TokenListSetting({ onClick }: { onClick: () => void }) {
   const { t } = useTranslation()
@@ -19,7 +20,8 @@ export default function TokenListSetting({ onClick }: { onClick: () => void }) {
   const jupiterTokenListTokenCount = mintGroup.jup.size
   const userAddedTokenListTokenCount = useTokenStore.getState().extraLoadedTokenList.length
 
-  const jupiterTokenListTypes = [t('token_selector.jupiter_types_all'), t('token_selector.jupiter_types_strict')]
+  const jupiterTokenListTypes = [JupTokenType.ALL, JupTokenType.Strict]
+  const renderItem = useEvent((v: string) => t(`token_selector.jupiter_types_${v.toLocaleLowerCase()}`))
   const currentJupiterTokenListType = useAppStore((s) => s.jupTokenType)
 
   const handleJupiterTokenListTypeChange = useEvent((type: JupTokenType) => {
@@ -47,6 +49,7 @@ export default function TokenListSetting({ onClick }: { onClick: () => void }) {
         onOpen={() => handleSwitchChange('jup', true)}
         onClose={() => handleSwitchChange('jup', false)}
         typeItems={jupiterTokenListTypes}
+        renderItem={renderItem}
         currentTypeItem={currentJupiterTokenListType}
         onTypeItemChange={(v) =>
           jupiterTokenListTypes.includes(v as JupTokenType) && handleJupiterTokenListTypeChange(v.toLowerCase() as JupTokenType)
@@ -74,6 +77,7 @@ function TokenListRowItem({
   onClose,
   onClick,
   typeItems,
+  renderItem,
   currentTypeItem,
   onTypeItemChange
 }: {
@@ -81,6 +85,7 @@ function TokenListRowItem({
   tokenCount: number
   switchable?: boolean
   typeItems?: string[]
+  renderItem?: (v: string) => ReactNode
   currentTypeItem?: string
   onTypeItemChange?: (type: string) => void
   isOpen?: boolean
@@ -110,7 +115,8 @@ function TokenListRowItem({
               variant="filledDark"
               items={typeItems}
               value={currentTypeItem}
-              renderTriggerItem={(v) => <Text textTransform="capitalize">{v}</Text>}
+              renderItem={(v) => <Text textTransform="capitalize">{renderItem && v ? renderItem(v) : v}</Text>}
+              renderTriggerItem={(v) => <Text textTransform="capitalize">{renderItem && v ? renderItem(v) : v}</Text>}
               onChange={(val) => {
                 onTypeItemChange?.(val)
               }}
