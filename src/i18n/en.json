@@ -115,7 +115,7 @@
     "language": "Language",
     "language_tooltip": "Select preferred language",
     "versioned_transaction": "Versioned Transaction",
-    "versioned_transaction_tooltip": "Versioned Tx is a significant updgrade that allows for additional functionality, including advanced swap routing. Before turning on Vers. Tx, ensure that your wallet is compatible.",
+    "versioned_transaction_tooltip": "Versioned Tx is a significant upgrade that allows for additional functionality, including advanced swap routing. Before turning on Vers. Tx, ensure that your wallet is compatible.",
     "custom": "Custom",
     "fee_auto": "Auto",
     "fee_dynamic": "Dynamic",
