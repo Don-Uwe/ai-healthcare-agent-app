@@ -4,7 +4,7 @@ import { toastSubject } from '@/hooks/toast/useGlobalToast'
 import CopyIcon from '@/icons/misc/CopyIcon'
 import ExternalLinkLargeIcon from '@/icons/misc/ExternalLinkLargeIcon'
 import { colors } from '@/theme/cssVariables'
-import { useAppStore } from '@/store/useAppStore'
+import { useAppStore, supportedExplorers } from '@/store/useAppStore'
 
 type NftMintAddressProps = {
   nftMintAddress?: string
@@ -36,7 +36,14 @@ export default function NftMintAddress({ nftMintAddress }: NftMintAddressProps) 
               })
             }}
           />
-          <Link href={`${explorerUrl}/token/${nftMintAddress}`} isExternal>
+          <Link
+            href={
+              explorerUrl === supportedExplorers[0]?.host
+                ? `${explorerUrl}/token/${nftMintAddress}`
+                : `${explorerUrl}/address/${nftMintAddress}`
+            }
+            isExternal
+          >
             <ExternalLinkLargeIcon />
           </Link>
         </HStack>
