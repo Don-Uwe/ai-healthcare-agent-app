@@ -20,7 +20,7 @@ import { encodeStr } from '@/utils/common'
 import CopyIcon from '@/icons/misc/CopyIcon'
 import ExternalLink from '@/icons/misc/ExternalLink'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
-import { useAppStore } from '@/store/useAppStore'
+import { useAppStore, supportedExplorers } from '@/store/useAppStore'
 
 export default function DepositedNFTModal({ nftAddress, isOpen, onClose }: { nftAddress: string; isOpen: boolean; onClose: () => void }) {
   const router = useRouter()
@@ -72,7 +72,13 @@ export default function DepositedNFTModal({ nftAddress, isOpen, onClose }: { nft
                 })
               }}
             />
-            <a href={`${explorerUrl}/token/${nftAddress}`} target="_blank" rel="noreferrer">
+            <a
+              href={
+                explorerUrl === supportedExplorers[0]?.host ? `${explorerUrl}/token/${nftAddress}` : `${explorerUrl}/address/${nftAddress}`
+              }
+              target="_blank"
+              rel="noreferrer"
+            >
               <ExternalLink cursor="pointer" width="14" height="14" />
             </a>
           </Flex>

@@ -632,7 +632,8 @@
     "pool_creation_fee_note": "Note: A creation fee of {{subject}} SOL is required for new pools.",
     "pool_creation_fee_tooltip": "Pool creation fee ensures lookup table support for optimized pool indexing, swap routing, and API functionality.",
     "custom": "Custom",
-    "start_now": "Start Now"
+    "start_now": "Start Now",
+    "current_price_tooltip": "This is the current price of an existing pool on Raydium. You can still enter a different initial price but be aware this may lead to arbitrage if the price difference is large."
   },
   "create_farm": {
     "weekly_rewards": "Weekly Rewards",

@@ -67,7 +67,7 @@ const ThemeProvider: FC<{ children: ReactNode }> = ({ children }) => {
             height: 6px;
           }
           ::-webkit-scrollbar-thumb {
-            background-color: rgba(255, 255, 255, 0.2);
+            background-color: ${colors.scrollbarThumb};
             border-radius: 8px;
           }
           ::-webkit-scrollbar-corner {

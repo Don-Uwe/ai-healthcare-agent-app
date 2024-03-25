@@ -222,7 +222,7 @@ function TokenRowItem({
       overflow={'hidden'}
       onClick={() => onClick?.(token)}
     >
-      <Flex w="full" justifyContent={'space-between'}>
+      <Flex w="full" justifyContent={'space-between'} _hover={{ '.addRemoveCtrlContent': { display: 'flex' } }}>
         <Flex w="0" flexGrow={1} minW="0">
           <TokenAvatar token={token} mr="2" />
           <Box w="100%" minW="0" overflow="hidden">
@@ -232,7 +232,8 @@ function TokenRowItem({
               </Text>
               {isUnknown ? (
                 <Box
-                  display="flex"
+                  className="addRemoveCtrlContent"
+                  display="none"
                   alignSelf="center"
                   alignItems="center"
                   cursor="pointer"

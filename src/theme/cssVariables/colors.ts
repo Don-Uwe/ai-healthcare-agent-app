@@ -93,7 +93,7 @@ export const darkColors: Record<keyof typeof colors, string> = {
   popoverBg: '#141f3a',
 
   //customize (by V3 frontend coder)
-  scrollbarThumb: 'rgba(255, 255, 255, 0.4)',
+  scrollbarThumb: 'rgba(255, 255, 255, 0.2)',
 
   // badge
   badgePurple: 'rgba(140, 110, 239, 0.5)',
@@ -217,7 +217,7 @@ export const lightColors: Partial<typeof darkColors> = {
   popoverBg: '#fff',
 
   //customize (by V3 frontend coder)
-  scrollbarThumb: 'rgba(255, 255, 255, 0.4)',
+  scrollbarThumb: 'rgba(196, 214, 255, 0.5)',
 
   // badge
   badgePurple: 'rgba(140, 110, 239, 0.5)',

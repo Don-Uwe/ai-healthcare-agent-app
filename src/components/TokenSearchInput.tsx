@@ -179,6 +179,9 @@ export default function TokenSearchInput({
           const item = filteredList[activeIndex]
           if (item) {
             const token = tokenMap.get(item.address!)
+            if (selectedList.length === 1) {
+              event.currentTarget.blur()
+            }
             if (token) {
               onSelectedListChange
                 ? onSelectedListChange([...selectedList.concat([token])])
@@ -243,6 +246,7 @@ export default function TokenSearchInput({
               placeholder={selectedList.length ? '' : t('common.search_all')!}
               h={['34px', 10]}
               borderRadius="100px"
+              disabled={selectedList.length === 2 ? true : false}
               px={1}
               sx={{
                 w: 'full',

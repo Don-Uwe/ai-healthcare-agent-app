@@ -82,7 +82,8 @@ export function RPCConnectionSettingField() {
               value={!isCustom ? rpcNodeUrl : customUrl}
               onBlur={handleSwitchCustomRpc}
               onChange={({ currentTarget: { value } }) => {
-                setCustomUrl(value)
+                const customUrl = value.replace(/^(https?:\/\/)?(https?:\/\/)/, '$2')
+                setCustomUrl(customUrl)
               }}
             />
             {isLoading ? (
