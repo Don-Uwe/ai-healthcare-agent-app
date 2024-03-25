@@ -21,7 +21,7 @@ import {
   Coin98WalletAdapter,
   SafePalWalletAdapter,
   BitpieWalletAdapter,
-  BitKeepWalletAdapter
+  BitgetWalletAdapter
 } from '@solana/wallet-adapter-wallets'
 import { useAppStore, defaultNetWork, defaultEndpoint } from '../store/useAppStore'
 
@@ -60,7 +60,7 @@ const App: FC<PropsWithChildren<any>> = ({ children }) => {
       new Coin98WalletAdapter({ endpoint }),
       new SafePalWalletAdapter({ endpoint }),
       new BitpieWalletAdapter({ endpoint }),
-      new BitKeepWalletAdapter({ endpoint }),
+      new BitgetWalletAdapter({ endpoint }),
       new ExodusWalletAdapter({ endpoint })
     ],
     [network, endpoint]
