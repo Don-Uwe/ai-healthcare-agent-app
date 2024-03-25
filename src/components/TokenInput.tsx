@@ -164,7 +164,8 @@ function TokenInput(props: TokenInputProps) {
   // balance
   const getTokenBalanceUiAmount = useTokenAccountStore((s) => s.getTokenBalanceUiAmount)
   const balanceInfo = getTokenBalanceUiAmount({ mint: token?.address || '', decimals: token?.decimals })
-  const balanceAmount = balanceInfo.amount.sub(token?.address === SOL_INFO.address ? '0.05' : 0)
+  let balanceAmount = balanceInfo.amount.sub(token?.address === SOL_INFO.address ? '0.05' : 0)
+  if (balanceAmount.lessThan(0)) balanceAmount = new Decimal(0)
   const balanceMaxString = hideBalance ? null : balanceAmount.mul(maxMultiplier || 1).toString()
   const balanceMaxDecimal = balanceAmount
   const maxString = forceBalanceAmount ? String(forceBalanceAmount) : balanceMaxString
