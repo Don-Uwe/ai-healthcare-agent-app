@@ -96,7 +96,7 @@ interface ClmmState {
     props: {
       poolInfo: ApiV3PoolInfoConcentratedItem
       position: ClmmPositionLayout
-      liquidity: number | string | BN
+      liquidity: BN
       amountMaxA: number | string | BN
       amountMaxB: number | string | BN
     } & TxCallbackProps
@@ -376,7 +376,7 @@ export const useClmmStore = createStore<ClmmState>(
       onFinally,
       onConfirmed
     }) => {
-      const { raydium, txVersion } = useAppStore.getState()
+      const { raydium, txVersion, slippage } = useAppStore.getState()
       if (!raydium) return ''
 
       try {
@@ -389,8 +389,18 @@ export const useClmmStore = createStore<ClmmState>(
             closePosition: position.liquidity.eq(new BN(liquidity))
           },
           liquidity: new BN(liquidity),
-          amountMinA: new BN(new Decimal(amountMinA.toString()).mul(10 ** poolInfo.mintA.decimals).toFixed(0)),
-          amountMinB: new BN(new Decimal(amountMinB.toString()).mul(10 ** poolInfo.mintB.decimals).toFixed(0)),
+          amountMinA: new BN(
+            new Decimal(amountMinA.toString())
+              .mul(1 - slippage)
+              .mul(10 ** poolInfo.mintA.decimals)
+              .toFixed(0)
+          ),
+          amountMinB: new BN(
+            new Decimal(amountMinB.toString())
+              .mul(1 - slippage)
+              .mul(10 ** poolInfo.mintB.decimals)
+              .toFixed(0)
+          ),
           computeBudgetConfig,
           txVersion
         })
@@ -473,7 +483,7 @@ export const useClmmStore = createStore<ClmmState>(
     },
 
     increaseLiquidityAct: async ({ poolInfo, position, liquidity, amountMaxA, amountMaxB, ...txProps }) => {
-      const { raydium, txVersion } = useAppStore.getState()
+      const { raydium, txVersion, slippage } = useAppStore.getState()
       if (!raydium) return ''
       try {
         const computeBudgetConfig = await getComputeBudgetConfig()
@@ -483,7 +493,7 @@ export const useClmmStore = createStore<ClmmState>(
           ownerInfo: {
             useSOLBalance: isSolWSol(poolInfo.mintA.address) || isSolWSol(poolInfo.mintB.address)
           },
-          liquidity: new BN(liquidity),
+          liquidity: new BN(new Decimal(liquidity.toString()).mul(1 - slippage).toFixed(0)),
           amountMaxA: new BN(amountMaxA),
           amountMaxB: new BN(amountMaxB),
           checkCreateATAOwner: true,
