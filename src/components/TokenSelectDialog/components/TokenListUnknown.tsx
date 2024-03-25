@@ -69,7 +69,7 @@ function TokenRowItem({
       maxW={'100%'}
       overflow={'hidden'}
     >
-      <Flex w="full" justifyContent={'space-between'}>
+      <Flex w="full" justifyContent={'space-between'} _hover={{ '.removeCtrlContent': { display: 'flex' } }}>
         <Flex w="0" flexGrow={1} minW="0">
           <TokenAvatar token={token} mr="2" />
           <Box w="100%" minW="0" overflow="hidden">
@@ -78,7 +78,8 @@ function TokenRowItem({
                 {token.symbol}
               </Text>
               <Box
-                display="flex"
+                className="removeCtrlContent"
+                display="none"
                 alignSelf="center"
                 alignItems="center"
                 cursor="pointer"

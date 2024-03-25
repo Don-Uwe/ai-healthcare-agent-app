@@ -188,6 +188,15 @@ export function SwapPanel({
     mutate()
   })
 
+  const outputFilterFn = useEvent((token: TokenInfo) => {
+    if (isSolWSol(tokenInput?.address) && isSolWSol(token.address)) return false
+    return true
+  })
+  const inputFilterFn = useEvent((token: TokenInfo) => {
+    if (isSolWSol(tokenOutput?.address) && isSolWSol(token.address)) return false
+    return true
+  })
+
   return (
     <>
       <Flex mb={[4, 5]} direction="column">
@@ -200,6 +209,7 @@ export function SwapPanel({
           readonly={swapDisabled || (!isSwapBaseIn && isComputing)}
           disableClickBalance={swapDisabled}
           onChange={(v) => handleInputChange(v)}
+          filterFn={inputFilterFn}
           onTokenChange={(token) => handleSelectToken(token, 'input')}
         />
         <SwapIcon onClick={handleChangeSide} />
@@ -211,6 +221,7 @@ export function SwapPanel({
           value={isSwapBaseIn ? outputAmount : amountIn}
           readonly={swapDisabled || (isSwapBaseIn && isComputing)}
           onChange={handleInput2Change}
+          filterFn={outputFilterFn}
           onTokenChange={(token) => handleSelectToken(token, 'output')}
         />
       </Flex>

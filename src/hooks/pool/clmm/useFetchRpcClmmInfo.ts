@@ -10,7 +10,7 @@ import { MINUTE_MILLISECONDS } from '@/utils/date'
 import Decimal from 'decimal.js'
 
 const fetcher = ([connection, publicKey]: [Connection, string]) => {
-  console.log('rpc: get clmm account info')
+  console.log('rpc: get clmm account info', publicKey)
   return connection.getAccountInfo(ToPublicKey(publicKey), { commitment: useAppStore.getState().commitment })
 }
 

@@ -2,7 +2,7 @@ import CircleCheck from '@/icons/misc/CircleCheck'
 import CopyIcon from '@/icons/misc/CopyIcon'
 import ExternalLink from '@/icons/misc/ExternalLink'
 import { SvgIcon } from '@/icons/type'
-import { useAppStore } from '@/store/useAppStore'
+import { useAppStore, supportedExplorers } from '@/store/useAppStore'
 import { Box, Flex, FlexProps, Text, TextProps, useClipboard } from '@chakra-ui/react'
 import { ReactNode } from 'react'
 
@@ -75,7 +75,11 @@ export default function AddressChip({
           </Box>
         )}
         {canExternalLink && address && (
-          <a href={`${explorerUrl}/token/${address}`} rel="noreferrer" target="_blank">
+          <a
+            href={explorerUrl === supportedExplorers[0]?.host ? `${explorerUrl}/token/${address}` : `${explorerUrl}/address/${address}`}
+            rel="noreferrer"
+            target="_blank"
+          >
             <Box cursor="pointer">
               <ExternalLink color={'currentColor'} {...iconProps} />
             </Box>

@@ -10,6 +10,7 @@ import Button from '@/components/Button'
 import HorizontalSwitchSmallIcon from '@/icons/misc/HorizontalSwitchSmallIcon'
 import { DatePick, HourPick, MinutePick } from '@/components/DateTimePicker'
 import EditIcon from '@/icons/misc/EditIcon'
+import { QuestionToolTip } from '@/components/QuestionToolTip'
 
 import { useClmmStore } from '@/store/useClmmStore'
 import { debounce } from '@/utils/functionMethods'
@@ -379,6 +380,7 @@ export default function SetPriceAndRange({
         <Text variant="label" fontSize="sm">
           {t('field.current_price')}:
         </Text>
+        <QuestionToolTip iconType="question" label={t('create_standard_pool.current_price_tooltip')} />
         <Text color={colors.textSecondary} fontSize="sm">
           {onlinePrice}{' '}
           {t('common.per_unit', {

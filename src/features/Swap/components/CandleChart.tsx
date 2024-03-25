@@ -76,7 +76,7 @@ export default function CandleChart({ onPriceChange, baseMint, quoteMint, timeTy
       borderVisible: false,
       wickUpColor: upColor,
       wickDownColor: downColor,
-      priceLineVisible: false,
+      priceLineVisible: true,
       priceFormat: {
         type: 'custom',
         formatter: (val: number) => {
@@ -117,9 +117,7 @@ export default function CandleChart({ onPriceChange, baseMint, quoteMint, timeTy
     })
 
     chart.timeScale().applyOptions({
-      timeVisible: true,
-      fixLeftEdge: true,
-      fixRightEdge: true
+      timeVisible: true
     })
 
     // to prevent load next page in immediately next mount
