@@ -518,7 +518,15 @@ function ResultPanel(props: {
       rounded={'xl'}
       p={2}
     >
-      <Text position={'absolute'} top={-6} insetInline={0} textAlign="center" fontSize={'sm'} color={colors.textSecondary}>
+      <Text
+        position={'absolute'}
+        top={-6}
+        insetInline={0}
+        textAlign="center"
+        fontSize={'sm'}
+        sx={{ textWrap: 'nowrap' }}
+        color={colors.textSecondary}
+      >
         {props.title}
       </Text>
       <Flex direction={'column'} gap={0.5}>

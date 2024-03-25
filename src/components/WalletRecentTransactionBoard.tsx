@@ -23,6 +23,7 @@ import { Wallet } from '@solana/wallet-adapter-react'
 
 import CircleError from '@/icons/misc/CircleError'
 import CircleSuccess from '@/icons/misc/CircleSuccess'
+import CircleInfo from '@/icons/misc/CircleInfo'
 import { colors } from '@/theme/cssVariables'
 import { toUTC } from '@/utils/date'
 import toUsdVolume from '@/utils/numberish/toUsdVolume'
@@ -54,14 +55,14 @@ interface WalletMenuProps {
 type RecentTransaction = {
   name: string
   txId: string
-  status: 'success' | 'error'
+  status: 'success' | 'error' | 'info'
   description: string
   date: number | Date | string // (ms)
   relatedTokens: { address: string; logoURI: string; symbol: string }[]
   sub?: {
     txId?: string
     name: string
-    status: 'success' | 'error'
+    status: 'success' | 'error' | 'info'
     date: number | Date | string // (ms)
   }[]
 }
@@ -72,7 +73,6 @@ type WalletInfo = {
   network: string
   networkIcon?: string | ReactNode
   address: string
-  balanceUSD?: number | string
 }
 
 function getNetworkIcon(network: string): ReactNode | undefined {
@@ -91,7 +91,6 @@ function getNetworkIcon(network: string): ReactNode | undefined {
 export default function WalletRecentTransactionBoard({ wallet, address, isOpen = false, onClose, onDisconnect }: WalletMenuProps) {
   const { t } = useTranslation()
   const allRecords = getTxAllRecord()
-  const { idleBalance } = useTokenBalance()
 
   const handleDisConnect = useCallback(() => {
     onDisconnect()
@@ -105,8 +104,7 @@ export default function WalletRecentTransactionBoard({ wallet, address, isOpen =
     adaptarIcon: wallet?.adapter.icon,
     network: 'Solana',
     networkIcon: getNetworkIcon('Solana'),
-    address,
-    balanceUSD: idleBalance.toDecimalPlaces(2).toString()
+    address
   }
   /*
   const evmWalletInfo: WalletInfo | undefined = {
@@ -156,9 +154,6 @@ export default function WalletRecentTransactionBoard({ wallet, address, isOpen =
             canCopy
             showCopyIcon
           />
-          <Text fontSize="sm" color={colors.textTertiary}>
-            {toUsdVolume(solanaWalletInfo.balanceUSD)}
-          </Text>
         </VStack>
       )}
 
@@ -267,7 +262,13 @@ function RecentTransactionCard({ transaction }: { transaction: RecentTransaction
         columnGap="10px"
       >
         <Box gridArea="statu" alignSelf={'center'}>
-          {transaction.status === 'success' ? <CircleSuccess /> : <CircleError />}
+          {transaction.status === 'info' ? (
+            <CircleInfo width="16px" height="16px" />
+          ) : transaction.status === 'success' ? (
+            <CircleSuccess />
+          ) : (
+            <CircleError />
+          )}
         </Box>
         <Box
           gridArea={'name'}
@@ -304,7 +305,9 @@ function RecentTransactionCard({ transaction }: { transaction: RecentTransaction
                     columnGap="10px"
                   >
                     <Box gridArea="statu" alignSelf="center">
-                      {subTransaction.status === 'success' ? (
+                      {transaction.status === 'info' ? (
+                        <CircleInfo width="14px" height="14px" />
+                      ) : transaction.status === 'success' ? (
                         <CircleSuccess width="14px" height="14px" />
                       ) : (
                         <CircleError width="14px" height="14px" />

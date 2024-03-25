@@ -115,13 +115,13 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
   let allFarmPendingReward = new Decimal(0)
   allFarmBalances.forEach((b) => {
     const farm = stakedFarmMap.get(b?.id || '')
-    const pendingReward = b?.pendingRewards.reduce(
-      (acc, cur, idx) =>
-        acc.add(
-          new Decimal(cur).mul(tokenPrices[farm!.rewardInfos[idx].mint.address]?.value || 0) // reward in usd
-        ),
-      new Decimal(0)
-    )
+    const pendingReward = b?.pendingRewards.reduce((acc, cur, idx) => {
+      return farm?.rewardInfos[idx]
+        ? acc.add(
+            new Decimal(cur).mul(tokenPrices[farm.rewardInfos[idx].mint.address]?.value || 0) // reward in usd
+          )
+        : acc
+    }, new Decimal(0))
     allFarmPendingReward = allFarmPendingReward.add(pendingReward)
   })
 

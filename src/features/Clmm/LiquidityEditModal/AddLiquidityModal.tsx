@@ -41,12 +41,14 @@ export default function AddLiquidityModal({
   isOpen,
   baseIn,
   onClose,
+  onSyncSending,
   poolInfo,
   position
 }: {
   isOpen: boolean
   baseIn: boolean
   onClose: () => void
+  onSyncSending: (val: boolean) => void
   poolInfo: FormattedPoolInfoConcentratedItem
   position: ClmmPosition
 }) {
@@ -157,6 +159,11 @@ export default function AddLiquidityModal({
     setTokenAmount(['', ''])
     setIsSending(false)
   }, [isOpen])
+
+  useEffect(() => {
+    onSyncSending(sending)
+    return () => onSyncSending(false)
+  }, [sending, onSyncSending])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="lg">

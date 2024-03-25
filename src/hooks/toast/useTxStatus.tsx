@@ -77,8 +77,8 @@ function useTxStatus() {
               <Flex
                 gap="1"
                 alignItems="center"
-                onClick={status ? () => window.open(`${explorerUrl}/tx/${txId}`) : undefined}
-                cursor={status ? 'pointer' : 'default'}
+                onClick={() => window.open(`${explorerUrl}/tx/${txId}`)}
+                cursor={'pointer'}
                 opacity={status ? 1 : 0.5}
               >
                 {t('transaction.view_detail')}
@@ -97,6 +97,17 @@ function useTxStatus() {
             detail: renderDetail(),
             status: 'info',
             duration: 60 * 1000 * 2
+          })
+
+          setTxRecord({
+            status: 'info',
+            title: txHistoryTitle || 'transaction.title',
+            description: txHistoryDesc || '',
+            txId,
+            owner,
+            mintInfo,
+            txValues,
+            isMultiSig: isMultisigWallet
           })
 
           connection.onSignature(
@@ -191,9 +202,9 @@ function useTxStatus() {
                     borderRadius="8px"
                     p={3}
                     ml="-30px"
-                    cursor={txStatus[txId] ? 'pointer' : 'default'}
+                    cursor={'pointer'}
                     opacity={txStatus[txId] ? 1 : 0.5}
-                    onClick={txStatus[txId] ? () => window.open(`${explorerUrl}/tx/${txId}`) : undefined}
+                    onClick={() => window.open(`${explorerUrl}/tx/${txId}`)}
                   >
                     <Flex alignItems="center" gap="2">
                       {txStatus[txId] === 'error' ? <CircleError /> : <CircleCheck fill={colors.secondary} />}
@@ -235,7 +246,7 @@ function useTxStatus() {
           })
 
           setTxRecord({
-            status: 'success',
+            status: 'info',
             title: txHistoryTitle || 'transaction.title',
             description: txHistoryDesc,
             txId: toastId,

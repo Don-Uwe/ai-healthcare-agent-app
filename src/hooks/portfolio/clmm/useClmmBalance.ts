@@ -4,7 +4,8 @@ import {
   PositionInfoLayout,
   TickUtils,
   ApiV3PoolInfoConcentratedItem,
-  PositionUtils
+  PositionUtils,
+  publicKey
 } from '@raydium-io/raydium-sdk-v2'
 import shallow from 'zustand/shallow'
 import { PublicKey, Connection } from '@solana/web3.js'
@@ -17,13 +18,13 @@ import { useAppStore, useTokenAccountStore, initTokenAccountSate } from '@/store
 import { useEvent } from '@/hooks/useEvent'
 import ToPublicKey from '@/utils/publicKey'
 
-export type ClmmPosition = ReturnType<typeof PositionInfoLayout.decode>
+export type ClmmPosition = ReturnType<typeof PositionInfoLayout.decode> & { key?: string }
 export type ClmmDataMap = Map<string, ClmmPosition[]>
 
 let lastRefreshTag = initTokenAccountSate.refreshClmmPositionTag
 
 const fetcher = ([connection, publicKeyList]: [Connection, string[]]) => {
-  console.log('rpc: get clmm position balance info')
+  console.log('rpc: get clmm position balance info', publicKeyList)
   return connection.getMultipleAccountsInfo(
     publicKeyList.map((publicKey) => ToPublicKey(publicKey)),
     'confirmed'
@@ -81,8 +82,8 @@ export default function useClmmBalance({
       new Decimal(amountB.amount.toString()).div(10 ** poolInfo.mintB.decimals)
     ]
     const [_amountSlippageA, _amountSlippageB] = [
-      new Decimal(amountSlippageA.amount.toString()).div(10 ** poolInfo.mintA.decimals),
-      new Decimal(amountSlippageB.amount.toString()).div(10 ** poolInfo.mintB.decimals)
+      new Decimal(amountSlippageA.amount.toString()).sub(amountSlippageA.fee?.toString() ?? 0).div(10 ** poolInfo.mintA.decimals),
+      new Decimal(amountSlippageB.amount.toString()).sub(amountSlippageB.fee?.toString() ?? 0).div(10 ** poolInfo.mintB.decimals)
     ]
 
     return {
@@ -95,8 +96,9 @@ export default function useClmmBalance({
     }
   })
 
-  const allPositionKey = balanceMints.map((acc) =>
-    getPdaPersonalPositionAddress(new PublicKey(clmmProgramId), acc.accountInfo.mint).publicKey.toBase58()
+  const allPositionKey = useMemo(
+    () => balanceMints.map((acc) => getPdaPersonalPositionAddress(new PublicKey(clmmProgramId), acc.accountInfo.mint).publicKey.toBase58()),
+    [balanceMints]
   )
 
   const needFetch = tokenAccLoaded && clmmProgramId && connection && tokenAccountRawInfos.length > 0 && allPositionKey.length > 0
@@ -110,15 +112,21 @@ export default function useClmmBalance({
   useEffect(() => {
     const positionMap: ClmmDataMap = new Map()
     if (isLoading || isValidating) return
-    ;(data || []).forEach((positionRes) => {
+    ;(data || []).forEach((positionRes, idx) => {
       if (!positionRes) return
       const position = PositionInfoLayout.decode(positionRes.data)
       const poolId = position.poolId.toBase58()
-      if (!positionMap.get(poolId)) positionMap.set(poolId, [position])
+      if (!positionMap.get(poolId))
+        positionMap.set(poolId, [
+          {
+            ...position,
+            key: allPositionKey[idx]
+          }
+        ])
       else positionMap.set(poolId, [...Array.from(positionMap.get(poolId)!), position])
     })
     setBalanceData(positionMap)
-  }, [data, isLoading, isValidating])
+  }, [data, allPositionKey, isLoading, isValidating])
 
   useEffect(() => {
     if (lastRefreshTag === refreshClmmPositionTag) return

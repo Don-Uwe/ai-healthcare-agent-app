@@ -68,7 +68,10 @@ export default function TokenList({
         .toNumber()
     }
     const sortedTokenList = sortItems(tokenList, {
-      sortRules: [{ value: (i) => i.symbol === 'RAY' || i.symbol === 'SOL' }, { value: (i) => i.symbol.length, compareFn }]
+      sortRules: [
+        { value: (i) => (i.address === SOLMint || i.address === RAYMint ? i.address : null) },
+        { value: (i) => (i.tags.includes('unknown') ? null : i.symbol.length), compareFn }
+      ]
     })
     const filteredList = search ? filterTokenFn(sortedTokenList, { searchStr: search }) : sortedTokenList
 
@@ -202,8 +205,6 @@ function TokenRowItem({
   onRemoveUnknownTokenClick: (token: TokenInfo) => void
 }) {
   const { t } = useTranslation()
-  // eslint-disable-next-line
-  // @ts-ignore
   const isUnknown = !token.type || token.type === 'unknown' || token.tags.includes('unknown')
   const isTrusted = isUnknown && !!useTokenStore.getState().tokenMap.get(token.address)?.userAdded
 

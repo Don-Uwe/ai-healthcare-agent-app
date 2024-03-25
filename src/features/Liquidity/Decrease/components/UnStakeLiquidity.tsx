@@ -53,7 +53,7 @@ export default function UnStakeLiquidity({
     farmInfo: selectedFarm
   })
   const { data: tokenPrices } = useTokenPrice({
-    mintList: pendingRewards.map((_, idx) => selectedFarm?.rewardInfos[idx].mint.address)
+    mintList: pendingRewards.map((_, idx) => selectedFarm?.rewardInfos[idx]?.mint.address)
   })
 
   const totalDeposited = new Decimal(deposited).add(v1Deposited)

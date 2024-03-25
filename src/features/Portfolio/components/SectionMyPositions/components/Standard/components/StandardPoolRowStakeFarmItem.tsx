@@ -39,9 +39,11 @@ export default function StandardPoolRowStakeFarmItem({
       pendingRewards
         .reduce(
           (acc, cur, idx) =>
-            acc.add(
-              new Decimal(cur).mul(tokenPrices[farm?.rewardInfos[idx].mint.address || '']?.value ?? 0) // reward in usd
-            ),
+            farm?.rewardInfos[idx]
+              ? acc.add(
+                  new Decimal(cur).mul(tokenPrices[farm?.rewardInfos[idx].mint.address || '']?.value ?? 0) // reward in usd
+                )
+              : acc,
           new Decimal(0)
         )
         .toDecimalPlaces(6)

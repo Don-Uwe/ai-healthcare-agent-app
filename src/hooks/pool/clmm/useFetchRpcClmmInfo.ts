@@ -10,21 +10,25 @@ import { MINUTE_MILLISECONDS } from '@/utils/date'
 import Decimal from 'decimal.js'
 
 const fetcher = ([connection, publicKey]: [Connection, string]) => {
-  console.log('rpc: get clmm account info')
+  console.log('rpc: get clmm account info', publicKey)
   return connection.getAccountInfo(ToPublicKey(publicKey), { commitment: useAppStore.getState().commitment })
 }
 
-export default function useFetchRpcClmmInfo(props: { shouldFetch?: boolean; id?: string; refreshInterval?: number }) {
-  const { shouldFetch = true, id = '', refreshInterval = MINUTE_MILLISECONDS } = props || {}
+export default function useFetchRpcClmmInfo(props: { shouldFetch?: boolean; id?: string; refreshInterval?: number; refreshTag?: number }) {
+  const { shouldFetch = true, id = '', refreshInterval = MINUTE_MILLISECONDS, refreshTag } = props || {}
   const isValidId = isValidPublicKey(id)
   const [connection] = useAppStore((s) => [s.connection], shallow)
   const [poolInfo, setPoolInfo] = useState<(ReturnType<typeof PoolInfoLayout.decode> & { currentPrice: Decimal }) | undefined>()
 
-  const { data, isLoading, error, ...rest } = useSWR(shouldFetch && connection && isValidId ? [connection, id] : null, fetcher, {
-    dedupingInterval: refreshInterval,
-    focusThrottleInterval: refreshInterval,
-    refreshInterval
-  })
+  const { data, isLoading, error, ...rest } = useSWR(
+    shouldFetch && connection && isValidId ? [connection, id, refreshTag] : null,
+    fetcher,
+    {
+      dedupingInterval: refreshInterval,
+      focusThrottleInterval: refreshInterval,
+      refreshInterval
+    }
+  )
   const isEmptyResult = shouldFetch && !!id && !isLoading && !(data && !error)
 
   useEffect(() => {

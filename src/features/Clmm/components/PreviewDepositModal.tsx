@@ -12,7 +12,8 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
-  ModalFooter
+  ModalFooter,
+  useDisclosure
 } from '@chakra-ui/react'
 import TokenAvatar from '@/components/TokenAvatar'
 import TokenAvatarPair from '@/components/TokenAvatarPair'
@@ -65,7 +66,7 @@ export default function PreviewDepositModal({
   const [price0Decimal, price1Decimal] = [getFirstNonZeroDecimal(priceRange[0]), getFirstNonZeroDecimal(priceRange[1])]
 
   const totalDeposit = new Decimal(tokenAmount[0])
-    .mul(tokenPrices[pool.mintA.address].value || 0)
+    .mul(tokenPrices[pool.mintA.address]?.value || 0)
     .add(new Decimal(tokenAmount[1]).mul(tokenPrices[pool.mintB.address]?.value || 0))
 
   return (

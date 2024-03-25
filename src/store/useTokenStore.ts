@@ -111,8 +111,6 @@ export const useTokenStore = createStore<TokenStore>(
           displayTokenList: get().tokenList.filter((token) => {
             return (
               (displayTokenSettings.official && raydium.token.mintGroup.official.has(token.address)) ||
-              // eslint-disable-next-line
-              // @ts-ignore
               (displayTokenSettings.jup && raydium.token.mintGroup.jup.has(token.address) && (isJupAll || !token.tags.includes('unknown')))
             )
           })

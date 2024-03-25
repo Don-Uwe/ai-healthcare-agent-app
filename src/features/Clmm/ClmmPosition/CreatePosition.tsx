@@ -354,6 +354,7 @@ export default function CreatePosition() {
       tickLower: tickPriceRef.current.tickLower!,
       tickUpper: tickPriceRef.current.tickUpper!,
       onSuccess: (props) => {
+        setIsSending(false)
         setNFTAddress(props?.buildData.extInfo.nftMint.toString() || '')
         onClose()
         onNFTOpen()
@@ -361,7 +362,7 @@ export default function CreatePosition() {
           mutate()
         }, 500)
       },
-      onFinally: () => setIsSending(false)
+      onError: () => setIsSending(false)
     })
   }
 
