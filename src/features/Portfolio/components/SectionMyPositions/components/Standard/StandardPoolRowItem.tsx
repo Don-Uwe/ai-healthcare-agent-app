@@ -145,6 +145,7 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
       const f = stakedFarmList.find((f) => f.id === farmId)
       if (!f) return
       return data.amount.map((d, idx) => {
+        if (!f.rewardInfos[idx]) return
         const prevData = rewardData.get(f.rewardInfos[idx].mint.address)
         rewardData.set(f.rewardInfos[idx].mint.address, {
           mint: f.rewardInfos[idx].mint,
