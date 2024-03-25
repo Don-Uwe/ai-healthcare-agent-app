@@ -11,6 +11,7 @@ interface Props {
   poolId?: string
   refreshInterval?: number
   shouldFetch?: boolean
+  refreshTag?: number
 }
 
 const fetcher = async (url: string) => {
@@ -35,7 +36,7 @@ const poolDataFetcher = async ([connection, poolKeys]: [connection: Connection, 
   }
 }
 
-export default function useFetchRpcPoolData({ poolId, refreshInterval = MINUTE_MILLISECONDS, shouldFetch = true }: Props) {
+export default function useFetchRpcPoolData({ poolId, refreshInterval = MINUTE_MILLISECONDS, shouldFetch = true, refreshTag }: Props) {
   const [connection, host, poolKeyUrl] = useAppStore((s) => [s.connection, s.urlConfigs.BASE_HOST, s.urlConfigs.POOL_KEY_BY_ID], shallow)
   const readyFetch = !!(connection && poolId && shouldFetch)
 
@@ -45,11 +46,15 @@ export default function useFetchRpcPoolData({ poolId, refreshInterval = MINUTE_M
     refreshInterval: 60 * MINUTE_MILLISECONDS
   })
 
-  const { data, isLoading, mutate } = useSWR(readyFetch && poolKeysData ? [connection, poolKeysData.data] : null, poolDataFetcher, {
-    dedupingInterval: refreshInterval,
-    focusThrottleInterval: refreshInterval,
-    refreshInterval
-  })
+  const { data, isLoading, mutate } = useSWR(
+    readyFetch && poolKeysData ? [connection, poolKeysData.data, refreshTag] : null,
+    poolDataFetcher,
+    {
+      dedupingInterval: refreshInterval,
+      focusThrottleInterval: refreshInterval,
+      refreshInterval
+    }
+  )
 
   return {
     data,

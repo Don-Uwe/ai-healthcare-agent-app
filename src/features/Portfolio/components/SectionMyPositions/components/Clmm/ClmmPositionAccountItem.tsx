@@ -19,7 +19,6 @@ import { useClmmStore } from '@/store/useClmmStore'
 import { RpcPoolData } from '@/hooks/pool/clmm/useSubscribeClmmInfo'
 import { getOpenCache, setOpenCache } from '../../utils'
 import BN from 'bn.js'
-import useClmmPositionInfo from '@/hooks/portfolio/clmm/useClmmPositionInfo'
 
 type ClmmPositionAccountItemProps = {
   poolInfo: FormattedPoolInfoConcentratedItem
@@ -35,7 +34,7 @@ const realTimeRefresh = 15 * 1000
 
 export default function ClmmPositionAccountItem({
   poolInfo,
-  position: propPosition,
+  position,
   baseIn,
   initRpcPoolData,
   setNoRewardClmmPos
@@ -44,7 +43,7 @@ export default function ClmmPositionAccountItem({
   const removeLiquidityAct = useClmmStore((s) => s.removeLiquidityAct)
   const closePositionAct = useClmmStore((s) => s.closePositionAct)
 
-  const { isOpen, onToggle } = useDisclosure({ defaultIsOpen: getOpenCache(propPosition.nftMint.toBase58()) })
+  const { isOpen, onToggle } = useDisclosure({ defaultIsOpen: getOpenCache(position.nftMint.toBase58()) })
   const { isOpen: isRemoveOpen, onClose: onRemoveClose, onOpen: onRemoveOpen } = useDisclosure()
   const { isOpen: isAddOpen, onClose: onAddClose, onOpen: onAddOpen } = useDisclosure()
   const { isOpen: isSending, onClose: offSending, onOpen: onSending } = useDisclosure()
@@ -54,25 +53,12 @@ export default function ClmmPositionAccountItem({
     mintList: [poolInfo.mintA.address, poolInfo.mintB.address]
   })
 
-  const { data: rpcPosition } = useClmmPositionInfo({
-    shouldFetch: isRemoveOpen || isAddOpen,
-    nftMint: propPosition.key,
-    refreshInterval: isSending ? 5 * 60 * 1000 : realTimeRefresh,
-    refreshTag
-  })
   const rpcData = useFetchRpcClmmInfo({
     shouldFetch: isRemoveOpen || isAddOpen,
     id: poolInfo.id,
     refreshInterval: isSending ? 5 * 60 * 1000 : realTimeRefresh,
     refreshTag
   })
-
-  const position = rpcPosition
-    ? {
-        ...propPosition,
-        ...rpcPosition
-      }
-    : propPosition
 
   const chainTimeOffset = useAppStore((s) => s.chainTimeOffset)
   const aprData = getPositionAprCore({

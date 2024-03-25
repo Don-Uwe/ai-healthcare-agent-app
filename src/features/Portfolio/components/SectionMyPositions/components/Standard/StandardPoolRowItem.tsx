@@ -45,6 +45,7 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
   const { isOpen: isHarvesting, onOpen: onHarvesting, onClose: offHarvesting } = useDisclosure()
   const { isOpen: isMigrateOpen, onOpen: onMigrateOpen, onClose: onMigrateClose } = useDisclosure()
   const { isOpen: isRpcFetching, onOpen: onRpcFetching } = useDisclosure()
+  const [refreshTag, setRefreshTag] = useState(0)
   const isMobile = useAppStore((s) => s.isMobile)
   const [allPendingRewards, setAllPendingRewards] = useState<Map<string, { usd: string; amount: string[] }>>(new Map())
   const updateReward = new Map()
@@ -69,12 +70,11 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
     return [farm, farmLpAmount]
   }, [position.data, stakedFarms])
 
-  // const { formattedData, isLoading } = useFetchPoolByLpMint({ lpMintList: [lpMint] })
-  // const pool = formattedData?.[0]
-  const { data: rpcPoolData, mutate: refreshRpcData } = useFetchRpcPoolData({
+  const { data: rpcPoolData } = useFetchRpcPoolData({
     shouldFetch: isRpcFetching,
     poolId: pool?.id,
-    refreshInterval: isMigrateOpen ? 1000 * 20 : undefined
+    refreshInterval: isMigrateOpen ? 1000 * 20 : undefined,
+    refreshTag
   })
   const { formattedData: clmmPoolData } = useFetchPoolByMint({
     shouldFetch: !!pool && !!pool.mintA && !!pool.mintB,
@@ -236,7 +236,7 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
             hasFarmLp={!new Decimal(farmLpAmount).isZero()}
             canMigrate={canMigrate}
             onMigrateOpen={() => {
-              if (isRpcFetching) refreshRpcData()
+              setRefreshTag(Date.now())
               onRpcFetching()
               onMigrateOpen()
             }}

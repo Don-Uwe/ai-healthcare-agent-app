@@ -95,8 +95,8 @@ export default function MigrateFromStandardDialog({
   lpAmount,
   farmLpAmount,
   currentRewardInfo,
-  pooledAmountA: propPooledAmountA,
-  pooledAmountB: propPooledAmountB
+  pooledAmountA,
+  pooledAmountB
 }: MigrateFromStandardDialogProps) {
   const { t } = useTranslation()
   const isMobile = useAppStore((s) => s.isMobile)
@@ -125,12 +125,6 @@ export default function MigrateFromStandardDialog({
   const error = useValidateSchema({ priceLower: priceRange[0], priceUpper: priceRange[1] })
 
   const isQuickMode = mode === 'quick'
-  const [safeAmountA, safeAmountB] = [
-    new Decimal(propPooledAmountA).mul(0.999).toString(),
-    new Decimal(propPooledAmountB).mul(0.999).toString()
-  ]
-  const [pooledAmountA, pooledAmountB] =
-    clmmPoolInfo.mintA.address === poolInfo.mintA.address ? [safeAmountA, safeAmountB] : [safeAmountB, safeAmountA]
   const [mintADecimal, mintBDecimal] = [clmmPoolInfo.mintA.decimals, clmmPoolInfo.mintB.decimals]
   const baseToken = clmmPoolInfo.mintA
   const quoteToken = clmmPoolInfo.mintB
@@ -152,8 +146,8 @@ export default function MigrateFromStandardDialog({
     setClmmAmount({
       amountA: new Decimal(data.amountA.amount.toString()).div(10 ** mintADecimal).toFixed(20),
       amountB: new Decimal(data.amountB.amount.toString()).div(10 ** mintBDecimal).toFixed(20),
-      amountSlippageA: new BN(new Decimal(data.amountSlippageA.amount.toString()).mul(1 + slippage).toFixed(0)),
-      amountSlippageB: new BN(new Decimal(data.amountSlippageB.amount.toString()).mul(1 + slippage).toFixed(0))
+      amountSlippageA: new BN(new Decimal(data.amountSlippageA.amount.toString()).toFixed(0)),
+      amountSlippageB: new BN(new Decimal(data.amountSlippageB.amount.toString()).toFixed(0))
     })
     setLpNotEnough(data.liquidity.isZero())
   })
