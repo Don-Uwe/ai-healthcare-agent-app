@@ -1,7 +1,7 @@
 import { Box, Flex, Grid, GridItem, HStack, Link, Text, useDisclosure } from '@chakra-ui/react'
 import { ApiClmmConfigInfo, ApiV3Token, solToWSol } from '@raydium-io/raydium-sdk-v2'
 import { useCallback, useRef, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import shallow from 'zustand/shallow'
 
 import PanelCard from '@/components/PanelCard'
@@ -241,7 +241,14 @@ export default function CreateClmmPool() {
               title={t('create_pool.clmm_please_note')}
               description={
                 <Text fontSize="sm" color={colors.textTertiary}>
-                  {t('create_pool.clmm_please_note_des')} <Link isExternal>{t('create_pool.clmm_please_note_des_link')}</Link>
+                  <Trans i18nKey="create_pool.clmm_please_note_des">
+                    <Link href="https://docs.raydium.io/raydium/pool-creation/creating-a-clmm-pool-and-farm" isExternal>
+                      CLMM
+                    </Link>
+                    <Link href="https://docs.raydium.io/raydium/pool-creation/creating-a-standard-amm-pool" isExternal>
+                      Standard
+                    </Link>
+                  </Trans>
                 </Text>
               }
             />

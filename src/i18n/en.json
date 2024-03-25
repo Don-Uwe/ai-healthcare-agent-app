@@ -65,7 +65,7 @@
     "remove_token": "Remove token",
     "confirm_token": "Confirm Token",
     "user_added": "User Added",
-    "beta_tooltip": "This site is in Beta, updates are ongoing. Use at your own risk. Share feedback, earn RAY.",
+    "beta_tooltip": "This site is in Beta, updates are ongoing. Use at your own risk. <0>Share feedback</0>, earn RAY.",
     "days": "Days"
   },
   "button": {
@@ -285,14 +285,12 @@
     "modal_tab_standard_amm": "Standard AMM",
     "modal_tab_concentrated": "Concentrated Liquidity",
     "modal_section_header_pool": "Creating a pool",
-    "modal_section_header_pool_desc": "Create a liquidity pool for any token pair. It’s highly suggested to read this",
+    "modal_section_header_pool_desc": "Create a liquidity pool for any token pair. For detailed instructions, read the guide for <0>CLMM</0> or <1>Standard</1> pools.",
     "modal_section_header_pool_desc_link": "detailed guide",
     "modal_section_header_farm": "Creating a farm",
-    "modal_section_header_farm_desc": "A farm can be created for any pool that is already live. It’s highly suggested to read this",
-    "modal_section_header_farm_desc_link": "detailed guide",
+    "modal_section_header_farm_desc": "A farm can be created for any pool that is already live. For detailed instructions, read the guide for <0>CLMM</0> or <1>Standard</1> farms.",
     "clmm_please_note": "Please Note",
-    "clmm_please_note_des": "This tool is for advanced users. Before creating a farm, it’s suggested to go through the",
-    "clmm_please_note_des_link": "detailed guide"
+    "clmm_please_note_des": "This tool is for advanced users. For detailed instructions, read the guide for <0>CLMM</0> or <1>Standard</1> pools."
   },
   "farm": {
     "create": "Create Farm",
@@ -591,8 +589,7 @@
     "step_2": "Step 2",
     "step_2_name": "Initialize Liquidity Pool",
     "please_note": "Please Note",
-    "please_note_des": "A farm can be created for any pool that is already live. It’s highly suggested to read this",
-    "please_note_des_link": "detailed guide",
+    "please_note_des": "This tool is for advanced users. For detailed instructions, read the guide for <0>CLMM</0> or <1>Standard</1> pools.",
     "enter_open_book_market_id": "Enter OpenBook Market ID",
     "market_id": "Market ID",
     "note_has_id": "OpenBook integrated pools must be linked to a unique OpenBook Market ID. A Market ID can only be used for one pool.",
@@ -664,8 +661,7 @@
     "error_text_create_farm": "User must have 300 RAY",
     "please_note": "Please Note",
     "please_note_des": "Rewards allocated to farms cannot be withdrawn after farming starts. Newly created farms generally appear on Raydium 10-30 minutes after creation, depending on Solana network status.",
-    "note_des": "This tool is for advanced users. Before creating a farm, it’s suggested to go through the",
-    "note_des_link": "detailed guide",
+    "note_des": "A farm can be created for any pool that is already live. For detailed instructions, read the guide for <0>CLMM</0> or <1>Standard</1> farms.",
     "add_reward_token": "You can add up to 3 reward tokens.",
     "estimated_rewards_week": "Estimated rewards / week"
   },
