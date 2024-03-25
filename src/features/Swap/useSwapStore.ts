@@ -3,7 +3,7 @@ import { WSOLMint, SOLMint, TxVersion, printSimulate, SOL_INFO } from '@raydium-
 import { createStore, useAppStore, useTokenStore } from '@/store'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
 import { txStatusSubject, multiTxStatusSubject } from '@/hooks/toast/useTxStatus'
-import { ApiSwapV1OutSuccess, SolanaFeeInfoJson } from './type'
+import { ApiSwapV1OutSuccess } from './type'
 import { isSolWSol } from '@/utils/token'
 import axios from '@/api/axios'
 import { v4 as uuid } from 'uuid'
@@ -14,11 +14,12 @@ import Decimal from 'decimal.js'
 import { TxCallbackProps } from '@/types/tx'
 import i18n from '@/i18n'
 import { retry } from '@/utils/common'
+import { fetchComputePrice } from '@/utils/tx/computeBudget'
 
-const getComputePrice = async () => {
+const getSwapComputePrice = async () => {
   const transactionFee = useAppStore.getState().transactionFee
   if (isNaN(parseFloat(String(transactionFee) || ''))) {
-    const json = (await axios.get(`https://solanacompass.com/api/fees?cacheFreshTime=${5 * 60 * 1000}`)) as SolanaFeeInfoJson
+    const json = await fetchComputePrice()
     const { avg } = json?.[15] ?? {}
     if (!avg) return undefined
     return {
@@ -85,7 +86,7 @@ export const useSwapStore = createStore<SwapStore>(
           mint: new PublicKey(outputToken.address)
         })
 
-        const computeData = await getComputePrice()
+        const computeData = await getSwapComputePrice()
 
         const isV0Tx = txVersion === TxVersion.V0
         const {
@@ -101,7 +102,7 @@ export const useSwapStore = createStore<SwapStore>(
           `${urlConfigs.SWAP_HOST}${urlConfigs.SWAP_TX}${swapResponse.data.swapType === 'BaseIn' ? 'swap-base-in' : 'swap-base-out'}`,
           {
             wallet: publicKey.toBase58(),
-            computeUnitPriceMicroLamports: String(computeData?.microLamports || ''),
+            computeUnitPriceMicroLamports: new Decimal(computeData?.microLamports || 0).toFixed(0),
             swapResponse,
             txVersion: isV0Tx ? 'V0' : 'LEGACY',
             wrapSol: isInputSol,

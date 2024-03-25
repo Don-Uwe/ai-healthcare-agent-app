@@ -198,8 +198,6 @@ function TokenInput(props: TokenInputProps) {
   })
 
   const isUnknownToken = useEvent((token: TokenInfo) => {
-    // eslint-disable-next-line
-    // @ts-ignore
     const isUnknown = !token.type || token.type === 'unknown' || token.tags.includes('unknown')
     const isTrusted = isUnknown && !!tokenMap.get(token.address)?.userAdded
     const isUserAddedTokenEnable = displayTokenSettings.userAdded

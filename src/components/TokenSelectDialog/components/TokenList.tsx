@@ -202,8 +202,6 @@ function TokenRowItem({
   onRemoveUnknownTokenClick: (token: TokenInfo) => void
 }) {
   const { t } = useTranslation()
-  // eslint-disable-next-line
-  // @ts-ignore
   const isUnknown = !token.type || token.type === 'unknown' || token.tags.includes('unknown')
   const isTrusted = isUnknown && !!useTokenStore.getState().tokenMap.get(token.address)?.userAdded
 

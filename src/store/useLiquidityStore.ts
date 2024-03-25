@@ -23,6 +23,7 @@ import { getPoolName } from '@/features/Pools/util'
 
 import BN from 'bn.js'
 import Decimal from 'decimal.js'
+import { getComputeBudgetConfig } from '@/utils/tx/computeBudget'
 
 interface LiquidityStore {
   newCreatedPool?: CreatePoolAddress
@@ -172,6 +173,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
     createPoolAct: async ({ pool, baseAmount, quoteAmount, startTime, onSuccess, onError, onFinally }) => {
       const { raydium, programIdConfig, txVersion } = useAppStore.getState()
       if (!raydium) return ''
+      const computeBudgetConfig = await getComputeBudgetConfig()
 
       const { execute, extInfo } = await raydium.liquidity.createPoolV4({
         programId: programIdConfig.AMM_V4,
@@ -195,7 +197,8 @@ export const useLiquidityStore = createStore<LiquidityStore>(
         },
         associatedOnly: false,
         txVersion,
-        feeDestinationId: new PublicKey('7YttLkHDoNj9wyDur5pM1ejNaAvT9X4eqaYcHQqtj2G5')
+        feeDestinationId: new PublicKey('7YttLkHDoNj9wyDur5pM1ejNaAvT9X4eqaYcHQqtj2G5'),
+        computeBudgetConfig
       })
 
       const meta = getTxMeta({
@@ -225,6 +228,8 @@ export const useLiquidityStore = createStore<LiquidityStore>(
       const { raydium, txVersion, wallet, connection, signAllTransactions } = useAppStore.getState()
       if (!raydium || !connection || !signAllTransactions) return ''
 
+      const computeBudgetConfig = await getComputeBudgetConfig()
+
       const { execute, transactions } = await raydium.liquidity.removeAllLpAndCreateClmmPosition({
         ...params,
         createPositionInfo: {
@@ -232,6 +237,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
           tickLower: Math.min(params.createPositionInfo.tickLower, params.createPositionInfo.tickUpper),
           tickUpper: Math.max(params.createPositionInfo.tickLower, params.createPositionInfo.tickUpper)
         },
+        computeBudgetConfig,
         getEphemeralSigners: wallet ? await getEphemeralSigners(wallet) : undefined,
         txVersion
       })

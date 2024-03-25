@@ -32,6 +32,7 @@ import { getMintSymbol } from '@/utils/token'
 
 import { CLMM_FEE_CONFIGS, getTxMeta } from './configs/clmm'
 import { TxCallbackProps } from '../types/tx'
+import { getComputeBudgetConfig } from '@/utils/tx/computeBudget'
 
 import BN from 'bn.js'
 import Decimal from 'decimal.js'
@@ -253,6 +254,7 @@ export const useClmmStore = createStore<ClmmState>(
       }
       if (!poolInfo) return { txId: '' }
 
+      const computeBudgetConfig = await getComputeBudgetConfig()
       const buildData = await raydium.clmm.openPositionFromBase({
         poolInfo,
         poolKeys,
@@ -265,6 +267,7 @@ export const useClmmStore = createStore<ClmmState>(
         baseAmount: new BN(baseAmount),
         otherAmountMax: new BN(otherAmountMax),
         getEphemeralSigners: wallet ? await getEphemeralSigners(wallet) : undefined,
+        computeBudgetConfig,
         txVersion
       })
 
@@ -363,6 +366,7 @@ export const useClmmStore = createStore<ClmmState>(
       if (!raydium) return ''
 
       try {
+        const computeBudgetConfig = await getComputeBudgetConfig()
         const { execute } = await raydium.clmm.decreaseLiquidity({
           poolInfo,
           ownerPosition: position,
@@ -373,6 +377,7 @@ export const useClmmStore = createStore<ClmmState>(
           liquidity: new BN(liquidity),
           amountMinA: new BN(new Decimal(amountMinA.toString()).mul(10 ** poolInfo.mintA.decimals).toFixed(0)),
           amountMinB: new BN(new Decimal(amountMinB.toString()).mul(10 ** poolInfo.mintB.decimals).toFixed(0)),
+          computeBudgetConfig,
           txVersion
         })
 
@@ -455,6 +460,7 @@ export const useClmmStore = createStore<ClmmState>(
       const { raydium, txVersion } = useAppStore.getState()
       if (!raydium) return ''
       try {
+        const computeBudgetConfig = await getComputeBudgetConfig()
         const { execute } = await raydium.clmm.increasePositionFromLiquidity({
           poolInfo,
           ownerPosition: position,
@@ -465,6 +471,7 @@ export const useClmmStore = createStore<ClmmState>(
           amountMaxA: new BN(amountMaxA),
           amountMaxB: new BN(amountMaxB),
           checkCreateATAOwner: true,
+          computeBudgetConfig,
           txVersion
         })
 
@@ -530,12 +537,13 @@ export const useClmmStore = createStore<ClmmState>(
           pool: poolInfo.id.slice(0, 6)
         }
       })
-
+      const computeBudgetConfig = await getComputeBudgetConfig()
       if (rewardInfos.length) {
         const setRewardsBuildData = await raydium.clmm.setRewards({
           poolInfo,
           ownerInfo: { useSOLBalance: true },
           rewardInfos,
+          computeBudgetConfig,
           txVersion
         })
 
@@ -560,7 +568,7 @@ export const useClmmStore = createStore<ClmmState>(
           ownerInfo: { useSOLBalance: true },
           checkCreateATAOwner: true,
           rewardInfos: newRewardInfos,
-          notAddComputeBudget: allBuildData.length > 0,
+          computeBudgetConfig,
           txVersion
         })
 
@@ -610,6 +618,7 @@ export const useClmmStore = createStore<ClmmState>(
         return { txId: '' }
       }
       try {
+        const computeBudgetConfig = await getComputeBudgetConfig()
         const buildData = await raydium.clmm.createPool({
           programId: CLMM_PROGRAM_ID,
           // to do, get correct program id
@@ -618,6 +627,7 @@ export const useClmmStore = createStore<ClmmState>(
           ammConfig: { ...config, id: new PublicKey(config.id), fundOwner: '' },
           initialPrice: new Decimal(price),
           startTime: new BN(startTime || Math.floor((Date.now() + chainTimeOffset) / 1000)),
+          computeBudgetConfig,
           txVersion
         })
         const { execute: executeTx } = buildData
