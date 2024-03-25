@@ -3,7 +3,7 @@ import { isClient } from '../common'
 const HISTORY_KEY = '_r_tx_history_'
 
 interface RecordProps {
-  status: 'error' | 'success'
+  status: 'error' | 'success' | 'info'
   title: string
   description: string
   txId: string

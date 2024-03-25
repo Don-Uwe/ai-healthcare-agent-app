@@ -14,6 +14,7 @@ import useResizeObserver from '@/hooks/useResizeObserver'
 import { filterTokenFn } from '@/utils/token'
 import { isValidPublicKey } from '@/utils/publicKey'
 import shallow from 'zustand/shallow'
+import { useEvent } from '@/hooks/useEvent'
 
 type SearchBarProps = {
   value: string
@@ -140,13 +141,17 @@ export default function TokenSearchInput({
     setActiveIndex(getEnabledActiveIndex(0))
   }, [filteredList.length, searchValue])
   const listRef = useRef<HTMLDivElement>(null)
-  const scrollIntoView = (args: number) => {
+  const scrollIntoView = useEvent((args: number) => {
     const itemElement = listRef?.current?.children[args] as HTMLElement | undefined
     itemElement?.scrollIntoView({
       behavior: 'smooth',
       block: 'center'
     })
-  }
+  })
+
+  useEffect(() => {
+    scrollIntoView(0)
+  }, [scrollIntoView, searchValue])
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent<HTMLInputElement>) => {

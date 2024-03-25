@@ -14,7 +14,7 @@ import {
   useColorMode,
   useDisclosure
 } from '@chakra-ui/react'
-import { ApiV3Token, TokenInfo } from '@raydium-io/raydium-sdk-v2'
+import { ApiV3Token, TokenInfo, SOL_INFO } from '@raydium-io/raydium-sdk-v2'
 import Decimal from 'decimal.js'
 import React, { ReactNode, useState } from 'react'
 import useTokenPrice from '@/hooks/token/useTokenPrice'
@@ -164,8 +164,9 @@ function TokenInput(props: TokenInputProps) {
   // balance
   const getTokenBalanceUiAmount = useTokenAccountStore((s) => s.getTokenBalanceUiAmount)
   const balanceInfo = getTokenBalanceUiAmount({ mint: token?.address || '', decimals: token?.decimals })
-  const balanceMaxString = hideBalance ? null : balanceInfo.amount.mul(maxMultiplier || 1).toString()
-  const balanceMaxDecimal = balanceInfo.amount
+  const balanceAmount = balanceInfo.amount.sub(token?.address === SOL_INFO.address ? '0.05' : 0)
+  const balanceMaxString = hideBalance ? null : balanceAmount.mul(maxMultiplier || 1).toString()
+  const balanceMaxDecimal = balanceAmount
   const maxString = forceBalanceAmount ? String(forceBalanceAmount) : balanceMaxString
   const maxDecimal = forceBalanceAmount ? new Decimal(forceBalanceAmount) : balanceMaxDecimal
 

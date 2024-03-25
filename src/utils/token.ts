@@ -1,5 +1,6 @@
 import { TOKEN_WSOL, WSOLMint, SOLMint, ApiV3Token, SOL_INFO, TokenInfo } from '@raydium-io/raydium-sdk-v2'
 import { PublicKey } from '@solana/web3.js'
+import { sortItems } from '@/utils/sortItems'
 
 export const wSolToSol = (key?: string): string | undefined => (key === WSOLMint.toBase58() ? SOLMint.toBase58() : key)
 export const solToWSol = (key?: string): string | undefined => (key === SOLMint.toBase58() ? WSOLMint.toBase58() : key)
@@ -70,7 +71,7 @@ export const filterTokenFn = (list: TokenInfo[], params?: { searchStr?: string; 
         return
       }
       if (searchText === data.symbol.toLocaleLowerCase()) {
-        tokenGroup[1] = [data]
+        tokenGroup[1] = [...(tokenGroup[1] || []), data]
         return
       }
       const idx = data.symbol.toLocaleLowerCase().indexOf(searchText)
@@ -78,6 +79,11 @@ export const filterTokenFn = (list: TokenInfo[], params?: { searchStr?: string; 
         tokenGroup[idx + 2] = [...(tokenGroup[idx + 2] || []), data].sort((a, b) => b.priority - a.priority)
       }
     })
+    tokenGroup[1] = tokenGroup[1]
+      ? sortItems(tokenGroup[1], {
+          sortRules: [{ value: (i) => i.type === 'raydium' }]
+        })
+      : tokenGroup[1]
     filteredList = tokenGroup.flat().filter(Boolean)
   }
   return filteredList

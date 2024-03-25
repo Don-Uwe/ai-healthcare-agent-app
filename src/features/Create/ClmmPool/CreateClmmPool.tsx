@@ -75,7 +75,8 @@ export default function CreateClmmPool() {
         config: ammConfig,
         token1,
         token2,
-        price: '1'
+        price: '1',
+        forerunCreate: true
       })
         .then(({ buildData }) => {
           if (!buildData) return
@@ -92,9 +93,11 @@ export default function CreateClmmPool() {
     ({ price }: { price: string }) => {
       const { token1, token2, config } = currentCreateInfo.current
       if (!token1 || !token2 || !config) return
-      createClmmPool({ config, token1, token2, price: price && new Decimal(price).gt(0) ? price : '1' }).then(({ buildData }) => {
-        debounceSetBuildData(buildData)
-      })
+      createClmmPool({ config, token1, token2, price: price && new Decimal(price).gt(0) ? price : '1', forerunCreate: true }).then(
+        ({ buildData }) => {
+          debounceSetBuildData(buildData)
+        }
+      )
     },
     [createClmmPool, debounceSetBuildData]
   )
@@ -138,7 +141,13 @@ export default function CreateClmmPool() {
     exhaustCall(async () => {
       setIsTxSending(true)
       const { token1, token2, config, price, startTime } = currentCreateInfo.current
-      const { buildData } = await createClmmPool({ config: config!, token1: token1!, token2: token2!, price, startTime })
+      const { buildData } = await createClmmPool({
+        config: config!,
+        token1: token1!,
+        token2: token2!,
+        price,
+        startTime
+      })
 
       if (!buildData) return
 

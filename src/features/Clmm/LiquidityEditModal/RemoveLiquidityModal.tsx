@@ -35,11 +35,13 @@ import { useEvent } from '@/hooks/useEvent'
 export default function RemoveLiquidityModal({
   isOpen,
   onClose,
+  onSyncSending,
   poolInfo,
   position
 }: {
   isOpen: boolean
   onClose: () => void
+  onSyncSending: (val: boolean) => void
   poolInfo: ApiV3PoolInfoConcentratedItem
   position: PositionWithUpdateFn
 }) {
@@ -49,12 +51,15 @@ export default function RemoveLiquidityModal({
   const sliderRef = useRef({ changeValue: (_val: number) => {} })
   const focusARef = useRef(true)
   const [decimalA, decimalB] = [poolInfo.mintA.decimals, poolInfo.mintB.decimals]
-  const { amountA, amountB } = getPriceAndAmount({ poolInfo, position })
+  const { amountSlippageA, amountSlippageB } = getPriceAndAmount({ poolInfo, position })
 
   const [sending, setIsSending] = useState(false)
   const [percent, setPercent] = useState(0)
 
-  const [positionAmountA, positionAmountB] = [amountA.toString(), amountB.toString()]
+  const [positionAmountA, positionAmountB] = [
+    amountSlippageA.toDecimalPlaces(poolInfo.mintA.decimals, Decimal.ROUND_FLOOR).toString(),
+    amountSlippageB.toDecimalPlaces(poolInfo.mintB.decimals, Decimal.ROUND_FLOOR).toString()
+  ]
   const [tokenAmount, setTokenAmount] = useState(['', ''])
   const [minTokenAmount, setMinTokenAmount] = useState(['', ''])
 
@@ -141,6 +146,11 @@ export default function RemoveLiquidityModal({
       new Decimal(positionAmountB).mul(percent / 100).toString()
     ])
   }, [tokenAmount, percent])
+
+  useEffect(() => {
+    onSyncSending(sending)
+    return () => onSyncSending(false)
+  }, [sending, onSyncSending])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="lg">
@@ -246,12 +256,10 @@ export default function RemoveLiquidityModal({
                   setPercent(0)
                   setTokenAmount(['', ''])
                   setMinTokenAmount(['', ''])
-                  if (percent >= 100) onClose()
-                },
-                onFinally: () => {
-                  setIsSending(false)
                   onClose()
-                }
+                },
+                onConfirmed: () => setIsSending(false),
+                onError: () => setIsSending(false)
               })
             }}
           >

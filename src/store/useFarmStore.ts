@@ -329,7 +329,7 @@ export const useFarmStore = createStore<FarmStore>(
             symbolA: getMintSymbol({ mint: buyInfo.mint, transformSol: true })
           }
 
-      const meta = getTxMeta({ action: hasProjectAmount && hasBuyAmount ? 'claimIdo' : 'claimIdo1', values })
+      const meta = getTxMeta({ action: hasProjectAmount && hasBuyAmount ? 'claimIdo1' : 'claimIdo', values })
       return execute()
         .then((txId: string) => {
           txStatusSubject.next({ ...meta, txId, onSuccess, onError })

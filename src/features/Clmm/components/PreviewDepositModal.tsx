@@ -12,7 +12,8 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
-  ModalFooter
+  ModalFooter,
+  useDisclosure
 } from '@chakra-ui/react'
 import TokenAvatar from '@/components/TokenAvatar'
 import TokenAvatarPair from '@/components/TokenAvatarPair'
