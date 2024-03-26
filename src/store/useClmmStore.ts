@@ -90,6 +90,7 @@ interface ClmmState {
       amountMinA: number | string | BN
       amountMinB: number | string | BN
       needRefresh?: boolean
+      harvest?: boolean
     } & TxCallbackProps
   ) => Promise<string>
   increaseLiquidityAct: (
@@ -371,6 +372,7 @@ export const useClmmStore = createStore<ClmmState>(
       amountMinA,
       amountMinB,
       needRefresh,
+      harvest,
       onSuccess,
       onError,
       onFinally,
@@ -406,7 +408,7 @@ export const useClmmStore = createStore<ClmmState>(
         })
 
         const meta = getTxMeta({
-          action: 'removeLiquidity',
+          action: harvest ? 'harvest' : 'removeLiquidity',
           values: {
             amountA: amountMinA || 0,
             symbolA: getMintSymbol({ mint: poolInfo.mintA, transformSol: true }),
