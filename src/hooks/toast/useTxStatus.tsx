@@ -283,15 +283,12 @@ function useTxStatus() {
             owner,
             mintInfo,
             txValues,
-            subTx: subTxIds.map(({ txId, txHistoryTitle, status }) => {
-              console.log(1231232222, txId, status)
-              return {
-                txId,
-                name: txHistoryTitle || '',
-                status: status ?? 'info',
-                date: Date.now()
-              }
-            }),
+            subTx: subTxIds.map(({ txId, txHistoryTitle, status }) => ({
+              txId,
+              name: txHistoryTitle || '',
+              status: status ?? 'info',
+              date: Date.now()
+            })),
             isMultiSig: isMultisigWallet
           })
 
