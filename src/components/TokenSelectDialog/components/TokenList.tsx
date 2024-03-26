@@ -177,13 +177,7 @@ export default function TokenList({
             {t('common.balance')}/{t('common.address')}
           </Heading>
         </Flex>
-        <Box overflow="hidden" mx="-12px">
-          <List height="100%" onLoadMore={showMoreData} preventResetOnChange items={displayList} getItemKey={(token) => token.address}>
-            {renderTokenItem}
-          </List>
-        </Box>
-        {/* TODO: custom add token */}
-        {newToken ? (
+        {newToken?.type === 'unknown' ? (
           <Box padding={4} gap={4} flexDirection="column" display="flex">
             <Flex alignItems="center">
               <Text flex="1">Symbol:</Text>
@@ -199,7 +193,6 @@ export default function TokenList({
                   defaultValue={newToken?.symbol}
                   onChange={(e) => {
                     customTokenInfo.current.symbol = e.currentTarget.value
-                    // setUserTokenSymbol(e.currentTarget.value)
                   }}
                 />
               </InputGroup>
@@ -218,7 +211,6 @@ export default function TokenList({
                   defaultValue={newToken?.name}
                   onChange={(e) => {
                     customTokenInfo.current.name = e.currentTarget.value
-                    // setUserTokenName(e.currentTarget.value)
                   }}
                 />
               </InputGroup>
@@ -238,7 +230,13 @@ export default function TokenList({
               {'Add User Token'}
             </Button>
           </Box>
-        ) : null}
+        ) : (
+          <Box overflow="hidden" mx="-12px">
+            <List height="100%" onLoadMore={showMoreData} preventResetOnChange items={displayList} getItemKey={(token) => token.address}>
+              {renderTokenItem}
+            </List>
+          </Box>
+        )}
       </Flex>
       <Box borderRadius={'8px'} background={colors.modalContainerBg} p="12px" mb="24px">
         <Text opacity={'50%'} fontWeight={'normal'} fontSize={'12px'} lineHeight={'16px'} color={colors.textSecondary}>
