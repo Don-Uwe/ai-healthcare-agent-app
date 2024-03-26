@@ -83,7 +83,7 @@ export default function TokenList({
   const tempSetNewToken = orgTokenMap.get(search)
   const { tokenInfo: newToken } = useTokenInfo({
     mint:
-      search && (!filteredList.length || (!tempSetNewToken?.type && !tempSetNewToken?.userAdded)) && isValidPublicKey(search)
+      search && (!filteredList.length || (tempSetNewToken?.type === 'unknown' && !tempSetNewToken?.userAdded)) && isValidPublicKey(search)
         ? search
         : undefined
   })

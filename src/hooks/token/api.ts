@@ -47,7 +47,8 @@ export const getOnlineTokenInfo = async ({
             decimals: onlineData.decimals,
             tags: [],
             extensions: {},
-            priority: 2
+            priority: 2,
+            type: 'unknown'
           }
           cacheTokenInfoMap.set(mint.toString(), res)
           return res
