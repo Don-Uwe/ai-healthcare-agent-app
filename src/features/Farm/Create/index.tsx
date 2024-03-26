@@ -19,7 +19,7 @@ import { routeBack, setUrlQuery } from '@/utils/routeTools'
 import { RAY_TOKEN_INFO } from '@/utils/token'
 import { PublicKey } from '@solana/web3.js'
 import Decimal from 'decimal.js'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import { TxErrorModal } from '../../../components/Modal/TxErrorModal'
 import RewardAddItem from './components/AddRewards'
 import ReviewDetail from './components/DetailReview'
@@ -269,7 +269,17 @@ export default function CreateFarm() {
             title={t('create_farm.please_note')}
             description={
               <Text fontSize="sm" color={colors.textTertiary}>
-                {t('create_farm.note_des')} <Link isExternal>{t('create_farm.note_des_link')}</Link>
+                <Trans i18nKey="create_farm.note_des">
+                  <Link href="https://docs.raydium.io/raydium/pool-creation/creating-a-clmm-pool-and-farm" isExternal>
+                    CLMM
+                  </Link>
+                  <Link
+                    href="https://docs.raydium.io/raydium/pool-creation/creating-a-standard-amm-pool/creating-an-ecosystem-farm"
+                    isExternal
+                  >
+                    Standard
+                  </Link>
+                </Trans>
               </Text>
             }
           />

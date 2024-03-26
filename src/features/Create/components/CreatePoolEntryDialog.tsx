@@ -28,7 +28,7 @@ import {
 } from '@chakra-ui/react'
 import { useRouter } from 'next/router'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 
 type CreateTarget = 'standard-amm' | 'concentrated-liquidity' | 'standard-farm'
 
@@ -148,9 +148,14 @@ export function CreatePoolEntryDialogBody({ type, onChange }: { type: CreateTarg
       <CreateBlock
         title={t('create_pool.modal_section_header_pool')}
         description={
-          <Text>
-            {t('create_pool.modal_section_header_pool_desc')} <Link isExternal>{t('create_pool.modal_section_header_pool_desc_link')}</Link>
-          </Text>
+          <Trans i18nKey="create_pool.modal_section_header_pool_desc">
+            <Link href="https://docs.raydium.io/raydium/pool-creation/creating-a-clmm-pool-and-farm" isExternal>
+              CLMM
+            </Link>
+            <Link href="https://docs.raydium.io/raydium/pool-creation/creating-a-standard-amm-pool" isExternal>
+              Standard
+            </Link>
+          </Trans>
         }
         selected={type === 'concentrated-liquidity' || type === 'standard-amm'}
         renderPoolType={
@@ -177,9 +182,14 @@ export function CreatePoolEntryDialogBody({ type, onChange }: { type: CreateTarg
       <CreateBlock
         title={t('create_pool.modal_section_header_farm')}
         description={
-          <Text>
-            {t('create_pool.modal_section_header_farm_desc')} <Link isExternal>{t('create_pool.modal_section_header_farm_desc_link')}</Link>
-          </Text>
+          <Trans i18nKey="create_pool.modal_section_header_farm_desc">
+            <Link href="https://docs.raydium.io/raydium/pool-creation/creating-a-clmm-pool-and-farm" isExternal>
+              CLMM
+            </Link>
+            <Link href="https://docs.raydium.io/raydium/pool-creation/creating-a-standard-amm-pool/creating-an-ecosystem-farm" isExternal>
+              Standard
+            </Link>
+          </Trans>
         }
         selected={type === 'standard-farm'}
         onClick={() => onChange('standard-farm')}

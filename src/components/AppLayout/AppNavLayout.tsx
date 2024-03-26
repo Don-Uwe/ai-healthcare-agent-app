@@ -26,7 +26,7 @@ import {
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import React, { ReactNode } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import MobileDesktop, { Desktop, Mobile } from '../MobileDesktop'
 import SolWallet from '../SolWallet'
 import { MobileBottomNavbar } from './MobileBottomNavbar'
@@ -98,11 +98,13 @@ function AppNavLayout({
         bg={colors.backgroundLight}
       >
         <Box display="flex" alignItems="center" justifyContent="center" textAlign="center" width="95%" mt="0.5em" mb="0.5em">
-          <a href="https://tally.so/r/n9WZZV" rel="noreferrer" target="_blank">
-            <Text as="span" textColor={colors.textSecondary} fontSize="0.85em" fontWeight="normal" color={colors.textSecondary}>
-              {t('common.beta_tooltip')}
-            </Text>
-          </a>
+          <Text as="span" textColor={colors.textPrimary} fontSize="0.85em" fontWeight="normal" color={colors.textPrimary}>
+            <Trans i18nKey="common.beta_tooltip">
+              <a href="https://tally.so/r/n9WZZV" rel="noreferrer" target="_blank" style={{ color: colors.textLink }}>
+                Share feedback
+              </a>
+            </Trans>
+          </Text>
         </Box>
         <Box
           display="flex"
