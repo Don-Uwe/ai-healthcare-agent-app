@@ -9,7 +9,7 @@ interface RecordProps {
   txId: string
   owner?: string
   mintInfo?: { address: string; logoURI: string; symbol: string }[]
-  subTx?: { txId?: string; name: string; status: 'error' | 'success'; date: number }[]
+  subTx?: { txId?: string; name: string; status: 'error' | 'success' | 'info'; date: number }[]
   txValues?: Record<string, any>
   time: number
   isMultiSig?: boolean

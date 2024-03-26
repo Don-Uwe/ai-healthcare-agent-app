@@ -14,7 +14,7 @@ import ChevronLeftIcon from '@/icons/misc/ChevronLeftIcon'
 import { useAppStore } from '@/store'
 import { genCSS2GridTemplateColumns, genCSS3GridTemplateColumns } from '@/theme/detailConfig'
 import { setUrlQuery } from '@/utils/routeTools'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import CreateMarket from './components/CreateMarket'
 import HasId from './components/HasId'
 import Initialize from './components/Initialize'
@@ -146,7 +146,14 @@ export default function CreatePool() {
             title={t('create_standard_pool.please_note')}
             description={
               <Text fontSize="sm" color={colors.textTertiary}>
-                {t('create_standard_pool.please_note_des')} <Link isExternal>{t('create_standard_pool.please_note_des_link')}</Link>
+                <Trans i18nKey="create_standard_pool.please_note_des">
+                  <Link href="https://docs.raydium.io/raydium/pool-creation/creating-a-clmm-pool-and-farm" isExternal>
+                    CLMM
+                  </Link>
+                  <Link href="https://docs.raydium.io/raydium/pool-creation/creating-a-standard-amm-pool" isExternal>
+                    Standard
+                  </Link>
+                </Trans>
               </Text>
             }
           />

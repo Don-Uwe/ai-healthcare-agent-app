@@ -64,9 +64,6 @@ export const useSwapStore = createStore<SwapStore>(
         console.error('no wallet')
         return
       }
-      // eslint-disable-next-line
-      // @ts-ignore
-      connection._confirmTransactionInitialTimeout = 3000
 
       try {
         const tokenMap = useTokenStore.getState().tokenMap
@@ -111,7 +108,6 @@ export const useSwapStore = createStore<SwapStore>(
             outputAccount: isOutputSol ? undefined : outputTokenAcc?.toBase58()
           }
         )
-
         if (!success) return
         const swapTransactions = data || []
         const allTxBuf = swapTransactions.map((tx) => Buffer.from(tx.transaction, 'base64'))
@@ -134,75 +130,104 @@ export const useSwapStore = createStore<SwapStore>(
             symbolB: getMintSymbol({ mint: outputToken, transformSol: true })
           }
         })
-        const id = uuid()
-        toastSubject.next({
-          id,
-          status: 'info',
-          title: swapMeta.title + ' ' + i18n.t('transaction.sending'),
-          description: swapMeta.description,
-          duration: 1000 * 60 * 2 + 1000 * 6
+        const toastId = uuid()
+        let swapDone = false
+        const showToast = (processedId: { txId: string; status: 'info' | 'success' | 'error' }[]) => {
+          if (swapDone) return
+          if (signedTxs.length <= 1) {
+            txStatusSubject.next({
+              txId: processedId[0].txId,
+              ...swapMeta,
+              mintInfo: [inputToken, outputToken],
+              onConfirmed: txProps.onConfirmed,
+              update: true
+            })
+          } else {
+            const isError = processedId.some((t) => t.status === 'error')
+            multiTxStatusSubject.next({
+              toastId,
+              skipWatchSignature: true,
+              update: true,
+              status: isError
+                ? 'error'
+                : processedId.filter((s) => s.status === 'success').length === processedId.length
+                ? 'success'
+                : 'info',
+              ...swapMeta,
+              title: swapMeta.title + (isError ? ` ${i18n.t('transaction.failed')}` : ''),
+              duration: isError ? 8000 : undefined,
+              subTxIds: processedId.map((tx, idx) => {
+                const titleKey =
+                  idx === 0
+                    ? 'transaction_history.set_up'
+                    : idx === processedId.length - 1 && processedId.length > 2
+                    ? 'transaction_history.clean_up'
+                    : 'transaction_history.name_swap'
+                return {
+                  txId: tx.txId,
+                  status: tx.status,
+                  title: i18n.t(titleKey),
+                  txHistoryTitle: titleKey
+                }
+              })
+            })
+          }
+        }
+
+        const processedId = new Array(signedTxs.length).fill({
+          txId: '',
+          status: 'info'
         })
-        const processedId = await retry<string[]>(
-          async () => {
-            const processedId: string[] = []
-            for await (const tx of signedTxs) {
+        // eslint-disable-next-line
+        // @ts-ignore
+        connection._confirmTransactionInitialTimeout = 3000
+        for await (const [idx, tx] of signedTxs.entries()) {
+          if (swapDone) return
+          await retry(
+            async () => {
               const txId =
                 tx instanceof Transaction
                   ? await connection.sendRawTransaction(tx.serialize(), { skipPreflight: true, maxRetries: 1 })
                   : await connection.sendTransaction(tx, { skipPreflight: true, maxRetries: 1 })
-              processedId.push(txId)
-
+              processedId[idx] = {
+                txId,
+                status: processedId[idx].status ?? 'info'
+              }
+              showToast(processedId)
               const res = await connection.confirmTransaction(txId, 'processed')
+
+              processedId[idx] = {
+                txId,
+                status: res.value.err ? 'error' : 'success'
+              }
+
               if (res.value.err) {
                 console.log('tx error:', res)
+                processedId[idx] = {
+                  txId,
+                  status: 'error'
+                }
+                showToast(processedId)
+                swapDone = true
                 throw new Error('tx failed')
               }
-            }
-            return processedId
-          },
-          {
-            retryCount: 40,
-            interval: 3000,
-            errorMsg: i18n.t('transaction.send_failed', { title: swapMeta.title }) as string,
-            onError: () =>
-              toastSubject.next({
-                id,
-                close: true
-              })
-          }
-        )
-
-        toastSubject.next({
-          id,
-          close: true
-        })
-
-        txProps.onSuccess?.()
-        if (processedId.length <= 1) {
-          txStatusSubject.next({ txId: processedId[0], ...swapMeta, mintInfo: [inputToken, outputToken], onConfirmed: txProps.onConfirmed })
-        } else {
-          multiTxStatusSubject.next({
-            toastId: uuid(),
-            ...swapMeta,
-            subTxIds: processedId.map((txId, idx) => {
-              const titleKey =
-                idx === 0
-                  ? 'transaction_history.set_up'
-                  : idx === processedId.length - 1 && processedId.length > 2
-                  ? 'transaction_history.clean_up'
-                  : 'transaction_history.name_swap'
-              return {
-                txId,
-                status: 'success',
-                title: i18n.t(titleKey),
-                txHistoryTitle: titleKey
+            },
+            {
+              retryCount: 40,
+              interval: 3000,
+              errorMsg: i18n.t('transaction.send_failed', { title: swapMeta.title }) as string,
+              onError: (errorMsg?: string) => {
+                if (errorMsg !== 'tx failed') {
+                  swapDone = true
+                  toastSubject.next({ id: signedTxs.length > 1 ? toastId : processedId[0].txId, close: true })
+                }
               }
-            })
-          })
+            }
+          )
         }
       } catch (e: any) {
         txProps.onError?.()
-        toastSubject.next({ txError: e })
+        if (e.message !== 'tx failed') toastSubject.next({ txError: e })
       } finally {
         // eslint-disable-next-line
         // @ts-ignore

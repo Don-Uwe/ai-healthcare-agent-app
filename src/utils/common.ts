@@ -22,7 +22,7 @@ export const sleep = async (time?: number) => {
 
 export const retry = async <T>(
   fetcher: () => Promise<any>,
-  options?: { retryCount?: number; interval?: number; errorMsg?: string; onError?: () => void }
+  options?: { retryCount?: number; interval?: number; errorMsg?: string; onError?: (msg?: string) => void }
 ): Promise<T> => {
   const { retryCount = 10, interval = 1000, errorMsg = 'request failed', onError } = options || {}
   let retryCounter = 0
@@ -45,9 +45,9 @@ export const retry = async <T>(
             resolve(res)
           } catch (e: any) {
             if (e.message === 'tx failed') {
-              onError?.()
+              onError?.(e.message)
               clearInterval(intervalId)
-              reject(new Error(`${i18n.t('transaction.title')} ${i18n.t(`transaction.failed`)}`))
+              reject(new Error('tx failed'))
             }
           }
         }, interval)

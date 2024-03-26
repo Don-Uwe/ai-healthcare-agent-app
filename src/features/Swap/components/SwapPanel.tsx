@@ -169,7 +169,8 @@ export function SwapPanel({
       onError: () => {
         offSending()
         mutate()
-      }
+      },
+      onFinally: offSending
     })
   }
 

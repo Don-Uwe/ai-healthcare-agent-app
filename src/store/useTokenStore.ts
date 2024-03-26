@@ -110,7 +110,7 @@ export const useTokenStore = createStore<TokenStore>(
         {
           displayTokenList: get().tokenList.filter((token) => {
             return (
-              (displayTokenSettings.official && raydium.token.mintGroup.official.has(token.address)) ||
+              (displayTokenSettings.official && get().mintGroup.official.has(token.address)) ||
               (displayTokenSettings.jup && raydium.token.mintGroup.jup.has(token.address) && (isJupAll || !token.tags.includes('unknown')))
             )
           })
@@ -121,9 +121,11 @@ export const useTokenStore = createStore<TokenStore>(
     },
     setExtraTokenList: ({ token, addToStorage = true, update }) => {
       const { tokenList, tokenMap, mintGroup, extraLoadedTokenList, setDisplayTokenListAct } = get()
+
       if (tokenMap.has(token.address) && !update) return
       tokenMap.set(token.address, token)
       mintGroup.official.add(token.address)
+
       set({
         tokenList: tokenList.some((t) => t.address === token.address) ? [...tokenList] : [...tokenList, token],
         tokenMap: new Map(Array.from(tokenMap)),

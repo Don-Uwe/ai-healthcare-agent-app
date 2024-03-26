@@ -101,6 +101,8 @@ export default function ClmmPositionAccountItem({
       liquidity: ZERO,
       amountMinA: ZERO,
       amountMinB: ZERO,
+      harvest: true,
+      needRefresh: true,
       onFinally
     })
   })

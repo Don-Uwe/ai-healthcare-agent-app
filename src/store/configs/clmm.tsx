@@ -60,8 +60,8 @@ const CLMM_TX_MSG = {
   harvest: {
     title: 'transaction_history.harvest_rewards',
     desc: 'transaction_history.harvest_clmm_reward_desc',
-    txHistoryTitle: 'transaction_history.harvest_reward_title',
-    txHistoryDesc: 'transaction_history.harvest_rewards_desc',
+    txHistoryTitle: 'transaction_history.harvest_rewards',
+    txHistoryDesc: 'transaction_history.harvest_clmm_reward_desc',
     components: { sub: <Text as="span" color={colors.textSecondary} fontWeight="700" /> }
   },
   openPosition: {
