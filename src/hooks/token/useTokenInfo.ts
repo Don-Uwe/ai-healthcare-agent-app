@@ -14,7 +14,11 @@ export default function useTokenInfo({ mint, programId }: { mint?: string | Publ
 
   useEffect(() => {
     if (tokenMap.size < 1) return
-    if (!mint) return
+    if (!mint) {
+      setLoading(false)
+      setTokenInfo(undefined)
+      return
+    }
     const info = tokenMap.get(mint.toString())
 
     if (!info) {

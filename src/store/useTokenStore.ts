@@ -127,14 +127,16 @@ export const useTokenStore = createStore<TokenStore>(
       mintGroup.official.add(token.address)
 
       set({
-        tokenList: tokenList.some((t) => t.address === token.address) ? [...tokenList] : [...tokenList, token],
+        tokenList: tokenList.some((t) => t.address === token.address)
+          ? tokenList.map((t) => (t.address === token.address ? token : t))
+          : [...tokenList, token],
         tokenMap: new Map(Array.from(tokenMap)),
         mintGroup: {
           official: new Set(Array.from(mintGroup.official)),
           jup: mintGroup.jup
         },
         extraLoadedTokenList: extraLoadedTokenList.some((t) => t.address === token.address)
-          ? extraLoadedTokenList
+          ? extraLoadedTokenList.map((t) => (t.address === token.address ? token : t))
           : [...extraLoadedTokenList, token]
       })
       setDisplayTokenListAct()

@@ -48,6 +48,7 @@ export default function TokenList({
   const [filteredList, setFilteredList] = useState<TokenInfo[]>(tokenList)
   const [displayList, setDisplayList] = useState<TokenInfo[]>([])
   const [search, setSearch] = useState('')
+  const customTokenInfo = useRef<{ name?: string; symbol?: string }>({})
 
   const listControllerRef = useRef<ListPropController>()
   useEffect(() => {
@@ -79,8 +80,12 @@ export default function TokenList({
     setFilteredList(filteredList)
   }, [search, tokenList, tokenAccountMap])
 
+  const tempSetNewToken = orgTokenMap.get(search)
   const { tokenInfo: newToken } = useTokenInfo({
-    mint: search && !filteredList.length && isValidPublicKey(search) ? search : undefined
+    mint:
+      search && (!filteredList.length || (!tempSetNewToken?.type && !tempSetNewToken?.userAdded)) && isValidPublicKey(search)
+        ? search
+        : undefined
   })
 
   useEffect(() => {
@@ -178,41 +183,62 @@ export default function TokenList({
           </List>
         </Box>
         {/* TODO: custom add token */}
-        {/* <Box padding={4} gap={4} flexDirection="column" display="flex">
-          <InputGroup bg={colors.backgroundDark} color={colors.textSecondary} rounded="8px">
-            <Input
-              p="8px 16px"
-              variant="unstyled"
-              _placeholder={{
-                fontSize: '14px',
-                color: colors.textTertiary
+        {newToken ? (
+          <Box padding={4} gap={4} flexDirection="column" display="flex">
+            <Flex alignItems="center">
+              <Text flex="1">Symbol:</Text>
+              <InputGroup flex="3" bg={colors.backgroundDark} color={colors.textSecondary} rounded="8px">
+                <Input
+                  p="8px 16px"
+                  variant="unstyled"
+                  _placeholder={{
+                    fontSize: '14px',
+                    color: colors.textTertiary
+                  }}
+                  placeholder={t('token_selector.input_token_symbol') ?? undefined}
+                  defaultValue={newToken?.symbol}
+                  onChange={(e) => {
+                    customTokenInfo.current.symbol = e.currentTarget.value
+                    // setUserTokenSymbol(e.currentTarget.value)
+                  }}
+                />
+              </InputGroup>
+            </Flex>
+            <Flex alignItems="center">
+              <Text flex="1">Name:</Text>
+              <InputGroup flex="3" bg={colors.backgroundDark} color={colors.textSecondary} rounded="8px">
+                <Input
+                  p="8px 16px"
+                  variant="unstyled"
+                  _placeholder={{
+                    fontSize: '14px',
+                    color: colors.textTertiary
+                  }}
+                  placeholder={t('token_selector.input_token_name') ?? undefined}
+                  defaultValue={newToken?.name}
+                  onChange={(e) => {
+                    customTokenInfo.current.name = e.currentTarget.value
+                    // setUserTokenName(e.currentTarget.value)
+                  }}
+                />
+              </InputGroup>
+            </Flex>
+            <Button
+              variant="solid-dark"
+              width="full"
+              bg={colors.backgroundDark}
+              onClick={() => {
+                handleAddUnknownTokenClick({
+                  ...newToken,
+                  ...customTokenInfo.current
+                })
+                customTokenInfo.current = {}
               }}
-              placeholder={t('token_selector.input_token_symbol') ?? undefined}
-              defaultValue={displayList[0].symbol}
-              onChange={(e) => {
-                setUserTokenSymbol(e.currentTarget.value)
-              }}
-            />
-          </InputGroup>
-          <InputGroup bg={colors.backgroundDark} color={colors.textSecondary} rounded="8px">
-            <Input
-              p="8px 16px"
-              variant="unstyled"
-              _placeholder={{
-                fontSize: '14px',
-                color: colors.textTertiary
-              }}
-              placeholder={t('token_selector.input_token_name') ?? undefined}
-              defaultValue={displayList[0].name}
-              onChange={(e) => {
-                setUserTokenName(e.currentTarget.value)
-              }}
-            />
-          </InputGroup>
-          <Button variant="solid-dark" width="full" bg={colors.backgroundDark} onClick={() => handleAddUserToken()}>
-            {'Add User Token'}
-          </Button>
-        </Box> */}
+            >
+              {'Add User Token'}
+            </Button>
+          </Box>
+        ) : null}
       </Flex>
       <Box borderRadius={'8px'} background={colors.modalContainerBg} p="12px" mb="24px">
         <Text opacity={'50%'} fontWeight={'normal'} fontSize={'12px'} lineHeight={'16px'} color={colors.textSecondary}>
