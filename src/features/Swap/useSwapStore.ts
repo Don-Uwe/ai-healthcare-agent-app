@@ -213,7 +213,7 @@ export const useSwapStore = createStore<SwapStore>(
               }
             },
             {
-              retryCount: 3,
+              retryCount: 40,
               interval: 3000,
               errorMsg: i18n.t('transaction.send_failed', { title: swapMeta.title }) as string,
               onError: (errorMsg?: string) => {
