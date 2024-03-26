@@ -14,7 +14,6 @@ import useResizeObserver from '@/hooks/useResizeObserver'
 import { filterTokenFn } from '@/utils/token'
 import { isValidPublicKey } from '@/utils/publicKey'
 import shallow from 'zustand/shallow'
-import { useEvent } from '@/hooks/useEvent'
 
 type SearchBarProps = {
   value: string

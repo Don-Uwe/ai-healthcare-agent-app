@@ -177,6 +177,42 @@ export default function TokenList({
             {renderTokenItem}
           </List>
         </Box>
+        {/* TODO: custom add token */}
+        {/* <Box padding={4} gap={4} flexDirection="column" display="flex">
+          <InputGroup bg={colors.backgroundDark} color={colors.textSecondary} rounded="8px">
+            <Input
+              p="8px 16px"
+              variant="unstyled"
+              _placeholder={{
+                fontSize: '14px',
+                color: colors.textTertiary
+              }}
+              placeholder={t('token_selector.input_token_symbol') ?? undefined}
+              defaultValue={displayList[0].symbol}
+              onChange={(e) => {
+                setUserTokenSymbol(e.currentTarget.value)
+              }}
+            />
+          </InputGroup>
+          <InputGroup bg={colors.backgroundDark} color={colors.textSecondary} rounded="8px">
+            <Input
+              p="8px 16px"
+              variant="unstyled"
+              _placeholder={{
+                fontSize: '14px',
+                color: colors.textTertiary
+              }}
+              placeholder={t('token_selector.input_token_name') ?? undefined}
+              defaultValue={displayList[0].name}
+              onChange={(e) => {
+                setUserTokenName(e.currentTarget.value)
+              }}
+            />
+          </InputGroup>
+          <Button variant="solid-dark" width="full" bg={colors.backgroundDark} onClick={() => handleAddUserToken()}>
+            {'Add User Token'}
+          </Button>
+        </Box> */}
       </Flex>
       <Box borderRadius={'8px'} background={colors.modalContainerBg} p="12px" mb="24px">
         <Text opacity={'50%'} fontWeight={'normal'} fontSize={'12px'} lineHeight={'16px'} color={colors.textSecondary}>
