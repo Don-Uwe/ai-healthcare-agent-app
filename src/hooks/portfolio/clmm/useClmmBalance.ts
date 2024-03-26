@@ -24,7 +24,7 @@ export type ClmmDataMap = Map<string, ClmmPosition[]>
 let lastRefreshTag = initTokenAccountSate.refreshClmmPositionTag
 
 const fetcher = ([connection, publicKeyList]: [Connection, string[]]) => {
-  console.log('rpc: get clmm position balance info', publicKeyList)
+  console.log('rpc: get clmm position balance info')
   return connection.getMultipleAccountsInfo(
     publicKeyList.map((publicKey) => ToPublicKey(publicKey)),
     'confirmed'

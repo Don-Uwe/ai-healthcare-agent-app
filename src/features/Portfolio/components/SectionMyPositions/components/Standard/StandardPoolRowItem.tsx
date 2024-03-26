@@ -28,6 +28,7 @@ import { FarmBalanceInfo } from '@/hooks/farm/type'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'react-i18next'
 import BN from 'bn.js'
+import { MINUTE_MILLISECONDS } from '@/utils/date'
 
 type PoolItemProps = {
   pool?: FormattedPoolInfoStandardItem
@@ -80,7 +81,8 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
     shouldFetch: !!pool && !!pool.mintA && !!pool.mintB,
     mint1: pool?.mintA.address,
     mint2: pool?.mintB.address,
-    type: PoolFetchType.Concentrated
+    type: PoolFetchType.Concentrated,
+    refreshInterval: 10 * MINUTE_MILLISECONDS
   })
   const unStakeLpBalance = getTokenBalanceUiAmount({ mint: pool?.lpMint.address || '', decimals: pool?.lpMint.decimals }).rawAmount
   const allLpUiAmount = new Decimal(position.totalLpAmount).add(unStakeLpBalance).div(10 ** (pool?.lpMint.decimals || 6))

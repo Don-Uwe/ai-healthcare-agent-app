@@ -141,17 +141,17 @@ export default function TokenSearchInput({
     setActiveIndex(getEnabledActiveIndex(0))
   }, [filteredList.length, searchValue])
   const listRef = useRef<HTMLDivElement>(null)
-  const scrollIntoView = useEvent((args: number) => {
+  const scrollIntoView = (args: number) => {
     const itemElement = listRef?.current?.children[args] as HTMLElement | undefined
     itemElement?.scrollIntoView({
       behavior: 'smooth',
       block: 'center'
     })
-  })
+  }
 
   useEffect(() => {
     scrollIntoView(0)
-  }, [scrollIntoView, searchValue])
+  }, [searchValue])
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent<HTMLInputElement>) => {
