@@ -23,6 +23,7 @@ import Decimal from 'decimal.js'
 export interface UpdateClmmPendingYield {
   nftMint: string
   pendingYield: Decimal
+  isEmpty: boolean
 }
 
 export type PositionWithUpdateFn = ClmmPosition & {
@@ -39,7 +40,15 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
 
   const [isSending, setIsSending] = useState(false)
   const [allClmmPending, setAllClmmPending] = useState(new Decimal(0))
-  const clmmPendingYield = useRef<Map<string, Decimal>>(new Map())
+  const clmmPendingYield = useRef<
+    Map<
+      string,
+      {
+        usd: Decimal
+        isEmpty: boolean
+      }
+    >
+  >(new Map())
 
   const { data: clmmPoolAssets, clmmBalanceInfo, isLoading: isClmmBalanceLoading } = useClmmPortfolioData({ type: '' })
   const {
@@ -125,7 +134,8 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
     allFarmPendingReward = allFarmPendingReward.add(pendingReward)
   })
 
-  const isReady = allFarmPendingReward.gt(0) || allClmmPending.gt(0)
+  const isReady =
+    allFarmPendingReward.gt(0) || allClmmPending.gt(0) || Array.from(clmmPendingYield.current.values()).some((d) => !d.isEmpty)
   const isLoading = isFarmLoading || isClmmBalanceLoading || isPoolLoading
 
   const finallyFn = (txId?: string, meta?: Record<string, unknown>) => {
@@ -223,15 +233,15 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
 
   const setTotalClmmPending = useCallback(
     debounce(
-      () => setAllClmmPending(Array.from(clmmPendingYield.current.values()).reduce((acc, cur) => acc.add(cur), new Decimal(0))),
+      () => setAllClmmPending(Array.from(clmmPendingYield.current.values()).reduce((acc, cur) => acc.add(cur.usd), new Decimal(0))),
       400
     ),
     []
   )
 
   const updateClmmPendingYield = useCallback(
-    ({ nftMint, pendingYield }: UpdateClmmPendingYield) => {
-      clmmPendingYield.current.set(nftMint, pendingYield)
+    ({ nftMint, pendingYield, isEmpty }: UpdateClmmPendingYield) => {
+      clmmPendingYield.current.set(nftMint, { usd: pendingYield, isEmpty })
       setTotalClmmPending()
     },
     [setTotalClmmPending]

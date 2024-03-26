@@ -11,10 +11,11 @@ type PendingYieldProps = {
   pendingYield?: string
   rewardTokens: ApiV3Token[]
   isLoading?: boolean
+  hasReward?: boolean
   onHarvest: () => void
 }
 
-export default function PendingYield({ isLoading, onHarvest, pendingYield, rewardTokens }: PendingYieldProps) {
+export default function PendingYield({ isLoading, hasReward, onHarvest, pendingYield, rewardTokens }: PendingYieldProps) {
   const { t } = useTranslation()
   return (
     <SimpleGrid
@@ -34,7 +35,15 @@ export default function PendingYield({ isLoading, onHarvest, pendingYield, rewar
       <Text gridArea={'title'} color={colors.textSecondary}>
         {t('portfolio.section_positions_clmm_account_pending_yield')}
       </Text>
-      <Button isLoading={isLoading} onClick={onHarvest} gridArea={'btn'} justifySelf={'end'} size="sm" variant="outline">
+      <Button
+        isLoading={isLoading}
+        isDisabled={!hasReward}
+        onClick={onHarvest}
+        gridArea={'btn'}
+        justifySelf={'end'}
+        size="sm"
+        variant="outline"
+      >
         {t('portfolio.section_positions_clmm_account_pending_yield_button')}
       </Button>
       <HStack gridArea={'volumn'}>
