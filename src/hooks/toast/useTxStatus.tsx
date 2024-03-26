@@ -13,6 +13,7 @@ import { toastSubject } from './useGlobalToast'
 import { colors } from '@/theme/cssVariables/colors'
 import CircleCheck from '@/icons/misc/CircleCheck'
 import CircleError from '@/icons/misc/CircleError'
+import CircleInfo from '@/icons/misc/CircleInfo'
 
 export interface TxMeta {
   title?: string | ReactNode
@@ -27,6 +28,7 @@ export const txStatusSubject = new Subject<
     txValues?: Record<string, any>
     mintInfo?: ApiV3Token[]
     hideResultToast?: boolean
+    update?: boolean
     onConfirmed?: (signatureResult: SignatureResult, context: Context) => void
     onError?: (signatureResult: SignatureResult, context: Context) => void
     onSuccess?: (signatureResult: SignatureResult, context: Context) => void
@@ -36,9 +38,13 @@ export const txStatusSubject = new Subject<
 export const multiTxStatusSubject = new Subject<
   TxMeta & {
     toastId: string
-    subTxIds: (TxMeta & { txId: string; status?: 'success' | 'error' })[]
+    status?: 'success' | 'error' | 'info'
+    update?: boolean
+    subTxIds: (TxMeta & { txId: string; status?: 'success' | 'error' | 'info' })[]
     txValues?: Record<string, any>
     mintInfo?: ApiV3Token[]
+    duration?: number
+    skipWatchSignature?: boolean
 
     onError?: (signatureResult: SignatureResult, context: Context) => void
     onSuccess?: (signatureResult: SignatureResult, context: Context) => void
@@ -64,6 +70,7 @@ function useTxStatus() {
           txValues,
           mintInfo = [],
           hideResultToast,
+          update,
           onConfirmed,
           onError,
           onSuccess
@@ -96,7 +103,8 @@ function useTxStatus() {
               : description || `${explorerUrl}/tx/${txId}`,
             detail: renderDetail(),
             status: 'info',
-            duration: 60 * 1000 * 2
+            duration: 2 * 60 * 1000,
+            update
           })
 
           setTxRecord({
@@ -183,10 +191,25 @@ function useTxStatus() {
     const sub = multiTxStatusSubject
       .asObservable()
       .subscribe(
-        ({ toastId, subTxIds, title, txHistoryTitle, description, txHistoryDesc = '', txValues, mintInfo = [], onError, onSuccess }) => {
+        ({
+          toastId,
+          subTxIds,
+          status,
+          title,
+          txHistoryTitle,
+          description,
+          txHistoryDesc = '',
+          txValues,
+          mintInfo = [],
+          update,
+          duration,
+          skipWatchSignature,
+          onError,
+          onSuccess
+        }) => {
           const owner = useAppStore.getState().publicKey?.toBase58()
           const isMultisigWallet = useAppStore.getState().wallet?.adapter.name === 'SquadsX'
-          const txStatus: Record<string, 'success' | 'error'> = {}
+          const txStatus: Record<string, 'success' | 'error' | 'info'> = {}
 
           subTxIds.forEach((tx) => {
             if (tx.status) txStatus[tx.txId] = tx.status
@@ -195,19 +218,25 @@ function useTxStatus() {
           const renderDetail = () => {
             return (
               <Flex flexDirection="column" gap="3">
-                {subTxIds.map(({ txId, title = t('transaction.title') }) => (
+                {subTxIds.map(({ txId, title = t('transaction.title') }, idx) => (
                   <Box
-                    key={txId}
+                    key={txId || `${toastId}-${idx}`}
                     bg={colors.backgroundDark}
                     borderRadius="8px"
                     p={3}
                     ml="-30px"
-                    cursor={'pointer'}
-                    opacity={txStatus[txId] ? 1 : 0.5}
-                    onClick={() => window.open(`${explorerUrl}/tx/${txId}`)}
+                    cursor={txId ? 'pointer' : 'default'}
+                    opacity={txId ? 1 : 0.5}
+                    onClick={txId ? () => window.open(`${explorerUrl}/tx/${txId}`) : undefined}
                   >
                     <Flex alignItems="center" gap="2">
-                      {txStatus[txId] === 'error' ? <CircleError /> : <CircleCheck fill={colors.secondary} />}
+                      {txStatus[txId] === 'error' ? (
+                        <CircleError />
+                      ) : txStatus[txId] === 'info' ? (
+                        <CircleInfo width="16px" height="16px" />
+                      ) : (
+                        <CircleCheck fill={colors.secondary} />
+                      )}
                       <Box
                         fontSize={14}
                         fontWeight={400}
@@ -238,105 +267,110 @@ function useTxStatus() {
           // show initial tx send toast
           toastSubject.next({
             id: toastId,
+            update,
             title: title || `${t('transaction.title')} ${t('transaction.sent')}`,
             description,
             detail: renderDetail(),
-            status: 'info',
-            duration: 1000 * 30
+            status: status || 'info',
+            duration: duration || 2 * 60 * 1000
           })
 
           setTxRecord({
-            status: 'info',
+            status: status || 'info',
             title: txHistoryTitle || 'transaction.title',
             description: txHistoryDesc,
             txId: toastId,
             owner,
             mintInfo,
             txValues,
-            subTx: subTxIds.map(({ txId, txHistoryTitle }) => ({
-              txId,
-              name: txHistoryTitle || '',
-              status: 'success',
-              date: Date.now()
-            })),
+            subTx: subTxIds.map(({ txId, txHistoryTitle, status }) => {
+              console.log(1231232222, txId, status)
+              return {
+                txId,
+                name: txHistoryTitle || '',
+                status: status ?? 'info',
+                date: Date.now()
+              }
+            }),
             isMultiSig: isMultisigWallet
           })
 
-          subTxIds.forEach(({ txId }) => {
-            connection.onSignature(
-              txId,
-              (signatureResult, context) => {
-                txStatus[txId] = signatureResult.err ? 'error' : 'success'
-                if (signatureResult.err) {
-                  // update toast status to error
-                  toastSubject.next({
-                    id: toastId,
-                    update: true,
-                    title:
-                      (isMultisigWallet ? `${title} ${t('transaction.multisig_wallet_initiation')}` : title || t('transaction.title')) +
-                      t('transaction.failed'),
-                    status: 'error',
-                    description,
-                    detail: renderDetail()
-                  })
+          if (!skipWatchSignature)
+            subTxIds.forEach(({ txId }) => {
+              connection.onSignature(
+                txId,
+                (signatureResult, context) => {
+                  txStatus[txId] = signatureResult.err ? 'error' : 'success'
+                  if (signatureResult.err) {
+                    // update toast status to error
+                    toastSubject.next({
+                      id: toastId,
+                      update: true,
+                      title:
+                        (isMultisigWallet ? `${title} ${t('transaction.multisig_wallet_initiation')}` : title || t('transaction.title')) +
+                        t('transaction.failed'),
+                      status: 'error',
+                      description,
+                      detail: renderDetail()
+                    })
 
-                  onError?.(signatureResult, context)
-                  setTxRecord({
-                    status: 'success',
-                    title: txHistoryTitle || 'transaction.failed',
-                    description: txHistoryDesc,
-                    txId: toastId,
-                    owner,
-                    mintInfo,
-                    txValues,
-                    subTx: subTxIds.map(({ txId: tx, txHistoryTitle }) => ({
-                      txId: tx,
-                      name: txHistoryTitle || '',
-                      status: txId === tx ? 'error' : 'success',
-                      date: Date.now()
-                    })),
-                    isMultiSig: isMultisigWallet
-                  })
-                } else {
-                  // update toast status to success
-                  toastSubject.next({
-                    id: toastId,
-                    update: true,
-                    title: isMultisigWallet
-                      ? t('transaction.multisig_wallet_initiated')
-                      : title
-                      ? `${title} ${t('transaction.confirmed')}`
-                      : `${t('transaction.title')} ${t('transaction.confirmed')}`,
-                    description,
-                    detail: renderDetail(),
-                    status: 'success'
-                  })
-
-                  if (Object.values(txStatus).length === subTxIds.length) onSuccess?.(signatureResult, context)
-
-                  setTxRecord({
-                    status: 'success',
-                    title: txHistoryTitle || 'transaction.failed',
-                    description: txHistoryDesc,
-                    txId: toastId,
-                    owner,
-                    mintInfo,
-                    txValues,
-                    subTx: subTxIds.map(({ txId: tx, txHistoryTitle }) => ({
-                      txId: tx,
-                      name: txHistoryTitle || '',
+                    onError?.(signatureResult, context)
+                    setTxRecord({
                       status: 'success',
-                      date: Date.now()
-                    })),
-                    isMultiSig: isMultisigWallet
-                  })
-                }
-              },
-              'processed'
-            )
+                      title: txHistoryTitle || 'transaction.failed',
+                      description: txHistoryDesc,
+                      txId: toastId,
+                      owner,
+                      mintInfo,
+                      txValues,
+                      subTx: subTxIds.map(({ txId: tx, txHistoryTitle }) => ({
+                        txId: tx,
+                        name: txHistoryTitle || '',
+                        status: txId === tx ? 'error' : 'success',
+                        date: Date.now()
+                      })),
+                      isMultiSig: isMultisigWallet
+                    })
+                  } else {
+                    // update toast status to success
+                    toastSubject.next({
+                      id: toastId,
+                      update: true,
+                      title: isMultisigWallet
+                        ? t('transaction.multisig_wallet_initiated')
+                        : title
+                        ? `${title} ${t('transaction.confirmed')}`
+                        : `${t('transaction.title')} ${t('transaction.confirmed')}`,
+                      description,
+                      detail: renderDetail(),
+                      status: 'success'
+                    })
 
-            connection.getSignatureStatus(txId)
-          })
+                    if (Object.values(txStatus).length === subTxIds.length) onSuccess?.(signatureResult, context)
+
+                    setTxRecord({
+                      status: 'success',
+                      title: txHistoryTitle || 'transaction.failed',
+                      description: txHistoryDesc,
+                      txId: toastId,
+                      owner,
+                      mintInfo,
+                      txValues,
+                      subTx: subTxIds.map(({ txId: tx, txHistoryTitle }) => ({
+                        txId: tx,
+                        name: txHistoryTitle || '',
+                        status: 'success',
+                        date: Date.now()
+                      })),
+                      isMultiSig: isMultisigWallet
+                    })
+                  }
+                },
+                'processed'
+              )
+
+              connection.getSignatureStatus(txId)
+            })
         }
       )
 

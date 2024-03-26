@@ -50,6 +50,14 @@ export function Toast({ state, onClose }: ToasterProps) {
         }
 
   useEffect(() => {
+    setCountDownController({
+      isCountDown: true,
+      remainTime: state.duration ?? toastDefaultConfig.duration,
+      endTime: new Date().getTime() + (state.duration ?? 0)
+    })
+  }, [state.duration])
+
+  useEffect(() => {
     if (countDownController.isCountDown && countDownController.remainTime) {
       const timeout = setTimeout(() => {
         onClose()
@@ -82,6 +90,7 @@ export function Toast({ state, onClose }: ToasterProps) {
           <Box style={{ backgroundColor: 'transparent', position: 'absolute', inset: 0 }} />
           {/* remain-line */}
           <Box
+            key={state.duration}
             style={{
               backgroundColor: customTheme.mainColor,
               position: 'absolute',

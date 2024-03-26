@@ -24,7 +24,7 @@ export const toastSubject = new Subject<
 >()
 
 const toastConfig = {
-  duration: 5000,
+  duration: 8000,
   isClosable: true,
   position: 'bottom-right' as ToastPosition,
   containerStyle: {
@@ -46,14 +46,13 @@ function useGlobalToast() {
         return
       }
       if (update && id && toast.isActive(id)) {
-        if (!id) return
         toast.update(id, {
           duration: data.duration || toastConfig.duration,
           position: data.position || toastConfig.position,
           ...data,
           render: (props: RenderProps) => (
             <Toast
-              state={{ ...toastConfig, ...data, status: data.status === 'error' ? data.status : 'success' }}
+              state={{ ...toastConfig, ...data, status: data.status === 'error' || data.status === 'info' ? data.status : 'success' }}
               id={props.id!}
               onClose={props.onClose}
             />

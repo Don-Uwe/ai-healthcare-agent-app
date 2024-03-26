@@ -249,7 +249,6 @@ function RecentTransactionCard({ transaction }: { transaction: RecentTransaction
   const { isOpen, onToggle } = useDisclosure()
   const explorerUrl = useAppStore((s) => s.explorerUrl)
   const { t } = useTranslation()
-
   return (
     <Box bg={colors.backgroundDark} rounded="lg" p={3}>
       <SimpleGrid
@@ -305,9 +304,9 @@ function RecentTransactionCard({ transaction }: { transaction: RecentTransaction
                     columnGap="10px"
                   >
                     <Box gridArea="statu" alignSelf="center">
-                      {transaction.status === 'info' ? (
+                      {subTransaction.status === 'info' ? (
                         <CircleInfo width="14px" height="14px" />
-                      ) : transaction.status === 'success' ? (
+                      ) : subTransaction.status === 'success' ? (
                         <CircleSuccess width="14px" height="14px" />
                       ) : (
                         <CircleError width="14px" height="14px" />

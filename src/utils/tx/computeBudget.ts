@@ -10,7 +10,10 @@ export interface ComputeBudgetConfig {
 
 export const fetchComputePrice = async () => {
   try {
-    const res = (await axios.get(`https://solanacompass.com/api/fees?cacheFreshTime=${5 * 60 * 1000}`)) as SolanaFeeInfoJson
+    const res = (await axios.get(`https://solanacompass.com/api/fees?cacheFreshTime=${5 * 60 * 1000}`, {
+      timeout: 3 * 1000,
+      skipError: true
+    })) as SolanaFeeInfoJson
     return res
   } catch {
     return undefined
