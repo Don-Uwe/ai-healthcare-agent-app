@@ -227,7 +227,7 @@ export default function TokenList({
                 customTokenInfo.current = {}
               }}
             >
-              {'Add User Token'}
+              {t('token_selector.add_user_token')}
             </Button>
           </Box>
         ) : (
