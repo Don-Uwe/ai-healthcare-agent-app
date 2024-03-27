@@ -97,11 +97,11 @@ export default function SectionMyPositions() {
           "title  tabs  " auto
           "action action" auto / 1fr 1fr
         `,
-          `
-          "title " auto
-          "tabs  " auto
-          "action" auto / 1fr 
-        `,
+          //   `
+          //   "title " auto
+          //   "tabs  " auto
+          //   "action" auto / 1fr
+          // `,
           `
           "title title " auto
           "tabs  action" auto / 1fr 1fr
