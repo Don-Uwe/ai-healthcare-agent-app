@@ -260,10 +260,11 @@ export default function MigrateFromStandardDialog({
       base: isMintABase ? 'MintA' : 'MintB',
       userFarmLpAmount: new BN(farmLpAmount),
       onSuccess: () => {
+        setLoading(false)
         onClose()
         routeToPage('portfolio', { queryProps: { section: 'my-positions', position_tab: 'concentrated' } })
       },
-      onFinally: () => setLoading(false)
+      onError: () => setLoading(false)
     })
   }
 

@@ -17,11 +17,8 @@ import { useFarmStore, useClmmStore, useTokenAccountStore, useAppStore } from '@
 import { getTxMeta as getFarmTxMeta } from '@/store/configs/farm'
 import { getTxMeta as getClmmTxMeta } from '@/store/configs/clmm'
 import { useEvent } from '../useEvent'
-import showMultiToast, { generateDefaultIds } from '@/hooks/toast/multiToastUtil'
 import { debounce } from '@/utils/functionMethods'
 import Decimal from 'decimal.js'
-import { v4 as uuid } from 'uuid'
-import { ToastStatus } from '@/types/tx'
 
 export interface UpdateClmmPendingYield {
   nftMint: string
@@ -176,6 +173,7 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
       }
       buildData = farmBuildData.buildData
     }
+
     if (clmmBalanceInfo.size) {
       const noneZeroPos = { ...clmmRecord }
       Object.keys(noneZeroPos).forEach((key) => {
@@ -195,7 +193,7 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
           {}
         ),
         allPositions: noneZeroPos,
-        execute: false
+        execute: !buildData
       })
       if (clmmBuildData.buildData) {
         if (buildData) {
@@ -215,45 +213,6 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
           }
           setIsSending(false)
           return
-        }
-        try {
-          const { transactions } = clmmBuildData.buildData
-          const isMultiTx = transactions.length > 1
-          const toastId = uuid()
-          let processedId = generateDefaultIds(transactions.length)
-          const meta = getClmmTxMeta({
-            action: 'harvest',
-            values: { symbol: 'Clmm and Farms' }
-          })
-          const showToast = () => {
-            showMultiToast({
-              toastId,
-              processedId,
-              meta,
-              txLength: transactions.length,
-              getSubTxTitle() {
-                return meta.title
-              }
-            })
-          }
-
-          await clmmBuildData.buildData.execute({
-            sequentially: true,
-            onTxUpdate: (data) => {
-              processedId = processedId.map((prev, idx) => ({
-                txId: data[idx]?.txId || prev.txId,
-                status: !data[idx] || data[idx].status === 'sent' ? 'info' : (data[idx].status as ToastStatus)
-              }))
-              if (isMultiTx) showToast()
-              else {
-                finallyFn(data[0].txId, meta)
-                return
-              }
-            }
-          })
-          if (isMultiTx) showToast()
-        } catch (e: any) {
-          toastSubject.next({ txError: e })
         }
         setIsSending(false)
       }

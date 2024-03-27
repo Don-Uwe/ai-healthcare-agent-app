@@ -355,16 +355,16 @@ export default function CreatePosition() {
       otherAmountMax: focusPoolARef.current ? mintBAmount : mintAAmount,
       tickLower: tickPriceRef.current.tickLower!,
       tickUpper: tickPriceRef.current.tickUpper!,
-      onSuccess: (props) => {
-        setIsSending(false)
-        setNFTAddress(props?.buildData.extInfo.nftMint.toString() || '')
+      onConfirmed: () => {
         onClose()
         onNFTOpen()
         setTimeout(() => {
           mutate()
         }, 500)
       },
-      onError: () => setIsSending(false)
+      onFinally: () => setIsSending(false)
+    }).then((props) => {
+      setNFTAddress(props?.buildData?.extInfo.nftMint.toString() || '')
     })
   }
 

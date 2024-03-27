@@ -10,8 +10,8 @@ import { v4 as uuid } from 'uuid'
 import createStore from './createStore'
 import { useAppStore } from './useAppStore'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
-import { txStatusSubject, multiTxStatusSubject } from '@/hooks/toast/useTxStatus'
-import showMultiToast, { generateDefaultIds } from '@/hooks/toast/multiToastUtil'
+import { txStatusSubject } from '@/hooks/toast/useTxStatus'
+import showMultiToast, { generateDefaultIds, callBackHandler } from '@/hooks/toast/multiToastUtil'
 import { PublicKey } from '@solana/web3.js'
 import { ToastStatus, TxCallbackProps } from '@/types/tx'
 import { formatLocaleStr } from '@/utils/numberish/formatter'
@@ -265,7 +265,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
         })
       }
 
-      let errorCalled = false
+      const handler = callBackHandler({ transactionLength: transactions.length, onSuccess, onError, onFinally })
       return execute({
         sequentially: true,
         onTxUpdate: (data) => {
@@ -284,17 +284,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
             })
             return
           }
-
-          if (data.some((tx) => tx.status === 'error') && !errorCalled) {
-            errorCalled = true
-            onError?.()
-            return
-          }
-
-          if (data.filter((d) => d.status === 'success').length === transactions.length) {
-            onSuccess?.()
-            return
-          }
+          handler(processedId)
         }
       })
         .then((txId) => {
@@ -306,7 +296,6 @@ export const useLiquidityStore = createStore<LiquidityStore>(
           toastSubject.next({ txError: e, ...migrateMeta })
           return ''
         })
-        .finally(onFinally)
     },
 
     computePairAmount: ({ pool, amount, baseIn }) => {

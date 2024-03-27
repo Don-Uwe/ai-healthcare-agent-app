@@ -1,6 +1,6 @@
 import i18n from '@/i18n'
 import { multiTxStatusSubject } from './useTxStatus'
-import { ToastStatus } from '@/types/tx'
+import { ToastStatus, TxCallbackProps } from '@/types/tx'
 
 export const generateDefaultIds = (length: number): { txId: string; status: ToastStatus }[] =>
   new Array(length).fill({ txId: '', status: 'info' })
@@ -29,6 +29,7 @@ export default function showMultiToast({
 }) {
   const isError = processedId.some((t) => t.status === 'error')
   const isSuccess = processedId.filter((s) => s.status === 'success').length >= (txLength ?? processedId.length)
+
   multiTxStatusSubject.next({
     toastId,
     skipWatchSignature: true,
@@ -47,4 +48,40 @@ export default function showMultiToast({
       }
     })
   })
+}
+
+export const callBackHandler = ({
+  transactionLength,
+  ...callbackProps
+}: {
+  transactionLength: number
+} & TxCallbackProps) => {
+  let [successCalled, errorCalled, finallyCalled, confirmedCalled] = [false, false, false, false]
+
+  return (
+    processedId: {
+      txId: string
+      status: ToastStatus
+    }[]
+  ) => {
+    if (processedId.some((tx) => tx.status === 'error')) {
+      if (!errorCalled) callbackProps?.onError?.()
+      if (!finallyCalled) callbackProps?.onFinally?.()
+      errorCalled = true
+      finallyCalled = true
+      return
+    }
+
+    if (processedId.length === transactionLength) {
+      if (!successCalled) callbackProps?.onSuccess?.()
+      if (!finallyCalled) callbackProps?.onFinally?.()
+      successCalled = true
+      finallyCalled = true
+    }
+
+    if (processedId.filter((d) => d.status === 'success').length === transactionLength) {
+      if (!confirmedCalled) callbackProps?.onConfirmed?.()
+      confirmedCalled = true
+    }
+  }
 }

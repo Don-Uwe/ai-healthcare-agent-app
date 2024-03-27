@@ -3,7 +3,7 @@ import { PublicKey } from '@solana/web3.js'
 import { useAppStore, useTokenAccountStore, useTokenStore } from './'
 import createStore from './createStore'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
-import showMultiToast, { generateDefaultIds } from '@/hooks/toast/multiToastUtil'
+import showMultiToast, { generateDefaultIds, callBackHandler } from '@/hooks/toast/multiToastUtil'
 import { ToastStatus, TxCallbackProps } from '@/types/tx'
 import { isValidPublicKey } from '@/utils/publicKey'
 import { wSolToSol, solToWSol, solToWsolString } from '@/utils/token'
@@ -125,7 +125,7 @@ export const useCreateMarketStore = createStore<CreateMarketState>(
         mintB: quoteMint.toString()
       }
     },
-    createMarketAct: async ({ baseToken, quoteToken, orderSize, priceTick, onSuccess, onError, onFinally }) => {
+    createMarketAct: async ({ baseToken, quoteToken, orderSize, priceTick, ...txProps }) => {
       const { raydium, programIdConfig, connection, txVersion } = useAppStore.getState()
       if (!raydium || !connection) return { txId: [], marketId: '' }
       const { execute, transactions, extInfo } = await raydium.marketV2.create({
@@ -148,9 +148,8 @@ export const useCreateMarketStore = createStore<CreateMarketState>(
         values: { pair: `${solToWsolString(baseToken.symbol)} - ${solToWsolString(quoteToken.symbol)}` }
       })
 
-      let errorCalled = false
+      const handler = callBackHandler({ transactionLength: transactions.length, ...txProps })
       const toastId = uuid()
-
       let processedId = generateDefaultIds(transactions.length)
       const showToast = () => {
         showMultiToast({
@@ -173,15 +172,7 @@ export const useCreateMarketStore = createStore<CreateMarketState>(
           }))
           showToast()
 
-          if (data.some((tx) => tx.status === 'error') && !errorCalled) {
-            errorCalled = true
-            onError?.()
-            return
-          }
-
-          if (data.filter((d) => d.status === 'success').length === transactions.length) {
-            onSuccess?.(extInfo.address.marketId.toString())
-          }
+          handler(processedId)
         }
       })
         .then((r) => {
@@ -189,11 +180,10 @@ export const useCreateMarketStore = createStore<CreateMarketState>(
           return { txId: r, marketId: extInfo.address.marketId.toString() || '' }
         })
         .catch((e) => {
-          onError?.()
+          txProps.onError?.()
           toastSubject.next({ txError: e })
           return { txId: [], marketId: '' }
         })
-        .finally(onFinally)
     }
   }),
   'useCreateMarketStore'
