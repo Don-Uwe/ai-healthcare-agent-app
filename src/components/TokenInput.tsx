@@ -128,7 +128,7 @@ function TokenInput(props: TokenInputProps) {
     sx
   } = props
   const isMobile = useAppStore((s) => s.isMobile)
-  const setExtraTokenList = useTokenStore((s) => s.setExtraTokenList)
+  const setExtraTokenListAct = useTokenStore((s) => s.setExtraTokenListAct)
   const { colorMode } = useColorMode()
   const isLight = colorMode === 'light'
   const { isOpen, onOpen, onClose } = useDisclosure()
@@ -218,7 +218,7 @@ function TokenInput(props: TokenInputProps) {
   })
 
   const handleUnknownTokenConfirm = useEvent((token: TokenInfo | ApiV3Token) => {
-    setExtraTokenList({ token: { ...token, userAdded: true } as TokenInfo, addToStorage: true, update: true })
+    setExtraTokenListAct({ token: { ...token, userAdded: true } as TokenInfo, addToStorage: true, update: true })
     onTokenChange?.(token)
     onCloseUnknownTokenConfirm()
   })

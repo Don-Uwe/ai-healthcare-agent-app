@@ -3,7 +3,7 @@ import { FarmPositionData } from '@raydium-io/raydium-sdk-v2'
 import useSWR from 'swr'
 import shallow from 'zustand/shallow'
 import axios from '@/api/axios'
-import { useAppStore, useTokenAccountStore } from '@/store'
+import { useAppStore, useTokenAccountStore, useFarmStore } from '@/store'
 import { addAccChangeCbk, removeAccChangeCbk } from '@/hooks/app/useTokenAccountInfo'
 
 import Decimal from 'decimal.js'
@@ -24,12 +24,12 @@ export type FarmPositionInfo = {
   }[]
 }
 
-const fetcher = (url: string) => axios.get<FarmPositionData>(url, { skipError: true })
+const fetcher = ([url]: [url: string]) => axios.get<FarmPositionData>(url, { skipError: true })
 
 export default function useFarmPositions(props: { shouldFetch?: boolean; refreshInterval?: number }) {
   const { shouldFetch = true, refreshInterval = 1000 * 60 } = props || {}
-
   const getTokenBalanceUiAmount = useTokenAccountStore((s) => s.getTokenBalanceUiAmount)
+  const refreshTag = useFarmStore((s) => s.refreshTag)
 
   const [host, OWNER_STAKE_FARMS, connection, publicKey] = useAppStore(
     (s) => [s.urlConfigs.BASE_HOST, s.urlConfigs.OWNER_STAKE_FARMS, s.connection, s.publicKey],
@@ -38,7 +38,7 @@ export default function useFarmPositions(props: { shouldFetch?: boolean; refresh
 
   const url = !publicKey || !shouldFetch ? null : host + OWNER_STAKE_FARMS.replace('{owner}', publicKey.toString())
 
-  const { data, isLoading, error, ...rest } = useSWR(url, fetcher, {
+  const { data, isLoading, error, ...rest } = useSWR(url ? [url, refreshTag] : url, fetcher, {
     dedupingInterval: refreshInterval,
     focusThrottleInterval: refreshInterval,
     refreshInterval

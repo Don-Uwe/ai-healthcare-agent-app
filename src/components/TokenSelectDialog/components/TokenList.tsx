@@ -41,8 +41,8 @@ export default function TokenList({
   const { t } = useTranslation()
   const orgTokenList = useTokenStore((s) => s.displayTokenList)
   const orgTokenMap = useTokenStore((s) => s.tokenMap)
-  const setExtraTokenList = useTokenStore((s) => s.setExtraTokenList)
-  const unsetExtraTokenList = useTokenStore((s) => s.unsetExtraTokenList)
+  const setExtraTokenListAct = useTokenStore((s) => s.setExtraTokenListAct)
+  const unsetExtraTokenListAct = useTokenStore((s) => s.unsetExtraTokenListAct)
   const [getTokenBalanceUiAmount, tokenAccountMap] = useTokenAccountStore((s) => [s.getTokenBalanceUiAmount, s.tokenAccountMap])
   const tokenList = useMemo(() => (filterFn ? orgTokenList.filter(filterFn) : orgTokenList), [filterFn, orgTokenList])
   const [filteredList, setFilteredList] = useState<TokenInfo[]>(tokenList)
@@ -92,8 +92,8 @@ export default function TokenList({
   useEffect(() => {
     customTokenInfo.current = {}
     if (!newToken) return
-    setExtraTokenList({ token: newToken, addToStorage: newToken.type === 'raydium' || newToken.type === 'jupiter' })
-  }, [newToken, setExtraTokenList])
+    setExtraTokenListAct({ token: newToken, addToStorage: newToken.type === 'raydium' || newToken.type === 'jupiter' })
+  }, [newToken, setExtraTokenListAct])
 
   const showMoreData = useEvent(() => {
     setDisplayList((list) => list.concat(filteredList.slice(list.length, list.length + perPage)))
@@ -110,10 +110,10 @@ export default function TokenList({
   const getBalance = useCallback((token: TokenInfo) => getTokenBalanceUiAmount({ mint: token.address }).text, [getTokenBalanceUiAmount])
 
   const handleAddUnknownTokenClick = useCallback((token: TokenInfo) => {
-    setExtraTokenList({ token: { ...token, userAdded: true }, addToStorage: true, update: true })
+    setExtraTokenListAct({ token: { ...token, userAdded: true }, addToStorage: true, update: true })
   }, [])
   const handleRemoveUnknownTokenClick = useCallback((token: TokenInfo) => {
-    unsetExtraTokenList(token)
+    unsetExtraTokenListAct(token)
   }, [])
 
   const USDC = useMemo(() => orgTokenMap.get(USDCMint), [orgTokenMap])

@@ -23,12 +23,14 @@ import createStore from './createStore'
 import { useAppStore } from './useAppStore'
 import { getTxMeta } from './configs/farm'
 import { getMintSymbol } from '@/utils/token'
+import { refreshCreatedFarm } from '@/hooks/portfolio/farm/useCreatedFarmInfo'
 import Decimal from 'decimal.js'
 import BN from 'bn.js'
 
 export interface FarmStore {
   farmLoading: boolean
   currentFarm?: FormatFarmInfoOut
+  refreshTag: number
 
   harvestAllAct: (
     props: { farmInfoList: FormatFarmInfoOut[]; execute?: boolean } & TxCallbackProps
@@ -57,14 +59,17 @@ export interface FarmStore {
       idoKeys: IdoKeysData
     } & TxCallbackProps
   ) => Promise<string>
+
+  refreshFarmAct: () => void
 }
 
 const initFarmSate = {
-  farmLoading: false
+  farmLoading: false,
+  refreshTag: 0
 }
 
 export const useFarmStore = createStore<FarmStore>(
-  () => ({
+  (set, get) => ({
     ...initFarmSate,
 
     harvestAllAct: async ({ farmInfoList, execute = true, ...txProps }) => {
@@ -125,6 +130,7 @@ export const useFarmStore = createStore<FarmStore>(
       return execute()
         .then((txId: string) => {
           txStatusSubject.next({ txId, ...meta, onSuccess, onError })
+          get().refreshFarmAct()
           return txId
         })
         .catch((e) => {
@@ -156,6 +162,7 @@ export const useFarmStore = createStore<FarmStore>(
         return execute()
           .then((txId: string) => {
             txStatusSubject.next({ txId, ...meta, onSuccess, onError })
+            get().refreshFarmAct()
             return txId
           })
           .catch((e) => {
@@ -187,8 +194,14 @@ export const useFarmStore = createStore<FarmStore>(
 
       return execute()
         .then((txId: string) => {
-          txStatusSubject.next({ txId })
-          onSuccess?.(extInfo)
+          txStatusSubject.next({
+            txId,
+            onSuccess: () => {
+              onSuccess?.(extInfo)
+              refreshCreatedFarm()
+            },
+            onError
+          })
           return txId
         })
         .catch((e) => {
@@ -341,6 +354,9 @@ export const useFarmStore = createStore<FarmStore>(
           return ''
         })
         .finally(onFinally)
+    },
+    refreshFarmAct: () => {
+      set({ refreshTag: Date.now() })
     }
   }),
   'useFarmStore'

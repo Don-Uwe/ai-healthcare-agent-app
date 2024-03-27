@@ -26,7 +26,6 @@ import CircleSuccess from '@/icons/misc/CircleSuccess'
 import CircleInfo from '@/icons/misc/CircleInfo'
 import { colors } from '@/theme/cssVariables'
 import { toUTC } from '@/utils/date'
-import toUsdVolume from '@/utils/numberish/toUsdVolume'
 import SolanaNetworkIcon from '@/icons/networks/SolanaNetworkIcon'
 import EthereumNetworkIcon from '@/icons/networks/EthereumNetworkIcon'
 import BinanceNetworkIcon from '@/icons/networks/BinanceNetworkIcon'
@@ -38,11 +37,9 @@ import { useAppStore } from '@/store'
 import ChevronUpDownArrow from './ChevronUpDownArrow'
 import AddressChip from './AddressChip'
 import TokenAvatar from './TokenAvatar'
-
+import { ToastStatus } from '@/types/tx'
 import { getTxAllRecord } from '@/utils/tx/historyTxStatus'
 import dayjs from 'dayjs'
-
-import useTokenBalance from '@/hooks/portfolio/useTokenBalance'
 
 interface WalletMenuProps {
   wallet: Wallet | null
@@ -55,14 +52,14 @@ interface WalletMenuProps {
 type RecentTransaction = {
   name: string
   txId: string
-  status: 'success' | 'error' | 'info'
+  status: ToastStatus
   description: string
   date: number | Date | string // (ms)
   relatedTokens: { address: string; logoURI: string; symbol: string }[]
   sub?: {
     txId?: string
     name: string
-    status: 'success' | 'error' | 'info'
+    status: ToastStatus
     date: number | Date | string // (ms)
   }[]
 }

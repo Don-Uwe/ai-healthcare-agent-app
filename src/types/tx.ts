@@ -4,3 +4,5 @@ export interface TxCallbackProps<O = any> {
   onFinally?: (props?: O) => void
   onConfirmed?: () => void
 }
+
+export type ToastStatus = 'success' | 'error' | 'info'

@@ -30,8 +30,8 @@ export interface TokenStore {
 
   loadTokensAct: (forceUpdate?: boolean, jupTokenType?: JupTokenType) => void
   setDisplayTokenListAct: () => void
-  setExtraTokenList: (props: { token: TokenInfo; addToStorage?: boolean; update?: boolean }) => void
-  unsetExtraTokenList: (token: TokenInfo) => void
+  setExtraTokenListAct: (props: { token: TokenInfo; addToStorage?: boolean; update?: boolean }) => void
+  unsetExtraTokenListAct: (token: TokenInfo) => void
 
   getChainTokenInfo: (mint: string | PublicKey) => Promise<RawMint | undefined>
   getTokenDecimal: (mint: string | PublicKey, tokenInfo?: RawMint) => Promise<number>
@@ -119,7 +119,7 @@ export const useTokenStore = createStore<TokenStore>(
         { type: 'setDisplayTokenListAct' }
       )
     },
-    setExtraTokenList: ({ token, addToStorage = true, update }) => {
+    setExtraTokenListAct: ({ token, addToStorage = true, update }) => {
       const { tokenList, tokenMap, mintGroup, extraLoadedTokenList, setDisplayTokenListAct } = get()
 
       if (tokenMap.has(token.address) && !update) return
@@ -142,7 +142,7 @@ export const useTokenStore = createStore<TokenStore>(
       setDisplayTokenListAct()
       if (addToStorage) setTokenToStorage(token)
     },
-    unsetExtraTokenList: (token) => {
+    unsetExtraTokenListAct: (token) => {
       const { tokenList, tokenMap, mintGroup, extraLoadedTokenList, setDisplayTokenListAct } = get()
       if (!get().tokenMap.has(token.address)) return
       tokenMap.set(token.address, { ...token, userAdded: false })

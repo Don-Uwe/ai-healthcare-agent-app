@@ -10,7 +10,7 @@ import TokenAvatar from '@/components/TokenAvatar'
 import RemoveTokenIcon from '@/icons/misc/RemoveTokenIcon'
 
 export default function TokenListSetting() {
-  const unsetExtraTokenList = useTokenStore((s) => s.unsetExtraTokenList)
+  const unsetExtraTokenListAct = useTokenStore((s) => s.unsetExtraTokenListAct)
   const tokenList = useTokenStore((s) => s.extraLoadedTokenList)
   const [getTokenBalanceUiAmount] = useTokenAccountStore((s) => [s.getTokenBalanceUiAmount])
   const [displayList, setDisplayList] = useState<TokenInfo[]>([])
@@ -22,7 +22,7 @@ export default function TokenListSetting() {
   const getBalance = useCallback((token: TokenInfo) => getTokenBalanceUiAmount({ mint: token.address }).text, [getTokenBalanceUiAmount])
 
   const handleRemoveUnknownTokenClick = useCallback((token: TokenInfo) => {
-    unsetExtraTokenList(token)
+    unsetExtraTokenListAct(token)
   }, [])
 
   const renderTokenItem = useCallback(

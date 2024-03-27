@@ -3,6 +3,7 @@ import { WSOLMint, SOLMint, TxVersion, printSimulate, SOL_INFO } from '@raydium-
 import { createStore, useAppStore, useTokenStore } from '@/store'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
 import { txStatusSubject, multiTxStatusSubject } from '@/hooks/toast/useTxStatus'
+import showMultiToast from '@/hooks/toast/multiToastUtil'
 import { ApiSwapV1OutSuccess } from './type'
 import { isSolWSol } from '@/utils/token'
 import axios from '@/api/axios'
@@ -15,6 +16,7 @@ import { TxCallbackProps } from '@/types/tx'
 import i18n from '@/i18n'
 import { retry } from '@/utils/common'
 import { fetchComputePrice } from '@/utils/tx/computeBudget'
+import { ToastStatus } from '@/types/tx'
 
 const getSwapComputePrice = async () => {
   const transactionFee = useAppStore.getState().transactionFee
@@ -132,7 +134,7 @@ export const useSwapStore = createStore<SwapStore>(
         })
         const toastId = uuid()
         let swapDone = false
-        const showToast = (processedId: { txId: string; status: 'info' | 'success' | 'error' }[]) => {
+        const showToast = (processedId: { txId: string; status: ToastStatus }[]) => {
           if (swapDone) return
           if (signedTxs.length <= 1) {
             txStatusSubject.next({
@@ -143,33 +145,18 @@ export const useSwapStore = createStore<SwapStore>(
               update: true
             })
           } else {
-            const isError = processedId.some((t) => t.status === 'error')
-            multiTxStatusSubject.next({
+            showMultiToast({
               toastId,
-              skipWatchSignature: true,
-              update: true,
-              status: isError
-                ? 'error'
-                : processedId.filter((s) => s.status === 'success').length === processedId.length
-                ? 'success'
-                : 'info',
-              ...swapMeta,
-              title: swapMeta.title + (isError ? ` ${i18n.t('transaction.failed')}` : ''),
-              duration: isError ? 8000 : undefined,
-              subTxIds: processedId.map((tx, idx) => {
-                const titleKey =
-                  idx === 0
-                    ? 'transaction_history.set_up'
-                    : idx === processedId.length - 1 && processedId.length > 2
-                    ? 'transaction_history.clean_up'
-                    : 'transaction_history.name_swap'
-                return {
-                  txId: tx.txId,
-                  status: tx.status,
-                  title: i18n.t(titleKey),
-                  txHistoryTitle: titleKey
-                }
-              })
+              processedId,
+              meta: swapMeta,
+              txLength: signedTxs.length,
+              getSubTxTitle(idx) {
+                return idx === 0
+                  ? 'transaction_history.set_up'
+                  : idx === processedId.length - 1 && processedId.length > 2
+                  ? 'transaction_history.clean_up'
+                  : 'transaction_history.name_swap'
+              }
             })
           }
         }
@@ -195,20 +182,14 @@ export const useSwapStore = createStore<SwapStore>(
               }
               showToast(processedId)
               const res = await connection.confirmTransaction(txId, 'processed')
-
               processedId[idx] = {
                 txId,
                 status: res.value.err ? 'error' : 'success'
               }
-
+              showToast(processedId)
+              swapDone = !!res.value.err || idx === signedTxs.length - 1
               if (res.value.err) {
                 console.log('tx error:', res)
-                processedId[idx] = {
-                  txId,
-                  status: 'error'
-                }
-                showToast(processedId)
-                swapDone = true
                 throw new Error('tx failed')
               }
             },

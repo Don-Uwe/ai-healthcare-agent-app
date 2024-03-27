@@ -3,13 +3,12 @@ import { PublicKey } from '@solana/web3.js'
 import { useAppStore, useTokenAccountStore, useTokenStore } from './'
 import createStore from './createStore'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
-import { multiTxStatusSubject } from '@/hooks/toast/useTxStatus'
-import { TxCallbackProps } from '@/types/tx'
+import showMultiToast, { generateDefaultIds } from '@/hooks/toast/multiToastUtil'
+import { ToastStatus, TxCallbackProps } from '@/types/tx'
 import { isValidPublicKey } from '@/utils/publicKey'
 import { wSolToSol, solToWSol, solToWsolString } from '@/utils/token'
 import { getTxMeta } from './configs/market'
 import { v4 as uuid } from 'uuid'
-import i18n from '@/i18n'
 
 interface CreateMarketState {
   checkMarketAct: (marketId: string) => Promise<{ isValid: boolean; mintA?: string; mintB?: string }>
@@ -149,37 +148,44 @@ export const useCreateMarketStore = createStore<CreateMarketState>(
         values: { pair: `${solToWsolString(baseToken.symbol)} - ${solToWsolString(quoteToken.symbol)}` }
       })
 
-      let toasted = false
       let errorCalled = false
+      const toastId = uuid()
+
+      let processedId = generateDefaultIds(transactions.length)
+      const showToast = () => {
+        showMultiToast({
+          toastId,
+          processedId,
+          meta,
+          txLength: transactions.length,
+          getSubTxTitle(idx) {
+            return idx !== transactions.length - 1 ? 'transaction_history.set_up' : 'create_market.create'
+          }
+        })
+      }
 
       return execute({
         sequentially: true,
         onTxUpdate: (data) => {
+          processedId = processedId.map((prev, idx) => ({
+            txId: data[idx]?.txId || prev.txId,
+            status: !data[idx] || data[idx].status === 'sent' ? 'info' : (data[idx].status as ToastStatus)
+          }))
+          showToast()
+
           if (data.some((tx) => tx.status === 'error') && !errorCalled) {
             errorCalled = true
             onError?.()
+            return
           }
 
-          if (data.length === transactions.length && !toasted) {
-            onSuccess?.()
-            toasted = true
-            multiTxStatusSubject.next({
-              toastId: uuid(),
-              ...meta,
-              subTxIds: data.map(({ txId }, idx) => {
-                const titleKey = idx !== data.length - 1 ? 'transaction_history.set_up' : 'create_market.create'
-                return {
-                  txId,
-                  status: 'success',
-                  title: i18n.t(titleKey),
-                  txHistoryTitle: titleKey
-                }
-              })
-            })
+          if (data.filter((d) => d.status === 'success').length === transactions.length) {
+            onSuccess?.(extInfo.address.marketId.toString())
           }
         }
       })
         .then((r) => {
+          showToast()
           return { txId: r, marketId: extInfo.address.marketId.toString() || '' }
         })
         .catch((e) => {

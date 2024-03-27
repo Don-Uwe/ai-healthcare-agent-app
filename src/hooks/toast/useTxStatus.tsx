@@ -14,6 +14,7 @@ import { colors } from '@/theme/cssVariables/colors'
 import CircleCheck from '@/icons/misc/CircleCheck'
 import CircleError from '@/icons/misc/CircleError'
 import CircleInfo from '@/icons/misc/CircleInfo'
+import { ToastStatus } from '@/types/tx'
 
 export interface TxMeta {
   title?: string | ReactNode
@@ -38,9 +39,9 @@ export const txStatusSubject = new Subject<
 export const multiTxStatusSubject = new Subject<
   TxMeta & {
     toastId: string
-    status?: 'success' | 'error' | 'info'
+    status?: ToastStatus
     update?: boolean
-    subTxIds: (TxMeta & { txId: string; status?: 'success' | 'error' | 'info' })[]
+    subTxIds: (TxMeta & { txId: string; status?: ToastStatus })[]
     txValues?: Record<string, any>
     mintInfo?: ApiV3Token[]
     duration?: number
@@ -50,6 +51,8 @@ export const multiTxStatusSubject = new Subject<
     onSuccess?: (signatureResult: SignatureResult, context: Context) => void
   }
 >()
+
+const subscribeMap = new Map<string, number>()
 
 function useTxStatus() {
   const { t } = useTranslation()
@@ -118,7 +121,8 @@ function useTxStatus() {
             isMultiSig: isMultisigWallet
           })
 
-          connection.onSignature(
+          if (subscribeMap.has(txId)) connection.removeSignatureListener(subscribeMap.get(txId)!)
+          const subId = connection.onSignature(
             txId,
             (signatureResult, context) => {
               onConfirmed?.(signatureResult, context)
@@ -177,6 +181,7 @@ function useTxStatus() {
             'processed'
           )
 
+          subscribeMap.set(txId, subId)
           connection.getSignatureStatus(txId)
         }
       )
@@ -209,7 +214,7 @@ function useTxStatus() {
         }) => {
           const owner = useAppStore.getState().publicKey?.toBase58()
           const isMultisigWallet = useAppStore.getState().wallet?.adapter.name === 'SquadsX'
-          const txStatus: Record<string, 'success' | 'error' | 'info'> = {}
+          const txStatus: Record<string, ToastStatus> = {}
 
           subTxIds.forEach((tx) => {
             if (tx.status) txStatus[tx.txId] = tx.status
@@ -294,7 +299,8 @@ function useTxStatus() {
 
           if (!skipWatchSignature)
             subTxIds.forEach(({ txId }) => {
-              connection.onSignature(
+              if (subscribeMap.has(txId)) connection.removeSignatureListener(subscribeMap.get(txId)!)
+              const subId = connection.onSignature(
                 txId,
                 (signatureResult, context) => {
                   txStatus[txId] = signatureResult.err ? 'error' : 'success'
@@ -365,7 +371,7 @@ function useTxStatus() {
                 },
                 'processed'
               )
-
+              subscribeMap.set(txId, subId)
               connection.getSignatureStatus(txId)
             })
         }

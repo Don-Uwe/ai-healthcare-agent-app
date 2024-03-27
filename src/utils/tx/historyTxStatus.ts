@@ -1,15 +1,16 @@
+import { ToastStatus } from '@/types/tx'
 import { isClient } from '../common'
 
 const HISTORY_KEY = '_r_tx_history_'
 
 interface RecordProps {
-  status: 'error' | 'success' | 'info'
+  status: ToastStatus
   title: string
   description: string
   txId: string
   owner?: string
   mintInfo?: { address: string; logoURI: string; symbol: string }[]
-  subTx?: { txId?: string; name: string; status: 'error' | 'success' | 'info'; date: number }[]
+  subTx?: { txId?: string; name: string; status: ToastStatus; date: number }[]
   txValues?: Record<string, any>
   time: number
   isMultiSig?: boolean
