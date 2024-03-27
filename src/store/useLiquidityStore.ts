@@ -229,7 +229,6 @@ export const useLiquidityStore = createStore<LiquidityStore>(
       if (!raydium || !connection || !signAllTransactions) return ''
 
       const computeBudgetConfig = await getComputeBudgetConfig()
-
       const { execute, transactions } = await raydium.liquidity.removeAllLpAndCreateClmmPosition({
         ...params,
         createPositionInfo: {

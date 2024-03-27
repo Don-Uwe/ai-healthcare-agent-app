@@ -87,8 +87,10 @@ export default function TokenList({
         ? search
         : undefined
   })
+  const isUnknownNewToken = newToken?.type === 'unknown'
 
   useEffect(() => {
+    customTokenInfo.current = {}
     if (!newToken) return
     setExtraTokenList({ token: newToken, addToStorage: newToken.type === 'raydium' || newToken.type === 'jupiter' })
   }, [newToken, setExtraTokenList])
@@ -177,7 +179,7 @@ export default function TokenList({
             {t('common.balance')}/{t('common.address')}
           </Heading>
         </Flex>
-        {newToken?.type === 'unknown' ? (
+        {isUnknownNewToken ? (
           <Box padding={4} gap={4} flexDirection="column" display="flex">
             <Flex alignItems="center">
               <Text flex="1">Symbol:</Text>
@@ -238,11 +240,13 @@ export default function TokenList({
           </Box>
         )}
       </Flex>
-      <Box borderRadius={'8px'} background={colors.modalContainerBg} p="12px" mb="24px">
-        <Text opacity={'50%'} fontWeight={'normal'} fontSize={'12px'} lineHeight={'16px'} color={colors.textSecondary}>
-          {t('token_selector.token_not_found')}
-        </Text>
-      </Box>
+      {!isUnknownNewToken ? (
+        <Box borderRadius={'8px'} background={colors.modalContainerBg} p="12px" mb="24px">
+          <Text opacity={'50%'} fontWeight={'normal'} fontSize={'12px'} lineHeight={'16px'} color={colors.textSecondary}>
+            {t('token_selector.token_not_found')}
+          </Text>
+        </Box>
+      ) : null}
 
       <Button variant="solid-dark" width="full" bg={colors.backgroundDark} onClick={() => onOpenTokenList()}>
         {t('common.view_token_list')}
