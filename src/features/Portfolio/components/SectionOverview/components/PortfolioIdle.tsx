@@ -116,10 +116,10 @@ function AssetsList(props: { idleList?: IdleType[] }) {
             `
               "avatar symbol i1 i2 btn" auto / auto 1fr 1.3fr 1.3fr 1.5fr
               `,
-            `
-            "avatar symbol btn" auto
-            "i1 i2 btn" auto / 1fr 1fr 1fr
-          `,
+            //   `
+            //   "avatar symbol btn" auto
+            //   "i1 i2 btn" auto / 1fr 1fr 1fr
+            // `,
             `
             "avatar symbol i1 i2 btn" auto / auto 1fr 1.3fr 1.3fr 1.5fr
           `

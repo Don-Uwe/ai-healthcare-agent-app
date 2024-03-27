@@ -72,7 +72,7 @@ export default function PreviewDepositModal({
   return (
     <Modal size="lg" isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
-      <ModalContent sx={{ bg: 'rgba(28, 36, 62, 1)' }}>
+      <ModalContent color={colors.textPrimary}>
         <ModalHeader mb="5">{t('clmm.preview_deposit')}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
