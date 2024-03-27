@@ -3,13 +3,12 @@ import { PublicKey } from '@solana/web3.js'
 import { useAppStore, useTokenAccountStore, useTokenStore } from './'
 import createStore from './createStore'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
-import { multiTxStatusSubject } from '@/hooks/toast/useTxStatus'
-import { TxCallbackProps } from '@/types/tx'
+import showMultiToast, { generateDefaultIds, callBackHandler } from '@/hooks/toast/multiToastUtil'
+import { ToastStatus, TxCallbackProps } from '@/types/tx'
 import { isValidPublicKey } from '@/utils/publicKey'
 import { wSolToSol, solToWSol, solToWsolString } from '@/utils/token'
 import { getTxMeta } from './configs/market'
 import { v4 as uuid } from 'uuid'
-import i18n from '@/i18n'
 
 interface CreateMarketState {
   checkMarketAct: (marketId: string) => Promise<{ isValid: boolean; mintA?: string; mintB?: string }>
@@ -126,7 +125,7 @@ export const useCreateMarketStore = createStore<CreateMarketState>(
         mintB: quoteMint.toString()
       }
     },
-    createMarketAct: async ({ baseToken, quoteToken, orderSize, priceTick, onSuccess, onError, onFinally }) => {
+    createMarketAct: async ({ baseToken, quoteToken, orderSize, priceTick, ...txProps }) => {
       const { raydium, programIdConfig, connection, txVersion } = useAppStore.getState()
       if (!raydium || !connection) return { txId: [], marketId: '' }
       const { execute, transactions, extInfo } = await raydium.marketV2.create({
@@ -149,45 +148,42 @@ export const useCreateMarketStore = createStore<CreateMarketState>(
         values: { pair: `${solToWsolString(baseToken.symbol)} - ${solToWsolString(quoteToken.symbol)}` }
       })
 
-      let toasted = false
-      let errorCalled = false
+      const handler = callBackHandler({ transactionLength: transactions.length, ...txProps })
+      const toastId = uuid()
+      let processedId = generateDefaultIds(transactions.length)
+      const showToast = () => {
+        showMultiToast({
+          toastId,
+          processedId,
+          meta,
+          txLength: transactions.length,
+          getSubTxTitle(idx) {
+            return idx !== transactions.length - 1 ? 'transaction_history.set_up' : 'create_market.create'
+          }
+        })
+      }
 
       return execute({
         sequentially: true,
         onTxUpdate: (data) => {
-          if (data.some((tx) => tx.status === 'error') && !errorCalled) {
-            errorCalled = true
-            onError?.()
-          }
+          processedId = processedId.map((prev, idx) => ({
+            txId: data[idx]?.txId || prev.txId,
+            status: !data[idx] || data[idx].status === 'sent' ? 'info' : (data[idx].status as ToastStatus)
+          }))
+          showToast()
 
-          if (data.length === transactions.length && !toasted) {
-            onSuccess?.()
-            toasted = true
-            multiTxStatusSubject.next({
-              toastId: uuid(),
-              ...meta,
-              subTxIds: data.map(({ txId }, idx) => {
-                const titleKey = idx !== data.length - 1 ? 'transaction_history.set_up' : 'create_market.create'
-                return {
-                  txId,
-                  status: 'success',
-                  title: i18n.t(titleKey),
-                  txHistoryTitle: titleKey
-                }
-              })
-            })
-          }
+          handler(processedId)
         }
       })
         .then((r) => {
+          showToast()
           return { txId: r, marketId: extInfo.address.marketId.toString() || '' }
         })
         .catch((e) => {
-          onError?.()
+          txProps.onError?.()
           toastSubject.next({ txError: e })
           return { txId: [], marketId: '' }
         })
-        .finally(onFinally)
     }
   }),
   'useCreateMarketStore'

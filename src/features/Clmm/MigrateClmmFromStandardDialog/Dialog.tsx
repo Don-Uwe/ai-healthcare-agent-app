@@ -102,12 +102,14 @@ export default function MigrateFromStandardDialog({
   const isMobile = useAppStore((s) => s.isMobile)
   const migrateToClmmAct = useLiquidityStore((s) => s.migrateToClmmAct)
   const epochInfo = useAppStore((s) => s.epochInfo)
+  const refreshTag = useRef(Date.now())
   useRefreshEpochInfo()
 
   const { currentPrice } = useSubscribeClmmInfo({
     initialFetch: true,
     poolInfo: clmmPoolInfo,
-    throttle: 1000
+    throttle: 1000,
+    refreshTag: refreshTag.current
   })
   clmmPoolInfo.price = currentPrice || clmmPoolInfo.price
 
@@ -257,11 +259,12 @@ export default function MigrateFromStandardDialog({
       farmInfo,
       base: isMintABase ? 'MintA' : 'MintB',
       userFarmLpAmount: new BN(farmLpAmount),
-      onSuccess: onClose,
-      onFinally: () => {
+      onSuccess: () => {
         setLoading(false)
+        onClose()
         routeToPage('portfolio', { queryProps: { section: 'my-positions', position_tab: 'concentrated' } })
-      }
+      },
+      onError: () => setLoading(false)
     })
   }
 

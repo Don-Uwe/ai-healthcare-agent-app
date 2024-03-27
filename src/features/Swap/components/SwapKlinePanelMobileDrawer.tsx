@@ -98,7 +98,7 @@ function SwapKlinePanelMobileDrawerContent({
             <GridItem gridArea="price" pt={4} pl={3}>
               <HStack spacing={2} alignItems="baseline">
                 <Text fontSize="xl" fontWeight={700} color={colors.textPrimary}>
-                  {price ? formatCurrency(price.current, { symbol: '$', maximumDecimalTrailingZeroes: 5 }) : price}
+                  {price ? formatCurrency(price.current, { maximumDecimalTrailingZeroes: 5 }) : price}
                 </Text>
                 <Text
                   fontSize="xs"

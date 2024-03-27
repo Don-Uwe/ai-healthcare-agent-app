@@ -125,8 +125,8 @@ export default function ClmmPositionAccountItem({
   }, [isOpen, position.nftMint.toBase58()])
 
   useEffect(() => {
-    position.updateClmmPendingYield({ nftMint: position.nftMint.toString(), pendingYield: totalPendingYield })
-  }, [totalPendingYield, position.nftMint.toBase58()])
+    position.updateClmmPendingYield({ nftMint: position.nftMint.toString(), pendingYield: totalPendingYield, isEmpty: isEmptyReward })
+  }, [totalPendingYield, position.nftMint.toBase58(), isEmptyReward])
 
   return position.tickLower !== undefined && position.tickUpper !== undefined ? (
     <Box>
@@ -149,6 +149,7 @@ export default function ClmmPositionAccountItem({
           isOpen ? (
             isMobile ? (
               <ClmmPositionAccountItemDetailMobileDrawer
+                hasReward={!isEmptyReward}
                 onHarvest={handleHarvest}
                 poolInfo={poolInfo}
                 position={position}
@@ -165,6 +166,7 @@ export default function ClmmPositionAccountItem({
               />
             ) : (
               <ClmmPositionAccountItemDetail
+                hasReward={!isEmptyReward}
                 onHarvest={handleHarvest}
                 poolInfo={poolInfo}
                 aprData={aprData}

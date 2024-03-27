@@ -9,7 +9,7 @@ export default function useMultipleTokenInfo({
 }: {
   mintList: {
     address: string | PublicKey
-    programId?: string | PublicKey
+    programId?: PublicKey | undefined
   }[]
 }) {
   const tokenMap = useTokenStore((s) => s.tokenMap)

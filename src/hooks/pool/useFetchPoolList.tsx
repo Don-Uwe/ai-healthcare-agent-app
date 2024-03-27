@@ -13,7 +13,7 @@ import { ReturnPoolType, ReturnFormattedPoolType } from './type'
 let refreshTag = Date.now()
 export const refreshPoolCache = () => (refreshTag = Date.now())
 
-const fetcher = (url: string) => axios.get<PoolsApiReturn | SearchPoolsApiReturn>(url)
+const fetcher = ([url]: [url: string]) => axios.get<PoolsApiReturn | SearchPoolsApiReturn>(url)
 
 const PAGE_SIZE = 100
 
@@ -49,15 +49,14 @@ export default function useFetchPoolList<T extends PoolFetchType>(props?: {
   } = props || {}
   const [host, listUrl] = useAppStore((s) => [s.urlConfigs.BASE_HOST, s.urlConfigs.POOL_LIST], shallow)
 
-  const url =
-    (host + listUrl)
-      .replace('{type}', showFarms ? `${type}_farm` : type)
-      .replace('{sort}', sort)
-      .replace('{order}', order)
-      .replace('{page_size}', String(pageSize)) + `?time=${refreshTag}`
+  const url = (host + listUrl)
+    .replace('{type}', showFarms ? `${type}_farm` : type)
+    .replace('{sort}', sort)
+    .replace('{order}', order)
+    .replace('{page_size}', String(pageSize))
 
   const { data, setSize, error, ...swrProps } = useSWRInfinite(
-    (index) => (shouldFetch ? url.replace('{page}', String(index + 1)) : null),
+    (index) => (shouldFetch ? [url.replace('{page}', String(index + 1)), refreshTag] : null),
     fetcher,
     {
       revalidateFirstPage: false,

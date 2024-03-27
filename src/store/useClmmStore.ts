@@ -27,16 +27,16 @@ import { useAppStore, useTokenAccountStore } from '@/store'
 import { isSolWSol } from '@/utils/token'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
 import { txStatusSubject, multiTxStatusSubject } from '@/hooks/toast/useTxStatus'
+import showMultiToast, { generateDefaultIds, callBackHandler } from '@/hooks/toast/multiToastUtil'
 import getEphemeralSigners from '@/utils/tx/getEphemeralSigners'
 import { getMintSymbol } from '@/utils/token'
 
 import { CLMM_FEE_CONFIGS, getTxMeta } from './configs/clmm'
-import { TxCallbackProps } from '../types/tx'
+import { ToastStatus, TxCallbackProps } from '../types/tx'
 import { getComputeBudgetConfig } from '@/utils/tx/computeBudget'
 
 import BN from 'bn.js'
 import Decimal from 'decimal.js'
-import { Transaction } from 'ethers'
 
 export type CreatePoolBuildData =
   | TxBuildData<{ mockPoolInfo: ApiV3PoolInfoConcentratedItem; address: ClmmKeys }>
@@ -197,35 +197,37 @@ export const useClmmStore = createStore<ClmmState>(
           values: { symbol: 'Clmm farms' }
         })
 
-        let toasted = false
-        let errorCalled = false
-
-        buildData
-          .execute({
-            sequentially: false,
-            onTxUpdate: (data) => {
-              if (data.some((tx) => tx.status === 'error') && !errorCalled) {
-                errorCalled = true
-                txProps.onError?.()
-              }
-              if (data.length === buildData.transactions.length && !toasted) {
-                txProps.onSuccess?.()
-                toasted = true
-                multiTxStatusSubject.next({
-                  toastId: uuid(),
-                  ...meta,
-                  subTxIds: data.map(({ txId, status }, idx) => ({
-                    txId,
-                    status: status !== 'sent' ? status : undefined,
-                    title: meta.txHistoryDesc,
-                    txHistoryTitle: meta.txHistoryDesc,
-                    values: { symbol: `Clmm ${idx}` }
-                  }))
-                })
-              }
+        const toastId = uuid()
+        let processedId = generateDefaultIds(buildData.transactions.length)
+        const showToast = () => {
+          showMultiToast({
+            toastId,
+            processedId,
+            meta,
+            txLength: buildData.transactions.length,
+            getSubTxTitle() {
+              return meta.txHistoryTitle
             }
           })
-          .then(() => ({ txId: '', buildData }))
+        }
+
+        const handler = callBackHandler({ transactionLength: buildData.transactions.length, ...txProps })
+        buildData
+          .execute({
+            sequentially: true,
+            onTxUpdate: (data) => {
+              processedId = processedId.map((prev, idx) => ({
+                txId: data[idx]?.txId || prev.txId,
+                status: !data[idx] || data[idx].status === 'sent' ? 'info' : (data[idx].status as ToastStatus)
+              }))
+              showToast()
+              handler(processedId)
+            }
+          })
+          .then(() => {
+            showToast()
+            return { txId: '', buildData }
+          })
           .catch((e) => {
             txProps.onError?.()
             toastSubject.next({ ...meta, txError: e })
@@ -311,38 +313,55 @@ export const useClmmStore = createStore<ClmmState>(
             ? await createPoolBuildData.builder.buildMultiTx({ extraPreBuildData: [buildData as TxBuildData<Record<string, any>>] })
             : await createPoolBuildData.builder.buildV0MultiTx({ extraPreBuildData: [buildData as TxV0BuildData<Record<string, any>>] })
 
-        let toasted = false
-        let errorCalled = false
+        const handler = callBackHandler({ transactionLength: transactions.length, ...txProps })
+
+        const isMultiTx = transactions.length > 1
+        const toastId = uuid()
+        let processedId = generateDefaultIds(transactions.length)
+        const showToast = () => {
+          showMultiToast({
+            toastId,
+            processedId,
+            meta,
+            txLength: transactions.length,
+            getSubTxTitle(idx) {
+              return idx !== transactions.length - 1 ? 'transaction_history.set_up' : 'create_market.create'
+            }
+          })
+        }
+
         return execute({
           sequentially: true,
           onTxUpdate: (data) => {
-            if (data.some((tx) => tx.status === 'error') && !errorCalled) {
-              errorCalled = true
-              txProps.onError?.()
-            }
-            if (data.length === transactions.length && !toasted) {
-              !errorCalled && txProps.onSuccess?.()
-              txProps.onFinally?.()
-              toasted = true
-              multiTxStatusSubject.next({
-                toastId: uuid(),
+            processedId = processedId.map((prev, idx) => ({
+              txId: data[idx]?.txId || prev.txId,
+              status: !data[idx] || data[idx].status === 'sent' ? 'info' : (data[idx].status as ToastStatus)
+            }))
+            if (isMultiTx) showToast()
+            else {
+              if (data[0].status === 'success') txProps?.onSuccess?.()
+              txStatusSubject.next({
+                txId: data[0].txId,
+                update: true,
                 ...createPoolMeta,
-                subTxIds: data.map(({ txId, status }, idx) => ({
-                  txId,
-                  status: status !== 'sent' ? status : undefined,
-                  ...(idx === transactions.length - 1 ? meta : createPoolMeta)
-                }))
+                onError: txProps.onError,
+                onConfirmed: txProps.onConfirmed
               })
+              return
             }
+            handler(processedId)
           }
         })
-          .then(() => ({ txId: '', buildData }))
+          .then(() => {
+            if (isMultiTx) showToast()
+            return { txId: '', buildData }
+          })
           .catch((e) => {
             toastSubject.next({ txError: e, ...createPoolMeta })
             txProps.onError?.()
             return { txId: '' }
           })
-          .finally(txProps.onFinally)
+          .finally(isMultiTx ? undefined : txProps.onFinally)
       }
 
       return buildData
@@ -353,8 +372,9 @@ export const useClmmStore = createStore<ClmmState>(
             ...meta,
             mintInfo,
             onError: txProps.onError,
-            onConfirmed: () => txProps.onSuccess?.({ txId, buildData })
+            onConfirmed: txProps.onConfirmed
           })
+          txProps.onSuccess?.({ txId, buildData })
           return { txId, buildData }
         })
         .catch((e) => {

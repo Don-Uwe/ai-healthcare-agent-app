@@ -14,7 +14,6 @@ import useResizeObserver from '@/hooks/useResizeObserver'
 import { filterTokenFn } from '@/utils/token'
 import { isValidPublicKey } from '@/utils/publicKey'
 import shallow from 'zustand/shallow'
-import { useEvent } from '@/hooks/useEvent'
 
 type SearchBarProps = {
   value: string
@@ -33,8 +32,8 @@ export default function TokenSearchInput({
   ...boxProps
 }: SearchBarProps) {
   const { t } = useTranslation()
-  const [displayTokenList, tokenMap, setExtraTokenList, setDisplayTokenListAct] = useTokenStore(
-    (s) => [s.displayTokenList, s.tokenMap, s.setExtraTokenList, s.setDisplayTokenListAct],
+  const [displayTokenList, tokenMap, setExtraTokenListAct, setDisplayTokenListAct] = useTokenStore(
+    (s) => [s.displayTokenList, s.tokenMap, s.setExtraTokenListAct, s.setDisplayTokenListAct],
     shallow
   )
 
@@ -89,9 +88,9 @@ export default function TokenSearchInput({
 
   useEffect(() => {
     if (!newToken) return
-    setExtraTokenList({ token: newToken })
+    setExtraTokenListAct({ token: newToken })
     setDisplayTokenListAct()
-  }, [newToken, setExtraTokenList, setDisplayTokenListAct])
+  }, [newToken, setExtraTokenListAct, setDisplayTokenListAct])
 
   useEffect(() => {
     debounceUpdate(value)

@@ -6,7 +6,7 @@ import { useTokenStore } from '@/store/useTokenStore'
 import { useAppStore } from '@/store/useAppStore'
 import { getMintSymbol } from '@/utils/token'
 
-export default function useTokenInfo({ mint, programId }: { mint?: string | PublicKey; programId?: string | PublicKey }) {
+export default function useTokenInfo({ mint, programId }: { mint?: string | PublicKey; programId?: PublicKey | undefined }) {
   const tokenMap = useTokenStore((s) => s.tokenMap)
   const connection = useAppStore((s) => s.connection)
   const [loading, setLoading] = useState<boolean>(true)
@@ -14,7 +14,11 @@ export default function useTokenInfo({ mint, programId }: { mint?: string | Publ
 
   useEffect(() => {
     if (tokenMap.size < 1) return
-    if (!mint) return
+    if (!mint) {
+      setLoading(false)
+      setTokenInfo(undefined)
+      return
+    }
     const info = tokenMap.get(mint.toString())
 
     if (!info) {

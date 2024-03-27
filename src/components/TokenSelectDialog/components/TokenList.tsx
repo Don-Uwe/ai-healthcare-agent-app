@@ -41,13 +41,14 @@ export default function TokenList({
   const { t } = useTranslation()
   const orgTokenList = useTokenStore((s) => s.displayTokenList)
   const orgTokenMap = useTokenStore((s) => s.tokenMap)
-  const setExtraTokenList = useTokenStore((s) => s.setExtraTokenList)
-  const unsetExtraTokenList = useTokenStore((s) => s.unsetExtraTokenList)
+  const setExtraTokenListAct = useTokenStore((s) => s.setExtraTokenListAct)
+  const unsetExtraTokenListAct = useTokenStore((s) => s.unsetExtraTokenListAct)
   const [getTokenBalanceUiAmount, tokenAccountMap] = useTokenAccountStore((s) => [s.getTokenBalanceUiAmount, s.tokenAccountMap])
   const tokenList = useMemo(() => (filterFn ? orgTokenList.filter(filterFn) : orgTokenList), [filterFn, orgTokenList])
   const [filteredList, setFilteredList] = useState<TokenInfo[]>(tokenList)
   const [displayList, setDisplayList] = useState<TokenInfo[]>([])
   const [search, setSearch] = useState('')
+  const customTokenInfo = useRef<{ name?: string; symbol?: string }>({})
 
   const listControllerRef = useRef<ListPropController>()
   useEffect(() => {
@@ -79,14 +80,20 @@ export default function TokenList({
     setFilteredList(filteredList)
   }, [search, tokenList, tokenAccountMap])
 
+  const tempSetNewToken = orgTokenMap.get(search)
   const { tokenInfo: newToken } = useTokenInfo({
-    mint: search && !filteredList.length && isValidPublicKey(search) ? search : undefined
+    mint:
+      search && (!filteredList.length || (tempSetNewToken?.type === 'unknown' && !tempSetNewToken?.userAdded)) && isValidPublicKey(search)
+        ? search
+        : undefined
   })
+  const isUnknownNewToken = newToken?.type === 'unknown'
 
   useEffect(() => {
+    customTokenInfo.current = {}
     if (!newToken) return
-    setExtraTokenList({ token: newToken, addToStorage: newToken.type === 'raydium' || newToken.type === 'jupiter' })
-  }, [newToken, setExtraTokenList])
+    setExtraTokenListAct({ token: newToken, addToStorage: newToken.type === 'raydium' || newToken.type === 'jupiter' })
+  }, [newToken, setExtraTokenListAct])
 
   const showMoreData = useEvent(() => {
     setDisplayList((list) => list.concat(filteredList.slice(list.length, list.length + perPage)))
@@ -103,10 +110,10 @@ export default function TokenList({
   const getBalance = useCallback((token: TokenInfo) => getTokenBalanceUiAmount({ mint: token.address }).text, [getTokenBalanceUiAmount])
 
   const handleAddUnknownTokenClick = useCallback((token: TokenInfo) => {
-    setExtraTokenList({ token: { ...token, userAdded: true }, addToStorage: true, update: true })
+    setExtraTokenListAct({ token: { ...token, userAdded: true }, addToStorage: true, update: true })
   }, [])
   const handleRemoveUnknownTokenClick = useCallback((token: TokenInfo) => {
-    unsetExtraTokenList(token)
+    unsetExtraTokenListAct(token)
   }, [])
 
   const USDC = useMemo(() => orgTokenMap.get(USDCMint), [orgTokenMap])
@@ -172,17 +179,74 @@ export default function TokenList({
             {t('common.balance')}/{t('common.address')}
           </Heading>
         </Flex>
-        <Box overflow="hidden" mx="-12px">
-          <List height="100%" onLoadMore={showMoreData} preventResetOnChange items={displayList} getItemKey={(token) => token.address}>
-            {renderTokenItem}
-          </List>
-        </Box>
+        {isUnknownNewToken ? (
+          <Box padding={4} gap={4} flexDirection="column" display="flex">
+            <Flex alignItems="center">
+              <Text flex="1">Symbol:</Text>
+              <InputGroup flex="3" bg={colors.backgroundDark} color={colors.textSecondary} rounded="8px">
+                <Input
+                  p="8px 16px"
+                  variant="unstyled"
+                  _placeholder={{
+                    fontSize: '14px',
+                    color: colors.textTertiary
+                  }}
+                  placeholder={t('token_selector.input_token_symbol') ?? undefined}
+                  defaultValue={newToken?.symbol}
+                  onChange={(e) => {
+                    customTokenInfo.current.symbol = e.currentTarget.value
+                  }}
+                />
+              </InputGroup>
+            </Flex>
+            <Flex alignItems="center">
+              <Text flex="1">Name:</Text>
+              <InputGroup flex="3" bg={colors.backgroundDark} color={colors.textSecondary} rounded="8px">
+                <Input
+                  p="8px 16px"
+                  variant="unstyled"
+                  _placeholder={{
+                    fontSize: '14px',
+                    color: colors.textTertiary
+                  }}
+                  placeholder={t('token_selector.input_token_name') ?? undefined}
+                  defaultValue={newToken?.name}
+                  onChange={(e) => {
+                    customTokenInfo.current.name = e.currentTarget.value
+                  }}
+                />
+              </InputGroup>
+            </Flex>
+            <Button
+              variant="solid-dark"
+              width="full"
+              bg={colors.backgroundDark}
+              onClick={() => {
+                handleAddUnknownTokenClick({
+                  ...newToken,
+                  ...customTokenInfo.current
+                })
+                customTokenInfo.current = {}
+              }}
+            >
+              {t('token_selector.add_user_token')}
+            </Button>
+          </Box>
+        ) : (
+          <Box overflow="hidden" mx="-12px">
+            <List height="100%" onLoadMore={showMoreData} preventResetOnChange items={displayList} getItemKey={(token) => token.address}>
+              {renderTokenItem}
+            </List>
+          </Box>
+        )}
       </Flex>
-      <Box borderRadius={'8px'} background={colors.modalContainerBg} p="12px" mb="24px">
-        <Text opacity={'50%'} fontWeight={'normal'} fontSize={'12px'} lineHeight={'16px'} color={colors.textSecondary}>
-          {t('token_selector.token_not_found')}
-        </Text>
-      </Box>
+      {!isUnknownNewToken ? (
+        <Box borderRadius={'8px'} background={colors.modalContainerBg} p="12px" mb="24px">
+          <Text opacity={'50%'} fontWeight={'normal'} fontSize={'12px'} lineHeight={'16px'} color={colors.textSecondary}>
+            {t('token_selector.token_not_found')}
+          </Text>
+        </Box>
+      ) : null}
 
       <Button variant="solid-dark" width="full" bg={colors.backgroundDark} onClick={() => onOpenTokenList()}>
         {t('common.view_token_list')}

@@ -7,6 +7,7 @@ import Close from '@/icons/misc/Close'
 import ExclaimationCircle from '@/icons/misc/ExclaimationCircle'
 import CircleInfo from '@/icons/misc/CircleInfo'
 import { colors } from '@/theme/cssVariables'
+import { ToastStatus } from '@/types/tx'
 
 const toastDefaultConfig: { duration: number; position: ToastPosition } = {
   duration: 5000,
@@ -14,7 +15,7 @@ const toastDefaultConfig: { duration: number; position: ToastPosition } = {
 }
 
 type CustomUseToastOptions = Omit<UseToastOptions, 'status'> & {
-  status: 'success' | 'error' | 'info'
+  status: ToastStatus
   icon?: React.ReactNode
   detail?: React.ReactNode
   fullWidth?: boolean

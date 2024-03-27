@@ -1,7 +1,7 @@
 import { DEV_API_URLS, TokenInfo, ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 import axios from '@/api/axios'
-import { PublicKey, Connection } from '@solana/web3.js'
-import { TOKEN_PROGRAM_ID, getMint } from '@solana/spl-token'
+import { PublicKey, Connection, AccountInfo } from '@solana/web3.js'
+import { TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, unpackMint } from '@solana/spl-token'
 
 import { useAppStore } from '@/store/useAppStore'
 
@@ -21,27 +21,38 @@ export const getOnlineTokenInfo = async ({
 }: {
   mint: string | PublicKey
   connection?: Connection
-  programId?: string | PublicKey
+  programId?: PublicKey | undefined
 }): Promise<TokenInfo | undefined> => {
   try {
     if (connection) {
-      const onlineData = await getMint(connection, new PublicKey(mint), 'confirmed', new PublicKey(programId))
-      const mintAddress = mint.toString()
-      if (onlineData) {
-        const res = {
-          chainId: 101,
-          address: mintAddress,
-          programId: '',
-          logoURI: '',
-          symbol: mintAddress.slice(0, 6),
-          name: mintAddress.slice(0, 6),
-          decimals: onlineData.decimals,
-          tags: [],
-          extensions: {},
-          priority: 2
+      const address = new PublicKey(mint)
+      const info = await connection.getAccountInfo(address, 'confirmed')
+      const space = (info as AccountInfo<Buffer> & { space?: number })?.space ?? 0
+      if (space === 82 || space > 165) {
+        if (info?.owner.equals(TOKEN_PROGRAM_ID)) {
+          programId = TOKEN_PROGRAM_ID
+        } else if (info?.owner.equals(TOKEN_2022_PROGRAM_ID)) {
+          programId = TOKEN_2022_PROGRAM_ID
         }
-        cacheTokenInfoMap.set(mint.toString(), res)
-        return res
+        const onlineData = unpackMint(address, info, programId)
+        const mintAddress = mint.toString()
+        if (onlineData) {
+          const res = {
+            chainId: 101,
+            address: mintAddress,
+            programId: '',
+            logoURI: '',
+            symbol: mintAddress.slice(0, 6),
+            name: mintAddress.slice(0, 6),
+            decimals: onlineData.decimals,
+            tags: [],
+            extensions: {},
+            priority: 2,
+            type: 'unknown'
+          }
+          cacheTokenInfoMap.set(mint.toString(), res)
+          return res
+        }
       }
     }
     return undefined
@@ -60,7 +71,7 @@ export const getTokenInfo = async ({
   mint: string | PublicKey
   forceReload?: boolean
   connection?: Connection
-  programId?: string | PublicKey
+  programId?: PublicKey | undefined
   notFetchOnline?: boolean
 }): Promise<TokenInfo | undefined> => {
   if (!forceReload) {

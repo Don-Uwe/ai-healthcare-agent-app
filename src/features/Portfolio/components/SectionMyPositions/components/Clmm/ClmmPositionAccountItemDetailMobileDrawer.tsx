@@ -35,6 +35,7 @@ type DetailProps = {
   nftMint: string
   totalPendingYield: string
   baseIn: boolean
+  hasReward?: boolean
   onHarvest: (props: { onSend?: () => void; onFinally?: () => void }) => void
   onClickCloseButton: (props: { onSend?: () => void; onFinally?: () => void }) => void
   onClickMinusButton: () => void
@@ -51,6 +52,7 @@ export default function ClmmPositionAccountItemDetailMobileDrawer({
   baseIn,
   timeBasis,
   onTimeBasisChange,
+  hasReward,
   onHarvest,
   onClickCloseButton,
   onClickMinusButton,
@@ -103,6 +105,7 @@ export default function ClmmPositionAccountItemDetailMobileDrawer({
             />
             <PendingYield
               isLoading={isLoading}
+              hasReward={hasReward}
               onHarvest={handleHarvest}
               pendingYield={toUsdVolume(totalPendingYield.toString())}
               rewardTokens={poolInfo.rewardDefaultInfos.map((r) => r.mint)}

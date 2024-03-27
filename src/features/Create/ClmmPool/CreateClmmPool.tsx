@@ -165,7 +165,7 @@ export default function CreateClmmPool() {
         baseAmount: currentCreateInfo.current.inputA ? mintAAmount : mintBAmount,
         otherAmountMax: currentCreateInfo.current.inputA ? mintBAmount : mintAAmount,
         createPoolBuildData: buildData,
-        onSuccess: () => routeToPage('pools'),
+        onConfirmed: () => routeToPage('pools'),
         onFinally: () => setIsTxSending(false)
       })
     })

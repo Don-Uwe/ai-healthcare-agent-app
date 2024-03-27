@@ -27,16 +27,24 @@ interface Props {
   throttle?: number
   initialFetch?: boolean
   subscribe?: boolean
+  refreshTag?: number
 }
 
 const updateSubject = new Subject<RpcPoolData>()
 
-export default function useSubscribeClmmInfo({ poolInfo, throttle = MINUTE_MILLISECONDS, initialFetch = false, subscribe = true }: Props) {
+export default function useSubscribeClmmInfo({
+  poolInfo,
+  throttle = MINUTE_MILLISECONDS,
+  initialFetch = false,
+  subscribe = true,
+  refreshTag
+}: Props) {
   const [connection, CLMM_PROGRAM_ID] = useAppStore((s) => [s.connection, s.programIdConfig.CLMM_PROGRAM_ID], shallow)
   const [data, setData] = useState<RpcPoolData | undefined>()
   const { data: rpcClmmData, mutate } = useFetchRpcClmmInfo({
     shouldFetch: initialFetch && !data,
     id: poolInfo?.id,
+    refreshTag,
     refreshInterval: 15 * 1000
   })
 

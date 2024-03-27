@@ -47,6 +47,7 @@ export default function RemoveLiquidityModal({
 }) {
   const { t } = useTranslation()
   const featureDisabled = useAppStore((s) => s.featureDisabled.removeConcentratedPosition)
+  const removeLiquidityAct = useClmmStore((s) => s.removeLiquidityAct)
   const { getPriceAndAmount } = useClmmBalance({})
   const sliderRef = useRef({ changeValue: (_val: number) => {} })
   const focusARef = useRef(true)
@@ -73,8 +74,6 @@ export default function RemoveLiquidityModal({
 
   const handleFocusA = useCallback(() => (focusARef.current = true), [])
   const handleFocusB = useCallback(() => (focusARef.current = false), [])
-
-  const removeLiquidityAct = useClmmStore((s) => s.removeLiquidityAct)
 
   let error = undefined
   try {

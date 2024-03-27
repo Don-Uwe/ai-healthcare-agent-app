@@ -31,7 +31,7 @@ import useValidate from './useValidate'
 import { Desktop } from '@/components/MobileDesktop'
 import ChevronLeftIcon from '@/icons/misc/ChevronLeftIcon'
 import { debounce } from '@/utils/functionMethods'
-import { routeBack } from '@/utils/routeTools'
+import { routeBack, useRouteQuery } from '@/utils/routeTools'
 import { wSolToSol } from '@/utils/token'
 import useSubscribeClmmInfo from '@/hooks/pool/clmm/useSubscribeClmmInfo'
 import { calRatio } from '../utils/math'
@@ -48,9 +48,9 @@ export default function CreatePosition() {
 
   const { t } = useTranslation()
   const router = useRouter()
-  const { pool_id: urlPoolId } = router.query as {
+  const { pool_id: urlPoolId } = useRouteQuery<{
     pool_id?: string
-  }
+  }>()
   const featureDisabled = useAppStore((s) => s.featureDisabled.createConcentratedPosition)
 
   const { isOpen, onOpen, onClose } = useDisclosure()
@@ -65,6 +65,7 @@ export default function CreatePosition() {
   const [rangePercent, setRangePercent] = useState(0.5)
   const [aprTab, setAprTab] = useState(AprKey.Day)
   const [tokens, setTokens] = useState<{ mintA?: string; mintB?: string }>({})
+  const rpcRefreshTag = useRef(Date.now())
   const fetchPoolId = urlPoolId || '2QdhepnKRTLjjSqPL1PtKNwqrUkoLee5Gqs8bvZhRdMv'
 
   const { data: tokenPrices } = useTokenPrice({
@@ -84,7 +85,8 @@ export default function CreatePosition() {
   const rpcData = useSubscribeClmmInfo({
     initialFetch: true,
     poolInfo: clmmData,
-    throttle: 20 * 1000
+    throttle: 10 * 1000,
+    refreshTag: rpcRefreshTag.current
   })
 
   if (clmmData && rpcData?.currentPrice) clmmData.price = rpcData.currentPrice!
@@ -353,16 +355,16 @@ export default function CreatePosition() {
       otherAmountMax: focusPoolARef.current ? mintBAmount : mintAAmount,
       tickLower: tickPriceRef.current.tickLower!,
       tickUpper: tickPriceRef.current.tickUpper!,
-      onSuccess: (props) => {
-        setIsSending(false)
-        setNFTAddress(props?.buildData.extInfo.nftMint.toString() || '')
+      onConfirmed: () => {
         onClose()
         onNFTOpen()
         setTimeout(() => {
           mutate()
         }, 500)
       },
-      onError: () => setIsSending(false)
+      onFinally: () => setIsSending(false)
+    }).then((props) => {
+      setNFTAddress(props?.buildData?.extInfo.nftMint.toString() || '')
     })
   }
 

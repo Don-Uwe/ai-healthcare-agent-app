@@ -1,4 +1,4 @@
-import { ToastPosition, useToast, UseToastOptions } from '@chakra-ui/react'
+import { ToastPosition, useToast, UseToastOptions, ToastId } from '@chakra-ui/react'
 import { ReactNode, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Subject } from 'rxjs'
@@ -35,16 +35,20 @@ const toastConfig = {
   }
 }
 
+const userClosedToastIds = new Map<string | number, string>()
+
 function useGlobalToast() {
   const toast = useToast()
   const { t } = useTranslation()
 
   useEffect(() => {
     const sub = toastSubject.asObservable().subscribe(({ id, update, close, txError, noRpc, ...data }) => {
+      const status = data.status === 'error' || data.status === 'info' ? data.status : 'success'
       if (close) {
         id && toast.close(id)
         return
       }
+      if (id && userClosedToastIds.has(id) && userClosedToastIds.get(id) === status) return
       if (update && id && toast.isActive(id)) {
         toast.update(id, {
           duration: data.duration || toastConfig.duration,
@@ -52,9 +56,12 @@ function useGlobalToast() {
           ...data,
           render: (props: RenderProps) => (
             <Toast
-              state={{ ...toastConfig, ...data, status: data.status === 'error' || data.status === 'info' ? data.status : 'success' }}
+              state={{ ...toastConfig, ...data, status }}
               id={props.id!}
-              onClose={props.onClose}
+              onClose={() => {
+                props.onClose?.()
+                userClosedToastIds.set(props.id as ToastId, status)
+              }}
             />
           )
         })
@@ -116,7 +123,10 @@ function useGlobalToast() {
           <Toast
             state={{ ...toastConfig, ...data, status: data.status === 'error' || data.status === 'info' ? data.status : 'success' }}
             id={props.id!}
-            onClose={props.onClose}
+            onClose={() => {
+              props.onClose?.()
+              userClosedToastIds.set(props.id as ToastId, status)
+            }}
           />
         )
       })

@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { Box, Flex, Grid, GridItem, HStack, Heading, SimpleGrid, Text } from '@chakra-ui/react'
 import { useTranslation } from 'react-i18next'
 import { useRouter } from 'next/router'
@@ -43,6 +43,7 @@ export default function SectionMyPositions() {
     }
   ]
   const connected = useAppStore((s) => s.connected)
+  const owner = useAppStore((s) => s.publicKey)
 
   const defaultTab = (query.tab as string) || tabs[0].value
 
@@ -60,7 +61,6 @@ export default function SectionMyPositions() {
   const isFocusStake = currentTab === tabs[2].value
 
   const noRewardClmmPos = useRef<Set<string>>(new Set())
-
   const setNoRewardClmmPos = useEvent((poolId: string, isDelete?: boolean) => {
     if (isDelete) {
       noRewardClmmPos.current.delete(poolId)
@@ -68,6 +68,13 @@ export default function SectionMyPositions() {
     }
     noRewardClmmPos.current.add(poolId)
   })
+
+  useEffect(
+    () => () => {
+      noRewardClmmPos.current.clear()
+    },
+    [owner?.toBase58()]
+  )
 
   const {
     handleHarvest,
@@ -90,11 +97,11 @@ export default function SectionMyPositions() {
           "title  tabs  " auto
           "action action" auto / 1fr 1fr
         `,
-          `
-          "title " auto
-          "tabs  " auto
-          "action" auto / 1fr 
-        `,
+          //   `
+          //   "title " auto
+          //   "tabs  " auto
+          //   "action" auto / 1fr
+          // `,
           `
           "title title " auto
           "tabs  action" auto / 1fr 1fr

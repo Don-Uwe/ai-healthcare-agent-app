@@ -140,7 +140,10 @@
     "search_placeholder": "Search by token or paste address",
     "jupiter_types_all": "ALL",
     "jupiter_types_strict": "Strict",
-    "token_not_found": "Can’t find the token you’re looking for? Try entering the mint address or check token list settings below."
+    "token_not_found": "Can’t find the token you’re looking for? Try entering the mint address or check token list settings below.",
+    "input_token_symbol": "input a symbol for this token",
+    "input_token_name": "input a name for this token (optional)",
+    "add_user_token": "Add User Token"
   },
   "field": {
     "24h_volume": "Volume 24H",

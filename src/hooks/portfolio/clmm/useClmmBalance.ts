@@ -1,11 +1,10 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 import {
   getPdaPersonalPositionAddress,
   PositionInfoLayout,
   TickUtils,
   ApiV3PoolInfoConcentratedItem,
-  PositionUtils,
-  publicKey
+  PositionUtils
 } from '@raydium-io/raydium-sdk-v2'
 import shallow from 'zustand/shallow'
 import { PublicKey, Connection } from '@solana/web3.js'
@@ -48,8 +47,6 @@ export default function useClmmBalance({
     shallow
   )
   useRefreshEpochInfo()
-
-  const [balanceData, setBalanceData] = useState<ClmmDataMap>(new Map())
 
   const balanceMints = useMemo(() => tokenAccountRawInfos.filter((acc) => acc.accountInfo.amount.eq(new BN(1))), [tokenAccountRawInfos])
   const getPriceAndAmount = useEvent(({ poolInfo, position }: { poolInfo: ApiV3PoolInfoConcentratedItem; position: ClmmPosition }) => {
@@ -109,9 +106,8 @@ export default function useClmmBalance({
     keepPreviousData: !!needFetch && !!owner
   })
 
-  useEffect(() => {
+  const balanceData = useMemo(() => {
     const positionMap: ClmmDataMap = new Map()
-    if (isLoading || isValidating) return
     ;(data || []).forEach((positionRes, idx) => {
       if (!positionRes) return
       const position = PositionInfoLayout.decode(positionRes.data)
@@ -125,21 +121,14 @@ export default function useClmmBalance({
         ])
       else positionMap.set(poolId, [...Array.from(positionMap.get(poolId)!), position])
     })
-    setBalanceData(positionMap)
-  }, [data, allPositionKey, isLoading, isValidating])
+    return positionMap
+  }, [data, allPositionKey])
 
   useEffect(() => {
     if (lastRefreshTag === refreshClmmPositionTag) return
     lastRefreshTag = refreshClmmPositionTag
     mutate()
   }, [refreshClmmPositionTag, mutate])
-
-  useEffect(
-    () => () => {
-      setBalanceData(new Map())
-    },
-    [owner?.toBase58()]
-  )
 
   return {
     clmmBalanceInfo: balanceData,
