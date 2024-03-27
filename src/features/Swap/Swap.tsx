@@ -58,7 +58,16 @@ export default function Swap() {
       width={!isMobile && isPCChartShown ? 'min(100%, 1300px)' : undefined}
     >
       <HStack alignSelf="flex-end" my={[1, 0]}>
-        <Box cursor="pointer" onClick={() => setIsPCChartShown((b) => !b)}>
+        <Box
+          cursor="pointer"
+          onClick={() => {
+            if (!isMobile) {
+              setIsPCChartShown((b) => !b)
+            } else {
+              setIsMobileChartShown(true)
+            }
+          }}
+        >
           {isMobile || isPCChartShown ? (
             <SwapChatIcon />
           ) : (
@@ -83,15 +92,15 @@ export default function Swap() {
         ]}
         gap={[3, isPCChartShown ? 8 : 0]}
       >
-        <GridItem ref={swapPanelRef} gridArea="panel">
-          <PanelCard p={[3, 6]} flexGrow={['1', 'unset']}>
+        <GridItem gridArea="panel">
+          <PanelCard ref={swapPanelRef} p={[3, 6]} flexGrow={['1', 'unset']}>
             <SwapPanel onInputMintChange={setInputMint} onOutputMintChange={setOutputMint} />
           </PanelCard>
         </GridItem>
 
-        <GridItem ref={klineRef} gridArea="kline">
+        <GridItem gridArea="kline" {...(isMobile ? { mb: 3 } : {})}>
           {!isMobile && isPCChartShown && (
-            <PanelCard p={[3, 3]} gap={4} height="100%">
+            <PanelCard ref={klineRef} p={[3, 3]} gap={4} height="100%">
               <SwapKlinePanel
                 untilDate={untilDate.current}
                 baseToken={baseToken}
@@ -105,7 +114,7 @@ export default function Swap() {
           {isMobile && (
             <PanelCard
               p={[3, 6]}
-              gap={4}
+              gap={0}
               onClick={() => {
                 setIsMobileChartShown(true)
               }}

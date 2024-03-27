@@ -1,12 +1,16 @@
-import { Grid, GridItem, HStack, Text } from '@chakra-ui/react'
+import { Box, Grid, GridItem, HStack, Text } from '@chakra-ui/react'
 import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 
 import TokenAvatarPair from '@/components/TokenAvatarPair'
 import { colors } from '@/theme/cssVariables'
 import toPercentString from '@/utils/numberish/toPercentString'
 import { formatCurrency } from '@/utils/numberish/formatter'
+import { useTranslation } from 'react-i18next'
+import { useEffect, useRef } from 'react'
+import { ColorType, IChartApi, ISeriesApi, createChart } from 'lightweight-charts'
 
 import useFetchPoolKLine from '@/hooks/pool/useFetchPoolKLine'
+import ExpandLeftTopIcon from '@/icons/misc/ExpandLeftTopIcon'
 
 export function SwapKlinePanelMobileThumbnail({
   untilDate,
@@ -17,12 +21,66 @@ export function SwapKlinePanelMobileThumbnail({
   baseToken: ApiV3Token | undefined
   quoteToken: ApiV3Token | undefined
 }) {
-  const { currentPrice, change24H = 0 } = useFetchPoolKLine({
+  const {
+    data,
+    currentPrice,
+    change24H = 0,
+    isEmptyResult
+  } = useFetchPoolKLine({
     base: baseToken?.address,
     quote: quoteToken?.address,
     timeType: '15m',
     untilDate
   })
+  const { t } = useTranslation()
+  const chartCtrRef = useRef<HTMLDivElement>(null)
+  const chartRef = useRef<{ chart?: IChartApi; line?: ISeriesApi<'Line'> }>({})
+  const pair = baseToken && quoteToken ? `${baseToken?.address}-${quoteToken?.address}` : undefined
+  useEffect(() => {
+    if (!pair) return
+    const chart = createChart(chartCtrRef.current!, {
+      layout: { background: { type: ColorType.Solid, color: 'transparent' }, fontFamily: 'Space Grotesk' },
+      grid: {
+        vertLines: {
+          visible: false
+        },
+        horzLines: {
+          visible: false
+        }
+      },
+      crosshair: {
+        horzLine: {
+          visible: false
+        },
+        vertLine: {
+          visible: false
+        }
+      },
+      timeScale: {
+        visible: false
+      },
+      rightPriceScale: {
+        visible: false
+      },
+      leftPriceScale: {
+        visible: false
+      }
+    })
+    const lineSeries = chart.addLineSeries({
+      priceLineVisible: false
+    })
+    chartRef.current.chart = chart
+    chartRef.current.line = lineSeries
+    return () => {
+      chart.remove()
+      chartRef.current = {}
+    }
+  }, [pair])
+
+  useEffect(() => {
+    if (!chartRef.current.chart || !data.length) return
+    chartRef.current.line?.setData(data)
+  }, [data])
 
   return (
     <>
@@ -52,14 +110,23 @@ export function SwapKlinePanelMobileThumbnail({
         <GridItem gridArea="price">
           <HStack spacing={2}>
             <Text fontSize={['md', 'xl']} fontWeight={500} color={colors.textPrimary}>
-              {currentPrice !== undefined ? formatCurrency(currentPrice, { symbol: '$', maximumDecimalTrailingZeroes: 5 }) : '--'}
+              {currentPrice !== undefined ? formatCurrency(currentPrice, { maximumDecimalTrailingZeroes: 5 }) : '--'}
             </Text>
             <Text fontSize={['xs', 'sm']} color={change24H > 0 ? 'colors.teal' : change24H < 0 ? '#ff4ea3' : '#888888'}>
               {toPercentString(change24H, { alwaysSigned: true })}
             </Text>
           </HStack>
         </GridItem>
+        <GridItem gridArea="chart" position="relative" height="100%">
+          <Box ref={chartCtrRef} style={{ opacity: isEmptyResult ? 0 : 1, width: '100%', height: '100%', contain: 'size' }}></Box>
+        </GridItem>
       </Grid>
+      <HStack justify="center">
+        <Text fontWeight="bold" fontSize="12px" color={colors.textSecondary}>
+          {t('swap.show_chart')}
+        </Text>
+        <ExpandLeftTopIcon />
+      </HStack>
     </>
   )
 }
