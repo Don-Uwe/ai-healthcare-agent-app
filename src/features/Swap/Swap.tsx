@@ -92,25 +92,23 @@ export default function Swap() {
         ]}
         gap={[3, isPCChartShown ? 8 : 0]}
       >
-        <GridItem gridArea="panel">
-          <PanelCard ref={swapPanelRef} p={[3, 6]} flexGrow={['1', 'unset']}>
+        <GridItem ref={swapPanelRef} gridArea="panel">
+          <PanelCard p={[3, 6]} flexGrow={['1', 'unset']}>
             <SwapPanel onInputMintChange={setInputMint} onOutputMintChange={setOutputMint} />
           </PanelCard>
         </GridItem>
 
         <GridItem gridArea="kline" {...(isMobile ? { mb: 3 } : {})}>
-          {!isMobile && isPCChartShown && (
-            <PanelCard ref={klineRef} p={[3, 3]} gap={4} height="100%">
-              <SwapKlinePanel
-                untilDate={untilDate.current}
-                baseToken={baseToken}
-                quoteToken={quoteToken}
-                timeType={selectedTimeType}
-                onDirectionToggle={() => setDirectionReverse((b) => !b)}
-                onTimeTypeChange={setSelectedTimeType}
-              />
-            </PanelCard>
-          )}
+          <PanelCard ref={klineRef} p={[3, 3]} gap={4} height="100%" {...(isMobile || !isPCChartShown ? { display: 'none' } : {})}>
+            <SwapKlinePanel
+              untilDate={untilDate.current}
+              baseToken={baseToken}
+              quoteToken={quoteToken}
+              timeType={selectedTimeType}
+              onDirectionToggle={() => setDirectionReverse((b) => !b)}
+              onTimeTypeChange={setSelectedTimeType}
+            />
+          </PanelCard>
           {isMobile && (
             <PanelCard
               p={[3, 6]}
