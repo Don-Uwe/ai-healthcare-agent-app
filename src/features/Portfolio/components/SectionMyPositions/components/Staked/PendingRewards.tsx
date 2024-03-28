@@ -9,10 +9,11 @@ import { useTranslation } from 'react-i18next'
 type PendingRewardsProps = {
   pendingReward: string
   isLoading: boolean
+  harvestable: boolean
   onHarvest: () => void
 }
 
-export default function PendingRewards({ pendingReward, isLoading, onHarvest }: PendingRewardsProps) {
+export default function PendingRewards({ pendingReward, isLoading, harvestable, onHarvest }: PendingRewardsProps) {
   const { t } = useTranslation()
   return (
     <Flex flexBasis="300px" minH="72px" bg={colors.backgroundDark} rounded="lg" justify={'space-between'} py={3} px={4}>
@@ -26,7 +27,7 @@ export default function PendingRewards({ pendingReward, isLoading, onHarvest }: 
         </HStack>
       </Flex>
       <Flex justify={'flex-end'} align="center">
-        <Button variant="outline" isDisabled={Number(pendingReward) <= 0} isLoading={isLoading} onClick={onHarvest}>
+        <Button variant="outline" isDisabled={!harvestable} isLoading={isLoading} onClick={onHarvest}>
           {t('staking.pending_rewards_button')}
         </Button>
       </Flex>

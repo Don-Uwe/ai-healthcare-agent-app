@@ -24,6 +24,7 @@ import { useAppStore } from './useAppStore'
 import { getTxMeta } from './configs/farm'
 import { getMintSymbol } from '@/utils/token'
 import { refreshCreatedFarm } from '@/hooks/portfolio/farm/useCreatedFarmInfo'
+import { getDefaultToastData, transformProcessData, handleMultiTxToast } from '@/hooks/toast/multiToastUtil'
 import Decimal from 'decimal.js'
 import BN from 'bn.js'
 
@@ -34,7 +35,7 @@ export interface FarmStore {
 
   harvestAllAct: (
     props: { farmInfoList: FormatFarmInfoOut[]; execute?: boolean } & TxCallbackProps
-  ) => Promise<{ txId: string; buildData?: MultiTxBuildData | MultiTxV0BuildData }>
+  ) => Promise<{ txIds: string[]; buildData?: MultiTxBuildData | MultiTxV0BuildData }>
 
   withdrawFarmAct: (
     params: { farmInfo: FormatFarmInfoOut | ApiStakePool; amount: string; userAuxiliaryLedgers?: string[] } & TxCallbackProps
@@ -74,7 +75,7 @@ export const useFarmStore = createStore<FarmStore>(
 
     harvestAllAct: async ({ farmInfoList, execute = true, ...txProps }) => {
       const { raydium, txVersion } = useAppStore.getState()
-      if (!raydium) return { txId: '' }
+      if (!raydium) return { txIds: [] }
       const data = await raydium.farm.harvestAllRewards({
         txVersion,
         farmInfoList: farmInfoList.reduce(
@@ -91,21 +92,45 @@ export const useFarmStore = createStore<FarmStore>(
           action: 'harvest',
           values: {}
         })
+
+        const txLength = data.transactions.length
+        const { toastId, processedId, handler } = getDefaultToastData({
+          txLength,
+          ...txProps
+        })
+        const getSubTxTitle = () => meta.title
         return data
-          .execute()
+          .execute({
+            sequentially: true,
+            onTxUpdate: (data) =>
+              handleMultiTxToast({
+                toastId,
+                processedId: transformProcessData({ processedId, data }),
+                txLength,
+                meta,
+                handler,
+                getSubTxTitle
+              })
+          })
           .then((txIds) => {
-            txStatusSubject.next({ txId: txIds[0], ...meta })
-            txProps.onSuccess?.()
-            return { txId: txIds[0], buildData: data }
+            handleMultiTxToast({
+              toastId,
+              processedId: transformProcessData({ processedId, data: [] }),
+              txLength,
+              meta,
+              handler,
+              getSubTxTitle
+            })
+            return { txIds, buildData: data }
           })
           .catch((e) => {
             toastSubject.next({ txError: e, ...meta })
             txProps.onError?.()
-            return { txId: '', buildData: data }
+            return { txIds: [], buildData: data }
           })
           .finally(txProps.onFinally)
       }
-      return { txId: '', buildData: data }
+      return { txIds: [], buildData: data }
     },
 
     withdrawFarmAct: async ({ farmInfo, amount, userAuxiliaryLedgers, onSuccess, onError, onFinally }) => {

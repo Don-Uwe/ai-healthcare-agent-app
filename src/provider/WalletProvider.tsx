@@ -28,6 +28,7 @@ import { useAppStore, defaultNetWork, defaultEndpoint } from '../store/useAppSto
 const App: FC<PropsWithChildren<any>> = ({ children }) => {
   const [network] = useState<WalletAdapterNetwork>(defaultNetWork)
   const rpcNodeUrl = useAppStore((s) => s.rpcNodeUrl)
+  const wsNodeUrl = useAppStore((s) => s.wsNodeUrl)
   // const [endpoint] = useState<string>(defaultEndpoint)
   const [endpoint, setEndpoint] = useState<string>(rpcNodeUrl || defaultEndpoint)
 
@@ -71,7 +72,7 @@ const App: FC<PropsWithChildren<any>> = ({ children }) => {
   }, [rpcNodeUrl])
 
   return (
-    <ConnectionProvider endpoint={endpoint} config={{ disableRetryOnRateLimit: true }}>
+    <ConnectionProvider endpoint={endpoint} config={{ disableRetryOnRateLimit: true, wsEndpoint: wsNodeUrl }}>
       <WalletProvider wallets={wallets} autoConnect>
         <WalletModalProvider>{children}</WalletModalProvider>
       </WalletProvider>

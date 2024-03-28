@@ -24,9 +24,21 @@ let lastRefreshTag = initTokenAccountSate.refreshClmmPositionTag
 
 const fetcher = ([connection, publicKeyList]: [Connection, string[]]) => {
   console.log('rpc: get clmm position balance info')
-  return connection.getMultipleAccountsInfo(
-    publicKeyList.map((publicKey) => ToPublicKey(publicKey)),
-    'confirmed'
+  const commitment = useAppStore.getState().commitment
+
+  const chunkSize = 100
+  const keyGroup = []
+  for (let i = 0; i < publicKeyList.length; i += chunkSize) {
+    keyGroup.push(publicKeyList.slice(i, i + chunkSize))
+  }
+
+  return Promise.all(
+    keyGroup.map((list) =>
+      connection.getMultipleAccountsInfo(
+        list.map((publicKey) => ToPublicKey(publicKey)),
+        commitment
+      )
+    )
   )
 }
 
@@ -99,16 +111,23 @@ export default function useClmmBalance({
   )
 
   const needFetch = tokenAccLoaded && clmmProgramId && connection && tokenAccountRawInfos.length > 0 && allPositionKey.length > 0
-  const { data, isLoading, isValidating, mutate, ...swrProps } = useSWR(needFetch ? [connection!, allPositionKey] : null, fetcher, {
+  const {
+    data: chunkData,
+    isLoading,
+    isValidating,
+    mutate,
+    ...swrProps
+  } = useSWR(needFetch ? [connection!, allPositionKey] : null, fetcher, {
     dedupingInterval: refreshInterval,
     focusThrottleInterval: refreshInterval,
     refreshInterval,
     keepPreviousData: !!needFetch && !!owner
   })
+  const data = useMemo(() => chunkData?.flat().filter(Boolean) || [], [chunkData])
 
   const balanceData = useMemo(() => {
     const positionMap: ClmmDataMap = new Map()
-    ;(data || []).forEach((positionRes, idx) => {
+    data.forEach((positionRes, idx) => {
       if (!positionRes) return
       const position = PositionInfoLayout.decode(positionRes.data)
       const poolId = position.poolId.toBase58()

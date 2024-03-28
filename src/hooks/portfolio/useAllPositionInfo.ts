@@ -8,18 +8,17 @@ import useFarmPositions from '@/hooks/portfolio/farm/useFarmPositions'
 import useFetchMultipleFarmInfo from '@/hooks/farm/useFetchMultipleFarmInfo'
 import useFetchMultipleFarmBalance from '@/hooks/farm/useFetchMultipleFarmBalance'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
-import { txStatusSubject } from '@/hooks/toast/useTxStatus'
 import useTokenPrice from '@/hooks/token/useTokenPrice'
 import { getTickArrayAddress } from '@/hooks/pool/formatter'
 import useClmmPortfolioData, { ClmmPosition } from './clmm/useClmmPortfolioData'
 import useFetchMultipleAccountInfo from '@/hooks/info/useFetchMultipleAccountInfo'
-import { useFarmStore, useClmmStore, useTokenAccountStore, useAppStore } from '@/store'
+import { useFarmStore, useClmmStore, useAppStore } from '@/store'
 import { getTxMeta as getFarmTxMeta } from '@/store/configs/farm'
 import { getTxMeta as getClmmTxMeta } from '@/store/configs/clmm'
+import { getDefaultToastData, transformProcessData, handleMultiTxToast } from '@/hooks/toast/multiToastUtil'
 import { useEvent } from '../useEvent'
 import { debounce } from '@/utils/functionMethods'
 import Decimal from 'decimal.js'
-
 export interface UpdateClmmPendingYield {
   nftMint: string
   pendingYield: Decimal
@@ -121,9 +120,10 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
     mintList: allFarmBalances.map((b) => stakedFarmMap.get(b?.id || '')?.rewardInfos.map((r) => r.mint.address)).flat()
   })
 
-  let allFarmPendingReward = new Decimal(0)
+  let [allFarmPendingReward, hasFarmReward] = [new Decimal(0), false]
   allFarmBalances.forEach((b) => {
     const farm = stakedFarmMap.get(b?.id || '')
+    hasFarmReward = b?.pendingRewards.some((a) => !new Decimal(a || 0).isZero())
     const pendingReward = b?.pendingRewards.reduce((acc, cur, idx) => {
       return farm?.rewardInfos[idx]
         ? acc.add(
@@ -134,17 +134,8 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
     allFarmPendingReward = allFarmPendingReward.add(pendingReward)
   })
 
-  const isReady =
-    allFarmPendingReward.gt(0) || allClmmPending.gt(0) || Array.from(clmmPendingYield.current.values()).some((d) => !d.isEmpty)
+  const isReady = hasFarmReward || allClmmPending.gt(0) || Array.from(clmmPendingYield.current.values()).some((d) => !d.isEmpty)
   const isLoading = isFarmLoading || isClmmBalanceLoading || isPoolLoading
-
-  const finallyFn = (txId?: string, meta?: Record<string, unknown>) => {
-    if (txId) txStatusSubject.next({ txId, ...(meta || {}) })
-    setIsSending(false)
-    useTokenAccountStore.setState({
-      refreshClmmPositionTag: Date.now()
-    })
-  }
 
   const handleHarvest = useEvent(async (zeroClmmPos?: Set<string>) => {
     if (!isReady) return
@@ -152,25 +143,13 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
     setIsSending(true)
 
     let buildData: MultiTxBuildData | MultiTxV0BuildData | undefined
-
-    if (allFarmPendingReward.gt(0) && stakedFarmList.length) {
+    if (hasFarmReward && stakedFarmList.length) {
       const farmBuildData = await harvestAllFarmAct({
         farmInfoList: stakedFarmList.filter(
           (farm) => !!allFarmBalances.find((f) => f.id === farm.id)?.pendingRewards.some((r) => !new Decimal(r || 0).isZero())
         ),
-        execute: false
+        execute: !clmmBalanceInfo.size
       })
-
-      if (!clmmBalanceInfo.size && farmBuildData.buildData) {
-        try {
-          const txIds = await farmBuildData.buildData.execute()
-          finallyFn(txIds[0], getFarmTxMeta({ action: 'harvest', values: {} }))
-        } catch (e: any) {
-          toastSubject.next({ txError: e })
-        }
-        setIsSending(false)
-        return
-      }
       buildData = farmBuildData.buildData
     }
 
@@ -198,16 +177,33 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
       if (clmmBuildData.buildData) {
         if (buildData) {
           buildData.builder.addInstruction(clmmBuildData.buildData.builder.AllTxData)
-          const { execute } = await buildData.builder.sizeCheckBuild()
+          const { execute, transactions } = await buildData.builder.sizeCheckBuild()
+
+          const farmMeta = getFarmTxMeta({ action: 'harvest', values: {} })
+          const cmmMeta = getClmmTxMeta({ action: 'harvest', values: {} })
+          const harvestAllMeta = getClmmTxMeta({ action: 'harvestAll', values: { symbol: 'Clmm、Farm' } })
+
+          const txLength = transactions.length
+          const { toastId, processedId, handler } = getDefaultToastData({
+            txLength
+          })
+
           try {
-            const txIds = await execute({ sequentially: true })
-            finallyFn(
-              txIds[txIds.length - 1],
-              getClmmTxMeta({
-                action: 'harvest',
-                values: { symbol: 'Clmm farms' }
-              })
-            )
+            await execute({
+              sequentially: true,
+              onTxUpdate: (data) => {
+                handleMultiTxToast({
+                  toastId,
+                  processedId: transformProcessData({ processedId, data }),
+                  txLength,
+                  meta: harvestAllMeta,
+                  handler,
+                  getSubTxTitle(idx) {
+                    return idx < buildData!.transactions.length ? farmMeta.txHistoryDesc : cmmMeta.txHistoryDesc
+                  }
+                })
+              }
+            })
           } catch (e: any) {
             toastSubject.next({ txError: e })
           }

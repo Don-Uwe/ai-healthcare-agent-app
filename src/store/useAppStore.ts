@@ -63,6 +63,14 @@ export const FEE_KEY = '_r_fee_'
 export const SLIPPAGE_KEY = '_r_slippage_'
 export const USER_ADDED_KEY = '_r_u_added_'
 
+interface RpcItem {
+  url: string
+  ws?: string
+  weight: number
+  batch: boolean
+  name: string
+}
+
 interface AppState {
   raydium?: Raydium
   connection?: Connection
@@ -80,12 +88,8 @@ interface AppState {
   commitment: Commitment
   transactionFee?: string
   rpcNodeUrl?: string
-  rpcs: {
-    batch: boolean
-    name: string
-    url: string
-    weight: number
-  }[]
+  wsNodeUrl?: string
+  rpcs: RpcItem[]
   urlConfigs: typeof API_URLS & {
     SWAP_HOST: string
     SWAP_COMPUTE: string
@@ -250,7 +254,7 @@ export const useAppStore = createStore<AppState>(
       try {
         const {
           data: { rpcs }
-        } = await axios.get(urlConfigs.BASE_HOST + urlConfigs.RPCS)
+        } = await axios.get<{ rpcs: RpcItem[] }>(urlConfigs.BASE_HOST + urlConfigs.RPCS)
         set({ rpcs }, false, { type: 'fetchRpcsAct' })
 
         let i = 0
@@ -285,7 +289,8 @@ export const useAppStore = createStore<AppState>(
       try {
         if (!isValidUrl(url)) throw new Error('invalid url')
         await retry<Promise<EpochInfo>>(() => axios.post(url, { method: 'getEpochInfo' }, { skipError: true }), { retryCount: 6 })
-        set({ rpcNodeUrl: url, tokenAccLoaded: false }, false, { type: 'setRpcUrlAct' })
+        const rpcNode = get().rpcs.find((r) => r.url === url)
+        set({ rpcNodeUrl: url, wsNodeUrl: rpcNode?.ws, tokenAccLoaded: false }, false, { type: 'setRpcUrlAct' })
         setStorageItem(RPC_URL_KEY, url)
         if (!skipToast)
           toastSubject.next({

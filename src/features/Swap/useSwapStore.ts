@@ -2,7 +2,7 @@ import { PublicKey, VersionedTransaction, Transaction } from '@solana/web3.js'
 import { WSOLMint, SOLMint, TxVersion, printSimulate, SOL_INFO } from '@raydium-io/raydium-sdk-v2'
 import { createStore, useAppStore, useTokenStore } from '@/store'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
-import { txStatusSubject, multiTxStatusSubject } from '@/hooks/toast/useTxStatus'
+import { txStatusSubject } from '@/hooks/toast/useTxStatus'
 import showMultiToast from '@/hooks/toast/multiToastUtil'
 import { ApiSwapV1OutSuccess } from './type'
 import { isSolWSol } from '@/utils/token'
@@ -150,7 +150,7 @@ export const useSwapStore = createStore<SwapStore>(
               processedId,
               meta: swapMeta,
               txLength: signedTxs.length,
-              getSubTxTitle(idx) {
+              getSubTxTitle(idx: number) {
                 return idx === 0
                   ? 'transaction_history.set_up'
                   : idx === processedId.length - 1 && processedId.length > 2

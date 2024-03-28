@@ -201,7 +201,8 @@
     "error_INSUFFICIENT_LIQUIDITY": " Insufficient Liquidity",
     "error_REQ_POOL_NOT_OPEN": "Pool Open At",
     "error_sol_fee_not_insufficient": "You need at least {{amount}} SOL to pay for fees and deposits",
-    "user_added_token_list": "User Added Token List"
+    "user_added_token_list": "User Added Token List",
+    "show_chart": "Show chart"
   },
   "liquidity_pools": {
     "view_chart_tooltip": "View pool charts",
@@ -293,7 +294,11 @@
     "modal_section_header_farm": "Creating a farm",
     "modal_section_header_farm_desc": "A farm can be created for any pool that is already live. For detailed instructions, read the guide for <0>CLMM</0> or <1>Standard</1> farms.",
     "clmm_please_note": "Please Note",
-    "clmm_please_note_des": "This tool is for advanced users. For detailed instructions, read the guide for <0>CLMM</0> or <1>Standard</1> pools."
+    "clmm_please_note_des": "This tool is for advanced users. For detailed instructions, read the guide for <0>CLMM</0> or <1>Standard</1> pools.",
+    "clmm_create_pool_note_step1": "First, select tokens & fee tier",
+    "clmm_create_pool_note_step2": "Next, set initial token price & position price range",
+    "clmm_create_pool_note_step3": "Last, please enter token deposit amount",
+    "pool_existed": "Pool existed"
   },
   "farm": {
     "create": "Create Farm",

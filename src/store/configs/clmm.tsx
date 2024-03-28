@@ -112,6 +112,13 @@ const CLMM_TX_MSG = {
     txHistoryTitle: 'transaction_history.create_farm',
     txHistoryDesc: 'transaction_history.create_clmm_farm_desc',
     components: {}
+  },
+  harvestAll: {
+    title: 'transaction_history.harvest_rewards',
+    desc: 'transaction_history.harvest_rewards_desc',
+    txHistoryTitle: 'transaction_history.harvest_rewards',
+    txHistoryDesc: 'transaction_history.harvest_rewards_desc',
+    components: { sub: <Text as="span" color={colors.textSecondary} fontWeight="700" /> }
   }
 }
 

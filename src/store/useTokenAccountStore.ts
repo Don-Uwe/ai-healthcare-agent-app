@@ -237,7 +237,11 @@ export const useTokenAccountStore = createStore<TokenAccountStore>(
         const tokenList = useTokenStore.getState().tokenList.sort((tokenA, tokenB) => {
           const accountA = tokenAccountMap.get(tokenA.address)
           const accountB = tokenAccountMap.get(tokenB.address)
-          return (accountB?.[0].amount.toNumber() || Number.MIN_VALUE) - (accountA?.[0].amount.toNumber() || Number.MIN_VALUE)
+          const amountA = new Decimal(accountB?.[0].amount.toString() || 0)
+          const amountB = new Decimal(accountA?.[0].amount.toString() || 0)
+          if (amountB.gt(amountA)) return 1
+          if (amountB.eq(amountA)) return 0
+          return -1
         })
         useTokenStore.setState({ tokenList: JSON.parse(JSON.stringify(tokenList)) }, false, { type: 'fetchTokenAccountAct' })
         useAppStore.setState({ tokenAccLoaded: true })

@@ -29,21 +29,11 @@ import { FormattedPoolInfoStandardItem } from '@/hooks/pool/type'
 import { panelCard } from '@/theme/cssBlocks'
 import toPercentString from '@/utils/numberish/toPercentString'
 import InfoCircleIcon from '@/icons/misc/InfoCircleIcon'
+import { useAppStore, supportedExplorers } from '@/store/useAppStore'
 
 export default function PoolInfo({ pool }: { pool?: FormattedPoolInfoStandardItem }) {
   const { t } = useTranslation()
-  const { onCopy, setValue } = useClipboard('')
   const [baseToken, quoteToken] = [pool?.mintA, pool?.mintB]
-
-  const handleCopy = useCallback((val: string) => {
-    setValue(val)
-    onCopy()
-    toastSubject.next({
-      status: 'success',
-      title: t('common.copy_success'),
-      description: val
-    })
-  }, [])
 
   const feeApr = pool?.allApr.week.find((s) => s.isTradingFee)
   const rewardApr = pool?.allApr.week.filter((s) => !s.isTradingFee && !!s.token) || []
@@ -63,6 +53,14 @@ export default function PoolInfo({ pool }: { pool?: FormattedPoolInfoStandardIte
     }),
     [pool]
   )
+
+  const onCopySuccess = useCallback((content: string) => {
+    toastSubject.next({
+      status: 'success',
+      title: t('common.copy_success'),
+      description: content
+    })
+  }, [])
 
   return (
     <Flex {...panelCard} bg={colors.backgroundLight} borderRadius="20px" py={7} px={6} direction="column">
@@ -87,105 +85,16 @@ export default function PoolInfo({ pool }: { pool?: FormattedPoolInfoStandardIte
             <PopoverBody>
               <Grid gap={4} py={1} rowGap="2px" templateColumns={'fit-content(60px) fit-content(80px) fit-content(30px)'}>
                 {baseToken && (
-                  <>
-                    <GridItem>
-                      <Text fontSize="xs" color={colors.textSecondary}>
-                        {wSolToSolString(baseToken.symbol)}
-                      </Text>
-                    </GridItem>
-                    <GridItem>
-                      <Text fontSize="xs" color={colors.textTertiary}>
-                        {encodeStr(baseToken.address, 6, 3)}
-                      </Text>
-                    </GridItem>
-                    <GridItem>
-                      <HStack spacing={0}>
-                        <CopyIcon
-                          fill={colors.textSecondary}
-                          cursor="pointer"
-                          onClick={baseToken ? () => handleCopy(baseToken.address) : undefined}
-                        />
-                        <ExternalLinkLargeIcon color={colors.textSecondary} />
-                      </HStack>
-                    </GridItem>
-                  </>
+                  <InfoRowItem symbol={wSolToSolString(baseToken.symbol)} address={baseToken.address} onCopySuccess={onCopySuccess} />
                 )}
                 {quoteToken && (
-                  <>
-                    <GridItem>
-                      <Text fontSize="xs" color={colors.textSecondary}>
-                        {wSolToSolString(quoteToken.symbol)}
-                      </Text>
-                    </GridItem>
-                    <GridItem>
-                      <Text fontSize="xs" color={colors.textTertiary}>
-                        {encodeStr(quoteToken.address, 6, 3)}
-                      </Text>
-                    </GridItem>
-                    <GridItem>
-                      <HStack spacing={0}>
-                        <CopyIcon
-                          fill={colors.textSecondary}
-                          cursor="pointer"
-                          onClick={quoteToken ? () => handleCopy(quoteToken.address) : undefined}
-                        />
-                        <ExternalLinkLargeIcon color={colors.textSecondary} />
-                      </HStack>
-                    </GridItem>
-                  </>
+                  <InfoRowItem symbol={wSolToSolString(quoteToken.symbol)} address={quoteToken.address} onCopySuccess={onCopySuccess} />
                 )}
-                <GridItem>
-                  <Text fontSize="xs" color={colors.textSecondary}>
-                    {t('common.lp')}
-                  </Text>
-                </GridItem>
-                <GridItem>
-                  <Text fontSize="xs" color={colors.textTertiary}>
-                    {pool ? encodeStr(pool.lpMint.address, 6, 3) : '-'}
-                  </Text>
-                </GridItem>
-                <GridItem>
-                  <HStack spacing={0}>
-                    <CopyIcon
-                      fill={colors.textSecondary}
-                      cursor="pointer"
-                      onClick={pool ? () => handleCopy(pool.lpMint.address) : undefined}
-                    />
-                    <ExternalLinkLargeIcon color={colors.textSecondary} />
-                  </HStack>
-                </GridItem>
-                <GridItem>
-                  <Text fontSize="xs" color={colors.textSecondary}>
-                    {t('common.amm_id')}
-                  </Text>
-                </GridItem>
-                <GridItem>
-                  <Text fontSize="xs" color={colors.textTertiary}>
-                    {pool ? encodeStr(pool.id, 6, 3) : '-'}
-                  </Text>
-                </GridItem>
-                <GridItem>
-                  <HStack spacing={0}>
-                    <CopyIcon fill={colors.textSecondary} cursor="pointer" onClick={pool ? () => handleCopy(pool.id) : undefined} />
-                    <ExternalLinkLargeIcon color={colors.textSecondary} />
-                  </HStack>
-                </GridItem>
-                <GridItem>
-                  <Text fontSize="xs" color={colors.textSecondary}>
-                    {t('common.market_id')}
-                  </Text>
-                </GridItem>
-                <GridItem>
-                  <Text fontSize="xs" color={colors.textTertiary}>
-                    {pool ? encodeStr(pool.programId, 6, 3) : '-'}
-                  </Text>
-                </GridItem>
-                <GridItem>
-                  <HStack spacing={0}>
-                    <CopyIcon fill={colors.textSecondary} cursor="pointer" onClick={pool ? () => handleCopy(pool.programId) : undefined} />
-                    <ExternalLinkLargeIcon color={colors.textSecondary} />
-                  </HStack>
-                </GridItem>
+                {pool?.lpMint?.address && (
+                  <InfoRowItem symbol={t('common.lp')} address={pool.lpMint.address} onCopySuccess={onCopySuccess} />
+                )}
+                {pool?.id && <InfoRowItem symbol={t('common.amm_id')} address={pool.id} onCopySuccess={onCopySuccess} />}
+                {pool?.programId && <InfoRowItem symbol={t('common.market_id')} address={pool.programId} onCopySuccess={onCopySuccess} />}
               </Grid>
             </PopoverBody>
           </PopoverContent>
@@ -248,5 +157,53 @@ export default function PoolInfo({ pool }: { pool?: FormattedPoolInfoStandardIte
         </Text>
       </Flex>
     </Flex>
+  )
+}
+
+function InfoRowItem({ onCopySuccess, symbol, address }: { onCopySuccess?(text: string): void; symbol?: string | null; address?: string }) {
+  const explorerUrl = useAppStore((s) => s.explorerUrl)
+  const copyContent = address ?? ''
+  const { onCopy, hasCopied } = useClipboard(copyContent)
+  return (
+    <>
+      <GridItem>
+        <Text fontSize="xs" color={colors.textSecondary}>
+          {symbol}
+        </Text>
+      </GridItem>
+      <GridItem>
+        <Text fontSize="xs" color={colors.textTertiary}>
+          {encodeStr(address, 6, 3)}
+        </Text>
+      </GridItem>
+      <GridItem>
+        <HStack spacing={0}>
+          <Box
+            cursor={hasCopied ? 'default' : 'pointer'}
+            onClick={
+              hasCopied
+                ? undefined
+                : () => {
+                    onCopy()
+                    onCopySuccess?.(copyContent)
+                  }
+            }
+          >
+            <CopyIcon fill={colors.textSecondary} />
+          </Box>
+          {address && (
+            <a
+              href={explorerUrl === supportedExplorers[0]?.host ? `${explorerUrl}/token/${address}` : `${explorerUrl}/address/${address}`}
+              rel="noreferrer"
+              target="_blank"
+            >
+              <Box cursor="pointer">
+                <ExternalLinkLargeIcon color={colors.textSecondary} />
+              </Box>
+            </a>
+          )}
+        </HStack>
+      </GridItem>
+    </>
   )
 }

@@ -222,31 +222,60 @@ export default function SelectPoolTokenAndFee({ completed, isLoading, onConfirm,
           const Icon = FeeConfigMap.get(config.tradeFeeRate)?.Icon
           const selected = currentConfig?.id === config.id
           return (
-            <Flex
-              key={config.id}
-              flexDirection="column"
-              gap="1"
-              bg={colors.backgroundDark}
-              rounded="xl"
-              w="48%"
-              p="10px"
-              borderRadius="10px"
-              textAlign="center"
-              fontSize="sm"
-              position="relative"
-              boxSizing="border-box"
-              onClick={existed ? undefined : () => setCurrentConfig(config)}
-              sx={{
-                opacity: existed ? '0.5' : '1',
-                cursor: existed ? 'default' : 'pointer',
-                border: `1px solid ${selected ? colors.secondary : 'transparent'}`
-              }}
-            >
-              {selected ? <CircleCheck style={{ color: colors.secondary, position: 'absolute', top: '10px', right: '10px' }} /> : null}
-              <Text fontWeight="500">{config.tradeFeeRate / 10000}%</Text>
-              <Text color={colors.textSecondary}>{config.description}</Text>
-              <Spacer />
-              {Icon ? <Icon width="100%" /> : null}
+            <Flex key={config.id} position="relative" flexDirection="column" w="48%" _hover={{ '.poolExistedTip': { display: 'flex' } }}>
+              <Flex
+                flexDirection="column"
+                gap="1"
+                bg={colors.backgroundDark}
+                rounded="xl"
+                p="10px"
+                borderRadius="10px"
+                textAlign="center"
+                fontSize="sm"
+                position="relative"
+                boxSizing="border-box"
+                onClick={existed ? undefined : () => setCurrentConfig(config)}
+                sx={{
+                  opacity: existed ? '0.5' : '1',
+                  cursor: existed ? 'default' : 'pointer',
+                  border: `1px solid ${selected ? colors.secondary : 'transparent'}`
+                }}
+              >
+                {selected ? <CircleCheck style={{ color: colors.secondary, position: 'absolute', top: '10px', right: '10px' }} /> : null}
+                <Text fontWeight="500">{config.tradeFeeRate / 10000}%</Text>
+                <Text color={colors.textSecondary}>{config.description}</Text>
+                <Spacer />
+                {Icon ? <Icon width="100%" /> : null}
+              </Flex>
+              {existed ? (
+                <Box
+                  width="35%"
+                  height="35%"
+                  bg={colors.tooltipBg}
+                  borderRadius={10}
+                  className="poolExistedTip"
+                  display="none"
+                  alignSelf={'center'}
+                  justifyContent="center"
+                  alignItems="center"
+                  position="absolute"
+                  top={-2.5}
+                  _after={{
+                    content: `""`,
+                    position: 'absolute',
+                    top: '100%',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    borderWidth: '0.75rem',
+                    borderStyle: 'solid',
+                    borderColor: `${colors.tooltipBg} transparent transparent transparent`
+                  }}
+                >
+                  <Text fontSize="xs" fontWeight="normal" color={colors.textSecondary}>
+                    {t('create_pool.pool_existed')}
+                  </Text>
+                </Box>
+              ) : null}
             </Flex>
           )
         })}

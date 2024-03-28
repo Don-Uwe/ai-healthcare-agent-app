@@ -3,12 +3,11 @@ import { PublicKey } from '@solana/web3.js'
 import { useAppStore, useTokenAccountStore, useTokenStore } from './'
 import createStore from './createStore'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
-import showMultiToast, { generateDefaultIds, callBackHandler } from '@/hooks/toast/multiToastUtil'
-import { ToastStatus, TxCallbackProps } from '@/types/tx'
+import { TxCallbackProps } from '@/types/tx'
 import { isValidPublicKey } from '@/utils/publicKey'
 import { wSolToSol, solToWSol, solToWsolString } from '@/utils/token'
 import { getTxMeta } from './configs/market'
-import { v4 as uuid } from 'uuid'
+import { getDefaultToastData, transformProcessData, handleMultiTxToast } from '@/hooks/toast/multiToastUtil'
 
 interface CreateMarketState {
   checkMarketAct: (marketId: string) => Promise<{ isValid: boolean; mintA?: string; mintB?: string }>
@@ -148,35 +147,34 @@ export const useCreateMarketStore = createStore<CreateMarketState>(
         values: { pair: `${solToWsolString(baseToken.symbol)} - ${solToWsolString(quoteToken.symbol)}` }
       })
 
-      const handler = callBackHandler({ transactionLength: transactions.length, ...txProps })
-      const toastId = uuid()
-      let processedId = generateDefaultIds(transactions.length)
-      const showToast = () => {
-        showMultiToast({
-          toastId,
-          processedId,
-          meta,
-          txLength: transactions.length,
-          getSubTxTitle(idx) {
-            return idx !== transactions.length - 1 ? 'transaction_history.set_up' : 'create_market.create'
-          }
-        })
-      }
+      const txLength = transactions.length
+      const { toastId, processedId, handler } = getDefaultToastData({
+        txLength,
+        ...txProps
+      })
+      const getSubTxTitle = (idx: number) => (idx !== transactions.length - 1 ? 'transaction_history.set_up' : 'create_market.create')
 
       return execute({
         sequentially: true,
-        onTxUpdate: (data) => {
-          processedId = processedId.map((prev, idx) => ({
-            txId: data[idx]?.txId || prev.txId,
-            status: !data[idx] || data[idx].status === 'sent' ? 'info' : (data[idx].status as ToastStatus)
-          }))
-          showToast()
-
-          handler(processedId)
-        }
+        onTxUpdate: (data) =>
+          handleMultiTxToast({
+            toastId,
+            processedId: transformProcessData({ processedId, data }),
+            txLength,
+            meta,
+            handler,
+            getSubTxTitle
+          })
       })
         .then((r) => {
-          showToast()
+          handleMultiTxToast({
+            toastId,
+            processedId: transformProcessData({ processedId, data: [] }),
+            txLength,
+            meta,
+            handler,
+            getSubTxTitle
+          })
           return { txId: r, marketId: extInfo.address.marketId.toString() || '' }
         })
         .catch((e) => {
