@@ -15,7 +15,7 @@ import useTokenPrice from '@/hooks/token/useTokenPrice'
 import { calRatio } from '@/features/Clmm/utils/math'
 import BN from 'bn.js'
 import Decimal from 'decimal.js'
-
+import { trimTrailZero } from '@/utils/numberish/formatter'
 import { TickData } from './type'
 interface Props extends Required<TickData> {
   baseIn: boolean
@@ -55,16 +55,16 @@ export default function TokenAmountPairInputs({ tempCreatedPool, baseIn, onConfi
           setTokenAmount((preValue) => {
             if (baseIn)
               return focusPoolARef.current
-                ? [preValue[0], props.amount ? res.amountSlippageB.toString() : '']
-                : [props.amount ? res.amountSlippageA.toString() : '', preValue[1]]
+                ? [preValue[0], props.amount ? trimTrailZero(res.amountSlippageB.toFixed(mintB.decimals))! : '']
+                : [props.amount ? trimTrailZero(res.amountSlippageA.toFixed(mintA.decimals))! : '', preValue[1]]
             return focusPoolARef.current
-              ? [props.amount ? res.amountSlippageB.toString() : '', preValue[1]]
-              : [preValue[0], props.amount ? res.amountSlippageA.toString() : '']
+              ? [props.amount ? trimTrailZero(res.amountSlippageB.toFixed(mintB.decimals))! : '', preValue[1]]
+              : [preValue[0], props.amount ? trimTrailZero(res.amountSlippageA.toFixed(mintA.decimals))! : '']
           })
         }
       })
     }, 100),
-    [baseIn]
+    [baseIn, mintA.decimals, mintB.decimals]
   )
 
   useEffect(() => {

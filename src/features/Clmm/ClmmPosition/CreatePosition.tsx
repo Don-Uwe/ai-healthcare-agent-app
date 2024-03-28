@@ -37,7 +37,7 @@ import useSubscribeClmmInfo from '@/hooks/pool/clmm/useSubscribeClmmInfo'
 import { calRatio } from '../utils/math'
 import BN from 'bn.js'
 import Decimal from 'decimal.js'
-
+import { trimTrailZero } from '@/utils/numberish/formatter'
 import useClmmApr from '@/features/Clmm/useClmmApr'
 import { useEvent } from '@/hooks/useEvent'
 
@@ -142,16 +142,16 @@ export default function CreatePosition() {
           setTokenAmount((preValue) => {
             if (baseIn)
               return focusPoolARef.current
-                ? [preValue[0], props.amount ? res.amountSlippageB.toString() : '']
-                : [props.amount ? res.amountSlippageA.toString() : '', preValue[1]]
+                ? [preValue[0], props.amount ? trimTrailZero(res.amountSlippageB.toFixed(clmmData?.mintB.decimals))! : '']
+                : [props.amount ? trimTrailZero(res.amountSlippageA.toFixed(clmmData?.mintA.decimals))! : '', preValue[1]]
             return focusPoolARef.current
-              ? [props.amount ? res.amountSlippageB.toString() : '', preValue[1]]
-              : [preValue[0], props.amount ? res.amountSlippageA.toString() : '']
+              ? [props.amount ? trimTrailZero(res.amountSlippageB.toFixed(clmmData?.mintB.decimals))! : '', preValue[1]]
+              : [preValue[0], props.amount ? trimTrailZero(res.amountSlippageA.toFixed(clmmData?.mintA.decimals))! : '']
           })
         }
       })
     }, 150),
-    [baseIn]
+    [baseIn, clmmData?.mintA.decimals, clmmData?.mintB.decimals]
   )
 
   const error = useValidate({
@@ -316,7 +316,7 @@ export default function CreatePosition() {
     if (nextTick === anotherSideTick) return
     tickPriceRef.current[tickKey] = p.tick
     tickPriceRef.current[side === Side.Left ? 'priceLower' : 'priceUpper'] = p.price.toString()
-    handleInputChange(formatDecimalToDigit({ val: p.price.toString() }), p.price.toNumber(), side)
+    handleInputChange(formatDecimalToDigit({ val: p.price.toString() }), 0, side)
   })
 
   useEffect(() => {

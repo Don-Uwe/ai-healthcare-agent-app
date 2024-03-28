@@ -63,8 +63,7 @@ export function SwapPanel({
     outputMint,
     amount: new Decimal(amountIn || 0)
       .mul(10 ** ((isSwapBaseIn ? tokenInput?.decimals : tokenOutput?.decimals) || 0))
-      .toDecimalPlaces(0, Decimal.ROUND_FLOOR)
-      .toString(),
+      .toFixed(0, Decimal.ROUND_FLOOR),
     swapType,
     refreshInterval: isSending || isHightRiskOpen ? 3 * 60 * 1000 : 1000 * 30
   })

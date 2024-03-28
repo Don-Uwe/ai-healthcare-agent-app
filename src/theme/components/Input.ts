@@ -63,7 +63,30 @@ const cleanStyle = definePartsStyle({
   }
 })
 
+const numberStyle = definePartsStyle({
+  field: {
+    width: '210px',
+    fontSize: '14px',
+    bg: colors.backgroundLight,
+    borderRadius: '12px',
+    _hover: {
+      bg: colors.backgroundLight
+    },
+    _focus: {
+      bg: colors.backgroundLight
+    },
+    _focusVisible: {
+      bg: colors.backgroundLight,
+      borderColor: 'transparent',
+      boxShadow: 'none'
+    },
+    _invalid: {
+      border: '1px solid red'
+    }
+  }
+})
+
 export const Input = defineMultiStyleConfig({
-  variants: { filled: filledStyle, filledDark: capsuleRadioStyle, clean: cleanStyle },
+  variants: { filled: filledStyle, filledDark: capsuleRadioStyle, clean: cleanStyle, number: numberStyle },
   defaultProps: { variant: 'filled' }
 })

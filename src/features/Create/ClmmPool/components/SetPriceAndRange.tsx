@@ -28,6 +28,7 @@ import { Side } from '@/features/Clmm/components/RangeInput'
 import { Desktop, Mobile } from '@/components/MobileDesktop'
 import { TokenPrice } from '@/hooks/token/useTokenPrice'
 import { useEvent } from '@/hooks/useEvent'
+import { trimTrailZero } from '@/utils/numberish/formatter'
 
 const IconStyle = {
   cursor: 'pointer',
@@ -151,8 +152,8 @@ export default function SetPriceAndRange({
       switchRef.current = false
       setCurrentPrice(val)
       debouncePriceChange({ price: val })
-      handleLeftRangeBlur(new Decimal(val).mul(0.5).toString())
-      handleRightRangeBlur(new Decimal(val).mul(1.5).toString())
+      handleLeftRangeBlur(new Decimal(val || 0).mul(0.5).toString())
+      handleRightRangeBlur(new Decimal(val || 0).mul(1.5).toString())
     },
     [baseIn]
   )
@@ -210,7 +211,7 @@ export default function SetPriceAndRange({
       if (nextTick === anotherSideTick) return
       tickPriceRef.current[tickKey] = p.tick
       tickPriceRef.current[side === Side.Left ? 'priceLower' : 'priceUpper'] = p.price.toString()
-      handleInputChange(formatDecimalToDigit({ val: p.price.toString() }), p.price.toNumber(), side)
+      handleInputChange(formatDecimalToDigit({ val: p.price.toString() }), 0, side)
     },
     [getTickPrice, tempCreatedPool?.id, tempCreatedPool, baseIn, handleInputChange, formatDecimalToDigit]
   )
@@ -277,7 +278,7 @@ export default function SetPriceAndRange({
               <Text variant="label" fontSize="sm">
                 {t('clmm.initial_price')}:
               </Text>
-              <Text>{new Decimal(currentPrice).toDecimalPlaces(token1.decimals).toString()}</Text>
+              <Text>{trimTrailZero(new Decimal(currentPrice).toFixed(Math.max(token1.decimals, token2.decimals)))}</Text>
               <Text>
                 {t('common.per_unit', {
                   subA: wSolToSolString(tempCreatedPool?.[baseIn ? 'mintB' : 'mintA'].symbol),

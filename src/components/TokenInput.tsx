@@ -5,14 +5,13 @@ import {
   GridItem,
   HStack,
   InputGroup,
-  NumberInput,
-  NumberInputField,
   Spacer,
   StackProps,
   SystemStyleObject,
   Text,
   useColorMode,
-  useDisclosure
+  useDisclosure,
+  Input
 } from '@chakra-ui/react'
 import { ApiV3Token, TokenInfo, SOL_INFO } from '@raydium-io/raydium-sdk-v2'
 import Decimal from 'decimal.js'
@@ -24,7 +23,6 @@ import ChevronDownIcon from '@/icons/misc/ChevronDownIcon'
 import { useAppStore, useTokenAccountStore, useTokenStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
 import { formatLocaleStr } from '@/utils/numberish/formatter'
-import { numberRegExp } from '@/utils/numberish/regex'
 import toUsdVolume from '@/utils/numberish/toUsdVolume'
 
 import { t } from 'i18next'
@@ -86,9 +84,8 @@ export interface TokenInputProps extends Pick<TokenSelectDialogProps, 'filterFn'
   sx?: SystemStyleObject
   ctrSx?: SystemStyleObject
   topBlockSx?: StackProps
-  onChange?: (val: string, valNumber: number) => void
+  onChange?: (val: string) => void
   /** for library:fomik  */
-  onFormikChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
   onTokenChange?: (token: TokenInfo | ApiV3Token) => void
   onFocus?: () => void
 }
@@ -114,7 +111,6 @@ function TokenInput(props: TokenInputProps) {
     maxMultiplier,
     renderTopRightPrefixLabel = () => <BalanceWalletIcon color={colors.textTertiary} />,
     onChange,
-    onFormikChange,
     onTokenChange,
     onFocus,
     filterFn,
@@ -175,13 +171,13 @@ function TokenInput(props: TokenInputProps) {
 
   const [unknownToken, setUnknownToken] = useState<TokenInfo | ApiV3Token>()
 
-  const handleValidate = useEvent((value: string) => {
-    return numberRegExp.test(value)
-  })
+  // const handleValidate = useEvent((value: string) => {
+  //   return numberRegExp.test(value)
+  // })
 
   const handleFocus = useEvent(() => {
     if (value === '0') {
-      onChange?.('', parseFloat(''))
+      onChange?.('')
     }
     onFocus?.()
   })
@@ -190,13 +186,13 @@ function TokenInput(props: TokenInputProps) {
     if (disableClickBalance) return
     if (!maxString) return
     handleFocus()
-    onChange?.(maxString, parseFloat(maxString))
+    onChange?.(maxString)
   })
 
   const handleClickHalf = useEvent(() => {
     if (!maxString) return
     handleFocus()
-    onChange?.(maxDecimal.div(2).toString(), maxDecimal.div(2).toNumber())
+    onChange?.(maxDecimal.div(2).toString())
   })
 
   const isUnknownToken = useEvent((token: TokenInfo) => {
@@ -223,7 +219,8 @@ function TokenInput(props: TokenInputProps) {
     onCloseUnknownTokenConfirm()
   })
 
-  const handleParseVal = useEvent((val: string) => {
+  const handleParseVal = useEvent((propVal: string) => {
+    const val = propVal.match(/[0-9.]/gi)?.join('') || ''
     if (!val) return ''
     const splitArr = val.split('.')
     if (splitArr.length > 2) return [splitArr[0], splitArr[1]].join('.')
@@ -329,7 +326,31 @@ function TokenInput(props: TokenInputProps) {
 
         <GridItem area="input" color={colors.textPrimary} fontWeight={500} fontSize={sizes.inputText}>
           <InputGroup sx={{ width }}>
-            <NumberInput
+            <Input
+              variant="number"
+              sx={{ '& input[inputmode=decimal]': { opacity: 1 } }}
+              onChange={(e) => {
+                onChange?.(handleParseVal(e?.currentTarget?.value || ''))
+              }}
+              onFocus={handleFocus}
+              isDisabled={readonly || loading}
+              value={value}
+              min={0}
+              width={width || '100%'}
+              opacity={loading ? 0.2 : 1}
+              id={id}
+              name={name}
+              textAlign="end"
+              fontWeight={500}
+              fontSize={sizes.inputText}
+              paddingX={0}
+              height="unset"
+              bg="transparent"
+              _focus={{ bg: 'transparent' }}
+              _hover={{ bg: 'transparent' }}
+              _active={{ bg: 'transparent' }}
+            />
+            {/* <NumberInput
               sx={{ '& input[inputmode=decimal]': { opacity: 1 } }}
               onChange={onChange}
               onFocus={handleFocus}
@@ -354,10 +375,8 @@ function TokenInput(props: TokenInputProps) {
                 _focus={{ bg: 'transparent' }}
                 _hover={{ bg: 'transparent' }}
                 _active={{ bg: 'transparent' }}
-                onChange={onFormikChange}
               />
-            </NumberInput>
-            {/* {loading && <InputRightElement pointerEvents="none" children={<CircularProgress size="14px" isIndeterminate />} />} */}
+            </NumberInput> */}
           </InputGroup>
         </GridItem>
 
