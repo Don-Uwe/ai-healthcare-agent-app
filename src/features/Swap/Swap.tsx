@@ -58,7 +58,16 @@ export default function Swap() {
       width={!isMobile && isPCChartShown ? 'min(100%, 1300px)' : undefined}
     >
       <HStack alignSelf="flex-end" my={[1, 0]}>
-        <Box cursor="pointer" onClick={() => setIsPCChartShown((b) => !b)}>
+        <Box
+          cursor="pointer"
+          onClick={() => {
+            if (!isMobile) {
+              setIsPCChartShown((b) => !b)
+            } else {
+              setIsMobileChartShown(true)
+            }
+          }}
+        >
           {isMobile || isPCChartShown ? (
             <SwapChatIcon />
           ) : (
@@ -89,23 +98,21 @@ export default function Swap() {
           </PanelCard>
         </GridItem>
 
-        <GridItem ref={klineRef} gridArea="kline">
-          {!isMobile && isPCChartShown && (
-            <PanelCard p={[3, 3]} gap={4} height="100%">
-              <SwapKlinePanel
-                untilDate={untilDate.current}
-                baseToken={baseToken}
-                quoteToken={quoteToken}
-                timeType={selectedTimeType}
-                onDirectionToggle={() => setDirectionReverse((b) => !b)}
-                onTimeTypeChange={setSelectedTimeType}
-              />
-            </PanelCard>
-          )}
+        <GridItem gridArea="kline" {...(isMobile ? { mb: 3 } : {})}>
+          <PanelCard ref={klineRef} p={[3, 3]} gap={4} height="100%" {...(isMobile || !isPCChartShown ? { display: 'none' } : {})}>
+            <SwapKlinePanel
+              untilDate={untilDate.current}
+              baseToken={baseToken}
+              quoteToken={quoteToken}
+              timeType={selectedTimeType}
+              onDirectionToggle={() => setDirectionReverse((b) => !b)}
+              onTimeTypeChange={setSelectedTimeType}
+            />
+          </PanelCard>
           {isMobile && (
             <PanelCard
               p={[3, 6]}
-              gap={4}
+              gap={0}
               onClick={() => {
                 setIsMobileChartShown(true)
               }}

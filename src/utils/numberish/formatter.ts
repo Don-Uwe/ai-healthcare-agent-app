@@ -167,14 +167,10 @@ export function formatCurrency(amount?: string | number, params: FormatCurrencyP
     // Medium, show 3 fraction digits
     const currencyFormatterMedium: { format: (value: number) => string } = generateFormatter(symbol, abbreviated, 3)
     return formatCurrencyOverride(currencyFormatterMedium.format(amountNumber), maximumDecimalTrailingZeroes)
-  } else if (amountNumber >= 1.0 && amountNumber < 50) {
+  } else if (amountNumber >= 0.000001 && amountNumber < 50) {
     // show 6 fraction digits
     const currencyFormatterSmall: { format: (value: number) => string } = generateFormatter(symbol, abbreviated, 6)
     return formatCurrencyOverride(currencyFormatterSmall.format(amountNumber), maximumDecimalTrailingZeroes)
-  } else if (amountNumber >= 0.000001 && amountNumber < 1.0) {
-    // show 8 fraction digits
-    const currencyFormatterVerySmall: { format: (value: number) => string } = generateFormatter(symbol, abbreviated, 8)
-    return formatCurrencyOverride(currencyFormatterVerySmall.format(amountNumber), maximumDecimalTrailingZeroes)
   } else if (amountNumber >= 10 ** -9 && amountNumber < 10 ** -6) {
     // show 12 fraction digits
     const currencyFormatterVeryVerySmall: { format: (value: number) => string } = generateFormatter(symbol, abbreviated, 12)
