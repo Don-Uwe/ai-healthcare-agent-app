@@ -11,9 +11,9 @@ import createStore from './createStore'
 import { useAppStore } from './useAppStore'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
 import { txStatusSubject } from '@/hooks/toast/useTxStatus'
-import showMultiToast, { generateDefaultIds, callBackHandler } from '@/hooks/toast/multiToastUtil'
+import { getDefaultToastData, transformProcessData, handleMultiTxToast } from '@/hooks/toast/multiToastUtil'
 import { PublicKey } from '@solana/web3.js'
-import { ToastStatus, TxCallbackProps } from '@/types/tx'
+import { TxCallbackProps } from '@/types/tx'
 import { formatLocaleStr } from '@/utils/numberish/formatter'
 
 import { getTxMeta } from './configs/liquidity'
@@ -250,46 +250,36 @@ export const useLiquidityStore = createStore<LiquidityStore>(
         values: { mint: getPoolName(params.poolInfo) }
       })
 
-      const isMultiTx = transactions.length > 1
-      const toastId = uuid()
-      let processedId = generateDefaultIds(transactions.length)
-      const showToast = () => {
-        if (!isMultiTx) {
-          if (processedId[0].txId)
-            txStatusSubject.next({
-              txId: processedId[0].txId,
-              update: true,
-              ...migrateMeta,
-              onError,
-              onConfirmed: params.onConfirmed || onSuccess
-            })
-          return
-        }
-        showMultiToast({
-          toastId,
-          processedId,
-          meta: migrateMeta,
-          txLength: transactions.length,
-          getSubTxTitle(idx) {
-            return idx === transactions.length - 1 ? migrateMeta.title : removeMeta.title
-          }
-        })
-        handler(processedId)
-      }
+      const txLength = transactions.length
+      const { toastId, processedId, handler } = getDefaultToastData({
+        txLength,
+        onSuccess,
+        onError,
+        onFinally
+      })
+      const getSubTxTitle = (idx: number) => (idx === transactions.length - 1 ? migrateMeta.title : removeMeta.title)
 
-      const handler = callBackHandler({ transactionLength: transactions.length, onSuccess, onError, onFinally })
       return execute({
         sequentially: true,
-        onTxUpdate: (data) => {
-          processedId = processedId.map((prev, idx) => ({
-            txId: data[idx]?.txId || prev.txId,
-            status: !data[idx] || data[idx].status === 'sent' ? 'info' : (data[idx].status as ToastStatus)
-          }))
-          showToast()
-        }
+        onTxUpdate: (data) =>
+          handleMultiTxToast({
+            toastId,
+            processedId: transformProcessData({ processedId, data }),
+            txLength,
+            meta: migrateMeta,
+            handler,
+            getSubTxTitle
+          })
       })
         .then((txIds) => {
-          showToast()
+          handleMultiTxToast({
+            toastId,
+            processedId: transformProcessData({ processedId, data: [] }),
+            txLength,
+            meta: migrateMeta,
+            handler,
+            getSubTxTitle
+          })
           return txIds[0]
         })
         .catch((e) => {

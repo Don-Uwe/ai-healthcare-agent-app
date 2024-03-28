@@ -21,18 +21,17 @@ import {
   TxVersion
 } from '@raydium-io/raydium-sdk-v2'
 import { PublicKey } from '@solana/web3.js'
-import { v4 as uuid } from 'uuid'
 import createStore from '@/store/createStore'
 import { useAppStore, useTokenAccountStore } from '@/store'
 import { isSolWSol } from '@/utils/token'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
 import { txStatusSubject } from '@/hooks/toast/useTxStatus'
-import showMultiToast, { generateDefaultIds, callBackHandler } from '@/hooks/toast/multiToastUtil'
+import { getDefaultToastData, transformProcessData, handleMultiTxToast } from '@/hooks/toast/multiToastUtil'
 import getEphemeralSigners from '@/utils/tx/getEphemeralSigners'
 import { getMintSymbol } from '@/utils/token'
 
 import { CLMM_FEE_CONFIGS, getTxMeta } from './configs/clmm'
-import { ToastStatus, TxCallbackProps } from '../types/tx'
+import { TxCallbackProps } from '../types/tx'
 import { getComputeBudgetConfig } from '@/utils/tx/computeBudget'
 
 import BN from 'bn.js'
@@ -197,46 +196,35 @@ export const useClmmStore = createStore<ClmmState>(
           values: { symbol: 'Clmm farms' }
         })
 
-        const isMultiTx = buildData.transactions.length > 1
-        const toastId = uuid()
-        let processedId = generateDefaultIds(buildData.transactions.length)
-        const showToast = () => {
-          if (!isMultiTx) {
-            if (processedId[0].txId)
-              txStatusSubject.next({
-                txId: processedId[0].txId,
-                update: true,
-                ...meta,
-                onError: txProps.onError,
-                onConfirmed: txProps.onConfirmed || txProps.onSuccess
-              })
-            return
-          }
-          showMultiToast({
-            toastId,
-            processedId,
-            meta,
-            txLength: buildData.transactions.length,
-            getSubTxTitle() {
-              return meta.txHistoryTitle
-            }
-          })
-          handler(processedId)
-        }
-        const handler = callBackHandler({ transactionLength: buildData.transactions.length, ...txProps })
+        const txLength = buildData.transactions.length
+        const { toastId, processedId, handler } = getDefaultToastData({
+          txLength,
+          ...txProps
+        })
+        const getSubTxTitle = () => meta.txHistoryTitle
+
         buildData
           .execute({
             sequentially: true,
-            onTxUpdate: (data) => {
-              processedId = processedId.map((prev, idx) => ({
-                txId: data[idx]?.txId || prev.txId,
-                status: !data[idx] || data[idx].status === 'sent' ? 'info' : (data[idx].status as ToastStatus)
-              }))
-              showToast()
-            }
+            onTxUpdate: (data) =>
+              handleMultiTxToast({
+                toastId,
+                processedId: transformProcessData({ processedId, data }),
+                txLength,
+                meta,
+                handler,
+                getSubTxTitle
+              })
           })
           .then(() => {
-            showToast()
+            handleMultiTxToast({
+              toastId,
+              processedId: transformProcessData({ processedId, data: [] }),
+              txLength,
+              meta,
+              handler,
+              getSubTxTitle
+            })
             return { txId: '', buildData }
           })
           .catch((e) => {
@@ -324,47 +312,35 @@ export const useClmmStore = createStore<ClmmState>(
             ? await createPoolBuildData.builder.buildMultiTx({ extraPreBuildData: [buildData as TxBuildData<Record<string, any>>] })
             : await createPoolBuildData.builder.buildV0MultiTx({ extraPreBuildData: [buildData as TxV0BuildData<Record<string, any>>] })
 
-        const handler = callBackHandler({ transactionLength: transactions.length, ...txProps })
+        const txLength = transactions.length
+        const { toastId, processedId, handler } = getDefaultToastData({
+          txLength,
+          ...txProps
+        })
 
-        const isMultiTx = transactions.length > 1
-        const toastId = uuid()
-        let processedId = generateDefaultIds(transactions.length)
-        const showToast = () => {
-          showMultiToast({
-            toastId,
-            processedId,
-            meta,
-            txLength: transactions.length,
-            getSubTxTitle(idx) {
-              return idx !== transactions.length - 1 ? 'transaction_history.set_up' : 'create_market.create'
-            }
-          })
-        }
+        const getSubTxTitle = (idx: number) => (idx !== transactions.length - 1 ? 'transaction_history.set_up' : 'create_market.create')
 
         return execute({
           sequentially: true,
-          onTxUpdate: (data) => {
-            processedId = processedId.map((prev, idx) => ({
-              txId: data[idx]?.txId || prev.txId,
-              status: !data[idx] || data[idx].status === 'sent' ? 'info' : (data[idx].status as ToastStatus)
-            }))
-            if (isMultiTx) showToast()
-            else {
-              if (data[0].status === 'success') txProps?.onSuccess?.()
-              txStatusSubject.next({
-                txId: data[0].txId,
-                update: true,
-                ...createPoolMeta,
-                onError: txProps.onError,
-                onConfirmed: txProps.onConfirmed
-              })
-              return
-            }
-            handler(processedId)
-          }
+          onTxUpdate: (data) =>
+            handleMultiTxToast({
+              toastId,
+              processedId: transformProcessData({ processedId, data }),
+              txLength,
+              meta,
+              handler,
+              getSubTxTitle
+            })
         })
           .then(() => {
-            if (isMultiTx) showToast()
+            handleMultiTxToast({
+              toastId,
+              processedId: transformProcessData({ processedId, data: [] }),
+              txLength,
+              meta,
+              handler,
+              getSubTxTitle
+            })
             return { txId: '', buildData }
           })
           .catch((e) => {
@@ -372,7 +348,7 @@ export const useClmmStore = createStore<ClmmState>(
             txProps.onError?.()
             return { txId: '' }
           })
-          .finally(isMultiTx ? undefined : txProps.onFinally)
+          .finally(txLength > 1 ? undefined : txProps.onFinally)
       }
 
       return buildData

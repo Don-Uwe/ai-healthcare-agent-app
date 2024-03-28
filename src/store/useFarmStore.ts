@@ -24,9 +24,7 @@ import { useAppStore } from './useAppStore'
 import { getTxMeta } from './configs/farm'
 import { getMintSymbol } from '@/utils/token'
 import { refreshCreatedFarm } from '@/hooks/portfolio/farm/useCreatedFarmInfo'
-import showMultiToast, { generateDefaultIds, callBackHandler } from '@/hooks/toast/multiToastUtil'
-import { ToastStatus } from '../types/tx'
-import { v4 as uuid } from 'uuid'
+import { getDefaultToastData, transformProcessData, handleMultiTxToast } from '@/hooks/toast/multiToastUtil'
 import Decimal from 'decimal.js'
 import BN from 'bn.js'
 
@@ -95,47 +93,34 @@ export const useFarmStore = createStore<FarmStore>(
           values: {}
         })
 
-        const handler = callBackHandler({ transactionLength: data.transactions.length, ...txProps })
-        const isMultiTx = data.transactions.length > 1
-        const toastId = uuid()
-        let processedId = generateDefaultIds(data.transactions.length)
-        const showToast = () => {
-          if (!isMultiTx) {
-            if (processedId[0].txId)
-              txStatusSubject.next({
-                txId: processedId[0].txId,
-                update: true,
-                ...meta,
-                onError: txProps?.onError,
-                onConfirmed: txProps?.onConfirmed || txProps?.onSuccess
-              })
-            return
-          }
-          showMultiToast({
-            toastId,
-            processedId,
-            meta,
-            txLength: data.transactions.length,
-            getSubTxTitle() {
-              return meta.title
-            }
-          })
-          handler(processedId)
-        }
-
+        const txLength = data.transactions.length
+        const { toastId, processedId, handler } = getDefaultToastData({
+          txLength,
+          ...txProps
+        })
+        const getSubTxTitle = () => meta.title
         return data
           .execute({
             sequentially: true,
-            onTxUpdate: (data) => {
-              processedId = processedId.map((prev, idx) => ({
-                txId: data[idx]?.txId || prev.txId,
-                status: !data[idx] || data[idx].status === 'sent' ? 'info' : (data[idx].status as ToastStatus)
-              }))
-              showToast()
-            }
+            onTxUpdate: (data) =>
+              handleMultiTxToast({
+                toastId,
+                processedId: transformProcessData({ processedId, data }),
+                txLength,
+                meta,
+                handler,
+                getSubTxTitle
+              })
           })
           .then((txIds) => {
-            showToast()
+            handleMultiTxToast({
+              toastId,
+              processedId: transformProcessData({ processedId, data: [] }),
+              txLength,
+              meta,
+              handler,
+              getSubTxTitle
+            })
             return { txIds, buildData: data }
           })
           .catch((e) => {

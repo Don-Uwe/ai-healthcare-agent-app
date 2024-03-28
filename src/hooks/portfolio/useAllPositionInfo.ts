@@ -8,21 +8,17 @@ import useFarmPositions from '@/hooks/portfolio/farm/useFarmPositions'
 import useFetchMultipleFarmInfo from '@/hooks/farm/useFetchMultipleFarmInfo'
 import useFetchMultipleFarmBalance from '@/hooks/farm/useFetchMultipleFarmBalance'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
-import { txStatusSubject } from '@/hooks/toast/useTxStatus'
 import useTokenPrice from '@/hooks/token/useTokenPrice'
 import { getTickArrayAddress } from '@/hooks/pool/formatter'
 import useClmmPortfolioData, { ClmmPosition } from './clmm/useClmmPortfolioData'
 import useFetchMultipleAccountInfo from '@/hooks/info/useFetchMultipleAccountInfo'
-import { useFarmStore, useClmmStore, useTokenAccountStore, useAppStore } from '@/store'
+import { useFarmStore, useClmmStore, useAppStore } from '@/store'
 import { getTxMeta as getFarmTxMeta } from '@/store/configs/farm'
 import { getTxMeta as getClmmTxMeta } from '@/store/configs/clmm'
-import showMultiToast, { generateDefaultIds } from '@/hooks/toast/multiToastUtil'
+import { getDefaultToastData, transformProcessData, handleMultiTxToast } from '@/hooks/toast/multiToastUtil'
 import { useEvent } from '../useEvent'
 import { debounce } from '@/utils/functionMethods'
 import Decimal from 'decimal.js'
-import { v4 as uuid } from 'uuid'
-import { ToastStatus } from '@/types/tx'
-import i18n from '@/i18n'
 export interface UpdateClmmPendingYield {
   nftMint: string
   pendingYield: Decimal
@@ -141,14 +137,6 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
   const isReady = hasFarmReward || allClmmPending.gt(0) || Array.from(clmmPendingYield.current.values()).some((d) => !d.isEmpty)
   const isLoading = isFarmLoading || isClmmBalanceLoading || isPoolLoading
 
-  const finallyFn = (txId?: string, meta?: Record<string, unknown>) => {
-    if (txId) txStatusSubject.next({ txId, ...(meta || {}) })
-    setIsSending(false)
-    useTokenAccountStore.setState({
-      refreshClmmPositionTag: Date.now()
-    })
-  }
-
   const handleHarvest = useEvent(async (zeroClmmPos?: Set<string>) => {
     if (!isReady) return
 
@@ -191,32 +179,29 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
           buildData.builder.addInstruction(clmmBuildData.buildData.builder.AllTxData)
           const { execute, transactions } = await buildData.builder.sizeCheckBuild()
 
-          const toastId = uuid()
-          let processedId = generateDefaultIds(transactions.length)
           const farmMeta = getFarmTxMeta({ action: 'harvest', values: {} })
           const cmmMeta = getClmmTxMeta({ action: 'harvest', values: {} })
           const harvestAllMeta = getClmmTxMeta({ action: 'harvestAll', values: { symbol: 'Clmm、Farm' } })
-          const showToast = () => {
-            showMultiToast({
-              toastId,
-              processedId,
-              meta: harvestAllMeta,
-              txLength: transactions.length,
-              getSubTxTitle(idx) {
-                return idx < buildData!.transactions.length ? farmMeta.txHistoryDesc : cmmMeta.txHistoryDesc
-              }
-            })
-          }
+
+          const txLength = transactions.length
+          const { toastId, processedId, handler } = getDefaultToastData({
+            txLength
+          })
 
           try {
             await execute({
               sequentially: true,
               onTxUpdate: (data) => {
-                processedId = processedId.map((prev, idx) => ({
-                  txId: data[idx]?.txId || prev.txId,
-                  status: !data[idx] || data[idx].status === 'sent' ? 'info' : (data[idx].status as ToastStatus)
-                }))
-                showToast()
+                handleMultiTxToast({
+                  toastId,
+                  processedId: transformProcessData({ processedId, data }),
+                  txLength,
+                  meta: harvestAllMeta,
+                  handler,
+                  getSubTxTitle(idx) {
+                    return idx < buildData!.transactions.length ? farmMeta.txHistoryDesc : cmmMeta.txHistoryDesc
+                  }
+                })
               }
             })
           } catch (e: any) {
