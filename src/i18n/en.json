@@ -294,7 +294,11 @@
     "modal_section_header_farm": "Creating a farm",
     "modal_section_header_farm_desc": "A farm can be created for any pool that is already live. For detailed instructions, read the guide for <0>CLMM</0> or <1>Standard</1> farms.",
     "clmm_please_note": "Please Note",
-    "clmm_please_note_des": "This tool is for advanced users. For detailed instructions, read the guide for <0>CLMM</0> or <1>Standard</1> pools."
+    "clmm_please_note_des": "This tool is for advanced users. For detailed instructions, read the guide for <0>CLMM</0> or <1>Standard</1> pools.",
+    "clmm_create_pool_note_step1": "First, select tokens & fee tier",
+    "clmm_create_pool_note_step2": "Next, set initial token price & position price range",
+    "clmm_create_pool_note_step3": "Last, please enter token deposit amount",
+    "pool_existed": "Pool existed"
   },
   "farm": {
     "create": "Create Farm",
