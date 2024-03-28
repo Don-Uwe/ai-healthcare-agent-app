@@ -26,8 +26,22 @@ const fetcher = async ([connection, publicKeyList]: [Connection, string[]]) => {
   })
   if (!newFetchList.length) return fetchedList.map((p) => preFetchMints.get(p)!)
   console.log('rpc: get multiple lp mint acc info')
-  const res = await connection.getMultipleAccountsInfo(newFetchList, { commitment: 'confirmed' })
+
+  const chunkSize = 100
+  const keyGroup = []
+  for (let i = 0; i < publicKeyList.length; i += chunkSize) {
+    keyGroup.push(publicKeyList.slice(i, i + chunkSize))
+  }
+  const res = await Promise.all(
+    keyGroup.map((list) =>
+      connection.getMultipleAccountsInfo(
+        list.map((publicKey) => ToPublicKey(publicKey)),
+        { commitment: 'confirmed' }
+      )
+    )
+  )
   const data = res
+    .flat()
     .map((accountData, idx) => {
       if (accountData?.data.length === MintLayout.span) {
         const r = MintLayout.decode(accountData.data)
