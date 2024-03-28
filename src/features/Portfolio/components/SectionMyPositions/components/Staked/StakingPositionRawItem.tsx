@@ -41,7 +41,7 @@ export default function StakingPositionRawItem({ pool, staked, apr }: PoolProps)
   })
 
   const positionUsd = new Decimal(staked.amount).mul(pool.lpPrice || 0).toString()
-  const pendingAmount = staked.pendingReward
+  const pendingAmount = staked.pendingReward || 0
   const pendingAmountInUSD = new Decimal(pendingAmount).mul(tokenPrices[staked.token?.address || '']?.value || 0).toString()
 
   return (
@@ -74,7 +74,12 @@ export default function StakingPositionRawItem({ pool, staked, apr }: PoolProps)
         <Apr apr={apr} />
       </GridItem>
       <GridItem area="pend">
-        <PendingRewards pendingReward={pendingAmountInUSD} isLoading={isLoading} onHarvest={handleHarvest} />
+        <PendingRewards
+          pendingReward={pendingAmountInUSD}
+          isLoading={isLoading}
+          harvestable={!new Decimal(pendingAmount).isZero()}
+          onHarvest={handleHarvest}
+        />
       </GridItem>
       <GridItem area="btns" justifySelf={['center', 'end']}>
         <ActionButtons id={pool.id} stakedToken={staked.token} />

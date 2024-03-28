@@ -16,6 +16,7 @@ import { getPoolName } from '@/features/Pools/util'
 import BN from 'bn.js'
 import Decimal from 'decimal.js'
 import { MINUTE_MILLISECONDS } from '@/utils/date'
+import { addAccChangeCbk, removeAccChangeCbk } from '@/hooks/app/useTokenAccountInfo'
 
 interface Props {
   shouldFetch?: boolean
@@ -104,6 +105,11 @@ export default function useFetchClmmRewardInfo({
 
     setIsEmptyReward(rewardInfos.filter((r) => r.gt(BN_ZERO)).length <= 0 && !tokenFeeAmountA.gt(BN_ZERO) && !tokenFeeAmountB.gt(BN_ZERO))
   }, [tickLowerData, tickUpperData, rpcPoolData, tokenPrices])
+
+  useEffect(() => {
+    addAccChangeCbk(data.mutate)
+    return () => removeAccChangeCbk(data.mutate)
+  }, [data.mutate])
 
   return {
     isEmptyReward,

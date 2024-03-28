@@ -122,6 +122,7 @@ function useTxStatus() {
           })
 
           if (subscribeMap.has(txId)) connection.removeSignatureListener(subscribeMap.get(txId)!)
+          if (!txId) return
           const subId = connection.onSignature(
             txId,
             (signatureResult, context) => {

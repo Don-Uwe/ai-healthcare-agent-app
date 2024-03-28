@@ -26,7 +26,7 @@ import createStore from '@/store/createStore'
 import { useAppStore, useTokenAccountStore } from '@/store'
 import { isSolWSol } from '@/utils/token'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
-import { txStatusSubject, multiTxStatusSubject } from '@/hooks/toast/useTxStatus'
+import { txStatusSubject } from '@/hooks/toast/useTxStatus'
 import showMultiToast, { generateDefaultIds, callBackHandler } from '@/hooks/toast/multiToastUtil'
 import getEphemeralSigners from '@/utils/tx/getEphemeralSigners'
 import { getMintSymbol } from '@/utils/token'
@@ -197,9 +197,21 @@ export const useClmmStore = createStore<ClmmState>(
           values: { symbol: 'Clmm farms' }
         })
 
+        const isMultiTx = buildData.transactions.length > 1
         const toastId = uuid()
         let processedId = generateDefaultIds(buildData.transactions.length)
         const showToast = () => {
+          if (!isMultiTx) {
+            if (processedId[0].txId)
+              txStatusSubject.next({
+                txId: processedId[0].txId,
+                update: true,
+                ...meta,
+                onError: txProps.onError,
+                onConfirmed: txProps.onConfirmed || txProps.onSuccess
+              })
+            return
+          }
           showMultiToast({
             toastId,
             processedId,
@@ -209,8 +221,8 @@ export const useClmmStore = createStore<ClmmState>(
               return meta.txHistoryTitle
             }
           })
+          handler(processedId)
         }
-
         const handler = callBackHandler({ transactionLength: buildData.transactions.length, ...txProps })
         buildData
           .execute({
@@ -221,7 +233,6 @@ export const useClmmStore = createStore<ClmmState>(
                 status: !data[idx] || data[idx].status === 'sent' ? 'info' : (data[idx].status as ToastStatus)
               }))
               showToast()
-              handler(processedId)
             }
           })
           .then(() => {

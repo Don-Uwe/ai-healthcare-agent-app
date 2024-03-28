@@ -254,6 +254,17 @@ export const useLiquidityStore = createStore<LiquidityStore>(
       const toastId = uuid()
       let processedId = generateDefaultIds(transactions.length)
       const showToast = () => {
+        if (!isMultiTx) {
+          if (processedId[0].txId)
+            txStatusSubject.next({
+              txId: processedId[0].txId,
+              update: true,
+              ...migrateMeta,
+              onError,
+              onConfirmed: params.onConfirmed || onSuccess
+            })
+          return
+        }
         showMultiToast({
           toastId,
           processedId,
@@ -263,6 +274,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
             return idx === transactions.length - 1 ? migrateMeta.title : removeMeta.title
           }
         })
+        handler(processedId)
       }
 
       const handler = callBackHandler({ transactionLength: transactions.length, onSuccess, onError, onFinally })
@@ -273,23 +285,12 @@ export const useLiquidityStore = createStore<LiquidityStore>(
             txId: data[idx]?.txId || prev.txId,
             status: !data[idx] || data[idx].status === 'sent' ? 'info' : (data[idx].status as ToastStatus)
           }))
-          if (isMultiTx) showToast()
-          else {
-            txStatusSubject.next({
-              txId: data[0].txId,
-              update: true,
-              ...migrateMeta,
-              onError,
-              onConfirmed: params.onConfirmed || onSuccess
-            })
-            return
-          }
-          handler(processedId)
+          showToast()
         }
       })
-        .then((txId) => {
-          if (isMultiTx) showToast()
-          return txId[0]
+        .then((txIds) => {
+          showToast()
+          return txIds[0]
         })
         .catch((e) => {
           onError?.()
