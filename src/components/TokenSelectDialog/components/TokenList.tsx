@@ -63,10 +63,12 @@ export default function TokenList({
     const compareFn = (_a: number, _b: number, items: { itemA: TokenInfo; itemB: TokenInfo }) => {
       const accountA = tokenAccountMap.get(items.itemA.address)
       const accountB = tokenAccountMap.get(items.itemB.address)
-      return new Decimal(accountB?.[0].amount.toString() || Number.MIN_VALUE)
-        .div(10 ** items.itemB.decimals)
-        .sub(new Decimal(accountA?.[0].amount.toString() || Number.MIN_VALUE).div(10 ** items.itemA.decimals))
-        .toNumber()
+      const amountA = new Decimal(accountA?.[0].amount.toString() || Number.MIN_VALUE).div(10 ** items.itemA.decimals)
+      const amountB = new Decimal(accountB?.[0].amount.toString() || Number.MIN_VALUE).div(10 ** items.itemB.decimals)
+
+      if (amountB.gt(amountA)) return 1
+      if (amountB.eq(amountA)) return 0
+      return -1
     }
     const sortedTokenList = sortItems(tokenList, {
       sortRules: [

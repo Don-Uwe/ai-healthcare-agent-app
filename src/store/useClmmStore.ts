@@ -647,7 +647,7 @@ export const useClmmStore = createStore<ClmmState>(
     },
 
     createClmmPool: async ({ token1, token2, config, price, startTime, execute, forerunCreate }) => {
-      const { raydium, publicKey, txVersion, chainTimeOffset } = useAppStore.getState()
+      const { raydium, publicKey, txVersion, chainTimeOffset, programIdConfig } = useAppStore.getState()
       if (!raydium || !publicKey) {
         toastSubject.next({ noRpc: true })
         return { txId: '' }
@@ -655,8 +655,7 @@ export const useClmmStore = createStore<ClmmState>(
       try {
         const computeBudgetConfig = forerunCreate ? undefined : await getComputeBudgetConfig()
         const buildData = await raydium.clmm.createPool({
-          programId: CLMM_PROGRAM_ID,
-          // to do, get correct program id
+          programId: programIdConfig.CLMM_PROGRAM_ID,
           mint1: { ...token1, address: token1.address },
           mint2: { ...token2, address: token2.address },
           ammConfig: { ...config, id: new PublicKey(config.id), fundOwner: '' },
@@ -685,7 +684,11 @@ export const useClmmStore = createStore<ClmmState>(
         }
         return { txId: '', buildData }
       } catch (e: any) {
-        toastSubject.next({ status: 'error', title: 'Error', description: e.message })
+        toastSubject.next({
+          status: 'error',
+          title: 'Error',
+          description: e.message.includes('byte array longer than') ? 'Current price out of range' : e.message
+        })
         return { txId: '' }
       }
     },
@@ -754,21 +757,36 @@ export const useClmmStore = createStore<ClmmState>(
     },
     getPriceAndTick: ({ pool, price, baseIn }) => {
       if (!pool) return
-
-      const p = new Decimal(price || '0').clamp(1 / 10 ** Math.max(pool.mintA.decimals, pool.mintB.decimals), Number.MAX_SAFE_INTEGER)
-      return TickUtils.getPriceAndTick({
-        poolInfo: pool,
-        price: p,
-        baseIn
-      })
+      try {
+        const p = new Decimal(price || '0').clamp(1 / 10 ** Math.max(pool.mintA.decimals, pool.mintB.decimals), Number.MAX_SAFE_INTEGER)
+        return TickUtils.getPriceAndTick({
+          poolInfo: pool,
+          price: p,
+          baseIn
+        })
+      } catch (e: any) {
+        toastSubject.next({
+          status: 'error',
+          title: 'error',
+          description: e.message.includes('not within the supported sqrtPrice range') ? 'Price for tick overflow' : e.message
+        })
+      }
     },
     getTickPrice: ({ pool, tick, baseIn }) => {
       if (!pool) return
-      return TickUtils.getTickPrice({
-        poolInfo: pool,
-        tick,
-        baseIn
-      })
+      try {
+        return TickUtils.getTickPrice({
+          poolInfo: pool,
+          tick,
+          baseIn
+        })
+      } catch (e: any) {
+        toastSubject.next({
+          status: 'error',
+          title: 'error',
+          description: e.message
+        })
+      }
     },
     computePairAmount: async ({ pool, inputA, tickLower, tickUpper, amount }) => {
       const [connection, getEpochInfo, slippage] = [
@@ -809,7 +827,7 @@ export const useClmmStore = createStore<ClmmState>(
       if (!raydium) return ''
       const { checkFetch } = props || {}
       if (checkFetch && get().rewardWhiteListMints.length > 0) return
-      raydium.clmm.getWhiteListMint({ programId: CLMM_PROGRAM_ID }).then((data) => {
+      raydium.clmm.getWhiteListMint({ programId: useAppStore.getState().programIdConfig.CLMM_PROGRAM_ID }).then((data) => {
         set({ rewardWhiteListMints: data }, false, { type: 'loadAddRewardWhiteListAct' })
       })
     },

@@ -74,8 +74,7 @@ function DecimalInput(props: Props) {
   const handleChange = useCallback(
     (val: string, valNumber: number) => {
       valRef.current = val
-      const n = Number(shakeValueDecimal(valNumber, decimals))
-      onChange?.(val, n, side)
+      onChange?.(val, valNumber, side)
     },
     [onChange, side, decimals]
   )
@@ -126,6 +125,7 @@ function DecimalInput(props: Props) {
         <InputGroup sx={{ width, height, px: 2, ...inputGroupSx }}>
           <NumberInput
             focusInputOnChange={false}
+            clampValueOnBlur={false}
             id={id}
             name={name}
             min={min}
@@ -136,6 +136,7 @@ function DecimalInput(props: Props) {
             parse={handleParseVal}
             isReadOnly={readonly}
             isDisabled={disabled || false}
+            isInvalid={false}
             value={showedValue} //FIXME: why still uncontrolled🤔?
             // precision={decimals}
             width={width}
