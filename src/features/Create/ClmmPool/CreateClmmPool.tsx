@@ -171,9 +171,9 @@ export default function CreateClmmPool() {
     })
   )
   const friendlySentence = [
-    'First, select tokens & fee tier',
-    'Next, set initial token price & position price range',
-    'Last, please enter token deposit amount'
+    t('create_pool.clmm_create_pool_note_step1'),
+    t('create_pool.clmm_create_pool_note_step2'),
+    t('create_pool.clmm_create_pool_note_step3')
   ][step]
 
   const needToShowSelectPoolToken = isMobile ? step === 0 : step >= 0
