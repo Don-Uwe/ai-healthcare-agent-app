@@ -75,7 +75,6 @@ export default function useFetchAccLpMint<T>({
   type
 }: Props<T>) {
   const connection = useAppStore((s) => s.connection)
-  const owner = useAppStore((s) => s.publicKey)
   const [tokenAccounts, getTokenBalanceUiAmount] = useTokenAccountStore((s) => [s.tokenAccounts, s.getTokenBalanceUiAmount], shallow)
 
   const readyFetchMints = tokenAccounts

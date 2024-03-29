@@ -30,6 +30,7 @@ export const txStatusSubject = new Subject<
     mintInfo?: ApiV3Token[]
     hideResultToast?: boolean
     update?: boolean
+    skipWatchSignature?: boolean
     onConfirmed?: (signatureResult: SignatureResult, context: Context) => void
     onError?: (signatureResult: SignatureResult, context: Context) => void
     onSuccess?: (signatureResult: SignatureResult, context: Context) => void
@@ -74,6 +75,7 @@ function useTxStatus() {
           mintInfo = [],
           hideResultToast,
           update,
+          skipWatchSignature,
           onConfirmed,
           onError,
           onSuccess
@@ -122,7 +124,7 @@ function useTxStatus() {
           })
 
           if (subscribeMap.has(txId)) return
-          if (!txId) return
+          if (!txId || skipWatchSignature) return
           const subId = connection.onSignature(
             txId,
             (signatureResult, context) => {
