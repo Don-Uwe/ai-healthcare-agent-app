@@ -419,7 +419,7 @@ export default function Pools() {
 
         {/* List Content */}
         {isNotFound ? (
-          <Box mt="40px" mx="auto">
+          <Box flexGrow="1" display="flex" flexDirection="column" justifyContent="center" alignItems="center">
             <NotFound />
             <Text mt="4" fontSize="sm" color={colors.textSecondary}>
               {t('error.no_pools_found')}

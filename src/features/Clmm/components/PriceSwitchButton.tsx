@@ -13,6 +13,9 @@ export default function PriceSwitchButton(props: { priceLabel: string; onClickSw
       color={colors.secondary}
       bg={colors.secondary10}
       onClick={props.onClickSwitch}
+      _active={{
+        color: colors.secondary
+      }}
     >
       {props.priceLabel} {t('common.price')}{' '}
       <HorizontalSwitchSmallIcon

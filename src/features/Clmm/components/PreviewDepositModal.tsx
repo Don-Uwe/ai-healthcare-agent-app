@@ -72,7 +72,7 @@ export default function PreviewDepositModal({
   return (
     <Modal size="lg" isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
-      <ModalContent color={colors.textPrimary}>
+      <ModalContent color={colors.textPrimary} border={`1px solid ${colors.backgroundDark}`}>
         <ModalHeader mb="5">{t('clmm.preview_deposit')}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
@@ -93,8 +93,9 @@ export default function PreviewDepositModal({
               px="4"
               fontSize="14px"
               fontWeight="500"
-              border={`1px solid ${colors.backgroundTransparent07}`}
-              bg={colors.backgroundTransparent10}
+              border={`1px solid ${colors.selectInactive}`}
+              bg={colors.modalContainerBg}
+              sx={{ boxShadow: 'none' }}
             >
               <Text variant="title">{t('liquidity.my_position')}</Text>
               <Flex mt="2" alignItems="center" justifyContent="space-between">
@@ -117,7 +118,7 @@ export default function PreviewDepositModal({
               </Flex>
             </PanelCard>
 
-            <PanelCard py="3" px="4" border={`1px solid ${colors.backgroundTransparent07}`} bg={colors.backgroundTransparent10}>
+            <PanelCard py="3" px="4" border={`1px solid ${colors.selectInactive}`} bg={colors.modalContainerBg} sx={{ boxShadow: 'none' }}>
               <Flex mb="2" justifyContent="space-between">
                 <Text variant="title">{t('field.current_price')}</Text>
                 <Flex fontSize="sm" gap="1" fontWeight="500" alignItems="center">
@@ -141,9 +142,9 @@ export default function PreviewDepositModal({
                   flexDirection="column"
                   justifyContent="center"
                   px={[3, 6]}
-                  py="2"
+                  py="3"
                   w="48%"
-                  bg={colors.backgroundTransparent07}
+                  bg={colors.modalContainerBg}
                   textAlign="center"
                 >
                   <Text variant="subTitle">{t('clmm.min_price')}</Text>
@@ -164,10 +165,10 @@ export default function PreviewDepositModal({
                   {...panelCard}
                   flexDirection="column"
                   justifyContent="center"
-                  p={[3, 6]}
-                  py="2"
+                  px={[3, 6]}
+                  py="3"
                   w="48%"
-                  bg={colors.backgroundTransparent07}
+                  bg={colors.modalContainerBg}
                   textAlign="center"
                 >
                   <Text variant="subTitle">{t('clmm.max_price')}</Text>
@@ -192,8 +193,9 @@ export default function PreviewDepositModal({
               px="4"
               fontSize="sm"
               fontWeight="500"
-              border={`1px solid ${colors.backgroundTransparent07}`}
-              bg={colors.backgroundTransparent10}
+              border={`1px solid ${colors.selectInactive}`}
+              bg={colors.modalContainerBg}
+              sx={{ borderRadius: '12px', boxShadow: 'none' }}
             >
               <Flex justifyContent="space-between" alignItems="center">
                 <Text variant="title">{t('liquidity.total_deposit')}</Text>

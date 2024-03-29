@@ -90,7 +90,7 @@ export default function Swap() {
             `
             : `"panel" auto / auto`
         ]}
-        gap={[3, isPCChartShown ? 8 : 0]}
+        gap={[3, isPCChartShown ? 4 : 0]}
       >
         <GridItem ref={swapPanelRef} gridArea="panel">
           <PanelCard p={[3, 6]} flexGrow={['1', 'unset']}>

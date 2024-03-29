@@ -169,7 +169,7 @@ export default function WalletRecentTransactionBoard({ wallet, address, isOpen =
 
       {/* Recent Transaction Cards */}
       <Box>
-        <HStack fontWeight={500} my={3} fontSize="xs" justify="space-between" color={colors.textSecondary}>
+        <HStack fontWeight={500} my={3} fontSize="sm" justify="space-between" color={colors.textSecondary}>
           <Text>{t('recent_transaction.recent_transactions')}</Text>
           <HStack spacing={0.5} cursor="pointer" onClick={turnOn}>
             <Text>{t('recent_transaction.view_all')}</Text> <ChevronRightIcon width={'14px'} height={'14px'} />
@@ -247,7 +247,7 @@ function RecentTransactionCard({ transaction }: { transaction: RecentTransaction
   const explorerUrl = useAppStore((s) => s.explorerUrl)
   const { t } = useTranslation()
   return (
-    <Box bg={colors.backgroundDark} rounded="lg" p={3}>
+    <Box bg={colors.backgroundDark} rounded="lg" p={3} ml={6}>
       <SimpleGrid
         gridTemplate={`
           "statu name token" auto

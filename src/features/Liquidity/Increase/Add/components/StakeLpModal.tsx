@@ -8,7 +8,7 @@ export default function StakeLpModal({ isOpen, onClose }: { isOpen: boolean; onC
   const { t } = useTranslation()
 
   return (
-    <Modal size="sm" isOpen={isOpen} onClose={onClose}>
+    <Modal size="md" isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent sx={{ bg: 'rgba(28, 36, 62, 1)' }}>
         <ModalHeader textAlign="center" px="12" mb="5" fontSize="xl">
