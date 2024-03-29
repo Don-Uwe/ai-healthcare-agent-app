@@ -13,7 +13,7 @@ export const Providers = ({ children }: { children: ReactNode }) => {
     <SWRConfig
       value={{
         onErrorRetry: (error, key, config, revalidate, { retryCount: apiRetryCount }) => {
-          if (skipRetryStatus.has(error.response?.status)) return
+          if (skipRetryStatus.has(error.response?.status) || error.code === 'ERR_NETWORK') return
           const is429 = error.message?.indexOf('429') !== -1
           if (apiRetryCount >= 10) return
 

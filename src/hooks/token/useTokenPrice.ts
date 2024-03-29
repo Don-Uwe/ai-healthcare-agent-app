@@ -1,5 +1,4 @@
 import axios from '@/api/axios'
-import { birdeyeAuthorizeKey, birdeyePriceUrl } from '@/utils/config/birdeyeAPI'
 import { isValidPublicKey } from '@/utils/publicKey'
 import { MINUTE_MILLISECONDS } from '@/utils/date'
 import { useTokenStore, TokenPrice } from '@/store'
@@ -13,13 +12,9 @@ export type { TokenPrice }
 
 const fetcher = (url: string) => {
   return axios.get<{
-    [key: string]: TokenPrice
+    [key: string]: number
   }>(url, {
-    skipError: true,
-    headers: {
-      'x-chain': 'solana',
-      'X-API-KEY': birdeyeAuthorizeKey
-    }
+    skipError: true
   })
 }
 
@@ -45,7 +40,7 @@ export default function useTokenPrice(props: { mintList: (string | PublicKey | u
   const shouldFetch = startFetch && prepareFetchList.size > 0
 
   const { data, isLoading, error, ...rest } = useSWR(
-    shouldFetch ? birdeyePriceUrl + `?list_address=${Array.from(prepareFetchList).slice(0, 49).join(',')}` : null,
+    shouldFetch ? 'https://test-api.raydium.io/v3/mint/price' + `?mints=${Array.from(prepareFetchList).slice(0, 49).join(',')}` : null,
     fetcher,
     {
       refreshInterval,
@@ -56,8 +51,14 @@ export default function useTokenPrice(props: { mintList: (string | PublicKey | u
   const isEmptyResult = !isLoading && !(data && !error)
 
   const resData = useMemo(() => {
-    const prices = data?.data || {}
+    const prices: Record<string, TokenPrice> = Object.keys(data?.data || {}).reduce((acc, cur) => {
+      return {
+        ...acc,
+        [cur]: { value: data?.data[cur] || 0 }
+      }
+    }, {})
     // set sol price to wsol price
+
     if (prices[NATIVE_MINT.toBase58()]) prices[PublicKey.default.toBase58()] = prices[NATIVE_MINT.toBase58()]
     Array.from(tokenPriceRecord.entries()).forEach((data) => {
       if (data[1].data) prices[data[0]] = data[1].data
@@ -71,11 +72,18 @@ export default function useTokenPrice(props: { mintList: (string | PublicKey | u
       const fetchRecord = new Map(Array.from(useTokenStore.getState().tokenPriceRecord))
       Object.keys(data?.data || {}).forEach((key) => {
         prepareFetchList.delete(key)
-        if (data)
+        if (data) {
           fetchRecord.set(key, {
             fetchTime: Date.now(),
-            data: data.data[key]
+            data: { value: data.data[key] || 0 }
           })
+          if (key === NATIVE_MINT.toBase58()) {
+            fetchRecord.set(PublicKey.default.toBase58(), {
+              fetchTime: Date.now(),
+              data: { value: data.data[key] || 0 }
+            })
+          }
+        }
       })
       useTokenStore.setState({ tokenPriceRecord: fetchRecord })
     }
