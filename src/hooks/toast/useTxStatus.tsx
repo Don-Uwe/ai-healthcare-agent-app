@@ -121,7 +121,7 @@ function useTxStatus() {
             isMultiSig: isMultisigWallet
           })
 
-          if (subscribeMap.has(txId)) connection.removeSignatureListener(subscribeMap.get(txId)!)
+          if (subscribeMap.has(txId)) return
           if (!txId) return
           const subId = connection.onSignature(
             txId,
@@ -300,7 +300,7 @@ function useTxStatus() {
 
           if (!skipWatchSignature)
             subTxIds.forEach(({ txId }) => {
-              if (subscribeMap.has(txId)) connection.removeSignatureListener(subscribeMap.get(txId)!)
+              if (subscribeMap.has(txId)) return
               const subId = connection.onSignature(
                 txId,
                 (signatureResult, context) => {

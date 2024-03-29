@@ -25,13 +25,18 @@ export default function UnStakeLiquidity({ poolInfo }: { poolInfo?: FormattedPoo
   const [removePercent, setRemovePercent] = useState(0)
   const getTokenBalanceUiAmount = useTokenAccountStore((s) => s.getTokenBalanceUiAmount)
   const liquidity = getTokenBalanceUiAmount({ mint: poolInfo?.lpMint.address || '', decimals: poolInfo?.lpMint.decimals }).amount
+  const amountA = rpcPoolData
+    ? new Decimal(rpcPoolData.baseReserve.toString()).div(10 ** rpcPoolData.baseDecimals)
+    : new Decimal(poolInfo?.mintAmountA || 0)
+  const amountB = rpcPoolData
+    ? new Decimal(rpcPoolData.quoteReserve.toString()).div(10 ** rpcPoolData.quoteDecimals)
+    : new Decimal(poolInfo?.mintAmountB || 0)
+  const lpAmount = rpcPoolData
+    ? new Decimal(rpcPoolData.lpSupply.toString()).div(10 ** rpcPoolData.lpDecimals)
+    : new Decimal(poolInfo?.lpAmount || 1)
 
-  const baseRatio = new Decimal(rpcPoolData?.baseReserve.toString() || poolInfo?.mintAmountA || 0).div(
-    rpcPoolData?.lpSupply.toString() || poolInfo?.lpAmount || 1
-  )
-  const quoteRatio = new Decimal(rpcPoolData?.quoteReserve.toString() || poolInfo?.mintAmountB || 0).div(
-    rpcPoolData?.lpSupply.toString() || poolInfo?.lpAmount || 1
-  )
+  const baseRatio = amountA.div(lpAmount)
+  const quoteRatio = amountB.div(lpAmount)
 
   const removeAmount = new Decimal(liquidity).mul(removePercent).div(100)
 
