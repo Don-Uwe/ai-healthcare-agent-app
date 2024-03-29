@@ -16,23 +16,27 @@ import useRefreshEpochInfo from '@/hooks/app/useRefreshEpochInfo'
 import { useAppStore, useTokenAccountStore, initTokenAccountSate } from '@/store'
 import { useEvent } from '@/hooks/useEvent'
 import ToPublicKey from '@/utils/publicKey'
+import { setStorageItem, getStorageItem } from '@/utils/localStorage'
 
 export type ClmmPosition = ReturnType<typeof PositionInfoLayout.decode> & { key?: string }
 export type ClmmDataMap = Map<string, ClmmPosition[]>
 
+const NFT_CACHE_KEY = '_r_nft_b_'
 let lastRefreshTag = initTokenAccountSate.refreshClmmPositionTag
+const noneNftMintSet = new Set<string>(JSON.parse(getStorageItem(NFT_CACHE_KEY) || '[]'))
 
-const fetcher = ([connection, publicKeyList]: [Connection, string[]]) => {
+const fetcher = async ([connection, publicKeyList]: [Connection, string[]]) => {
   console.log('rpc: get clmm position balance info')
   const commitment = useAppStore.getState().commitment
+  const readyList = publicKeyList.filter((k) => !noneNftMintSet.has(k))
 
   const chunkSize = 100
   const keyGroup = []
-  for (let i = 0; i < publicKeyList.length; i += chunkSize) {
-    keyGroup.push(publicKeyList.slice(i, i + chunkSize))
+  for (let i = 0; i < readyList.length; i += chunkSize) {
+    keyGroup.push(readyList.slice(i, i + chunkSize))
   }
 
-  return Promise.all(
+  const res = await Promise.all(
     keyGroup.map((list) =>
       connection.getMultipleAccountsInfo(
         list.map((publicKey) => ToPublicKey(publicKey)),
@@ -40,6 +44,17 @@ const fetcher = ([connection, publicKeyList]: [Connection, string[]]) => {
       )
     )
   )
+
+  const data = res.flat().filter((d, idx) => {
+    if (!d) noneNftMintSet.add(publicKeyList[idx])
+    return !!d
+  })
+  try {
+    setStorageItem(NFT_CACHE_KEY, JSON.stringify(Array.from(noneNftMintSet)))
+  } catch {
+    console.error('unable set non nft mints')
+  }
+  return data
 }
 
 export default function useClmmBalance({
@@ -123,7 +138,7 @@ export default function useClmmBalance({
     refreshInterval,
     keepPreviousData: !!needFetch && !!owner
   })
-  const data = useMemo(() => chunkData?.flat().filter(Boolean) || [], [chunkData])
+  const data = useMemo(() => chunkData?.filter(Boolean) || [], [chunkData])
 
   const balanceData = useMemo(() => {
     const positionMap: ClmmDataMap = new Map()
