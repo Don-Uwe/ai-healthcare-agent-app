@@ -8,6 +8,8 @@ import useFetchPoolByLpMint from '@/hooks/pool/useFetchPoolByLpMint'
 import { MINUTE_MILLISECONDS } from '@/utils/date'
 import Decimal from 'decimal.js'
 import ToPublicKey from '@/utils/publicKey'
+import { setStorageItem, getStorageItem } from '@/utils/localStorage'
+
 interface Props<T> {
   shouldFetch?: boolean
   refreshInterval?: number
@@ -15,8 +17,11 @@ interface Props<T> {
   type?: T
 }
 type MintData = RawMint & { address: PublicKey }
+
 const preFetchMints: Map<string, MintData> = new Map()
 const poolLpAuthority = new Set(['5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1', '3uaZBfHPfmpAHW7dsimC1SnyR61X4bJqQZKWmRSCXJxv'])
+const LP_CACHE_KEY = '_r_lp_b_'
+const noneLpMintSet = new Set<string>(JSON.parse(getStorageItem(LP_CACHE_KEY) || '[]'))
 
 const fetcher = async ([connection, publicKeyList]: [Connection, string[]]) => {
   const [newFetchList, fetchedList]: [PublicKey[], string[]] = [[], []]
@@ -47,12 +52,19 @@ const fetcher = async ([connection, publicKeyList]: [Connection, string[]]) => {
         const r = MintLayout.decode(accountData.data)
         const mintData = { ...r, address: newFetchList[idx] }
         preFetchMints.set(mintData.address.toBase58(), mintData)
+        if (!poolLpAuthority.has(mintData.mintAuthority.toBase58())) noneLpMintSet.add(mintData.address.toBase58())
         return mintData
       }
       return undefined
     })
     .filter((d) => !!d)
     .concat(fetchedList.map((p) => preFetchMints.get(p)))
+
+  try {
+    setStorageItem(LP_CACHE_KEY, JSON.stringify(Array.from(noneLpMintSet)))
+  } catch {
+    console.error('unable set non lp mints')
+  }
   return data as MintData[]
 }
 
@@ -65,7 +77,10 @@ export default function useFetchAccLpMint<T>({
   const connection = useAppStore((s) => s.connection)
   const [tokenAccounts, getTokenBalanceUiAmount] = useTokenAccountStore((s) => [s.tokenAccounts, s.getTokenBalanceUiAmount], shallow)
 
-  const readyFetchMints = tokenAccounts.filter((p) => !p.mint.equals(PublicKey.default)).map((t) => t.mint.toString())
+  const readyFetchMints = tokenAccounts
+    .filter((p) => !p.mint.equals(PublicKey.default) && !p.amount.isZero())
+    .map((t) => t.mint.toString())
+    .filter((k) => !noneLpMintSet.has(k))
 
   const fetch = shouldFetch && !!connection
 

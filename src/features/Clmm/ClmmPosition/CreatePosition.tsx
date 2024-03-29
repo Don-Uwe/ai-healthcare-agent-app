@@ -305,7 +305,7 @@ export default function CreatePosition() {
     const tickKey = side === Side.Left ? 'tickLower' : 'tickUpper'
     const tick = tickPriceRef.current[tickKey]
     const pow = (isAdd && baseIn) || (!baseIn && !isAdd) ? 0 : 1
-    const nextTick = tick! + 2 * Math.pow(-1, pow)
+    const nextTick = tick! + currentPool.config.tickSpacing * Math.pow(-1, pow)
     const p = getTickPrice({
       pool: currentPool,
       tick: nextTick,

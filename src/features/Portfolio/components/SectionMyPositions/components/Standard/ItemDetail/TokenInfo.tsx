@@ -5,6 +5,7 @@ import TokenAvatar from '@/components/TokenAvatar'
 import { colors } from '@/theme/cssVariables'
 import { toVolume } from '@/utils/numberish/autoSuffixNumberish'
 import { useTranslation } from 'react-i18next'
+import Decimal from 'decimal.js'
 
 type TokenInfoProps = {
   base: {
@@ -27,7 +28,7 @@ export default function TokenPooledInfo({ base, quote }: TokenInfoProps) {
         </Text>
         <HStack>
           <Text fontSize="sm" color={colors.textSecondary} fontWeight="medium">
-            {toVolume(base.amount, { useShorterExpression: true })}
+            {toVolume(new Decimal(base.amount).toFixed(2, Decimal.ROUND_FLOOR), { useShorterExpression: true })}
           </Text>
           <TokenAvatar token={base.token} size="xs" />
         </HStack>
@@ -38,7 +39,7 @@ export default function TokenPooledInfo({ base, quote }: TokenInfoProps) {
         </Text>
         <HStack>
           <Text fontSize="sm" color={colors.textSecondary} fontWeight="medium">
-            {toVolume(quote.amount, { useShorterExpression: true })}
+            {toVolume(new Decimal(quote.amount).toFixed(2, Decimal.ROUND_FLOOR), { useShorterExpression: true })}
           </Text>
           <TokenAvatar token={quote.token} size="xs" />
         </HStack>

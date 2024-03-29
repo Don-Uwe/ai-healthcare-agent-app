@@ -30,6 +30,7 @@ export const txStatusSubject = new Subject<
     mintInfo?: ApiV3Token[]
     hideResultToast?: boolean
     update?: boolean
+    skipWatchSignature?: boolean
     onConfirmed?: (signatureResult: SignatureResult, context: Context) => void
     onError?: (signatureResult: SignatureResult, context: Context) => void
     onSuccess?: (signatureResult: SignatureResult, context: Context) => void
@@ -74,6 +75,7 @@ function useTxStatus() {
           mintInfo = [],
           hideResultToast,
           update,
+          skipWatchSignature,
           onConfirmed,
           onError,
           onSuccess
@@ -121,8 +123,8 @@ function useTxStatus() {
             isMultiSig: isMultisigWallet
           })
 
-          if (subscribeMap.has(txId)) connection.removeSignatureListener(subscribeMap.get(txId)!)
-          if (!txId) return
+          if (subscribeMap.has(txId)) return
+          if (!txId || skipWatchSignature) return
           const subId = connection.onSignature(
             txId,
             (signatureResult, context) => {
@@ -300,7 +302,7 @@ function useTxStatus() {
 
           if (!skipWatchSignature)
             subTxIds.forEach(({ txId }) => {
-              if (subscribeMap.has(txId)) connection.removeSignatureListener(subscribeMap.get(txId)!)
+              if (subscribeMap.has(txId)) return
               const subId = connection.onSignature(
                 txId,
                 (signatureResult, context) => {

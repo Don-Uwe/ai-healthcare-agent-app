@@ -13,6 +13,7 @@ import Decimal from 'decimal.js'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import PortfolioPieChart, { IDLE_TOKENS_COLORS } from './PortfolioPieChart'
+import { toVolume } from '@/utils/numberish/autoSuffixNumberish'
 
 export type IdleType = {
   token: ApiV3Token | undefined
@@ -134,7 +135,9 @@ function AssetsList(props: { idleList?: IdleType[] }) {
             <Text fontWeight="medium">{idle.token?.symbol}</Text>
           </GridItem>
           <GridItem area={'i1'}>
-            <Text color={colors.textSecondary}>{idle.amount ? formatLocaleStr(idle.amount, 2) : idle.amount}</Text>
+            <Text color={colors.textSecondary}>
+              {idle.amount ? toVolume(idle.amount, { useShorterExpression: true, decimals: 2 }) : idle.amount}
+            </Text>
           </GridItem>
           <GridItem area={'i2'}>
             <Text color={colors.textSecondary}>{toUsdVolume(idle.amountInUSD)}</Text>

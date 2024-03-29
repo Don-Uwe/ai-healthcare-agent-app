@@ -67,6 +67,8 @@ function DecimalInput(props: Props) {
   } = props
   const valRef = useRef(value)
   valRef.current = value
+
+  const clampValueOnBlur = min !== undefined || max !== undefined
   const handleValidate = useCallback((value: string) => {
     return numberRegExp.test(value)
   }, [])
@@ -125,7 +127,7 @@ function DecimalInput(props: Props) {
         <InputGroup sx={{ width, height, px: 2, ...inputGroupSx }}>
           <NumberInput
             focusInputOnChange={false}
-            clampValueOnBlur={false}
+            clampValueOnBlur={clampValueOnBlur}
             id={id}
             name={name}
             min={min}
@@ -136,7 +138,7 @@ function DecimalInput(props: Props) {
             parse={handleParseVal}
             isReadOnly={readonly}
             isDisabled={disabled || false}
-            isInvalid={false}
+            isInvalid={clampValueOnBlur ? undefined : false}
             value={showedValue} //FIXME: why still uncontrolled🤔?
             // precision={decimals}
             width={width}

@@ -133,15 +133,30 @@ export const useSwapStore = createStore<SwapStore>(
           }
         })
         const toastId = uuid()
+        const processedId: { txId: string; status: 'success' | 'error' | 'info' }[] = []
+        for (let i = 0; i < signedTxs.length; i++) {
+          processedId.push({
+            txId: '',
+            status: 'info'
+          })
+        }
         let swapDone = false
         const showToast = (processedId: { txId: string; status: ToastStatus }[]) => {
           if (swapDone) return
           if (signedTxs.length <= 1) {
+            if (processedId[0].status !== 'info') return
             txStatusSubject.next({
               txId: processedId[0].txId,
               ...swapMeta,
               mintInfo: [inputToken, outputToken],
-              onConfirmed: txProps.onConfirmed,
+              onConfirmed: () => {
+                txProps.onConfirmed?.()
+                processedId[0].status = 'success'
+              },
+              onError: () => {
+                txProps.onError?.()
+                processedId[0].status = 'error'
+              },
               update: true
             })
           } else {
@@ -161,10 +176,42 @@ export const useSwapStore = createStore<SwapStore>(
           }
         }
 
-        const processedId = new Array(signedTxs.length).fill({
-          txId: '',
-          status: 'info'
-        })
+        const subscribedTx = new Set<string>()
+
+        const subscribeTx = (txId: string) => {
+          if (subscribedTx.has(txId) || processedId.length <= 1) return
+          subscribedTx.add(txId)
+          connection.onSignature(
+            txId,
+            (signatureResult) => {
+              const idx = processedId.findIndex((p) => p.txId === txId)
+              if (processedId[idx]) {
+                processedId[idx].status = !signatureResult.err ? 'success' : 'error'
+              }
+            },
+            'confirmed'
+          )
+          connection.getSignatureStatus(txId)
+        }
+
+        const checkStatus = (idx: number) => {
+          if (processedId[idx].status !== 'info') {
+            showToast(processedId)
+
+            if (processedId[idx].status === 'error') {
+              // 1 failed
+              swapDone = true
+              throw new Error('tx failed')
+            }
+
+            if (idx === signedTxs.length - 1) {
+              // all success
+              swapDone = true
+              return
+            }
+          }
+        }
+
         // eslint-disable-next-line
         // @ts-ignore
         connection._confirmTransactionInitialTimeout = 3000
@@ -172,26 +219,18 @@ export const useSwapStore = createStore<SwapStore>(
           if (swapDone) return
           await retry(
             async () => {
+              checkStatus(idx)
+              if (swapDone || processedId[idx].status !== 'info') return
               const txId =
                 tx instanceof Transaction
-                  ? await connection.sendRawTransaction(tx.serialize(), { skipPreflight: true, maxRetries: 1 })
-                  : await connection.sendTransaction(tx, { skipPreflight: true, maxRetries: 1 })
-              processedId[idx] = {
-                txId,
-                status: processedId[idx].status ?? 'info'
-              }
+                  ? await connection.sendRawTransaction(tx.serialize(), { skipPreflight: true, maxRetries: 3 })
+                  : await connection.sendTransaction(tx, { skipPreflight: true, maxRetries: 3 })
+              processedId[idx].txId = txId
               showToast(processedId)
-              const res = await connection.confirmTransaction(txId, 'processed')
-              processedId[idx] = {
-                txId,
-                status: res.value.err ? 'error' : 'success'
-              }
-              showToast(processedId)
-              swapDone = !!res.value.err || idx === signedTxs.length - 1
-              if (res.value.err) {
-                console.log('tx error:', res)
-                throw new Error('tx failed')
-              }
+              subscribeTx(txId)
+              checkStatus(idx)
+              if (swapDone) return
+              throw new Error('sending')
             },
             {
               retryCount: 40,

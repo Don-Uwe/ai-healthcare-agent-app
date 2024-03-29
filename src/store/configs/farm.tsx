@@ -14,8 +14,8 @@ const FARM_TX_MSG = {
   withdraw: {
     title: 'liquidity.tx_message.unStaked_successfully',
     desc: 'liquidity.tx_message.unStaked_desc',
-    txHistoryTitle: 'transaction_history.liquidity_staked_title',
-    txHistoryDesc: 'transaction_history.liquidity_staked_desc',
+    txHistoryTitle: 'transaction_history.unStaked_successfully',
+    txHistoryDesc: 'transaction_history.unStaked_desc',
     components: { sub: <Text as="span" color={colors.textSecondary} fontWeight="700" /> }
   },
   claimIdo: {

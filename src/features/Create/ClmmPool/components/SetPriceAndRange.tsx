@@ -193,38 +193,34 @@ export default function SetPriceAndRange({
     setPriceRange((pos) => (side === Side.Left ? [val, pos[1]] : [pos[0], val]))
   }, [])
 
-  const handleClickAdd = useCallback(
-    (side: string, isAdd: boolean) => {
-      if (!tempCreatedPool) return
-      const tickKey = side === Side.Left ? 'tickLower' : 'tickUpper'
-      const tick = tickPriceRef.current[tickKey]
-      const pow = (isAdd && baseIn) || (!baseIn && !isAdd) ? 0 : 1
-      const nextTick = tick! + 2 * Math.pow(-1, pow)
-      const p = getTickPrice({
-        pool: tempCreatedPool,
-        // tick: tick! + tempCreatedPool.tickSpacing * Math.pow(-1, pow), to do fix
-        tick: nextTick,
-        baseIn
-      })
-      if (!p) return
-      const anotherSideTick = tickPriceRef.current?.[side === Side.Left ? 'tickUpper' : 'tickLower']
-      if (nextTick === anotherSideTick) return
-      tickPriceRef.current[tickKey] = p.tick
-      tickPriceRef.current[side === Side.Left ? 'priceLower' : 'priceUpper'] = p.price.toString()
-      handleInputChange(formatDecimalToDigit({ val: p.price.toString() }), 0, side)
-    },
-    [getTickPrice, tempCreatedPool?.id, tempCreatedPool, baseIn, handleInputChange, formatDecimalToDigit]
-  )
+  const handleClickAdd = useEvent((side: string, isAdd: boolean) => {
+    if (!tempCreatedPool) return
+    const tickKey = side === Side.Left ? 'tickLower' : 'tickUpper'
+    const tick = tickPriceRef.current[tickKey]
+    const pow = (isAdd && baseIn) || (!baseIn && !isAdd) ? 0 : 1
+    const nextTick = tick! + tempCreatedPool.config.tickSpacing * Math.pow(-1, pow)
+    const p = getTickPrice({
+      pool: tempCreatedPool,
+      tick: nextTick,
+      baseIn
+    })
+    if (!p) return
+    const anotherSideTick = tickPriceRef.current?.[side === Side.Left ? 'tickUpper' : 'tickLower']
+    if (nextTick === anotherSideTick) return
+    tickPriceRef.current[tickKey] = p.tick
+    tickPriceRef.current[side === Side.Left ? 'priceLower' : 'priceUpper'] = p.price.toString()
+    handleInputChange(formatDecimalToDigit({ val: p.price.toString() }), 0, side)
+  })
 
   const computeFullRange = useEvent(() => {
     const minTick = getTickPrice({
       pool: tempCreatedPool,
-      tick: -443636,
+      tick: parseInt((-443636 / tempCreatedPool!.config.tickSpacing).toString()) * tempCreatedPool!.config.tickSpacing,
       baseIn
     })
     const maxTick = getTickPrice({
       pool: tempCreatedPool,
-      tick: 443636,
+      tick: parseInt((443636 / tempCreatedPool!.config.tickSpacing).toString()) * tempCreatedPool!.config.tickSpacing,
       baseIn
     })
 

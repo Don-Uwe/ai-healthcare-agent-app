@@ -1,13 +1,11 @@
 import { useCallback, useMemo, useState } from 'react'
 import { Box, Button, Collapse, GridItem, HStack, VStack, useDisclosure, Skeleton } from '@chakra-ui/react'
-import { ApiV3Token, PoolFetchType } from '@raydium-io/raydium-sdk-v2'
+import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 import MigrateFromStandardDialog from '@/features/Clmm/MigrateClmmFromStandardDialog/Dialog'
 import { FormattedFarmInfoV6 } from '@/hooks/farm/type'
-import { FormattedPoolInfoConcentratedItem } from '@/hooks/pool/type'
 import { FarmPositionInfo } from '@/hooks/portfolio/farm/useFarmPositions'
 import useFetchRpcPoolData from '@/hooks/pool/amm/useFetchRpcPoolData'
 import { FormattedPoolInfoStandardItem } from '@/hooks/pool/type'
-import useFetchPoolByMint from '@/hooks/pool/useFetchPoolByMint'
 import ExpandUpIcon from '@/icons/misc/ExpandUpIcon'
 import { useAppStore, useFarmStore, useTokenAccountStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
@@ -28,7 +26,7 @@ import { FarmBalanceInfo } from '@/hooks/farm/type'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'react-i18next'
 import BN from 'bn.js'
-import { MINUTE_MILLISECONDS } from '@/utils/date'
+import useMigratePoolConfig from '@/hooks/pool/useMigratePoolConfig'
 
 type PoolItemProps = {
   pool?: FormattedPoolInfoStandardItem
@@ -50,7 +48,8 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
   const isMobile = useAppStore((s) => s.isMobile)
   const [allPendingRewards, setAllPendingRewards] = useState<Map<string, { usd: string; amount: string[] }>>(new Map())
   const updateReward = new Map()
-
+  const { data: migratePoolList } = useMigratePoolConfig({})
+  const migrateData = migratePoolList.find((p) => p.lpMint === pool?.lpMint.address)
   const isPc = !isMobile
 
   const hasStakeFarm = position.hasAmount
@@ -74,29 +73,14 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
   const { data: rpcPoolData } = useFetchRpcPoolData({
     shouldFetch: isRpcFetching,
     poolId: pool?.id,
-    refreshInterval: isMigrateOpen ? 1000 * 20 : undefined,
+    refreshInterval: isMigrateOpen ? 1000 * 15 : undefined,
     refreshTag
   })
-  const { formattedData: clmmPoolData } = useFetchPoolByMint({
-    shouldFetch: !!pool && !!pool.mintA && !!pool.mintB,
-    mint1: pool?.mintA.address,
-    mint2: pool?.mintB.address,
-    type: PoolFetchType.Concentrated,
-    refreshInterval: 10 * MINUTE_MILLISECONDS
-  })
+
   const unStakeLpBalance = getTokenBalanceUiAmount({ mint: pool?.lpMint.address || '', decimals: pool?.lpMint.decimals }).rawAmount
   const allLpUiAmount = new Decimal(position.totalLpAmount).add(unStakeLpBalance).div(10 ** (pool?.lpMint.decimals || 6))
 
-  const canMigrate = clmmPoolData.length > 0 && allLpUiAmount.gt(0)
-  const targetClmmPool = useMemo(() => {
-    if (!canMigrate || !clmmPoolData.length) return
-    let target: FormattedPoolInfoConcentratedItem | undefined
-    clmmPoolData.forEach((p) => {
-      if (!target) target = p
-      else if (p.tvl > target.tvl) target = p
-    })
-    return target
-  }, [canMigrate, clmmPoolData])
+  const canMigrate = !!migrateData && allLpUiAmount.gt(0)
 
   const baseRatio = new Decimal(
     rpcPoolData?.baseReserve.div(new BN(10).pow(new BN(rpcPoolData.baseDecimals))).toString() || pool?.mintAmountA || 0
@@ -297,7 +281,7 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
         <MigrateFromStandardDialog
           isOpen={isMigrateOpen}
           poolInfo={pool}
-          clmmPoolInfo={targetClmmPool!}
+          migrateClmmConfig={migrateData!}
           farmInfo={farmInfo}
           lpAmount={unStakeLpBalance.toString()}
           farmLpAmount={farmLpAmount}

@@ -9,9 +9,6 @@ const EXTRA_TOKEN_KEY = '_r_cus_t_'
 
 export interface TokenPrice {
   value: number
-  updateUnixTime: number
-  updateHumanTime: string
-  priceChange24h: number
 }
 
 export interface TokenStore {
