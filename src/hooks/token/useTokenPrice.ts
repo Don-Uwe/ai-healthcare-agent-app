@@ -1,7 +1,7 @@
 import axios from '@/api/axios'
 import { isValidPublicKey } from '@/utils/publicKey'
 import { MINUTE_MILLISECONDS } from '@/utils/date'
-import { useTokenStore, TokenPrice } from '@/store'
+import { useTokenStore, TokenPrice, useAppStore } from '@/store'
 import { solToWSol, WSOLMint, RAYMint, USDCMint, USDTMint, mSOLMint } from '@raydium-io/raydium-sdk-v2'
 import { NATIVE_MINT } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
@@ -29,6 +29,7 @@ const prepareFetchList = new Set<string>([
 export default function useTokenPrice(props: { mintList: (string | PublicKey | undefined)[]; refreshInterval?: number; timeout?: number }) {
   const { mintList, refreshInterval = 3 * MINUTE_MILLISECONDS, timeout = 800 } = props || {}
   const tokenPriceRecord = useTokenStore((s) => s.tokenPriceRecord)
+  const BASE_HOST = useAppStore((s) => s.urlConfigs.BASE_HOST)
   const [startFetch, setStartFetch] = useState(timeout === 0)
   const [refreshTag, setRefreshTag] = useState(Date.now())
 
@@ -40,7 +41,7 @@ export default function useTokenPrice(props: { mintList: (string | PublicKey | u
   const shouldFetch = startFetch && prepareFetchList.size > 0
 
   const { data, isLoading, error, ...rest } = useSWR(
-    shouldFetch ? 'https://test-api.raydium.io/v3/mint/price' + `?mints=${Array.from(prepareFetchList).slice(0, 49).join(',')}` : null,
+    shouldFetch ? `${BASE_HOST}/v3/mint/price` + `?mints=${Array.from(prepareFetchList).slice(0, 49).join(',')}` : null,
     fetcher,
     {
       refreshInterval,

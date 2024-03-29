@@ -26,18 +26,19 @@ import {
   ApiV3PoolInfoStandardItem,
   ApiV3Token,
   FormatFarmInfoOutV6,
+  PoolFetchType,
   TickUtils,
   getLiquidityFromAmounts
 } from '@raydium-io/raydium-sdk-v2'
 import { useEffect, useRef, useState } from 'react'
 
-import { useAppStore, useLiquidityStore } from '@/store'
+import { useAppStore, useClmmStore, useLiquidityStore } from '@/store'
 
 import TokenAvatar from '@/components/TokenAvatar'
 import { getPriceBoundary } from '@/features/Clmm/utils/tick'
 import useRefreshEpochInfo from '@/hooks/app/useRefreshEpochInfo'
 import useSubscribeClmmInfo from '@/hooks/pool/clmm/useSubscribeClmmInfo'
-import { FormattedPoolInfoConcentratedItem } from '@/hooks/pool/type'
+import useFetchPoolById from '@/hooks/pool/useFetchPoolById'
 import { useEvent } from '@/hooks/useEvent'
 import CircleArrowRight from '@/icons/misc/CircleArrowRight'
 import CircleCheck from '@/icons/misc/CircleCheck'
@@ -56,11 +57,12 @@ import { useTranslation } from 'react-i18next'
 import EstimatedAprInfo from './AprInfo'
 import RangeInput from './RangeInput'
 import useValidateSchema from './useValidateSchema'
+import { MigrateClmmConfig } from '@/hooks/pool/useMigratePoolConfig'
 
 interface MigrateFromStandardDialogProps {
   isOpen: boolean
   poolInfo: ApiV3PoolInfoStandardItem
-  clmmPoolInfo: FormattedPoolInfoConcentratedItem
+  migrateClmmConfig: MigrateClmmConfig
   farmInfo?: FormatFarmInfoOutV6
   lpAmount: string
   farmLpAmount: string
@@ -90,20 +92,27 @@ export default function MigrateFromStandardDialog({
   isOpen,
   onClose,
   poolInfo,
-  clmmPoolInfo,
+  migrateClmmConfig,
   farmInfo,
   lpAmount,
   farmLpAmount,
   currentRewardInfo,
-  pooledAmountA,
-  pooledAmountB
+  pooledAmountA: propAmountA,
+  pooledAmountB: propAmountB
 }: MigrateFromStandardDialogProps) {
   const { t } = useTranslation()
   const isMobile = useAppStore((s) => s.isMobile)
+  const getPriceAndTick = useClmmStore((s) => s.getPriceAndTick)
   const migrateToClmmAct = useLiquidityStore((s) => s.migrateToClmmAct)
   const epochInfo = useAppStore((s) => s.epochInfo)
   const refreshTag = useRef(Date.now())
   useRefreshEpochInfo()
+
+  const { formattedData } = useFetchPoolById<ApiV3PoolInfoConcentratedItem>({
+    idList: [migrateClmmConfig.clmmId],
+    type: PoolFetchType.Concentrated
+  })
+  const clmmPoolInfo = formattedData?.[0]
 
   const { currentPrice } = useSubscribeClmmInfo({
     initialFetch: true,
@@ -111,7 +120,15 @@ export default function MigrateFromStandardDialog({
     throttle: 1000,
     refreshTag: refreshTag.current
   })
-  clmmPoolInfo.price = currentPrice || clmmPoolInfo.price
+
+  if (clmmPoolInfo) clmmPoolInfo.price = currentPrice || clmmPoolInfo.price
+  // const [pooledAmountA, pooledAmountB] =
+  //   poolInfo.mintA.address === clmmPoolInfo.mintA.address
+  //     ? [new Decimal(propAmountA).mul(0.999).toString(), new Decimal(propAmountB).mul(0.999).toString()]
+  //     : [new Decimal(propAmountB).mul(0.999).toString(), new Decimal(propAmountA).mul(0.999).toString()]
+
+  const [pooledAmountA, pooledAmountB] =
+    poolInfo.mintA.address === clmmPoolInfo?.mintA.address ? [propAmountA, propAmountB] : [propAmountB, propAmountA]
 
   const [loading, setLoading] = useState(false)
   const [lpNotEnough, setLpNotEnough] = useState(false)
@@ -127,11 +144,12 @@ export default function MigrateFromStandardDialog({
   const error = useValidateSchema({ priceLower: priceRange[0], priceUpper: priceRange[1] })
 
   const isQuickMode = mode === 'quick'
-  const [mintADecimal, mintBDecimal] = [clmmPoolInfo.mintA.decimals, clmmPoolInfo.mintB.decimals]
-  const baseToken = clmmPoolInfo.mintA
-  const quoteToken = clmmPoolInfo.mintB
+  const [mintADecimal, mintBDecimal] = [clmmPoolInfo?.mintA.decimals ?? 0, clmmPoolInfo?.mintB.decimals ?? 0]
+  const baseToken = clmmPoolInfo?.mintA
+  const quoteToken = clmmPoolInfo?.mintB
 
   const calculateAmount = useEvent(({ priceLowerTick, priceUpperTick }: { priceLowerTick: number; priceUpperTick: number }) => {
+    if (!clmmPoolInfo) return
     const slippage = useAppStore.getState().slippage
 
     const data = getLiquidityFromAmounts({
@@ -159,18 +177,28 @@ export default function MigrateFromStandardDialog({
       setPriceRange(['', ''])
       customTickRef.current = undefined
     },
-    [clmmPoolInfo.id]
+    [clmmPoolInfo?.id]
   )
 
   useEffect(() => {
     setPriceRange(([priceLower, priceUpper]) => [
-      priceUpper ? new Decimal(1).div(priceUpper).toDecimalPlaces(clmmPoolInfo.poolDecimals).toString() : priceUpper,
-      priceLower ? new Decimal(1).div(priceLower).toDecimalPlaces(clmmPoolInfo.poolDecimals).toString() : priceLower
+      priceUpper
+        ? new Decimal(1)
+            .div(priceUpper)
+            .toDecimalPlaces(clmmPoolInfo?.poolDecimals ?? 0)
+            .toString()
+        : priceUpper,
+      priceLower
+        ? new Decimal(1)
+            .div(priceLower)
+            .toDecimalPlaces(clmmPoolInfo?.poolDecimals ?? 0)
+            .toString()
+        : priceLower
     ])
-  }, [baseIn, clmmPoolInfo.poolDecimals])
+  }, [baseIn, clmmPoolInfo?.poolDecimals])
 
   const handleBlur = useEvent((side: 'lower' | 'upper', val: string) => {
-    if (new Decimal(val || 0).lte(0)) return
+    if (!clmmPoolInfo || new Decimal(val || 0).lte(0)) return
     const tickData = getExactPriceAndTick({
       poolInfo: clmmPoolInfo,
       price: new Decimal(val || clmmPoolInfo.price),
@@ -197,14 +225,21 @@ export default function MigrateFromStandardDialog({
   const rpcPriceLoaded = currentPrice !== undefined
 
   useEffect(() => {
-    if (!rpcPriceLoaded) return
-    const res = getPriceBoundary({
-      baseIn,
-      poolInfo: { ...clmmPoolInfo, price: clmmPoolInfo.price }
-    })
+    if (!rpcPriceLoaded || !clmmPoolInfo) return
 
-    if (res) {
-      setDefaultTicker({ ...res })
+    const minTick = getPriceAndTick({ pool: clmmPoolInfo, price: migrateClmmConfig.defaultPriceMin.toString(), baseIn })
+    const maxTick = getPriceAndTick({ pool: clmmPoolInfo, price: migrateClmmConfig.defaultPriceMax.toString(), baseIn })
+
+    if (minTick && maxTick) {
+      const res = {
+        priceLowerTick: Math.min(minTick.tick, maxTick.tick),
+        priceUpperTick: Math.max(minTick.tick, maxTick.tick),
+        priceLower: baseIn ? minTick.price : new Decimal(1).div(maxTick.price.toString()),
+        priceUpper: baseIn ? maxTick.price : new Decimal(1).div(minTick.price.toString())
+      }
+      setDefaultTicker({
+        ...res
+      })
       setPriceRange((prevRange) => {
         if (prevRange[0] === '') {
           customTickRef.current = { ...res }
@@ -216,7 +251,7 @@ export default function MigrateFromStandardDialog({
         return prevRange
       })
     }
-  }, [clmmPoolInfo, baseIn, rpcPriceLoaded])
+  }, [clmmPoolInfo, baseIn, rpcPriceLoaded, migrateClmmConfig])
 
   // calculate amount in quick mode
   useEffect(() => {
@@ -234,6 +269,7 @@ export default function MigrateFromStandardDialog({
   ])
 
   const handleConfirm = () => {
+    if (!clmmPoolInfo) return
     setLoading(true)
 
     const isMintABase = !new Decimal(pooledAmountB)
@@ -329,7 +365,7 @@ export default function MigrateFromStandardDialog({
                     px={2}
                     fontWeight={500}
                   >
-                    {t('field.fee')} {toPercentString(clmmPoolInfo.config.tradeFeeRate / 10000)}
+                    {t('field.fee')} {toPercentString(clmmPoolInfo?.config.tradeFeeRate ?? 0 / 10000)}
                   </Box>
                 </HStack>
                 <HStack gap={2}>
@@ -337,7 +373,7 @@ export default function MigrateFromStandardDialog({
                     {t('migrate_clmm.current_price')}:
                   </Text>
                   <Text color={colors.textSecondary} fontSize={'md'} fontWeight={500}>
-                    {toVolume(baseIn ? clmmPoolInfo.price : new Decimal(1).div(clmmPoolInfo.price || 1))}
+                    {toVolume(baseIn ? clmmPoolInfo?.price ?? 0 : new Decimal(1).div(clmmPoolInfo?.price ?? 1))}
                   </Text>
                   <Text color={colors.textTertiary} fontWeight={500} fontSize={'sm'}>
                     {baseIn
@@ -357,10 +393,10 @@ export default function MigrateFromStandardDialog({
                 <Tabs variant="roundedLight" bg={colors.backgroundDark} onChange={(index) => setBaseIn(index === 0)}>
                   <TabList>
                     <Tab sx={{ _selected: { bg: colors.dividerBg, rounded: 'lg' } }}>
-                      {t('common.token_price', { token: wSolToSolString(baseToken.symbol) })}
+                      {t('common.token_price', { token: wSolToSolString(baseToken?.symbol) })}
                     </Tab>
                     <Tab sx={{ _selected: { bg: colors.dividerBg, rounded: 'lg' } }}>
-                      {t('common.token_price', { token: wSolToSolString(quoteToken.symbol) })}
+                      {t('common.token_price', { token: wSolToSolString(quoteToken?.symbol) })}
                     </Tab>
                   </TabList>
                 </Tabs>
@@ -476,7 +512,9 @@ export default function MigrateFromStandardDialog({
             </Box>
 
             {/* Esimated APR */}
-            <EstimatedAprInfo value={aprTab} onChange={setAprTab} aprData={clmmPoolInfo.allApr} totalApr={clmmPoolInfo.totalApr} />
+            {clmmPoolInfo ? (
+              <EstimatedAprInfo value={aprTab} onChange={setAprTab} aprData={clmmPoolInfo.allApr} totalApr={clmmPoolInfo.totalApr} />
+            ) : null}
           </VStack>
         </ModalBody>
 
