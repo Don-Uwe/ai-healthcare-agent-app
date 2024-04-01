@@ -89,7 +89,8 @@ export default function showMultiToast({
   processedId,
   meta,
   getSubTxTitle,
-  txLength
+  txLength,
+  onClose
 }: {
   toastId: string
   processedId: {
@@ -105,6 +106,7 @@ export default function showMultiToast({
   }
   getSubTxTitle: (idx: number) => string
   txLength?: number
+  onClose?: () => void
 }) {
   const isError = processedId.some((t) => t.status === 'error')
   const isSuccess = processedId.filter((s) => s.status === 'success').length >= (txLength ?? processedId.length)
@@ -117,6 +119,7 @@ export default function showMultiToast({
     ...meta,
     title: meta.title + (isError ? ` ${i18n.t('transaction.failed')}` : ''),
     duration: isError || isSuccess ? 8000 : undefined,
+    onClose,
     subTxIds: processedId.map((tx, idx) => {
       const titleKey = getSubTxTitle(idx)
       return {

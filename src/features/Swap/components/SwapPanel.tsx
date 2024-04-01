@@ -160,6 +160,7 @@ export function SwapPanel({
     onSending()
     swapTokenAct({
       swapResponse: response as ApiSwapV1OutSuccess,
+      onCloseToast: offSending,
       onSuccess: () => {
         setAmountIn('')
         setNeedPriceUpdatedAlert(false)

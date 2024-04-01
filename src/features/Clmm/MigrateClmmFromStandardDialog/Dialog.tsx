@@ -122,10 +122,6 @@ export default function MigrateFromStandardDialog({
   })
 
   if (clmmPoolInfo) clmmPoolInfo.price = currentPrice || clmmPoolInfo.price
-  // const [pooledAmountA, pooledAmountB] =
-  //   poolInfo.mintA.address === clmmPoolInfo.mintA.address
-  //     ? [new Decimal(propAmountA).mul(0.999).toString(), new Decimal(propAmountB).mul(0.999).toString()]
-  //     : [new Decimal(propAmountB).mul(0.999).toString(), new Decimal(propAmountA).mul(0.999).toString()]
 
   const [pooledAmountA, pooledAmountB] =
     poolInfo.mintA.address === clmmPoolInfo?.mintA.address ? [propAmountA, propAmountB] : [propAmountB, propAmountA]
@@ -365,7 +361,7 @@ export default function MigrateFromStandardDialog({
                     px={2}
                     fontWeight={500}
                   >
-                    {t('field.fee')} {toPercentString(clmmPoolInfo?.config.tradeFeeRate ?? 0 / 10000)}
+                    {t('field.fee')} {toPercentString((clmmPoolInfo?.config.tradeFeeRate ?? 0) / 10000, { alreadyPercented: true })}
                   </Box>
                 </HStack>
                 <HStack gap={2}>
