@@ -134,6 +134,7 @@ function useTxStatus() {
             txId,
             (signatureResult, context) => {
               if (signatureResult.err) {
+                onError?.(signatureResult, context)
                 // update toast status to error
                 !hideResultToast &&
                   toastSubject.next({
@@ -147,8 +148,6 @@ function useTxStatus() {
                     detail: renderDetail('error'),
                     onClose
                   })
-
-                onError?.(signatureResult, context)
                 setTxRecord({
                   status: 'error',
                   title: txHistoryTitle || 'transaction.title',
