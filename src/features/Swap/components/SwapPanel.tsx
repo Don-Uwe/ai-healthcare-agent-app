@@ -37,7 +37,10 @@ export function SwapPanel({
   const { swap: swapDisabled } = useAppStore().featureDisabled
   const swapTokenAct = useSwapStore((s) => s.swapTokenAct)
   const tokenMap = useTokenStore((s) => s.tokenMap)
-  const [getTokenBalanceUiAmount] = useTokenAccountStore((s) => [s.getTokenBalanceUiAmount], shallow)
+  const [getTokenBalanceUiAmount, fetchTokenAccountAct] = useTokenAccountStore(
+    (s) => [s.getTokenBalanceUiAmount, s.fetchTokenAccountAct],
+    shallow
+  )
   const { isOpen: isSending, onOpen: onSending, onClose: offSending } = useDisclosure()
   const { isOpen: isHightRiskOpen, onOpen: onHightRiskOpen, onClose: offHightRiskOpen } = useDisclosure()
   const sendingResult = useRef<ApiSwapV1OutSuccess | undefined>()
@@ -187,6 +190,7 @@ export function SwapPanel({
   const handleRefresh = useEvent(() => {
     if (isSending || isHightRiskOpen) return
     mutate()
+    fetchTokenAccountAct({})
   })
 
   const outputFilterFn = useEvent((token: TokenInfo) => {

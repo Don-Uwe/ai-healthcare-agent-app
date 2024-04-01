@@ -23,15 +23,16 @@ export default function useFetchMultipleRpcClmmInfo(props: {
   shouldFetch?: boolean
   idList?: (string | undefined)[]
   refreshInterval?: number
+  refreshTag?: number
 }) {
-  const { shouldFetch = true, idList = [], refreshInterval = MINUTE_MILLISECONDS * 3 } = props || {}
+  const { shouldFetch = true, idList = [], refreshInterval = MINUTE_MILLISECONDS * 3, refreshTag } = props || {}
   const readyIdList = useMemo(() => idList.filter((i) => i && isValidPublicKey(i)) as string[], [JSON.stringify(idList)])
   const [connection] = useAppStore((s) => [s.connection], shallow)
   const [poolData, setPoolData] = useState<PoolData[]>([])
   const [poolDataMap, setPoolDataMap] = useState<{ [key: string]: PoolData }>({})
 
   const { data, isLoading, error, ...rest } = useSWR(
-    shouldFetch && connection && readyIdList.length ? [connection, readyIdList] : null,
+    shouldFetch && connection && readyIdList.length ? [connection, readyIdList, refreshTag] : null,
     fetcher,
     {
       dedupingInterval: refreshInterval,

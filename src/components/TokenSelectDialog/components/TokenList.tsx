@@ -194,7 +194,7 @@ export default function TokenList({
                     color: colors.textTertiary
                   }}
                   placeholder={t('token_selector.input_token_symbol') ?? undefined}
-                  defaultValue={newToken?.symbol}
+                  defaultValue={`${newToken?.symbol}`}
                   onChange={(e) => {
                     customTokenInfo.current.symbol = e.currentTarget.value
                   }}
@@ -294,7 +294,7 @@ function TokenRowItem({
           <Box w="100%" minW="0" overflow="hidden">
             <Box display="flex" gap={2} alignItems="center">
               <Text color={colors.textSecondary} mt="0.5">
-                {token.symbol}
+                {token.symbol}😃
               </Text>
               {isUnknown ? (
                 <Box

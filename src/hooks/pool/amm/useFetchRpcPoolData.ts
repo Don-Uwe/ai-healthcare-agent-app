@@ -4,7 +4,7 @@ import { useAppStore } from '@/store'
 import { MINUTE_MILLISECONDS } from '@/utils/date'
 import useSWR from 'swr'
 import shallow from 'zustand/shallow'
-
+import BN from 'bn.js'
 import axios from '@/api/axios'
 
 interface Props {
@@ -13,6 +13,19 @@ interface Props {
   shouldFetch?: boolean
   refreshTag?: number
 }
+
+export type RpcAmmPool =
+  | {
+      status: BN
+      baseDecimals: number
+      quoteDecimals: number
+      lpDecimals: number
+      baseReserve: BN
+      quoteReserve: BN
+      lpSupply: BN
+      startTime: BN
+    }
+  | undefined
 
 const fetcher = async (url: string) => {
   try {

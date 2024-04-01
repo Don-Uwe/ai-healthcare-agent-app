@@ -11,10 +11,17 @@ import { ConditionalPoolType } from './type'
 import { useAppStore, useTokenStore } from '@/store'
 import { formatPoolData, poolInfoCache } from './formatter'
 
-const fetcher = (url: string) => axios.get<ApiV3PoolInfoItem[]>(url, { skipError: true })
+const fetcher = ([url]: [url: string]) => axios.get<ApiV3PoolInfoItem[]>(url, { skipError: true })
 
 export default function useFetchPoolById<T = ApiV3PoolInfoItem>(
-  props: { shouldFetch?: boolean; idList?: (string | undefined)[]; refreshInterval?: number; readFromCache?: boolean } & FetchPoolParams
+  props: {
+    shouldFetch?: boolean
+    idList?: (string | undefined)[]
+    refreshInterval?: number
+    readFromCache?: boolean
+    refreshTag?: number
+    keepPreviousData?: boolean
+  } & FetchPoolParams
 ): {
   data?: T[]
   dataMap: { [key: string]: T }
@@ -26,7 +33,15 @@ export default function useFetchPoolById<T = ApiV3PoolInfoItem>(
   isValidating: boolean
   mutate: KeyedMutator<AxiosResponse<ApiV3PoolInfoItem[], any>>
 } {
-  const { shouldFetch = true, idList = [], refreshInterval = MINUTE_MILLISECONDS * 3, readFromCache, type } = props || {}
+  const {
+    shouldFetch = true,
+    idList = [],
+    refreshInterval = MINUTE_MILLISECONDS * 3,
+    readFromCache,
+    type,
+    refreshTag,
+    keepPreviousData
+  } = props || {}
   const readyIdList = idList.filter((i) => i && isValidPublicKey(i) && !useTokenStore.getState().tokenMap.get(i)) as string[]
   const [host, searchIdUrl] = useAppStore((s) => [s.urlConfigs.BASE_HOST, s.urlConfigs.POOL_SEARCH_BY_ID], shallow)
 
@@ -44,10 +59,11 @@ export default function useFetchPoolById<T = ApiV3PoolInfoItem>(
 
   const url = !readyIdList.length || readyIdList.length === cacheDataList.length || !shouldFetch ? null : host + searchIdUrl
 
-  const { data, isLoading, error, ...rest } = useSWR(url ? url.replace('{ids}', readyIdList.join(',')) : url, fetcher, {
+  const { data, isLoading, error, ...rest } = useSWR(url ? [url.replace('{ids}', readyIdList.join(',')), refreshTag] : null, fetcher, {
     dedupingInterval: refreshInterval,
     focusThrottleInterval: refreshInterval,
-    refreshInterval
+    refreshInterval,
+    keepPreviousData
   })
   const resData = useMemo(
     () => [

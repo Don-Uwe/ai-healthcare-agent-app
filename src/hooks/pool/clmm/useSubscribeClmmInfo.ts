@@ -26,6 +26,7 @@ interface Props {
   }
   throttle?: number
   initialFetch?: boolean
+  keepFetch?: boolean
   subscribe?: boolean
   refreshTag?: number
 }
@@ -36,13 +37,14 @@ export default function useSubscribeClmmInfo({
   poolInfo,
   throttle = MINUTE_MILLISECONDS,
   initialFetch = false,
+  keepFetch = false,
   subscribe = true,
   refreshTag
 }: Props) {
   const [connection, CLMM_PROGRAM_ID] = useAppStore((s) => [s.connection, s.programIdConfig.CLMM_PROGRAM_ID], shallow)
   const [data, setData] = useState<RpcPoolData | undefined>()
   const { data: rpcClmmData, mutate } = useFetchRpcClmmInfo({
-    shouldFetch: initialFetch && !data,
+    shouldFetch: keepFetch || (initialFetch && !data),
     id: poolInfo?.id,
     refreshTag,
     refreshInterval: 15 * 1000
@@ -56,14 +58,12 @@ export default function useSubscribeClmmInfo({
 
   useEffect(() => {
     if (!rpcClmmData) return
-    setData(
-      (prevData) =>
-        prevData || {
-          poolId: poolInfo!.id,
-          currentPrice: rpcClmmData.currentPrice.toNumber(),
-          poolInfo: rpcClmmData
-        }
-    )
+
+    setData(() => ({
+      poolId: poolInfo!.id,
+      currentPrice: rpcClmmData.currentPrice.toNumber(),
+      poolInfo: rpcClmmData
+    }))
   }, [rpcClmmData])
 
   useEffect(() => {
@@ -125,6 +125,7 @@ export default function useSubscribeClmmInfo({
   return {
     ...data,
     poolId: data ? new PublicKey(data?.poolId) : undefined,
-    programId: poolInfo ? new PublicKey(poolInfo.programId) : undefined
+    programId: poolInfo ? new PublicKey(poolInfo.programId) : undefined,
+    mutateRpcData: mutate
   }
 }

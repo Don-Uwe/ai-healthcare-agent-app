@@ -1,6 +1,6 @@
 import { Box, Flex, Text, useDisclosure } from '@chakra-ui/react'
 import { useRouter } from 'next/router'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import Button from '@/components/Button'
@@ -19,13 +19,15 @@ import toUsdVolume from '@/utils/numberish/toUsdVolume'
 import Decimal from 'decimal.js'
 import SelectFarmListItem from '../../components/SelectFarmListItem'
 import SelectedFarm from '../../components/SelectedFarm'
-
+import IntervalCircle, { IntervalCircleHandler } from '@/components/IntervalCircle'
+import { useEvent } from '@/hooks/useEvent'
 interface Props {
   poolInfo?: FormattedPoolInfoStandardItem
   disabled?: boolean
+  onRefresh: () => void
 }
 
-export default function Stake({ poolInfo, disabled }: Props) {
+export default function Stake({ poolInfo, disabled, onRefresh }: Props) {
   const router = useRouter()
   const { t } = useTranslation()
   const { isOpen: isSending, onOpen: onSending, onClose: offSending } = useDisclosure()
@@ -37,7 +39,8 @@ export default function Stake({ poolInfo, disabled }: Props) {
   const [isLoading, setIsLoading] = useState(true)
   const [selectedFarm, setSelectedFarm] = useState<FormattedFarmInfo | undefined>(undefined)
   const [percent, setPercent] = useState(0)
-  const { formattedData } = useFetchFarmByLpMint({
+  const circleRef = useRef<IntervalCircleHandler>(null)
+  const { formattedData, mutate: mutateFarm } = useFetchFarmByLpMint({
     poolLp: poolInfo?.lpMint.address
   })
   const farmList = useMemo(() => formattedData.filter((f) => f.isOngoing), [formattedData])
@@ -90,13 +93,35 @@ export default function Stake({ poolInfo, disabled }: Props) {
     })
   }
 
+  const handleRefresh = useEvent(() => {
+    mutateFarm()
+    onRefresh()
+  })
+
+  const handleClick = useEvent(() => {
+    circleRef.current?.restart()
+    handleRefresh()
+  })
+
   if (!poolInfo) return null
 
   return (
     <Flex direction="column" w="full" px="24px" pt={4} pb="40px" bg={colors.backgroundLight}>
-      <Text fontSize="xl" fontWeight="medium" color={colors.textPrimary} mb={3}>
-        {t('liquidity.select_farm')}
-      </Text>
+      <Flex mb={3} justifyContent="space-between" alignItems="center">
+        <Text fontSize="xl" fontWeight="medium" color={colors.textPrimary}>
+          {t('liquidity.select_farm')}
+        </Text>
+        <IntervalCircle
+          componentRef={circleRef}
+          svgWidth={18}
+          strokeWidth={2}
+          trackStrokeColor={colors.secondary}
+          trackStrokeOpacity={0.5}
+          filledTrackStrokeColor={colors.secondary}
+          onClick={handleClick}
+          onEnd={handleRefresh}
+        />
+      </Flex>
       <Select<FormattedFarmInfo>
         sx={{ py: '12px', px: '14px', borderRadius: '8px', bg: colors.backgroundDark, width: 'full' }}
         popoverContentSx={{ py: 3, px: 4, bg: colors.backgroundDark }}

@@ -1,5 +1,5 @@
 import { Box, Flex, HStack, SimpleGrid, Text } from '@chakra-ui/react'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { Select } from '@/components/Select'
@@ -13,15 +13,16 @@ import { FormattedFarmInfo } from '@/hooks/farm/type'
 import useFetchFarmByLpMint from '@/hooks/farm/useFetchFarmByLpMint'
 import useFetchFarmBalance from '@/hooks/farm/useFetchFarmBalance'
 import useFarmPositions from '@/hooks/portfolio/farm/useFarmPositions'
-import { useAppStore, useFarmStore } from '@/store'
+import { useAppStore, useFarmStore, useTokenAccountStore } from '@/store'
 import useTokenPrice from '@/hooks/token/useTokenPrice'
 import toUsdVolume from '@/utils/numberish/toUsdVolume'
 import { formatLocaleStr } from '@/utils/numberish/formatter'
 import SelectedFarm from '../../components/SelectedFarm'
 import SelectFarmListItem from '../../components/SelectFarmListItem'
-
+import IntervalCircle, { IntervalCircleHandler } from '@/components/IntervalCircle'
 import { colors } from '@/theme/cssVariables'
 import Decimal from 'decimal.js'
+import { useEvent } from '@/hooks/useEvent'
 
 export default function UnStakeLiquidity({
   poolInfo,
@@ -37,19 +38,28 @@ export default function UnStakeLiquidity({
   const { t } = useTranslation()
   const featureDisabled = useAppStore((s) => s.featureDisabled.removeFarm)
   const withdrawFarmAct = useFarmStore((s) => s.withdrawFarmAct)
-
+  const fetchTokenAccountAct = useTokenAccountStore((s) => s.fetchTokenAccountAct)
+  const circleRef = useRef<IntervalCircleHandler>(null)
   const [selectedFarm, setSelectedFarm] = useState<FormattedFarmInfo | undefined>(undefined)
   const [withdrawPercent, setWithdrawPercent] = useState(0)
 
-  const { formattedData: farmList, isLoading } = useFetchFarmByLpMint({
+  const {
+    formattedData: farmList,
+    isLoading,
+    mutate: mutateFarm
+  } = useFetchFarmByLpMint({
     poolLp: poolInfo?.lpMint.address
   })
 
-  const { farmBasedData } = useFarmPositions({})
+  const { farmBasedData, mutate: mutateFarmPos } = useFarmPositions({})
   const farmPositionData = farmBasedData.get(selectedFarm?.id || '')
   const v1Deposited = new Decimal(farmPositionData?.totalV1LpAmount || 0).div(10 ** (selectedFarm?.lpMint.decimals || 0)).toString()
 
-  const { deposited, pendingRewards } = useFetchFarmBalance({
+  const {
+    deposited,
+    pendingRewards,
+    mutate: mutateFarmBalance
+  } = useFetchFarmBalance({
     farmInfo: selectedFarm
   })
   const { data: tokenPrices } = useTokenPrice({
@@ -78,11 +88,35 @@ export default function UnStakeLiquidity({
     })
   }
 
+  const handleRefresh = useEvent(() => {
+    mutateFarm()
+    mutateFarmBalance()
+    mutateFarmPos()
+    fetchTokenAccountAct({})
+  })
+
+  const handleClick = useEvent(() => {
+    circleRef.current?.restart()
+    handleRefresh()
+  })
+
   return (
     <Flex borderRadius="24px" direction="column" w="full" px="24px" py="32px" mb="10" bg={colors.backgroundLight}>
-      <Text fontSize="xl" fontWeight="medium" color={colors.textPrimary} mb={3}>
-        {t('liquidity.select_farm')}
-      </Text>
+      <Flex mb={3} justifyContent="space-between" alignItems="center">
+        <Text fontSize="xl" fontWeight="medium" color={colors.textPrimary}>
+          {t('liquidity.select_farm')}
+        </Text>
+        <IntervalCircle
+          componentRef={circleRef}
+          svgWidth={18}
+          strokeWidth={2}
+          trackStrokeColor={colors.secondary}
+          trackStrokeOpacity={0.5}
+          filledTrackStrokeColor={colors.secondary}
+          onClick={handleClick}
+          onEnd={handleRefresh}
+        />
+      </Flex>
       <Select<FormattedFarmInfo>
         sx={{ py: '12px', px: '14px', borderRadius: '8px', bg: colors.backgroundDark, width: 'full' }}
         popoverContentSx={{ py: 3, px: 4, bg: colors.backgroundDark }}

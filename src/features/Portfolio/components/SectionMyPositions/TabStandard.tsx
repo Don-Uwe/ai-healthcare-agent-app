@@ -12,11 +12,13 @@ import { FarmBalanceInfo } from '@/hooks/farm/type'
 export default function MyPositionTabStandard({
   lpBasedData,
   allFarmBalances,
+  refreshTag,
   stakedFarmMap,
   isLoading
 }: {
   isLoading: boolean
   allFarmBalances: FarmBalanceInfo[]
+  refreshTag: number
   lpBasedData: Map<string, FarmPositionInfo>
   stakedFarmMap: Map<string, FormattedFarmInfoV6>
 }) {
@@ -30,7 +32,9 @@ export default function MyPositionTabStandard({
   )
 
   const { formattedData, isLoading: isPoolLoading } = useFetchPoolByLpMint({
-    lpMintList: farmPositionList.map((f) => f[0]).concat(lpOnlyList.map((p) => p.address.toBase58()))
+    lpMintList: farmPositionList.map((f) => f[0]).concat(lpOnlyList.map((p) => p.address.toBase58())),
+    refreshTag,
+    keepPreviousData: true
   })
   const hasData = farmPositionList.length > 0 || lpOnlyList.length > 0
   const allData = [...farmPositionList, ...lpOnlyList]

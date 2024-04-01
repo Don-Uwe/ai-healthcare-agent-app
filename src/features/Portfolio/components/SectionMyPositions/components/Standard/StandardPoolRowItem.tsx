@@ -146,8 +146,7 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
     return acc.add(cur.usd)
   }, new Decimal(0))
 
-  if (isLoading) return <Skeleton w="full" height="140px" rounded="lg" />
-  if (!pool) return null
+  if (!pool) return isLoading ? <Skeleton w="full" height="140px" rounded="lg" /> : null
 
   const lpAmountUSD = allLpUiAmount.mul(pool.lpPrice ?? 0).toString()
   const [pooledAmountA, pooledAmountB] = [

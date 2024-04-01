@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import shallow from 'zustand/shallow'
 import { useAppStore } from '@/store'
 import { useTokenAccountStore } from '@/store/useTokenAccountStore'
+import { isDocumentVisible } from '@/utils/common'
 
 const accountChangeCbk: (() => void)[] = []
 export const addAccChangeCbk = (fn: () => void) => accountChangeCbk.push(fn)
@@ -17,28 +18,40 @@ function useTokenAccountInfo() {
 
   useEffect(() => {
     if (!connection || !publicKey) return
-    fetchTokenAccountAct({ connection, owner: publicKey })
+    fetchTokenAccountAct({})
+
+    let timeoutId = 0
 
     const listenerId = connection.onAccountChange(
       publicKey,
       () => {
-        fetchTokenAccountAct({ connection, owner: publicKey, commitment })
+        fetchTokenAccountAct({ commitment })
         accountChangeCbk.forEach((cb) => cb())
+        if (timeoutId) window.clearTimeout(timeoutId)
+        timeoutId = window.setTimeout(() => {
+          fetchTokenAccountAct({ commitment })
+        }, 10 * 1000)
       },
       commitment
     )
 
-    // const listenerId2 = connection.onAccountChange(
-    //   publicKey,
-    //   () => {
-    //     fetchTokenAccountAct({ connection, owner: publicKey, commitment })
-    //   },
-    //   'finalized'
-    // )
+    return () => {
+      if (timeoutId) window.clearTimeout(timeoutId)
+      connection.removeAccountChangeListener(listenerId)
+    }
+    // eslint-disable-next-line
+  }, [connection?.rpcEndpoint, publicKey])
+
+  useEffect(() => {
+    if (!connection || !publicKey) return
+
+    const intervalId = window.setInterval(() => {
+      if (!isDocumentVisible()) return
+      fetchTokenAccountAct({})
+    }, 3 * 60 * 1000)
 
     return () => {
-      connection.removeAccountChangeListener(listenerId)
-      // connection.removeAccountChangeListener(listenerId2)
+      window.clearInterval(intervalId)
     }
     // eslint-disable-next-line
   }, [connection?.rpcEndpoint, publicKey])

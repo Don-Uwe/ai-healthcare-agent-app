@@ -11,10 +11,16 @@ import { FormattedPoolInfoStandardItem } from './type'
 import { useAppStore } from '@/store'
 import { formatPoolData, poolInfoCache } from './formatter'
 
-const fetcher = (url: string) => axios.get<ApiV3PoolInfoStandardItem[]>(url, { skipError: true })
+const fetcher = ([url]: [url: string]) => axios.get<ApiV3PoolInfoStandardItem[]>(url, { skipError: true })
 
 export default function useFetchPoolByLpMint(
-  props: { shouldFetch?: boolean; lpMintList?: (string | undefined)[]; refreshInterval?: number } & FetchPoolParams
+  props: {
+    shouldFetch?: boolean
+    lpMintList?: (string | undefined)[]
+    refreshInterval?: number
+    refreshTag?: number
+    keepPreviousData?: boolean
+  } & FetchPoolParams
 ): {
   data?: ApiV3PoolInfoStandardItem[]
   dataMap: { [key: string]: ApiV3PoolInfoStandardItem }
@@ -26,15 +32,16 @@ export default function useFetchPoolByLpMint(
   isValidating: boolean
   mutate: KeyedMutator<AxiosResponse<ApiV3PoolInfoStandardItem[], any>>
 } {
-  const { shouldFetch = true, lpMintList = [], refreshInterval = MINUTE_MILLISECONDS * 3 } = props || {}
+  const { shouldFetch = true, lpMintList = [], refreshInterval = MINUTE_MILLISECONDS * 3, refreshTag, keepPreviousData } = props || {}
   const readyIdList = lpMintList.filter((i) => i && isValidPublicKey(i)) as string[]
   const [host, searchLpUrl] = useAppStore((s) => [s.urlConfigs.BASE_HOST, s.urlConfigs.POOL_SEARCH_LP], shallow)
   const url = !lpMintList || !shouldFetch || !readyIdList.length ? null : host + searchLpUrl
 
-  const { data, isLoading, error, ...rest } = useSWR(url ? url.replace('{lp_mints}', lpMintList.join(',')) : url, fetcher, {
+  const { data, isLoading, error, ...rest } = useSWR(url ? [url.replace('{lp_mints}', lpMintList.join(',')), refreshTag] : url, fetcher, {
     dedupingInterval: refreshInterval,
     focusThrottleInterval: refreshInterval,
-    refreshInterval
+    refreshInterval,
+    keepPreviousData
   })
 
   const resData = useMemo(() => data?.data.filter((d) => !!d) || [], [data]) as ApiV3PoolInfoStandardItem[]

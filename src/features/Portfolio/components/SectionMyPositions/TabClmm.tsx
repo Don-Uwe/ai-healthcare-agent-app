@@ -14,14 +14,20 @@ import { deleteOpenCache } from './utils'
 export function ClmmMyPositionTabContent({
   isLoading,
   clmmBalanceInfo,
+  refreshTag,
   setNoRewardClmmPos
 }: {
   isLoading: boolean
+  refreshTag: number
   clmmBalanceInfo: ClmmDataWithUpdateFn
   setNoRewardClmmPos: (val: string, isDelete?: boolean) => void
 }) {
   const { t } = useTranslation()
-  const { formattedDataMap } = useFetchPoolById<ApiV3PoolInfoConcentratedItem>({ idList: Array.from(clmmBalanceInfo.keys()) })
+  const { formattedDataMap } = useFetchPoolById<ApiV3PoolInfoConcentratedItem>({
+    idList: Array.from(clmmBalanceInfo.keys()),
+    refreshTag,
+    keepPreviousData: true
+  })
   const allPositions = useMemo(() => {
     const data = Array.from(clmmBalanceInfo.entries())
     data.forEach((pos) => {
@@ -34,7 +40,8 @@ export function ClmmMyPositionTabContent({
   }, [clmmBalanceInfo, formattedDataMap])
 
   const { dataMap } = useFetchMultipleRpcClmmInfo({
-    idList: Array.from(clmmBalanceInfo.keys())
+    idList: Array.from(clmmBalanceInfo.keys()),
+    refreshTag
   })
 
   useEffect(() => {

@@ -14,6 +14,7 @@ import { FARM_TYPE } from './farmUtils'
 import BN from 'bn.js'
 
 import Decimal from 'decimal.js'
+import { useEvent } from '../useEvent'
 
 const fetcher = ([connection, publicKeyList]: [Connection, string[]]) => {
   console.log('rpc: get multiple farm balance info')
@@ -35,7 +36,11 @@ export default function useFetchMultipleFarmBalance(props: {
 }) {
   const { shouldFetch = true, shouldFetchPendingRewards = true, farmInfoList, refreshInterval = MINUTE_MILLISECONDS * 5 } = props || {}
   const [connection, publicKey, tokenAccLoaded] = useAppStore((s) => [s.connection, s.publicKey, s.tokenAccLoaded], shallow)
-  const { data: rpcInfoDataList, isLoading: isFarmLoading } = useFetchMultipleFarmInfoByRpc({
+  const {
+    data: rpcInfoDataList,
+    isLoading: isFarmLoading,
+    mutate: mutateFarmRpc
+  } = useFetchMultipleFarmInfoByRpc({
     shouldFetch: shouldFetchPendingRewards,
     farmInfoList
   })
@@ -82,10 +87,16 @@ export default function useFetchMultipleFarmBalance(props: {
     }
   }, [mutate, connection?.rpcEndpoint, publicKey])
 
+  const handleMutate = useEvent(() => {
+    mutate()
+    mutateFarmRpc()
+  })
+
   if (responses) {
     return {
       isLoading,
       rpcInfoDataList,
+      mutate: mutateFarmRpc,
       allFarmBalances: responses
         .map((data, idx) => {
           if (!data)
@@ -153,6 +164,7 @@ export default function useFetchMultipleFarmBalance(props: {
   return {
     isLoading,
     rpcInfoDataList: [],
-    allFarmBalances: []
+    allFarmBalances: [],
+    mutate: handleMutate
   }
 }

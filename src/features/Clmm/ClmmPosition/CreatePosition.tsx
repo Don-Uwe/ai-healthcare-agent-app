@@ -15,7 +15,7 @@ import { colors } from '@/theme/cssVariables'
 import { formatToMaxDigit, formatLocaleStr, getFirstNonZeroDecimal } from '@/utils/numberish/formatter'
 import toPercentString from '@/utils/numberish/toPercentString'
 import toUsdVolume from '@/utils/numberish/toUsdVolume'
-
+import IntervalCircle, { IntervalCircleHandler } from '@/components/IntervalCircle'
 import EstimatedAprInfo from '../components/AprInfo'
 import ChartPriceLabel from '../components/ChartPriceLabel'
 import LiquidityChartRangeInput from '../components/LiquidityChartRangeInput'
@@ -57,6 +57,7 @@ export default function CreatePosition() {
   const { isOpen: isNFTOpen, onOpen: onNFTOpen, onClose: onNFTClose } = useDisclosure()
   const { getPriceAndTick, computePairAmount, openPositionAct, getTickPrice } = useClmmStore()
   const getTokenBalanceUiAmount = useTokenAccountStore((s) => s.getTokenBalanceUiAmount)
+  const fetchTokenAccountAct = useTokenAccountStore((s) => s.fetchTokenAccountAct)
 
   const [nftAddress, setNFTAddress] = useState('')
   const [isSending, setIsSending] = useState(false)
@@ -66,6 +67,7 @@ export default function CreatePosition() {
   const [aprTab, setAprTab] = useState(AprKey.Day)
   const [tokens, setTokens] = useState<{ mintA?: string; mintB?: string }>({})
   const rpcRefreshTag = useRef(Date.now())
+  const refreshCircleRef = useRef<IntervalCircleHandler>(null)
   const fetchPoolId = urlPoolId || '2QdhepnKRTLjjSqPL1PtKNwqrUkoLee5Gqs8bvZhRdMv'
 
   const { data: tokenPrices } = useTokenPrice({
@@ -83,7 +85,7 @@ export default function CreatePosition() {
   })
   const clmmData = formattedData?.[0]
   const rpcData = useSubscribeClmmInfo({
-    initialFetch: true,
+    keepFetch: true,
     poolInfo: clmmData,
     throttle: 10 * 1000,
     refreshTag: rpcRefreshTag.current
@@ -342,6 +344,13 @@ export default function CreatePosition() {
     ]
   }, [baseIn, currentPool])
 
+  const handleClickRefresh = useEvent(() => {
+    refreshCircleRef.current?.restart()
+    fetchTokenAccountAct({})
+    mutate()
+    rpcData?.mutateRpcData()
+  })
+
   const createPosition = () => {
     setIsSending(true)
     const [mintAAmount, mintBAmount] = [
@@ -553,7 +562,20 @@ export default function CreatePosition() {
           bg={colors.backgroundLight}
           p="4"
         >
-          <Flex mb="3">{t('clmm.add_deposit_amount')}</Flex>
+          <Flex alignItems="center" justifyContent="space-between" mb="3">
+            <Flex>{t('clmm.add_deposit_amount')}</Flex>
+            <IntervalCircle
+              componentRef={refreshCircleRef}
+              duration={60 * 1000}
+              svgWidth={18}
+              strokeWidth={2}
+              trackStrokeColor={colors.secondary}
+              trackStrokeOpacity={0.5}
+              filledTrackStrokeColor={colors.secondary}
+              onClick={handleClickRefresh}
+              onEnd={handleClickRefresh}
+            />
+          </Flex>
           {/* TODO not need now */}
           {/* <Flex color={colors.textSecondary} fontSize="sm" mb="4" alignItems="center" gap="1" mt="2">
             <Text>{t('clmm.match_deposit_ratio')}</Text>
