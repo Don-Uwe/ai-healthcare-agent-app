@@ -11,7 +11,6 @@ import {
   ReturnTypeGetPriceAndTick,
   ApiV3Token,
   SetRewardsParams,
-  CLMM_PROGRAM_ID,
   ClmmKeys,
   ApiV3PoolInfoConcentratedItem,
   MakeTxData,

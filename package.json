@@ -46,7 +46,7 @@
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
     "@project-serum/serum": "^0.13.65",
-    "@raydium-io/raydium-sdk-v2": "2.0.0-rc.5",
+    "@raydium-io/raydium-sdk-v2": "2.0.0-rc.6",
     "@solana/spl-token": "^0.3.7",
     "@solana/wallet-adapter-base": "^0.9.23",
     "@solana/wallet-adapter-exodus": "^0.1.18",
