@@ -42,7 +42,7 @@ const getSwapComputePrice = async () => {
 
 interface SwapStore {
   swapTokenAct: (
-    props: { swapResponse: ApiSwapV1OutSuccess; onCloseToast?: () => void } & TxCallbackProps
+    props: { swapResponse: ApiSwapV1OutSuccess; unwrapSol?: boolean; onCloseToast?: () => void } & TxCallbackProps
   ) => Promise<string | string[] | undefined>
   unWrapSolAct: (props: {
     amount: string
@@ -65,7 +65,7 @@ export const useSwapStore = createStore<SwapStore>(
   () => ({
     ...initSwapState,
 
-    swapTokenAct: async ({ swapResponse, onCloseToast, ...txProps }) => {
+    swapTokenAct: async ({ swapResponse, unwrapSol = false, onCloseToast, ...txProps }) => {
       const { publicKey, raydium, txVersion, connection, signAllTransactions, urlConfigs } = useAppStore.getState()
       if (!raydium || !connection) {
         console.error('no connection')
@@ -114,7 +114,7 @@ export const useSwapStore = createStore<SwapStore>(
             swapResponse,
             txVersion: isV0Tx ? 'V0' : 'LEGACY',
             wrapSol: isInputSol,
-            unwrapSol: isOutputSol,
+            unwrapSol,
             inputAccount: inputTokenAcc?.toBase58(),
             outputAccount: isOutputSol ? undefined : outputTokenAcc?.toBase58()
           }
@@ -133,12 +133,12 @@ export const useSwapStore = createStore<SwapStore>(
               new Decimal(swapResponse.data.inputAmount).div(10 ** (inputToken.decimals || 0)).toString(),
               inputToken.decimals
             )!,
-            symbolA: getMintSymbol({ mint: inputToken, transformSol: true }),
+            symbolA: getMintSymbol({ mint: inputToken, transformSol: unwrapSol }),
             amountB: formatLocaleStr(
               new Decimal(swapResponse.data.outputAmount).div(10 ** (outputToken.decimals || 0)).toString(),
               outputToken.decimals
             )!,
-            symbolB: getMintSymbol({ mint: outputToken, transformSol: true })
+            symbolB: getMintSymbol({ mint: outputToken, transformSol: unwrapSol })
           }
         })
         const toastId = uuid()

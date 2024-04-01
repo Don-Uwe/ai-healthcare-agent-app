@@ -180,6 +180,7 @@ export function SwapPanel({
     onSending()
     swapTokenAct({
       swapResponse: response as ApiSwapV1OutSuccess,
+      unwrapSol: tokenOutput?.address === PublicKey.default.toString(),
       onCloseToast: offSending,
       onSuccess: () => {
         setAmountIn('')
