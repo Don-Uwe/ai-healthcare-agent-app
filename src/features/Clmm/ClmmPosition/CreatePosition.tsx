@@ -335,14 +335,14 @@ export default function CreatePosition() {
     }
   }, [urlPoolId, poolId])
 
-  const [priceMin24h, priceMax24h] = useMemo(() => {
+  const [priceMin, priceMax] = useMemo(() => {
     if (!currentPool) return [0, 0]
-    if (baseIn) return [currentPool.day.priceMin, currentPool.day.priceMax]
+    if (baseIn) return [currentPool?.[aprTab].priceMin, currentPool?.[aprTab].priceMax]
     return [
-      currentPool.day.priceMax ? 1 / currentPool.day.priceMax : currentPool.day.priceMax,
-      currentPool.day.priceMin ? 1 / currentPool.day.priceMin : currentPool.day.priceMin
+      currentPool?.[aprTab].priceMax ? 1 / currentPool?.[aprTab].priceMax : currentPool?.[aprTab].priceMax,
+      currentPool?.[aprTab].priceMin ? 1 / currentPool?.[aprTab].priceMin : currentPool?.[aprTab].priceMin
     ]
-  }, [baseIn, currentPool])
+  }, [baseIn, currentPool, aprTab])
 
   const handleClickRefresh = useEvent(() => {
     refreshCircleRef.current?.restart()
@@ -496,8 +496,8 @@ export default function CreatePosition() {
                   price={parseFloat(currentPriceStr)}
                   priceLower={priceRange[0]}
                   priceUpper={priceRange[1]}
-                  timePriceMin={priceMin24h}
-                  timePriceMax={priceMax24h}
+                  timePriceMin={priceMin}
+                  timePriceMax={priceMax}
                   onLeftRangeInput={handleLeftRangeBlur}
                   onRightRangeInput={handleRightRangeBlur}
                   interactive={true}
@@ -515,8 +515,8 @@ export default function CreatePosition() {
                     subA: currentPool?.[baseIn ? 'mintB' : 'mintA'].symbol,
                     subB: currentPool?.[baseIn ? 'mintA' : 'mintB'].symbol
                   })}
-                  timePrice={`${formatLocaleStr(priceMin24h, currentPool?.poolDecimals)} - ${formatLocaleStr(
-                    priceMax24h,
+                  timePrice={`${formatLocaleStr(priceMin, currentPool?.poolDecimals)} - ${formatLocaleStr(
+                    priceMax,
                     currentPool?.poolDecimals
                   )}`}
                 />
