@@ -234,7 +234,7 @@ function OtherMiscUtils({
       </Popover> */}
       <IntervalCircle
         componentRef={refreshCircleRef}
-        duration={30 * 1000}
+        duration={60 * 1000}
         svgWidth={18}
         strokeWidth={2}
         trackStrokeColor={colors.secondary}
