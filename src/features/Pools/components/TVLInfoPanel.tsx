@@ -1,12 +1,11 @@
 import { Box, HStack, Image, Text } from '@chakra-ui/react'
-import { Numberish } from '@raydium-io/raydium-sdk-v2'
 import { useTranslation } from 'react-i18next'
 
 import { colors } from '@/theme/cssVariables'
 import { appLayoutPaddingX } from '@/theme/detailConfig'
 import toUsdVolume from '@/utils/numberish/toUsdVolume'
 
-export default function TVLInfoPanel({ tvl, volume }: { tvl: Numberish; volume: Numberish }) {
+export default function TVLInfoPanel({ tvl, volume }: { tvl: string | number; volume: string | number }) {
   const { t } = useTranslation()
   return (
     <HStack spacing={5}>
@@ -16,7 +15,7 @@ export default function TVLInfoPanel({ tvl, volume }: { tvl: Numberish; volume: 
   )
 }
 
-function TVLInfoItem({ name, value, decoratorImageSrc }: { name: string; value: Numberish; decoratorImageSrc?: string }) {
+function TVLInfoItem({ name, value, decoratorImageSrc }: { name: string; value: string | number; decoratorImageSrc?: string }) {
   return (
     <Box backgroundColor={colors.backgroundLight} borderRadius={8} display="flex" overflow="hidden">
       <Box pl={3} pr={0} py={2}>
@@ -32,7 +31,7 @@ function TVLInfoItem({ name, value, decoratorImageSrc }: { name: string; value: 
   )
 }
 
-export function TVLInfoPanelMobile({ tvl, volume }: { tvl: Numberish; volume: Numberish }) {
+export function TVLInfoPanelMobile({ tvl, volume }: { tvl: string | number; volume: string | number }) {
   const { t } = useTranslation()
   return (
     <HStack

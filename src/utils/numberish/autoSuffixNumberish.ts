@@ -1,11 +1,10 @@
-import { Numberish, Rounding, Fraction, toFraction } from '@raydium-io/raydium-sdk-v2'
 import formatNumber, { FormatOptions } from './formatNumber'
 import Decimal from 'decimal.js'
 
 export type ToVolumeOption = {
   decimals?: number
   format?: any | undefined
-  rounding?: Rounding
+  rounding?: Decimal.Rounding
   // if true, always use shorter expression
   useShorterExpression?: boolean
   // if bigger than this, use shorter expression
@@ -13,15 +12,15 @@ export type ToVolumeOption = {
   maxDigitsNumber?: number
 } & FormatOptions
 
-export function toVolume(n: Numberish | Decimal, options?: ToVolumeOption): string {
-  const formatFn = (n: Fraction, needShortcut: boolean) =>
-    formatNumber(n.toFixed(options?.decimals ?? 2, options?.format, options?.rounding), {
+export function toVolume(n: number | string | Decimal, options?: ToVolumeOption): string {
+  const formatFn = (n: Decimal, needShortcut: boolean) =>
+    formatNumber(n.toFixed(options?.decimals ?? 2, options?.rounding || Decimal.ROUND_HALF_UP), {
       decimalMode: 'fixed',
       maxDecimalCount: options?.decimals ?? 2,
       useShorterExpression: needShortcut,
       ...options
     })
-  const num = toFraction(isDecimal(n) ? n.toString() : n)
+  const num = new Decimal(n.toString().replace(/,/gi, ''))
   try {
     const int = num.toFixed(0)
     const numberWidth = int.length + (options?.decimals ?? 2)
@@ -30,8 +29,4 @@ export function toVolume(n: Numberish | Decimal, options?: ToVolumeOption): stri
   } catch {
     return '0'
   }
-}
-
-function isDecimal(n: any): n is Decimal {
-  return n && typeof n === 'object' && n instanceof Decimal
 }

@@ -1,6 +1,5 @@
-import { Numberish } from '@raydium-io/raydium-sdk-v2'
 import { fall } from '../functionMethods'
-import { toString } from './toString'
+import Decimal from 'decimal.js'
 
 const stringNumberRegex = /(-?)([\d,_]*)\.?(\d*)/
 
@@ -95,7 +94,7 @@ export type FormatOptions = {
  * formatNumber(100.1234, { maxDecimalCount: 3 }) // result: '100.123'
  */
 export default function formatNumber(
-  n: Numberish | null | undefined,
+  n: number | string | Decimal | null | undefined,
   {
     groupSeparator = ',',
     maxDecimalCount = 2,
@@ -107,7 +106,7 @@ export default function formatNumber(
 ): string {
   if (n === undefined) return '0'
   return fall(n, [
-    (n) => toString(n),
+    (n) => n?.toString() || '',
     (n) => toFixed(n, maxDecimalCount),
     (n) => (decimalMode === 'fixed' ? n : trimTailingZero(n)),
     (str) => {

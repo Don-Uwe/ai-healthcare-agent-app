@@ -93,10 +93,10 @@ export default function TokenAmountPairInputs({ tempCreatedPool, baseIn, onConfi
   )
 
   const [balanceA, balanceB] = useMemo(() => {
-    let amountA = getTokenBalanceUiAmount({ mint: wSolToSol(mintA.address)!, decimals: mintA.decimals }).amount.sub(
+    const amountA = getTokenBalanceUiAmount({ mint: wSolToSol(mintA.address)!, decimals: mintA.decimals }).amount.sub(
       isSolWSol(mintA.address) ? 0.5 : 0
     )
-    let amountB = getTokenBalanceUiAmount({ mint: wSolToSol(mintB.address)!, decimals: mintB.decimals }).amount.sub(
+    const amountB = getTokenBalanceUiAmount({ mint: wSolToSol(mintB.address)!, decimals: mintB.decimals }).amount.sub(
       isSolWSol(mintB.address) ? 0.5 : 0
     )
 
