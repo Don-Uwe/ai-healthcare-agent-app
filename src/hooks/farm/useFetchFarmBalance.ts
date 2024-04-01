@@ -71,17 +71,13 @@ export default function useFetchFarmBalance(props: {
 
   useEffect(() => {
     if (!connection || !publicKey) return
-    let timeId = -1
     const refetch = () => {
-      timeId = window.setTimeout(() => {
-        mutate()
-        refresh()
-      }, 1000)
+      mutate()
+      refresh()
     }
     addAccChangeCbk(refetch)
 
     return () => {
-      clearTimeout(timeId)
       removeAccChangeCbk(refetch)
     }
   }, [mutate, refresh, connection?.rpcEndpoint, publicKey])

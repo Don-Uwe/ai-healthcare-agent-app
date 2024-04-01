@@ -30,6 +30,7 @@ function useTokenAccountInfo() {
         if (timeoutId) window.clearTimeout(timeoutId)
         timeoutId = window.setTimeout(() => {
           fetchTokenAccountAct({ commitment })
+          accountChangeCbk.forEach((cb) => cb())
         }, 10 * 1000)
       },
       commitment
