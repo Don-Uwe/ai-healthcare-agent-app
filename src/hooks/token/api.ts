@@ -29,9 +29,7 @@ export const getOnlineTokenInfo = async ({
       const info = await connection.getAccountInfo(address, 'confirmed')
       const space = (info as AccountInfo<Buffer> & { space?: number })?.space ?? 0
       if (space === 82 || space > 165) {
-        if (info?.owner.equals(TOKEN_PROGRAM_ID)) {
-          programId = TOKEN_PROGRAM_ID
-        } else if (info?.owner.equals(TOKEN_2022_PROGRAM_ID)) {
+        if (info?.owner.equals(TOKEN_2022_PROGRAM_ID)) {
           programId = TOKEN_2022_PROGRAM_ID
         }
         const onlineData = unpackMint(address, info, programId)
@@ -40,7 +38,7 @@ export const getOnlineTokenInfo = async ({
           const res = {
             chainId: 101,
             address: mintAddress,
-            programId: '',
+            programId: programId?.toBase58() || TOKEN_PROGRAM_ID.toBase58(),
             logoURI: '',
             symbol: mintAddress.slice(0, 6),
             name: mintAddress.slice(0, 6),

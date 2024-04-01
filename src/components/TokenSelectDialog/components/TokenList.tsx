@@ -294,7 +294,7 @@ function TokenRowItem({
           <Box w="100%" minW="0" overflow="hidden">
             <Box display="flex" gap={2} alignItems="center">
               <Text color={colors.textSecondary} mt="0.5">
-                {token.symbol}😃
+                {token.symbol}
               </Text>
               {isUnknown ? (
                 <Box
