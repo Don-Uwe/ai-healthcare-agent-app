@@ -1,5 +1,5 @@
 import { PublicKey, VersionedTransaction, Transaction } from '@solana/web3.js'
-import { WSOLMint, SOLMint, TxVersion, printSimulate, SOL_INFO } from '@raydium-io/raydium-sdk-v2'
+import { SOLMint, TxVersion, printSimulate, SOL_INFO } from '@raydium-io/raydium-sdk-v2'
 import { createStore, useAppStore, useTokenStore } from '@/store'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
 import { txStatusSubject } from '@/hooks/toast/useTxStatus'
@@ -17,6 +17,8 @@ import i18n from '@/i18n'
 import { retry } from '@/utils/common'
 import { fetchComputePrice } from '@/utils/tx/computeBudget'
 import { ToastStatus } from '@/types/tx'
+import { trimTailingZero } from '@/utils/numberish/formatNumber'
+import { getComputeBudgetConfig } from '@/utils/tx/computeBudget'
 
 const getSwapComputePrice = async () => {
   const transactionFee = useAppStore.getState().transactionFee
@@ -42,7 +44,12 @@ interface SwapStore {
   swapTokenAct: (
     props: { swapResponse: ApiSwapV1OutSuccess; onCloseToast?: () => void } & TxCallbackProps
   ) => Promise<string | string[] | undefined>
-  unWrapSolAct: (amount: string) => Promise<string | undefined>
+  unWrapSolAct: (props: {
+    amount: string
+    onClose?: () => void
+    onSuccess?: () => void
+    onError?: () => void
+  }) => Promise<string | undefined>
   wrapSolAct: (amount: string) => Promise<string | undefined>
 }
 
@@ -261,18 +268,29 @@ export const useSwapStore = createStore<SwapStore>(
       return ''
     },
 
-    unWrapSolAct: async (amount: string): Promise<string | undefined> => {
+    unWrapSolAct: async ({ amount, onSuccess, onError, ...txProps }): Promise<string | undefined> => {
       const raydium = useAppStore.getState().raydium
       if (!raydium) return
-      const { execute } = await raydium.tradeV2.unWrapWSol(raydium.decimalAmount({ mint: WSOLMint, amount })!)
+      const { execute } = await raydium.tradeV2.unWrapWSol({ amount, computeBudgetConfig: await getComputeBudgetConfig() })
+
+      const values = { amount: trimTailingZero(new Decimal(amount).div(10 ** SOL_INFO.decimals).toFixed(SOL_INFO.decimals)) }
+      const meta = {
+        title: i18n.t('swap.unwrap_all_wsol', values),
+        description: i18n.t('swap.unwrap_all_wsol_desc', values),
+        txHistoryTitle: 'swap.unwrap_all_wsol',
+        txHistoryDesc: 'swap.unwrap_all_wsol_desc',
+        txValues: values
+      }
 
       return execute()
         .then((txId) => {
-          txStatusSubject.next({ txId })
+          onSuccess?.()
+          txStatusSubject.next({ txId, ...meta, ...txProps })
           return txId
         })
         .catch((e) => {
-          toastSubject.next({ txError: e })
+          onError?.()
+          toastSubject.next({ txError: e, ...meta })
           return ''
         })
     },

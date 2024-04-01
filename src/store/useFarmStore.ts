@@ -211,7 +211,7 @@ export const useFarmStore = createStore<FarmStore>(
         return ''
       }
     },
-    createFarmAct: async ({ poolInfo, rewardInfos, onSuccess, onError, onFinally }) => {
+    createFarmAct: async ({ poolInfo, rewardInfos, onSuccess, onError, onFinally, onConfirmed }) => {
       const { raydium, txVersion } = useAppStore.getState()
       if (!raydium) return ''
 
@@ -227,6 +227,9 @@ export const useFarmStore = createStore<FarmStore>(
             txId,
             onSuccess: () => {
               onSuccess?.(extInfo)
+            },
+            onConfirmed: () => {
+              onConfirmed?.()
               refreshCreatedFarm()
             },
             onError

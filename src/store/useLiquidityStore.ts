@@ -224,7 +224,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
         .finally(onFinally)
     },
 
-    migrateToClmmAct: async ({ onSuccess, onError, onFinally, ...params }) => {
+    migrateToClmmAct: async ({ onSuccess, onError, onFinally, onConfirmed, ...params }) => {
       const { raydium, txVersion, wallet, connection, signAllTransactions } = useAppStore.getState()
       if (!raydium || !connection || !signAllTransactions) return ''
 
@@ -255,7 +255,8 @@ export const useLiquidityStore = createStore<LiquidityStore>(
         txLength,
         onSuccess,
         onError,
-        onFinally
+        onFinally,
+        onConfirmed
       })
       const getSubTxTitle = (idx: number) => (idx === transactions.length - 1 ? migrateMeta.title : removeMeta.title)
 

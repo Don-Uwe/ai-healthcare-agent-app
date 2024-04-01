@@ -22,7 +22,7 @@ import {
 } from '@chakra-ui/react'
 import { solToWSol, TokenInfo } from '@raydium-io/raydium-sdk-v2'
 import { useFormik } from 'formik'
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { QuestionToolTip } from '../../../../components/QuestionToolTip'
 import useMarketSchema from '../hooks/useMarketSchema'
@@ -43,7 +43,7 @@ export default function CreateMarket() {
   const createMarketAct = useCreateMarketStore((s) => s.createMarketAct)
   const { isOpen, onToggle } = useDisclosure()
   const { isOpen: isSending, onOpen: onSending, onClose: offSending } = useDisclosure()
-
+  const marketRef = useRef('')
   const schema = useMarketSchema()
 
   const { errors, values, setFieldValue, submitForm } = useFormik<FormValue>({
@@ -56,7 +56,11 @@ export default function CreateMarket() {
       createMarketAct({
         ...(values as Required<FormValue>),
         onSuccess: (marketId) => {
-          marketId && setUrlQuery({ mode: tabValueModeMapping['I have an ID'], id: marketId })
+          marketRef.current = marketId
+        },
+        onConfirmed: () => {
+          offSending()
+          setUrlQuery({ mode: tabValueModeMapping['I have an ID'], id: marketRef.current })
         },
         onFinally: offSending
       })

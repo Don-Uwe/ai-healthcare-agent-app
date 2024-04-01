@@ -88,6 +88,7 @@ export default function Stake({ poolInfo, disabled, onRefresh }: Props) {
         : undefined,
       onSuccess: () => {
         setPercent(0)
+        offSending()
       },
       onFinally: offSending
     })

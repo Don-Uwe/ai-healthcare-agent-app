@@ -47,6 +47,7 @@ const MODE_TO_STEP = {
 export default function CreateFarm() {
   const isMobile = useAppStore((s) => s.isMobile)
   const { t } = useTranslation()
+
   // -------- step --------
   const query = useRouteQuery<QueryDetail>()
   const createStandardFarmAct = useFarmStore((s) => s.createFarmAct)
@@ -65,6 +66,7 @@ export default function CreateFarm() {
   // -------- step 2 --------
   const [rewardInfos, setRewardInfos] = useState<NewRewardInfo[]>([{ id: uuidv4(), token: RAY_TOKEN_INFO, isValid: false }])
 
+  const { isOpen: isSending, onOpen: onSending, onClose: offSending } = useDisclosure()
   // -------- tx dialog --------
   const { isOpen: isSuccessModalOpen, onOpen: onOpenSuccessModal, onClose: onCloseSuccessModal } = useDisclosure()
   const { isOpen: isErrorModalOpen, onOpen: onOpenErrorModal, onClose: onCloseErrorModal } = useDisclosure()
@@ -84,6 +86,7 @@ export default function CreateFarm() {
   const data = allCreatedPools.filter((p) => p.rewardDefaultInfos.length === 0)
 
   const handleCreateFarm = useEvent(() => {
+    onSending()
     if (selectedPoolType === 'Standard') {
       return createStandardFarmAct({
         poolInfo: selectedPool as ApiV3PoolInfoStandardItem,
@@ -98,10 +101,16 @@ export default function CreateFarm() {
           rewardType: 'Standard SPL'
         })),
         onSuccess: (props) => {
+          offSending()
           setFarmId(props?.farmId.toString() || '')
+        },
+        onConfirmed: () => {
           onOpenSuccessModal()
         },
-        onError: onOpenErrorModal
+        onError: () => {
+          offSending()
+          onOpenErrorModal()
+        }
       })
     }
 
@@ -117,10 +126,16 @@ export default function CreateFarm() {
         endTime: Math.floor(new Decimal(r.farmEnd!).div(1000).toNumber())
       })),
       onSuccess: () => {
+        offSending()
         setFarmId((selectedPool as ApiV3PoolInfoConcentratedItem).id)
+      },
+      onConfirmed: () => {
         onOpenSuccessModal()
       },
-      onError: onOpenErrorModal
+      onError: () => {
+        onOpenErrorModal()
+        offSending()
+      }
     })
   })
 
@@ -360,6 +375,7 @@ export default function CreateFarm() {
               <ReviewDetail
                 rewardInfos={rewardInfos}
                 poolInfo={selectedPool}
+                isSending={isSending}
                 onClickBackButton={() => {
                   stepsRef.current?.goToPrevious()
                   routeToStepReward()

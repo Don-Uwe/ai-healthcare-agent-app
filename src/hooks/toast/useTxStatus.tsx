@@ -33,7 +33,7 @@ export const txStatusSubject = new Subject<
     skipWatchSignature?: boolean
     onConfirmed?: (signatureResult: SignatureResult, context: Context) => void
     onError?: (signatureResult: SignatureResult, context: Context) => void
-    onSuccess?: (signatureResult: SignatureResult, context: Context) => void
+    onSuccess?: () => void
     onClose?: () => void
   }
 >()
@@ -50,7 +50,7 @@ export const multiTxStatusSubject = new Subject<
     skipWatchSignature?: boolean
 
     onError?: (signatureResult: SignatureResult, context: Context) => void
-    onSuccess?: (signatureResult: SignatureResult, context: Context) => void
+    onSuccess?: () => void
     onClose?: () => void
   }
 >()
@@ -115,6 +115,7 @@ function useTxStatus() {
             update,
             onClose
           })
+          onSuccess?.()
 
           setTxRecord({
             status: 'info',
@@ -132,7 +133,6 @@ function useTxStatus() {
           const subId = connection.onSignature(
             txId,
             (signatureResult, context) => {
-              onConfirmed?.(signatureResult, context)
               if (signatureResult.err) {
                 // update toast status to error
                 !hideResultToast &&
@@ -160,6 +160,7 @@ function useTxStatus() {
                   isMultiSig: isMultisigWallet
                 })
               } else {
+                onConfirmed?.(signatureResult, context)
                 if (hideResultToast) return
                 // update toast status to success
                 toastSubject.next({
@@ -174,7 +175,6 @@ function useTxStatus() {
                   onClose
                 })
 
-                onSuccess?.(signatureResult, context)
                 setTxRecord({
                   status: 'success',
                   title: txHistoryTitle || 'transaction.title',
@@ -362,7 +362,7 @@ function useTxStatus() {
                       onClose
                     })
 
-                    if (Object.values(txStatus).length === subTxIds.length) onSuccess?.(signatureResult, context)
+                    if (Object.values(txStatus).length === subTxIds.length) onSuccess?.()
 
                     setTxRecord({
                       status: 'success',

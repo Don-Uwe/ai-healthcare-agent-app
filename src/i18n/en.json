@@ -202,7 +202,10 @@
     "error_REQ_POOL_NOT_OPEN": "Pool Open At",
     "error_sol_fee_not_insufficient": "You need at least {{amount}} SOL to pay for fees and deposits",
     "user_added_token_list": "User Added Token List",
-    "show_chart": "Show chart"
+    "show_chart": "Show chart",
+    "unwrap_all_wsol": "Unwrapped all WSOL",
+    "unwrap_all_wsol_desc": "Unwrapped total {{amount}} WSOL",
+    "unwrap_wsol_info": "You have {{amount}} WSOL that you can <sub>Unwrap</sub>"
   },
   "liquidity_pools": {
     "view_chart_tooltip": "View pool charts",

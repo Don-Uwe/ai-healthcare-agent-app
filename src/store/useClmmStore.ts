@@ -692,7 +692,7 @@ export const useClmmStore = createStore<ClmmState>(
       }
     },
 
-    createFarm: async ({ poolInfo, rewardInfos, onSuccess, onError, onFinally }) => {
+    createFarm: async ({ poolInfo, rewardInfos, onSuccess, onError, onFinally, onConfirmed }) => {
       const { raydium, publicKey, txVersion } = useAppStore.getState()
       if (!raydium || !publicKey) return ''
       const { execute } = await raydium.clmm.initRewards({
@@ -711,7 +711,7 @@ export const useClmmStore = createStore<ClmmState>(
       })
       return execute()
         .then((txId: string) => {
-          txStatusSubject.next({ txId, ...meta, mintInfo: rewardInfos.map((r) => r.mint) })
+          txStatusSubject.next({ txId, ...meta, mintInfo: rewardInfos.map((r) => r.mint), onConfirmed })
           onSuccess?.()
           return txId
         })

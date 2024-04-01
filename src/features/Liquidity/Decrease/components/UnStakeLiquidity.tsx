@@ -1,4 +1,4 @@
-import { Box, Flex, HStack, SimpleGrid, Text } from '@chakra-ui/react'
+import { Box, Flex, HStack, SimpleGrid, Text, useDisclosure } from '@chakra-ui/react'
 import { useEffect, useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -42,6 +42,7 @@ export default function UnStakeLiquidity({
   const circleRef = useRef<IntervalCircleHandler>(null)
   const [selectedFarm, setSelectedFarm] = useState<FormattedFarmInfo | undefined>(undefined)
   const [withdrawPercent, setWithdrawPercent] = useState(0)
+  const { isOpen: isSending, onOpen: onSending, onClose: offSending } = useDisclosure()
 
   const {
     formattedData: farmList,
@@ -78,13 +79,18 @@ export default function UnStakeLiquidity({
   }, [deposited, onStakedChange])
 
   const handleClickUnStake = () => {
+    onSending()
     withdrawFarmAct({
       farmInfo: selectedFarm!,
       amount: withdrawAmount.toString(),
       userAuxiliaryLedgers: farmPositionData?.hasV1Data
         ? farmPositionData.data.filter((d) => d.version === 'V1' && !new Decimal(d.lpAmount).isZero()).map((d) => d.userVault)
         : undefined,
-      onSuccess: () => setWithdrawPercent(0)
+      onSuccess: () => {
+        setWithdrawPercent(0)
+        offSending()
+      },
+      onError: offSending
     })
   }
 
@@ -177,7 +183,12 @@ export default function UnStakeLiquidity({
           })}
         </SimpleGrid>
       </Box>
-      <Button mt={10} isDisabled={featureDisabled || !selectedFarm || withdrawAmount.isZero()} onClick={handleClickUnStake}>
+      <Button
+        mt={10}
+        isDisabled={featureDisabled || !selectedFarm || withdrawAmount.isZero()}
+        isLoading={isSending}
+        onClick={handleClickUnStake}
+      >
         {featureDisabled ? t('common.disabled') : t('liquidity.unstake_liquidity')}
       </Button>
     </Flex>
