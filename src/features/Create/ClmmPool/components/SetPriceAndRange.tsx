@@ -29,6 +29,7 @@ import { Desktop, Mobile } from '@/components/MobileDesktop'
 import { TokenPrice } from '@/hooks/token/useTokenPrice'
 import { useEvent } from '@/hooks/useEvent'
 import { trimTrailZero } from '@/utils/numberish/formatter'
+import { formatCurrency } from '@/utils/numberish/formatter'
 
 const IconStyle = {
   cursor: 'pointer',
@@ -264,7 +265,6 @@ export default function SetPriceAndRange({
     handleLeftRangeBlur(new Decimal(1).div(priceRangeRef.current[1]).toString())
     handleRightRangeBlur(new Decimal(1).div(priceRangeRef.current[0]).toString())
   })
-
   if (completed)
     return (
       <PanelCard px={[3, 6]} py={[3, 4]} fontSize="sm" fontWeight="500" color={colors.textSecondary}>
@@ -288,9 +288,13 @@ export default function SetPriceAndRange({
               </Text>
               <Text>
                 {isFullRange
-                  ? `${new Decimal(fullRangeTickRef.current.priceLower || 0).toString()} - ${new Decimal(
-                      fullRangeTickRef.current.priceUpper || 0
-                    ).toString()}`
+                  ? `${formatCurrency(new Decimal(fullRangeTickRef.current.priceLower || 0).toFixed(24), {
+                      maximumDecimalTrailingZeroes: 5,
+                      abbreviated: true
+                    })} - ${formatCurrency(new Decimal(fullRangeTickRef.current.priceUpper || 0).toFixed(24), {
+                      maximumDecimalTrailingZeroes: 5,
+                      abbreviated: true
+                    })}`
                   : `${priceRange[0]} - ${priceRange[1]}`}
               </Text>
               <Text>

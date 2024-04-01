@@ -12,8 +12,7 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
-  ModalFooter,
-  useDisclosure
+  ModalFooter
 } from '@chakra-ui/react'
 import TokenAvatar from '@/components/TokenAvatar'
 import TokenAvatarPair from '@/components/TokenAvatarPair'
@@ -28,6 +27,7 @@ import Decimal from 'decimal.js'
 import toPercentString from '@/utils/numberish/toPercentString'
 import { TokenPrice } from '@/hooks/token/useTokenPrice'
 import { getFirstNonZeroDecimal } from '@/utils/numberish/formatter'
+import { formatCurrency } from '@/utils/numberish/formatter'
 
 interface Props {
   isOpen: boolean
@@ -150,8 +150,10 @@ export default function PreviewDepositModal({
                   <Text variant="subTitle">{t('clmm.min_price')}</Text>
                   <Text fontSize={['lg', 'xl']} fontWeight="500" color={colors.textPrimary}>
                     {price0Decimal > decimals
-                      ? new Decimal(priceRange[0]).toString()
-                      : new Decimal(priceRange[0]).toDecimalPlaces(decimals).toString()}
+                      ? formatCurrency(new Decimal(priceRange[0]).toFixed(24), { maximumDecimalTrailingZeroes: 5 })
+                      : formatCurrency(new Decimal(priceRange[0]).toDecimalPlaces(decimals).toFixed(24), {
+                          maximumDecimalTrailingZeroes: 5
+                        })}
                   </Text>
                   <Text variant="subTitle" color={colors.textSecondary} opacity="0.5">
                     {t('common.per_unit', {
@@ -174,8 +176,11 @@ export default function PreviewDepositModal({
                   <Text variant="subTitle">{t('clmm.max_price')}</Text>
                   <Text fontSize={['lg', 'xl']} fontWeight="500" color={colors.textPrimary}>
                     {price1Decimal > decimals
-                      ? new Decimal(priceRange[1]).toString()
-                      : new Decimal(priceRange[1]).toDecimalPlaces(decimals).toString()}
+                      ? formatCurrency(new Decimal(priceRange[1]).toFixed(24), { maximumDecimalTrailingZeroes: 5, abbreviated: true })
+                      : formatCurrency(new Decimal(priceRange[1]).toDecimalPlaces(decimals).toFixed(24), {
+                          maximumDecimalTrailingZeroes: 5,
+                          abbreviated: true
+                        })}
                   </Text>
                   <Text variant="subTitle" color={colors.textSecondary} opacity="0.5">
                     {t('common.per_unit', {
