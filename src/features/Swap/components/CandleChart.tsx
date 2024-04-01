@@ -142,7 +142,7 @@ export default function CandleChart({ onPriceChange, baseMint, quoteMint, timeTy
   }, [loadMore, pair])
 
   useEffect(() => {
-    if (!chartRef.current.chart || !data.length) return
+    if (!chartRef.current.chart) return
     chartRef.current.candle?.setData(data)
     chartRef.current.volume?.setData(data)
   }, [data, timeType])

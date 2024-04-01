@@ -26,7 +26,7 @@ export default function ItemName(props: {
         <Box color={colors.textPrimary} fontWeight="500" fontSize="20px" whiteSpace={'nowrap'}>
           {props.poolName}
         </Box>
-        {props.hasStakeFarm && <FarmTitleBadge stakeFarmCount={props.stakeFarmCount} />}
+        {props.hasStakeFarm && props.stakeFarmCount !== 0 && <FarmTitleBadge stakeFarmCount={props.stakeFarmCount} />}
       </HStack>
     </Flex>
   )

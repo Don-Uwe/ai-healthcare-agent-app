@@ -94,7 +94,7 @@ export default function PoolInfo({ pool }: { pool?: FormattedPoolInfoStandardIte
                   <InfoRowItem symbol={t('common.lp')} address={pool.lpMint.address} onCopySuccess={onCopySuccess} />
                 )}
                 {pool?.id && <InfoRowItem symbol={t('common.amm_id')} address={pool.id} onCopySuccess={onCopySuccess} />}
-                {pool?.programId && <InfoRowItem symbol={t('common.market_id')} address={pool.programId} onCopySuccess={onCopySuccess} />}
+                {pool?.marketId && <InfoRowItem symbol={t('common.market_id')} address={pool.marketId} onCopySuccess={onCopySuccess} />}
               </Grid>
             </PopoverBody>
           </PopoverContent>
