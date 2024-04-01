@@ -217,7 +217,8 @@ export default function TokenSearchInput({
             color={colors.textTertiary}
             background={colors.backgroundTransparent12}
             _hover={{ bg: colors.backgroundTransparent07 }}
-            px="4"
+            pl="2"
+            pr="3"
             placeItems={'center'}
             borderRadius="100px"
             h={['34px', 10]}
@@ -300,13 +301,13 @@ export default function TokenSearchInput({
                   gap="2"
                   mb={idx !== filteredList.length - 1 ? '3' : '0'}
                 >
-                  <Flex alignItems="flex-start" gap="2">
+                  <Flex alignItems="flex-start" gap="2" overflow="hidden">
                     <TokenAvatar size="sm" mt="0.5" token={token} />
-                    <Flex alignItems="center" gap="2" flexWrap="wrap">
-                      <Text variant="title" color={colors.textPrimary} fontSize="md">
+                    <Flex alignItems="center" gap="2" flexWrap="nowrap">
+                      <Text variant="title" color={colors.textPrimary} fontSize="md" whiteSpace="nowrap">
                         {token.symbol}
                       </Text>
-                      <Text variant="label" fontSize="md">
+                      <Text variant="label" fontSize="md" whiteSpace="nowrap">
                         {token.name}
                       </Text>
                     </Flex>

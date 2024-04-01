@@ -204,8 +204,8 @@ export const Brush = ({
                 </g>
 
                 <LabelGroup transform={`translate(50,0), scale(${flipWestHandle ? '1' : '-1'}, 1)`} visible={showLabels || hovering}>
-                  <TooltipBackground y="0" x="-30" height="30" width="60" rx="8" />
-                  <Tooltip transform={`scale(-1, 1)`} y="15" dominantBaseline="middle">
+                  <TooltipBackground y="0" x="-25" height="25" width="50" rx="8" />
+                  <Tooltip transform={`scale(-1, 1)`} y="12.5" dominantBaseline="middle">
                     {brushLabelValue('w', localBrushExtent[0])}
                   </Tooltip>
                 </LabelGroup>
@@ -220,8 +220,8 @@ export const Brush = ({
                 </g>
 
                 <LabelGroup transform={`translate(50,0), scale(${flipEastHandle ? '-1' : '1'}, 1)`} visible={showLabels || hovering}>
-                  <TooltipBackground y="0" x="-30" height="30" width="60" rx="8" />
-                  <Tooltip y="15" dominantBaseline="middle">
+                  <TooltipBackground y="0" x="-25" height="25" width="50" rx="8" />
+                  <Tooltip y="12.5" dominantBaseline="middle">
                     {brushLabelValue('e', localBrushExtent[1])}
                   </Tooltip>
                 </LabelGroup>
