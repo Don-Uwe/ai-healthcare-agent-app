@@ -122,24 +122,26 @@ export default function PoolListItem({
     <>
       {styleType === 'list' ? (
         <Box pl={[0, 6]} px={4} py={3} background={index % 2 ? colors.backgroundTransparent07 : ''} sx={poolListGrid} onClick={onPoolClick}>
-          <Flex align="center" gap={[2, 4]} position={'relative'}>
+          <Flex align="center" gap={[2, 4]}>
             <Desktop>
               <Center width={6} height={6}>
                 <StarIcon selected={isFavorite} onClick={onFavoriteClick} style={{ cursor: 'pointer', minWidth: '16px' }} />
               </Center>
             </Desktop>
             <Mobile>
-              <Box
-                bg={isFavorite ? colors.selectActiveSecondary : 'transparent'}
-                borderRadius={'0px 8px 8px 0px'}
-                position="absolute"
-                top={'50%'}
-                left={-4}
-                width={'2.5px'}
-                height={5}
-                transform={'auto'}
-                translateY={'-50%'}
-              ></Box>
+              <Box position={'relative'}>
+                <Box
+                  bg={isFavorite ? colors.selectActiveSecondary : 'transparent'}
+                  borderRadius={'0px 8px 8px 0px'}
+                  position="absolute"
+                  top={'50%'}
+                  left={-4}
+                  width={'2.5px'}
+                  height={5}
+                  transform={'auto'}
+                  translateY={'-50%'}
+                ></Box>
+              </Box>
             </Mobile>
 
             <Tooltip
