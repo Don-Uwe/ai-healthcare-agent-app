@@ -25,6 +25,7 @@ import { getTxMeta } from './configs/farm'
 import { getMintSymbol } from '@/utils/token'
 import { refreshCreatedFarm } from '@/hooks/portfolio/farm/useCreatedFarmInfo'
 import { getDefaultToastData, transformProcessData, handleMultiTxToast } from '@/hooks/toast/multiToastUtil'
+import { getComputeBudgetConfig } from '@/utils/tx/computeBudget'
 import Decimal from 'decimal.js'
 import BN from 'bn.js'
 
@@ -136,11 +137,12 @@ export const useFarmStore = createStore<FarmStore>(
     withdrawFarmAct: async ({ farmInfo, amount, userAuxiliaryLedgers, onSuccess, onError, onFinally }) => {
       const { raydium, txVersion } = useAppStore.getState()
       if (!raydium) return ''
-
+      const computeBudgetConfig = await getComputeBudgetConfig()
       const { execute } = await raydium.farm.withdraw({
         farmInfo,
         amount: new BN(new Decimal(amount).mul(10 ** farmInfo.lpMint.decimals).toFixed(0)),
         userAuxiliaryLedgers,
+        computeBudgetConfig,
         txVersion
       })
 
@@ -170,10 +172,12 @@ export const useFarmStore = createStore<FarmStore>(
       if (!raydium) return ''
       const depositAmount = new BN(new Decimal(amount).mul(10 ** farmInfo.lpMint.decimals).toFixed(0))
       try {
+        const computeBudgetConfig = await getComputeBudgetConfig()
         const { execute } = await raydium.farm.deposit({
           farmInfo,
           amount: depositAmount,
           userAuxiliaryLedgers,
+          computeBudgetConfig,
           txVersion
         })
         const meta = getTxMeta({

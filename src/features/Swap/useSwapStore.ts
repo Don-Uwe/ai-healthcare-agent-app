@@ -39,7 +39,9 @@ const getSwapComputePrice = async () => {
 }
 
 interface SwapStore {
-  swapTokenAct: (props: { swapResponse: ApiSwapV1OutSuccess } & TxCallbackProps) => Promise<string | string[] | undefined>
+  swapTokenAct: (
+    props: { swapResponse: ApiSwapV1OutSuccess; onCloseToast?: () => void } & TxCallbackProps
+  ) => Promise<string | string[] | undefined>
   unWrapSolAct: (amount: string) => Promise<string | undefined>
   wrapSolAct: (amount: string) => Promise<string | undefined>
 }
@@ -56,7 +58,7 @@ export const useSwapStore = createStore<SwapStore>(
   () => ({
     ...initSwapState,
 
-    swapTokenAct: async ({ swapResponse, ...txProps }) => {
+    swapTokenAct: async ({ swapResponse, onCloseToast, ...txProps }) => {
       const { publicKey, raydium, txVersion, connection, signAllTransactions, urlConfigs } = useAppStore.getState()
       if (!raydium || !connection) {
         console.error('no connection')
@@ -149,6 +151,7 @@ export const useSwapStore = createStore<SwapStore>(
               txId: processedId[0].txId,
               ...swapMeta,
               mintInfo: [inputToken, outputToken],
+              onClose: onCloseToast,
               onConfirmed: () => {
                 txProps.onConfirmed?.()
                 processedId[0].status = 'success'
@@ -165,6 +168,7 @@ export const useSwapStore = createStore<SwapStore>(
               processedId,
               meta: swapMeta,
               txLength: signedTxs.length,
+              onClose: onCloseToast,
               getSubTxTitle(idx: number) {
                 return idx === 0
                   ? 'transaction_history.set_up'

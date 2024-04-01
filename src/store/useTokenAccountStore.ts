@@ -17,6 +17,7 @@ import {
   createTransferInstruction
 } from '@solana/spl-token'
 import { formatLocaleStr } from '@/utils/numberish/formatter'
+import { trimTailingZero } from '@/utils/numberish/formatNumber'
 import createStore from './createStore'
 import { useAppStore } from './useAppStore'
 import { useTokenStore } from './useTokenStore'
@@ -292,8 +293,8 @@ export const useTokenAccountStore = createStore<TokenAccountStore>(
         rawAmount: amount,
         amount: decimalAmount,
         decimals: tokenDecimal,
-        text: decimalAmount.toString(),
-        localeText: formatLocaleStr(decimalAmount.toString(), tokenDecimal)!,
+        text: trimTailingZero(decimalAmount.toFixed(tokenDecimal, Decimal.ROUND_FLOOR)),
+        localeText: formatLocaleStr(decimalAmount.toFixed(tokenDecimal, Decimal.ROUND_FLOOR), tokenDecimal)!,
         isZero: amount.eq(0),
         gt: (val: string) => !!val && amount.gt(val)
       }

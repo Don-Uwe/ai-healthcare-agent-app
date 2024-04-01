@@ -84,7 +84,7 @@ export default function SelectPoolTokenAndFee({ completed, isLoading, onConfirm,
     timeout: 100
   })
 
-  const { data } = useFetchPoolByMint({
+  const { data, isLoading: isExistingLoading } = useFetchPoolByMint({
     shouldFetch: !!token1 && !!token2,
     mint1: token1 ? solToWSol(token1.address).toString() : '',
     mint2: token2 ? solToWSol(token2.address || '').toString() : '',
@@ -111,12 +111,13 @@ export default function SelectPoolTokenAndFee({ completed, isLoading, onConfirm,
   useEffect(() => () => setCurrentConfig(undefined), [poolKey])
 
   useEffect(() => {
+    if (isExistingLoading) return
     const defaultConfig = Object.values(clmmFeeConfigs || {}).find((c) => c.tradeFeeRate === 2500)
     if (!new Set(existingPools.values()).has(defaultConfig?.id || '')) {
       if (defaultConfig) setCurrentConfig(defaultConfig)
       return
     }
-  }, [poolKey, existingPools, clmmFeeConfigs])
+  }, [poolKey, existingPools, clmmFeeConfigs, isExistingLoading])
 
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
@@ -281,7 +282,7 @@ export default function SelectPoolTokenAndFee({ completed, isLoading, onConfirm,
         })}
         {Object.values(clmmFeeConfigs).length % 2 ? <Flex w="48%" /> : null}
       </Flex>
-      <ConnectedButton mt="8" isDisabled={!!error || !currentConfig} isLoading={isLoading} onClick={handleConfirm}>
+      <ConnectedButton mt="8" isDisabled={!!error || !currentConfig} isLoading={isLoading || isExistingLoading} onClick={handleConfirm}>
         {error ? `${t('common.select')} ${t(error)}` : t('button.continue')}
       </ConnectedButton>
     </PanelCard>

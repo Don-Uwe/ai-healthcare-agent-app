@@ -141,7 +141,7 @@ export default function PortfolioInfo({ poolAssets, tokenAssets }: { poolAssets?
             </GridItem>
 
             {tab !== 'Assets by token' ? (
-              <GridItem area={'tab'} alignSelf={'center'}>
+              <GridItem area={'tab'} alignSelf={'center'} justifySelf={'end'}>
                 <AssetsTab
                   current={currentType}
                   items={[
@@ -176,7 +176,15 @@ function AssetsTotal(props: { total: string | number }) {
 }
 
 function AssetsTab(props: { current: string; items: SelectorItem[]; onChange?: (newTab: string) => void }) {
-  return <Select variant="filledFlowDark" items={props.items} value={props.current} onChange={(t) => props.onChange?.(t)} />
+  return (
+    <Select
+      variant="filledFlowDark"
+      sx={{ minWidth: '160px' }}
+      items={props.items}
+      value={props.current}
+      onChange={(t) => props.onChange?.(t)}
+    />
+  )
 }
 
 type PortfolioAssetListProps = {

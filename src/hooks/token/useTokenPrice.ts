@@ -30,6 +30,7 @@ export default function useTokenPrice(props: { mintList: (string | PublicKey | u
   const { mintList, refreshInterval = 3 * MINUTE_MILLISECONDS, timeout = 800 } = props || {}
   const tokenPriceRecord = useTokenStore((s) => s.tokenPriceRecord)
   const BASE_HOST = useAppStore((s) => s.urlConfigs.BASE_HOST)
+  const MINT_PRICE = useAppStore((s) => s.urlConfigs.MINT_PRICE)
   const [startFetch, setStartFetch] = useState(timeout === 0)
   const [refreshTag, setRefreshTag] = useState(Date.now())
 
@@ -41,7 +42,7 @@ export default function useTokenPrice(props: { mintList: (string | PublicKey | u
   const shouldFetch = startFetch && prepareFetchList.size > 0
 
   const { data, isLoading, error, ...rest } = useSWR(
-    shouldFetch ? `${BASE_HOST}/v3/mint/price` + `?mints=${Array.from(prepareFetchList).slice(0, 49).join(',')}` : null,
+    shouldFetch ? `${BASE_HOST}${MINT_PRICE}` + `?mints=${Array.from(prepareFetchList).slice(0, 49).join(',')}` : null,
     fetcher,
     {
       refreshInterval,

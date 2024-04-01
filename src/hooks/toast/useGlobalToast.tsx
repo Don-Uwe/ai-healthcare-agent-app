@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Subject } from 'rxjs'
 
 import { Toast } from '@/components/Toast'
+import { v4 as uuid } from 'uuid'
 
 export interface RenderProps extends UseToastOptions {
   /**
@@ -20,6 +21,7 @@ export const toastSubject = new Subject<
     // update usage
     update?: boolean
     close?: boolean
+    onClose?: () => void
   }
 >()
 
@@ -43,6 +45,12 @@ function useGlobalToast() {
 
   useEffect(() => {
     const sub = toastSubject.asObservable().subscribe(({ id, update, close, txError, noRpc, ...data }) => {
+      id = id ?? uuid()
+      const handleClose = (props: RenderProps) => {
+        data.onClose?.()
+        toast.close(props.id as ToastId)
+        userClosedToastIds.set(props.id as ToastId, status)
+      }
       const status = data.status === 'error' || data.status === 'info' ? data.status : 'success'
       if (close) {
         id && toast.close(id)
@@ -55,14 +63,7 @@ function useGlobalToast() {
           position: data.position || toastConfig.position,
           ...data,
           render: (props: RenderProps) => (
-            <Toast
-              state={{ ...toastConfig, ...data, status }}
-              id={props.id!}
-              onClose={() => {
-                props.onClose?.()
-                userClosedToastIds.set(props.id as ToastId, status)
-              }}
-            />
+            <Toast state={{ ...toastConfig, ...data, status }} id={props.id!} onClose={() => handleClose(props)} />
           )
         })
         return
@@ -80,6 +81,7 @@ function useGlobalToast() {
           duration: data.duration || toastConfig.duration,
           position: data.position || toastConfig.position,
           status: 'error',
+          ...data,
           render: (props: RenderProps) => {
             return (
               <Toast
@@ -91,7 +93,7 @@ function useGlobalToast() {
                   status: 'error'
                 }}
                 id={props.id!}
-                onClose={props.onClose}
+                onClose={() => handleClose(props)}
               />
             )
           }
@@ -108,7 +110,7 @@ function useGlobalToast() {
             <Toast
               state={{ ...toastConfig, ...data, status: 'error', title: 'Error', description: 'No Rpc Connection' }}
               id={props.id!}
-              onClose={props.onClose}
+              onClose={() => handleClose(props)}
             />
           )
         })
@@ -123,10 +125,7 @@ function useGlobalToast() {
           <Toast
             state={{ ...toastConfig, ...data, status: data.status === 'error' || data.status === 'info' ? data.status : 'success' }}
             id={props.id!}
-            onClose={() => {
-              props.onClose?.()
-              userClosedToastIds.set(props.id as ToastId, status)
-            }}
+            onClose={() => handleClose(props)}
           />
         )
       })

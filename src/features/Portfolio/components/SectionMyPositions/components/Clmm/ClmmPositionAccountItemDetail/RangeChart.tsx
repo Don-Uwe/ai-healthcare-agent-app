@@ -63,7 +63,7 @@ export default function RangeChart({ poolInfo, positionData, baseIn = true, nftM
     ]
   }, [baseIn, positionDetailInfo.priceLower, positionDetailInfo.priceUpper])
 
-  const inRange = new Decimal(priceLower).lt(poolInfo.price) && new Decimal(priceUpper).gt(poolInfo.price)
+  const inRange = new Decimal(priceLower).lt(price) && new Decimal(priceUpper).gt(price)
   const allVolume = volumeA.add(volumeB)
   const percentA = allVolume.isZero() ? 0 : new Decimal(volumeA).div(volumeA.add(volumeB)).mul(100).toDecimalPlaces(1).toNumber()
   const percentB = allVolume.isZero() ? 0 : 100 - percentA

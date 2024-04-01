@@ -22,7 +22,8 @@ const fetcher = (url: string) => {
 export default function useMigratePoolConfig(props: { shouldFetch?: boolean; refreshInterval?: number }) {
   const { shouldFetch = true, refreshInterval = 60 * MINUTE_MILLISECONDS } = props || {}
   const BASE_HOST = useAppStore((s) => s.urlConfigs.BASE_HOST)
-  const { data, isLoading, error, ...rest } = useSWR(shouldFetch ? `${BASE_HOST}/v3/main/migrate-lp` : null, fetcher, {
+  const MIGRATE_CONFIG = useAppStore((s) => s.urlConfigs.MIGRATE_CONFIG)
+  const { data, isLoading, error, ...rest } = useSWR(shouldFetch ? `${BASE_HOST}${MIGRATE_CONFIG}` : null, fetcher, {
     refreshInterval,
     dedupingInterval: refreshInterval,
     focusThrottleInterval: refreshInterval

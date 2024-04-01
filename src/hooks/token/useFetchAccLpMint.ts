@@ -34,8 +34,8 @@ const fetcher = async ([connection, publicKeyList]: [Connection, string[]]) => {
 
   const chunkSize = 100
   const keyGroup = []
-  for (let i = 0; i < publicKeyList.length; i += chunkSize) {
-    keyGroup.push(publicKeyList.slice(i, i + chunkSize))
+  for (let i = 0; i < newFetchList.length; i += chunkSize) {
+    keyGroup.push(newFetchList.slice(i, i + chunkSize))
   }
   const res = await Promise.all(
     keyGroup.map((list) =>

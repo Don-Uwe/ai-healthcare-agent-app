@@ -34,6 +34,7 @@ export const txStatusSubject = new Subject<
     onConfirmed?: (signatureResult: SignatureResult, context: Context) => void
     onError?: (signatureResult: SignatureResult, context: Context) => void
     onSuccess?: (signatureResult: SignatureResult, context: Context) => void
+    onClose?: () => void
   }
 >()
 
@@ -50,6 +51,7 @@ export const multiTxStatusSubject = new Subject<
 
     onError?: (signatureResult: SignatureResult, context: Context) => void
     onSuccess?: (signatureResult: SignatureResult, context: Context) => void
+    onClose?: () => void
   }
 >()
 
@@ -78,7 +80,8 @@ function useTxStatus() {
           skipWatchSignature,
           onConfirmed,
           onError,
-          onSuccess
+          onSuccess,
+          onClose
         }) => {
           const owner = useAppStore.getState().publicKey?.toBase58()
           const isMultisigWallet = useAppStore.getState().wallet?.adapter.name === 'SquadsX'
@@ -109,7 +112,8 @@ function useTxStatus() {
             detail: renderDetail(),
             status: 'info',
             duration: 2 * 60 * 1000,
-            update
+            update,
+            onClose
           })
 
           setTxRecord({
@@ -140,7 +144,8 @@ function useTxStatus() {
                       ` ${t('transaction.failed')}`,
                     status: 'error',
                     description: description || `${explorerUrl}/tx/${txId}`,
-                    detail: renderDetail('error')
+                    detail: renderDetail('error'),
+                    onClose
                   })
 
                 onError?.(signatureResult, context)
@@ -165,7 +170,8 @@ function useTxStatus() {
                     : `${title || t('transaction.title')} ${t('transaction.confirmed')}`,
                   description: isMultisigWallet ? t('transaction.multisig_wallet_desc') : description || `${explorerUrl}/tx/${txId}`,
                   detail: renderDetail('success'),
-                  status: 'success'
+                  status: 'success',
+                  onClose
                 })
 
                 onSuccess?.(signatureResult, context)
@@ -213,7 +219,8 @@ function useTxStatus() {
           duration,
           skipWatchSignature,
           onError,
-          onSuccess
+          onSuccess,
+          onClose
         }) => {
           const owner = useAppStore.getState().publicKey?.toBase58()
           const isMultisigWallet = useAppStore.getState().wallet?.adapter.name === 'SquadsX'
@@ -280,7 +287,8 @@ function useTxStatus() {
             description,
             detail: renderDetail(),
             status: status || 'info',
-            duration: duration || 2 * 60 * 1000
+            duration: duration || 2 * 60 * 1000,
+            onClose
           })
 
           setTxRecord({
@@ -317,7 +325,8 @@ function useTxStatus() {
                         t('transaction.failed'),
                       status: 'error',
                       description,
-                      detail: renderDetail()
+                      detail: renderDetail(),
+                      onClose
                     })
 
                     onError?.(signatureResult, context)
@@ -349,7 +358,8 @@ function useTxStatus() {
                         : `${t('transaction.title')} ${t('transaction.confirmed')}`,
                       description,
                       detail: renderDetail(),
-                      status: 'success'
+                      status: 'success',
+                      onClose
                     })
 
                     if (Object.values(txStatus).length === subTxIds.length) onSuccess?.(signatureResult, context)

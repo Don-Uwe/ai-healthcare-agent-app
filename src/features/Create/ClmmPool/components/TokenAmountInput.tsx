@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Button, HStack, Text, VStack } from '@chakra-ui/react'
 import { ApiV3PoolInfoConcentratedItem } from '@raydium-io/raydium-sdk-v2'
 
@@ -10,7 +10,7 @@ import { colors } from '@/theme/cssVariables'
 import { debounce } from '@/utils/functionMethods'
 import toPercentString from '@/utils/numberish/toPercentString'
 import toUsdVolume from '@/utils/numberish/toUsdVolume'
-import { getMintSymbol, wSolToSol, wsolToSolToken } from '@/utils/token'
+import { getMintSymbol, wSolToSol, wsolToSolToken, isSolWSol } from '@/utils/token'
 import useTokenPrice from '@/hooks/token/useTokenPrice'
 import { calRatio } from '@/features/Clmm/utils/math'
 import BN from 'bn.js'
@@ -92,10 +92,19 @@ export default function TokenAmountPairInputs({ tempCreatedPool, baseIn, onConfi
     [tempCreatedPool.mintA.address]
   )
 
-  const [balanceA, balanceB] = [
-    getTokenBalanceUiAmount({ mint: wSolToSol(mintA.address)!, decimals: mintA.decimals }).text,
-    getTokenBalanceUiAmount({ mint: wSolToSol(mintB.address)!, decimals: mintB.decimals }).text
-  ]
+  const [balanceA, balanceB] = useMemo(() => {
+    const amountA = getTokenBalanceUiAmount({ mint: wSolToSol(mintA.address)!, decimals: mintA.decimals }).amount.sub(
+      isSolWSol(mintA.address) ? 0.5 : 0
+    )
+    const amountB = getTokenBalanceUiAmount({ mint: wSolToSol(mintB.address)!, decimals: mintB.decimals }).amount.sub(
+      isSolWSol(mintB.address) ? 0.5 : 0
+    )
+
+    return [
+      amountA.isNegative() ? '0' : amountA.toFixed(mintA.decimals, Decimal.ROUND_FLOOR),
+      amountB.isNegative() ? '0' : amountB.toFixed(mintB.decimals, Decimal.ROUND_FLOOR)
+    ]
+  }, [getTokenBalanceUiAmount, mintA.address, mintB.address])
 
   let error = undefined
   function checkError() {
@@ -134,6 +143,7 @@ export default function TokenAmountPairInputs({ tempCreatedPool, baseIn, onConfi
         onFocusChange={handleFocusChange}
         token1Disable={disabledInput[0]}
         token2Disable={disabledInput[1]}
+        forceBalanceAmount={[balanceA, balanceB]}
       />
       <VStack
         mt={4}
