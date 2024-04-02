@@ -154,6 +154,8 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
     allLpUiAmount.mul(quoteRatio).toDecimalPlaces(pool.mintB.decimals, Decimal.ROUND_DOWN).toString()
   ]
 
+  const canStake = !unStakeLpBalance.isZero() && stakedFarmList.filter((f) => f.isOngoing).length > 0
+
   return (
     <Box {...panelCard} py={[4, 5]} px={[3, 8]} pb={isPc && isOpen ? 3 : 5} bg={colors.backgroundLight} borderRadius="xl" w="full">
       <Box
@@ -220,6 +222,7 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
             farmId={farmInfo?.id}
             hasFarmLp={!new Decimal(farmLpAmount).isZero()}
             canMigrate={canMigrate}
+            canStake={!unStakeLpBalance.isZero() && stakedFarmList.filter((f) => f.isOngoing).length > 0}
             onMigrateOpen={() => {
               setRefreshTag(Date.now())
               onRpcFetching()
@@ -274,6 +277,7 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
           onUpdatePendingReward={handleUpdatePendingRewards}
           isLoading={isHarvesting}
           onHarvest={handleHarvest}
+          canStake={canStake}
         />
       )}
       {isMigrateOpen ? (

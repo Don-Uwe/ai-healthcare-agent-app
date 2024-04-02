@@ -138,15 +138,23 @@ export default function Stake({ poolInfo, disabled, onRefresh }: Props) {
       <Text fontSize="xl" fontWeight="medium" color={colors.textPrimary} mt={5} mb={3}>
         {t('liquidity.stake_liquidity')}
       </Text>
-      <Flex justifyContent="space-between" alignItems="center" p="4" bg={colors.backgroundDark} borderRadius="12px">
+      <Flex
+        justifyContent="space-between"
+        alignItems="center"
+        maxW="100%"
+        flexWrap={'wrap'}
+        p="4"
+        bg={colors.backgroundDark}
+        borderRadius="12px"
+      >
         <Flex gap="2" alignItems="center">
           <TokenAvatarPair token1={poolInfo.mintA} token2={poolInfo.mintB} />
-          <Text variant="title" fontSize="24px">
+          <Text variant="title" fontSize={['20px', '24px']}>
             {selectedFarm?.farmName.replace(' - ', '/')}
           </Text>
         </Flex>
         <Box textAlign="right">
-          <Text fontSize="28px" fontWeight="500">
+          <Text fontSize={['22px', '28px']} fontWeight="500">
             {formatLocaleStr(lpBalance.amount.mul(percent).div(100).toString(), poolInfo.lpMint.decimals)}
           </Text>
           <Text variant="label" fontSize="sm">
