@@ -100,7 +100,10 @@ export function formatFarmData<T = FormatFarmInfoOut>(farm: FormatFarmInfoOut): 
       .mul(r.perSecond)
       .div(10 ** r.mint.decimals)
       .toString()
-    const ongoing = (openTime.isBefore(now, 'seconds') && endTime.isAfter(now, 'seconds')) || r.perSecond > 0
+    const ongoing =
+      (r as RewardInfoV6).openTime && (r as RewardInfoV6).endTime
+        ? openTime.isBefore(now, 'seconds') && endTime.isAfter(now, 'seconds')
+        : r.perSecond > 0
     const ended = endTime.isBefore(now, 'seconds') && r.perSecond === 0
     const unEmitRewards = new Decimal(Math.max(endTime.diff(now, 'seconds'), 0))
       .mul(r.perSecond)
@@ -130,20 +133,12 @@ export function formatFarmData<T = FormatFarmInfoOut>(farm: FormatFarmInfoOut): 
     } as ConditionalFormattedRewardType<T>
   })
 
-  const ongoingRewards = formattedRewardInfos.filter((reward) => {
-    if (farm.programId === FARM_PROGRAM_ID_V6.toString()) {
-      const data = reward as RewardInfoV6
-      return data.openTime * 1000 <= Date.now() && data.endTime * 1000 >= Date.now()
-    }
-    return reward.perSecond > 0
-  })
-
   return {
     ...farm,
     farmName,
     symbolMints: farm.symbolMints.map((mint) => ({ ...mint, symbol: getMintSymbol({ mint, transformSol: true }) })),
     formattedRewardInfos,
-    isOngoing: ongoingRewards.length > 0,
+    isOngoing: formattedRewardInfos.filter((reward) => reward.ongoing).length > 0,
     type: farmType?.name,
     version: farmType?.version
   } as any
