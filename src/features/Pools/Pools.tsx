@@ -54,6 +54,7 @@ import PoolListItem from './components/PoolListItem'
 import TVLInfoPanel, { TVLInfoPanelMobile } from './components/TVLInfoPanel'
 import { useScrollTitleCollapse } from './useScrollTitleCollapse'
 import { getFavoritePoolCache } from './util'
+import i18n from '@/i18n'
 
 export type PoolPageQuery = {
   token?: string
@@ -75,6 +76,44 @@ export const FILED_KEY: Record<TimeBase, AprKey> = {
   '7d': AprKey.Week,
   '30d': AprKey.Month
 }
+
+const SORT_ITEMS = [
+  {
+    name: 'default',
+    label: i18n.t('liquidity.default'),
+    value: 'default'
+  },
+  {
+    name: 'tvl_dsc',
+    label: i18n.t('liquidity.tvl_dsc'),
+    value: 'volume_desc'
+  },
+  {
+    name: 'tvl_asc',
+    label: i18n.t('liquidity.tvl_asc'),
+    value: 'volume_asc'
+  },
+  {
+    name: 'lp_dsc',
+    label: i18n.t('liquidity.lp_dsc'),
+    value: 'liquidity_desc'
+  },
+  {
+    name: 'lp_asc',
+    label: i18n.t('liquidity.lp_asc'),
+    value: 'liquidity_asc'
+  },
+  {
+    name: 'apr_dsc',
+    label: i18n.t('liquidity.yield_dsc'),
+    value: 'apr_desc'
+  },
+  {
+    name: 'apr_asc',
+    label: i18n.t('liquidity.yield_asc'),
+    value: 'apr_asc'
+  }
+]
 
 export default function Pools() {
   const { t, i18n } = useTranslation()
@@ -167,7 +206,7 @@ export default function Pools() {
     listControllerRef.current?.resetRenderCount()
   }, [activeTabItem, currentLayoutStyle, showFarms, timeBase])
 
-  const { order, sortKey, onChangeSortData } = useSort({
+  const { order, sortKey, onChangeSortData, setOrder } = useSort({
     defaultKey: 'default'
   })
 
@@ -360,7 +399,8 @@ export default function Pools() {
                 <Box pt={[0.5, 4]} pb={[3, 2]}>
                   <Stack
                     direction={['column', 'row']}
-                    spacing={[4, 16]}
+                    alignItems={['start', 'center']}
+                    spacing={[4, 10]}
                     bg={[colors.tooltipBg, 'transparent']}
                     borderRadius="12px"
                     py={['16px', '0px']}
@@ -399,12 +439,39 @@ export default function Pools() {
                       </FormControl>
                     </Box>
 
-                    <Box>
+                    <Flex alignItems="center">
                       <FormControl display="flex" alignItems="center">
                         <FormLabel minW={['120px', 'unset']}>{t('liquidity.show_farms')}</FormLabel>
                         <Switch checked={showFarms} onChange={handleSwitchFarmChange} />
                       </FormControl>
-                    </Box>
+                    </Flex>
+
+                    {currentLayoutStyle === 'grid' ? (
+                      <Flex alignItems="center">
+                        <FormControl display="flex" alignItems="center">
+                          <FormLabel minW={['120px', 'unset']}>{t('common.sort_by')}</FormLabel>
+                          <Select
+                            sx={({ isPanelOpen }) => ({
+                              height: '34px',
+                              minWidth: '80px',
+                              border: '1px solid transparent',
+                              borderColor: isPanelOpen ? 'currentcolor' : 'transparent',
+                              fontSize: '14px'
+                            })}
+                            popoverContentSx={{
+                              bg: colors.tooltipBg
+                            }}
+                            value={sortKey === 'default' ? 'default' : `${sortKey}_${order ? 'desc' : 'asc'}`}
+                            items={SORT_ITEMS}
+                            onChange={(value) => {
+                              const [key, order] = value.split('_')
+                              onChangeSortData(key)
+                              setOrder(order === 'desc' ? 1 : 0)
+                            }}
+                          />
+                        </FormControl>
+                      </Flex>
+                    ) : null}
                   </Stack>
                 </Box>
               </Collapse>
@@ -428,7 +495,7 @@ export default function Pools() {
         ) : (
           <>
             {isLoading ? (
-              <PoolItemLoadingSkeleton />
+              <PoolItemLoadingSkeleton isGrid={currentLayoutStyle === 'grid'} />
             ) : (
               <List
                 controllerRef={listControllerRef}
