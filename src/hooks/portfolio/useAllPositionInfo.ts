@@ -4,6 +4,7 @@ import { MultiTxBuildData, MultiTxV0BuildData, FormatFarmInfoOutV6, ApiV3PoolInf
 
 import useFetchPoolById from '../pool/useFetchPoolById'
 
+import { useTokenAccountStore } from '@/store'
 import useFarmPositions from '@/hooks/portfolio/farm/useFarmPositions'
 import useFetchMultipleFarmInfo from '@/hooks/farm/useFetchMultipleFarmInfo'
 import useFetchMultipleFarmBalance from '@/hooks/farm/useFetchMultipleFarmBalance'
@@ -36,6 +37,7 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
   const harvestAllFarmAct = useFarmStore((s) => s.harvestAllAct)
   const harvestAllClmmAct = useClmmStore((s) => s.harvestAllAct)
   const owner = useAppStore((s) => s.publicKey)
+  const fetchTokenAccountAct = useTokenAccountStore((s) => s.fetchTokenAccountAct)
 
   const [isSending, setIsSending] = useState(false)
   const [allClmmPending, setAllClmmPending] = useState(new Decimal(0))
@@ -53,7 +55,8 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
   const {
     data: clmmData = [],
     dataMap: clmmDataMap,
-    isLoading: isPoolLoading
+    isLoading: isPoolLoading,
+    mutate: mutatePoolInfo
   } = useFetchPoolById<ApiV3PoolInfoConcentratedItem>({
     idList: Array.from(clmmBalanceInfo.entries()).map((r) => r[0])
   })
@@ -79,20 +82,25 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
       })
     : []
 
-  const { dataWithId: clmmTickAddressData } = useFetchMultipleAccountInfo({
+  const { dataWithId: clmmTickAddressData, mutate: mutateClmmTicks } = useFetchMultipleAccountInfo({
     name: 'get clmm position tick',
     publicKeyList: readyList.flat().flat() as PublicKey[],
     refreshInterval: 60 * 1000 * 10
   })
 
   // fetch farm position info
-  const { farmBasedData, lpBasedData } = useFarmPositions({
+  const {
+    farmBasedData,
+    lpBasedData,
+    mutate: mutateFarmPos
+  } = useFarmPositions({
     shouldFetch
   })
   const {
     data: stakedFarmList,
     formattedDataMap: stakedFarmMap,
-    isLoading: isFarmLoading
+    isLoading: isFarmLoading,
+    mutate: mutateFarmsInfo
   } = useFetchMultipleFarmInfo<FormatFarmInfoOutV6>({
     shouldFetch: farmBasedData.size > 0,
     idList: Array.from(farmBasedData.entries())
@@ -103,7 +111,8 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
   const {
     allFarmBalances,
     isLoading: isFarmBalanceLoading,
-    rpcInfoDataList: rpcFarmDataList
+    rpcInfoDataList: rpcFarmDataList,
+    mutate: mutateFarmBalance
   } = useFetchMultipleFarmBalance({
     refreshInterval: 60 * 1000,
     farmInfoList: stakedFarmList.length
@@ -136,6 +145,16 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
 
   const isReady = hasFarmReward || allClmmPending.gt(0) || Array.from(clmmPendingYield.current.values()).some((d) => !d.isEmpty)
   const isLoading = isFarmLoading || isClmmBalanceLoading || isPoolLoading
+
+  const handleRefresh = useEvent(() => {
+    fetchTokenAccountAct({})
+    mutatePoolInfo()
+    mutateClmmTicks()
+    mutateFarmPos()
+    mutateFarmsInfo()
+    mutateFarmBalance()
+    useTokenAccountStore.setState({ refreshClmmPositionTag: Date.now() })
+  })
 
   const handleHarvest = useEvent(async (zeroClmmPos?: Set<string>) => {
     if (!isReady) return
@@ -287,6 +306,7 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
 
     totalPendingYield: allClmmPending.add(allFarmPendingReward),
 
-    handleHarvest
+    handleHarvest,
+    handleRefresh
   }
 }

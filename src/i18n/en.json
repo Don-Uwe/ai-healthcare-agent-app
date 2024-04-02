@@ -66,7 +66,8 @@
     "confirm_token": "Confirm Token",
     "user_added": "User Added",
     "beta_tooltip": "This site is in Beta, updates are ongoing. Use at your own risk. <0>Share feedback</0>, earn RAY.",
-    "days": "Days"
+    "days": "Days",
+    "sort_by": "Sort By"
   },
   "button": {
     "deposit": "Deposit",
@@ -202,7 +203,10 @@
     "error_REQ_POOL_NOT_OPEN": "Pool Open At",
     "error_sol_fee_not_insufficient": "You need at least {{amount}} SOL to pay for fees and deposits",
     "user_added_token_list": "User Added Token List",
-    "show_chart": "Show chart"
+    "show_chart": "Show chart",
+    "unwrap_all_wsol": "Unwrapped all WSOL",
+    "unwrap_all_wsol_desc": "Unwrapped total {{amount}} WSOL",
+    "unwrap_wsol_info": "You have {{amount}} WSOL that you can <sub>Unwrap</sub>"
   },
   "liquidity_pools": {
     "view_chart_tooltip": "View pool charts",
@@ -281,7 +285,14 @@
       "unStaked_successfully": "Unstaked {{symbol}}",
       "unStaked_desc": "You Unstaked <sub>{{amount}} {{symbol}}</sub>"
     },
-    "rewards_ends": "Ends"
+    "rewards_ends": "Ends",
+    "tvl_dsc": "Trading Volume (dsc)",
+    "tvl_asc": "Trading Volume (asc)",
+    "lp_dsc": "Liquidity (dsc)",
+    "lp_asc": "Liquidity (asc)",
+    "yield_dsc": "Yield (dsc)",
+    "yield_asc": "Yield (asc)",
+    "default": "default"
   },
   "create_pool": {
     "modal_title": "I want to start from...",

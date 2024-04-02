@@ -146,14 +146,15 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
     return acc.add(cur.usd)
   }, new Decimal(0))
 
-  if (isLoading) return <Skeleton w="full" height="140px" rounded="lg" />
-  if (!pool) return null
+  if (!pool) return isLoading ? <Skeleton w="full" height="140px" rounded="lg" /> : null
 
   const lpAmountUSD = allLpUiAmount.mul(pool.lpPrice ?? 0).toString()
   const [pooledAmountA, pooledAmountB] = [
     allLpUiAmount.mul(baseRatio).toDecimalPlaces(pool.mintA.decimals, Decimal.ROUND_DOWN).toString(),
     allLpUiAmount.mul(quoteRatio).toDecimalPlaces(pool.mintB.decimals, Decimal.ROUND_DOWN).toString()
   ]
+
+  const canStake = !unStakeLpBalance.isZero() && stakedFarmList.filter((f) => f.isOngoing).length > 0
 
   return (
     <Box {...panelCard} py={[4, 5]} px={[3, 8]} pb={isPc && isOpen ? 3 : 5} bg={colors.backgroundLight} borderRadius="xl" w="full">
@@ -221,6 +222,7 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
             farmId={farmInfo?.id}
             hasFarmLp={!new Decimal(farmLpAmount).isZero()}
             canMigrate={canMigrate}
+            canStake={!unStakeLpBalance.isZero() && stakedFarmList.filter((f) => f.isOngoing).length > 0}
             onMigrateOpen={() => {
               setRefreshTag(Date.now())
               onRpcFetching()
@@ -275,6 +277,7 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
           onUpdatePendingReward={handleUpdatePendingRewards}
           isLoading={isHarvesting}
           onHarvest={handleHarvest}
+          canStake={canStake}
         />
       )}
       {isMigrateOpen ? (

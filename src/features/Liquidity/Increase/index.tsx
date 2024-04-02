@@ -42,6 +42,7 @@ export default function Increase() {
     { value: 'Stake Liquidity', label: t('liquidity.stake_liquidity') }
   ]
   const getTokenBalanceUiAmount = useTokenAccountStore((s) => s.getTokenBalanceUiAmount)
+  const fetchTokenAccountAct = useTokenAccountStore((s) => s.fetchTokenAccountAct)
   const { lpBasedData } = useFarmPositions({})
 
   const [tokenPair, setTokenPair] = useState<{ base?: ApiV3Token; quote?: ApiV3Token }>({})
@@ -71,7 +72,10 @@ export default function Increase() {
 
   const [mode, setMode] = useState<LiquidityActionModeType>('add')
 
-  const handleRefresh = useCallback(() => mutate(), [mutate])
+  const handleRefresh = useEvent(() => {
+    mutate()
+    fetchTokenAccountAct({})
+  })
 
   const handleSelectToken = useCallback((token: TokenInfo | ApiV3Token, side: 'base' | 'quote') => {
     setTokenPair((pair) => {
@@ -156,7 +160,7 @@ export default function Increase() {
                 />
               ) : null}
 
-              {mode === 'stake' ? <Stake poolInfo={pool} disabled={!isLoading && !hasFarmInfo} /> : null}
+              {mode === 'stake' ? <Stake poolInfo={pool} disabled={!isLoading && !hasFarmInfo} onRefresh={handleRefresh} /> : null}
             </Box>
           </VStack>
         </GridItem>

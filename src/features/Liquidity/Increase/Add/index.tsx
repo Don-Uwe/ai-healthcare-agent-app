@@ -158,7 +158,7 @@ export default function AddLiquidity({
       amountA: computeAmountRef.current.base,
       amountB: computeAmountRef.current.quote,
       fixedSide: focusRef.current === 'base' ? 'a' : 'b',
-      onSuccess: () => {
+      onSent: () => {
         setPairAmount({ base: '', quote: '' })
         computeAmountRef.current = { base: '', quote: '' }
       },

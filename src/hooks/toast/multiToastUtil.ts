@@ -55,7 +55,7 @@ export const handleMultiTxToast = (
         update: true,
         ...meta,
         onError: txProps.onError,
-        onConfirmed: txProps.onConfirmed || txProps.onSuccess
+        onConfirmed: txProps.onConfirmed || txProps.onSent
       })
     return
   }
@@ -155,7 +155,7 @@ export const callBackHandler = ({
     }
 
     if (processedId.length === transactionLength) {
-      if (!successCalled) callbackProps?.onSuccess?.()
+      if (!successCalled) callbackProps?.onSent?.()
       if (!finallyCalled) callbackProps?.onFinally?.()
       successCalled = true
       finallyCalled = true

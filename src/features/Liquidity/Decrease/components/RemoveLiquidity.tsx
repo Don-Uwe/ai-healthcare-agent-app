@@ -1,30 +1,38 @@
 import { Box, Flex, SimpleGrid, Text } from '@chakra-ui/react'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import Button from '@/components/Button'
 import AmountSlider from '@/components/AmountSlider'
 import TokenAvatarPair from '@/components/TokenAvatarPair'
-import useFetchRpcPoolData from '@/hooks/pool/amm/useFetchRpcPoolData'
 import { FormattedPoolInfoStandardItem } from '@/hooks/pool/type'
 import { useAppStore, useTokenAccountStore } from '@/store'
-
+import IntervalCircle, { IntervalCircleHandler } from '@/components/IntervalCircle'
 import toUsdVolume from '@/utils/numberish/toUsdVolume'
 import { formatLocaleStr } from '@/utils/numberish/formatter'
 import { useLiquidityStore } from '@/store/useLiquidityStore'
 
 import { colors } from '@/theme/cssVariables'
 import Decimal from 'decimal.js'
-import { MINUTE_MILLISECONDS } from '@/utils/date'
+import { RpcAmmPool } from '@/hooks/pool/amm/useFetchRpcPoolData'
+import { useEvent } from '@/hooks/useEvent'
 
-export default function UnStakeLiquidity({ poolInfo }: { poolInfo?: FormattedPoolInfoStandardItem }) {
+export default function UnStakeLiquidity({
+  poolInfo,
+  rpcPoolData,
+  onRefresh
+}: {
+  poolInfo?: FormattedPoolInfoStandardItem
+  rpcPoolData?: RpcAmmPool
+  onRefresh: () => void
+}) {
   const { t } = useTranslation()
   const featureDisabled = useAppStore((s) => s.featureDisabled.removeStandardPosition)
   const removeLiquidityAct = useLiquidityStore((s) => s.removeLiquidityAct)
-  const { data: rpcPoolData } = useFetchRpcPoolData({ poolId: poolInfo?.id, refreshInterval: 2 * MINUTE_MILLISECONDS })
   const [removePercent, setRemovePercent] = useState(0)
   const getTokenBalanceUiAmount = useTokenAccountStore((s) => s.getTokenBalanceUiAmount)
   const liquidity = getTokenBalanceUiAmount({ mint: poolInfo?.lpMint.address || '', decimals: poolInfo?.lpMint.decimals }).amount
+  const circleRef = useRef<IntervalCircleHandler>(null)
   const amountA = rpcPoolData
     ? new Decimal(rpcPoolData.baseReserve.toString()).div(10 ** rpcPoolData.baseDecimals)
     : new Decimal(poolInfo?.mintAmountA || 0)
@@ -48,8 +56,25 @@ export default function UnStakeLiquidity({ poolInfo }: { poolInfo?: FormattedPoo
     })
   }
 
+  const handleEnd = useEvent(() => {
+    circleRef.current?.restart()
+    onRefresh()
+  })
+
   return (
     <Flex borderRadius="24px" direction="column" w="full" px="24px" py="32px" bg={colors.backgroundLight}>
+      <Flex justifyContent="flex-end" mb="3">
+        <IntervalCircle
+          componentRef={circleRef}
+          svgWidth={18}
+          strokeWidth={2}
+          trackStrokeColor={colors.secondary}
+          trackStrokeOpacity={0.5}
+          filledTrackStrokeColor={colors.secondary}
+          onClick={handleEnd}
+          onEnd={onRefresh}
+        />
+      </Flex>
       <Flex justifyContent="space-between" align="center" py="6" px="4" bg={colors.backgroundDark} borderRadius="12px">
         <Flex gap="2" alignItems="center">
           <TokenAvatarPair token1={poolInfo?.mintA} token2={poolInfo?.mintB} />

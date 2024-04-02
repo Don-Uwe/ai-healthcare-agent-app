@@ -10,9 +10,9 @@ import { panelCard } from '@/theme/cssBlocks'
 
 import { FarmBalanceInfo } from '@/hooks/farm/type'
 
-export default function MyPositionTabStaked({ allFarmBalances }: { allFarmBalances: FarmBalanceInfo[] }) {
+export default function MyPositionTabStaked({ allFarmBalances, refreshTag }: { allFarmBalances: FarmBalanceInfo[]; refreshTag: number }) {
   const { t } = useTranslation()
-  const { activeStakePools, isLoading } = useFetchStakePools({})
+  const { activeStakePools, isLoading } = useFetchStakePools({ refreshTag })
 
   const pool = activeStakePools[0]
   const res = allFarmBalances.find((f) => f.id === pool?.id)

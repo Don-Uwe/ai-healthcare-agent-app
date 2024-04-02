@@ -14,6 +14,7 @@ type ActionButtonsProps = {
   farmId?: string
   hasFarmLp: boolean
   canMigrate: boolean
+  canStake: boolean
   canViewMore: boolean
   onClickViewMore?(): void
   onMigrateOpen?(): void
@@ -26,11 +27,11 @@ export default function ActionButtons({
   hasFarmLp,
   canMigrate,
   canViewMore,
+  canStake,
   onClickViewMore,
   onMigrateOpen
 }: ActionButtonsProps) {
   const { t } = useTranslation()
-
   const onUnstaking = () => {
     routeToPage('decrease-liquidity', {
       queryProps: {
@@ -117,6 +118,7 @@ export default function ActionButtons({
         <Button
           gridColumn={variant === 'drawer-face' ? 'span 2' : undefined}
           size={variant === 'drawer-face' ? 'md' : 'sm'}
+          isDisabled={!canStake}
           onClick={onStake}
         >
           {t('portfolio.stake_item_stake_button')}

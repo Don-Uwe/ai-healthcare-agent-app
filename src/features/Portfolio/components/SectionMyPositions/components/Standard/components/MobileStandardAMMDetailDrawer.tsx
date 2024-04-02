@@ -39,6 +39,7 @@ export default function MobileStandardAMMDetailDrawer({
   pooledAmountA,
   pooledAmountB,
   isLoading,
+  canStake,
   onUpdatePendingReward,
   onHarvest
 }: {
@@ -54,6 +55,7 @@ export default function MobileStandardAMMDetailDrawer({
   pooledAmountA: string
   pooledAmountB: string
   isLoading: boolean
+  canStake: boolean
   onUpdatePendingReward: (params: { farmId: string; reward: { usd: string; amount: string[] } }) => void
   onHarvest: () => void
 }) {
@@ -141,6 +143,7 @@ export default function MobileStandardAMMDetailDrawer({
                 variant="drawer-face"
                 poolId={pool.id}
                 hasFarmLp={hasStakeFarm}
+                canStake={canStake}
                 canMigrate={Boolean(canMigrate)}
                 canViewMore={Boolean(stakeFarmCount) && !isOpen}
               />

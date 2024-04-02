@@ -37,6 +37,7 @@ export default function useSort({ defaultKey, defaultOrder, formatPropFunc }: Pr
     order,
     sortKey,
     onChangeSortData,
-    sortFn
+    sortFn,
+    setOrder
   }
 }

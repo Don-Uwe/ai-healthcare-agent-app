@@ -9,11 +9,12 @@ import ChevronLeftIcon from '@/icons/misc/ChevronLeftIcon'
 import { useTokenAccountStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
 import { routeBack, setUrlQuery, useRouteQuery } from '@/utils/routeTools'
-
+import useFetchRpcPoolData from '@/hooks/pool/amm/useFetchRpcPoolData'
 import { LiquidityActionModeType, tabValueModeMapping } from '../utils'
 import BalanceInfo from './components/BalanceInfo'
 import RemoveLiquidity from './components/RemoveLiquidity'
 import UnStakeLiquidity from './components/UnStakeLiquidity'
+import { MINUTE_MILLISECONDS } from '@/utils/date'
 
 export type DecreaseTabOptionType = {
   value: 'Unstake Liquidity' | 'Remove Liquidity'
@@ -38,14 +39,16 @@ export default function Decrease() {
   ]
   const { pool_id: poolId = '', mode: queryMode = 'unstake', farm_id } = useRouteQuery<DecreaseLiquidityPageQuery>()
   const getTokenBalanceUiAmount = useTokenAccountStore((s) => s.getTokenBalanceUiAmount)
+  const fetchTokenAccountAct = useTokenAccountStore((s) => s.fetchTokenAccountAct)
 
   const [tabValue, setTabValue] = useState<DecreaseTabOptionType['value'] | undefined>(undefined)
   const [stakedLiquidity, setStakedLiquidity] = useState('0')
 
-  const { formattedData } = useFetchPoolById<ApiV3PoolInfoStandardItem>({
+  const { formattedData, mutate } = useFetchPoolById<ApiV3PoolInfoStandardItem>({
     idList: [poolId]
   })
   const poolInfo = formattedData?.[0]
+  const { data: rpcPoolData, mutate: rpcMutate } = useFetchRpcPoolData({ poolId: poolInfo?.id, refreshInterval: 2 * MINUTE_MILLISECONDS })
 
   const handleStakedChange = useCallback((val: string) => setStakedLiquidity(val), [])
 
@@ -56,6 +59,12 @@ export default function Decrease() {
   const handleTabChange = useEvent((value: DecreaseTabOptionType['value']) => {
     setTabValue(value)
     setUrlQuery({ mode: tabValueModeMapping[value] })
+  })
+
+  const handleRefresh = useEvent(() => {
+    mutate()
+    rpcMutate()
+    fetchTokenAccountAct({})
   })
 
   return (
@@ -98,7 +107,7 @@ export default function Decrease() {
                 defaultFarm={farm_id}
               />
             ) : (
-              <RemoveLiquidity poolInfo={poolInfo} />
+              <RemoveLiquidity poolInfo={poolInfo} rpcPoolData={rpcPoolData} onRefresh={handleRefresh} />
             )}
           </VStack>
         </GridItem>

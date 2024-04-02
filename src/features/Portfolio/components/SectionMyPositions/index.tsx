@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Box, Flex, Grid, GridItem, HStack, Heading, SimpleGrid, Text } from '@chakra-ui/react'
 import { useTranslation } from 'react-i18next'
 import { useRouter } from 'next/router'
@@ -14,7 +14,7 @@ import MyPositionTabStandard from './TabStandard'
 import { Desktop, Mobile } from '@/components/MobileDesktop'
 import { Select } from '@/components/Select'
 import { useStateWithUrl } from '@/hooks/useStateWithUrl'
-
+import IntervalCircle, { IntervalCircleHandler } from '@/components/IntervalCircle'
 import useAllPositionInfo from '@/hooks/portfolio/useAllPositionInfo'
 import { panelCard } from '@/theme/cssBlocks'
 import toUsdVolume from '@/utils/numberish/toUsdVolume'
@@ -25,6 +25,8 @@ export type PositionTabValues = 'concentrated' | 'standard' | 'staked RAY'
 export default function SectionMyPositions() {
   const { t } = useTranslation()
   const { query } = useRouter()
+  const [refreshTag, setRefreshTag] = useState(Date.now())
+  const circleRef = useRef<IntervalCircleHandler>(null)
   const tabs: {
     value: PositionTabValues
     label: string
@@ -78,6 +80,7 @@ export default function SectionMyPositions() {
 
   const {
     handleHarvest,
+    handleRefresh,
     farmLpBasedData,
     stakedFarmMap,
     allFarmBalances,
@@ -88,6 +91,16 @@ export default function SectionMyPositions() {
     isReady,
     isSending
   } = useAllPositionInfo({})
+
+  const handleRefreshAll = useEvent(() => {
+    handleRefresh()
+    setRefreshTag(Date.now())
+  })
+
+  const handleClick = useEvent(() => {
+    circleRef.current?.restart()
+    handleRefreshAll()
+  })
 
   return (
     <>
@@ -114,9 +127,21 @@ export default function SectionMyPositions() {
         alignItems={'center'}
       >
         <GridItem area={'title'}>
-          <Heading id="my-position" fontSize={['lg', 'xl']} fontWeight="500" color={colors.textPrimary}>
-            {t('portfolio.section_positions')}
-          </Heading>
+          <Flex gap="2" alignItems="center">
+            <Heading id="my-position" fontSize={['lg', 'xl']} fontWeight="500" color={colors.textPrimary}>
+              {t('portfolio.section_positions')}
+            </Heading>
+            <IntervalCircle
+              componentRef={circleRef}
+              svgWidth={18}
+              strokeWidth={2}
+              trackStrokeColor={colors.secondary}
+              trackStrokeOpacity={0.5}
+              filledTrackStrokeColor={colors.secondary}
+              onClick={handleClick}
+              onEnd={handleRefreshAll}
+            />
+          </Flex>
         </GridItem>
         <GridItem area="tabs" justifySelf={['right', 'left']}>
           <Desktop>
@@ -155,16 +180,22 @@ export default function SectionMyPositions() {
       </Grid>
       {connected ? (
         isFocusClmmTab ? (
-          <ClmmMyPositionTabContent isLoading={isClmmLoading} clmmBalanceInfo={clmmBalanceInfo} setNoRewardClmmPos={setNoRewardClmmPos} />
+          <ClmmMyPositionTabContent
+            isLoading={isClmmLoading}
+            clmmBalanceInfo={clmmBalanceInfo}
+            setNoRewardClmmPos={setNoRewardClmmPos}
+            refreshTag={refreshTag}
+          />
         ) : isFocusStandardTab ? (
           <MyPositionTabStandard
             isLoading={isFarmLoading}
             allFarmBalances={allFarmBalances}
             lpBasedData={farmLpBasedData}
             stakedFarmMap={stakedFarmMap}
+            refreshTag={refreshTag}
           />
         ) : isFocusStake ? (
-          <MyPositionTabStaked allFarmBalances={allFarmBalances} />
+          <MyPositionTabStaked allFarmBalances={allFarmBalances} refreshTag={refreshTag} />
         ) : null
       ) : (
         <SimpleGrid {...panelCard} placeItems={'center'} bg={colors.backgroundLight} borderRadius="12px" py={12}>

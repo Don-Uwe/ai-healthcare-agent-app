@@ -35,7 +35,6 @@ import { useEffect, useRef, useState } from 'react'
 import { useAppStore, useClmmStore, useLiquidityStore } from '@/store'
 
 import TokenAvatar from '@/components/TokenAvatar'
-import { getPriceBoundary } from '@/features/Clmm/utils/tick'
 import useRefreshEpochInfo from '@/hooks/app/useRefreshEpochInfo'
 import useSubscribeClmmInfo from '@/hooks/pool/clmm/useSubscribeClmmInfo'
 import useFetchPoolById from '@/hooks/pool/useFetchPoolById'
@@ -291,9 +290,11 @@ export default function MigrateFromStandardDialog({
       farmInfo,
       base: isMintABase ? 'MintA' : 'MintB',
       userFarmLpAmount: new BN(farmLpAmount),
-      onSuccess: () => {
+      onSent: () => {
         setLoading(false)
         onClose()
+      },
+      onConfirmed: () => {
         routeToPage('portfolio', { queryProps: { section: 'my-positions', position_tab: 'concentrated' } })
       },
       onError: () => setLoading(false)

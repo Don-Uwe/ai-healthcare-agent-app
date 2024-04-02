@@ -5,13 +5,14 @@ import { useEvent } from '@/hooks/useEvent'
 import { useHover } from '@/hooks/useHover'
 import { useAppStore, useTokenAccountStore, useTokenStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
-import { Box, Button, Collapse, Flex, HStack, SimpleGrid, Text, useDisclosure } from '@chakra-ui/react'
-import { ApiV3Token, RAYMint, TokenInfo } from '@raydium-io/raydium-sdk-v2'
+import { Box, Button, Collapse, Flex, HStack, SimpleGrid, Text, useDisclosure, CircularProgress } from '@chakra-ui/react'
+import { ApiV3Token, RAYMint, SOL_INFO, TokenInfo } from '@raydium-io/raydium-sdk-v2'
 import { PublicKey } from '@solana/web3.js'
 import { useRouter } from 'next/router'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import shallow from 'zustand/shallow'
+import CircleInfo from '@/icons/misc/CircleInfo'
 import { getSwapPairCache, setSwapPairCache } from '../util'
 import { SwapInfoBoard } from './SwapInfoBoard'
 import SwapButtonTwoTurnIcon from '@/icons/misc/SwapButtonTwoTurnIcon'
@@ -24,6 +25,8 @@ import HighRiskAlert from './HighRiskAlert'
 import { isSolWSol } from '@/utils/token'
 import WarningIcon from '@/icons/misc/WarningIcon'
 import dayjs from 'dayjs'
+import { NATIVE_MINT } from '@solana/spl-token'
+import { Trans } from 'react-i18next'
 
 export function SwapPanel({
   onInputMintChange,
@@ -36,15 +39,32 @@ export function SwapPanel({
   const { t, i18n } = useTranslation()
   const { swap: swapDisabled } = useAppStore().featureDisabled
   const swapTokenAct = useSwapStore((s) => s.swapTokenAct)
+  const unWrapSolAct = useSwapStore((s) => s.unWrapSolAct)
   const tokenMap = useTokenStore((s) => s.tokenMap)
-  const [getTokenBalanceUiAmount] = useTokenAccountStore((s) => [s.getTokenBalanceUiAmount], shallow)
+  const [getTokenBalanceUiAmount, fetchTokenAccountAct] = useTokenAccountStore(
+    (s) => [s.getTokenBalanceUiAmount, s.fetchTokenAccountAct],
+    shallow
+  )
+
   const { isOpen: isSending, onOpen: onSending, onClose: offSending } = useDisclosure()
+  const { isOpen: isUnWrapping, onOpen: onUnWrapping, onClose: offUnWrapping } = useDisclosure()
   const { isOpen: isHightRiskOpen, onOpen: onHightRiskOpen, onClose: offHightRiskOpen } = useDisclosure()
   const sendingResult = useRef<ApiSwapV1OutSuccess | undefined>()
-
+  const wsolBalance = getTokenBalanceUiAmount({ mint: NATIVE_MINT.toBase58(), decimals: SOL_INFO.decimals })
   const { inputMint: cacheInput, outputMint: cacheOutput } = getSwapPairCache()
   const [inputMint, setInputMint] = useState<string>(cacheInput || PublicKey.default.toBase58())
   const [swapType, setSwapType] = useState<'BaseIn' | 'BaseOut'>('BaseIn')
+
+  const handleUnwrap = useEvent(() => {
+    onUnWrapping()
+    unWrapSolAct({
+      amount: wsolBalance.rawAmount.toFixed(0),
+      onSent: offUnWrapping,
+      onClose: offUnWrapping,
+      onError: offUnWrapping
+    })
+  })
+
   useEffect(() => {
     onInputMintChange?.(inputMint)
   }, [inputMint])
@@ -160,8 +180,10 @@ export function SwapPanel({
     onSending()
     swapTokenAct({
       swapResponse: response as ApiSwapV1OutSuccess,
+      wrapSol: tokenInput?.address === PublicKey.default.toString(),
+      unwrapSol: tokenOutput?.address === PublicKey.default.toString(),
       onCloseToast: offSending,
-      onSuccess: () => {
+      onSent: () => {
         setAmountIn('')
         setNeedPriceUpdatedAlert(false)
         offSending()
@@ -187,6 +209,7 @@ export function SwapPanel({
   const handleRefresh = useEvent(() => {
     if (isSending || isHightRiskOpen) return
     mutate()
+    fetchTokenAccountAct({})
   })
 
   const outputFilterFn = useEvent((token: TokenInfo) => {
@@ -226,7 +249,6 @@ export function SwapPanel({
           onTokenChange={(token) => handleSelectToken(token, 'output')}
         />
       </Flex>
-
       {/* swap info */}
       <Box mb={[4, 5]}>
         <SwapInfoBoard
@@ -238,7 +260,6 @@ export function SwapPanel({
           onRefresh={handleRefresh}
         />
       </Box>
-
       <Collapse in={needPriceUpdatedAlert}>
         <Box pb={[4, 5]}>
           <SwapPriceUpdatedAlert onConfirm={onPriceUpdatedConfirm} />
@@ -260,6 +281,32 @@ export function SwapPanel({
           <Text>{t('swap.error_sol_fee_not_insufficient', { amount: 0.05 })}</Text>
         </Flex>
       ) : null}
+      {wsolBalance.isZero ? null : (
+        <Flex
+          rounded="md"
+          mt="-2"
+          mb="3"
+          fontSize="xs"
+          fontWeight={400}
+          bg={colors.backgroundTransparent07}
+          alignItems="center"
+          px="4"
+          py="2"
+          gap="1"
+          color={colors.textSecondary}
+        >
+          <CircleInfo />
+          <Trans
+            i18nKey={'swap.unwrap_wsol_info'}
+            values={{
+              amount: wsolBalance.text
+            }}
+            components={{
+              sub: isUnWrapping ? <Progress /> : <Text cursor="pointer" color={colors.textLink} onClick={handleUnwrap} />
+            }}
+          />
+        </Flex>
+      )}
       <ConnectedButton
         isDisabled={new Decimal(amountIn || 0).isZero() || swapError || needPriceUpdatedAlert || swapDisabled}
         isLoading={isComputing || isSending}
@@ -309,4 +356,8 @@ function SwapIcon(props: { onClick?: () => void }) {
       {isHover ? <SwapButtonTwoTurnIcon /> : <SwapButtonOneTurnIcon />}
     </SimpleGrid>
   )
+}
+
+function Progress() {
+  return <CircularProgress isIndeterminate size="16px" />
 }

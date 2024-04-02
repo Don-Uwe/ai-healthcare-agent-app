@@ -194,7 +194,7 @@ export default function TokenList({
                     color: colors.textTertiary
                   }}
                   placeholder={t('token_selector.input_token_symbol') ?? undefined}
-                  defaultValue={newToken?.symbol}
+                  defaultValue={`${newToken?.symbol}`}
                   onChange={(e) => {
                     customTokenInfo.current.symbol = e.currentTarget.value
                   }}

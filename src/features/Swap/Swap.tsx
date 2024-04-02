@@ -7,6 +7,7 @@ import PanelCard from '@/components/PanelCard'
 import { useIsomorphicLayoutEffect } from '@/hooks/useIsomorphicLayoutEffect'
 import SwapChatEmptyIcon from '@/icons/misc/SwapChatEmptyIcon'
 import SwapChatIcon from '@/icons/misc/SwapChatIcon'
+import SwapExchangeIcon from '@/icons/misc/SwapExchangeIcon'
 import { useAppStore, useTokenStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
 import { getVHExpression } from '../../theme/cssValue/getViewportExpression'
@@ -23,6 +24,7 @@ export default function Swap() {
   const [outputMint, setOutputMint] = useState<string>(cacheOutput !== cacheInput ? cacheOutput : RAYMint.toBase58())
   const [isPCChartShown, setIsPCChartShown] = useState<boolean>(true)
   const [isMobileChartShown, setIsMobileChartShown] = useState<boolean>(false)
+  const [isChartLeft, setIsChartLeft] = useState<boolean>(true)
   const isMobile = useAppStore((s) => s.isMobile)
   const [directionReverse, setDirectionReverse] = useState<boolean>(false)
   const [selectedTimeType, setSelectedTimeType] = useState<TimeType>('15m')
@@ -58,6 +60,16 @@ export default function Swap() {
       width={!isMobile && isPCChartShown ? 'min(100%, 1300px)' : undefined}
     >
       <HStack alignSelf="flex-end" my={[1, 0]}>
+        {!isMobile && (
+          <Box
+            cursor="pointer"
+            onClick={() => {
+              setIsChartLeft((b) => !b)
+            }}
+          >
+            <SwapExchangeIcon />
+          </Box>
+        )}
         <Box
           cursor="pointer"
           onClick={() => {
@@ -84,11 +96,7 @@ export default function Swap() {
             "panel" auto
             "kline" auto / auto
           `,
-          isPCChartShown
-            ? `
-            "kline  panel" auto / 1.5fr 1fr
-            `
-            : `"panel" auto / auto`
+          isPCChartShown ? (isChartLeft ? `"kline  panel" auto / 1.5fr 1fr` : `"panel kline" auto / 1fr 1.5fr`) : `"panel" auto / auto`
         ]}
         gap={[3, isPCChartShown ? 4 : 0]}
       >

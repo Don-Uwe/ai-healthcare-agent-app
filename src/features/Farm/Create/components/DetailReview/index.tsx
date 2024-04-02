@@ -17,6 +17,7 @@ import useTokenPrice from '@/hooks/token/useTokenPrice'
 export default function DetailReview(props: {
   rewardInfos: NewRewardInfo[]
   poolInfo: ApiV3PoolInfoItem | undefined
+  isSending: boolean
   onClickBackButton(): void
   onClickCreateFarmButton(): void
   onJumpToStepSelect(): void
@@ -87,7 +88,13 @@ export default function DetailReview(props: {
           <Button size={['lg', 'md']} variant="outline" flexBasis="120px" onClick={props.onClickBackButton}>
             {t('button.back')}
           </Button>
-          <Button size={['lg', 'md']} flexBasis="300px" isDisabled={!!error} onClick={props.onClickCreateFarmButton}>
+          <Button
+            size={['lg', 'md']}
+            flexBasis="300px"
+            isDisabled={!!error}
+            isLoading={props.isSending}
+            onClick={props.onClickCreateFarmButton}
+          >
             {error || t('create_farm.button_create_farm')}
           </Button>
         </Flex>

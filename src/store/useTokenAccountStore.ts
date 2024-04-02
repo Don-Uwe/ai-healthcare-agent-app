@@ -35,7 +35,7 @@ export interface TokenAccountStore {
 
   refreshClmmPositionTag: number // temp use
 
-  fetchTokenAccountAct: (params: { connection: Connection; owner: PublicKey; commitment?: Commitment }) => Promise<void>
+  fetchTokenAccountAct: (params: { commitment?: Commitment }) => Promise<void>
   updateTokenAccountAct: () => void
   getTokenBalanceUiAmount: (params: { mint: string | PublicKey; decimals?: number; isNative?: boolean }) => {
     rawAmount: Decimal
@@ -187,8 +187,10 @@ export const useTokenAccountStore = createStore<TokenAccountStore>(
         }
       )
     },
-    fetchTokenAccountAct: async ({ connection, owner, commitment }) => {
-      if (loading || (Date.now() - lastFetchTime < 5000 && owner.equals(preOwner) && commitment === preCommitment)) return
+    fetchTokenAccountAct: async ({ commitment }) => {
+      const { connection, publicKey: owner } = useAppStore.getState()
+      if (!owner || !connection) return
+      if (loading || (Date.now() - lastFetchTime < 3000 && owner.equals(preOwner) && commitment === preCommitment)) return
       preCommitment = commitment
       loading = true
       preOwner = owner
@@ -340,7 +342,7 @@ export const useTokenAccountStore = createStore<TokenAccountStore>(
         .execute()
         .then((txId) => {
           txStatusSubject.next({ txId })
-          txProps.onSuccess?.()
+          txProps.onSent?.()
         })
         .catch((e) => {
           toastSubject.next({ txError: e })

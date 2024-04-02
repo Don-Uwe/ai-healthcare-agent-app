@@ -33,7 +33,7 @@ export const txStatusSubject = new Subject<
     skipWatchSignature?: boolean
     onConfirmed?: (signatureResult: SignatureResult, context: Context) => void
     onError?: (signatureResult: SignatureResult, context: Context) => void
-    onSuccess?: (signatureResult: SignatureResult, context: Context) => void
+    onSent?: () => void
     onClose?: () => void
   }
 >()
@@ -50,7 +50,7 @@ export const multiTxStatusSubject = new Subject<
     skipWatchSignature?: boolean
 
     onError?: (signatureResult: SignatureResult, context: Context) => void
-    onSuccess?: (signatureResult: SignatureResult, context: Context) => void
+    onSent?: () => void
     onClose?: () => void
   }
 >()
@@ -80,7 +80,7 @@ function useTxStatus() {
           skipWatchSignature,
           onConfirmed,
           onError,
-          onSuccess,
+          onSent,
           onClose
         }) => {
           const owner = useAppStore.getState().publicKey?.toBase58()
@@ -115,6 +115,7 @@ function useTxStatus() {
             update,
             onClose
           })
+          onSent?.()
 
           setTxRecord({
             status: 'info',
@@ -132,8 +133,8 @@ function useTxStatus() {
           const subId = connection.onSignature(
             txId,
             (signatureResult, context) => {
-              onConfirmed?.(signatureResult, context)
               if (signatureResult.err) {
+                onError?.(signatureResult, context)
                 // update toast status to error
                 !hideResultToast &&
                   toastSubject.next({
@@ -147,8 +148,6 @@ function useTxStatus() {
                     detail: renderDetail('error'),
                     onClose
                   })
-
-                onError?.(signatureResult, context)
                 setTxRecord({
                   status: 'error',
                   title: txHistoryTitle || 'transaction.title',
@@ -160,6 +159,7 @@ function useTxStatus() {
                   isMultiSig: isMultisigWallet
                 })
               } else {
+                onConfirmed?.(signatureResult, context)
                 if (hideResultToast) return
                 // update toast status to success
                 toastSubject.next({
@@ -174,7 +174,6 @@ function useTxStatus() {
                   onClose
                 })
 
-                onSuccess?.(signatureResult, context)
                 setTxRecord({
                   status: 'success',
                   title: txHistoryTitle || 'transaction.title',
@@ -187,7 +186,7 @@ function useTxStatus() {
                 })
               }
             },
-            'processed'
+            'confirmed'
           )
 
           subscribeMap.set(txId, subId)
@@ -219,7 +218,7 @@ function useTxStatus() {
           duration,
           skipWatchSignature,
           onError,
-          onSuccess,
+          onSent,
           onClose
         }) => {
           const owner = useAppStore.getState().publicKey?.toBase58()
@@ -331,7 +330,7 @@ function useTxStatus() {
 
                     onError?.(signatureResult, context)
                     setTxRecord({
-                      status: 'success',
+                      status: 'error',
                       title: txHistoryTitle || 'transaction.failed',
                       description: txHistoryDesc,
                       txId: toastId,
@@ -347,6 +346,9 @@ function useTxStatus() {
                       isMultiSig: isMultisigWallet
                     })
                   } else {
+                    const allTxStatus = Object.values(txStatus)
+                    const isAllSent = allTxStatus.length === subTxIds.length
+                    const isAllSuccess = isAllSent && allTxStatus.filter((s) => s === 'success').length === subTxIds.length
                     // update toast status to success
                     toastSubject.next({
                       id: toastId,
@@ -358,14 +360,14 @@ function useTxStatus() {
                         : `${t('transaction.title')} ${t('transaction.confirmed')}`,
                       description,
                       detail: renderDetail(),
-                      status: 'success',
+                      status: isAllSuccess ? 'success' : 'info',
                       onClose
                     })
 
-                    if (Object.values(txStatus).length === subTxIds.length) onSuccess?.(signatureResult, context)
+                    if (isAllSent) onSent?.()
 
                     setTxRecord({
-                      status: 'success',
+                      status: isAllSuccess ? 'success' : 'info',
                       title: txHistoryTitle || 'transaction.failed',
                       description: txHistoryDesc,
                       txId: toastId,
@@ -382,7 +384,7 @@ function useTxStatus() {
                     })
                   }
                 },
-                'processed'
+                'confirmed'
               )
               subscribeMap.set(txId, subId)
               connection.getSignatureStatus(txId)
