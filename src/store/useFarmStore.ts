@@ -134,7 +134,7 @@ export const useFarmStore = createStore<FarmStore>(
       return { txIds: [], buildData: data }
     },
 
-    withdrawFarmAct: async ({ farmInfo, amount, userAuxiliaryLedgers, onSuccess, onError, onFinally }) => {
+    withdrawFarmAct: async ({ farmInfo, amount, userAuxiliaryLedgers, onSent, onError, onFinally }) => {
       const { raydium, txVersion } = useAppStore.getState()
       if (!raydium) return ''
       const computeBudgetConfig = await getComputeBudgetConfig()
@@ -156,7 +156,7 @@ export const useFarmStore = createStore<FarmStore>(
 
       return execute()
         .then((txId: string) => {
-          txStatusSubject.next({ txId, ...meta, onSuccess, onError })
+          txStatusSubject.next({ txId, ...meta, onSent, onError })
           get().refreshFarmAct()
           return txId
         })
@@ -167,7 +167,7 @@ export const useFarmStore = createStore<FarmStore>(
         })
         .finally(onFinally)
     },
-    depositFarmAct: async ({ farmInfo, amount, userAuxiliaryLedgers, onSuccess, onError, onFinally }) => {
+    depositFarmAct: async ({ farmInfo, amount, userAuxiliaryLedgers, onSent, onError, onFinally }) => {
       const { raydium, txVersion } = useAppStore.getState()
       if (!raydium) return ''
       const depositAmount = new BN(new Decimal(amount).mul(10 ** farmInfo.lpMint.decimals).toFixed(0))
@@ -190,7 +190,7 @@ export const useFarmStore = createStore<FarmStore>(
 
         return execute()
           .then((txId: string) => {
-            txStatusSubject.next({ txId, ...meta, onSuccess, onError })
+            txStatusSubject.next({ txId, ...meta, onSent, onError })
             get().refreshFarmAct()
             return txId
           })
@@ -211,7 +211,7 @@ export const useFarmStore = createStore<FarmStore>(
         return ''
       }
     },
-    createFarmAct: async ({ poolInfo, rewardInfos, onSuccess, onError, onFinally, onConfirmed }) => {
+    createFarmAct: async ({ poolInfo, rewardInfos, onSent, onError, onFinally, onConfirmed }) => {
       const { raydium, txVersion } = useAppStore.getState()
       if (!raydium) return ''
 
@@ -225,8 +225,8 @@ export const useFarmStore = createStore<FarmStore>(
         .then((txId: string) => {
           txStatusSubject.next({
             txId,
-            onSuccess: () => {
-              onSuccess?.(extInfo)
+            onSent: () => {
+              onSent?.(extInfo)
             },
             onConfirmed: () => {
               onConfirmed?.()
@@ -243,7 +243,7 @@ export const useFarmStore = createStore<FarmStore>(
         })
         .finally(onFinally)
     },
-    withdrawFarmRewardAct: async ({ farmInfo, withdrawMint, onSuccess, onError, onFinally }) => {
+    withdrawFarmRewardAct: async ({ farmInfo, withdrawMint, onSent, onError, onFinally }) => {
       const { raydium, txVersion } = useAppStore.getState()
       if (!raydium) return ''
       const { execute } = await raydium.farm.withdrawFarmReward({
@@ -260,7 +260,7 @@ export const useFarmStore = createStore<FarmStore>(
       return execute()
         .then((txId: string) => {
           txStatusSubject.next({ txId, ...meta })
-          onSuccess?.()
+          onSent?.()
           return txId
         })
         .catch((e) => {
@@ -348,7 +348,7 @@ export const useFarmStore = createStore<FarmStore>(
           return ''
         })
     },
-    claimIdoAct: async ({ onSuccess, onError, onFinally, ...props }) => {
+    claimIdoAct: async ({ onSent, onError, onFinally, ...props }) => {
       const { raydium, txVersion } = useAppStore.getState()
       if (!raydium) return ''
       const { execute } = await raydium!.ido.claim({ ...props, txVersion })
@@ -377,7 +377,7 @@ export const useFarmStore = createStore<FarmStore>(
       const meta = getTxMeta({ action: hasProjectAmount && hasBuyAmount ? 'claimIdo1' : 'claimIdo', values })
       return execute()
         .then((txId: string) => {
-          txStatusSubject.next({ ...meta, txId, onSuccess, onError })
+          txStatusSubject.next({ ...meta, txId, onSent, onError })
           return txId
         })
         .catch((e) => {

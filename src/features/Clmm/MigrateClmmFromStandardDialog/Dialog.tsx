@@ -290,7 +290,7 @@ export default function MigrateFromStandardDialog({
       farmInfo,
       base: isMintABase ? 'MintA' : 'MintB',
       userFarmLpAmount: new BN(farmLpAmount),
-      onSuccess: () => {
+      onSent: () => {
         setLoading(false)
         onClose()
       },

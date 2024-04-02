@@ -342,7 +342,7 @@ export const useTokenAccountStore = createStore<TokenAccountStore>(
         .execute()
         .then((txId) => {
           txStatusSubject.next({ txId })
-          txProps.onSuccess?.()
+          txProps.onSent?.()
         })
         .catch((e) => {
           toastSubject.next({ txError: e })

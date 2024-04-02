@@ -360,7 +360,7 @@ export const useClmmStore = createStore<ClmmState>(
             onError: txProps.onError,
             onConfirmed: txProps.onConfirmed
           })
-          txProps.onSuccess?.({ txId, buildData })
+          txProps.onSent?.({ txId, buildData })
           return { txId, buildData }
         })
         .catch((e) => {
@@ -379,7 +379,7 @@ export const useClmmStore = createStore<ClmmState>(
       amountMinB,
       needRefresh,
       harvest,
-      onSuccess,
+      onSent,
       onError,
       onFinally,
       onConfirmed
@@ -430,7 +430,7 @@ export const useClmmStore = createStore<ClmmState>(
               ...meta,
               mintInfo: [poolInfo.mintA, poolInfo.mintB],
               onError,
-              onSuccess,
+              onSent,
               onConfirmed: () => {
                 onConfirmed?.()
                 if (needRefresh) setTimeout(() => useTokenAccountStore.setState({ refreshClmmPositionTag: Date.now() }), 500)
@@ -531,7 +531,7 @@ export const useClmmStore = createStore<ClmmState>(
               txId,
               ...meta,
               mintInfo: [poolInfo.mintA, poolInfo.mintB],
-              onSuccess: txProps.onSuccess,
+              onSent: txProps.onSent,
               onConfirmed: () => {
                 setTimeout(() => {
                   useTokenAccountStore.setState({ refreshClmmPositionTag: Date.now() })
@@ -692,7 +692,7 @@ export const useClmmStore = createStore<ClmmState>(
       }
     },
 
-    createFarm: async ({ poolInfo, rewardInfos, onSuccess, onError, onFinally, onConfirmed }) => {
+    createFarm: async ({ poolInfo, rewardInfos, onSent, onError, onFinally, onConfirmed }) => {
       const { raydium, publicKey, txVersion } = useAppStore.getState()
       if (!raydium || !publicKey) return ''
       const { execute } = await raydium.clmm.initRewards({
@@ -712,7 +712,7 @@ export const useClmmStore = createStore<ClmmState>(
       return execute()
         .then((txId: string) => {
           txStatusSubject.next({ txId, ...meta, mintInfo: rewardInfos.map((r) => r.mint), onConfirmed })
-          onSuccess?.()
+          onSent?.()
           return txId
         })
         .catch((e) => {

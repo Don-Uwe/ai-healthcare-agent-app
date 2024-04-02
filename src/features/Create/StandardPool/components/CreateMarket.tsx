@@ -55,7 +55,7 @@ export default function CreateMarket() {
       onSending()
       createMarketAct({
         ...(values as Required<FormValue>),
-        onSuccess: (marketId) => {
+        onSent: (marketId) => {
           marketRef.current = marketId
         },
         onConfirmed: () => {

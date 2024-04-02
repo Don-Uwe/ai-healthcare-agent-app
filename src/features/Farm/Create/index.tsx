@@ -100,7 +100,7 @@ export default function CreateFarm() {
           endTime: Number(new Decimal(r.farmEnd!).div(1000).toFixed(0)),
           rewardType: 'Standard SPL'
         })),
-        onSuccess: (props) => {
+        onSent: (props) => {
           offSending()
           setFarmId(props?.farmId.toString() || '')
         },
@@ -125,7 +125,7 @@ export default function CreateFarm() {
         openTime: Math.floor(new Decimal(Math.max(r.farmStart!, Date.now())).div(1000).toNumber()),
         endTime: Math.floor(new Decimal(r.farmEnd!).div(1000).toNumber())
       })),
-      onSuccess: () => {
+      onSent: () => {
         offSending()
         setFarmId((selectedPool as ApiV3PoolInfoConcentratedItem).id)
       },

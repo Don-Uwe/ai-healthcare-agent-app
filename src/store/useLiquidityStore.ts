@@ -92,7 +92,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
   (set) => ({
     ...initLiquiditySate,
 
-    addLiquidityAct: async ({ onSuccess, onError, onFinally, ...params }) => {
+    addLiquidityAct: async ({ onSent, onError, onFinally, ...params }) => {
       const { raydium, txVersion } = useAppStore.getState()
       if (!raydium) return ''
       const { execute } = await raydium.liquidity.addLiquidity({
@@ -121,7 +121,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
             onError,
             onConfirmed: params.onConfirmed
           })
-          onSuccess?.()
+          onSent?.()
           return txId
         })
         .catch((e) => {
@@ -132,7 +132,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
         .finally(onFinally)
     },
 
-    removeLiquidityAct: async ({ onSuccess, onError, onFinally, ...params }) => {
+    removeLiquidityAct: async ({ onSent, onError, onFinally, ...params }) => {
       const { raydium, txVersion } = useAppStore.getState()
 
       if (!raydium) return ''
@@ -159,7 +159,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
       return execute()
         .then((txId) => {
           txStatusSubject.next({ txId, ...meta, mintInfo: [params.poolInfo.mintA, params.poolInfo.mintB], onError })
-          onSuccess?.()
+          onSent?.()
           return txId
         })
         .catch((e) => {
@@ -170,7 +170,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
         .finally(onFinally)
     },
 
-    createPoolAct: async ({ pool, baseAmount, quoteAmount, startTime, onSuccess, onError, onFinally }) => {
+    createPoolAct: async ({ pool, baseAmount, quoteAmount, startTime, onSent, onError, onFinally }) => {
       const { raydium, programIdConfig, txVersion } = useAppStore.getState()
       if (!raydium) return ''
       const computeBudgetConfig = await getComputeBudgetConfig()
@@ -213,7 +213,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
         .then((txId) => {
           set({ newCreatedPool: extInfo.address })
           txStatusSubject.next({ txId, ...meta, mintInfo: [pool.mintA, pool.mintB], onError })
-          onSuccess?.()
+          onSent?.()
           return txId
         })
         .catch((e) => {
@@ -224,7 +224,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
         .finally(onFinally)
     },
 
-    migrateToClmmAct: async ({ onSuccess, onError, onFinally, onConfirmed, ...params }) => {
+    migrateToClmmAct: async ({ onSent, onError, onFinally, onConfirmed, ...params }) => {
       const { raydium, txVersion, wallet, connection, signAllTransactions } = useAppStore.getState()
       if (!raydium || !connection || !signAllTransactions) return ''
 
@@ -253,7 +253,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
       const txLength = transactions.length
       const { toastId, processedId, handler } = getDefaultToastData({
         txLength,
-        onSuccess,
+        onSent,
         onError,
         onFinally,
         onConfirmed

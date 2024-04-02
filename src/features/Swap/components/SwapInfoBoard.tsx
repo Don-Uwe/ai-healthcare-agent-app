@@ -168,7 +168,7 @@ function PriceDetector({
   return (
     <HStack>
       <Text as="div" color={colors.textPrimary} fontWeight={500}>
-        <Flex gap="1" alignItems="center" flexWrap="wrap" maxW="80%">
+        <Flex gap="1" alignItems="center" flexWrap="wrap" maxW={['80%', 'none']}>
           <Text as="div">1</Text>
           <Text as="div">{reverse ? tokenOutput?.symbol : tokenInput?.symbol}</Text>≈
           {!isComputing ? (

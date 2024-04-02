@@ -59,7 +59,7 @@ export function SwapPanel({
     onUnWrapping()
     unWrapSolAct({
       amount: wsolBalance.rawAmount.toFixed(0),
-      onSuccess: offUnWrapping,
+      onSent: offUnWrapping,
       onClose: offUnWrapping,
       onError: offUnWrapping
     })
@@ -180,9 +180,10 @@ export function SwapPanel({
     onSending()
     swapTokenAct({
       swapResponse: response as ApiSwapV1OutSuccess,
+      wrapSol: tokenInput?.address === PublicKey.default.toString(),
       unwrapSol: tokenOutput?.address === PublicKey.default.toString(),
       onCloseToast: offSending,
-      onSuccess: () => {
+      onSent: () => {
         setAmountIn('')
         setNeedPriceUpdatedAlert(false)
         offSending()

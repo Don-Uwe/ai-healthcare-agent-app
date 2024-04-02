@@ -86,7 +86,7 @@ export default function UnStakeLiquidity({
       userAuxiliaryLedgers: farmPositionData?.hasV1Data
         ? farmPositionData.data.filter((d) => d.version === 'V1' && !new Decimal(d.lpAmount).isZero()).map((d) => d.userVault)
         : undefined,
-      onSuccess: () => {
+      onSent: () => {
         setWithdrawPercent(0)
         offSending()
       },

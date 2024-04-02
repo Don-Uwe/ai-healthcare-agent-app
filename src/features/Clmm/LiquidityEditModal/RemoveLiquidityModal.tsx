@@ -251,7 +251,7 @@ export default function RemoveLiquidityModal({
                 amountMinA: minTokenAmount[0],
                 amountMinB: minTokenAmount[1],
                 needRefresh: percent <= 100,
-                onSuccess: () => {
+                onSent: () => {
                   setIsSending(false)
                   setPercent(0)
                   setTokenAmount(['', ''])

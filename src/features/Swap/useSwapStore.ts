@@ -42,14 +42,9 @@ const getSwapComputePrice = async () => {
 
 interface SwapStore {
   swapTokenAct: (
-    props: { swapResponse: ApiSwapV1OutSuccess; unwrapSol?: boolean; onCloseToast?: () => void } & TxCallbackProps
+    props: { swapResponse: ApiSwapV1OutSuccess; wrapSol?: boolean; unwrapSol?: boolean; onCloseToast?: () => void } & TxCallbackProps
   ) => Promise<string | string[] | undefined>
-  unWrapSolAct: (props: {
-    amount: string
-    onClose?: () => void
-    onSuccess?: () => void
-    onError?: () => void
-  }) => Promise<string | undefined>
+  unWrapSolAct: (props: { amount: string; onClose?: () => void; onSent?: () => void; onError?: () => void }) => Promise<string | undefined>
   wrapSolAct: (amount: string) => Promise<string | undefined>
 }
 
@@ -65,7 +60,7 @@ export const useSwapStore = createStore<SwapStore>(
   () => ({
     ...initSwapState,
 
-    swapTokenAct: async ({ swapResponse, unwrapSol = false, onCloseToast, ...txProps }) => {
+    swapTokenAct: async ({ swapResponse, wrapSol, unwrapSol = false, onCloseToast, ...txProps }) => {
       const { publicKey, raydium, txVersion, connection, signAllTransactions, urlConfigs } = useAppStore.getState()
       if (!raydium || !connection) {
         console.error('no connection')
@@ -133,7 +128,7 @@ export const useSwapStore = createStore<SwapStore>(
               new Decimal(swapResponse.data.inputAmount).div(10 ** (inputToken.decimals || 0)).toString(),
               inputToken.decimals
             )!,
-            symbolA: getMintSymbol({ mint: inputToken, transformSol: unwrapSol }),
+            symbolA: getMintSymbol({ mint: inputToken, transformSol: wrapSol }),
             amountB: formatLocaleStr(
               new Decimal(swapResponse.data.outputAmount).div(10 ** (outputToken.decimals || 0)).toString(),
               outputToken.decimals
@@ -268,7 +263,7 @@ export const useSwapStore = createStore<SwapStore>(
       return ''
     },
 
-    unWrapSolAct: async ({ amount, onSuccess, onError, ...txProps }): Promise<string | undefined> => {
+    unWrapSolAct: async ({ amount, onSent, onError, ...txProps }): Promise<string | undefined> => {
       const raydium = useAppStore.getState().raydium
       if (!raydium) return
       const { execute } = await raydium.tradeV2.unWrapWSol({ amount, computeBudgetConfig: await getComputeBudgetConfig() })
@@ -284,7 +279,7 @@ export const useSwapStore = createStore<SwapStore>(
 
       return execute()
         .then((txId) => {
-          onSuccess?.()
+          onSent?.()
           txStatusSubject.next({ txId, ...meta, ...txProps })
           return txId
         })

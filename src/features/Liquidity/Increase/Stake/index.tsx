@@ -86,7 +86,7 @@ export default function Stake({ poolInfo, disabled, onRefresh }: Props) {
       userAuxiliaryLedgers: lpPositionData?.hasV1Data
         ? lpPositionData.data.filter((d) => d.version === 'V1' && !new Decimal(d.lpAmount).isZero()).map((d) => d.userVault)
         : undefined,
-      onSuccess: () => {
+      onSent: () => {
         setPercent(0)
         offSending()
       },
