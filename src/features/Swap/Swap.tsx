@@ -60,14 +60,16 @@ export default function Swap() {
       width={!isMobile && isPCChartShown ? 'min(100%, 1300px)' : undefined}
     >
       <HStack alignSelf="flex-end" my={[1, 0]}>
-        <Box
-          cursor="pointer"
-          onClick={() => {
-            setIsChartLeft((b) => !b)
-          }}
-        >
-          <SwapExchangeIcon />
-        </Box>
+        {!isMobile && (
+          <Box
+            cursor="pointer"
+            onClick={() => {
+              setIsChartLeft((b) => !b)
+            }}
+          >
+            <SwapExchangeIcon />
+          </Box>
+        )}
         <Box
           cursor="pointer"
           onClick={() => {
