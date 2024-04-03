@@ -175,7 +175,7 @@ export const useCreateMarketStore = createStore<CreateMarketState>(
             handler,
             getSubTxTitle
           })
-          return { txId: r, marketId: extInfo.address.marketId.toString() || '' }
+          return { txId: r.txIds, marketId: extInfo.address.marketId.toString() || '' }
         })
         .catch((e) => {
           txProps.onError?.()

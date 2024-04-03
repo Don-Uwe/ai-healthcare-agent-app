@@ -188,6 +188,7 @@ export const useClmmStore = createStore<ClmmState>(
         ownerInfo: {},
         programId: programId ? new PublicKey(programId) : undefined,
         txVersion
+        // computeBudgetConfig: execute ? await getComputeBudgetConfig() : undefined
       })
       if (execute) {
         const meta = getTxMeta({
@@ -345,6 +346,7 @@ export const useClmmStore = createStore<ClmmState>(
           .catch((e) => {
             toastSubject.next({ txError: e, ...createPoolMeta })
             txProps.onError?.()
+            txProps.onFinally?.()
             return { txId: '' }
           })
           .finally(txLength > 1 ? undefined : txProps.onFinally)
@@ -352,7 +354,7 @@ export const useClmmStore = createStore<ClmmState>(
 
       return buildData
         .execute()
-        .then((txId: string) => {
+        .then(({ txId }) => {
           txStatusSubject.next({
             txId,
             ...meta,
@@ -424,7 +426,7 @@ export const useClmmStore = createStore<ClmmState>(
         })
 
         return execute()
-          .then((txId: string) => {
+          .then(({ txId }) => {
             txStatusSubject.next({
               txId,
               ...meta,
@@ -469,7 +471,7 @@ export const useClmmStore = createStore<ClmmState>(
         })
 
         return execute()
-          .then((txId: string) => {
+          .then(({ txId }) => {
             txStatusSubject.next({
               txId,
               ...meta,
@@ -526,7 +528,7 @@ export const useClmmStore = createStore<ClmmState>(
         })
 
         return execute()
-          .then((txId: string) => {
+          .then(({ txId }) => {
             txStatusSubject.next({
               txId,
               ...meta,
@@ -584,7 +586,7 @@ export const useClmmStore = createStore<ClmmState>(
         if (!newRewardInfos.length)
           return setRewardsBuildData
             .execute()
-            .then((txId) => {
+            .then(({ txId }) => {
               txStatusSubject.next({ txId, ...meta, mintInfo: newRewardInfos.map((r) => r.mint), onConfirmed })
               return txId
             })
@@ -609,7 +611,7 @@ export const useClmmStore = createStore<ClmmState>(
         if (!rewardInfos.length)
           return initRewardBuildData
             .execute()
-            .then((txId) => {
+            .then(({ txId }) => {
               txStatusSubject.next({ txId, ...meta, mintInfo: rewardInfos.map((r) => r.mint), onConfirmed })
               return txId
             })
@@ -633,7 +635,7 @@ export const useClmmStore = createStore<ClmmState>(
       newRewardInfos.forEach((r) => mints.set(r.mint.address, r.mint))
       return res
         .execute()
-        .then((txId) => {
+        .then(({ txId }) => {
           txStatusSubject.next({ txId, ...txProps, ...meta, mintInfo: Array.from(mints.values()) })
           return txId
         })
@@ -672,7 +674,7 @@ export const useClmmStore = createStore<ClmmState>(
           })
 
           return executeTx()
-            .then((txId: string) => {
+            .then(({ txId }) => {
               txStatusSubject.next({ txId, ...meta, mintInfo: [token1, token2] })
               return { txId, buildData }
             })
@@ -710,7 +712,7 @@ export const useClmmStore = createStore<ClmmState>(
         values: { poolId: `${poolInfo.id.slice(0, 4)}...${poolInfo.id.slice(-4)}` }
       })
       return execute()
-        .then((txId: string) => {
+        .then(({ txId }) => {
           txStatusSubject.next({ txId, ...meta, mintInfo: rewardInfos.map((r) => r.mint), onConfirmed })
           onSent?.()
           return txId

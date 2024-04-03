@@ -113,7 +113,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
       })
 
       return execute()
-        .then((txId) => {
+        .then(({ txId }) => {
           txStatusSubject.next({
             txId,
             ...meta,
@@ -157,7 +157,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
       })
 
       return execute()
-        .then((txId) => {
+        .then(({ txId }) => {
           txStatusSubject.next({ txId, ...meta, mintInfo: [params.poolInfo.mintA, params.poolInfo.mintB], onError })
           onSent?.()
           return txId
@@ -210,7 +210,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
       })
 
       return execute()
-        .then((txId) => {
+        .then(({ txId }) => {
           set({ newCreatedPool: extInfo.address })
           txStatusSubject.next({ txId, ...meta, mintInfo: [pool.mintA, pool.mintB], onError })
           onSent?.()
@@ -272,7 +272,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
             getSubTxTitle
           })
       })
-        .then((txIds) => {
+        .then(({ txIds }) => {
           handleMultiTxToast({
             toastId,
             processedId: transformProcessData({ processedId, data: [] }),
