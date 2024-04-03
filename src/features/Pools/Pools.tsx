@@ -286,7 +286,7 @@ export default function Pools() {
   }, [timeBase])
 
   useEffect(() => {
-    if (urlSortKey === sortKey || !POOL_SORT_KEY.hasOwnProperty(urlSortKey)) return
+    if (urlSortKey === sortKey || !POOL_SORT_KEY[urlSortKey as keyof typeof POOL_SORT_KEY]) return
     onChangeSortData(urlSortKey)
   }, [])
 
