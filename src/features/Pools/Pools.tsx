@@ -12,7 +12,8 @@ import {
   Tag,
   Text,
   useBreakpointValue,
-  useDisclosure
+  useDisclosure,
+  useUpdateEffect
 } from '@chakra-ui/react'
 import { ApiV3Token, FetchPoolParams, PoolFetchType } from '@raydium-io/raydium-sdk-v2'
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -53,7 +54,7 @@ import { PoolListHeader } from './components/PoolListHeader'
 import PoolListItem from './components/PoolListItem'
 import TVLInfoPanel, { TVLInfoPanelMobile } from './components/TVLInfoPanel'
 import { useScrollTitleCollapse } from './useScrollTitleCollapse'
-import { getFavoritePoolCache } from './util'
+import { getFavoritePoolCache, POOL_SORT_KEY } from './util'
 import i18n from '@/i18n'
 
 export type PoolPageQuery = {
@@ -147,6 +148,11 @@ export default function Pools() {
   // -------- search --------
   const tokenMap = useTokenStore((s) => s.tokenMap)
   const [searchTokens, setSearchTokens] = useState<ApiV3Token[]>([])
+
+  const { order, sortKey, onChangeSortData, setOrder } = useSort({
+    defaultKey: 'default'
+  })
+
   useEffectWithUrl(
     'token',
     (query) => {
@@ -160,6 +166,7 @@ export default function Pools() {
     },
     [tokenMap]
   )
+
   const [searchText, setSearchText] = useStateWithUrl('', 'search', {
     fromUrl: (u) => (u ? String(u) : undefined),
     toUrl: (v) => (v ? String(v) : undefined)
@@ -179,6 +186,16 @@ export default function Pools() {
   // -------- detail setting: time base --------
   const [timeBase, setTimeBase] = useStateWithUrl<TimeBase>(Object.keys(FILED_KEY)[0] as TimeBase, 'time_base', {
     fromUrl: (u) => u as TimeBase,
+    toUrl: (v) => v
+  })
+
+  const [urlSortKey, setUrlSortKey] = useStateWithUrl(sortKey, 'sort_by', {
+    fromUrl: (u) => u,
+    toUrl: (v) => v
+  })
+
+  const [urlOrder, setUrlOrder] = useStateWithUrl('desc', 'order', {
+    fromUrl: (u) => u,
     toUrl: (v) => v
   })
 
@@ -205,10 +222,6 @@ export default function Pools() {
   useEffect(() => {
     listControllerRef.current?.resetRenderCount()
   }, [activeTabItem, currentLayoutStyle, showFarms, timeBase])
-
-  const { order, sortKey, onChangeSortData, setOrder } = useSort({
-    defaultKey: 'default'
-  })
 
   const search = searchTokens.reduce((acc, cur) => acc + ',' + cur.address, '')
   const hasSearch = searchTokens.length > 0
@@ -252,7 +265,6 @@ export default function Pools() {
   const isLoading = hasSearch ? isSearchLoading : isOrgLoading
   const isLoadEnded = hasSearch ? isSearchLoadEnded : isOrgLoadedEnd
   const loadMore = hasSearch ? () => {} : orgLoadMore
-
   const sortedData = useMemo(() => {
     // if (!favoritePools.size) return data
     const favorite: FormattedPoolInfoItem[] = []
@@ -265,13 +277,28 @@ export default function Pools() {
   }, [data, Array.from(favoritePools).toString()])
 
   const prevSearch = usePrevious(search)
-  const sortRef = useRef<string>('volume')
+  const sortRef = useRef<string>('default')
 
   useEffect(() => {
-    const sort = sortRef.current.match(/[a-zA-Z]+/g)?.[0] || 'volume'
+    const sort = sortRef.current.match(/[a-zA-Z]+/g)?.[0] || 'default'
     if (sortRef.current === sort) return
     onChangeSortData(sort)
   }, [timeBase])
+
+  useEffect(() => {
+    if (urlSortKey === sortKey || !POOL_SORT_KEY.hasOwnProperty(urlSortKey)) return
+    onChangeSortData(urlSortKey)
+  }, [])
+
+  useEffect(() => {
+    const urlOrderNum = urlOrder === 'asc' ? 0 : 1
+    if (urlOrderNum === order) return
+    setOrder(urlOrderNum)
+  }, [])
+
+  useUpdateEffect(() => {
+    setUrlOrder(order === 0 ? 'asc' : 'desc')
+  }, [order])
 
   const handleSwitchFarmChange = (e: ChangeEvent<HTMLInputElement>) => {
     setShowFarms(e.currentTarget.checked)
@@ -279,6 +306,7 @@ export default function Pools() {
 
   const handleClickSort = (propertyName: string) => {
     onChangeSortData(propertyName)
+    setUrlSortKey(propertyName)
   }
 
   // secondary controller bar

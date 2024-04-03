@@ -8,12 +8,11 @@ import { colors } from '@/theme/cssVariables'
 import { Box, Button, Collapse, Flex, HStack, SimpleGrid, Text, useDisclosure, CircularProgress } from '@chakra-ui/react'
 import { ApiV3Token, RAYMint, SOL_INFO, TokenInfo } from '@raydium-io/raydium-sdk-v2'
 import { PublicKey } from '@solana/web3.js'
-import { useRouter } from 'next/router'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import shallow from 'zustand/shallow'
 import CircleInfo from '@/icons/misc/CircleInfo'
-import { getSwapPairCache, setSwapPairCache } from '../util'
+import { getSwapPairCache, setSwapPairCache, urlToMint, mintToUrl } from '../util'
 import { SwapInfoBoard } from './SwapInfoBoard'
 import SwapButtonTwoTurnIcon from '@/icons/misc/SwapButtonTwoTurnIcon'
 import SwapButtonOneTurnIcon from '@/icons/misc/SwapButtonOneTurnIcon'
@@ -23,6 +22,7 @@ import { useSwapStore } from '../useSwapStore'
 import Decimal from 'decimal.js'
 import HighRiskAlert from './HighRiskAlert'
 import { isSolWSol } from '@/utils/token'
+import { useRouteQuery, setUrlQuery } from '@/utils/routeTools'
 import WarningIcon from '@/icons/misc/WarningIcon'
 import dayjs from 'dayjs'
 import { NATIVE_MINT } from '@solana/spl-token'
@@ -35,7 +35,7 @@ export function SwapPanel({
   onInputMintChange?: (mint: string) => void
   onOutputMintChange?: (mint: string) => void
 }) {
-  const router = useRouter()
+  const query = useRouteQuery<{ inputMint: string; outputMint: string }>()
   const { t, i18n } = useTranslation()
   const { swap: swapDisabled } = useAppStore().featureDisabled
   const swapTokenAct = useSwapStore((s) => s.swapTokenAct)
@@ -55,6 +55,17 @@ export function SwapPanel({
   const [inputMint, setInputMint] = useState<string>(cacheInput || PublicKey.default.toBase58())
   const [swapType, setSwapType] = useState<'BaseIn' | 'BaseOut'>('BaseIn')
 
+  const [outputMint, setOutputMint] = useState<string>(cacheOutput !== cacheInput ? cacheOutput : RAYMint.toBase58())
+
+  useEffect(() => {
+    onInputMintChange?.(inputMint)
+    onOutputMintChange?.(outputMint)
+    setUrlQuery({ inputMint: mintToUrl(inputMint), outputMint: mintToUrl(outputMint) })
+  }, [inputMint, outputMint])
+
+  const [amountIn, setAmountIn] = useState<string>('')
+  const [needPriceUpdatedAlert, setNeedPriceUpdatedAlert] = useState(false)
+
   const handleUnwrap = useEvent(() => {
     onUnWrapping()
     unWrapSolAct({
@@ -64,18 +75,6 @@ export function SwapPanel({
       onError: offUnWrapping
     })
   })
-
-  useEffect(() => {
-    onInputMintChange?.(inputMint)
-  }, [inputMint])
-  const [outputMint, setOutputMint] = useState<string>(cacheOutput !== cacheInput ? cacheOutput : RAYMint.toBase58())
-  useEffect(() => {
-    onOutputMintChange?.(outputMint)
-  }, [outputMint])
-
-  const [amountIn, setAmountIn] = useState<string>('')
-  const [needPriceUpdatedAlert, setNeedPriceUpdatedAlert] = useState(false)
-
   const [tokenInput, tokenOutput] = [tokenMap.get(inputMint), tokenMap.get(outputMint)]
   const isSwapBaseIn = swapType === 'BaseIn'
   const { response, data, isLoading, isValidating, error, openTime, mutate } = useSwap({
@@ -107,20 +106,20 @@ export function SwapPanel({
       : computeResult?.outputAmount || ''
 
   useEffect(() => {
-    const query = router.query as { inputMint?: string; outputMint?: string }
-    if (query.inputMint && tokenMap.get(query.inputMint)) {
-      setInputMint(query.inputMint)
+    const [inputMint, outputMint] = [urlToMint(query.inputMint), urlToMint(query.outputMint)]
+    if (inputMint && tokenMap.get(inputMint)) {
+      setInputMint(inputMint)
       setSwapPairCache({
-        inputMint: query.inputMint
+        inputMint
       })
     }
-    if (query.outputMint && tokenMap.get(query.outputMint)) {
-      setOutputMint(query.outputMint)
+    if (outputMint && tokenMap.get(outputMint)) {
+      setOutputMint(outputMint)
       setSwapPairCache({
-        outputMint: query.outputMint
+        outputMint
       })
     }
-  }, [router.query, tokenMap])
+  }, [tokenMap])
 
   useEffect(() => {
     if (isSending && response && response.data?.outputAmount !== sendingResult.current?.data.outputAmount) {

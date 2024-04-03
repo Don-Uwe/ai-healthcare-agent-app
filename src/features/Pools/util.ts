@@ -77,3 +77,11 @@ export const formatPoolData = ({ pool, timeData }: { pool: ApiV3PoolInfoItem; ti
     allApr
   }
 }
+
+export const POOL_SORT_KEY = {
+  default: 'default',
+  liquidity: 'liquidity',
+  volume: 'volume',
+  fee: 'fee',
+  apr: 'apr'
+}
