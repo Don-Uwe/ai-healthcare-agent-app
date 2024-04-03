@@ -86,6 +86,7 @@ export const useFarmStore = createStore<FarmStore>(
           }),
           {}
         )
+        // computeBudgetConfig: execute ? await getComputeBudgetConfig() : undefined
       })
 
       if (execute) {
@@ -113,7 +114,7 @@ export const useFarmStore = createStore<FarmStore>(
                 getSubTxTitle
               })
           })
-          .then((txIds) => {
+          .then(({ txIds }) => {
             handleMultiTxToast({
               toastId,
               processedId: transformProcessData({ processedId, data: [] }),
@@ -155,7 +156,7 @@ export const useFarmStore = createStore<FarmStore>(
       })
 
       return execute()
-        .then((txId: string) => {
+        .then(({ txId }) => {
           txStatusSubject.next({ txId, ...meta, onSent, onError })
           get().refreshFarmAct()
           return txId
@@ -189,7 +190,7 @@ export const useFarmStore = createStore<FarmStore>(
         })
 
         return execute()
-          .then((txId: string) => {
+          .then(({ txId }) => {
             txStatusSubject.next({ txId, ...meta, onSent, onError })
             get().refreshFarmAct()
             return txId
@@ -222,7 +223,7 @@ export const useFarmStore = createStore<FarmStore>(
       })
 
       return execute()
-        .then((txId: string) => {
+        .then(({ txId }) => {
           txStatusSubject.next({
             txId,
             onSent: () => {
@@ -258,7 +259,7 @@ export const useFarmStore = createStore<FarmStore>(
       })
 
       return execute()
-        .then((txId: string) => {
+        .then(({ txId }) => {
           txStatusSubject.next({ txId, ...meta })
           onSent?.()
           return txId
@@ -291,7 +292,7 @@ export const useFarmStore = createStore<FarmStore>(
         if (!newRewards.length)
           return buildData
             .execute()
-            .then((txId) => {
+            .then(({ txId }) => {
               txStatusSubject.next({ txId, ...meta, onConfirmed })
               return txId
             })
@@ -314,7 +315,7 @@ export const useFarmStore = createStore<FarmStore>(
         if (!allBuildData.length) {
           return buildData
             .execute()
-            .then((txId) => {
+            .then(({ txId }) => {
               txStatusSubject.next({ txId, ...meta, onConfirmed })
               return txId
             })
@@ -339,7 +340,7 @@ export const useFarmStore = createStore<FarmStore>(
 
       return res
         .execute()
-        .then((txId: string) => {
+        .then(({ txId }) => {
           txStatusSubject.next({ txId, ...meta, onConfirmed })
           return txId
         })
@@ -376,7 +377,7 @@ export const useFarmStore = createStore<FarmStore>(
 
       const meta = getTxMeta({ action: hasProjectAmount && hasBuyAmount ? 'claimIdo1' : 'claimIdo', values })
       return execute()
-        .then((txId: string) => {
+        .then(({ txId }) => {
           txStatusSubject.next({ ...meta, txId, onSent, onError })
           return txId
         })

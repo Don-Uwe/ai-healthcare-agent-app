@@ -188,6 +188,7 @@ export const useClmmStore = createStore<ClmmState>(
         ownerInfo: {},
         programId: programId ? new PublicKey(programId) : undefined,
         txVersion
+        // computeBudgetConfig: execute ? await getComputeBudgetConfig() : undefined
       })
       if (execute) {
         const meta = getTxMeta({
@@ -257,118 +258,126 @@ export const useClmmStore = createStore<ClmmState>(
       }
       if (!poolInfo) return { txId: '' }
 
-      const computeBudgetConfig = await getComputeBudgetConfig()
-      const buildData = await raydium.clmm.openPositionFromBase({
-        poolInfo,
-        poolKeys,
-        tickLower: Math.min(tickLower, tickUpper),
-        tickUpper: Math.max(tickLower, tickUpper),
-        base,
-        ownerInfo: {
-          useSOLBalance: isSolWSol(poolInfo.mintA.address) || isSolWSol(poolInfo.mintB.address)
-        },
-        baseAmount: new BN(baseAmount),
-        otherAmountMax: new BN(otherAmountMax),
-        getEphemeralSigners: wallet ? await getEphemeralSigners(wallet) : undefined,
-        computeBudgetConfig,
-        txVersion
-      })
+      try {
+        const computeBudgetConfig = await getComputeBudgetConfig()
+        const buildData = await raydium.clmm.openPositionFromBase({
+          poolInfo,
+          poolKeys,
+          tickLower: Math.min(tickLower, tickUpper),
+          tickUpper: Math.max(tickLower, tickUpper),
+          base,
+          ownerInfo: {
+            useSOLBalance: isSolWSol(poolInfo.mintA.address) || isSolWSol(poolInfo.mintB.address)
+          },
+          baseAmount: new BN(baseAmount),
+          otherAmountMax: new BN(otherAmountMax),
+          getEphemeralSigners: wallet ? await getEphemeralSigners(wallet) : undefined,
+          computeBudgetConfig,
+          txVersion
+        })
 
-      const [amountA, amountB] = base === 'MintA' ? [baseAmount, otherAmountMax] : [otherAmountMax, baseAmount]
-      const meta = getTxMeta({
-        action: 'openPosition',
-        values: {
-          amountA:
-            new Decimal(amountA || 0)
-              .div(10 ** poolInfo.mintA.decimals)
-              .toDecimalPlaces(poolInfo.mintA.decimals)
-              .toString() || 0,
-          symbolA: getMintSymbol({ mint: poolInfo.mintA, transformSol: true }),
-          amountB:
-            new Decimal(amountB || 0)
-              .div(10 ** poolInfo.mintB.decimals)
-              .toDecimalPlaces(poolInfo.mintB.decimals)
-              .toString() || 0,
-          symbolB: getMintSymbol({ mint: poolInfo.mintB, transformSol: true })
+        const [amountA, amountB] = base === 'MintA' ? [baseAmount, otherAmountMax] : [otherAmountMax, baseAmount]
+        const meta = getTxMeta({
+          action: 'openPosition',
+          values: {
+            amountA:
+              new Decimal(amountA || 0)
+                .div(10 ** poolInfo.mintA.decimals)
+                .toDecimalPlaces(poolInfo.mintA.decimals)
+                .toString() || 0,
+            symbolA: getMintSymbol({ mint: poolInfo.mintA, transformSol: true }),
+            amountB:
+              new Decimal(amountB || 0)
+                .div(10 ** poolInfo.mintB.decimals)
+                .toDecimalPlaces(poolInfo.mintB.decimals)
+                .toString() || 0,
+            symbolB: getMintSymbol({ mint: poolInfo.mintB, transformSol: true })
+          }
+        })
+
+        const mintInfo = [poolInfo.mintA, poolInfo.mintB]
+
+        if (!buildData) {
+          txProps.onError?.()
+          return { txId: '' }
         }
-      })
 
-      const mintInfo = [poolInfo.mintA, poolInfo.mintB]
+        // create pool and open position
+        if (createPoolBuildData) {
+          const createPoolMeta = getTxMeta({
+            action: 'createPool',
+            values: {}
+          })
+          const { execute, transactions } =
+            txVersion === TxVersion.LEGACY
+              ? await createPoolBuildData.builder.buildMultiTx({ extraPreBuildData: [buildData as TxBuildData<Record<string, any>>] })
+              : await createPoolBuildData.builder.buildV0MultiTx({ extraPreBuildData: [buildData as TxV0BuildData<Record<string, any>>] })
 
-      if (!buildData) {
-        txProps.onError?.()
-        return { txId: '' }
-      }
+          const txLength = transactions.length
+          const { toastId, processedId, handler } = getDefaultToastData({
+            txLength,
+            ...txProps
+          })
 
-      // create pool and open position
-      if (createPoolBuildData) {
-        const createPoolMeta = getTxMeta({
-          action: 'createPool',
-          values: {}
-        })
-        const { execute, transactions } =
-          txVersion === TxVersion.LEGACY
-            ? await createPoolBuildData.builder.buildMultiTx({ extraPreBuildData: [buildData as TxBuildData<Record<string, any>>] })
-            : await createPoolBuildData.builder.buildV0MultiTx({ extraPreBuildData: [buildData as TxV0BuildData<Record<string, any>>] })
+          const getSubTxTitle = (idx: number) => (idx !== transactions.length - 1 ? 'transaction_history.set_up' : 'create_market.create')
 
-        const txLength = transactions.length
-        const { toastId, processedId, handler } = getDefaultToastData({
-          txLength,
-          ...txProps
-        })
-
-        const getSubTxTitle = (idx: number) => (idx !== transactions.length - 1 ? 'transaction_history.set_up' : 'create_market.create')
-
-        return execute({
-          sequentially: true,
-          onTxUpdate: (data) =>
-            handleMultiTxToast({
-              toastId,
-              processedId: transformProcessData({ processedId, data }),
-              txLength,
-              meta,
-              handler,
-              getSubTxTitle
+          return execute({
+            sequentially: true,
+            onTxUpdate: (data) =>
+              handleMultiTxToast({
+                toastId,
+                processedId: transformProcessData({ processedId, data }),
+                txLength,
+                meta,
+                handler,
+                getSubTxTitle
+              })
+          })
+            .then(() => {
+              handleMultiTxToast({
+                toastId,
+                processedId: transformProcessData({ processedId, data: [] }),
+                txLength,
+                meta,
+                handler,
+                getSubTxTitle
+              })
+              return { txId: '', buildData }
             })
-        })
-          .then(() => {
-            handleMultiTxToast({
-              toastId,
-              processedId: transformProcessData({ processedId, data: [] }),
-              txLength,
-              meta,
-              handler,
-              getSubTxTitle
+            .catch((e) => {
+              toastSubject.next({ txError: e, ...createPoolMeta })
+              txProps.onError?.()
+              txProps.onFinally?.()
+              return { txId: '' }
             })
-            return { txId: '', buildData }
+            .finally(txLength > 1 ? undefined : txProps.onFinally)
+        }
+
+        return buildData
+          .execute()
+          .then(({ txId }) => {
+            txStatusSubject.next({
+              txId,
+              ...meta,
+              mintInfo,
+              onError: txProps.onError,
+              onConfirmed: txProps.onConfirmed
+            })
+            txProps.onSent?.({ txId, buildData })
+            return { txId, buildData }
           })
           .catch((e) => {
-            toastSubject.next({ txError: e, ...createPoolMeta })
             txProps.onError?.()
+            toastSubject.next({ txError: e, ...meta })
             return { txId: '' }
           })
-          .finally(txLength > 1 ? undefined : txProps.onFinally)
+          .finally(txProps.onFinally)
+      } catch (e: any) {
+        txProps.onError?.()
+        txProps.onFinally?.()
+        console.error(e.message)
+        return { txId: '' }
       }
-
-      return buildData
-        .execute()
-        .then((txId: string) => {
-          txStatusSubject.next({
-            txId,
-            ...meta,
-            mintInfo,
-            onError: txProps.onError,
-            onConfirmed: txProps.onConfirmed
-          })
-          txProps.onSent?.({ txId, buildData })
-          return { txId, buildData }
-        })
-        .catch((e) => {
-          txProps.onError?.()
-          toastSubject.next({ txError: e, ...meta })
-          return { txId: '' }
-        })
-        .finally(txProps.onFinally)
     },
 
     removeLiquidityAct: async ({
@@ -424,7 +433,7 @@ export const useClmmStore = createStore<ClmmState>(
         })
 
         return execute()
-          .then((txId: string) => {
+          .then(({ txId }) => {
             txStatusSubject.next({
               txId,
               ...meta,
@@ -469,7 +478,7 @@ export const useClmmStore = createStore<ClmmState>(
         })
 
         return execute()
-          .then((txId: string) => {
+          .then(({ txId }) => {
             txStatusSubject.next({
               txId,
               ...meta,
@@ -526,7 +535,7 @@ export const useClmmStore = createStore<ClmmState>(
         })
 
         return execute()
-          .then((txId: string) => {
+          .then(({ txId }) => {
             txStatusSubject.next({
               txId,
               ...meta,
@@ -584,7 +593,7 @@ export const useClmmStore = createStore<ClmmState>(
         if (!newRewardInfos.length)
           return setRewardsBuildData
             .execute()
-            .then((txId) => {
+            .then(({ txId }) => {
               txStatusSubject.next({ txId, ...meta, mintInfo: newRewardInfos.map((r) => r.mint), onConfirmed })
               return txId
             })
@@ -609,7 +618,7 @@ export const useClmmStore = createStore<ClmmState>(
         if (!rewardInfos.length)
           return initRewardBuildData
             .execute()
-            .then((txId) => {
+            .then(({ txId }) => {
               txStatusSubject.next({ txId, ...meta, mintInfo: rewardInfos.map((r) => r.mint), onConfirmed })
               return txId
             })
@@ -633,7 +642,7 @@ export const useClmmStore = createStore<ClmmState>(
       newRewardInfos.forEach((r) => mints.set(r.mint.address, r.mint))
       return res
         .execute()
-        .then((txId) => {
+        .then(({ txId }) => {
           txStatusSubject.next({ txId, ...txProps, ...meta, mintInfo: Array.from(mints.values()) })
           return txId
         })
@@ -672,7 +681,7 @@ export const useClmmStore = createStore<ClmmState>(
           })
 
           return executeTx()
-            .then((txId: string) => {
+            .then(({ txId }) => {
               txStatusSubject.next({ txId, ...meta, mintInfo: [token1, token2] })
               return { txId, buildData }
             })
@@ -710,7 +719,7 @@ export const useClmmStore = createStore<ClmmState>(
         values: { poolId: `${poolInfo.id.slice(0, 4)}...${poolInfo.id.slice(-4)}` }
       })
       return execute()
-        .then((txId: string) => {
+        .then(({ txId }) => {
           txStatusSubject.next({ txId, ...meta, mintInfo: rewardInfos.map((r) => r.mint), onConfirmed })
           onSent?.()
           return txId

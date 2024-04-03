@@ -19,6 +19,7 @@ import { getTxMeta as getClmmTxMeta } from '@/store/configs/clmm'
 import { getDefaultToastData, transformProcessData, handleMultiTxToast } from '@/hooks/toast/multiToastUtil'
 import { useEvent } from '../useEvent'
 import { debounce } from '@/utils/functionMethods'
+import { getComputeBudgetConfig } from '@/utils/tx/computeBudget'
 import Decimal from 'decimal.js'
 export interface UpdateClmmPendingYield {
   nftMint: string
@@ -196,6 +197,7 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
       if (clmmBuildData.buildData) {
         if (buildData) {
           buildData.builder.addInstruction(clmmBuildData.buildData.builder.AllTxData)
+          buildData.builder.addCustomComputeBudget(await getComputeBudgetConfig())
           const { execute, transactions } = await buildData.builder.sizeCheckBuild()
 
           const farmMeta = getFarmTxMeta({ action: 'harvest', values: {} })

@@ -266,7 +266,10 @@ export const useSwapStore = createStore<SwapStore>(
     unWrapSolAct: async ({ amount, onSent, onError, ...txProps }): Promise<string | undefined> => {
       const raydium = useAppStore.getState().raydium
       if (!raydium) return
-      const { execute } = await raydium.tradeV2.unWrapWSol({ amount, computeBudgetConfig: await getComputeBudgetConfig() })
+      const { execute } = await raydium.tradeV2.unWrapWSol({
+        amount
+        // computeBudgetConfig: await getComputeBudgetConfig()
+      })
 
       const values = { amount: trimTailingZero(new Decimal(amount).div(10 ** SOL_INFO.decimals).toFixed(SOL_INFO.decimals)) }
       const meta = {
@@ -278,7 +281,7 @@ export const useSwapStore = createStore<SwapStore>(
       }
 
       return execute()
-        .then((txId) => {
+        .then(({ txId }) => {
           onSent?.()
           txStatusSubject.next({ txId, ...meta, ...txProps })
           return txId
@@ -295,7 +298,7 @@ export const useSwapStore = createStore<SwapStore>(
       if (!raydium) return
       const { execute } = await raydium.tradeV2.wrapWSol(raydium.decimalAmount({ mint: SOLMint, amount })!)
       return execute()
-        .then((txId) => {
+        .then(({ txId }) => {
           txStatusSubject.next({ txId })
           return txId
         })
