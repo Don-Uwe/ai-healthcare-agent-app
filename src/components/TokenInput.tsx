@@ -215,8 +215,11 @@ function TokenInput(props: TokenInputProps) {
 
   const handleUnknownTokenConfirm = useEvent((token: TokenInfo | ApiV3Token) => {
     setExtraTokenListAct({ token: { ...token, userAdded: true } as TokenInfo, addToStorage: true, update: true })
-    onTokenChange?.(token)
     onCloseUnknownTokenConfirm()
+    onTokenChange?.(token)
+    setTimeout(() => {
+      onTokenChange?.(token)
+    }, 0)
   })
 
   const handleParseVal = useEvent((propVal: string) => {

@@ -76,7 +76,7 @@ export function SwapInfoBoard({
           name={isBaseOut ? t('swap.info_maximum_input') : t('swap.info_minimum_received')}
           tooltip={isBaseOut ? t('swap.info_maximum_input_tooltip') : t('swap.info_minimum_received_tooltip')}
         />
-        <MinimumReceiveValue tokenOutput={isBaseOut ? tokenInput : tokenOutput} amount={computedSwapResult?.otherAmountThreshold || ''} />
+        <MinimumReceiveValue tokenOutput={tokenOutput} amount={computedSwapResult?.otherAmountThreshold || ''} />
       </HStack>
 
       <HStack gap={4} py={1} justifyContent="space-between">
