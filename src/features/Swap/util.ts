@@ -1,6 +1,5 @@
 import { SOLMint, WSOLMint } from '@raydium-io/raydium-sdk-v2'
 import { isClient } from '@/utils/common'
-import { PublicKey } from '@solana/web3.js'
 
 export const isSol = (mint: string) => mint === SOLMint.toBase58()
 export const isWSol = (mint: string) => mint === WSOLMint.toBase58()
@@ -29,16 +28,4 @@ export const setSwapPairCache = (params: Partial<PairData>) => {
       ...params
     })
   )
-}
-
-export const urlToMint = (mint: string) => {
-  if (!mint) return
-  if (mint === 'sol') return PublicKey.default.toBase58()
-  return mint
-}
-
-export const mintToUrl = (mint: string) => {
-  if (!mint) return
-  if (mint === PublicKey.default.toBase58()) return 'sol'
-  return mint
 }

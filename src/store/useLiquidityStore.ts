@@ -6,7 +6,6 @@ import {
   ApiV3Token,
   FormatFarmInfoOutV6
 } from '@raydium-io/raydium-sdk-v2'
-import { v4 as uuid } from 'uuid'
 import createStore from './createStore'
 import { useAppStore } from './useAppStore'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'

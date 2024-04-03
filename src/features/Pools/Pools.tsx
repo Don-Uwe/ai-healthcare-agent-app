@@ -56,6 +56,8 @@ import TVLInfoPanel, { TVLInfoPanelMobile } from './components/TVLInfoPanel'
 import { useScrollTitleCollapse } from './useScrollTitleCollapse'
 import { getFavoritePoolCache, POOL_SORT_KEY } from './util'
 import i18n from '@/i18n'
+import { setUrlQuery, useRouteQuery } from '@/utils/routeTools'
+import { urlToMint, mintToUrl } from '@/utils/token'
 
 export type PoolPageQuery = {
   token?: string
@@ -118,6 +120,9 @@ const SORT_ITEMS = [
 
 export default function Pools() {
   const { t, i18n } = useTranslation()
+  const query = useRouteQuery()
+  const currentQuery = useRef(query)
+  currentQuery.current = query || {}
   const isEN = i18n.language === 'en'
   const isMobile = useAppStore((s) => s.isMobile)
 
@@ -159,7 +164,7 @@ export default function Pools() {
       if (!query) return
       if (!tokenMap) return
       const tokenMints = query.split(',')
-      const tokens = shakeUndefindedItem(tokenMints.map((mint) => tokenMap.get(mint)))
+      const tokens = shakeUndefindedItem(tokenMints.map((mint) => tokenMap.get(urlToMint(mint)!)))
       if (tokens.length) {
         setSearchTokens(tokens)
       }
@@ -167,11 +172,7 @@ export default function Pools() {
     [tokenMap]
   )
 
-  const [searchText, setSearchText] = useStateWithUrl('', 'search', {
-    fromUrl: (u) => (u ? String(u) : undefined),
-    toUrl: (v) => (v ? String(v) : undefined)
-  })
-
+  const [searchText, setSearchText] = useState('')
   const favoritePools = getFavoritePoolCache()
   const { data: infoData } = useFetchMainInfo({})
   const isSearchPublicKey = isValidPublicKey(searchText)
@@ -198,6 +199,13 @@ export default function Pools() {
     fromUrl: (u) => u,
     toUrl: (v) => v
   })
+
+  useUpdateEffect(() => {
+    setUrlQuery({
+      ...currentQuery.current,
+      token: searchTokens.length ? searchTokens.map((t) => mintToUrl(t.address)).join(',') : undefined
+    })
+  }, [searchTokens])
 
   // -------- detail setting: layout --------
   const [currentLayoutStyle, setCurrentLayoutStyle] = useStateWithUrl('list', 'layout', {

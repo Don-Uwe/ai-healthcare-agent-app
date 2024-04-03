@@ -21,7 +21,8 @@ import {
   SimpleGrid,
   Tag,
   Text,
-  VStack
+  VStack,
+  Badge
 } from '@chakra-ui/react'
 import { ApiV3Token, TokenInfo } from '@raydium-io/raydium-sdk-v2'
 import React from 'react'
@@ -49,6 +50,7 @@ type PoolDetailMobileDrawerProps = {
   tvl?: string
   aprData: AprData
   weeklyRewards: WeeklyRewardData
+  isEcosystem: boolean
   isOpen: boolean
   onClose: () => void
   onDeposit: () => void
@@ -77,6 +79,7 @@ export default function PoolDetailMobileDrawer({
   tvl,
   aprData,
   weeklyRewards,
+  isEcosystem,
   isOpen,
   onClose,
   onDeposit
@@ -184,12 +187,23 @@ export default function PoolDetailMobileDrawer({
               </Flex>
             </ContentCard>
             <ContentCard>
-              <Text fontSize="sm" color={colors.textSecondary}>
-                {t('field.weekly_rewards')}
-              </Text>
+              <Flex gap="2" alignItems="center">
+                <Text fontSize="sm" color={colors.textSecondary}>
+                  {t('field.weekly_rewards')}
+                </Text>
+                {isEcosystem ? <Badge variant="crooked">{t('badge.ecosystem')}</Badge> : null}
+              </Flex>
               <SimpleGrid templateColumns={'repeat(2, 1fr)'} columnGap={2}>
                 {weeklyRewards.map((reward) => (
-                  <Flex w="full" key={String(reward.token?.address)} justify={'space-between'} align="center" fontSize="12px" mt="8px">
+                  <Flex
+                    w="full"
+                    key={String(reward.token?.address)}
+                    justify={'space-between'}
+                    align="center"
+                    fontSize="12px"
+                    mt="8px"
+                    gap="1"
+                  >
                     <HStack fontWeight="normal" color={colors.textSecondary} spacing={1}>
                       <TokenAvatar size="sm" token={reward.token} />
                       <Box color={colors.textPrimary}>{formatLocaleStr(reward.amount, 2)}</Box>

@@ -88,3 +88,15 @@ export const filterTokenFn = (list: TokenInfo[], params?: { searchStr?: string; 
   }
   return filteredList
 }
+
+export const urlToMint = (mint: string) => {
+  if (!mint) return
+  if (mint === 'sol') return SOL_INFO.address
+  return mint
+}
+
+export const mintToUrl = (mint: string) => {
+  if (!mint) return
+  if (mint === SOL_INFO.address) return 'sol'
+  return mint
+}

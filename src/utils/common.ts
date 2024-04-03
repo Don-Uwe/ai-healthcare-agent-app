@@ -1,5 +1,3 @@
-import i18n from '@/i18n'
-
 export const isClient = () => typeof window !== 'undefined'
 export const isLocal = () => typeof window !== 'undefined' && window.location.host.includes('localhost')
 export const isDocumentVisible = () => isClient() && document.visibilityState === 'visible'

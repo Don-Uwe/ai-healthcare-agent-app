@@ -44,7 +44,6 @@ import PoolListItemAprDetailPopoverContent from './PoolListItemAprDetailPopoverC
 import { aprColors, PoolListItemAprLine } from './PoolListItemAprLine'
 import { PoolListItemAprPie } from './PoolListItemAprPie'
 import { PoolListItemRewardStack } from './PoolListItemRewardStack'
-import dayjs from 'dayjs'
 
 export default function PoolListItem({
   styleType = 'list',
@@ -230,7 +229,11 @@ export default function PoolListItem({
             isContentCard
             placement="top-end"
             label={
-              <PoolListItemAprDetailPopoverContent rewardType={t('badge.ecosystem')} aprData={aprData} weeklyRewards={pool.weeklyRewards} />
+              <PoolListItemAprDetailPopoverContent
+                rewardType={pool.rewardDefaultPoolInfos === 'Ecosystem' ? t('badge.ecosystem') : ''}
+                aprData={aprData}
+                weeklyRewards={pool.weeklyRewards}
+              />
             }
           >
             <HStack flexDirection={['column', 'column', 'row']} gap={[1, 2, 5]} alignItems={['revert', 'revert', 'center']}>
@@ -537,6 +540,7 @@ export default function PoolListItem({
           tvl={formatLocaleStr(pool.tvl)}
           aprData={aprData}
           weeklyRewards={pool.weeklyRewards}
+          isEcosystem={pool.rewardDefaultPoolInfos === 'Ecosystem'}
         />
       </Mobile>
     </>
