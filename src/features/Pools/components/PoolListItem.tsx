@@ -44,7 +44,6 @@ import PoolListItemAprDetailPopoverContent from './PoolListItemAprDetailPopoverC
 import { aprColors, PoolListItemAprLine } from './PoolListItemAprLine'
 import { PoolListItemAprPie } from './PoolListItemAprPie'
 import { PoolListItemRewardStack } from './PoolListItemRewardStack'
-import dayjs from 'dayjs'
 
 export default function PoolListItem({
   styleType = 'list',

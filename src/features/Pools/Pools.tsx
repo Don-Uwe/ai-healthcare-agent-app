@@ -15,7 +15,7 @@ import {
   useDisclosure,
   useUpdateEffect
 } from '@chakra-ui/react'
-import { ApiV3Token, FetchPoolParams, PoolFetchType, SOL_INFO } from '@raydium-io/raydium-sdk-v2'
+import { ApiV3Token, FetchPoolParams, PoolFetchType } from '@raydium-io/raydium-sdk-v2'
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -200,7 +200,7 @@ export default function Pools() {
     toUrl: (v) => v
   })
 
-  useEffect(() => {
+  useUpdateEffect(() => {
     setUrlQuery({
       ...currentQuery.current,
       token: searchTokens.length ? searchTokens.map((t) => mintToUrl(t.address)).join(',') : undefined

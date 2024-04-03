@@ -91,12 +91,12 @@ export const filterTokenFn = (list: TokenInfo[], params?: { searchStr?: string; 
 
 export const urlToMint = (mint: string) => {
   if (!mint) return
-  if (mint === 'sol') return PublicKey.default.toBase58()
+  if (mint === 'sol') return SOL_INFO.address
   return mint
 }
 
 export const mintToUrl = (mint: string) => {
   if (!mint) return
-  if (mint === PublicKey.default.toBase58()) return 'sol'
+  if (mint === SOL_INFO.address) return 'sol'
   return mint
 }

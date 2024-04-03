@@ -18,7 +18,6 @@ import { retry } from '@/utils/common'
 import { fetchComputePrice } from '@/utils/tx/computeBudget'
 import { ToastStatus } from '@/types/tx'
 import { trimTailingZero } from '@/utils/numberish/formatNumber'
-import { getComputeBudgetConfig } from '@/utils/tx/computeBudget'
 
 const getSwapComputePrice = async () => {
   const transactionFee = useAppStore.getState().transactionFee

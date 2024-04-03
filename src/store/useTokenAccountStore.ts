@@ -7,7 +7,7 @@ import {
   getATAAddress,
   TxBuilder
 } from '@raydium-io/raydium-sdk-v2'
-import { Connection, PublicKey, KeyedAccountInfo, Commitment, AccountInfo } from '@solana/web3.js'
+import { PublicKey, KeyedAccountInfo, Commitment, AccountInfo } from '@solana/web3.js'
 import {
   TOKEN_PROGRAM_ID,
   TOKEN_2022_PROGRAM_ID,

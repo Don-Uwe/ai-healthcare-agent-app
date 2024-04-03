@@ -1,6 +1,5 @@
 import { SOLMint, WSOLMint } from '@raydium-io/raydium-sdk-v2'
 import { isClient } from '@/utils/common'
-import { PublicKey } from '@solana/web3.js'
 
 export const isSol = (mint: string) => mint === SOLMint.toBase58()
 export const isWSol = (mint: string) => mint === WSOLMint.toBase58()
