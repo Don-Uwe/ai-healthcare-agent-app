@@ -354,8 +354,8 @@ export default function CreatePosition() {
   const createPosition = () => {
     setIsSending(true)
     const [mintAAmount, mintBAmount] = [
-      new Decimal(tokenAmountRef.current[baseIn ? 0 : 1]).mul(10 ** (currentPool?.[baseIn ? 'mintA' : 'mintB'].decimals || 0)).toFixed(0),
-      new Decimal(tokenAmountRef.current[baseIn ? 1 : 0]).mul(10 ** (currentPool?.[baseIn ? 'mintB' : 'mintA'].decimals || 0)).toFixed(0)
+      new Decimal(tokenAmountRef.current[baseIn ? 0 : 1]).mul(10 ** (currentPool?.mintA.decimals ?? 0)).toFixed(0),
+      new Decimal(tokenAmountRef.current[baseIn ? 1 : 0]).mul(10 ** (currentPool?.mintB.decimals ?? 0)).toFixed(0)
     ]
     openPositionAct({
       poolInfo: currentPool!,
