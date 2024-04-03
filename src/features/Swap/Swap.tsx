@@ -60,7 +60,7 @@ export default function Swap() {
       width={!isMobile && isPCChartShown ? 'min(100%, 1300px)' : undefined}
     >
       <HStack alignSelf="flex-end" my={[1, 0]}>
-        {!isMobile && (
+        {!isMobile && isPCChartShown && (
           <Box
             cursor="pointer"
             onClick={() => {
