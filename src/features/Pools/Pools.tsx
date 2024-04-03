@@ -442,7 +442,7 @@ export default function Pools() {
                     <Flex alignItems="center">
                       <FormControl display="flex" alignItems="center">
                         <FormLabel minW={['120px', 'unset']}>{t('liquidity.show_farms')}</FormLabel>
-                        <Switch checked={showFarms} onChange={handleSwitchFarmChange} />
+                        <Switch defaultChecked={showFarms} onChange={handleSwitchFarmChange} />
                       </FormControl>
                     </Flex>
 
