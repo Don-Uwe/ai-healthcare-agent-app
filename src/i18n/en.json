@@ -120,7 +120,7 @@
     "custom": "Custom",
     "fee_auto": "Auto",
     "fee_dynamic": "Dynamic",
-    "fee_normal": "Normal",
+    "fee_none": "None",
     "fee_high": "High",
     "fee_turbo": "Turbo",
     "transaction_priority": "Transaction Priority",
