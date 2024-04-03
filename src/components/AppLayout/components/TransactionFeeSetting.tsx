@@ -52,16 +52,16 @@ export function TransactionFeeSetting() {
                   val: ''
                 },
                 {
-                  name: t('setting_board.fee_normal'),
+                  name: t('setting_board.fee_none'),
                   val: '0'
                 },
                 {
                   name: t('setting_board.fee_high'),
-                  val: '0.005'
+                  val: '0.001'
                 },
                 {
                   name: t('setting_board.fee_turbo'),
-                  val: '0.01'
+                  val: '0.005'
                 }
               ].map((v) => (
                 <Button
