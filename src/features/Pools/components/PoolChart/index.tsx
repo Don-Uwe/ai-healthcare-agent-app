@@ -65,7 +65,7 @@ export function ChartWindow<T extends string>({
     poolAddress,
     timeType: currentTimeType
   })
-
+  if (isMobile && isEmptyResult) return null
   return (
     <Chart<typeof data[0]>
       isEmpty={isEmptyResult}
