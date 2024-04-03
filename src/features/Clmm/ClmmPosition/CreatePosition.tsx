@@ -168,7 +168,7 @@ export default function CreatePosition() {
     (params: FormatParams) => {
       if (!params.val) return ''
       const maxLength = getFirstNonZeroDecimal(String(params.val)) + 5
-      return new Decimal(params.val).toDecimalPlaces(Math.max(decimals, 15, maxLength)).toString()
+      return new Decimal(params.val).toDecimalPlaces(Math.max(decimals, 15, maxLength)).toFixed(Math.max(decimals, 15, maxLength))
     },
     [decimals]
   )
@@ -354,8 +354,8 @@ export default function CreatePosition() {
   const createPosition = () => {
     setIsSending(true)
     const [mintAAmount, mintBAmount] = [
-      new Decimal(tokenAmountRef.current[0]).mul(10 ** (currentPool?.mintA.decimals || 0)).toFixed(0),
-      new Decimal(tokenAmountRef.current[1]).mul(10 ** (currentPool?.mintB.decimals || 0)).toFixed(0)
+      new Decimal(tokenAmountRef.current[baseIn ? 0 : 1]).mul(10 ** (currentPool?.[baseIn ? 'mintA' : 'mintB'].decimals || 0)).toFixed(0),
+      new Decimal(tokenAmountRef.current[baseIn ? 1 : 0]).mul(10 ** (currentPool?.[baseIn ? 'mintB' : 'mintA'].decimals || 0)).toFixed(0)
     ]
     openPositionAct({
       poolInfo: currentPool!,
@@ -371,7 +371,9 @@ export default function CreatePosition() {
           mutate()
         }, 500)
       },
-      onFinally: () => setIsSending(false)
+      onFinally: () => {
+        setIsSending(false)
+      }
     }).then((props) => {
       setNFTAddress(props?.buildData?.extInfo.nftMint.toString() || '')
     })
