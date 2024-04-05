@@ -174,8 +174,8 @@ export const useSwapStore = createStore<SwapStore>(
                 return idx === 0
                   ? 'transaction_history.set_up'
                   : idx === processedId.length - 1 && processedId.length > 2
-                  ? 'transaction_history.clean_up'
-                  : 'transaction_history.name_swap'
+                    ? 'transaction_history.clean_up'
+                    : 'transaction_history.name_swap'
               }
             })
           }
@@ -228,8 +228,8 @@ export const useSwapStore = createStore<SwapStore>(
               if (swapDone || processedId[idx].status !== 'info') return
               const txId =
                 tx instanceof Transaction
-                  ? await connection.sendRawTransaction(tx.serialize(), { skipPreflight: true, maxRetries: 3 })
-                  : await connection.sendTransaction(tx, { skipPreflight: true, maxRetries: 3 })
+                  ? await connection.sendRawTransaction(tx.serialize(), { skipPreflight: true, maxRetries: 0 })
+                  : await connection.sendTransaction(tx, { skipPreflight: true, maxRetries: 0 })
               processedId[idx].txId = txId
               showToast(processedId)
               subscribeTx(txId)
