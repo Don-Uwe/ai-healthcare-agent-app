@@ -23,7 +23,7 @@ export default function useFetchOwnerIdo(props: { owner?: string | PublicKey; sh
   const [isNoData, setIsNoData] = useState(false)
   const isOwnerValid = owner ? isValidPublicKey(owner) : false
 
-  const [host, ownerIdoUrl] = useAppStore((s) => [s.urlConfigs.BASE_HOST, s.urlConfigs.OWNER_IDO], shallow)
+  const [host, ownerIdoUrl] = useAppStore((s) => [s.urlConfigs.OWNER_BASE_HOST, s.urlConfigs.OWNER_IDO], shallow)
   const url = isNoData || !isOwnerValid || !shouldFetch ? null : host + ownerIdoUrl.replace('{owner}', owner!.toString())
 
   const { data, isLoading, error, ...rest } = useSWR(url, fetcher, {

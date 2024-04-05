@@ -32,7 +32,7 @@ export default function useFarmPositions(props: { shouldFetch?: boolean; refresh
   const refreshTag = useFarmStore((s) => s.refreshTag)
 
   const [host, OWNER_STAKE_FARMS, connection, publicKey] = useAppStore(
-    (s) => [s.urlConfigs.BASE_HOST, s.urlConfigs.OWNER_STAKE_FARMS, s.connection, s.publicKey],
+    (s) => [s.urlConfigs.OWNER_BASE_HOST, s.urlConfigs.OWNER_STAKE_FARMS, s.connection, s.publicKey],
     shallow
   )
 

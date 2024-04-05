@@ -21,7 +21,7 @@ export default function useCreatedFarmInfo(props: { owner?: string | PublicKey; 
   const { owner, shouldFetch = true, refreshInterval = 1000 * 60 * 3 } = props || {}
   const isOwnerValid = owner ? isValidPublicKey(owner) : false
 
-  const [host, OWNER_CREATED_FARM] = useAppStore((s) => [s.urlConfigs.BASE_HOST, s.urlConfigs.OWNER_CREATED_FARM], shallow)
+  const [host, OWNER_CREATED_FARM] = useAppStore((s) => [s.urlConfigs.OWNER_BASE_HOST, s.urlConfigs.OWNER_CREATED_FARM], shallow)
   const url = !isOwnerValid || !shouldFetch ? null : host + OWNER_CREATED_FARM.replace('{owner}', owner!.toString()) + `?time=${refreshTag}`
 
   const { data, isLoading, error, ...rest } = useSWR(url, fetcher, {
