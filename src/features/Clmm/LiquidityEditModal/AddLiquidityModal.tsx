@@ -108,8 +108,8 @@ export default function AddLiquidityModal({
   try {
     liquidityValidateSchema(t).validateSync({
       tokenAmount,
-      balanceA: getTokenBalanceUiAmount({ mint: wSolToSol(poolInfo.mintA.address)! }).text,
-      balanceB: getTokenBalanceUiAmount({ mint: wSolToSol(poolInfo.mintB.address)! }).text
+      balanceA: getTokenBalanceUiAmount({ mint: wSolToSol(poolInfo.mintA.address)!, decimals: poolInfo.mintA.decimals }).text,
+      balanceB: getTokenBalanceUiAmount({ mint: wSolToSol(poolInfo.mintB.address)!, decimals: poolInfo.mintB.decimals }).text
     })
 
     error = undefined

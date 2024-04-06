@@ -24,7 +24,7 @@ export default function AddRewardItem({ isDefaultOpen, index, rewardInfo, tokenF
   const domRef = useRef<HTMLDivElement>(null)
   const schema = useRewardSchema()
   const getTokenBalanceUiAmount = useTokenAccountStore((s) => s.getTokenBalanceUiAmount)
-  const balance = getTokenBalanceUiAmount({ mint: rewardInfo.token?.address || '' }).text
+  const balance = getTokenBalanceUiAmount({ mint: rewardInfo.token?.address || '', decimals: rewardInfo.token?.decimals }).text
 
   const validateReward = useEvent((rewardInfo: NewRewardInfo) => {
     let error = undefined

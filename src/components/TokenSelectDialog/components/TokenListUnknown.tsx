@@ -19,7 +19,10 @@ export default function TokenListSetting() {
     setDisplayList(tokenList)
   }, [tokenList])
 
-  const getBalance = useCallback((token: TokenInfo) => getTokenBalanceUiAmount({ mint: token.address }).text, [getTokenBalanceUiAmount])
+  const getBalance = useCallback(
+    (token: TokenInfo) => getTokenBalanceUiAmount({ mint: token.address, decimals: token.decimals }).text,
+    [getTokenBalanceUiAmount]
+  )
 
   const handleRemoveUnknownTokenClick = useCallback((token: TokenInfo) => {
     unsetExtraTokenListAct(token)

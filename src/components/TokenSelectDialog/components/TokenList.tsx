@@ -109,7 +109,10 @@ export default function TokenList({
     setSearch(e.currentTarget.value)
   })
 
-  const getBalance = useCallback((token: TokenInfo) => getTokenBalanceUiAmount({ mint: token.address }).text, [getTokenBalanceUiAmount])
+  const getBalance = useCallback(
+    (token: TokenInfo) => getTokenBalanceUiAmount({ mint: token.address, decimals: token.decimals }).text,
+    [getTokenBalanceUiAmount]
+  )
 
   const handleAddUnknownTokenClick = useCallback((token: TokenInfo) => {
     setExtraTokenListAct({ token: { ...token, userAdded: true }, addToStorage: true, update: true })

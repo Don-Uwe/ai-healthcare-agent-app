@@ -160,8 +160,8 @@ export default function CreatePosition() {
     poolId,
     priceRange,
     tokenAmount,
-    balanceA: getTokenBalanceUiAmount({ mint: tokens.mintA || '' }).text,
-    balanceB: getTokenBalanceUiAmount({ mint: tokens.mintB || '' }).text
+    balanceA: getTokenBalanceUiAmount({ mint: tokens.mintA || '', decimals: clmmData?.mintA.decimals }).text,
+    balanceB: getTokenBalanceUiAmount({ mint: tokens.mintB || '', decimals: clmmData?.mintB.decimals }).text
   })
 
   const formatDecimalToDigit = useCallback(
