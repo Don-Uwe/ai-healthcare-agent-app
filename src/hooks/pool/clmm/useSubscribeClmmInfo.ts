@@ -79,7 +79,7 @@ export default function useSubscribeClmmInfo({
   }, [poolInfo?.id, subscribe])
 
   useEffect(() => {
-    if (!connection || !poolInfo || poolInfo.programId !== CLMM_PROGRAM_ID.toString()) return
+    if (!connection || !poolInfo || poolInfo.programId !== CLMM_PROGRAM_ID.toString() || !subscribe) return
 
     const id = connection.onProgramAccountChange(
       new PublicKey(poolInfo.programId),
@@ -120,7 +120,7 @@ export default function useSubscribeClmmInfo({
     return () => {
       connection.removeProgramAccountChangeListener(id)
     }
-  }, [connection, poolInfo?.id])
+  }, [connection, poolInfo?.id, subscribe])
 
   return {
     ...data,

@@ -42,8 +42,8 @@ export function SwapPanel({
   const swapTokenAct = useSwapStore((s) => s.swapTokenAct)
   const unWrapSolAct = useSwapStore((s) => s.unWrapSolAct)
   const tokenMap = useTokenStore((s) => s.tokenMap)
-  const [getTokenBalanceUiAmount, fetchTokenAccountAct] = useTokenAccountStore(
-    (s) => [s.getTokenBalanceUiAmount, s.fetchTokenAccountAct],
+  const [getTokenBalanceUiAmount, fetchTokenAccountAct, refreshTokenAccTime] = useTokenAccountStore(
+    (s) => [s.getTokenBalanceUiAmount, s.fetchTokenAccountAct, s.refreshTokenAccTime],
     shallow
   )
 
@@ -209,6 +209,7 @@ export function SwapPanel({
   const handleRefresh = useEvent(() => {
     if (isSending || isHightRiskOpen) return
     mutate()
+    if (Date.now() - refreshTokenAccTime < 10 * 1000) return
     fetchTokenAccountAct({})
   })
 

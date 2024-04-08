@@ -26,6 +26,7 @@ type ClmmPositionAccountItemProps = {
   baseIn: boolean
   initRpcPoolData?: RpcPoolData
   setNoRewardClmmPos: (val: string, isDelete?: boolean) => void
+  onSubscribe: () => void
 }
 
 const ZERO = new BN(0)
@@ -37,7 +38,8 @@ export default function ClmmPositionAccountItem({
   position,
   baseIn,
   initRpcPoolData,
-  setNoRewardClmmPos
+  setNoRewardClmmPos,
+  onSubscribe
 }: ClmmPositionAccountItemProps) {
   const isMobile = useAppStore((s) => s.isMobile)
   const removeLiquidityAct = useClmmStore((s) => s.removeLiquidityAct)
@@ -109,10 +111,12 @@ export default function ClmmPositionAccountItem({
 
   const handleRemoveOpen = useEvent(() => {
     onRemoveOpen()
+    onSubscribe()
     setRefreshTag(Date.now())
   })
   const handleAddOpen = useEvent(() => {
     onAddOpen()
+    onSubscribe()
     setRefreshTag(Date.now())
   })
 
@@ -189,6 +193,7 @@ export default function ClmmPositionAccountItem({
         isOpen={isRemoveOpen}
         onClose={onRemoveClose}
         onSyncSending={handleSyncSending}
+        initRpcPoolData={initRpcPoolData}
         poolInfo={rpcData.data ? { ...poolInfo, price: rpcData.data.currentPrice.toNumber() } : poolInfo}
         position={position}
       />

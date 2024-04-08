@@ -31,19 +31,22 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { removeValidateSchema } from './validateSchema'
 import { useEvent } from '@/hooks/useEvent'
+import { RpcPoolData } from '@/hooks/pool/clmm/useSubscribeClmmInfo'
 
 export default function RemoveLiquidityModal({
   isOpen,
   onClose,
   onSyncSending,
   poolInfo,
-  position
+  position,
+  initRpcPoolData
 }: {
   isOpen: boolean
   onClose: () => void
   onSyncSending: (val: boolean) => void
   poolInfo: ApiV3PoolInfoConcentratedItem
   position: PositionWithUpdateFn
+  initRpcPoolData?: RpcPoolData
 }) {
   const { t } = useTranslation()
   const featureDisabled = useAppStore((s) => s.featureDisabled.removeConcentratedPosition)
@@ -67,7 +70,9 @@ export default function RemoveLiquidityModal({
   const { rewards } = useFetchClmmRewardInfo({
     poolInfo,
     position,
+    subscribe: false,
     shouldFetch: false,
+    initRpcPoolData,
     tickLowerPrefetchData: position.tickLowerRpcData,
     tickUpperPrefetchData: position.tickUpperRpcData
   })

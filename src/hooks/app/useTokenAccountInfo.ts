@@ -14,7 +14,7 @@ export const removeAccChangeCbk = (fn: () => void) => {
 function useTokenAccountInfo() {
   const [raydium, connection, publicKey, commitment] = useAppStore((s) => [s.raydium, s.connection, s.publicKey, s.commitment], shallow)
 
-  const { fetchTokenAccountAct, tokenAccounts, tokenAccountRawInfos, reset } = useTokenAccountStore()
+  const { fetchTokenAccountAct, tokenAccounts, tokenAccountRawInfos, refreshTokenAccTime, reset } = useTokenAccountStore()
 
   useEffect(() => {
     if (!connection || !publicKey) return
@@ -55,7 +55,7 @@ function useTokenAccountInfo() {
       window.clearInterval(intervalId)
     }
     // eslint-disable-next-line
-  }, [connection?.rpcEndpoint, publicKey])
+  }, [connection?.rpcEndpoint, publicKey, refreshTokenAccTime])
 
   useEffect(() => {
     if (raydium) {

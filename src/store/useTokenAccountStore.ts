@@ -33,7 +33,8 @@ export interface TokenAccountStore {
   tokenAccountRawInfos: TokenAccountRaw[]
   tokenAccountMap: Map<string, TokenAccount[]>
 
-  refreshClmmPositionTag: number // temp use
+  refreshClmmPositionTag: number
+  refreshTokenAccTime: number
 
   fetchTokenAccountAct: (params: { commitment?: Commitment }) => Promise<void>
   updateTokenAccountAct: () => void
@@ -54,7 +55,8 @@ export const initTokenAccountSate = {
   tokenAccounts: [],
   tokenAccountRawInfos: [],
   tokenAccountMap: new Map(),
-  refreshClmmPositionTag: 0
+  refreshClmmPositionTag: 0,
+  refreshTokenAccTime: Date.now()
 }
 
 let [loading, lastFetchTime, preOwner, preCommitment]: [boolean, number, PublicKey, Commitment | undefined] = [
@@ -233,9 +235,18 @@ export const useTokenAccountStore = createStore<TokenAccountStore>(
         })
 
         clearUpdateTokenAccData()
-        set({ ...tokenAccountData, tokenAccountMap, getTokenBalanceUiAmount: get().getTokenBalanceUiAmount.bind(this) }, false, {
-          type: 'fetchTokenAccountAct'
-        })
+        set(
+          {
+            ...tokenAccountData,
+            tokenAccountMap,
+            refreshTokenAccTime: Date.now(),
+            getTokenBalanceUiAmount: get().getTokenBalanceUiAmount.bind(this)
+          },
+          false,
+          {
+            type: 'fetchTokenAccountAct'
+          }
+        )
 
         const tokenList = useTokenStore.getState().tokenList.sort((tokenA, tokenB) => {
           const accountA = tokenAccountMap.get(tokenA.address)

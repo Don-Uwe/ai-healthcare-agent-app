@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, Flex, Grid, GridItem, HStack, Tag, Text, Tooltip, Skeleton } from '@chakra-ui/react'
+import { Box, Flex, Grid, GridItem, HStack, Tag, Text, Tooltip, Skeleton, useDisclosure } from '@chakra-ui/react'
 import Link from 'next/link'
 import { PublicKey } from '@solana/web3.js'
 import Button from '@/components/Button'
@@ -32,12 +32,13 @@ export function ClmmPositionItemsCard({
   setNoRewardClmmPos: (val: string, isDelete?: boolean) => void
 }) {
   const { t } = useTranslation()
-  const data = useSubscribeClmmInfo({ poolInfo })
-  const [baseIn, setBaseIn] = useState(true)
+  const { isOpen: baseIn, onToggle } = useDisclosure()
+  const { isOpen: isSubscribe, onOpen: onSubscribe } = useDisclosure()
+  const data = useSubscribeClmmInfo({ poolInfo, subscribe: isSubscribe || false })
+
   const rpcData = initRpcPoolData || data
 
   if (poolInfo && rpcData.currentPrice) poolInfo.price = rpcData.currentPrice
-  const handleClickToggle = useCallback(() => setBaseIn((val) => !val), [])
   if (!poolInfo) return isLoading ? <Skeleton w="full" height="140px" rounded="lg" /> : null
 
   return (
@@ -78,7 +79,7 @@ export function ClmmPositionItemsCard({
           <Box alignSelf="center" ml={[0, 2]}>
             <Tooltip label={t('portfolio.section_positions_clmm_switch_direction_tooltip')}>
               <Box
-                onClick={handleClickToggle}
+                onClick={onToggle}
                 px={['12px', '12px']}
                 py={['5px', '6px']}
                 color={colors.secondary}
@@ -135,6 +136,7 @@ export function ClmmPositionItemsCard({
               baseIn={baseIn}
               initRpcPoolData={initRpcPoolData}
               setNoRewardClmmPos={setNoRewardClmmPos}
+              onSubscribe={onSubscribe}
             />
           ))}
         </Flex>
