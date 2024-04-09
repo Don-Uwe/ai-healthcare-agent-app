@@ -238,7 +238,12 @@ export default function SetPriceAndRange({
 
   const handleSwitchBase = useCallback((v: 'base' | 'quote') => {
     switchRef.current = true
-    setCurrentPrice((val) => (val ? new Decimal(1).div(val).toString() : val))
+    setCurrentPrice((val) => {
+      const newPrice = val ? new Decimal(1).div(val).toString() : val
+      handleLeftRangeBlur(new Decimal(newPrice).mul(0.5).toString())
+      handleRightRangeBlur(new Decimal(newPrice).mul(1.5).toString())
+      return newPrice
+    })
     onSwitchBase(v === 'base')
   }, [])
 
