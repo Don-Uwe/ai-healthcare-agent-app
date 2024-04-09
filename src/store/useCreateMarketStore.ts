@@ -8,7 +8,7 @@ import { isValidPublicKey } from '@/utils/publicKey'
 import { wSolToSol, solToWSol, solToWsolString } from '@/utils/token'
 import { getTxMeta } from './configs/market'
 import { getDefaultToastData, transformProcessData, handleMultiTxToast } from '@/hooks/toast/multiToastUtil'
-
+// import { getComputeBudgetConfig } from '@/utils/tx/computeBudget'
 interface CreateMarketState {
   checkMarketAct: (marketId: string) => Promise<{ isValid: boolean; mintA?: string; mintB?: string }>
   createMarketAct: (
@@ -127,6 +127,8 @@ export const useCreateMarketStore = createStore<CreateMarketState>(
     createMarketAct: async ({ baseToken, quoteToken, orderSize, priceTick, ...txProps }) => {
       const { raydium, programIdConfig, connection, txVersion } = useAppStore.getState()
       if (!raydium || !connection) return { txId: [], marketId: '' }
+
+      // const computeBudgetConfig = await getComputeBudgetConfig()
       const { execute, transactions, extInfo } = await raydium.marketV2.create({
         baseInfo: {
           mint: new PublicKey(solToWSol(baseToken.address)!),
@@ -140,6 +142,7 @@ export const useCreateMarketStore = createStore<CreateMarketState>(
         tickSize: Number(priceTick),
         dexProgramId: programIdConfig.OPEN_BOOK_PROGRAM,
         txVersion
+        // computeBudgetConfig
       })
 
       const meta = getTxMeta({
@@ -182,6 +185,7 @@ export const useCreateMarketStore = createStore<CreateMarketState>(
           toastSubject.next({ txError: e })
           return { txId: [], marketId: '' }
         })
+        .finally(txProps.onFinally)
     }
   }),
   'useCreateMarketStore'
