@@ -73,8 +73,8 @@ export default function CreateClmmPool() {
       currentCreateInfo.current.config = ammConfig
       createClmmPool({
         config: ammConfig,
-        token1,
-        token2,
+        token1: solToWSolToken(token1),
+        token2: solToWSolToken(token2),
         price: '1',
         forerunCreate: true
       })

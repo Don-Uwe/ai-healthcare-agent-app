@@ -808,7 +808,6 @@ export const useClmmStore = createStore<ClmmState>(
         return
       }
       const [decimalA, decimalB] = [poolInfo.mintA?.decimals ?? 6, poolInfo.mintB?.decimals ?? 6]
-
       const res = await PoolUtils.getLiquidityAmountOutFromAmountIn({
         poolInfo,
         slippage: 0,
@@ -820,7 +819,6 @@ export const useClmmStore = createStore<ClmmState>(
         amountHasFee: true,
         epochInfo: epochInfo!
       })
-
       return {
         amountA: new Decimal(res.amountA.amount.toString()).div(10 ** decimalA),
         amountSlippageA: new Decimal(res.amountSlippageA.amount.toString()).mul(1 + slippage).div(10 ** decimalA),

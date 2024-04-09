@@ -224,13 +224,15 @@ export default function SetPriceAndRange({
       tick: parseInt((443636 / tempCreatedPool!.config.tickSpacing).toString()) * tempCreatedPool!.config.tickSpacing,
       baseIn
     })
-
-    const [tickLower, tickUpper] = baseIn ? [minTick, maxTick] : [maxTick, minTick]
     fullRangeTickRef.current = {
-      tickLower: tickLower?.tick,
-      priceLower: tickLower?.price.toDecimalPlaces(30, Decimal.ROUND_FLOOR).toFixed(30),
-      tickUpper: tickUpper?.tick,
-      priceUpper: tickUpper?.price.toDecimalPlaces(30, Decimal.ROUND_FLOOR).toFixed(30)
+      tickLower: minTick?.tick,
+      priceLower: baseIn
+        ? minTick?.price.toDecimalPlaces(30, Decimal.ROUND_FLOOR).toFixed(30)
+        : new Decimal(1).div(minTick?.price.toDecimalPlaces(30, Decimal.ROUND_FLOOR) || 1).toFixed(30),
+      tickUpper: maxTick?.tick,
+      priceUpper: baseIn
+        ? maxTick?.price.toDecimalPlaces(30, Decimal.ROUND_FLOOR).toFixed(30)
+        : new Decimal(1).div(maxTick?.price.toDecimalPlaces(30, Decimal.ROUND_FLOOR) || 1).toFixed(30)
     }
   })
 
@@ -246,7 +248,7 @@ export default function SetPriceAndRange({
       computeFullRange()
       return
     }
-  }, [tempCreatedPool, isFullRange])
+  }, [tempCreatedPool, tempCreatedPool?.price, baseIn, isFullRange])
 
   useEffect(() => {
     if (!currentPrice) {

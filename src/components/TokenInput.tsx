@@ -22,7 +22,7 @@ import BalanceWalletIcon from '@/icons/misc/BalanceWalletIcon'
 import ChevronDownIcon from '@/icons/misc/ChevronDownIcon'
 import { useAppStore, useTokenAccountStore, useTokenStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
-import { formatLocaleStr } from '@/utils/numberish/formatter'
+import { formatLocaleStr, trimTrailZero } from '@/utils/numberish/formatter'
 import toUsdVolume from '@/utils/numberish/toUsdVolume'
 
 import { t } from 'i18next'
@@ -162,9 +162,9 @@ function TokenInput(props: TokenInputProps) {
   const balanceInfo = getTokenBalanceUiAmount({ mint: token?.address || '', decimals: token?.decimals })
   let balanceAmount = balanceInfo.amount.sub(token?.address === SOL_INFO.address ? '0.05' : 0)
   if (balanceAmount.lessThan(0)) balanceAmount = new Decimal(0)
-  const balanceMaxString = hideBalance ? null : balanceAmount.mul(maxMultiplier || 1).toString()
+  const balanceMaxString = hideBalance ? null : trimTrailZero(balanceAmount.mul(maxMultiplier || 1).toString())
   const balanceMaxDecimal = balanceAmount
-  const maxString = forceBalanceAmount ? String(forceBalanceAmount) : balanceMaxString
+  const maxString = forceBalanceAmount ? trimTrailZero(String(forceBalanceAmount)) : balanceMaxString
   const maxDecimal = forceBalanceAmount ? new Decimal(forceBalanceAmount) : balanceMaxDecimal
 
   const displayTokenSettings = useAppStore((s) => s.displayTokenSettings)
