@@ -19,7 +19,8 @@ interface Props {
 export default function CandleChart({ onPriceChange, baseMint, quoteMint, timeType, untilDate }: Props) {
   const { colorMode } = useColorMode()
 
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const currentLocale = i18n.language
   const chartCtrRef = useRef<HTMLDivElement>(null)
   const timeTypeRef = useRef<TimeType>(timeType)
   const chartRef = useRef<{ chart?: IChartApi; candle?: ISeriesApi<'Candlestick'>; volume?: ISeriesApi<'Histogram'> }>({})
@@ -80,11 +81,7 @@ export default function CandleChart({ onPriceChange, baseMint, quoteMint, timeTy
       priceFormat: {
         type: 'custom',
         formatter: (val: number) => {
-          // TODO: temp wirte here to fixed the chart width when val is too small, lightweight-charts add two value val + 0.11111111111111 and val - 0.11111111111111 to get optimal width
-          if (val === 0.11111111111111 || val === 0.88888888888889) {
-            val = 0
-          }
-          return val ? formatCurrency(val, { maximumDecimalTrailingZeroes: 5 }) : val
+          return val ? formatCurrency(val, { locale: currentLocale, maximumDecimalTrailingZeroes: 5 }) : val
         },
         minMove: 10 / 10 ** (baseMint?.decimals ?? 2)
       }

@@ -87,7 +87,7 @@ function AppNavLayout({
       overflow={overflowHidden ? 'hidden' : 'auto'}
       backgroundImage={isDark ? "url('/images/planet.png')" : undefined}
       backgroundPosition={`top -5% left ${planetLeft}`}
-      backgroundSize="800px 493px"
+      backgroundSize="600px 400px"
       backgroundRepeat="no-repeat"
     >
       <Box
