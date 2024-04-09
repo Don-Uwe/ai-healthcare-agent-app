@@ -1,9 +1,43 @@
 import { DEV_API_URLS, TokenInfo, ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 import axios from '@/api/axios'
 import { PublicKey, Connection, AccountInfo } from '@solana/web3.js'
-import { TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, unpackMint } from '@solana/spl-token'
+import {
+  TOKEN_PROGRAM_ID,
+  TOKEN_2022_PROGRAM_ID,
+  unpackMint,
+  TransferFeeConfig,
+  Mint,
+  TransferFeeConfigLayout,
+  ExtensionType
+} from '@solana/spl-token'
 
 import { useAppStore } from '@/store/useAppStore'
+
+export const TYPE_SIZE = 2
+export const LENGTH_SIZE = 2
+
+export function getExtensionData(extension: ExtensionType, tlvData: Buffer): Buffer | null {
+  let extensionTypeIndex = 0
+  while (extensionTypeIndex + TYPE_SIZE + LENGTH_SIZE <= tlvData.length) {
+    const entryType = tlvData.readUInt16LE(extensionTypeIndex)
+    const entryLength = tlvData.readUInt16LE(extensionTypeIndex + TYPE_SIZE)
+    const typeIndex = extensionTypeIndex + TYPE_SIZE + LENGTH_SIZE
+    if (entryType == extension) {
+      return tlvData.slice(typeIndex, typeIndex + entryLength)
+    }
+    extensionTypeIndex = typeIndex + entryLength
+  }
+  return null
+}
+
+export function getTransferFeeConfig(mint: Mint): TransferFeeConfig | null {
+  const extensionData = getExtensionData(ExtensionType.TransferFeeConfig, mint.tlvData)
+  if (extensionData !== null) {
+    return TransferFeeConfigLayout.decode(extensionData)
+  } else {
+    return null
+  }
+}
 
 export const cacheTokenInfoMap = new Map<string, TokenInfo>()
 export const addTokenInfoCache = (data: (TokenInfo | ApiV3Token)[]) =>
@@ -34,6 +68,8 @@ export const getOnlineTokenInfo = async ({
         }
         const onlineData = unpackMint(address, info, programId)
         const mintAddress = mint.toString()
+
+        const config = getTransferFeeConfig(onlineData)
         if (onlineData) {
           const res = {
             chainId: 101,
@@ -43,8 +79,28 @@ export const getOnlineTokenInfo = async ({
             symbol: mintAddress.slice(0, 6),
             name: mintAddress.slice(0, 6),
             decimals: onlineData.decimals,
-            tags: [],
-            extensions: {},
+            tags: config ? ['hasTransferFee'] : [],
+            extensions: {
+              ...(config
+                ? {
+                    feeConfig: {
+                      transferFeeConfigAuthority: config.transferFeeConfigAuthority.toBase58(),
+                      withdrawWithheldAuthority: config.withdrawWithheldAuthority.toBase58(),
+                      withheldAmount: config.withheldAmount.toString(),
+                      olderTransferFee: {
+                        epoch: config.olderTransferFee.epoch.toString(),
+                        maximumFee: config.olderTransferFee.maximumFee.toString(),
+                        transferFeeBasisPoints: config.olderTransferFee.transferFeeBasisPoints.valueOf()
+                      },
+                      newerTransferFee: {
+                        epoch: config.newerTransferFee.epoch.toString(),
+                        maximumFee: config.newerTransferFee.maximumFee.toString(),
+                        transferFeeBasisPoints: config.newerTransferFee.transferFeeBasisPoints.valueOf()
+                      }
+                    }
+                  }
+                : {})
+            },
             priority: 2,
             type: 'unknown'
           }
