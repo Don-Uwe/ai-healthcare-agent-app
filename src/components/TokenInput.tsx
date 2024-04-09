@@ -22,14 +22,15 @@ import BalanceWalletIcon from '@/icons/misc/BalanceWalletIcon'
 import ChevronDownIcon from '@/icons/misc/ChevronDownIcon'
 import { useAppStore, useTokenAccountStore, useTokenStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
-import { formatLocaleStr, trimTrailZero } from '@/utils/numberish/formatter'
-import toUsdVolume from '@/utils/numberish/toUsdVolume'
+import { trimTrailZero } from '@/utils/numberish/formatter'
+import { formatCurrency } from '@/utils/numberish/formatter'
 
 import { t } from 'i18next'
 import Button from './Button'
 import TokenAvatar from './TokenAvatar'
 import TokenSelectDialog, { TokenSelectDialogProps } from './TokenSelectDialog'
 import TokenUnknownAddDialog from './TokenSelectDialog/components/TokenUnknownAddDialog'
+import { useTranslation } from 'react-i18next'
 
 export interface TokenInputProps extends Pick<TokenSelectDialogProps, 'filterFn'> {
   id?: string
@@ -130,6 +131,13 @@ function TokenInput(props: TokenInputProps) {
   const { isOpen, onOpen, onClose } = useDisclosure()
   const { isOpen: isOpenUnknownTokenConfirm, onOpen: onOpenUnknownTokenConfirm, onClose: onCloseUnknownTokenConfirm } = useDisclosure()
 
+  const { i18n } = useTranslation()
+  const currentLocale = i18n.language
+  const decimalSeparator =
+    typeof Intl == 'object' && Intl && typeof Intl.NumberFormat == 'function'
+      ? new Intl.NumberFormat(currentLocale).formatToParts(0.1).find((part) => part.type === 'decimal')?.value || '.'
+      : '.'
+
   const size = inputSize ?? isMobile ? 'sm' : 'md'
   const sizes = {
     inputText: size === 'sm' ? 'lg' : '28px',
@@ -223,15 +231,23 @@ function TokenInput(props: TokenInputProps) {
   })
 
   const handleParseVal = useEvent((propVal: string) => {
-    const val = propVal.match(/[0-9.]/gi)?.join('') || ''
+    const val = propVal.match(new RegExp(`[0-9${decimalSeparator}]`, 'gi'))?.join('') || ''
     if (!val) return ''
-    const splitArr = val.split('.')
+    const splitArr = val.split(decimalSeparator)
     if (splitArr.length > 2) return [splitArr[0], splitArr[1]].join('.')
     if (token && splitArr[1] && splitArr[1].length > token.decimals) {
-      //.replace(/([1-9]+(\.[0-9]+[1-9])?)(\.?0+$)/, '$1')
       return [splitArr[0], splitArr[1].substring(0, token.decimals)].join('.')
     }
-    return val === '.' ? '0.' : val
+    return val === decimalSeparator ? '0.' : val.replace(decimalSeparator, '.')
+    // const val = propVal.match(/[0-9.]/gi)?.join('') || ''
+    // if (!val) return ''
+    // const splitArr = val.split('.')
+    // if (splitArr.length > 2) return [splitArr[0], splitArr[1]].join('.')
+    // if (token && splitArr[1] && splitArr[1].length > token.decimals) {
+    //   //.replace(/([1-9]+(\.[0-9]+[1-9])?)(\.?0+$)/, '$1')
+    //   return [splitArr[0], splitArr[1].substring(0, token.decimals)].join('.')
+    // }
+    // return val === '.' ? '0.' : val
   })
 
   return (
@@ -276,7 +292,7 @@ function TokenInput(props: TokenInputProps) {
               sx={{ textUnderlineOffset: '1px' }}
               _hover={{ textDecorationThickness: '1.5px', textUnderlineOffset: '2px' }}
             >
-              {formatLocaleStr(maxString, token?.decimals)}
+              {formatCurrency(maxString, { locale: currentLocale, decimalPlaces: token?.decimals })}
             </Text>
           </HStack>
         )}
@@ -337,7 +353,7 @@ function TokenInput(props: TokenInputProps) {
               }}
               onFocus={handleFocus}
               isDisabled={readonly || loading}
-              value={value}
+              value={formatCurrency(value, { locale: currentLocale, raw: true })}
               min={0}
               width={width || '100%'}
               opacity={loading ? 0.2 : 1}
@@ -384,7 +400,9 @@ function TokenInput(props: TokenInputProps) {
         </GridItem>
 
         <GridItem area="price" color={colors.textTertiary} fontSize={sizes.opacityVolume}>
-          <Text textAlign="right">~{toUsdVolume(totalPrice)}</Text>
+          <Text textAlign="right">
+            ~{formatCurrency(totalPrice, { locale: currentLocale, symbol: '$', maximumDecimalTrailingZeroes: 5 })}
+          </Text>
         </GridItem>
       </Grid>
       <TokenSelectDialog isOpen={isOpen} onClose={onClose} onSelectValue={handleSelectToken} filterFn={filterFn} />

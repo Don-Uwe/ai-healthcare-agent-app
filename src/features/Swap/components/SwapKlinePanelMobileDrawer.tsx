@@ -22,6 +22,8 @@ import CandleChart from './CandleChart'
 import toPercentString from '@/utils/numberish/toPercentString'
 import { formatCurrency } from '@/utils/numberish/formatter'
 import dayjs from 'dayjs'
+import { useTranslation } from 'react-i18next'
+
 import SwapMobileIcon from '@/icons/misc/SwapMobileIcon'
 
 function SwapKlinePanelMobileDrawerContent({
@@ -40,6 +42,8 @@ function SwapKlinePanelMobileDrawerContent({
   onTimeTypeChange?(timeType: TimeType): void
 }) {
   const [price, setPrice] = useState<{ current: number; change: number } | undefined>()
+  const { i18n } = useTranslation()
+  const currentLocale = i18n.language
   return (
     <>
       <Grid
@@ -98,7 +102,7 @@ function SwapKlinePanelMobileDrawerContent({
             <GridItem gridArea="price" pt={4} pl={3}>
               <HStack spacing={2} alignItems="baseline">
                 <Text fontSize="xl" fontWeight={700} color={colors.textPrimary}>
-                  {price ? formatCurrency(price.current, { maximumDecimalTrailingZeroes: 5 }) : price}
+                  {price ? formatCurrency(price.current, { locale: currentLocale, maximumDecimalTrailingZeroes: 5 }) : price}
                 </Text>
                 <Text
                   fontSize="xs"
@@ -111,7 +115,7 @@ function SwapKlinePanelMobileDrawerContent({
                       : colors.priceFloatingFlat
                   }
                 >
-                  {price ? toPercentString(price.change, { alwaysSigned: true }) : ''}
+                  {price ? formatCurrency(toPercentString(price.change, { alwaysSigned: true }), { locale: currentLocale, raw: true }) : ''}
                 </Text>
               </HStack>
             </GridItem>

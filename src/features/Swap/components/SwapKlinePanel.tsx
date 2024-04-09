@@ -9,6 +9,7 @@ import { useState } from 'react'
 import CandleChart from './CandleChart'
 import dayjs from 'dayjs'
 import SwapIcon from '@/icons/misc/SwapIcon'
+import { useTranslation } from 'react-i18next'
 import { formatCurrency } from '@/utils/numberish/formatter'
 
 export function SwapKlinePanel({
@@ -33,6 +34,9 @@ export function SwapKlinePanel({
       }
     | undefined
   >()
+
+  const { i18n } = useTranslation()
+  const currentLocale = i18n.language
 
   return (
     <>
@@ -92,7 +96,7 @@ export function SwapKlinePanel({
             <GridItem gridArea="price" paddingTop="8px">
               <HStack spacing={2} alignItems="baseline">
                 <Text fontSize="28px" fontWeight={700} color={colors.textPrimary}>
-                  {price ? formatCurrency(price.current, { maximumDecimalTrailingZeroes: 5 }) : price}
+                  {price ? formatCurrency(price.current, { locale: currentLocale, maximumDecimalTrailingZeroes: 5 }) : price}
                 </Text>
                 {price?.change && (
                   <Text
@@ -101,7 +105,7 @@ export function SwapKlinePanel({
                       price?.change > 0 ? colors.priceFloatingUp : price?.change < 0 ? colors.priceFloatingDown : colors.priceFloatingFlat
                     }
                   >
-                    {toPercentString(price?.change, { alwaysSigned: true })}
+                    {formatCurrency(toPercentString(price?.change, { alwaysSigned: true }), { locale: currentLocale, raw: true })}
                   </Text>
                 )}
               </HStack>

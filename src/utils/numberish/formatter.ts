@@ -67,6 +67,7 @@ export function trimTailingZero(s: string) {
 export interface FormatCurrencyParams {
   locale?: string
   noDecimal?: boolean
+  raw?: boolean
   symbol?: string
   abbreviated?: boolean
   decimalPlaces?: number
@@ -159,7 +160,7 @@ function generateIntlNumberFormatter(locale: string, symbol: string | undefined,
 }
 
 function generateFormatter(locale: string, symbol: string | undefined, abbreviated: boolean, numDecimals = 2) {
-  const isNumberFormatSupported = !!(typeof Intl == 'object' && Intl && typeof Intl.NumberFormat == 'function')
+  const isNumberFormatSupported = typeof Intl == 'object' && Intl && typeof Intl.NumberFormat == 'function'
   return isNumberFormatSupported
     ? generateIntlNumberFormatter(locale, symbol, abbreviated, numDecimals)
     : generateFallbackFormatter(symbol, abbreviated, numDecimals)
@@ -179,11 +180,20 @@ function generateFormatter(locale: string, symbol: string | undefined, abbreviat
  * formatCurrency(1000.12345, {locale:'es', decimalPlaces: 3}) // "1.000,123";
  * formatCurrency(3220.12345, {locale:'es', symbol: '$', decimalPlaces: 3 }) // 3.220,123$
  * formatCurrency(6553.83766, {locale:'es', symbol: '$',abbreviated:true, decimalPlaces: 3 }) // 6,554mil$
+ * formatCurrency(6553.83766, {locale:'es', raw:true }) // 6553,83766
+ * formatCurrency(1.2%, {locale:'es', raw:true }) // 1,2%
  */
 export function formatCurrency(amount?: string | number, params: FormatCurrencyParams = {}): string {
-  const { locale = 'en', noDecimal = false, symbol, abbreviated = false, decimalPlaces, maximumDecimalTrailingZeroes } = params
-  if (amount === undefined || amount == '') {
-    return '-'
+  const { locale = 'en', noDecimal = false, raw = false, symbol, abbreviated = false, decimalPlaces, maximumDecimalTrailingZeroes } = params
+  if (!amount) {
+    return '0'
+  }
+  if (raw) {
+    const decimalSeparator =
+      typeof Intl == 'object' && Intl && typeof Intl.NumberFormat == 'function'
+        ? new Intl.NumberFormat(locale).formatToParts(0.1).find((part) => part.type === 'decimal')?.value || '.'
+        : '.'
+    return decimalSeparator !== '.' ? amount.toString().replace('.', decimalSeparator) : amount.toString()
   }
   const amountDecimal = new Decimal(amount)
   const amountNumber = amountDecimal.toNumber()

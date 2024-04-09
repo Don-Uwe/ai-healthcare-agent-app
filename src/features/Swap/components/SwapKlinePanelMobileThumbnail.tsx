@@ -32,7 +32,8 @@ export function SwapKlinePanelMobileThumbnail({
     timeType: '15m',
     untilDate
   })
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const currentLocale = i18n.language
   const chartCtrRef = useRef<HTMLDivElement>(null)
   const chartRef = useRef<{ chart?: IChartApi; line?: ISeriesApi<'Line'> }>({})
   const pair = baseToken && quoteToken ? `${baseToken?.address}-${quoteToken?.address}` : undefined
@@ -110,10 +111,10 @@ export function SwapKlinePanelMobileThumbnail({
         <GridItem gridArea="price">
           <HStack spacing={2}>
             <Text fontSize={['md', 'xl']} fontWeight={500} color={colors.textPrimary}>
-              {currentPrice !== undefined ? formatCurrency(currentPrice, { maximumDecimalTrailingZeroes: 5 }) : '--'}
+              {currentPrice !== undefined ? formatCurrency(currentPrice, { locale: currentLocale, maximumDecimalTrailingZeroes: 5 }) : '--'}
             </Text>
             <Text fontSize={['xs', 'sm']} color={change24H > 0 ? 'colors.teal' : change24H < 0 ? '#ff4ea3' : '#888888'}>
-              {toPercentString(change24H, { alwaysSigned: true })}
+              {formatCurrency(toPercentString(change24H, { alwaysSigned: true }), { locale: currentLocale, raw: true })}
             </Text>
           </HStack>
         </GridItem>
