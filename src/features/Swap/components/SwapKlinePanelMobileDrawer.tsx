@@ -20,7 +20,7 @@ import { colors } from '@/theme/cssVariables'
 import { TimeType } from '@/hooks/pool/useFetchPoolKLine'
 import CandleChart from './CandleChart'
 import toPercentString from '@/utils/numberish/toPercentString'
-import { formatCurrency } from '@/utils/numberish/formatter'
+import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
 import dayjs from 'dayjs'
 import { useTranslation } from 'react-i18next'
 
@@ -115,7 +115,7 @@ function SwapKlinePanelMobileDrawerContent({
                       : colors.priceFloatingFlat
                   }
                 >
-                  {price ? formatCurrency(toPercentString(price.change, { alwaysSigned: true }), { locale: currentLocale, raw: true }) : ''}
+                  {price ? formatToRawLocaleStr(toPercentString(price.change, { alwaysSigned: true }), currentLocale) : ''}
                 </Text>
               </HStack>
             </GridItem>

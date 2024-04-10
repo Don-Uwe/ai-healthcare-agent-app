@@ -22,8 +22,7 @@ import BalanceWalletIcon from '@/icons/misc/BalanceWalletIcon'
 import ChevronDownIcon from '@/icons/misc/ChevronDownIcon'
 import { useAppStore, useTokenAccountStore, useTokenStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
-import { trimTrailZero } from '@/utils/numberish/formatter'
-import { formatCurrency } from '@/utils/numberish/formatter'
+import { trimTrailZero, formatCurrency, formatToRawLocaleStr, isIntlNumberFormatSupported } from '@/utils/numberish/formatter'
 
 import { t } from 'i18next'
 import Button from './Button'
@@ -133,10 +132,9 @@ function TokenInput(props: TokenInputProps) {
 
   const { i18n } = useTranslation()
   const currentLocale = i18n.language
-  const decimalSeparator =
-    typeof Intl == 'object' && Intl && typeof Intl.NumberFormat == 'function'
-      ? new Intl.NumberFormat(currentLocale).formatToParts(0.1).find((part) => part.type === 'decimal')?.value || '.'
-      : '.'
+  const decimalSeparator = isIntlNumberFormatSupported
+    ? new Intl.NumberFormat(currentLocale).formatToParts(0.1).find((part) => part.type === 'decimal')?.value || '.'
+    : '.'
 
   const size = inputSize ?? isMobile ? 'sm' : 'md'
   const sizes = {
@@ -353,7 +351,7 @@ function TokenInput(props: TokenInputProps) {
               }}
               onFocus={handleFocus}
               isDisabled={readonly || loading}
-              value={formatCurrency(value, { locale: currentLocale, raw: true })}
+              value={formatToRawLocaleStr(value, currentLocale)}
               min={0}
               width={width || '100%'}
               opacity={loading ? 0.2 : 1}

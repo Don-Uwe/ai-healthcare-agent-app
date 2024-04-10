@@ -1,7 +1,9 @@
 import { numberRegExp } from '@/utils/numberish/regex'
+import { formatToRawLocaleStr } from '@/utils/numberish/formatter'
 import { Flex, InputGroup, NumberInput, NumberInputField, SystemStyleObject, Text } from '@chakra-ui/react'
 import React, { MouseEvent, KeyboardEvent, ReactNode, useCallback, useEffect, useMemo, useRef } from 'react'
 import Decimal from 'decimal.js'
+import { useTranslation } from 'react-i18next'
 
 interface Props {
   id?: string
@@ -68,6 +70,13 @@ function DecimalInput(props: Props) {
   const valRef = useRef(value)
   valRef.current = value
 
+  const { i18n } = useTranslation()
+  const currentLocale = i18n.language
+  const decimalSeparator =
+    typeof Intl == 'object' && Intl && typeof Intl.NumberFormat == 'function'
+      ? new Intl.NumberFormat(currentLocale).formatToParts(0.1).find((part) => part.type === 'decimal')?.value || '.'
+      : '.'
+
   const clampValueOnBlur = min !== undefined || max !== undefined
   const handleValidate = useCallback((value: string) => {
     return numberRegExp.test(value)
@@ -86,16 +95,24 @@ function DecimalInput(props: Props) {
   }, [onBlur, side])
 
   const handleParseVal = useCallback(
-    (val: string) => {
-      const splitArr = (val || '').split('.')
+    (propVal: string) => {
+      const val = propVal.match(new RegExp(`[0-9${decimalSeparator}]`, 'gi'))?.join('') || ''
+      if (!val) return ''
+      const splitArr = val.split(decimalSeparator)
       if (splitArr.length > 2) return [splitArr[0], splitArr[1]].join('.')
       if (typeof decimals === 'number' && decimals > -1 && splitArr[1] && splitArr[1].length > decimals) {
-        //.replace(/([1-9]+(\.[0-9]+[1-9])?)(\.?0+$)/, '$1')
         return [splitArr[0], splitArr[1].substring(0, decimals)].join('.')
       }
-      return val === '.' ? '0.' : val
+      return val === decimalSeparator ? '0.' : val.replace(decimalSeparator, '.')
+      // const splitArr = (val || '').split('.')
+      // if (splitArr.length > 2) return [splitArr[0], splitArr[1]].join('.')
+      // if (typeof decimals === 'number' && decimals > -1 && splitArr[1] && splitArr[1].length > decimals) {
+      //   //.replace(/([1-9]+(\.[0-9]+[1-9])?)(\.?0+$)/, '$1')
+      //   return [splitArr[0], splitArr[1].substring(0, decimals)].join('.')
+      // }
+      // return val === '.' ? '0.' : val
     },
-    [decimals]
+    [decimals, currentLocale]
   )
 
   const handleFocus = useCallback(() => {
@@ -104,9 +121,10 @@ function DecimalInput(props: Props) {
 
   useEffect(() => {
     // parse first time
-    const val = handleParseVal(valRef.current)
+    // const val = handleParseVal(valRef.current)
+    const val = valRef.current
     handleChange(val, Number(val))
-  }, [handleParseVal, handleChange])
+  }, [handleChange])
 
   const shakeValueDecimal = (value: number | string | undefined, decimals?: number) =>
     value && !String(value).endsWith('.') && decimals != null && new Decimal(value).decimalPlaces() > decimals
@@ -140,6 +158,9 @@ function DecimalInput(props: Props) {
             isDisabled={disabled || false}
             isInvalid={clampValueOnBlur ? undefined : false}
             value={showedValue} //FIXME: why still uncontrolled🤔?
+            format={(value: string | number) => {
+              return formatToRawLocaleStr(value, currentLocale)
+            }}
             // precision={decimals}
             width={width}
             variant={variant}

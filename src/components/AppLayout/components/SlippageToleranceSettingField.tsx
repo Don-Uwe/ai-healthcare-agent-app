@@ -4,6 +4,7 @@ import { useEvent } from '@/hooks/useEvent'
 import { useAppStore, SLIPPAGE_KEY } from '@/store'
 import { colors } from '@/theme/cssVariables'
 import toPercentString from '@/utils/numberish/toPercentString'
+import { formatToRawLocaleStr } from '@/utils/numberish/formatter'
 import { Flex, Text } from '@chakra-ui/react'
 import { useTranslation } from 'react-i18next'
 import { SettingField } from './SettingField'
@@ -13,7 +14,8 @@ import { KeyboardEvent, useCallback, useState } from 'react'
 import Decimal from 'decimal.js'
 
 export function SlippageToleranceSettingField() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const currentLocale = i18n.language
   const slippage = useAppStore((s) => s.slippage)
   const isMobile = useAppStore((s) => s.isMobile)
   const [currentSlippage, setCurrentSlippage] = useState(String(slippage * 100))
@@ -58,7 +60,7 @@ export function SlippageToleranceSettingField() {
                     handleUpdateSlippage(v)
                   }}
                 >
-                  {toPercentString(v)}
+                  {formatToRawLocaleStr(toPercentString(v), currentLocale)}
                 </Button>
               ))}
             </Flex>

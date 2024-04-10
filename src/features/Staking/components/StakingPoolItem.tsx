@@ -10,9 +10,8 @@ import ChevronUpIcon from '@/icons/misc/ChevronUpIcon'
 import HorizontalSwitchSmallIcon from '@/icons/misc/HorizontalSwitchSmallIcon'
 import { useAppStore, useFarmStore, useTokenAccountStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
-import { toVolume } from '@/utils/numberish/autoSuffixNumberish'
 import toPercentString from '@/utils/numberish/toPercentString'
-import toUsdVolume from '@/utils/numberish/toUsdVolume'
+import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
 import { routeToPage, useRouteQuery } from '@/utils/routeTools'
 import { wSolToSolString } from '@/utils/token'
 import useTokenPrice from '@/hooks/token/useTokenPrice'
@@ -220,21 +219,19 @@ function HarvestButton(props: { pendingAmount: string; isLoading: boolean; onCli
 }
 
 function PendingRewards(props: { token: ApiV3Token; pendingAmount: number | string; pendingAmountInUSD: string }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const currentLocale = i18n.language
   return (
     <VStack align={'start'} spacing={[0, 2]}>
       <Text fontSize="sm" color={colors.textTertiary}>
         {t('clmm.pending_rewards')}
       </Text>
       <Text fontWeight={500} color={colors.textPrimary}>
-        {toVolume(props.pendingAmount, {
-          decimals: props.token.decimals,
-          decimalMode: 'trim'
-        })}{' '}
+        {formatCurrency(props.pendingAmount, { locale: currentLocale, decimalPlaces: props.token.decimals })}{' '}
         {wSolToSolString(props.token.symbol)}
       </Text>
       <Text fontSize="sm" color={colors.textTertiary}>
-        {toUsdVolume(props.pendingAmountInUSD, { decimalMode: 'trim' })}
+        {formatCurrency(props.pendingAmountInUSD, { locale: currentLocale, symbol: '$', decimalPlaces: 2 })}
       </Text>
     </VStack>
   )
@@ -316,21 +313,19 @@ function AvailableStakeTokenButtons(props: {
 }
 
 function AvailableStakeTokenInfoBox(props: { token: ApiV3Token; stakedVolume: string | number; balance: string }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const currentLocale = i18n.language
   return (
     <VStack align={'start'} spacing={[0, 2]}>
       <Text fontSize="sm" color={colors.textTertiary}>
         {t('staking.available', { symbol: wSolToSolString(props.token.symbol) })}
       </Text>
       <Text fontWeight={500} color={colors.textPrimary}>
-        {toVolume(props.balance, {
-          decimals: props.token.decimals,
-          decimalMode: 'trim'
-        })}{' '}
+        {formatCurrency(props.balance, { locale: currentLocale, decimalPlaces: props.token.decimals })}{' '}
         {wSolToSolString(props.token.symbol)}
       </Text>
       <Text fontSize="sm" color={colors.textTertiary}>
-        {toUsdVolume(props.stakedVolume, { decimalMode: 'trim' })}
+        {formatCurrency(props.stakedVolume, { locale: currentLocale, symbol: '$', decimalPlaces: 2 })}
       </Text>
     </VStack>
   )
@@ -346,15 +341,13 @@ function StakeFaceLabel(props: { token: ApiV3Token }) {
 }
 
 function StakePendingRewardFaceInfo(props: { token: ApiV3Token; pendingAmount: number | string }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const currentLocale = i18n.language
   return (
     <VStack align={'start'}>
       <Text color={colors.textTertiary}>{t('staking.pending_reward')}</Text>
       <Text>
-        {toVolume(props.pendingAmount, {
-          decimals: props.token.decimals,
-          decimalMode: 'trim'
-        })}{' '}
+        {formatCurrency(props.pendingAmount, { locale: currentLocale, decimalPlaces: props.token.decimals })}{' '}
         {wSolToSolString(props.token.symbol)}
       </Text>
     </VStack>
@@ -362,17 +355,15 @@ function StakePendingRewardFaceInfo(props: { token: ApiV3Token; pendingAmount: n
 }
 
 function StakeStakedFaceInfo(props: { token: ApiV3Token; deposited: string | number }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const currentLocale = i18n.language
   return (
     <VStack align={'start'}>
       <Text fontSize={['xs', 'sm']} color={colors.textTertiary}>
         {t('staking.staked')}
       </Text>
       <Text fontSize={['sm', 'md']}>
-        {toVolume(props.deposited, {
-          decimals: props.token.decimals,
-          decimalMode: 'trim'
-        })}{' '}
+        {formatCurrency(props.deposited, { locale: currentLocale, decimalPlaces: props.token.decimals })}{' '}
         {wSolToSolString(props.token.symbol)}
       </Text>
     </VStack>
@@ -380,25 +371,27 @@ function StakeStakedFaceInfo(props: { token: ApiV3Token; deposited: string | num
 }
 
 function StakeAPRFaceInfo(props: { apr: number }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const currentLocale = i18n.language
   return (
     <VStack align={'start'}>
       <Text fontSize={['xs', 'sm']} color={colors.textTertiary}>
         {t('staking.APR')}
       </Text>
-      <Text fontSize={['sm', 'md']}>{toPercentString(props.apr * 100)}</Text>
+      <Text fontSize={['sm', 'md']}>{formatToRawLocaleStr(toPercentString(props.apr * 100), currentLocale)}</Text>
     </VStack>
   )
 }
 
 function StakeLiquidityFaceInfo(props: { tvl: number }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const currentLocale = i18n.language
   return (
     <VStack align={'start'}>
       <Text fontSize={['xs', 'sm']} color={colors.textTertiary}>
         {t('staking.liquidity')}
       </Text>
-      <Text fontSize={['sm', 'md']}>{toUsdVolume(props.tvl, { decimalMode: 'trim' })}</Text>
+      <Text fontSize={['sm', 'md']}>{formatCurrency(props.tvl, { locale: currentLocale, symbol: '$', decimalPlaces: 2 })}</Text>
     </VStack>
   )
 }

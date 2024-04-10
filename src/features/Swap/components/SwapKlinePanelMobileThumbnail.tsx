@@ -4,7 +4,7 @@ import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 import TokenAvatarPair from '@/components/TokenAvatarPair'
 import { colors } from '@/theme/cssVariables'
 import toPercentString from '@/utils/numberish/toPercentString'
-import { formatCurrency } from '@/utils/numberish/formatter'
+import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
 import { useTranslation } from 'react-i18next'
 import { useEffect, useRef } from 'react'
 import { ColorType, IChartApi, ISeriesApi, createChart } from 'lightweight-charts'
@@ -114,7 +114,7 @@ export function SwapKlinePanelMobileThumbnail({
               {currentPrice !== undefined ? formatCurrency(currentPrice, { locale: currentLocale, maximumDecimalTrailingZeroes: 5 }) : '--'}
             </Text>
             <Text fontSize={['xs', 'sm']} color={change24H > 0 ? 'colors.teal' : change24H < 0 ? '#ff4ea3' : '#888888'}>
-              {formatCurrency(toPercentString(change24H, { alwaysSigned: true }), { locale: currentLocale, raw: true })}
+              {formatToRawLocaleStr(toPercentString(change24H, { alwaysSigned: true }), currentLocale)}
             </Text>
           </HStack>
         </GridItem>

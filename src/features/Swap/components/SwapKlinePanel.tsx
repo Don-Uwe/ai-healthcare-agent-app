@@ -10,7 +10,7 @@ import CandleChart from './CandleChart'
 import dayjs from 'dayjs'
 import SwapIcon from '@/icons/misc/SwapIcon'
 import { useTranslation } from 'react-i18next'
-import { formatCurrency } from '@/utils/numberish/formatter'
+import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
 
 export function SwapKlinePanel({
   baseToken,
@@ -105,7 +105,7 @@ export function SwapKlinePanel({
                       price?.change > 0 ? colors.priceFloatingUp : price?.change < 0 ? colors.priceFloatingDown : colors.priceFloatingFlat
                     }
                   >
-                    {formatCurrency(toPercentString(price?.change, { alwaysSigned: true }), { locale: currentLocale, raw: true })}
+                    {formatToRawLocaleStr(toPercentString(price?.change, { alwaysSigned: true }), currentLocale)}
                   </Text>
                 )}
               </HStack>

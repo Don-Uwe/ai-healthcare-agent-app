@@ -18,7 +18,7 @@ import Decimal from 'decimal.js'
 import useTokenInfo from '@/hooks/token/useTokenInfo'
 import { getMintSymbol } from '@/utils/token'
 import { useEvent } from '@/hooks/useEvent'
-import { trimTrailZero, formatCurrency } from '@/utils/numberish/formatter'
+import { trimTrailZero, formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
 
 export function SwapInfoBoard({
   amountIn,
@@ -88,10 +88,7 @@ export function SwapInfoBoard({
           fontWeight={500}
         >
           {computedSwapResult
-            ? `${formatCurrency(toPercentString(computedSwapResult.priceImpactPct, { notShowZero: true }), {
-                locale: currentLocale,
-                raw: true
-              })}`
+            ? `${formatToRawLocaleStr(toPercentString(computedSwapResult.priceImpactPct, { notShowZero: true }), currentLocale)}`
             : '-'}
         </Text>
       </HStack>
@@ -288,7 +285,7 @@ function RoutingValue({ routePlan }: { routePlan: ApiSwapV1OutSuccess['data']['r
           </Tooltip>
           <Tooltip label={<AddressChip address={poolId} renderLabel={'AMM ID:'} textProps={{ fontSize: 'xs' }} canExternalLink />}>
             <Text fontSize={'2xs'} color={colors.textSecondary}>
-              {formatCurrency(toPercentString(feeRate / 100), { locale: currentLocale, raw: true })}
+              {formatToRawLocaleStr(toPercentString(feeRate / 100), currentLocale)}
             </Text>
           </Tooltip>
 

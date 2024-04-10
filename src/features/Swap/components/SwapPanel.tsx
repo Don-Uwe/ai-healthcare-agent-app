@@ -28,7 +28,7 @@ import WarningIcon from '@/icons/misc/WarningIcon'
 import dayjs from 'dayjs'
 import { NATIVE_MINT } from '@solana/spl-token'
 import { Trans } from 'react-i18next'
-import { formatCurrency } from '@/utils/numberish/formatter'
+import { formatToRawLocaleStr } from '@/utils/numberish/formatter'
 
 export function SwapPanel({
   onInputMintChange,
@@ -281,7 +281,7 @@ export function SwapPanel({
           justifyContent="center"
         >
           <WarningIcon style={{ marginTop: '2px', marginRight: '4px' }} stroke={colors.semanticError} />
-          <Text>{t('swap.error_sol_fee_not_insufficient', { amount: formatCurrency(0.05, { locale: currentLocale, raw: true }) })}</Text>
+          <Text>{t('swap.error_sol_fee_not_insufficient', { amount: formatToRawLocaleStr(0.05, currentLocale) })}</Text>
         </Flex>
       ) : null}
       {wsolBalance.isZero ? null : (
