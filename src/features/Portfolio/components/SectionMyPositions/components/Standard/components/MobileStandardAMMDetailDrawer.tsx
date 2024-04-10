@@ -24,6 +24,7 @@ import StandardPoolAPR from '../ItemDetail/StandardPoolAPR'
 import TokenPooledInfo from '../ItemDetail/TokenInfo'
 import StandardPoolRowStakeFarmHoldItem from './StandardPoolRowStakeFarmHoldItem'
 import StandardPoolRowStakeFarmItem from './StandardPoolRowStakeFarmItem'
+import { FarmBalanceInfo } from '@/hooks/farm/type'
 import { useTranslation } from 'react-i18next'
 import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 
@@ -42,6 +43,7 @@ export default function MobileStandardAMMDetailDrawer({
   isLoading,
   canStake,
   rewardInfo,
+  allFarmBalances,
   onUpdatePendingReward,
   onHarvest
 }: {
@@ -59,6 +61,7 @@ export default function MobileStandardAMMDetailDrawer({
   isLoading: boolean
   canStake: boolean
   rewardInfo: { mint: ApiV3Token; amount: string; amountUSD: string }[]
+  allFarmBalances: FarmBalanceInfo[]
   onUpdatePendingReward: (params: {
     farmId: string
     reward: { mint: ApiV3Token[]; usd: string; amount: string[]; rewardTokenUsd: string[] }
@@ -139,6 +142,7 @@ export default function MobileStandardAMMDetailDrawer({
                         poolId={pool.id}
                         lpPrice={pool.lpPrice}
                         onUpdatePendingReward={onUpdatePendingReward}
+                        balanceInfo={allFarmBalances.find((f) => f.id === stakeFarm.farmId)}
                       />
                     ))}
                   </VStack>

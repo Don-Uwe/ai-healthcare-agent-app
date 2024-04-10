@@ -258,12 +258,13 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
         </GridItem>
       </Box>
 
-      {hasStakeFarm && !isMobile && (
+      {hasStakeFarm && (
         <Collapse in={isOpen}>
           <VStack mt={4} w="full" align="stretch" gap={3}>
             {stakedFarms.map((stakeFarm) => (
               <StandardPoolRowStakeFarmItem
                 key={stakeFarm.farmId}
+                hide={isMobile}
                 poolId={pool.id}
                 farmId={stakeFarm.farmId}
                 lpPrice={pool.lpPrice}
@@ -303,6 +304,7 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
           onHarvest={handleHarvest}
           canStake={canStake}
           rewardInfo={pendingRewardsInfo}
+          allFarmBalances={allFarmBalances}
         />
       )}
       {isMigrateOpen ? (

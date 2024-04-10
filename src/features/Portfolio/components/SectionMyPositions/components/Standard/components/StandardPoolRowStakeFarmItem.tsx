@@ -19,12 +19,14 @@ export default function StandardPoolRowStakeFarmItem({
   farmId,
   lpPrice,
   balanceInfo,
+  hide,
   onUpdatePendingReward
 }: {
   poolId: string
   farmId: string
   lpPrice: number
   balanceInfo?: FarmBalanceInfo
+  hide?: boolean
   onUpdatePendingReward: (params: {
     farmId: string
     reward: { mint: ApiV3Token[]; usd: string; amount: string[]; rewardTokenUsd: string[] }
@@ -64,8 +66,8 @@ export default function StandardPoolRowStakeFarmItem({
         rewardTokenUsd
       }
     })
-  }, [farm?.id, pendingReward, rewardTokenUsd, onUpdatePendingReward])
-  if (!farm) return null
+  }, [farm?.id, pendingReward, onUpdatePendingReward])
+  if (!farm || hide) return null
 
   return (
     <Grid
