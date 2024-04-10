@@ -6,17 +6,22 @@ import { QuestionToolTip } from '@/components/QuestionToolTip'
 import TokenAvatar from '@/components/TokenAvatar'
 import { colors } from '@/theme/cssVariables'
 import { useTranslation } from 'react-i18next'
+import toUsdVolume from '@/utils/numberish/toUsdVolume'
+import { formatCurrency } from '@/utils/numberish/formatter'
+import { getMintSymbol } from '@/utils/token'
 
 type PendingYieldProps = {
   pendingYield?: string
   rewardTokens: ApiV3Token[]
   isLoading?: boolean
   hasReward?: boolean
+  rewardInfos: { mint: ApiV3Token; amount: string; amountUSD: string }[]
   onHarvest: () => void
 }
 
-export default function PendingYield({ isLoading, hasReward, onHarvest, pendingYield, rewardTokens }: PendingYieldProps) {
+export default function PendingYield({ isLoading, hasReward, rewardInfos, onHarvest, pendingYield, rewardTokens }: PendingYieldProps) {
   const { t } = useTranslation()
+
   return (
     <SimpleGrid
       flex={1}
@@ -51,7 +56,22 @@ export default function PendingYield({ isLoading, hasReward, onHarvest, pendingY
           {pendingYield ?? '$0'}
         </Text>
         <QuestionToolTip
-          label={t('portfolio.section_positions_clmm_account_pending_yield_tooltip')}
+          label={
+            <>
+              {rewardInfos.map((r) => (
+                <Flex key={r.mint.address} alignItems="center" gap="1" my="2">
+                  <TokenAvatar key={`pool-reward-${r.mint.address}`} size={'sm'} token={r.mint} />
+                  <Text color={colors.textPrimary}>
+                    {formatCurrency(r.amount, {
+                      maximumDecimalTrailingZeroes: 5
+                    })}
+                  </Text>
+                  <Text>{getMintSymbol({ mint: r.mint, transformSol: true })}</Text>
+                  <Text color={colors.textPrimary}>({toUsdVolume(r.amountUSD, { decimals: 4, decimalMode: 'trim' })})</Text>
+                </Flex>
+              ))}
+            </>
+          }
           iconType="info"
           iconProps={{ width: 18, height: 18, fill: colors.textSecondary }}
         />

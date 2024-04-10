@@ -342,7 +342,6 @@
     "section_positions_clmm_account_view_less": "Daha az görüntüle",
     "section_positions_clmm_account_nft_mint_address": "NFT Mint Adresi",
     "section_positions_clmm_account_pending_yield": "Bekleyen getiri",
-    "section_positions_clmm_account_pending_yield_tooltip": "🤖🤖🤖bekleyen getiri için açıklama",
     "section_positions_clmm_account_pending_yield_button": "Harvest",
     "section_my_created_farms": "Oluşturduğum farmlar",
     "section_department_tab_clmm": "Konsantre",
@@ -363,7 +362,6 @@
   "amm": {
     "staked": "Stake edilmiş",
     "pending_reward": "Bekleyen Ödüller",
-    "pending_reward_tooltip": "🤖🤖🤖bekleyen ödüller için açıklama",
     "pending_reward_button": "Harvest",
     "pending_alert": "Bir farmda stake edilebilecek LP tokenlarını kaldırmışsınız. Şimdi stake edin",
     "pooled_token": "Havuzdaki {{token}}",

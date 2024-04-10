@@ -25,6 +25,7 @@ import TokenPooledInfo from '../ItemDetail/TokenInfo'
 import StandardPoolRowStakeFarmHoldItem from './StandardPoolRowStakeFarmHoldItem'
 import StandardPoolRowStakeFarmItem from './StandardPoolRowStakeFarmItem'
 import { useTranslation } from 'react-i18next'
+import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 
 export default function MobileStandardAMMDetailDrawer({
   isOpen,
@@ -40,6 +41,7 @@ export default function MobileStandardAMMDetailDrawer({
   pooledAmountB,
   isLoading,
   canStake,
+  rewardInfo,
   onUpdatePendingReward,
   onHarvest
 }: {
@@ -56,7 +58,11 @@ export default function MobileStandardAMMDetailDrawer({
   pooledAmountB: string
   isLoading: boolean
   canStake: boolean
-  onUpdatePendingReward: (params: { farmId: string; reward: { usd: string; amount: string[] } }) => void
+  rewardInfo: { mint: ApiV3Token; amount: string; amountUSD: string }[]
+  onUpdatePendingReward: (params: {
+    farmId: string
+    reward: { mint: ApiV3Token[]; usd: string; amount: string[]; rewardTokenUsd: string[] }
+  }) => void
   onHarvest: () => void
 }) {
   const { t } = useTranslation()
@@ -110,7 +116,13 @@ export default function MobileStandardAMMDetailDrawer({
               justifyItems="stretch"
             >
               <TokenPooledInfo base={{ token: pool.mintA, amount: pooledAmountA }} quote={{ token: pool.mintB, amount: pooledAmountB }} />
-              <PendingRewards pendingReward={pendingReward} positionStatus={positionStatus} isLoading={isLoading} onHarvest={onHarvest} />
+              <PendingRewards
+                pendingReward={pendingReward}
+                rewardInfo={rewardInfo}
+                positionStatus={positionStatus}
+                isLoading={isLoading}
+                onHarvest={onHarvest}
+              />
             </GridItem>
 
             <GridItem area="subs">

@@ -342,7 +342,7 @@
     "section_positions_clmm_account_view_less": "Ver menos",
     "section_positions_clmm_account_nft_mint_address": "Dirección de acuñación NFT",
     "section_positions_clmm_account_pending_yield": "Rendimiento pendiente",
-    "section_positions_clmm_account_pending_yield_tooltip": "🤖🤖🤖descripción para rendimiento pendiente",
+    "": "🤖🤖🤖descripción para rendimiento pendiente",
     "section_positions_clmm_account_pending_yield_button": "Cosechar",
     "section_my_created_farms": "Mis granjas creadas",
     "section_department_tab_clmm": "Concentradas",
@@ -363,7 +363,6 @@
   "amm": {
     "staked": "Apostado",
     "pending_reward": "Recompensas pendientes",
-    "pending_reward_tooltip": "🤖🤖🤖descripción para recompensas pendientes",
     "pending_reward_button": "Cosechar",
     "pending_alert": "Tienes tokens LP no apostados que podrían apostarse en una granja. Apuesta ahora",
     "pooled_token": "{{token}} agrupado",

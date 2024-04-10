@@ -1,3 +1,4 @@
+import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 import { FormattedPoolInfoConcentratedItem } from '@/hooks/pool/type'
 import { ClmmPosition } from '@/hooks/portfolio/clmm/useClmmBalance'
 import MinusIcon from '@/icons/misc/MinusIcon'
@@ -36,6 +37,7 @@ type DetailProps = {
   totalPendingYield: string
   baseIn: boolean
   hasReward?: boolean
+  rewardInfos: { mint: ApiV3Token; amount: string; amountUSD: string }[]
   onHarvest: (props: { onSend?: () => void; onFinally?: () => void }) => void
   onClickCloseButton: (props: { onSend?: () => void; onFinally?: () => void }) => void
   onClickMinusButton: () => void
@@ -53,6 +55,7 @@ export default function ClmmPositionAccountItemDetailMobileDrawer({
   timeBasis,
   onTimeBasisChange,
   hasReward,
+  rewardInfos,
   onHarvest,
   onClickCloseButton,
   onClickMinusButton,
@@ -106,6 +109,7 @@ export default function ClmmPositionAccountItemDetailMobileDrawer({
             <PendingYield
               isLoading={isLoading}
               hasReward={hasReward}
+              rewardInfos={rewardInfos}
               onHarvest={handleHarvest}
               pendingYield={toUsdVolume(totalPendingYield.toString())}
               rewardTokens={poolInfo.rewardDefaultInfos.map((r) => r.mint)}

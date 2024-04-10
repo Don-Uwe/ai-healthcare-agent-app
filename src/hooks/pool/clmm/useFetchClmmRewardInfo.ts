@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import {
   TickUtils,
   PositionInfoLayout,
@@ -111,10 +111,66 @@ export default function useFetchClmmRewardInfo({
     return () => removeAccChangeCbk(data.mutate)
   }, [data.mutate])
 
+  const allRewardInfos = useMemo(() => {
+    if (!poolInfo) return []
+    const rewardToken = rewards
+      .map((r, idx) => {
+        const rewardMint = poolInfo.rewardDefaultInfos[idx]?.mint
+        const amount = new Decimal(r?.toString() || 0).div(10 ** (rewardMint?.decimals ?? 0))
+        return {
+          mint: rewardMint,
+          amount: amount.toFixed(rewardMint?.decimals ?? 6),
+          amountUSD: amount.mul(tokenPrices[rewardMint?.address || '']?.value ?? 0).toFixed(4)
+        }
+      })
+      .filter((r) => !!r.mint)
+
+    const [feeAmountA, feeAmountB] = [
+      new Decimal(tokenFees.tokenFeeAmountA?.toString() || 0).div(10 ** poolInfo.mintA.decimals),
+      new Decimal(tokenFees.tokenFeeAmountB?.toString() || 0).div(10 ** poolInfo.mintB.decimals)
+    ]
+
+    if (!feeAmountA.isZero()) {
+      const feeIndex = rewardToken.findIndex((r) => r.mint.address === poolInfo.mintA.address)
+      const usdValue = feeAmountA.mul(tokenPrices[poolInfo.mintA.address]?.value ?? 0).toFixed(4)
+      if (feeIndex > -1) {
+        rewardToken[feeIndex].amount = new Decimal(rewardToken[feeIndex].amount)
+          .add(feeAmountA.toFixed(poolInfo.mintA.decimals))
+          .toFixed(poolInfo.mintA.decimals)
+        rewardToken[feeIndex].amountUSD = new Decimal(rewardToken[feeIndex].amountUSD).add(usdValue).toFixed(4)
+      } else {
+        rewardToken.push({
+          mint: poolInfo.mintA,
+          amount: feeAmountA.toFixed(poolInfo.mintA.decimals),
+          amountUSD: usdValue
+        })
+      }
+    }
+
+    if (!feeAmountB.isZero()) {
+      const feeIndex = rewardToken.findIndex((r) => r.mint.address === poolInfo.mintB.address)
+      const usdValue = feeAmountB.mul(tokenPrices[poolInfo.mintB.address]?.value ?? 0).toFixed(4)
+      if (feeIndex > -1) {
+        rewardToken[feeIndex].amount = new Decimal(rewardToken[feeIndex].amount)
+          .add(feeAmountB.toFixed(poolInfo.mintB.decimals))
+          .toFixed(poolInfo.mintB.decimals)
+        rewardToken[feeIndex].amountUSD = new Decimal(rewardToken[feeIndex].amountUSD).add(usdValue).toFixed(4)
+      } else {
+        rewardToken.push({
+          mint: poolInfo.mintB,
+          amount: feeAmountB.toFixed(poolInfo.mintB.decimals),
+          amountUSD: feeAmountB.mul(tokenPrices[poolInfo.mintB.address]?.value ?? 0).toFixed(4)
+        })
+      }
+    }
+    return rewardToken
+  }, [tokenFees, rewards, tokenPrices, poolInfo?.id])
+
   return {
     isEmptyReward,
     ...tokenFees,
     rewards,
-    totalPendingYield
+    totalPendingYield,
+    allRewardInfos
   }
 }

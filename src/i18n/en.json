@@ -406,7 +406,6 @@
     "section_positions_clmm_account_view_less": "View Less",
     "section_positions_clmm_account_nft_mint_address": "NFT Mint Address",
     "section_positions_clmm_account_pending_yield": "Pending Yield",
-    "section_positions_clmm_account_pending_yield_tooltip": "🤖🤖🤖description for pending yield",
     "section_positions_clmm_account_pending_yield_button": "Harvest",
     "section_my_created_farms": "My created farms",
     "section_department_tab_clmm": "Concentrated",
@@ -427,7 +426,6 @@
   "amm": {
     "staked": "Staked",
     "pending_reward": "Pending rewards",
-    "pending_reward_tooltip": "🤖🤖🤖description for pending rewards",
     "pending_reward_button": "Harvest",
     "pending_alert": "You have unstaked LP tokens that could be staked in a farm. Stake now",
     "pooled_token": "Pooled {{token}}",

@@ -342,7 +342,6 @@
     "section_positions_clmm_account_view_less": "Voir moins",
     "section_positions_clmm_account_nft_mint_address": "NFT Mint Address",
     "section_positions_clmm_account_pending_yield": "Yield à collecter",
-    "section_positions_clmm_account_pending_yield_tooltip": "🤖🤖🤖description for pending yield",
     "section_positions_clmm_account_pending_yield_button": "Collecter",
     "section_my_created_farms": "Mes farms créées",
     "section_department_tab_clmm": "Concentrée",
@@ -363,7 +362,6 @@
   "amm": {
     "staked": "Staké",
     "pending_reward": "Récompenses à collecter",
-    "pending_reward_tooltip": "🤖🤖🤖description for pending rewards",
     "pending_reward_button": "Collecter",
     "pending_alert": "Vous avez des LP tokens non staké qui pourrait être ajouté à une farm. Staker maintenant",
     "pooled_token": "Pooled {{token}}",

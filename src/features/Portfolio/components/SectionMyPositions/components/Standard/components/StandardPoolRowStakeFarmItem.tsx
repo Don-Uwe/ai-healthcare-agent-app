@@ -11,6 +11,7 @@ import { toAPRPercent } from '@/features/Pools/util'
 import useTokenPrice from '@/hooks/token/useTokenPrice'
 import { FarmBalanceInfo } from '@/hooks/farm/type'
 import Decimal from 'decimal.js'
+import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 
 /** subItem of standard Pool */
 export default function StandardPoolRowStakeFarmItem({
@@ -24,7 +25,10 @@ export default function StandardPoolRowStakeFarmItem({
   farmId: string
   lpPrice: number
   balanceInfo?: FarmBalanceInfo
-  onUpdatePendingReward: (params: { farmId: string; reward: { usd: string; amount: string[] } }) => void
+  onUpdatePendingReward: (params: {
+    farmId: string
+    reward: { mint: ApiV3Token[]; usd: string; amount: string[]; rewardTokenUsd: string[] }
+  }) => void
 }) {
   const { t } = useTranslation()
   const { data } = useFetchFarmInfoById({ idList: [farmId] })
@@ -34,33 +38,33 @@ export default function StandardPoolRowStakeFarmItem({
   })
   const { deposited = '0', pendingRewards = [] } = balanceInfo || {}
 
-  const pendingReward = useMemo(
-    () =>
-      pendingRewards
-        .reduce(
-          (acc, cur, idx) =>
-            farm?.rewardInfos[idx]
-              ? acc.add(
-                  new Decimal(cur).mul(tokenPrices[farm?.rewardInfos[idx].mint.address || '']?.value ?? 0) // reward in usd
-                )
-              : acc,
-          new Decimal(0)
-        )
-        .toDecimalPlaces(6)
-        .toString(),
-    [pendingRewards]
-  )
+  const { pendingReward, rewardTokenUsd } = useMemo(() => {
+    const rewardTokenUsd: string[] = []
+    const all = pendingRewards
+      .reduce((acc, cur, idx) => {
+        if (!farm?.rewardInfos[idx]) return acc
+        const usd = new Decimal(cur).mul(tokenPrices[farm?.rewardInfos[idx].mint.address || '']?.value ?? 0) // reward in usd
+        rewardTokenUsd.push(usd.toFixed(4))
+        return acc.add(usd)
+      }, new Decimal(0))
+      .toDecimalPlaces(6)
+      .toString()
+
+    return { pendingReward: all, rewardTokenUsd }
+  }, [pendingRewards])
 
   useEffect(() => {
     if (!farm?.id) return
     onUpdatePendingReward({
       farmId: farm.id,
       reward: {
+        mint: farm.rewardInfos.map((r) => r.mint),
         usd: pendingReward,
-        amount: pendingRewards
+        amount: pendingRewards,
+        rewardTokenUsd
       }
     })
-  }, [farm?.id, pendingReward, onUpdatePendingReward])
+  }, [farm?.id, pendingReward, rewardTokenUsd, onUpdatePendingReward])
   if (!farm) return null
 
   return (

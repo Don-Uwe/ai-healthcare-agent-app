@@ -15,6 +15,7 @@ import PendingYield from './ClmmPositionAccountItemDetail/PendingYield'
 import RangeChart from './ClmmPositionAccountItemDetail/RangeChart'
 import { useEvent } from '@/hooks/useEvent'
 import { useTranslation } from 'react-i18next'
+import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 
 type DetailProps = {
   poolInfo: FormattedPoolInfoConcentratedItem
@@ -26,6 +27,7 @@ type DetailProps = {
   totalPendingYield: string
   baseIn: boolean
   hasReward: boolean
+  rewardInfos: { mint: ApiV3Token; amount: string; amountUSD: string }[]
   onHarvest: (props: { onSend?: () => void; onFinally?: () => void }) => void
   onClickCloseButton: (props: { onSend?: () => void; onFinally?: () => void }) => void
   onClickMinusButton: () => void
@@ -42,6 +44,7 @@ export default function ClmmPositionAccountItemDetail({
   totalPendingYield,
   baseIn,
   hasReward,
+  rewardInfos,
   onTimeBasisChange,
   onHarvest,
   onClickCloseButton,
@@ -81,6 +84,7 @@ export default function ClmmPositionAccountItemDetail({
             <PendingYield
               isLoading={isLoading}
               hasReward={hasReward}
+              rewardInfos={rewardInfos}
               onHarvest={handleHarvest}
               pendingYield={toUsdVolume(totalPendingYield)}
               rewardTokens={poolInfo.rewardDefaultInfos.map((r) => r.mint)}

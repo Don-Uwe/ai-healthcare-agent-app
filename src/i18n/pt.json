@@ -342,7 +342,6 @@
     "section_positions_clmm_account_view_less": "Ver Menos",
     "section_positions_clmm_account_nft_mint_address": "Endereço de Mint de NFT",
     "section_positions_clmm_account_pending_yield": "Rendimento Pendente",
-    "section_positions_clmm_account_pending_yield_tooltip": "🤖🤖🤖descrição para rendimento pendente",
     "section_positions_clmm_account_pending_yield_button": "Colher",
     "section_my_created_farms": "Minhas fazendas criadas",
     "section_department_tab_clmm": "Concentrado",
@@ -363,7 +362,6 @@
   "amm": {
     "staked": "Estacado",
     "pending_reward": "Recompensas Pendentes",
-    "pending_reward_tooltip": "🤖🤖🤖descrição para recompensas pendentes",
     "pending_reward_button": "Colher",
     "pending_alert": "Você possui tokens LP não estacados que poderiam ser estacados em uma fazenda. Estaque agora",
     "pooled_token": "{{token}} Estacado",

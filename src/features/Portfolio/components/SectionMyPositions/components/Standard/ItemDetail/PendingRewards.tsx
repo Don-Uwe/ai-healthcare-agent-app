@@ -2,18 +2,23 @@ import ExclaimationTriangle from '@/icons/misc/ExclaimationTriangle'
 import InfoCircleIcon from '@/icons/misc/InfoCircleIcon'
 import { colors } from '@/theme/cssVariables'
 import toUsdVolume from '@/utils/numberish/toUsdVolume'
+import TokenAvatar from '@/components/TokenAvatar'
+import { formatCurrency } from '@/utils/numberish/formatter'
+import { getMintSymbol } from '@/utils/token'
 import { Badge, Box, Button, Flex, HStack, Text, Tooltip, VStack } from '@chakra-ui/react'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'react-i18next'
+import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 
 type PendingRewardsProps = {
   pendingReward: number | string
+  rewardInfo: { mint: ApiV3Token; amount: string; amountUSD: string }[]
   positionStatus?: string
   isLoading: boolean
   onHarvest: () => void
 }
 
-export default function PendingRewards({ pendingReward, positionStatus, isLoading, onHarvest }: PendingRewardsProps) {
+export default function PendingRewards({ pendingReward, positionStatus, rewardInfo, isLoading, onHarvest }: PendingRewardsProps) {
   const { t } = useTranslation()
   const positionStandardPoolsStatusTags = {
     unstaked: t('amm.farm_unstaked'),
@@ -29,9 +34,28 @@ export default function PendingRewards({ pendingReward, positionStatus, isLoadin
           <Text fontSize="sm" fontWeight="medium">
             {toUsdVolume(pendingReward, { useShorterExpression: true })}
           </Text>
-          <Tooltip label={t('amm.pending_reward_tooltip')}>
-            <InfoCircleIcon />
-          </Tooltip>
+          {rewardInfo.length > 0 ? (
+            <Tooltip
+              label={
+                <>
+                  {rewardInfo.map((r) => (
+                    <Flex key={r.mint.address} alignItems="center" gap="1" my="2">
+                      <TokenAvatar key={`pool-reward-${r.mint.address}`} size={'sm'} token={r.mint} />
+                      <Text color={colors.textPrimary}>
+                        {formatCurrency(r.amount, {
+                          maximumDecimalTrailingZeroes: 5
+                        })}
+                      </Text>
+                      <Text>{getMintSymbol({ mint: r.mint, transformSol: true })}</Text>
+                      <Text color={colors.textPrimary}>({toUsdVolume(r.amountUSD, { decimals: 4, decimalMode: 'trim' })})</Text>
+                    </Flex>
+                  ))}
+                </>
+              }
+            >
+              <InfoCircleIcon />
+            </Tooltip>
+          ) : null}
         </HStack>
       </VStack>
 

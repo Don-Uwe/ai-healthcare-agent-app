@@ -342,7 +342,6 @@
     "section_positions_clmm_account_view_less": "表示を減らす",
     "section_positions_clmm_account_nft_mint_address": "NFTミントアドレス",
     "section_positions_clmm_account_pending_yield": "未収穫利益",
-    "section_positions_clmm_account_pending_yield_tooltip": "🤖🤖🤖未収穫利益の説明",
     "section_positions_clmm_account_pending_yield_button": "収穫",
     "section_my_created_farms": "私が作成したファーム",
     "section_department_tab_clmm": "濃縮型",
@@ -363,7 +362,6 @@
   "amm": {
     "staked": "ステーク済み",
     "pending_reward": "保留中の報酬",
-    "pending_reward_tooltip": "🤖🤖🤖保留中の報酬に関する説明",
     "pending_reward_button": "収穫",
     "pending_alert": "ファームでステーキングされていないLPトークンがあります。今すぐステーキングしてください",
     "pooled_token": "{{token}}をプール済み",

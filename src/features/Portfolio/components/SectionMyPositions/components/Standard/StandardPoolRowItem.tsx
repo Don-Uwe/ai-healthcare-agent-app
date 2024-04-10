@@ -46,7 +46,9 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
   const { isOpen: isRpcFetching, onOpen: onRpcFetching } = useDisclosure()
   const [refreshTag, setRefreshTag] = useState(0)
   const isMobile = useAppStore((s) => s.isMobile)
-  const [allPendingRewards, setAllPendingRewards] = useState<Map<string, { usd: string; amount: string[] }>>(new Map())
+  const [allPendingRewards, setAllPendingRewards] = useState<
+    Map<string, { mint: ApiV3Token[]; usd: string; amount: string[]; rewardTokenUsd: string[] }>
+  >(new Map())
   const updateReward = new Map()
   const { data: migratePoolList } = useMigratePoolConfig({})
   const migrateData = migratePoolList.find((p) => p.lpMint === pool?.lpMint.address)
@@ -105,7 +107,7 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
   }
 
   const debounceSetRewards = useCallback(
-    debounce((rewards: Map<string, { usd: string; amount: string[] }>) => {
+    debounce((rewards: Map<string, { mint: ApiV3Token[]; usd: string; amount: string[]; rewardTokenUsd: string[] }>) => {
       setAllPendingRewards((prev) => {
         const newVal = new Map(Array.from(prev))
         Array.from(rewards.entries()).forEach(([key, value]) => {
@@ -118,7 +120,7 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
   )
 
   const handleUpdatePendingRewards = useCallback(
-    ({ farmId, reward }: { farmId: string; reward: { usd: string; amount: string[] } }) => {
+    ({ farmId, reward }: { farmId: string; reward: { mint: ApiV3Token[]; usd: string; amount: string[]; rewardTokenUsd: string[] } }) => {
       updateReward.set(farmId, reward)
       debounceSetRewards(updateReward)
     },
@@ -145,6 +147,27 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
   const totalPending = Array.from(allPendingRewards.values()).reduce((acc, cur) => {
     return acc.add(cur.usd)
   }, new Decimal(0))
+
+  const pendingRewardsInfo = useMemo(() => {
+    const info: { mint: ApiV3Token; amount: string; amountUSD: string }[] = []
+    Array.from(allPendingRewards.values()).forEach((r) => {
+      r.amount.forEach((amount, idx) => {
+        if (amount === '0') return
+        const infoIdx = info.findIndex((i) => i.mint.address === r.mint[idx].address)
+        if (infoIdx > -1) {
+          info[infoIdx].amount = new Decimal(info[infoIdx].amount).add(amount).toFixed(r.mint[idx].decimals)
+          info[infoIdx].amountUSD = new Decimal(info[infoIdx].amountUSD).add(r.rewardTokenUsd[idx]).toFixed(4)
+        } else {
+          info.push({
+            mint: r.mint[idx],
+            amount,
+            amountUSD: r.rewardTokenUsd[idx]
+          })
+        }
+      })
+    })
+    return info
+  }, [allPendingRewards])
 
   if (!pool) return isLoading ? <Skeleton w="full" height="140px" rounded="lg" /> : null
 
@@ -210,6 +233,7 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
           <TokenPooledInfo base={{ token: pool.mintA, amount: pooledAmountA }} quote={{ token: pool.mintB, amount: pooledAmountB }} />
           <PendingRewards
             pendingReward={totalPending.toString()}
+            rewardInfo={pendingRewardsInfo}
             positionStatus={positionStatus}
             isLoading={isHarvesting}
             onHarvest={handleHarvest}
@@ -278,6 +302,7 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
           isLoading={isHarvesting}
           onHarvest={handleHarvest}
           canStake={canStake}
+          rewardInfo={pendingRewardsInfo}
         />
       )}
       {isMigrateOpen ? (

@@ -342,7 +342,6 @@
     "section_positions_clmm_account_view_less": "折叠",
     "section_positions_clmm_account_nft_mint_address": "NFT铸造地址",
     "section_positions_clmm_account_pending_yield": "待收取奖励",
-    "section_positions_clmm_account_pending_yield_tooltip": "🤖🤖🤖待收益的说明",
     "section_positions_clmm_account_pending_yield_button": "收取奖励",
     "section_my_created_farms": "我创建的农场",
     "section_department_tab_clmm": "集中流动性池子",
@@ -363,7 +362,6 @@
   "amm": {
     "staked": "已质押",
     "pending_reward": "待收取奖励",
-    "pending_reward_tooltip": "🤖🤖🤖 sdfasdf",
     "pending_reward_button": "收取奖励",
     "pending_alert": "您有未质押的LP。立刻质押",
     "pooled_token": "池子里质押的 {{token}}",

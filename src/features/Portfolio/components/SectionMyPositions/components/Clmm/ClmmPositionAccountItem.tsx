@@ -73,7 +73,7 @@ export default function ClmmPositionAccountItem({
     chainTimeOffsetMs: chainTimeOffset
   })
 
-  const { totalPendingYield, isEmptyReward } = useFetchClmmRewardInfo({
+  const { totalPendingYield, isEmptyReward, allRewardInfos } = useFetchClmmRewardInfo({
     poolInfo,
     initRpcPoolData,
     position,
@@ -162,6 +162,7 @@ export default function ClmmPositionAccountItem({
                 onTimeBasisChange={setTimeBasis}
                 nftMint={position.nftMint.toString()}
                 totalPendingYield={totalPendingYield.toString()}
+                rewardInfos={allRewardInfos}
                 baseIn={baseIn}
                 onClickCloseButton={handleClosePosition}
                 onClickMinusButton={handleRemoveOpen}
@@ -180,6 +181,7 @@ export default function ClmmPositionAccountItem({
                 nftMint={position.nftMint.toString()}
                 totalPendingYield={totalPendingYield.toString()}
                 baseIn={baseIn}
+                rewardInfos={allRewardInfos}
                 onClickCloseButton={handleClosePosition}
                 onClickMinusButton={handleRemoveOpen}
                 onClickPlusButton={handleAddOpen}

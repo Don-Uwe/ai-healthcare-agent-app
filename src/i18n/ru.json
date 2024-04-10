@@ -342,7 +342,6 @@
     "section_positions_clmm_account_view_less": "Посмотреть меньше",
     "section_positions_clmm_account_nft_mint_address": "NFT Mint Адрес",
     "section_positions_clmm_account_pending_yield": "Ожидаемая доходность",
-    "section_positions_clmm_account_pending_yield_tooltip": "🤖🤖🤖описание ожидаемого дохода",
     "section_positions_clmm_account_pending_yield_button": "Урожай",
     "section_my_created_farms": "Мои созданные Farms",
     "section_department_tab_clmm": "Концентрированный",
@@ -363,7 +362,6 @@
   "amm": {
     "staked": "Staked",
     "pending_reward": "Ожидаемые награды",
-    "pending_reward_tooltip": "🤖🤖🤖описание ожидаемых наград",
     "pending_reward_button": "Harvest",
     "pending_alert": "У вас есть нестейкованные токены LP, которые можно застейкать на Farm. Сделайте Stake сейчас",
     "pooled_token": "Объединенный {{token}}",
