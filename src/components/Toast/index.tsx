@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react'
 import IntervalCircle from '@/components/IntervalCircle'
 import CircleCheck from '@/icons/misc/CircleCheck'
 import Close from '@/icons/misc/Close'
-import ExclaimationCircle from '@/icons/misc/ExclaimationCircle'
+import ErrorCircle from '@/icons/misc/ErrorCircle'
+import WarningCircle from '@/icons/misc/WarningCircle'
 import CircleInfo from '@/icons/misc/CircleInfo'
 import { colors } from '@/theme/cssVariables'
 import { ToastStatus } from '@/types/tx'
@@ -33,12 +34,16 @@ export function Toast({ state, onClose }: ToasterProps) {
     remainTime: state.duration ?? toastDefaultConfig.duration,
     endTime: new Date().getTime() + (state.duration ?? 0)
   })
-
   const customTheme =
     state && state.status === 'error'
       ? {
           mainColor: colors.semanticError,
-          icon: <ExclaimationCircle width={24} height={24} color={colors.semanticError} />
+          icon: <ErrorCircle width={24} height={24} color={colors.semanticError} />
+        }
+      : state.status === 'warning'
+      ? {
+          mainColor: colors.semanticWarning,
+          icon: <WarningCircle width={24} height={24} color={colors.semanticWarning} />
         }
       : state.status === 'info'
       ? {

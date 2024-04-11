@@ -132,14 +132,14 @@ function useTxStatus() {
           if (subscribeMap.has(txId)) return
           if (!txId || skipWatchSignature) return
 
-          // let isTxOnChain = false
-          // let timeout = 0
+          let isTxOnChain = false
+          let timeout = 0
 
           const subId = connection.onSignature(
             txId,
             (signatureResult, context) => {
-              // isTxOnChain = true
-              // clearTimeout(timeout)
+              isTxOnChain = true
+              clearTimeout(timeout)
               subscribeMap.delete(txId)
               if (signatureResult.err) {
                 onError?.(signatureResult, context)
@@ -201,7 +201,6 @@ function useTxStatus() {
           connection.getSignatureStatus(txId)
 
           // prepare for tx timeout
-          /*
           timeout = window.setTimeout(() => {
             if (isTxOnChain) return
             toastSubject.next({
@@ -210,14 +209,12 @@ function useTxStatus() {
             })
             connection.removeSignatureListener(subId)
             toastSubject.next({
-              title: title || `${t('transaction.title')} ${t('transaction.sent')}`,
-              description: t('transaction.send_timeout'),
-              status: 'error',
+              title: t('transaction.send_timeout'),
+              status: 'warning',
               duration: 8 * 1000,
               onClose
             })
           }, TOAST_DURATION)
-          */
         }
       )
 
@@ -335,16 +332,14 @@ function useTxStatus() {
           })
 
           // prepare for tx timeout
-          /*
-          let isTxOnChain = status === 'success' || status === 'error'
+          const isTxOnChain = status === 'success' || status === 'error'
           if (!subscribeMap.has(toastId)) {
             window.setTimeout(() => {
               if (subscribeMap.get(toastId) !== true)
                 toastSubject.next({
-                  title: title || `${t('transaction.title')} ${t('transaction.sent')}`,
-                  description: t('transaction.send_timeout'),
+                  title: t('transaction.send_timeout'),
                   detail: renderDetail(),
-                  status: 'error',
+                  status: 'warning',
                   duration: 5 * 1000,
                   onClose
                 })
@@ -352,7 +347,6 @@ function useTxStatus() {
             }, TOAST_DURATION)
           }
           subscribeMap.set(toastId, isTxOnChain)
-          */
 
           if (!skipWatchSignature)
             subTxIds.forEach(({ txId }) => {

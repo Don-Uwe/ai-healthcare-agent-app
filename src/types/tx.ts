@@ -5,4 +5,4 @@ export interface TxCallbackProps<O = any> {
   onConfirmed?: () => void
 }
 
-export type ToastStatus = 'success' | 'error' | 'info'
+export type ToastStatus = 'success' | 'error' | 'info' | 'warning'
