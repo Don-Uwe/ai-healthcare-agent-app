@@ -21,12 +21,12 @@ interface Props {
   pool?: ApiV3PoolInfoConcentratedItem
   readonly?: boolean
   tokenAmount: string[]
-  forceBalanceAmount?: string[]
   disableSelectToken?: boolean
   token1Disable?: boolean
   token2Disable?: boolean
   maxMultiplier?: number | string
   baseIn?: boolean
+  solReserveAmount?: number | string
   onTokenChange?: (val: TokenParams, userTriggered?: boolean) => void
   onAmountChange: (val: string, side: string) => void
   onFocusChange: (mint?: string) => void
@@ -43,7 +43,7 @@ export default function CLMMTokenInputGroup(props: Props) {
     token2Disable,
     readonly,
     baseIn = true,
-    forceBalanceAmount = [],
+    solReserveAmount,
     onTokenChange,
     onAmountChange,
     onFocusChange
@@ -101,7 +101,7 @@ export default function CLMMTokenInputGroup(props: Props) {
           maxMultiplier={maxMultiplier}
           onChange={handleToken1Change}
           onFocus={() => onFocusChange(pool?.[baseIn ? 'mintA' : 'mintB'].address)}
-          forceBalanceAmount={forceBalanceAmount[0]}
+          solReserveAmount={solReserveAmount}
         />
       </Flex>
       <Box my={'-10px'} zIndex={1}>
@@ -125,7 +125,7 @@ export default function CLMMTokenInputGroup(props: Props) {
           maxMultiplier={maxMultiplier}
           onChange={handleToken2Change}
           onFocus={() => onFocusChange(pool?.[baseIn ? 'mintB' : 'mintA'].address)}
-          forceBalanceAmount={forceBalanceAmount[1]}
+          solReserveAmount={solReserveAmount}
         />
       </Flex>
     </Flex>

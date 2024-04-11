@@ -30,6 +30,7 @@ import TokenAvatar from './TokenAvatar'
 import TokenSelectDialog, { TokenSelectDialogProps } from './TokenSelectDialog'
 import TokenUnknownAddDialog from './TokenSelectDialog/components/TokenUnknownAddDialog'
 import { useTranslation } from 'react-i18next'
+import { am } from '@raydium-io/raydium-sdk-v2/lib/type-b7200b4f'
 
 export interface TokenInputProps extends Pick<TokenSelectDialogProps, 'filterFn'> {
   id?: string
@@ -77,6 +78,7 @@ export interface TokenInputProps extends Pick<TokenSelectDialogProps, 'filterFn'
   disableClickBalance?: boolean
   forceBalanceAmount?: string | number
   maxMultiplier?: number | string
+  solReserveAmount?: number | string
   renderTopRightPrefixLabel?: () => ReactNode
 
   width?: string
@@ -109,6 +111,7 @@ function TokenInput(props: TokenInputProps) {
     disableClickBalance,
     forceBalanceAmount,
     maxMultiplier,
+    solReserveAmount = 0.05,
     renderTopRightPrefixLabel = () => <BalanceWalletIcon color={colors.textTertiary} />,
     onChange,
     onTokenChange,
@@ -166,12 +169,10 @@ function TokenInput(props: TokenInputProps) {
   // balance
   const getTokenBalanceUiAmount = useTokenAccountStore((s) => s.getTokenBalanceUiAmount)
   const balanceInfo = getTokenBalanceUiAmount({ mint: token?.address || '', decimals: token?.decimals })
-  let balanceAmount = balanceInfo.amount.sub(token?.address === SOL_INFO.address ? '0.05' : 0)
-  if (balanceAmount.lessThan(0)) balanceAmount = new Decimal(0)
+  const balanceAmount = balanceInfo.amount
   const balanceMaxString = hideBalance ? null : trimTrailZero(balanceAmount.mul(maxMultiplier || 1).toString())
-  const balanceMaxDecimal = balanceAmount
   const maxString = forceBalanceAmount ? trimTrailZero(String(forceBalanceAmount)) : balanceMaxString
-  const maxDecimal = forceBalanceAmount ? new Decimal(forceBalanceAmount) : balanceMaxDecimal
+  const maxDecimal = forceBalanceAmount ? new Decimal(forceBalanceAmount) : balanceAmount
 
   const displayTokenSettings = useAppStore((s) => s.displayTokenSettings)
 
@@ -188,17 +189,25 @@ function TokenInput(props: TokenInputProps) {
     onFocus?.()
   })
 
+  const getBalanceString = useEvent((amount: string) => {
+    if (token?.address !== SOL_INFO.address || !balanceMaxString) return amount
+    if (new Decimal(balanceMaxString).sub(amount).gte(solReserveAmount)) return amount
+    let decimal = new Decimal(amount).sub(solReserveAmount)
+    if (decimal.lessThan(0)) decimal = new Decimal(0)
+    return trimTrailZero(decimal.toFixed(token.decimals))!
+  })
+
   const handleClickMax = useEvent(() => {
     if (disableClickBalance) return
     if (!maxString) return
     handleFocus()
-    onChange?.(maxString)
+    onChange?.(getBalanceString(maxString))
   })
 
   const handleClickHalf = useEvent(() => {
     if (!maxString) return
     handleFocus()
-    onChange?.(maxDecimal.div(2).toString())
+    onChange?.(getBalanceString(maxDecimal.div(2).toString()))
   })
 
   const isUnknownToken = useEvent((token: TokenInfo) => {

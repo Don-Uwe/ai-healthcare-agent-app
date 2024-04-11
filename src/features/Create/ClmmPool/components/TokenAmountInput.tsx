@@ -92,19 +92,8 @@ export default function TokenAmountPairInputs({ tempCreatedPool, baseIn, onConfi
     [tempCreatedPool.mintA.address]
   )
 
-  const [balanceA, balanceB] = useMemo(() => {
-    const amountA = getTokenBalanceUiAmount({ mint: wSolToSol(mintA.address)!, decimals: mintA.decimals }).amount.sub(
-      isSolWSol(mintA.address) ? 0.5 : 0
-    )
-    const amountB = getTokenBalanceUiAmount({ mint: wSolToSol(mintB.address)!, decimals: mintB.decimals }).amount.sub(
-      isSolWSol(mintB.address) ? 0.5 : 0
-    )
-
-    return [
-      amountA.isNegative() ? '0' : amountA.toFixed(mintA.decimals, Decimal.ROUND_FLOOR),
-      amountB.isNegative() ? '0' : amountB.toFixed(mintB.decimals, Decimal.ROUND_FLOOR)
-    ]
-  }, [getTokenBalanceUiAmount, mintA.address, mintB.address])
+  const balanceA = getTokenBalanceUiAmount({ mint: wSolToSol(mintA.address)!, decimals: mintA.decimals }).amount
+  const balanceB = getTokenBalanceUiAmount({ mint: wSolToSol(mintB.address)!, decimals: mintB.decimals }).amount
 
   let error = undefined
   function checkError() {
@@ -143,7 +132,7 @@ export default function TokenAmountPairInputs({ tempCreatedPool, baseIn, onConfi
         onFocusChange={handleFocusChange}
         token1Disable={disabledInput[0]}
         token2Disable={disabledInput[1]}
-        forceBalanceAmount={[balanceA, balanceB]}
+        solReserveAmount={0.5}
       />
       <VStack
         mt={4}
