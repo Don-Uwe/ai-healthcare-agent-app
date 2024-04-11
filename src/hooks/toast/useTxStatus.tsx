@@ -343,6 +343,7 @@ function useTxStatus() {
 
                 toastSubject.next({
                   title: t('transaction.send_timeout'),
+                  detail: renderDetail(),
                   status: 'warning',
                   duration: 5 * 1000,
                   onClose
