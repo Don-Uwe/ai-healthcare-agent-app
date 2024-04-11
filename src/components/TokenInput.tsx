@@ -30,7 +30,6 @@ import TokenAvatar from './TokenAvatar'
 import TokenSelectDialog, { TokenSelectDialogProps } from './TokenSelectDialog'
 import TokenUnknownAddDialog from './TokenSelectDialog/components/TokenUnknownAddDialog'
 import { useTranslation } from 'react-i18next'
-import { am } from '@raydium-io/raydium-sdk-v2/lib/type-b7200b4f'
 
 export interface TokenInputProps extends Pick<TokenSelectDialogProps, 'filterFn'> {
   id?: string
