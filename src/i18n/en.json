@@ -528,7 +528,8 @@
     "multisig_wallet_initiation": "Transaction initiation",
     "multisig_wallet_initiated": "Transaction initiated.",
     "multisig_wallet_desc": "You can now cast votes for this proposal on the Squads app.",
-    "sending": "Sending.."
+    "sending": "Sending..",
+    "send_timeout": "Send transaction timeout"
   },
   "edit_farm": {
     "button": "Edit",

@@ -55,7 +55,8 @@ export const multiTxStatusSubject = new Subject<
   }
 >()
 
-const subscribeMap = new Map<string, number>()
+export const TOAST_DURATION = 2 * 60 * 1000
+const subscribeMap = new Map<string, any>()
 
 function useTxStatus() {
   const { t } = useTranslation()
@@ -111,7 +112,7 @@ function useTxStatus() {
               : description || `${explorerUrl}/tx/${txId}`,
             detail: renderDetail(),
             status: 'info',
-            duration: 2 * 60 * 1000,
+            duration: TOAST_DURATION,
             update,
             onClose
           })
@@ -130,9 +131,16 @@ function useTxStatus() {
 
           if (subscribeMap.has(txId)) return
           if (!txId || skipWatchSignature) return
+
+          let isTxOnChain = false
+          let timeout = 0
+
           const subId = connection.onSignature(
             txId,
             (signatureResult, context) => {
+              isTxOnChain = true
+              clearTimeout(timeout)
+              subscribeMap.delete(txId)
               if (signatureResult.err) {
                 onError?.(signatureResult, context)
                 // update toast status to error
@@ -191,6 +199,25 @@ function useTxStatus() {
 
           subscribeMap.set(txId, subId)
           connection.getSignatureStatus(txId)
+
+          // prepare for tx timeout
+          /*
+          timeout = window.setTimeout(() => {
+            if (isTxOnChain) return
+            toastSubject.next({
+              id: txId,
+              close: true
+            })
+            connection.removeSignatureListener(subId)
+            toastSubject.next({
+              title: title || `${t('transaction.title')} ${t('transaction.sent')}`,
+              description: t('transaction.send_timeout'),
+              status: 'error',
+              duration: 8 * 1000,
+              onClose
+            })
+          }, TOAST_DURATION)
+          */
         }
       )
 
@@ -286,7 +313,7 @@ function useTxStatus() {
             description,
             detail: renderDetail(),
             status: status || 'info',
-            duration: duration || 2 * 60 * 1000,
+            duration: duration || TOAST_DURATION,
             onClose
           })
 
@@ -307,14 +334,36 @@ function useTxStatus() {
             isMultiSig: isMultisigWallet
           })
 
+          // prepare for tx timeout
+          /*
+          let isTxOnChain = status === 'success' || status === 'error'
+          if (!subscribeMap.has(toastId)) {
+            window.setTimeout(() => {
+              if (subscribeMap.get(toastId) !== true)
+                toastSubject.next({
+                  title: title || `${t('transaction.title')} ${t('transaction.sent')}`,
+                  description: t('transaction.send_timeout'),
+                  detail: renderDetail(),
+                  status: 'error',
+                  duration: 5 * 1000,
+                  onClose
+                })
+              subscribeMap.delete(toastId)
+            }, TOAST_DURATION)
+          }
+          subscribeMap.set(toastId, isTxOnChain)
+          */
+
           if (!skipWatchSignature)
             subTxIds.forEach(({ txId }) => {
               if (subscribeMap.has(txId)) return
               const subId = connection.onSignature(
                 txId,
                 (signatureResult, context) => {
+                  subscribeMap.delete(txId)
                   txStatus[txId] = signatureResult.err ? 'error' : 'success'
                   if (signatureResult.err) {
+                    subscribeMap.set(toastId, true)
                     // update toast status to error
                     toastSubject.next({
                       id: toastId,
@@ -349,6 +398,7 @@ function useTxStatus() {
                     const allTxStatus = Object.values(txStatus)
                     const isAllSent = allTxStatus.length === subTxIds.length
                     const isAllSuccess = isAllSent && allTxStatus.filter((s) => s === 'success').length === subTxIds.length
+                    subscribeMap.set(toastId, isAllSuccess)
                     // update toast status to success
                     toastSubject.next({
                       id: toastId,
