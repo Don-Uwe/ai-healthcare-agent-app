@@ -1,6 +1,6 @@
 import ConnectedButton from '@/components/ConnectedButton'
 import { QuestionToolTip } from '@/components/QuestionToolTip'
-import TokenInput from '@/components/TokenInput'
+import TokenInput, { DEFAULT_SOL_RESERVER } from '@/components/TokenInput'
 import { useEvent } from '@/hooks/useEvent'
 import { useHover } from '@/hooks/useHover'
 import { useAppStore, useTokenAccountStore, useTokenStore } from '@/store'
@@ -167,7 +167,7 @@ export function SwapPanel({
 
   const balanceAmount = getTokenBalanceUiAmount({ mint: inputMint, decimals: tokenInput?.decimals }).amount
   const balanceNotEnough = balanceAmount.lt(inputAmount || 0) ? t('error.balance_not_enough') : undefined
-  const isSolFeeNotEnough = inputAmount && isSolWSol(inputMint || '') && balanceAmount.sub(inputAmount || 0).lt(0.05)
+  const isSolFeeNotEnough = inputAmount && isSolWSol(inputMint || '') && balanceAmount.sub(inputAmount || 0).lt(DEFAULT_SOL_RESERVER)
   const swapError = (error && i18n.exists(`swap.error_${error}`) ? t(`swap.error_${error}`) : error) || balanceNotEnough
   const isPoolNotOpenError = !!swapError && !!openTime
 
@@ -281,7 +281,7 @@ export function SwapPanel({
           justifyContent="center"
         >
           <WarningIcon style={{ marginTop: '2px', marginRight: '4px' }} stroke={colors.semanticError} />
-          <Text>{t('swap.error_sol_fee_not_insufficient', { amount: formatToRawLocaleStr(0.05, currentLocale) })}</Text>
+          <Text>{t('swap.error_sol_fee_not_insufficient', { amount: formatToRawLocaleStr(DEFAULT_SOL_RESERVER, currentLocale) })}</Text>
         </Flex>
       ) : null}
       {wsolBalance.isZero ? null : (

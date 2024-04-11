@@ -31,6 +31,7 @@ import TokenSelectDialog, { TokenSelectDialogProps } from './TokenSelectDialog'
 import TokenUnknownAddDialog from './TokenSelectDialog/components/TokenUnknownAddDialog'
 import { useTranslation } from 'react-i18next'
 
+export const DEFAULT_SOL_RESERVER = 0.01
 export interface TokenInputProps extends Pick<TokenSelectDialogProps, 'filterFn'> {
   id?: string
   name?: string
@@ -110,7 +111,7 @@ function TokenInput(props: TokenInputProps) {
     disableClickBalance,
     forceBalanceAmount,
     maxMultiplier,
-    solReserveAmount = 0.01,
+    solReserveAmount = DEFAULT_SOL_RESERVER,
     renderTopRightPrefixLabel = () => <BalanceWalletIcon color={colors.textTertiary} />,
     onChange,
     onTokenChange,
