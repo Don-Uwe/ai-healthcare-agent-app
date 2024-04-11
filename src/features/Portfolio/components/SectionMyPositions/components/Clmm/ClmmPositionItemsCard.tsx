@@ -32,7 +32,7 @@ export function ClmmPositionItemsCard({
   setNoRewardClmmPos: (val: string, isDelete?: boolean) => void
 }) {
   const { t } = useTranslation()
-  const { isOpen: baseIn, onToggle } = useDisclosure()
+  const { isOpen: baseIn, onToggle } = useDisclosure({ defaultIsOpen: true })
   const { isOpen: isSubscribe, onOpen: onSubscribe } = useDisclosure()
   const data = useSubscribeClmmInfo({ poolInfo, subscribe: isSubscribe || false })
 
