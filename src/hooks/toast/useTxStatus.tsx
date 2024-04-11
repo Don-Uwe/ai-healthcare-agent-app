@@ -57,6 +57,7 @@ export const multiTxStatusSubject = new Subject<
 
 export const TOAST_DURATION = 2 * 60 * 1000
 const subscribeMap = new Map<string, any>()
+const txStatus: Record<string, ToastStatus> = {}
 
 function useTxStatus() {
   const { t } = useTranslation()
@@ -247,7 +248,6 @@ function useTxStatus() {
         }) => {
           const owner = useAppStore.getState().publicKey?.toBase58()
           const isMultisigWallet = useAppStore.getState().wallet?.adapter.name === 'SquadsX'
-          const txStatus: Record<string, ToastStatus> = {}
 
           subTxIds.forEach((tx) => {
             if (tx.status) txStatus[tx.txId] = tx.status
@@ -335,14 +335,19 @@ function useTxStatus() {
           const isTxOnChain = status === 'success' || status === 'error'
           if (!subscribeMap.has(toastId)) {
             window.setTimeout(() => {
-              if (subscribeMap.get(toastId) !== true)
+              if (subscribeMap.get(toastId) !== true) {
+                toastSubject.next({
+                  id: toastId,
+                  close: true
+                })
+
                 toastSubject.next({
                   title: t('transaction.send_timeout'),
-                  detail: renderDetail(),
                   status: 'warning',
                   duration: 5 * 1000,
                   onClose
                 })
+              }
               subscribeMap.delete(toastId)
             }, TOAST_DURATION)
           }

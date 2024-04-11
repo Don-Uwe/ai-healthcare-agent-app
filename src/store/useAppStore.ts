@@ -221,15 +221,16 @@ export const useAppStore = createStore<AppState>(
         action
       )
 
-      raydium.chainTimeOffset()
+      setTimeout(() => {
+        get().fetchChainTimeAct()
+      }, 1000)
     },
     fetchChainTimeAct: () => {
-      const { raydium } = get()
-      if (!raydium) return
-      raydium
-        .chainTimeOffset()
-        .then((offset) => {
-          set({ chainTimeOffset: isNaN(offset) ? 0 : offset * 1000 }, false, { type: 'fetchChainTimeAct' })
+      const { urlConfigs } = get()
+      axios
+        .get(`${urlConfigs.BASE_HOST}${urlConfigs.CHAIN_TIME}`)
+        .then((data) => {
+          set({ chainTimeOffset: isNaN(data?.data.offset) ? 0 : 16 * 1000 }, false, { type: 'fetchChainTimeAct' })
         })
         .catch(() => {
           set({ chainTimeOffset: 0 }, false, { type: 'fetchChainTimeAct' })

@@ -117,7 +117,7 @@ export default function StandardPoolRowStakeFarmItem({
 
           <HStack width={['84px', '100px']} justifyContent={'center'}>
             <Text color={colors.textSecondary}>{t('liquidity.APR')}</Text>
-            <Text>{toAPRPercent(farm.apr)}</Text>
+            <Text>{toAPRPercent(farm.apr * 100)}</Text>
           </HStack>
 
           <Divider orientation="vertical" alignSelf="stretch" />

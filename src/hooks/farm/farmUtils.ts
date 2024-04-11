@@ -112,6 +112,7 @@ export function formatFarmData<T = FormatFarmInfoOut>(farm: FormatFarmInfoOut): 
 
     return {
       ...r,
+      apr: r.apr * 100,
       openTime: openTime.valueOf(),
       endTime: endTime.valueOf(),
       weekly: new Decimal(r.perSecond)

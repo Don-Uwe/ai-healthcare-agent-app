@@ -17,7 +17,7 @@ import Decimal from 'decimal.js'
 import { useEvent } from '../useEvent'
 
 const fetcher = ([connection, publicKeyList]: [Connection, string[]]) => {
-  console.log('rpc: get multiple farm balance info')
+  console.log('rpc: get multiple farm balance info', publicKeyList)
   return connection.getMultipleAccountsInfo(
     publicKeyList.map((publicKey) => ToPublicKey(publicKey)),
     { commitment: 'confirmed' }
@@ -91,7 +91,6 @@ export default function useFetchMultipleFarmBalance(props: {
     mutate()
     mutateFarmRpc()
   })
-
   if (responses) {
     return {
       isLoading,
@@ -136,7 +135,6 @@ export default function useFetchMultipleFarmBalance(props: {
                   .mul(rpcInfoData?.version === 6 ? rewardInfo.accRewardPerShare : rewardInfo.perShareReward)
                   .div(multiplier)
                   .sub(rewardDebt)
-
                 if (pendingReward.lt(new BN(0))) pendingReward = new BN(0)
                 return new Decimal(pendingReward.toString()).div(10 ** farmInfo!.lpMint.decimals).toString()
               })

@@ -91,7 +91,7 @@ export default function useFetchMultipleFarmInfoByRpc(props: {
 
   if (decodedDataList.length && decodedLpVaultDataList.length) {
     decodedDataList = decodedDataList.map((data, idx) => ({
-      ...updatePoolInfo(data, decodedLpVaultDataList[idx], slot ?? 0, onlineCurrentDate),
+      ...updatePoolInfo(data, decodedLpVaultDataList[idx], slot ?? 0, Math.floor(onlineCurrentDate / 1000)),
       id: data.id
     }))
   }

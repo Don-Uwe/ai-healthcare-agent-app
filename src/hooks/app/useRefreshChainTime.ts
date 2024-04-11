@@ -13,7 +13,6 @@ function useRefreshChainTime() {
     const interval = window.setInterval(() => {
       fetchChainTimeAct()
     }, 1000 * 60 * 5)
-
     return () => window.clearInterval(interval)
   }, [fetchChainTimeAct, raydium])
 

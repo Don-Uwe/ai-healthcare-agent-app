@@ -118,12 +118,15 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
     refreshInterval: 60 * 1000,
     farmInfoList: stakedFarmList.length
       ? Array.from(farmBasedData.values())
-          .filter((f) => f.hasAmount && f.data.length > 0 && !!stakedFarmList.find((s) => s.id === f.data[0].farmId))
-          .map((f) => ({
-            id: f.data[0].farmId,
-            programId: f.data[0].programId,
-            lpMint: stakedFarmList.find((s) => s.id === f.data[0].farmId)!.lpMint
-          }))
+          .filter((f) => f.hasAmount && f.data.length > 0 && !!stakedFarmList.find((s) => f.data.find((d) => d.farmId === s.id)))
+          .map((f) => {
+            const data = stakedFarmList.find((s) => f.data.find((d) => d.farmId === s.id))!
+            return {
+              id: data.id,
+              programId: data.programId,
+              lpMint: data.lpMint
+            }
+          })
       : []
   })
   const { data: tokenPrices } = useTokenPrice({
