@@ -132,14 +132,14 @@ function useTxStatus() {
           if (subscribeMap.has(txId)) return
           if (!txId || skipWatchSignature) return
 
-          let isTxOnChain = false
-          let timeout = 0
+          // let isTxOnChain = false
+          // let timeout = 0
 
           const subId = connection.onSignature(
             txId,
             (signatureResult, context) => {
-              isTxOnChain = true
-              clearTimeout(timeout)
+              // isTxOnChain = true
+              // clearTimeout(timeout)
               subscribeMap.delete(txId)
               if (signatureResult.err) {
                 onError?.(signatureResult, context)
