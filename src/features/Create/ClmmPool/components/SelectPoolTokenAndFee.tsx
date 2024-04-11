@@ -108,7 +108,8 @@ export default function SelectPoolTokenAndFee({ completed, isLoading, onConfirm,
     [token1?.address, token2?.address, data]
   )
 
-  useEffect(() => () => setCurrentConfig(undefined), [poolKey])
+  const isSelectedExisted = !!currentConfig && new Set(existingPools.values()).has(currentConfig.id)
+  useEffect(() => () => setCurrentConfig(undefined), [poolKey, isSelectedExisted])
 
   useEffect(() => {
     if (isExistingLoading) return

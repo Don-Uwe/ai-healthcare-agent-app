@@ -110,7 +110,7 @@ function TokenInput(props: TokenInputProps) {
     disableClickBalance,
     forceBalanceAmount,
     maxMultiplier,
-    solReserveAmount = 0.05,
+    solReserveAmount = 0.01,
     renderTopRightPrefixLabel = () => <BalanceWalletIcon color={colors.textTertiary} />,
     onChange,
     onTokenChange,
