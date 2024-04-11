@@ -66,6 +66,7 @@ interface ClmmState {
       otherAmountMax: string
       base: 'MintA' | 'MintB'
       createPoolBuildData?: CreatePoolBuildData
+      onCloseToast?: () => void
     } & TxCallbackProps<{
       txId: string
       buildData: TxBuildData<OpenPositionFromBaseExtInfo> | TxV0BuildData<OpenPositionFromBaseExtInfo>
@@ -249,6 +250,7 @@ export const useClmmStore = createStore<ClmmState>(
       baseAmount,
       otherAmountMax,
       createPoolBuildData,
+      onCloseToast,
       ...txProps
     }) => {
       const { raydium, wallet, txVersion } = useAppStore.getState()
@@ -360,6 +362,7 @@ export const useClmmStore = createStore<ClmmState>(
               txId,
               ...meta,
               mintInfo,
+              onClose: onCloseToast,
               onError: txProps.onError,
               onConfirmed: txProps.onConfirmed
             })

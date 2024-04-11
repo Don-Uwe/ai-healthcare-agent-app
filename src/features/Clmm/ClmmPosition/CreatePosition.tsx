@@ -367,13 +367,13 @@ export default function CreatePosition() {
       onConfirmed: () => {
         onClose()
         onNFTOpen()
+        setIsSending(false)
         setTimeout(() => {
           mutate()
         }, 500)
       },
-      onFinally: () => {
-        setIsSending(false)
-      }
+      onCloseToast: () => setIsSending(false),
+      onError: () => setIsSending(false)
     }).then((props) => {
       setNFTAddress(props?.buildData?.extInfo.nftMint.toString() || '')
     })

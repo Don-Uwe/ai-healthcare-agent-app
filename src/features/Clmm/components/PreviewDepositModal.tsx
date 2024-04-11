@@ -212,7 +212,7 @@ export default function PreviewDepositModal({
           </Box>
         </ModalBody>
         <ModalFooter px="0" py="0" mt="4" mb="2">
-          <Button w="100%" onClick={onConfirm} isLoading={isSending} loadingText={t('clmm.confirm_deposit') + '...'}>
+          <Button w="100%" onClick={onConfirm} isLoading={isSending} loadingText={t('transaction.transaction_initiating')}>
             {t('clmm.confirm_deposit')}
           </Button>
         </ModalFooter>
