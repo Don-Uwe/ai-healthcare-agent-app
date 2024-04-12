@@ -76,7 +76,7 @@ export const isIntlNumberFormatSupported = typeof Intl == 'object' && Intl && ty
 export function formatToRawLocaleStr(val: string | number | undefined): string | number {
   const locale = i18n.language
   if (!val) {
-    return '0'
+    return ''
   }
   const decimalSeparator = isIntlNumberFormatSupported
     ? new Intl.NumberFormat(locale).formatToParts(0.1).find((part) => part.type === 'decimal')?.value || '.'

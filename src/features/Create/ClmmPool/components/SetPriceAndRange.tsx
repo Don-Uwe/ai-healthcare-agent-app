@@ -28,8 +28,7 @@ import { Side } from '@/features/Clmm/components/RangeInput'
 import { Desktop, Mobile } from '@/components/MobileDesktop'
 import { TokenPrice } from '@/hooks/token/useTokenPrice'
 import { useEvent } from '@/hooks/useEvent'
-import { trimTrailZero } from '@/utils/numberish/formatter'
-import { formatCurrency } from '@/utils/numberish/formatter'
+import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
 
 const IconStyle = {
   cursor: 'pointer',
@@ -281,7 +280,7 @@ export default function SetPriceAndRange({
               <Text variant="label" fontSize="sm">
                 {t('clmm.initial_price')}:
               </Text>
-              <Text>{trimTrailZero(new Decimal(currentPrice).toFixed(Math.max(token1.decimals, token2.decimals)))}</Text>
+              <Text>{formatCurrency(currentPrice, { decimalPlaces: Math.max(token1.decimals, token2.decimals) })}</Text>
               <Text>
                 {t('common.per_unit', {
                   subA: wSolToSolString(tempCreatedPool?.[baseIn ? 'mintB' : 'mintA'].symbol),
@@ -302,7 +301,7 @@ export default function SetPriceAndRange({
                       maximumDecimalTrailingZeroes: 5,
                       abbreviated: true
                     })}`
-                  : `${priceRange[0]} - ${priceRange[1]}`}
+                  : `${formatToRawLocaleStr(priceRange[0])} - ${formatToRawLocaleStr(priceRange[1])}`}
               </Text>
               <Text>
                 {t('common.per_unit', {
@@ -390,7 +389,7 @@ export default function SetPriceAndRange({
         </Text>
         <QuestionToolTip iconType="question" label={t('create_standard_pool.current_price_tooltip')} />
         <Text color={colors.textSecondary} fontSize="sm">
-          {onlinePrice}{' '}
+          {formatToRawLocaleStr(onlinePrice)}{' '}
           {t('common.per_unit', {
             subA: wSolToSolString(priceReverse ? tokenQuote.symbol : tokenBase.symbol),
             subB: wSolToSolString(priceReverse ? tokenBase.symbol : tokenQuote.symbol)

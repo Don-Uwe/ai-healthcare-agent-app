@@ -5,8 +5,7 @@ import TokenAvatar from '@/components/TokenAvatar'
 import Tooltip from '@/components/Tooltip'
 import { WeeklyRewardData } from '@/hooks/pool/type'
 import { colors } from '@/theme/cssVariables'
-import { formatLocaleStr } from '@/utils/numberish/formatter'
-import toUsdVolume from '@/utils/numberish/toUsdVolume'
+import { formatCurrency } from '@/utils/numberish/formatter'
 import useTokenPrice from '@/hooks/token/useTokenPrice'
 import Decimal from 'decimal.js'
 
@@ -44,10 +43,13 @@ export function PoolListItemRewardStack(props: { rewards: WeeklyRewardData }) {
                   <GridItem area="volume">
                     <Flex h="100%" gap={4} fontSize="sm" color={colors.textPrimary} justify={'space-between'} alignItems="center">
                       <Text>
-                        {formatLocaleStr(reward.amount)} {reward.token?.symbol}/{t('common.week')}
+                        {formatCurrency(reward.amount, { decimalPlaces: 0 })} {reward.token?.symbol}/{t('common.week')}
                       </Text>
                       <Text>
-                        {toUsdVolume(new Decimal(reward.amount || 0).mul(tokenPrices[reward.token.address]?.value || 0).toString())}
+                        {formatCurrency(new Decimal(reward.amount || 0).mul(tokenPrices[reward.token.address]?.value || 0).toString(), {
+                          symbol: '$',
+                          decimalPlaces: 2
+                        })}
                       </Text>
                     </Flex>
                   </GridItem>

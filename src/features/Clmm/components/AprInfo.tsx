@@ -4,6 +4,7 @@ import { TimeBasisOptionType, timeBasisOptions } from '@/hooks/pool/type'
 import { useAppStore } from '@/store'
 import { colors } from '@/theme/cssVariables/colors'
 import toPercentString from '@/utils/numberish/toPercentString'
+import { formatToRawLocaleStr } from '@/utils/numberish/formatter'
 import { AprData } from '@/features/Clmm/utils/calApr'
 import { Box, Flex, HStack, Text } from '@chakra-ui/react'
 import { useTranslation } from 'react-i18next'
@@ -35,7 +36,7 @@ export default function EstimatedAprInfo({ aprData, value, onChange }: Props) {
       <Flex gap="3" alignItems="center">
         {!isMobile && (
           <Text fontWeight="500" size="lg">
-            {toPercentString(aprData?.apr || 0)}
+            {formatToRawLocaleStr(toPercentString(aprData?.apr || 0))}
           </Text>
         )}
         <Box>
@@ -58,7 +59,7 @@ export default function EstimatedAprInfo({ aprData, value, onChange }: Props) {
                   ))}
                 {isMobile && (
                   <Label
-                    value={toPercentString(aprData?.apr || 0, { decimals: 1 })}
+                    value={formatToRawLocaleStr(toPercentString(aprData?.apr || 0, { decimals: 1 }))}
                     position="center"
                     style={{ fill: colors.textPrimary, fontSize: '14px', fontWeight: 500 }}
                   />
@@ -74,7 +75,7 @@ export default function EstimatedAprInfo({ aprData, value, onChange }: Props) {
               <Box w="7px" h="7px" bg={PORTFOLIO_PIE_COLORS[0]} rounded={'full'} />
               {t('field.trade_fees')}{' '}
               <Text color={colors.textPrimary} fontWeight="500">
-                {toPercentString(aprData.fee.apr || 0)}
+                {formatToRawLocaleStr(toPercentString(aprData.fee.apr || 0))}
               </Text>
             </Flex>
           ) : null}
@@ -82,7 +83,7 @@ export default function EstimatedAprInfo({ aprData, value, onChange }: Props) {
             <Flex key={d.mint?.address || 'fees'} alignItems="center" gap="2" fontSize="sm" color={colors.textTertiary}>
               <Box w="7px" h="7px" bg={PORTFOLIO_PIE_COLORS[(idx + 1) % PORTFOLIO_PIE_COLORS.length]} rounded={'full'} />
               <Text color={colors.textPrimary} fontWeight="500">
-                {toPercentString(d.apr)}
+                {formatToRawLocaleStr(toPercentString(d.apr))}
               </Text>
             </Flex>
           ))}

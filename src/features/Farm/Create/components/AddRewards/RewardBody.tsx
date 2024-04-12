@@ -10,6 +10,7 @@ import FarmDatePickerModal from '@/components/FarmDatePickerModal'
 import { NewRewardInfo } from '../../type'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'react-i18next'
+import { formatToRawLocaleStr } from '@/utils/numberish/formatter'
 
 type RewardBodyProps = {
   rewardInfo: NewRewardInfo
@@ -129,7 +130,9 @@ export default function RewardBody({ rewardInfo, tokenFilterFn, onChange }: Rewa
             {t('create_farm.estimated_rewards_week')}
           </Text>
           <Text color={colors.textSecondary} fontSize="xl" fontWeight={500} mt={1}>
-            {new Decimal(rewardInfo.perWeek || 0).toDecimalPlaces(rewardInfo.token?.decimals || 6, Decimal.ROUND_FLOOR).toString()}
+            {formatToRawLocaleStr(
+              new Decimal(rewardInfo.perWeek || 0).toDecimalPlaces(rewardInfo.token?.decimals || 6, Decimal.ROUND_FLOOR).toString()
+            )}
             {rewardInfo.token?.symbol}
           </Text>
         </HStack>

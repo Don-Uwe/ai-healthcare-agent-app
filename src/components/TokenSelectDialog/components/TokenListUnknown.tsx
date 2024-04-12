@@ -8,6 +8,7 @@ import List from '@/components/List'
 import AddressChip from '@/components/AddressChip'
 import TokenAvatar from '@/components/TokenAvatar'
 import RemoveTokenIcon from '@/icons/misc/RemoveTokenIcon'
+import { formatToRawLocaleStr } from '@/utils/numberish/formatter'
 
 export default function TokenListSetting() {
   const unsetExtraTokenListAct = useTokenStore((s) => s.unsetExtraTokenListAct)
@@ -104,7 +105,7 @@ function TokenRowItem({
         </Flex>
         <Box flexShrink={0}>
           <Text color={colors.textSecondary} textAlign="right">
-            {balance()}
+            {formatToRawLocaleStr(balance())}
             <AddressChip
               onClick={(ev) => ev.stopPropagation()}
               color={colors.textTertiary}

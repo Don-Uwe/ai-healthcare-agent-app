@@ -29,6 +29,7 @@ import useAddNewRewardSchema from '../schema/useAddNewRewardSchema'
 import dayjs from 'dayjs'
 import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 import DatePickerModal from '@/components/FarmDatePickerModal'
+import { formatToRawLocaleStr } from '@/utils/numberish/formatter'
 
 /**
  * used in [FarmingRewardItem](../FarmingRewardItem.tsx)
@@ -211,7 +212,9 @@ export default function AddMoreRewardDialog({
               </Text>
               <Text color={colors.textSecondary} fontSize="xl" fontWeight={500} mt={1}>
                 {rewardInfo.perWeek
-                  ? new Decimal(rewardInfo.perWeek || 0).toDecimalPlaces(rewardInfo.mint?.decimals || 6, Decimal.ROUND_FLOOR).toString()
+                  ? formatToRawLocaleStr(
+                      new Decimal(rewardInfo.perWeek || 0).toDecimalPlaces(rewardInfo.mint?.decimals || 6, Decimal.ROUND_FLOOR).toString()
+                    )
                   : '--'}{' '}
                 {rewardInfo.mint?.symbol}
               </Text>

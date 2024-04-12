@@ -26,8 +26,7 @@ import { colors } from '@/theme/cssVariables'
 import { useEvent } from '@/hooks/useEvent'
 import { parseDateInfo, toUTC, DAY_SECONDS, WEEK_SECONDS } from '@/utils/date'
 import { getDuration } from '@/utils/duration'
-import { toVolume } from '@/utils/numberish/autoSuffixNumberish'
-import toUsdVolume from '@/utils/numberish/toUsdVolume'
+import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
 import Decimal from 'decimal.js'
 import { EditReward } from '../util'
 import useAdjustRewardSchema, { ADJUST_REWARD_ERROR } from '../schema/useAdjustRewardSchema'
@@ -240,10 +239,13 @@ function RewardInfoItem(props: {
         </Box>
         <Box flexGrow={1} bg={colors.backgroundTransparent12} py={4} px={6}>
           <Text fontSize="md" fontWeight={500} color={colors.textPrimary} mb={3}>
-            {toVolume(props.amount, { decimals: props.mint.decimals })}
+            {formatCurrency(props.amount, { decimalPlaces: props.mint.decimals })}
           </Text>
           <Text fontSize="xs" color={colors.textSecondary}>
-            {toUsdVolume(new Decimal(props.amount).mul(props.tokenPrices[props.mint.address]?.value || 0).toString())}
+            {formatCurrency(new Decimal(props.amount).mul(props.tokenPrices[props.mint.address]?.value || 0).toString(), {
+              symbol: '$',
+              decimalPlaces: 2
+            })}
           </Text>
         </Box>
       </Flex>
@@ -266,14 +268,14 @@ function RewardInfoItem(props: {
         </Box>
         <Box flexGrow={1} bg={colors.backgroundTransparent12} py={4} px={6}>
           <Text fontSize="md" fontWeight={500} color={colors.textPrimary} mb={3}>
-            {toVolume(props.perWeek, { decimals: props.mint.decimals })}
+            {formatCurrency(props.perWeek, { decimalPlaces: props.mint.decimals })}
             <Text display="inline" ml="2" color={colors.textSecondary}>
               {wSolToSolString(props.mint.symbol)}
               {t('edit_farm.per_week')}
             </Text>
           </Text>
           <Text fontSize="xs" color={colors.textSecondary}>
-            {toPercentString(props.apr)} {t('edit_farm.APR')}
+            {formatToRawLocaleStr(toPercentString(props.apr))} {t('edit_farm.APR')}
           </Text>
         </Box>
       </Flex>

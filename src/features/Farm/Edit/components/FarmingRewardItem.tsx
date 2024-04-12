@@ -7,8 +7,7 @@ import { useEvent } from '@/hooks/useEvent'
 import { useAppStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
 import { DAY_SECONDS } from '@/utils/date'
-import { toVolume } from '@/utils/numberish/autoSuffixNumberish'
-import formatNumber from '@/utils/numberish/formatNumber'
+import { formatCurrency } from '@/utils/numberish/formatter'
 
 import { EditReward, FarmStatus, getRewardMeta } from '../util'
 import AddMoreRewardDialog from './AddMoreRewardDialog'
@@ -160,9 +159,9 @@ export default function ExistFarmingRewardItem({
 
         <GridItem area={'per-week'}>
           <Box opacity={isUpdated ? 0.5 : 1}>
-            <Text>{formatNumber(reward.total)}</Text>
+            <Text>{formatCurrency(reward.total, { decimalPlaces: 2 })}</Text>
             <HStack fontSize="sm">
-              <Text color={colors.textSecondary}>{formatNumber(reward.perWeek)}</Text>
+              <Text color={colors.textSecondary}>{formatCurrency(reward.perWeek, { decimalPlaces: 2 })}</Text>
               <Text color={colors.textTertiary}>{t('edit_farm.per_week')}</Text>
             </HStack>
           </Box>
@@ -208,9 +207,9 @@ export default function ExistFarmingRewardItem({
           <VStack alignItems="start" gap="1"></VStack>
 
           <Box borderTop={`1px solid ${colors.backgroundTransparent12}`} pt="3">
-            <Text>{formatNumber(currentReward.total)}</Text>
+            <Text>{formatCurrency(currentReward.total, { decimalPlaces: 2 })}</Text>
             <HStack fontSize="sm">
-              <Text color={colors.textSecondary}>{formatNumber(currentReward.perWeek)}</Text>
+              <Text color={colors.textSecondary}>{formatCurrency(currentReward.perWeek, { decimalPlaces: 2 })}</Text>
               <Text color={colors.textTertiary}>{t('edit_farm.per_week')}</Text>
             </HStack>
           </Box>
@@ -243,7 +242,7 @@ export default function ExistFarmingRewardItem({
             <HStack>
               <Text>{t('edit_farm.claim_unemmitted_rewards')}</Text>
               <Text color={colors.textSecondary} fontSize={'xs'}>
-                {toVolume(claimableRewardAmount)} {wSolToSolString(rewardToken.symbol)}
+                {formatCurrency(claimableRewardAmount, { decimalPlaces: 2 })} {wSolToSolString(rewardToken.symbol)}
               </Text>
             </HStack>
           </Button>

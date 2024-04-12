@@ -9,7 +9,7 @@ import { useClmmStore, useTokenAccountStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
 import { debounce } from '@/utils/functionMethods'
 import toPercentString from '@/utils/numberish/toPercentString'
-import toUsdVolume from '@/utils/numberish/toUsdVolume'
+import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
 import { getMintSymbol, wSolToSol, wsolToSolToken, isSolWSol } from '@/utils/token'
 import useTokenPrice from '@/hooks/token/useTokenPrice'
 import { calRatio } from '@/features/Clmm/utils/math'
@@ -149,7 +149,7 @@ export default function TokenAmountPairInputs({ tempCreatedPool, baseIn, onConfi
             {t('clmm.total_deposit')}
           </Text>
           <Text fontSize={['md', 'xl']} fontWeight="500">
-            {toUsdVolume(totalVolume.toString())}
+            {formatCurrency(totalVolume.toString(), { symbol: '$', decimalPlaces: 2 })}
           </Text>
         </HStack>
 
@@ -159,10 +159,10 @@ export default function TokenAmountPairInputs({ tempCreatedPool, baseIn, onConfi
           </Text>
           <HStack fontWeight="500">
             <TokenAvatar token={wsolToSolToken(tempCreatedPool![baseIn ? 'mintA' : 'mintB'])} size="sm" />
-            <Text>{toPercentString(ratioA, { decimals: 1 })}</Text>
+            <Text>{formatToRawLocaleStr(toPercentString(ratioA, { decimals: 1 }))}</Text>
             <Text>/</Text>
             <TokenAvatar token={wsolToSolToken(tempCreatedPool![baseIn ? 'mintB' : 'mintA'])} size="sm" />
-            <Text>{toPercentString(ratioB, { decimals: 1 })}</Text>
+            <Text>{formatToRawLocaleStr(toPercentString(ratioB, { decimals: 1 }))}</Text>
           </HStack>
         </HStack>
       </VStack>

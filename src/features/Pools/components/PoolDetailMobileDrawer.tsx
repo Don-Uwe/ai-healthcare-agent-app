@@ -5,8 +5,7 @@ import { AprData } from '@/features/Clmm/utils/calApr'
 import OpenBookIcon from '@/icons/misc/OpenBookIcon'
 import StarIcon from '@/icons/misc/StarIcon'
 import { colors } from '@/theme/cssVariables'
-import { formatLocaleStr } from '@/utils/numberish/formatter'
-import toUsdVolume from '@/utils/numberish/toUsdVolume'
+import { formatCurrency } from '@/utils/numberish/formatter'
 import {
   Box,
   Button,
@@ -206,10 +205,15 @@ export default function PoolDetailMobileDrawer({
                   >
                     <HStack fontWeight="normal" color={colors.textSecondary} spacing={1}>
                       <TokenAvatar size="sm" token={reward.token} />
-                      <Box color={colors.textPrimary}>{formatLocaleStr(reward.amount, 2)}</Box>
+                      <Box color={colors.textPrimary}>{formatCurrency(reward.amount, { decimalPlaces: 2 })}</Box>
                       <Box>{reward.token?.symbol}</Box>
                     </HStack>
-                    <Box>{toUsdVolume(new Decimal(tokenPrices[reward.token.address]?.value || 0).mul(reward.amount).toString())}</Box>
+                    <Box>
+                      {formatCurrency(new Decimal(tokenPrices[reward.token.address]?.value || 0).mul(reward.amount).toString(), {
+                        symbol: '$',
+                        decimalPlaces: 2
+                      })}
+                    </Box>
                   </Flex>
                 ))}
               </SimpleGrid>

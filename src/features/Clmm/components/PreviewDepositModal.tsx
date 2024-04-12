@@ -20,14 +20,12 @@ import PanelCard from '@/components/PanelCard'
 import { getPoolName } from '@/features/Pools/util'
 import { getMintSymbol } from '@/utils/token'
 import { colors } from '@/theme/cssVariables/colors'
-import { formatLocaleStr } from '@/utils/numberish/formatter'
-import toUsdVolume from '@/utils/numberish/toUsdVolume'
 import { panelCard } from '@/theme/cssBlocks'
 import Decimal from 'decimal.js'
 import toPercentString from '@/utils/numberish/toPercentString'
 import { TokenPrice } from '@/hooks/token/useTokenPrice'
 import { getFirstNonZeroDecimal } from '@/utils/numberish/formatter'
-import { formatCurrency } from '@/utils/numberish/formatter'
+import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
 
 interface Props {
   isOpen: boolean
@@ -103,18 +101,24 @@ export default function PreviewDepositModal({
                   <TokenAvatar size={'smi'} token={pool.mintA} />
                   <Text variant="subTitle">{symbolA}</Text>
                 </Flex>
-                {formatLocaleStr(tokenAmount[0], pool['mintA'].decimals)} {symbolA}
+                {formatCurrency(tokenAmount[0], {
+                  decimalPlaces: pool['mintA'].decimals
+                })}{' '}
+                {symbolA}
               </Flex>
               <Flex mt="2" alignItems="center" justifyContent="space-between">
                 <Flex alignItems="center" gap="2">
                   <TokenAvatar size={'smi'} token={pool.mintB} />
                   <Text variant="subTitle">{symbolB}</Text>
                 </Flex>
-                {formatLocaleStr(tokenAmount[1], pool['mintB'].decimals)} {symbolB}
+                {formatCurrency(tokenAmount[1], {
+                  decimalPlaces: pool['mintB'].decimals
+                })}{' '}
+                {symbolB}
               </Flex>
               <Flex mt="2" justifyContent="space-between">
                 <Text color={colors.textSecondary}>{t('field.fee_tier')}</Text>
-                {toPercentString(isCreatePool ? pool.feeRate / 10000 : pool.feeRate * 100)}
+                {formatToRawLocaleStr(toPercentString(isCreatePool ? pool.feeRate / 10000 : pool.feeRate * 100))}
               </Flex>
             </PanelCard>
 
@@ -122,7 +126,9 @@ export default function PreviewDepositModal({
               <Flex mb="2" justifyContent="space-between">
                 <Text variant="title">{t('field.current_price')}</Text>
                 <Flex fontSize="sm" gap="1" fontWeight="500" alignItems="center">
-                  {formatLocaleStr(currentPrice, decimals)}
+                  {formatCurrency(currentPrice, {
+                    decimalPlaces: decimals
+                  })}
                   <Text color={colors.textSecondary}>
                     {t('common.per_unit', {
                       subA: baseIn ? symbolB : symbolA,
@@ -205,7 +211,10 @@ export default function PreviewDepositModal({
               <Flex justifyContent="space-between" alignItems="center">
                 <Text variant="title">{t('liquidity.total_deposit')}</Text>
                 <Text fontSize={['lg', 'xl']} fontWeight="500">
-                  {toUsdVolume(totalDeposit.toString())}
+                  {formatCurrency(totalDeposit.toString(), {
+                    symbol: '$',
+                    decimalPlaces: 2
+                  })}
                 </Text>
               </Flex>
             </PanelCard>
