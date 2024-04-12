@@ -8,6 +8,7 @@ import { isValidPublicKey } from '@/utils/publicKey'
 import { wSolToSol, solToWSol, solToWsolString } from '@/utils/token'
 import { getTxMeta } from './configs/market'
 import { getDefaultToastData, transformProcessData, handleMultiTxToast } from '@/hooks/toast/multiToastUtil'
+import { handleMultiTxRetry } from '@/hooks/toast/retryTx'
 // import { getComputeBudgetConfig } from '@/utils/tx/computeBudget'
 interface CreateMarketState {
   checkMarketAct: (marketId: string) => Promise<{ isValid: boolean; mintA?: string; mintB?: string }>
@@ -159,7 +160,8 @@ export const useCreateMarketStore = createStore<CreateMarketState>(
 
       return execute({
         sequentially: true,
-        onTxUpdate: (data) =>
+        onTxUpdate: (data) => {
+          handleMultiTxRetry(data)
           handleMultiTxToast({
             toastId,
             processedId: transformProcessData({ processedId, data }),
@@ -168,6 +170,7 @@ export const useCreateMarketStore = createStore<CreateMarketState>(
             handler,
             getSubTxTitle
           })
+        }
       })
         .then((r) => {
           handleMultiTxToast({
