@@ -57,7 +57,7 @@ export const retry = async <T>(
           }
         }, interval)
         intervalRecord.add(intervalId)
-        if (options?.id) idToIntervalRecord.set(options.id, interval)
+        if (options?.id) idToIntervalRecord.set(options.id, intervalId)
       })
   })
 }

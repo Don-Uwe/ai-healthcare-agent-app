@@ -45,7 +45,7 @@ export const multiTxStatusSubject = new Subject<
     toastId: string
     status?: ToastStatus
     update?: boolean
-    subTxIds: (TxMeta & { txId: string; status?: ToastStatus })[]
+    subTxIds: (TxMeta & { txId: string; status?: ToastStatus; signedTx?: Transaction | VersionedTransaction })[]
     txValues?: Record<string, any>
     mintInfo?: ApiV3Token[]
     duration?: number
@@ -362,11 +362,12 @@ function useTxStatus() {
           subscribeMap.set(toastId, isTxOnChain)
 
           if (!skipWatchSignature)
-            subTxIds.forEach(({ txId }) => {
+            subTxIds.forEach(({ txId, signedTx }) => {
               if (subscribeMap.has(txId)) return
               const subId = connection.onSignature(
                 txId,
                 (signatureResult, context) => {
+                  cancelRetryTx(txId)
                   subscribeMap.delete(txId)
                   txStatus[txId] = signatureResult.err ? 'error' : 'success'
                   if (signatureResult.err) {
@@ -445,6 +446,7 @@ function useTxStatus() {
               )
               subscribeMap.set(txId, subId)
               connection.getSignatureStatus(txId)
+              if (signedTx) retryTx({ tx: signedTx, id: txId })
             })
         }
       )
