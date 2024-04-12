@@ -95,7 +95,7 @@ export default function Decrease() {
                 currentTab={tabValue}
                 stakedLiquidity={stakedLiquidity}
                 unstakedLiquidity={
-                  getTokenBalanceUiAmount({ mint: poolInfo?.lpMint.address || '', decimals: poolInfo?.lpMint.decimals }).localeText
+                  getTokenBalanceUiAmount({ mint: poolInfo?.lpMint.address || '', decimals: poolInfo?.lpMint.decimals }).text
                 }
               />
             </Box>

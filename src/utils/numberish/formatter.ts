@@ -204,7 +204,7 @@ export function formatCurrency(amount?: string | number | Decimal, params: Forma
   if (!amount) {
     return '0'
   }
-  const amountDecimal = amount instanceof Decimal ? amount : new Decimal(amount)
+  const amountDecimal = amount instanceof Decimal ? amount : new Decimal(String(amount).replace(/,/gi, ''))
   const amountNumber = amountDecimal.toNumber()
   const amountString = amountDecimal.toFixed()
   const currencyFormatterNoDecimal: { format: (value: number) => string } = generateFormatter(locale, symbol, abbreviated, 0)
