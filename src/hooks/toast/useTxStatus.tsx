@@ -214,6 +214,7 @@ function useTxStatus() {
               id: txId,
               close: true
             })
+            cancelRetryTx(txId)
             connection.removeSignatureListener(subId)
             toastSubject.next({
               title: t('transaction.send_timeout'),
@@ -346,7 +347,7 @@ function useTxStatus() {
                   id: toastId,
                   close: true
                 })
-
+                subTxIds.forEach(({ txId }) => cancelRetryTx(txId))
                 toastSubject.next({
                   title: t('transaction.send_timeout'),
                   detail: renderDetail(),
