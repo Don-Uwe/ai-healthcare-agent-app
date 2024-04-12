@@ -173,8 +173,8 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
 
   const lpAmountUSD = allLpUiAmount.mul(pool.lpPrice ?? 0).toString()
   const [pooledAmountA, pooledAmountB] = [
-    allLpUiAmount.mul(baseRatio).toDecimalPlaces(pool.mintA.decimals, Decimal.ROUND_DOWN).toString(),
-    allLpUiAmount.mul(quoteRatio).toDecimalPlaces(pool.mintB.decimals, Decimal.ROUND_DOWN).toString()
+    allLpUiAmount.mul(baseRatio).mul(0.995).toDecimalPlaces(pool.mintA.decimals, Decimal.ROUND_DOWN).toString(),
+    allLpUiAmount.mul(quoteRatio).mul(0.995).toDecimalPlaces(pool.mintB.decimals, Decimal.ROUND_DOWN).toString()
   ]
 
   const canStake = !unStakeLpBalance.isZero() && stakedFarmList.filter((f) => f.isOngoing).length > 0

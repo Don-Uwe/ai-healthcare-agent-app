@@ -26,6 +26,7 @@ import { getMintSymbol } from '@/utils/token'
 import { refreshCreatedFarm } from '@/hooks/portfolio/farm/useCreatedFarmInfo'
 import { getDefaultToastData, transformProcessData, handleMultiTxToast } from '@/hooks/toast/multiToastUtil'
 import { getComputeBudgetConfig } from '@/utils/tx/computeBudget'
+import { handleMultiTxRetry } from '@/hooks/toast/retryTx'
 import Decimal from 'decimal.js'
 import BN from 'bn.js'
 
@@ -104,7 +105,8 @@ export const useFarmStore = createStore<FarmStore>(
         return data
           .execute({
             sequentially: true,
-            onTxUpdate: (data) =>
+            onTxUpdate: (data) => {
+              handleMultiTxRetry(data)
               handleMultiTxToast({
                 toastId,
                 processedId: transformProcessData({ processedId, data }),
@@ -113,6 +115,7 @@ export const useFarmStore = createStore<FarmStore>(
                 handler,
                 getSubTxTitle
               })
+            }
           })
           .then(({ txIds }) => {
             handleMultiTxToast({
@@ -156,8 +159,8 @@ export const useFarmStore = createStore<FarmStore>(
       })
 
       return execute()
-        .then(({ txId }) => {
-          txStatusSubject.next({ txId, ...meta, onSent, onError })
+        .then(({ txId, signedTx }) => {
+          txStatusSubject.next({ txId, ...meta, signedTx, onSent, onError })
           get().refreshFarmAct()
           return txId
         })
@@ -190,8 +193,8 @@ export const useFarmStore = createStore<FarmStore>(
         })
 
         return execute()
-          .then(({ txId }) => {
-            txStatusSubject.next({ txId, ...meta, onSent, onError })
+          .then(({ txId, signedTx }) => {
+            txStatusSubject.next({ txId, ...meta, signedTx, onSent, onError })
             get().refreshFarmAct()
             return txId
           })
@@ -223,9 +226,10 @@ export const useFarmStore = createStore<FarmStore>(
       })
 
       return execute()
-        .then(({ txId }) => {
+        .then(({ txId, signedTx }) => {
           txStatusSubject.next({
             txId,
+            signedTx,
             onSent: () => {
               onSent?.(extInfo)
             },
@@ -259,8 +263,8 @@ export const useFarmStore = createStore<FarmStore>(
       })
 
       return execute()
-        .then(({ txId }) => {
-          txStatusSubject.next({ txId, ...meta })
+        .then(({ txId, signedTx }) => {
+          txStatusSubject.next({ txId, signedTx, ...meta })
           onSent?.()
           return txId
         })
@@ -292,8 +296,8 @@ export const useFarmStore = createStore<FarmStore>(
         if (!newRewards.length)
           return buildData
             .execute()
-            .then(({ txId }) => {
-              txStatusSubject.next({ txId, ...meta, onConfirmed })
+            .then(({ txId, signedTx }) => {
+              txStatusSubject.next({ txId, signedTx, ...meta, onConfirmed })
               return txId
             })
             .catch((e) => {
@@ -377,8 +381,8 @@ export const useFarmStore = createStore<FarmStore>(
 
       const meta = getTxMeta({ action: hasProjectAmount && hasBuyAmount ? 'claimIdo1' : 'claimIdo', values })
       return execute()
-        .then(({ txId }) => {
-          txStatusSubject.next({ ...meta, txId, onSent, onError })
+        .then(({ txId, signedTx }) => {
+          txStatusSubject.next({ ...meta, signedTx, txId, onSent, onError })
           return txId
         })
         .catch((e) => {

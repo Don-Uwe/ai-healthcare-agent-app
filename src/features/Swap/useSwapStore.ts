@@ -174,8 +174,8 @@ export const useSwapStore = createStore<SwapStore>(
                 return idx === 0
                   ? 'transaction_history.set_up'
                   : idx === processedId.length - 1 && processedId.length > 2
-                    ? 'transaction_history.clean_up'
-                    : 'transaction_history.name_swap'
+                  ? 'transaction_history.clean_up'
+                  : 'transaction_history.name_swap'
               }
             })
           }
@@ -280,9 +280,9 @@ export const useSwapStore = createStore<SwapStore>(
       }
 
       return execute()
-        .then(({ txId }) => {
+        .then(({ txId, signedTx }) => {
           onSent?.()
-          txStatusSubject.next({ txId, ...meta, ...txProps })
+          txStatusSubject.next({ txId, signedTx, ...meta, ...txProps })
           return txId
         })
         .catch((e) => {
@@ -297,8 +297,8 @@ export const useSwapStore = createStore<SwapStore>(
       if (!raydium) return
       const { execute } = await raydium.tradeV2.wrapWSol(raydium.decimalAmount({ mint: SOLMint, amount })!)
       return execute()
-        .then(({ txId }) => {
-          txStatusSubject.next({ txId })
+        .then(({ txId, signedTx }) => {
+          txStatusSubject.next({ txId, signedTx })
           return txId
         })
         .catch((e) => {

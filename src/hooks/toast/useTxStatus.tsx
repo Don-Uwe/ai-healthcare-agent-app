@@ -1,6 +1,6 @@
 import { useEffect, ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { SignatureResult, Context } from '@solana/web3.js'
+import { SignatureResult, Context, VersionedTransaction, Transaction } from '@solana/web3.js'
 import { Flex, Box } from '@chakra-ui/react'
 import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 import { Subject } from 'rxjs'
@@ -15,6 +15,7 @@ import CircleCheck from '@/icons/misc/CircleCheck'
 import CircleError from '@/icons/misc/CircleError'
 import CircleInfo from '@/icons/misc/CircleInfo'
 import { ToastStatus } from '@/types/tx'
+import retryTx, { cancelRetryTx } from './retryTx'
 
 export interface TxMeta {
   title?: string | ReactNode
@@ -31,6 +32,7 @@ export const txStatusSubject = new Subject<
     hideResultToast?: boolean
     update?: boolean
     skipWatchSignature?: boolean
+    signedTx?: Transaction | VersionedTransaction
     onConfirmed?: (signatureResult: SignatureResult, context: Context) => void
     onError?: (signatureResult: SignatureResult, context: Context) => void
     onSent?: () => void
@@ -80,6 +82,7 @@ function useTxStatus() {
           hideResultToast,
           update,
           skipWatchSignature,
+          signedTx,
           onConfirmed,
           onError,
           onSent,
@@ -139,6 +142,7 @@ function useTxStatus() {
           const subId = connection.onSignature(
             txId,
             (signatureResult, context) => {
+              cancelRetryTx(txId)
               isTxOnChain = true
               clearTimeout(timeout)
               subscribeMap.delete(txId)
@@ -201,6 +205,8 @@ function useTxStatus() {
           subscribeMap.set(txId, subId)
           connection.getSignatureStatus(txId)
 
+          if (signedTx) retryTx({ id: txId, tx: signedTx })
+
           // prepare for tx timeout
           timeout = window.setTimeout(() => {
             if (isTxOnChain) return
@@ -208,6 +214,7 @@ function useTxStatus() {
               id: txId,
               close: true
             })
+            cancelRetryTx(txId)
             connection.removeSignatureListener(subId)
             toastSubject.next({
               title: t('transaction.send_timeout'),
@@ -340,9 +347,10 @@ function useTxStatus() {
                   id: toastId,
                   close: true
                 })
-
+                subTxIds.forEach(({ txId }) => cancelRetryTx(txId))
                 toastSubject.next({
                   title: t('transaction.send_timeout'),
+                  detail: renderDetail(),
                   status: 'warning',
                   duration: 5 * 1000,
                   onClose

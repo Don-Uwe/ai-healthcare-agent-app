@@ -19,7 +19,7 @@ import { getTxMeta } from './configs/liquidity'
 import { getMintSymbol } from '@/utils/token'
 import getEphemeralSigners from '@/utils/tx/getEphemeralSigners'
 import { getPoolName } from '@/features/Pools/util'
-
+import { handleMultiTxRetry } from '@/hooks/toast/retryTx'
 import BN from 'bn.js'
 import Decimal from 'decimal.js'
 import { getComputeBudgetConfig } from '@/utils/tx/computeBudget'
@@ -112,10 +112,11 @@ export const useLiquidityStore = createStore<LiquidityStore>(
       })
 
       return execute()
-        .then(({ txId }) => {
+        .then(({ txId, signedTx }) => {
           txStatusSubject.next({
             txId,
             ...meta,
+            signedTx,
             mintInfo: [params.poolInfo.mintA, params.poolInfo.mintB],
             onError,
             onConfirmed: params.onConfirmed
@@ -156,8 +157,8 @@ export const useLiquidityStore = createStore<LiquidityStore>(
       })
 
       return execute()
-        .then(({ txId }) => {
-          txStatusSubject.next({ txId, ...meta, mintInfo: [params.poolInfo.mintA, params.poolInfo.mintB], onError })
+        .then(({ txId, signedTx }) => {
+          txStatusSubject.next({ txId, ...meta, signedTx, mintInfo: [params.poolInfo.mintA, params.poolInfo.mintB], onError })
           onSent?.()
           return txId
         })
@@ -214,8 +215,16 @@ export const useLiquidityStore = createStore<LiquidityStore>(
       }
 
       return execute()
-        .then(({ txId }) => {
-          txStatusSubject.next({ txId, ...meta, mintInfo: [pool.mintA, pool.mintB], onSent, onError, onConfirmed: handleConfirmed })
+        .then(({ txId, signedTx }) => {
+          txStatusSubject.next({
+            txId,
+            ...meta,
+            signedTx,
+            mintInfo: [pool.mintA, pool.mintB],
+            onSent,
+            onError,
+            onConfirmed: handleConfirmed
+          })
           return txId
         })
         .catch((e) => {
@@ -264,7 +273,8 @@ export const useLiquidityStore = createStore<LiquidityStore>(
 
       return execute({
         sequentially: true,
-        onTxUpdate: (data) =>
+        onTxUpdate: (data) => {
+          handleMultiTxRetry(data)
           handleMultiTxToast({
             toastId,
             processedId: transformProcessData({ processedId, data }),
@@ -273,6 +283,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
             handler,
             getSubTxTitle
           })
+        }
       })
         .then(({ txIds }) => {
           handleMultiTxToast({

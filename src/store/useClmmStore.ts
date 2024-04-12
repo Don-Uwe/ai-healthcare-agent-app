@@ -32,6 +32,7 @@ import { getMintSymbol } from '@/utils/token'
 import { CLMM_FEE_CONFIGS, getTxMeta } from './configs/clmm'
 import { TxCallbackProps } from '../types/tx'
 import { getComputeBudgetConfig } from '@/utils/tx/computeBudget'
+import { handleMultiTxRetry } from '@/hooks/toast/retryTx'
 
 import BN from 'bn.js'
 import Decimal from 'decimal.js'
@@ -207,7 +208,8 @@ export const useClmmStore = createStore<ClmmState>(
         buildData
           .execute({
             sequentially: true,
-            onTxUpdate: (data) =>
+            onTxUpdate: (data) => {
+              handleMultiTxRetry(data)
               handleMultiTxToast({
                 toastId,
                 processedId: transformProcessData({ processedId, data }),
@@ -216,6 +218,7 @@ export const useClmmStore = createStore<ClmmState>(
                 handler,
                 getSubTxTitle
               })
+            }
           })
           .then(() => {
             handleMultiTxToast({
@@ -325,7 +328,8 @@ export const useClmmStore = createStore<ClmmState>(
 
           return execute({
             sequentially: true,
-            onTxUpdate: (data) =>
+            onTxUpdate: (data) => {
+              handleMultiTxRetry(data)
               handleMultiTxToast({
                 toastId,
                 processedId: transformProcessData({ processedId, data }),
@@ -334,6 +338,7 @@ export const useClmmStore = createStore<ClmmState>(
                 handler,
                 getSubTxTitle
               })
+            }
           })
             .then(() => {
               handleMultiTxToast({
@@ -357,11 +362,12 @@ export const useClmmStore = createStore<ClmmState>(
 
         return buildData
           .execute()
-          .then(({ txId }) => {
+          .then(({ txId, signedTx }) => {
             txStatusSubject.next({
               txId,
               ...meta,
               mintInfo,
+              signedTx,
               onClose: onCloseToast,
               onError: txProps.onError,
               onConfirmed: txProps.onConfirmed
@@ -436,11 +442,12 @@ export const useClmmStore = createStore<ClmmState>(
         })
 
         return execute()
-          .then(({ txId }) => {
+          .then(({ txId, signedTx }) => {
             txStatusSubject.next({
               txId,
               ...meta,
               mintInfo: [poolInfo.mintA, poolInfo.mintB],
+              signedTx,
               onError,
               onSent,
               onConfirmed: () => {
@@ -481,9 +488,10 @@ export const useClmmStore = createStore<ClmmState>(
         })
 
         return execute()
-          .then(({ txId }) => {
+          .then(({ txId, signedTx }) => {
             txStatusSubject.next({
               txId,
+              signedTx,
               ...meta,
               ...txProps
             })
@@ -538,10 +546,11 @@ export const useClmmStore = createStore<ClmmState>(
         })
 
         return execute()
-          .then(({ txId }) => {
+          .then(({ txId, signedTx }) => {
             txStatusSubject.next({
               txId,
               ...meta,
+              signedTx,
               mintInfo: [poolInfo.mintA, poolInfo.mintB],
               onSent: txProps.onSent,
               onConfirmed: () => {
@@ -596,8 +605,8 @@ export const useClmmStore = createStore<ClmmState>(
         if (!newRewardInfos.length)
           return setRewardsBuildData
             .execute()
-            .then(({ txId }) => {
-              txStatusSubject.next({ txId, ...meta, mintInfo: newRewardInfos.map((r) => r.mint), onConfirmed })
+            .then(({ txId, signedTx }) => {
+              txStatusSubject.next({ txId, ...meta, signedTx, mintInfo: newRewardInfos.map((r) => r.mint), onConfirmed })
               return txId
             })
             .catch((e) => {
@@ -684,8 +693,8 @@ export const useClmmStore = createStore<ClmmState>(
           })
 
           return executeTx()
-            .then(({ txId }) => {
-              txStatusSubject.next({ txId, ...meta, mintInfo: [token1, token2] })
+            .then(({ txId, signedTx }) => {
+              txStatusSubject.next({ txId, ...meta, signedTx, mintInfo: [token1, token2] })
               return { txId, buildData }
             })
             .catch((e) => {
@@ -722,8 +731,8 @@ export const useClmmStore = createStore<ClmmState>(
         values: { poolId: `${poolInfo.id.slice(0, 4)}...${poolInfo.id.slice(-4)}` }
       })
       return execute()
-        .then(({ txId }) => {
-          txStatusSubject.next({ txId, ...meta, mintInfo: rewardInfos.map((r) => r.mint), onConfirmed })
+        .then(({ txId, signedTx }) => {
+          txStatusSubject.next({ txId, ...meta, signedTx, mintInfo: rewardInfos.map((r) => r.mint), onConfirmed })
           onSent?.()
           return txId
         })

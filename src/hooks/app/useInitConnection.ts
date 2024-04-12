@@ -9,6 +9,7 @@ import { isLocal } from '@/utils/common'
 import { getDevOnlyStorage } from '@/utils/localStorage'
 import { SSRData } from '../../type'
 import { toastSubject } from '../toast/useGlobalToast'
+import { cancelAllRetry } from '@/utils/common'
 
 const localFakePubKey = '_r_f_wallet_'
 
@@ -124,6 +125,8 @@ function useInitConnection(props: SSRData) {
     }
     useAppStore.setState(payload, false, { type: 'useInitConnection', payload } as any)
   }, [publicKey?.toBase58(), wallet?.adapter.name])
+
+  useEffect(() => cancelAllRetry, [connection.rpcEndpoint])
 }
 
 export default useInitConnection

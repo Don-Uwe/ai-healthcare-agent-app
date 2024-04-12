@@ -351,8 +351,8 @@ export const useTokenAccountStore = createStore<TokenAccountStore>(
       txBuilder
         .build()
         .execute()
-        .then(({ txId }) => {
-          txStatusSubject.next({ txId })
+        .then(({ txId, signedTx }) => {
+          txStatusSubject.next({ txId, signedTx })
           txProps.onSent?.()
         })
         .catch((e) => {

@@ -17,6 +17,7 @@ import { useFarmStore, useClmmStore, useAppStore } from '@/store'
 import { getTxMeta as getFarmTxMeta } from '@/store/configs/farm'
 import { getTxMeta as getClmmTxMeta } from '@/store/configs/clmm'
 import { getDefaultToastData, transformProcessData, handleMultiTxToast } from '@/hooks/toast/multiToastUtil'
+import { handleMultiTxRetry } from '@/hooks/toast/retryTx'
 import { useEvent } from '../useEvent'
 import { debounce } from '@/utils/functionMethods'
 import { getComputeBudgetConfig } from '@/utils/tx/computeBudget'
@@ -216,6 +217,7 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
             await execute({
               sequentially: true,
               onTxUpdate: (data) => {
+                handleMultiTxRetry(data)
                 handleMultiTxToast({
                   toastId,
                   processedId: transformProcessData({ processedId, data }),

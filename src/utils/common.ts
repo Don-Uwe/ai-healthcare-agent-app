@@ -18,13 +18,17 @@ export const sleep = async (time?: number) => {
   })
 }
 
+const intervalRecord = new Set<number>()
+export const idToIntervalRecord = new Map<string, number>()
+
 export const retry = async <T>(
   fetcher: () => Promise<any>,
-  options?: { retryCount?: number; interval?: number; errorMsg?: string; onError?: (msg?: string) => void }
+  options?: { id?: string; retryCount?: number; interval?: number; errorMsg?: string; sleepTime?: number; onError?: (msg?: string) => void }
 ): Promise<T> => {
-  const { retryCount = 10, interval = 1000, errorMsg = 'request failed', onError } = options || {}
+  const { retryCount = 10, interval = 1000, errorMsg = 'request failed', sleepTime, onError } = options || {}
   let retryCounter = 0
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
+    if (sleepTime !== undefined) await sleep(sleepTime)
     fetcher()
       .then((res) => {
         resolve(res)
@@ -35,20 +39,33 @@ export const retry = async <T>(
           if (retryCounter > retryCount) {
             onError?.()
             clearInterval(intervalId)
+            intervalRecord.delete(intervalId)
             reject(new Error(errorMsg))
           }
           try {
             const res = await fetcher()
             clearInterval(intervalId)
+            intervalRecord.delete(intervalId)
             resolve(res)
           } catch (e: any) {
             if (e.message === 'tx failed') {
               onError?.(e.message)
               clearInterval(intervalId)
+              intervalRecord.delete(intervalId)
               reject(new Error('tx failed'))
             }
           }
         }, interval)
+        intervalRecord.add(intervalId)
+        if (options?.id) idToIntervalRecord.set(options.id, interval)
       })
   })
+}
+
+export const cancelRetry = (id?: number) => {
+  if (id) window.clearInterval(id)
+}
+
+export const cancelAllRetry = () => {
+  Array.from(intervalRecord).forEach((i) => window.clearInterval(i))
 }

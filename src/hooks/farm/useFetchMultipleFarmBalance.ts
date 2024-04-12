@@ -17,7 +17,7 @@ import Decimal from 'decimal.js'
 import { useEvent } from '../useEvent'
 
 const fetcher = ([connection, publicKeyList]: [Connection, string[]]) => {
-  console.log('rpc: get multiple farm balance info', publicKeyList)
+  console.log('rpc: get multiple farm balance info')
   return connection.getMultipleAccountsInfo(
     publicKeyList.map((publicKey) => ToPublicKey(publicKey)),
     { commitment: 'confirmed' }
