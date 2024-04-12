@@ -1,4 +1,5 @@
 import Decimal from 'decimal.js'
+import i18n from '@/i18n'
 
 export function formatLocaleStr(num?: string | number | Decimal, decimalPlace?: number) {
   if (num === null || num === undefined) return '-'
@@ -69,10 +70,11 @@ export const isIntlNumberFormatSupported = typeof Intl == 'object' && Intl && ty
 /**
  *
  * @example
- * formatCurrency(6553.83766, 'es') // 6553,83766
- * formatCurrency(1.2%, 'es') // 1,2%
+ * formatToRawLocaleStr(6553.83766) // locale en: 6553.83766, locale es:6553,83766
+ * formatToRawLocaleStr(1.2%) // locale en:1.2%, locale es:1,2%
  */
-export function formatToRawLocaleStr(val: string | number | undefined, locale = 'en'): string | number {
+export function formatToRawLocaleStr(val: string | number | undefined): string | number {
+  const locale = i18n.language
   if (!val) {
     return '0'
   }
@@ -83,7 +85,6 @@ export function formatToRawLocaleStr(val: string | number | undefined, locale = 
 }
 
 export interface FormatCurrencyParams {
-  locale?: string
   noDecimal?: boolean
   symbol?: string
   abbreviated?: boolean
@@ -191,18 +192,19 @@ function generateFormatter(locale: string, symbol: string | undefined, abbreviat
  * formatCurrency(1000.12345, {decimalPlaces: 3}) // "1,000.123";
  * formatCurrency(3220.12345, { symbol: '$', decimalPlaces: 3 }) // $3,220.123
  * formatCurrency(6553.83766, { symbol: '$',abbreviated:true, decimalPlaces: 3 }) // $6.554k
- * formatCurrency(0.00000000089912, {locale:'es', maximumDecimalTrailingZeroes: 5}) // result is '0,0₉8991';
- * formatCurrency(0.00000000089912, {locale:'es', symbol: '$', maximumDecimalTrailingZeroes: 5}) // result is '0,0₉8991$';
- * formatCurrency(1000.12345, {locale:'es', decimalPlaces: 3}) // "1.000,123";
- * formatCurrency(3220.12345, {locale:'es', symbol: '$', decimalPlaces: 3 }) // 3.220,123$
- * formatCurrency(6553.83766, {locale:'es', symbol: '$',abbreviated:true, decimalPlaces: 3 }) // 6,554mil$
+ * formatCurrency(0.00000000089912, { maximumDecimalTrailingZeroes: 5}) // locale:'es' result is '0,0₉8991';
+ * formatCurrency(0.00000000089912, { symbol: '$', maximumDecimalTrailingZeroes: 5}) // locale:'es' result is '0,0₉8991$';
+ * formatCurrency(1000.12345, { decimalPlaces: 3}) // locale:'es' result is "1.000,123";
+ * formatCurrency(3220.12345, { symbol: '$', decimalPlaces: 3 }) // locale:'es' resultis  3.220,123$
+ * formatCurrency(6553.83766, { symbol: '$',abbreviated:true, decimalPlaces: 3 }) // locale:'es' result is 6,554mil$
  */
-export function formatCurrency(amount?: string | number, params: FormatCurrencyParams = {}): string {
-  const { locale = 'en', noDecimal = false, symbol, abbreviated = false, decimalPlaces, maximumDecimalTrailingZeroes } = params
+export function formatCurrency(amount?: string | number | Decimal, params: FormatCurrencyParams = {}): string {
+  const locale = i18n.language
+  const { noDecimal = false, symbol, abbreviated = false, decimalPlaces, maximumDecimalTrailingZeroes } = params
   if (!amount) {
     return '0'
   }
-  const amountDecimal = new Decimal(amount)
+  const amountDecimal = amount instanceof Decimal ? amount : new Decimal(amount)
   const amountNumber = amountDecimal.toNumber()
   const amountString = amountDecimal.toFixed()
   const currencyFormatterNoDecimal: { format: (value: number) => string } = generateFormatter(locale, symbol, abbreviated, 0)

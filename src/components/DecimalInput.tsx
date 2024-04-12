@@ -1,5 +1,5 @@
 import { numberRegExp } from '@/utils/numberish/regex'
-import { formatToRawLocaleStr } from '@/utils/numberish/formatter'
+import { formatToRawLocaleStr, isIntlNumberFormatSupported } from '@/utils/numberish/formatter'
 import { Flex, InputGroup, NumberInput, NumberInputField, SystemStyleObject, Text } from '@chakra-ui/react'
 import React, { MouseEvent, KeyboardEvent, ReactNode, useCallback, useEffect, useMemo, useRef } from 'react'
 import Decimal from 'decimal.js'
@@ -72,10 +72,10 @@ function DecimalInput(props: Props) {
 
   const { i18n } = useTranslation()
   const currentLocale = i18n.language
-  const decimalSeparator =
-    typeof Intl == 'object' && Intl && typeof Intl.NumberFormat == 'function'
-      ? new Intl.NumberFormat(currentLocale).formatToParts(0.1).find((part) => part.type === 'decimal')?.value || '.'
-      : '.'
+
+  const decimalSeparator = isIntlNumberFormatSupported
+    ? new Intl.NumberFormat(currentLocale).formatToParts(0.1).find((part) => part.type === 'decimal')?.value || '.'
+    : '.'
 
   const clampValueOnBlur = min !== undefined || max !== undefined
   const handleValidate = useCallback((value: string) => {
@@ -159,7 +159,7 @@ function DecimalInput(props: Props) {
             isInvalid={clampValueOnBlur ? undefined : false}
             value={showedValue} //FIXME: why still uncontrolled🤔?
             format={(value: string | number) => {
-              return formatToRawLocaleStr(value, currentLocale)
+              return formatToRawLocaleStr(value)
             }}
             // precision={decimals}
             width={width}

@@ -2,7 +2,7 @@ import { Flex, FlexProps, Text } from '@chakra-ui/react'
 
 import TokenAvatar from '@/components/TokenAvatar'
 import { colors } from '@/theme/cssVariables'
-import { formatLocaleStr } from '@/utils/numberish/formatter'
+import { formatCurrency } from '@/utils/numberish/formatter'
 import { wSolToSolString } from '@/utils/token'
 import { useTranslation } from 'react-i18next'
 import { RewardInfo } from './FarmItem'
@@ -24,7 +24,7 @@ export default function WeeklyRewards({ rewardsInfo, ...rest }: WeeklyRewardsPro
               <Flex key={reward.mint.address} justify={'flex-start'} align="center">
                 <TokenAvatar size="xs" token={reward.mint} mr={2} />
                 <Text fontSize="sm" fontWeight="medium" color={colors.textPrimary} mr={2}>
-                  {formatLocaleStr(reward.weekly, reward.mint.decimals)}
+                  {formatCurrency(reward.weekly, { decimalPlaces: reward.mint.decimals })}
                 </Text>
                 <Text fontSize="sm" fontWeight="medium" color={colors.textTertiary}>
                   {wSolToSolString(reward.mint.symbol)}

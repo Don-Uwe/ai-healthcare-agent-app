@@ -1,4 +1,3 @@
-import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Box, Flex, Grid, GridItem, HStack, Tag, Text, Tooltip, Skeleton, useDisclosure } from '@chakra-ui/react'
 import Link from 'next/link'
@@ -9,13 +8,13 @@ import { colors } from '@/theme/cssVariables'
 import { PositionWithUpdateFn } from '@/hooks/portfolio/useAllPositionInfo'
 import { FormattedPoolInfoConcentratedItem } from '@/hooks/pool/type'
 import useSubscribeClmmInfo, { RpcPoolData } from '@/hooks/pool/clmm/useSubscribeClmmInfo'
-import { trimTrailZero } from '@/utils/numberish/formatter'
 import Decimal from 'decimal.js'
 import SwapHorizontalIcon from '@/icons/misc/SwapHorizontalIcon'
 import { Desktop, Mobile } from '@/components/MobileDesktop'
 import { panelCard } from '@/theme/cssBlocks'
 import ClmmPositionAccountItem from './ClmmPositionAccountItem'
 import toPercentString from '@/utils/numberish/toPercentString'
+import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
 
 export function ClmmPositionItemsCard({
   poolInfo,
@@ -72,7 +71,7 @@ export function ClmmPositionItemsCard({
           </Text>
 
           <Tag size={['sm', 'md']} variant="rounded">
-            {toPercentString(poolInfo.feeRate * 100)}
+            {formatToRawLocaleStr(toPercentString(poolInfo.feeRate * 100))}
           </Tag>
 
           {/* switch button */}
@@ -106,10 +105,12 @@ export function ClmmPositionItemsCard({
           {t('field.current_price')}:{' '}
           <Text as="span" color={colors.textPrimary}>
             {baseIn
-              ? trimTrailZero(poolInfo.price.toFixed(poolInfo.recommendDecimal(poolInfo.price)))
-              : trimTrailZero(
-                  new Decimal(1).div(poolInfo.price).toFixed(poolInfo.recommendDecimal(new Decimal(1).div(poolInfo.price).toString()))
-                )}
+              ? formatCurrency(poolInfo.price, {
+                  decimalPlaces: poolInfo.recommendDecimal(poolInfo.price)
+                })
+              : formatCurrency(new Decimal(1).div(poolInfo.price).toString(), {
+                  decimalPlaces: poolInfo.recommendDecimal(new Decimal(1).div(poolInfo.price).toString())
+                })}
           </Text>{' '}
           {t('common.per_unit', {
             subA: poolInfo[baseIn ? 'mintB' : 'mintA'].symbol,

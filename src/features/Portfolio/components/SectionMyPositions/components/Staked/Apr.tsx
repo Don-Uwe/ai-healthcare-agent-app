@@ -1,4 +1,5 @@
 import { Flex, Spacer, Text } from '@chakra-ui/react'
+import { formatToRawLocaleStr } from '@/utils/numberish/formatter'
 
 import { colors } from '@/theme/cssVariables'
 
@@ -13,7 +14,7 @@ export default function Apr({ apr }: AprProps) {
         APR
       </Text>
       <Text fontSize="lg" color={colors.textPrimary} fontWeight="medium">
-        {apr}
+        {formatToRawLocaleStr(apr)}
       </Text>
       <Spacer />
     </Flex>

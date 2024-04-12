@@ -1,5 +1,6 @@
 import { Flex, Text } from '@chakra-ui/react'
 import { useTranslation } from 'react-i18next'
+import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
 
 import { colors } from '@/theme/cssVariables'
 import { panelCard } from '@/theme/cssBlocks'
@@ -19,7 +20,7 @@ export default function PositionBalance({ myPosition = '345.02', staked = '256.4
           {t('liquidity.my_position')}
         </Text>
         <Text color={colors.textSecondary} fontSize="sm" opacity={0.5}>
-          ${myPosition}
+          {formatCurrency(myPosition, { symbol: '$' })}
         </Text>
       </Flex>
       <Flex mt={4}>
@@ -32,7 +33,7 @@ export default function PositionBalance({ myPosition = '345.02', staked = '256.4
           {t('liquidity.staked')}
         </Text>
         <Text color={colors.textSecondary} fontSize="sm" fontWeight="medium">
-          {staked}
+          {formatCurrency(staked)}
         </Text>
       </Flex>
       <Flex justify={'space-between'} align="center" mt={2}>
@@ -40,7 +41,7 @@ export default function PositionBalance({ myPosition = '345.02', staked = '256.4
           {t('liquidity.unstaked')}
         </Text>
         <Text color={colors.textSecondary} fontSize="sm" fontWeight="medium">
-          {unstaked}
+          {formatToRawLocaleStr(unstaked)}
         </Text>
       </Flex>
     </Flex>

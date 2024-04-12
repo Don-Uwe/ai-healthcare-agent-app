@@ -12,8 +12,7 @@ import { KeyboardEvent, useCallback, useState } from 'react'
 import { formatToRawLocaleStr } from '@/utils/numberish/formatter'
 
 export function TransactionFeeSetting() {
-  const { t, i18n } = useTranslation()
-  const currentLocale = i18n.language
+  const { t } = useTranslation()
   const transactionFee = useAppStore((s) => s.transactionFee)
   const isMobile = useAppStore((s) => s.isMobile)
   const [currentFee, setCurrentFee] = useState<string | undefined>(transactionFee)
@@ -79,7 +78,7 @@ export function TransactionFeeSetting() {
                   }}
                 >
                   <Flex>{v.name}</Flex>
-                  {v.val === '' ? t('setting_board.fee_dynamic') : formatToRawLocaleStr(v.val, currentLocale)}
+                  {v.val === '' ? t('setting_board.fee_dynamic') : formatToRawLocaleStr(v.val)}
                   {`${v.val === '' ? '' : ' SOL'}`}
                 </Button>
               ))}

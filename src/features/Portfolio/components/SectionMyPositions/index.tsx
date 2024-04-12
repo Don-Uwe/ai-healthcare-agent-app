@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { Box, Flex, Grid, GridItem, HStack, Heading, SimpleGrid, Text } from '@chakra-ui/react'
 import { useTranslation } from 'react-i18next'
 import { useRouter } from 'next/router'
-import { Rounding } from '@raydium-io/raydium-sdk-v2'
 import Button from '@/components/Button'
 import Tabs from '@/components/Tabs'
 import { colors } from '@/theme/cssVariables'
@@ -17,7 +16,7 @@ import { useStateWithUrl } from '@/hooks/useStateWithUrl'
 import IntervalCircle, { IntervalCircleHandler } from '@/components/IntervalCircle'
 import useAllPositionInfo from '@/hooks/portfolio/useAllPositionInfo'
 import { panelCard } from '@/theme/cssBlocks'
-import toUsdVolume from '@/utils/numberish/toUsdVolume'
+import { formatCurrency } from '@/utils/numberish/formatter'
 import { useEvent } from '@/hooks/useEvent'
 
 export type PositionTabValues = 'concentrated' | 'standard' | 'staked RAY'
@@ -161,7 +160,7 @@ export default function SectionMyPositions() {
                   </Text>
                   <HStack>
                     <Text whiteSpace={'nowrap'} color={colors.textPrimary} fontWeight={500}>
-                      {toUsdVolume(totalPendingYield.toString(), { decimals: 4, rounding: Rounding.ROUND_DOWN, decimalMode: 'trim' })}
+                      {formatCurrency(totalPendingYield.toString(), { symbol: '$', decimalPlaces: 4 })}
                     </Text>
                   </HStack>
                 </Flex>

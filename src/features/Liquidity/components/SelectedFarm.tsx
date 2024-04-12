@@ -7,7 +7,7 @@ import TokenAvatarPair from '@/components/TokenAvatarPair'
 import { useAppStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
 import { FarmType, FormattedFarmInfo } from '@/hooks/farm/type'
-import toUsdVolume from '@/utils/numberish/toUsdVolume'
+import { formatCurrency } from '@/utils/numberish/formatter'
 type SelectedFarmProps = {
   farm?: FormattedFarmInfo
   farmCategory?: FarmType
@@ -46,7 +46,7 @@ export default function SelectedFarm({ farm }: SelectedFarmProps) {
       </Flex>
       <Flex flex={1}>
         <Text fontSize="sm" color={colors.textTertiary}>
-          TVL: {toUsdVolume(farm.tvl)}
+          TVL: {formatCurrency(farm.tvl, { symbol: '$', decimalPlaces: 2 })}
         </Text>
       </Flex>
     </Flex>

@@ -20,8 +20,7 @@ import shallow from 'zustand/shallow'
 import { FormattedPoolInfoConcentratedItem } from '@/hooks/pool/type'
 import TokenAvatarPair from '@/components/TokenAvatarPair'
 import { debounce } from '@/utils/functionMethods'
-import { formatLocaleStr, formatCurrency } from '@/utils/numberish/formatter'
-import toUsdVolume from '@/utils/numberish/toUsdVolume'
+import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
 import useClmmBalance, { ClmmPosition } from '@/hooks/portfolio/clmm/useClmmBalance'
 import { useAppStore, useClmmStore, useTokenAccountStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
@@ -188,8 +187,13 @@ export default function AddLiquidityModal({
           >
             <Flex alignItems="center">
               <Text fontSize={['md', 'xl']} fontWeight="500">
-                {formatLocaleStr(priceLowerDecimal.toString(), poolInfo.recommendDecimal(priceLowerDecimal))} -{' '}
-                {formatLocaleStr(priceUpperDecimal.toString(), poolInfo.recommendDecimal(priceUpperDecimal))}
+                {formatCurrency(priceLowerDecimal.toString(), {
+                  decimalPlaces: poolInfo.recommendDecimal(priceLowerDecimal)
+                })}{' '}
+                -{' '}
+                {formatCurrency(priceUpperDecimal.toString(), {
+                  decimalPlaces: poolInfo.recommendDecimal(priceUpperDecimal)
+                })}
               </Text>
               <Badge ml="4" variant={inRange ? 'ok' : 'error'}>
                 {inRange ? t('clmm.in_range') : t('clmm.out_of_range')}
@@ -207,7 +211,7 @@ export default function AddLiquidityModal({
                   {t('liquidity.title')}
                 </Text>
                 <Text fontSize={['md', 'xl']} fontWeight="500">
-                  {toUsdVolume(positionTotalVolume.toString())}
+                  {formatCurrency(positionTotalVolume.toString(), { symbol: '$', decimalPlaces: 2 })}
                 </Text>
               </Box>
 
@@ -227,20 +231,20 @@ export default function AddLiquidityModal({
                 <HStack fontSize={['md', 'xl']} fontWeight="500">
                   <Desktop>
                     <TokenAvatar token={poolInfo.mintA} size="sm" />
-                    <Text>{toPercentString(ratioA, { decimalMode: 'trim' })}</Text>
+                    <Text>{formatToRawLocaleStr(toPercentString(ratioA, { decimalMode: 'trim' }))}</Text>
                     <Text>/</Text>
                     <TokenAvatar token={poolInfo.mintB} size="sm" />
-                    <Text>{toPercentString(ratioB, { decimalMode: 'trim' })}</Text>
+                    <Text>{formatToRawLocaleStr(toPercentString(ratioB, { decimalMode: 'trim' }))}</Text>
                   </Desktop>
                   <Mobile>
                     <Box>
                       <HStack>
                         <TokenAvatar token={poolInfo.mintA} size="sm" />
-                        <Text>{toPercentString(ratioA, { decimalMode: 'trim' })}</Text>
+                        <Text>{formatToRawLocaleStr(toPercentString(ratioA, { decimalMode: 'trim' }))}</Text>
                       </HStack>
                       <HStack>
                         <TokenAvatar token={poolInfo.mintB} size="sm" />
-                        <Text>{toPercentString(ratioB, { decimalMode: 'trim' })}</Text>
+                        <Text>{formatToRawLocaleStr(toPercentString(ratioB, { decimalMode: 'trim' }))}</Text>
                       </HStack>
                     </Box>
                   </Mobile>
@@ -287,7 +291,7 @@ export default function AddLiquidityModal({
             >
               <Text variant="title">{t('liquidity.total_deposit')}</Text>
               <Text variant="title" color={colors.textPrimary} fontSize={['lg', 'xl']}>
-                {toUsdVolume(totalDeposited)}
+                {formatCurrency(totalDeposited, { symbol: '$', decimalPlaces: 2 })}
               </Text>
             </Box>
           </Box>

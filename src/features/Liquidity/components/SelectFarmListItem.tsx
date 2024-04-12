@@ -7,8 +7,7 @@ import TokenAvatarPair from '@/components/TokenAvatarPair'
 import CircleCheckFill from '@/icons/misc/CircleCheckFill'
 import { colors } from '@/theme/cssVariables'
 import { FarmType, FormattedFarmInfo } from '@/hooks/farm/type'
-import toUsdVolume from '@/utils/numberish/toUsdVolume'
-import { formatLocaleStr } from '@/utils/numberish/formatter'
+import { formatCurrency } from '@/utils/numberish/formatter'
 import { useTranslation } from 'react-i18next'
 
 type SelectFarmListItemProps = {
@@ -52,7 +51,7 @@ export default function SelectFarmListItem({ farm, currentSelectedId }: SelectFa
           TVL
         </Text>
         <Text fontSize="sm" color={colors.textSecondary}>
-          {toUsdVolume(farm.tvl)}
+          {formatCurrency(farm.tvl, { symbol: '$', decimalPlaces: 2 })}
         </Text>
       </Box>
       <Box>
@@ -71,7 +70,7 @@ export default function SelectFarmListItem({ farm, currentSelectedId }: SelectFa
             APR
           </Text>
           <Text fontSize="sm" color={colors.textSecondary}>
-            {formatLocaleStr(farm.apr * 100, 2)}%
+            {formatCurrency(farm.apr * 100, { decimalPlaces: 2 })}%
           </Text>
         </Box>
         <Box my="auto">{farm.id === currentSelectedId ? <CircleCheckFill /> : null}</Box>

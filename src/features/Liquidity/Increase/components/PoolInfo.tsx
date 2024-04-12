@@ -21,7 +21,7 @@ import CopyIcon from '@/icons/misc/CopyIcon'
 import ExternalLinkLargeIcon from '@/icons/misc/ExternalLinkLargeIcon'
 import { colors } from '@/theme/cssVariables'
 import Decimal from 'decimal.js'
-import { formatLocaleStr } from '@/utils/numberish/formatter'
+import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
 import { wSolToSolString } from '@/utils/token'
 import { encodeStr } from '@/utils/common'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
@@ -70,7 +70,7 @@ export default function PoolInfo({ pool }: { pool?: FormattedPoolInfoStandardIte
             {t('liquidity.total_apr_7d')}
           </Text>
           <Text mt={1} mb="6px" fontSize={['md', 'lg']} fontWeight={500} color={colors.textPrimary}>
-            {toPercentString(pool?.week.apr)}
+            {formatToRawLocaleStr(toPercentString(pool?.week.apr))}
           </Text>
           <PoolListItemAprLine aprData={aprData} />
         </Box>
@@ -120,7 +120,7 @@ export default function PoolInfo({ pool }: { pool?: FormattedPoolInfoStandardIte
               )}
             </Flex>
             <Text fontSize="sm" color={colors.textSecondary}>
-              {toPercentString(Math.floor(Number(apr || 0) * 100) / 100)}
+              {formatToRawLocaleStr(toPercentString(Math.floor(Number(apr || 0) * 100) / 100))}
             </Text>
           </Flex>
         ))}
@@ -131,7 +131,7 @@ export default function PoolInfo({ pool }: { pool?: FormattedPoolInfoStandardIte
           {t('liquidity.pool_liquidity')}
         </Text>
         <Text color={colors.textSecondary} fontSize="sm" opacity={0.6}>
-          {pool ? `$${formatLocaleStr(new Decimal(pool.lpAmount).mul(pool.lpPrice).toString())}` : '-'}
+          {pool ? `$${formatCurrency(new Decimal(pool.lpAmount).mul(pool.lpPrice).toString())}` : '-'}
         </Text>
       </Flex>
       <Flex mt={2} justify={'space-between'} align="center">
@@ -142,7 +142,7 @@ export default function PoolInfo({ pool }: { pool?: FormattedPoolInfoStandardIte
           <TokenAvatar token={baseToken} size="sm" />
         </HStack>
         <Text color={colors.textSecondary} fontSize="sm" fontWeight="medium">
-          {pool ? formatLocaleStr(pool.mintAmountA) : '-'}
+          {pool ? formatCurrency(pool.mintAmountA) : '-'}
         </Text>
       </Flex>
       <Flex mt={2} justify="space-between" align="center">
@@ -153,7 +153,7 @@ export default function PoolInfo({ pool }: { pool?: FormattedPoolInfoStandardIte
           <TokenAvatar token={quoteToken} size="sm" />
         </HStack>
         <Text color={colors.textSecondary} fontSize="sm" fontWeight="medium">
-          {pool ? formatLocaleStr(pool.mintAmountB) : '-'}
+          {pool ? formatCurrency(pool.mintAmountB) : '-'}
         </Text>
       </Flex>
     </Flex>

@@ -39,7 +39,6 @@ export function SwapPanel({
 }) {
   const query = useRouteQuery<{ inputMint: string; outputMint: string }>()
   const { t, i18n } = useTranslation()
-  const currentLocale = i18n.language
   const { swap: swapDisabled } = useAppStore().featureDisabled
   const swapTokenAct = useSwapStore((s) => s.swapTokenAct)
   const unWrapSolAct = useSwapStore((s) => s.unWrapSolAct)
@@ -281,7 +280,7 @@ export function SwapPanel({
           justifyContent="center"
         >
           <WarningIcon style={{ marginTop: '2px', marginRight: '4px' }} stroke={colors.semanticError} />
-          <Text>{t('swap.error_sol_fee_not_insufficient', { amount: formatToRawLocaleStr(DEFAULT_SOL_RESERVER, currentLocale) })}</Text>
+          <Text>{t('swap.error_sol_fee_not_insufficient', { amount: formatToRawLocaleStr(DEFAULT_SOL_RESERVER) })}</Text>
         </Flex>
       ) : null}
       {wsolBalance.isZero ? null : (

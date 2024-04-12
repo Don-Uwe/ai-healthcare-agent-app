@@ -5,8 +5,7 @@ import { FormattedPoolInfoConcentratedItem } from '@/hooks/pool/type'
 import useClmmBalance, { ClmmPosition } from '@/hooks/portfolio/clmm/useClmmBalance'
 import useTokenPrice from '@/hooks/token/useTokenPrice'
 import { colors } from '@/theme/cssVariables'
-import { toVolume } from '@/utils/numberish/autoSuffixNumberish'
-import toUsdVolume from '@/utils/numberish/toUsdVolume'
+import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
 import { getTimeBasis } from '@/utils/time'
 import { toAPRPercent } from '@/features/Pools/util'
 import { debounce } from '@/utils/functionMethods'
@@ -106,14 +105,16 @@ export default function RangeChart({ poolInfo, positionData, baseIn = true, nftM
         <HStack fontSize="sm" justifyContent={'space-between'}>
           <HStack>
             <Text color={colors.textSecondary}>{t('liquidity.title')}</Text>
-            <Text color={colors.textPrimary}>{toUsdVolume(poolInfo.tvl, { useShorterExpression: true })}</Text>
+            <Text color={colors.textPrimary}>{formatCurrency(poolInfo.tvl, { symbol: '$', abbreviated: true, decimalPlaces: 2 })}</Text>
           </HStack>
 
           <HStack>
             <Text color={colors.textSecondary}>
               {getTimeBasis(timeBasisIdx)} {t('common.volume')}
             </Text>
-            <Text color={colors.textPrimary}>{toUsdVolume(poolInfo.day.volume, { useShorterExpression: true })}</Text>
+            <Text color={colors.textPrimary}>
+              {formatCurrency(poolInfo.day.volume, { symbol: '$', abbreviated: true, decimalPlaces: 2 })}
+            </Text>
           </HStack>
         </HStack>
       </Box>
@@ -123,31 +124,31 @@ export default function RangeChart({ poolInfo, positionData, baseIn = true, nftM
         <VStack align={'stretch'} spacing={1.5}>
           <Flex gap={2} color={colors.textSecondary} justifyContent="space-between">
             <Box>{t('liquidity.my_position')}</Box>
-            <Box>{toUsdVolume(totalVolume.toString())}</Box>
+            <Box>{formatCurrency(totalVolume.toString(), { symbol: '$', decimalPlaces: 2 })}</Box>
           </Flex>
           <Flex gap={2} mt={1} justifyContent="space-between">
             <HStack>
               <TokenAvatar size="sm" token={poolInfo.mintA} />
-              <Text>{toVolume(positionDetailInfo.amountA, { decimals: poolInfo.mintA.decimals })}</Text>
+              <Text>{formatCurrency(positionDetailInfo.amountA, { decimalPlaces: poolInfo.mintA.decimals })}</Text>
               <Text color={colors.textSecondary}>{poolInfo.mintA.symbol}</Text>
             </HStack>
             <Flex textAlign="right" justifyContent="space-between" gap="1.5" minW="79px">
-              {toUsdVolume(volumeA)}
+              {formatCurrency(volumeA, { symbol: '$', decimalPlaces: 2 })}
               <Box as="span" color={colors.textSecondary}>
-                {toAPRPercent(percentA, { decimalMode: 'trim' })}
+                {formatToRawLocaleStr(toAPRPercent(percentA, { decimalMode: 'trim' }))}
               </Box>
             </Flex>
           </Flex>
           <Flex gap={2} justifyContent="space-between">
             <HStack>
               <TokenAvatar size="sm" token={poolInfo.mintB} />
-              <Text>{toVolume(positionDetailInfo.amountB, { decimals: poolInfo.mintB.decimals })}</Text>
+              <Text>{formatCurrency(positionDetailInfo.amountB, { decimalPlaces: poolInfo.mintB.decimals })}</Text>
               <Text color={colors.textSecondary}>{poolInfo.mintB.symbol}</Text>
             </HStack>
             <Flex textAlign="right" justifyContent="space-between" gap="1.5" minW="79px">
-              {toUsdVolume(volumeB)}
+              {formatCurrency(volumeB, { symbol: '$', decimalPlaces: 2 })}
               <Box as="span" color={colors.textSecondary}>
-                {toAPRPercent(percentB, { decimalMode: 'trim' })}
+                {formatToRawLocaleStr(toAPRPercent(percentB, { decimalMode: 'trim' }))}
               </Box>
             </Flex>
           </Flex>
@@ -160,8 +161,8 @@ export default function RangeChart({ poolInfo, positionData, baseIn = true, nftM
 
         <HStack>
           <Text>
-            {new Decimal(priceLower).toDecimalPlaces(recommendDecimal).toNumber()} -{' '}
-            {new Decimal(priceUpper).toDecimalPlaces(recommendDecimal).toNumber()}
+            {formatCurrency(new Decimal(priceLower), { decimalPlaces: recommendDecimal })} -{' '}
+            {formatCurrency(new Decimal(priceUpper), { decimalPlaces: recommendDecimal })}
           </Text>
           <Text color={colors.textTertiary}>
             {poolInfo[baseIn ? 'mintB' : 'mintA'].symbol} per {poolInfo[baseIn ? 'mintA' : 'mintB'].symbol}

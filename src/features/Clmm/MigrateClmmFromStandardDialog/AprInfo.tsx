@@ -3,6 +3,7 @@ import Tabs from '@/components/Tabs'
 import { toAPRPercent } from '@/features/Pools/util'
 import { TimeAprData, TimeBasisOptionType, TotalApr, timeBasisOptions } from '@/hooks/pool/type'
 import { colors } from '@/theme/cssVariables/colors'
+import { formatToRawLocaleStr } from '@/utils/numberish/formatter'
 import toPercentString from '@/utils/numberish/toPercentString'
 import { Box, Flex, HStack, SimpleGrid, Text } from '@chakra-ui/react'
 import { useTranslation } from 'react-i18next'
@@ -55,7 +56,7 @@ export default function AprInfo({ aprData, totalApr, value, onChange }: Props) {
       >
         <HStack>
           <Text fontWeight="500" size="lg">
-            {toAPRPercent(apr)}
+            {formatToRawLocaleStr(toAPRPercent(apr))}
           </Text>
           <Box>
             <ResponsiveContainer width={40} height={40}>
@@ -84,7 +85,7 @@ export default function AprInfo({ aprData, totalApr, value, onChange }: Props) {
             <Box w="7px" h="7px" bg={PORTFOLIO_PIE_COLORS[idx % PORTFOLIO_PIE_COLORS.length]} rounded={'full'} />
             {d.isTradingFee ? t('field.trade_fees') : d.token!.symbol}{' '}
             <Text color={colors.textPrimary} fontWeight="500">
-              {toPercentString(d.apr)}
+              {formatToRawLocaleStr(toPercentString(d.apr))}
             </Text>
           </Flex>
         ))}

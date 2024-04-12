@@ -9,8 +9,7 @@ import useFetchClmmRewardInfo from '@/hooks/pool/clmm/useFetchClmmRewardInfo'
 import { useAppStore, useClmmStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
 import { debounce } from '@/utils/functionMethods'
-import formatNumber, { trimTailingZero } from '@/utils/numberish/formatNumber'
-import { getFirstNonZeroDecimal } from '@/utils/numberish/formatter'
+import { formatCurrency, getFirstNonZeroDecimal } from '@/utils/numberish/formatter'
 import { getMintSymbol } from '@/utils/token'
 import {
   Box,
@@ -205,10 +204,10 @@ export default function RemoveLiquidityModal({
                   <TokenAvatarPair size={['smi', 'md']} token1={poolInfo.mintA} token2={poolInfo.mintB} />
                 </Flex>
                 <HStack fontSize={['xs', 'sm']} gap="1">
-                  <Text>{formatNumber(minTokenAmount[0], { maxDecimalCount: getFirstNonZeroDecimal(minTokenAmount[0]) + 1 })}</Text>
+                  <Text>{formatCurrency(minTokenAmount[0], { decimalPlaces: getFirstNonZeroDecimal(minTokenAmount[0]) + 1 })}</Text>
                   <Text color={colors.textTertiary}>{getMintSymbol({ mint: poolInfo.mintA, transformSol: true })}</Text>
                   <Text color={colors.textTertiary}>+</Text>
-                  <Text>{formatNumber(minTokenAmount[1], { maxDecimalCount: getFirstNonZeroDecimal(minTokenAmount[1]) + 1 })}</Text>
+                  <Text>{formatCurrency(minTokenAmount[1], { decimalPlaces: getFirstNonZeroDecimal(minTokenAmount[1]) + 1 })}</Text>
                   <Text color={colors.textTertiary}>{getMintSymbol({ mint: poolInfo.mintB, transformSol: true })}</Text>
                 </HStack>
               </Flex>
@@ -229,9 +228,7 @@ export default function RemoveLiquidityModal({
                     return (
                       <HStack key={`reward-${rewardToken.address}`} fontSize={['xs', 'sm']} gap="1">
                         {idx > 0 ? <Text>+</Text> : null}
-                        <Text>
-                          {trimTailingZero(formatNumber(rewardAmount, { maxDecimalCount: getFirstNonZeroDecimal(rewardAmount) + 1 }))}
-                        </Text>
+                        <Text>{formatCurrency(rewardAmount, { decimalPlaces: getFirstNonZeroDecimal(rewardAmount) + 1 })}</Text>
                         <Text color={colors.textTertiary}>{getMintSymbol({ mint: rewardToken, transformSol: true })}</Text>
                       </HStack>
                     )

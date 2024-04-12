@@ -1,6 +1,6 @@
 import { Flex, FlexProps, Text } from '@chakra-ui/react'
 import { colors } from '@/theme/cssVariables'
-import { formatLocaleStr } from '@/utils/numberish/formatter'
+import { formatCurrency } from '@/utils/numberish/formatter'
 
 type TvlProps = FlexProps & {
   tvl: string | number
@@ -14,7 +14,7 @@ export default function Tvl({ tvl, decimals, ...rest }: TvlProps) {
         TVL
       </Text>
       <Text fontSize="sm" color={colors.textPrimary}>
-        ${formatLocaleStr(tvl, decimals)}
+        {formatCurrency(tvl, { symbol: '$', decimalPlaces: decimals })}
       </Text>
     </Flex>
   )

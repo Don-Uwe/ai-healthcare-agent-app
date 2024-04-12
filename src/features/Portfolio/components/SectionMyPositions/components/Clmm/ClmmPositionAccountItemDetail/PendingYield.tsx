@@ -6,7 +6,6 @@ import { QuestionToolTip } from '@/components/QuestionToolTip'
 import TokenAvatar from '@/components/TokenAvatar'
 import { colors } from '@/theme/cssVariables'
 import { useTranslation } from 'react-i18next'
-import toUsdVolume from '@/utils/numberish/toUsdVolume'
 import { formatCurrency } from '@/utils/numberish/formatter'
 import { getMintSymbol } from '@/utils/token'
 
@@ -67,7 +66,7 @@ export default function PendingYield({ isLoading, hasReward, rewardInfos, onHarv
                     })}
                   </Text>
                   <Text>{getMintSymbol({ mint: r.mint, transformSol: true })}</Text>
-                  <Text color={colors.textPrimary}>({toUsdVolume(r.amountUSD, { decimals: 4, decimalMode: 'trim' })})</Text>
+                  <Text color={colors.textPrimary}>({formatCurrency(r.amountUSD, { symbol: '$', decimalPlaces: 4 })})</Text>
                 </Flex>
               ))}
             </>

@@ -43,8 +43,7 @@ import CircleArrowRight from '@/icons/misc/CircleArrowRight'
 import CircleCheck from '@/icons/misc/CircleCheck'
 import CirclePlus from '@/icons/misc/CirclePlus'
 import { colors } from '@/theme/cssVariables'
-import { toVolume } from '@/utils/numberish/autoSuffixNumberish'
-import { formatLocaleStr } from '@/utils/numberish/formatter'
+import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
 import { routeToPage } from '@/utils/routeTools'
 
 import CircleArrowDown from '@/icons/misc/CircleArrowDown'
@@ -362,7 +361,8 @@ export default function MigrateFromStandardDialog({
                     px={2}
                     fontWeight={500}
                   >
-                    {t('field.fee')} {toPercentString((clmmPoolInfo?.config.tradeFeeRate ?? 0) / 10000, { alreadyPercented: true })}
+                    {t('field.fee')}{' '}
+                    {formatToRawLocaleStr(toPercentString((clmmPoolInfo?.config.tradeFeeRate ?? 0) / 10000, { alreadyPercented: true }))}
                   </Box>
                 </HStack>
                 <HStack gap={2}>
@@ -370,7 +370,7 @@ export default function MigrateFromStandardDialog({
                     {t('migrate_clmm.current_price')}:
                   </Text>
                   <Text color={colors.textSecondary} fontSize={'md'} fontWeight={500}>
-                    {toVolume(baseIn ? clmmPoolInfo?.price ?? 0 : new Decimal(1).div(clmmPoolInfo?.price ?? 1))}
+                    {formatCurrency(baseIn ? clmmPoolInfo?.price ?? 0 : new Decimal(1).div(clmmPoolInfo?.price ?? 1), { decimalPlaces: 2 })}
                   </Text>
                   <Text color={colors.textTertiary} fontWeight={500} fontSize={'sm'}>
                     {baseIn
@@ -408,8 +408,8 @@ export default function MigrateFromStandardDialog({
                   bg={colors.backgroundTransparent12}
                 >
                   <Text color={colors.textSecondary} fontWeight={500} fontSize={['sm', 'md']}>
-                    {formatLocaleStr(defaultTicker?.priceLower.toString(), mintADecimal)} -{' '}
-                    {formatLocaleStr(defaultTicker?.priceUpper.toString(), mintBDecimal)}
+                    {formatCurrency(defaultTicker?.priceLower.toString(), { decimalPlaces: mintADecimal })} -{' '}
+                    {formatCurrency(defaultTicker?.priceUpper.toString(), { decimalPlaces: mintBDecimal })}
                   </Text>
 
                   <Text color={colors.textTertiary} fontWeight={500} fontSize={'sm'}>
@@ -500,7 +500,7 @@ export default function MigrateFromStandardDialog({
                   {t('migrate_clmm.footer_note')}
                   {currentRewardInfo.map((data) => (
                     <Text as="span" key={data.mint.address} fontWeight="600">
-                      {toVolume(data.amount, { decimals: isMobile ? undefined : data.mint.decimals })} {data.mint.symbol}
+                      {formatCurrency(data.amount, { decimalPlaces: isMobile ? undefined : data.mint.decimals })} {data.mint.symbol}
                     </Text>
                   ))}
                   {t('migrate_clmm.footer_note_2')}
@@ -571,7 +571,7 @@ function ResultPanel(props: {
                   {props.hasTokenSymbol && <Text fontSize={'sm'}>{token.symbol}</Text>}
                 </HStack>
                 <Text color={colors.textSecondary} fontSize={'xs'}>
-                  {toVolume(amount || 0, { decimals: isMobile ? undefined : token.decimals, decimalMode: 'trim' })}
+                  {formatCurrency(amount || 0, { decimalPlaces: isMobile ? undefined : token.decimals })}
                 </Text>
               </HStack>
             )

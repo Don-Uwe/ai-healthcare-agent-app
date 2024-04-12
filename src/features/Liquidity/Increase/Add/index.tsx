@@ -10,7 +10,7 @@ import HorizontalSwitchSmallIcon from '@/icons/misc/HorizontalSwitchSmallIcon'
 import { useAppStore, useLiquidityStore, useTokenAccountStore } from '@/store'
 import useFetchRpcPoolData from '@/hooks/pool/amm/useFetchRpcPoolData'
 import { colors } from '@/theme/cssVariables'
-import { formatLocaleStr } from '@/utils/numberish/formatter'
+import { formatCurrency } from '@/utils/numberish/formatter'
 import { getMintSymbol, wSolToSolString } from '@/utils/token'
 // import AutoSwapModal from './components/AutoSwapModal'
 import StakeLpModal from './components/StakeLpModal'
@@ -237,7 +237,7 @@ export default function AddLiquidity({
           {t('liquidity.total_deposit')}
         </Text>
         <Text fontSize="xl" color={colors.textPrimary} fontWeight="medium">
-          ${formatLocaleStr(new Decimal(pool?.lpPrice ?? 0).mul(computedLpRef.current).toString())}
+          {formatCurrency(new Decimal(pool?.lpPrice ?? 0).mul(computedLpRef.current).toString(), { symbol: '$' })}
         </Text>
       </Flex>
       {/* footer */}
@@ -245,10 +245,9 @@ export default function AddLiquidity({
         <HStack fontSize="sm" color={colors.textSecondary} spacing="6px">
           <Text>
             {pool
-              ? `1 ${wSolToSolString(pool[isReverse ? 'mintB' : 'mintA'].symbol)} ≈ ${Number(
-                  new Decimal(pool[isReverse ? 'mintAmountA' : 'mintAmountB'] / pool[isReverse ? 'mintAmountB' : 'mintAmountA']).toFixed(
-                    Math.max(pool[isReverse ? 'mintA' : 'mintB'].decimals, 6)
-                  )
+              ? `1 ${wSolToSolString(pool[isReverse ? 'mintB' : 'mintA'].symbol)} ≈ ${formatCurrency(
+                  new Decimal(pool[isReverse ? 'mintAmountA' : 'mintAmountB'] / pool[isReverse ? 'mintAmountB' : 'mintAmountA']),
+                  { decimalPlaces: Math.max(pool[isReverse ? 'mintA' : 'mintB'].decimals, 6) }
                 )} ${wSolToSolString(pool[isReverse ? 'mintA' : 'mintB'].symbol)}`
               : '-'}
           </Text>

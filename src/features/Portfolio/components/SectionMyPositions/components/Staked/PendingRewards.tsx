@@ -3,7 +3,7 @@ import { Flex, HStack, Text } from '@chakra-ui/react'
 import Button from '@/components/Button'
 import { QuestionToolTip } from '@/components/QuestionToolTip'
 import { colors } from '@/theme/cssVariables'
-import toUsdVolume from '@/utils/numberish/toUsdVolume'
+import { formatCurrency } from '@/utils/numberish/formatter'
 import { useTranslation } from 'react-i18next'
 
 type PendingRewardsProps = {
@@ -22,7 +22,7 @@ export default function PendingRewards({ pendingReward, isLoading, harvestable, 
           {t('staking.pending_rewards')}
         </Text>
         <HStack fontSize="sm" color={colors.textSecondary} fontWeight="500" spacing={1}>
-          <Text>{toUsdVolume(pendingReward, { decimals: 6, decimalMode: 'trim' })}</Text>
+          <Text>{formatCurrency(pendingReward, { symbol: '$', decimalPlaces: 6 })}</Text>
           <QuestionToolTip label={t('staking.pending_rewards_tooltip')} iconType="info" />
         </HStack>
       </Flex>

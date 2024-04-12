@@ -1,7 +1,7 @@
 import { Flex, Text } from '@chakra-ui/react'
 
 import { colors } from '@/theme/cssVariables'
-import toUsdVolume from '@/utils/numberish/toUsdVolume'
+import { formatCurrency } from '@/utils/numberish/formatter'
 import { useTranslation } from 'react-i18next'
 
 type MyPositionProps = {
@@ -17,7 +17,7 @@ export default function StandardMyPosition({ positionUsd, center }: MyPositionPr
         {t('liquidity.my_position')}
       </Text>
       <Text textAlign={center ? 'center' : undefined} fontSize="lg" color={colors.textPrimary} fontWeight="medium">
-        {toUsdVolume(positionUsd, { useShorterExpression: true })}
+        {formatCurrency(positionUsd, { symbol: '$', abbreviated: true, decimalPlaces: 2 })}
       </Text>
     </Flex>
   )

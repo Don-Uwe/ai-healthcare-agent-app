@@ -8,8 +8,7 @@ import TokenAvatarPair from '@/components/TokenAvatarPair'
 import { FormattedPoolInfoStandardItem } from '@/hooks/pool/type'
 import { useAppStore, useTokenAccountStore } from '@/store'
 import IntervalCircle, { IntervalCircleHandler } from '@/components/IntervalCircle'
-import toUsdVolume from '@/utils/numberish/toUsdVolume'
-import { formatLocaleStr } from '@/utils/numberish/formatter'
+import { formatCurrency } from '@/utils/numberish/formatter'
 import { useLiquidityStore } from '@/store/useLiquidityStore'
 
 import { colors } from '@/theme/cssVariables'
@@ -83,8 +82,10 @@ export default function UnStakeLiquidity({
           </Text>
         </Flex>
         <Box textAlign="right">
-          <Text fontSize="28px">{toUsdVolume(removeAmount.mul(poolInfo?.lpPrice || '0').toString())}</Text>
-          <Text variant="label">{formatLocaleStr(removeAmount.toString(), poolInfo?.lpMint.decimals)} LP</Text>
+          <Text fontSize="28px">
+            {formatCurrency(removeAmount.mul(poolInfo?.lpPrice || '0').toString(), { symbol: '$', decimalPlaces: 2 })}
+          </Text>
+          <Text variant="label">{formatCurrency(removeAmount.toString(), { decimalPlaces: poolInfo?.lpMint.decimals })} LP</Text>
         </Box>
       </Flex>
       <AmountSlider isDisabled={featureDisabled || liquidity.isZero()} percent={removePercent} onChange={setRemovePercent} mt={4} />
@@ -94,12 +95,12 @@ export default function UnStakeLiquidity({
         </Text>
         <Flex alignItems="center" gap="1" fontSize="sm">
           <TokenAvatarPair mr="1" token1={poolInfo?.mintA} token2={poolInfo?.mintB} />
-          {formatLocaleStr(removeAmount.mul(baseRatio).toString(), poolInfo?.mintA.decimals)}{' '}
+          {formatCurrency(removeAmount.mul(baseRatio).toString(), { decimalPlaces: poolInfo?.mintA.decimals })}{' '}
           <Text fontSize="sm" variant="label">
             {poolInfo?.mintA.symbol}
           </Text>
           <Box>/</Box>
-          {formatLocaleStr(removeAmount.mul(quoteRatio).toString(), poolInfo?.mintB.decimals)}{' '}
+          {formatCurrency(removeAmount.mul(quoteRatio).toString(), { decimalPlaces: poolInfo?.mintB.decimals })}{' '}
           <Text fontSize="sm" variant="label">
             {poolInfo?.mintB.symbol}
           </Text>

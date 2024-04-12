@@ -3,7 +3,7 @@ import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 
 import TokenAvatar from '@/components/TokenAvatar'
 import { colors } from '@/theme/cssVariables'
-import { toVolume } from '@/utils/numberish/autoSuffixNumberish'
+import { formatCurrency } from '@/utils/numberish/formatter'
 import { useTranslation } from 'react-i18next'
 import Decimal from 'decimal.js'
 
@@ -28,7 +28,7 @@ export default function TokenPooledInfo({ base, quote }: TokenInfoProps) {
         </Text>
         <HStack>
           <Text fontSize="sm" color={colors.textSecondary} fontWeight="medium">
-            {toVolume(new Decimal(base.amount).toFixed(2, Decimal.ROUND_FLOOR), { useShorterExpression: true })}
+            {formatCurrency(new Decimal(base.amount).toFixed(2, Decimal.ROUND_FLOOR), { abbreviated: true, decimalPlaces: 2 })}
           </Text>
           <TokenAvatar token={base.token} size="xs" />
         </HStack>
@@ -39,7 +39,7 @@ export default function TokenPooledInfo({ base, quote }: TokenInfoProps) {
         </Text>
         <HStack>
           <Text fontSize="sm" color={colors.textSecondary} fontWeight="medium">
-            {toVolume(new Decimal(quote.amount).toFixed(2, Decimal.ROUND_FLOOR), { useShorterExpression: true })}
+            {formatCurrency(new Decimal(quote.amount).toFixed(2, Decimal.ROUND_FLOOR), { abbreviated: true, decimalPlaces: 2 })}
           </Text>
           <TokenAvatar token={quote.token} size="xs" />
         </HStack>

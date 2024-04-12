@@ -2,7 +2,7 @@ import { Flex, Text } from '@chakra-ui/react'
 import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 
 import { colors } from '@/theme/cssVariables'
-import toUsdVolume from '@/utils/numberish/toUsdVolume'
+import { formatCurrency } from '@/utils/numberish/formatter'
 
 type StakedValueProps = {
   positionUsd: string
@@ -19,10 +19,10 @@ export default function StakedValue({ positionUsd, staked }: StakedValueProps) {
         My Staked RAY
       </Text>
       <Text fontSize="lg" color={colors.textPrimary} fontWeight="500">
-        {staked.amount} {staked.token?.symbol}
+        {formatCurrency(staked.amount)} {staked.token?.symbol}
       </Text>
       <Text fontSize="xs" color={colors.textTertiary}>
-        {toUsdVolume(positionUsd, { decimalMode: 'trim' })}
+        {formatCurrency(positionUsd, { symbol: '$', decimalPlaces: 2 })}
       </Text>
     </Flex>
   )

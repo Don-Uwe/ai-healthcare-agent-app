@@ -5,7 +5,7 @@ import MinusIcon from '@/icons/misc/MinusIcon'
 import PlusIcon from '@/icons/misc/PlusIcon'
 import Close from '@/icons/misc/Close'
 import { colors } from '@/theme/cssVariables'
-import toUsdVolume from '@/utils/numberish/toUsdVolume'
+import { formatCurrency } from '@/utils/numberish/formatter'
 import { AprKey } from '@/hooks/pool/type'
 import { AprData } from '@/features/Clmm/utils/calApr'
 import {
@@ -111,7 +111,7 @@ export default function ClmmPositionAccountItemDetailMobileDrawer({
               hasReward={hasReward}
               rewardInfos={rewardInfos}
               onHarvest={handleHarvest}
-              pendingYield={toUsdVolume(totalPendingYield.toString())}
+              pendingYield={formatCurrency(totalPendingYield.toString(), { symbol: '$', decimalPlaces: 2 })}
               rewardTokens={poolInfo.rewardDefaultInfos.map((r) => r.mint)}
             />
             <HStack w="full" spacing={4}>

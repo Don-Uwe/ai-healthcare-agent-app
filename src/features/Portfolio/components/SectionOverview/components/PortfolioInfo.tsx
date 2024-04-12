@@ -10,11 +10,11 @@ import { isArray } from '@/utils/judges/judgeType'
 import { AssetType } from '../'
 
 import { Select, SelectorItem } from '@/components/Select'
-import toUsdVolume from '@/utils/numberish/toUsdVolume'
 import PortfolioPieChart, { PORTFOLIO_PIE_COLORS } from './PortfolioPieChart'
 import Decimal from 'decimal.js'
 import { panelCard } from '@/theme/cssBlocks'
 import toPercentString from '@/utils/numberish/toPercentString'
+import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
 
 export type AssetsType = {
   key: string
@@ -170,7 +170,7 @@ export default function PortfolioInfo({ poolAssets, tokenAssets }: { poolAssets?
 function AssetsTotal(props: { total: string | number }) {
   return (
     <Text fontSize={['20px', '28px']} fontWeight="medium">
-      {toUsdVolume(props.total)}
+      {formatCurrency(props.total, { symbol: '$', decimalPlaces: 2 })}
     </Text>
   )
 }
@@ -213,12 +213,12 @@ function PortfolioAssetList({ assetList }: PortfolioAssetListProps) {
               <Text color={colors.textSecondary}>{asset.key}</Text>
             </Flex>
             <Box>
-              <Text textAlign="right">{toUsdVolume(asset.value, { decimals: 2 })}</Text>
+              <Text textAlign="right">{formatCurrency(asset.value, { symbol: '$', decimalPlaces: 2 })}</Text>
             </Box>
           </Flex>
 
           <Text textAlign="right" width="90px" minW="52px">
-            {toPercentString(asset.percentage)}
+            {formatToRawLocaleStr(toPercentString(asset.percentage))}
           </Text>
         </HStack>
       ))}

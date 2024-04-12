@@ -35,8 +35,7 @@ export function SwapInfoBoard({
   computedSwapResult?: ApiSwapV1OutSuccess['data']
   onRefresh: () => void
 }) {
-  const { t, i18n } = useTranslation()
-  const currentLocale = i18n.language
+  const { t } = useTranslation()
   const [showMoreSwapInfo, setShowMoreSwapInfo] = useState(false)
   const refreshCircleRef = useRef<IntervalCircleHandler>(null)
   const routeTokens = tokenInput && tokenOutput ? [tokenInput, tokenOutput] : undefined
@@ -87,9 +86,7 @@ export function SwapInfoBoard({
           color={isHighRiskPrice ? colors.semanticError : priceImpact > 1 ? colors.semanticWarning : colors.textSecondary}
           fontWeight={500}
         >
-          {computedSwapResult
-            ? `${formatToRawLocaleStr(toPercentString(computedSwapResult.priceImpactPct, { notShowZero: true }), currentLocale)}`
-            : '-'}
+          {computedSwapResult ? `${formatToRawLocaleStr(toPercentString(computedSwapResult.priceImpactPct, { notShowZero: true }))}` : '-'}
         </Text>
       </HStack>
 
@@ -141,8 +138,7 @@ function PriceDetector({
   computedSwapResult?: ApiSwapV1OutSuccess['data']
 }) {
   const [reverse, setReverse] = useState(false)
-  const { t, i18n } = useTranslation()
-  const currentLocale = i18n.language
+  const { t } = useTranslation()
 
   const priceImpact = computedSwapResult
     ? computedSwapResult.priceImpactPct > 5
@@ -178,8 +174,8 @@ function PriceDetector({
           {!isComputing ? (
             <Text as="div">
               {reverse
-                ? formatCurrency(price, { locale: currentLocale, decimalPlaces: tokenInput?.decimals || 0 })
-                : formatCurrency(price, { locale: currentLocale, decimalPlaces: tokenOutput?.decimals || 0 })}
+                ? formatCurrency(price, { decimalPlaces: tokenInput?.decimals || 0 })
+                : formatCurrency(price, { decimalPlaces: tokenOutput?.decimals || 0 })}
             </Text>
           ) : (
             <Skeleton width={`${12 * ((reverse ? tokenInput?.decimals : tokenOutput?.decimals) || 1)}px`} height="24px" />
@@ -256,17 +252,14 @@ function OtherMiscUtils({
 }
 
 function MinimumReceiveValue({ tokenOutput, amount }: { tokenOutput?: TokenInfo; amount: string }) {
-  const { i18n } = useTranslation()
-  const currentLocale = i18n.language
   return (
     <HStack fontSize="xs" fontWeight={500}>
       <Text color={colors.textPrimary}>
         {amount && tokenOutput
           ? formatCurrency(new Decimal(amount).div(10 ** tokenOutput.decimals).toFixed(tokenOutput.decimals, Decimal.ROUND_FLOOR), {
-              locale: currentLocale,
               decimalPlaces: tokenOutput?.decimals
             })
-          : formatCurrency(amount, { locale: currentLocale })}
+          : formatCurrency(amount)}
       </Text>
       <Text color={colors.textSecondary}>{tokenOutput?.symbol}</Text>
     </HStack>
@@ -274,8 +267,6 @@ function MinimumReceiveValue({ tokenOutput, amount }: { tokenOutput?: TokenInfo;
 }
 
 function RoutingValue({ routePlan }: { routePlan: ApiSwapV1OutSuccess['data']['routePlan'] }) {
-  const { i18n } = useTranslation()
-  const currentLocale = i18n.language
   return (
     <HStack spacing={0.5} minH="32px">
       {routePlan.map(({ inputMint, outputMint, feeRate, poolId }, idx) => (
@@ -285,7 +276,7 @@ function RoutingValue({ routePlan }: { routePlan: ApiSwapV1OutSuccess['data']['r
           </Tooltip>
           <Tooltip label={<AddressChip address={poolId} renderLabel={'AMM ID:'} textProps={{ fontSize: 'xs' }} canExternalLink />}>
             <Text fontSize={'2xs'} color={colors.textSecondary}>
-              {formatToRawLocaleStr(toPercentString(feeRate / 100), currentLocale)}
+              {formatToRawLocaleStr(toPercentString(feeRate / 100))}
             </Text>
           </Tooltip>
 
@@ -306,8 +297,6 @@ function RoutingValue({ routePlan }: { routePlan: ApiSwapV1OutSuccess['data']['r
 
 function FeeItem({ route }: { route: ApiSwapV1OutSuccess['data']['routePlan']['0'] }) {
   const { tokenInfo } = useTokenInfo({ mint: route.feeMint })
-  const { i18n } = useTranslation()
-  const currentLocale = i18n.language
   if (!tokenInfo) return null
   return (
     <Flex alignItems="center" justifyContent="space-between" gap="1">
@@ -317,7 +306,6 @@ function FeeItem({ route }: { route: ApiSwapV1OutSuccess['data']['routePlan']['0
           .toDecimalPlaces(tokenInfo.decimals, Decimal.ROUND_FLOOR)
           .toString(),
         {
-          locale: currentLocale,
           decimalPlaces: tokenInfo.decimals
         }
       )}

@@ -14,8 +14,7 @@ import { useAppStore, useFarmStore, useTokenAccountStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
 
 import AmountSlider from '@/components/AmountSlider'
-import { formatLocaleStr } from '@/utils/numberish/formatter'
-import toUsdVolume from '@/utils/numberish/toUsdVolume'
+import { formatCurrency } from '@/utils/numberish/formatter'
 import Decimal from 'decimal.js'
 import SelectFarmListItem from '../../components/SelectFarmListItem'
 import SelectedFarm from '../../components/SelectedFarm'
@@ -155,10 +154,10 @@ export default function Stake({ poolInfo, disabled, onRefresh }: Props) {
         </Flex>
         <Box textAlign="right">
           <Text fontSize={['22px', '28px']} fontWeight="500">
-            {formatLocaleStr(lpBalance.amount.mul(percent).div(100).toString(), poolInfo.lpMint.decimals)}
+            {formatCurrency(lpBalance.amount.mul(percent).div(100).toString(), { decimalPlaces: poolInfo.lpMint.decimals })}
           </Text>
           <Text variant="label" fontSize="sm">
-            {toUsdVolume(readyStakeAmount.mul(poolInfo.lpPrice).toString())}
+            {formatCurrency(readyStakeAmount.mul(poolInfo.lpPrice).toString(), { symbol: '$', decimalPlaces: 2 })}
           </Text>
         </Box>
       </Flex>

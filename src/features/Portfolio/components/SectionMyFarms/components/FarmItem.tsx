@@ -16,6 +16,7 @@ import { colors } from '@/theme/cssVariables'
 import toApr from '@/utils/numberish/toApr'
 import { routeToPage } from '@/utils/routeTools'
 import { encodeStr } from '@/utils/common'
+import { formatToRawLocaleStr } from '@/utils/numberish/formatter'
 
 import Period from './Period'
 import Tvl from './Tvl'
@@ -72,7 +73,7 @@ export default function FarmItem({
             {t('field.apr')}
           </Text>
           <Text fontSize="sm" color={colors.textPrimary}>
-            {toApr({ val: apr })}
+            {formatToRawLocaleStr(toApr({ val: apr }))}
           </Text>
         </Flex>
         <WeeklyRewards rewardsInfo={data.formattedRewardInfos} flex={1.5} minW="fit-content" />
@@ -124,7 +125,7 @@ function FarmItemHeader({ name, baseToken, quoteToken, id, type, feeRate }: Farm
 
       {type === FarmCategory.Clmm && feeRate ? (
         <Tag size="sm" variant="rounded">
-          {feeRate * 100}%
+          {formatToRawLocaleStr(feeRate * 100)}%
         </Tag>
       ) : null}
 

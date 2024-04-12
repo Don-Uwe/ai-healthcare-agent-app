@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import TokenAvatar from '@/components/TokenAvatar'
 import { colors, sizes } from '@/theme/cssVariables'
-import toUsdVolume from '@/utils/numberish/toUsdVolume'
 import { Badge, Box, Flex, Grid, HStack, VStack } from '@chakra-ui/react'
 import { WeeklyRewardData } from '@/hooks/pool/type'
 import { AprData } from '@/features/Clmm/utils/calApr'
@@ -10,7 +9,7 @@ import { aprColors } from './PoolListItemAprLine'
 import { PoolListItemAprPie } from './PoolListItemAprPie'
 import { wSolToSolString } from '@/utils/token'
 import { toAPRPercent } from '../util'
-import { formatCurrency } from '@/utils/numberish/formatter'
+import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
 import Decimal from 'decimal.js'
 import dayjs from 'dayjs'
 
@@ -36,7 +35,7 @@ export default function PoolListItemAprDetailPopoverContent({
             {t('field.total_apr')}
           </Box>
           <Box fontSize={sizes.textLG} fontWeight="medium" color={colors.textPrimary}>
-            {parseFloat(aprData.apr.toFixed(2))}%
+            {formatToRawLocaleStr(parseFloat(aprData.apr.toFixed(2)))}%
           </Box>
         </Flex>
         {/* total apr */}
@@ -50,7 +49,7 @@ export default function PoolListItemAprDetailPopoverContent({
                   {t('field.trade_fees')}
                 </Flex>
                 <Box fontSize={sizes.textXS} color={colors.textPrimary}>
-                  {toAPRPercent(aprData.fee.apr)}
+                  {formatToRawLocaleStr(toAPRPercent(aprData.fee.apr))}
                 </Box>
               </Flex>
               {aprData.rewards.map(({ apr, mint }, idx) => {
@@ -62,7 +61,7 @@ export default function PoolListItemAprDetailPopoverContent({
                       {wSolToSolString(mint?.symbol)}
                     </Flex>
                     <Box fontSize={sizes.textXS} color={colors.textPrimary}>
-                      {toAPRPercent(apr)}
+                      {formatToRawLocaleStr(toAPRPercent(apr))}
                     </Box>
                   </Flex>
                 )
@@ -93,8 +92,9 @@ export default function PoolListItemAprDetailPopoverContent({
                   <Box>{reward.token?.symbol}</Box>
                   <Box color={colors.textPrimary}>
                     (
-                    {toUsdVolume(new Decimal(tokenPrices[reward.token.address]?.value || 0).mul(reward.amount).toString(), {
-                      useShorterExpression: true
+                    {formatCurrency(new Decimal(tokenPrices[reward.token.address]?.value || 0).mul(reward.amount).toString(), {
+                      abbreviated: true,
+                      decimalPlaces: 2
                     })}
                     )
                   </Box>

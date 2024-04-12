@@ -3,6 +3,7 @@ import { Flex, HStack, Text } from '@chakra-ui/react'
 import { QuestionToolTip } from '@/components/QuestionToolTip'
 import { colors } from '@/theme/cssVariables'
 import toApr from '@/utils/numberish/toApr'
+import { formatToRawLocaleStr } from '@/utils/numberish/formatter'
 import { useTranslation } from 'react-i18next'
 
 type MyPositionProps = {
@@ -19,7 +20,7 @@ export default function StandardPoolAPR({ positionAPR, center }: MyPositionProps
       </Text>
       <HStack>
         <Text fontSize="lg" color={colors.textPrimary} lineHeight={1} fontWeight="medium">
-          {toApr({ val: positionAPR, multiply: false })}
+          {formatToRawLocaleStr(toApr({ val: positionAPR, multiply: false }))}
         </Text>
         <QuestionToolTip
           iconProps={{

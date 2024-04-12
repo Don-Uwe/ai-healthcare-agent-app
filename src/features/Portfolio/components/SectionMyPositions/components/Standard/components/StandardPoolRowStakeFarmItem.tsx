@@ -5,7 +5,7 @@ import TokenAvatar from '@/components/TokenAvatar'
 import useFetchFarmInfoById from '@/hooks/farm/useFetchFarmInfoById'
 import FarmRewardIcon from '@/icons/pool/FarmRewardIcon'
 import { colors } from '@/theme/cssVariables'
-import toUsdVolume from '@/utils/numberish/toUsdVolume'
+import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
 import { routeToPage } from '@/utils/routeTools'
 import { toAPRPercent } from '@/features/Pools/util'
 import useTokenPrice from '@/hooks/token/useTokenPrice'
@@ -110,21 +110,21 @@ export default function StandardPoolRowStakeFarmItem({
         <SimpleGrid columnGap={[2, 8]} templateColumns={'1fr auto auto auto 1fr'}>
           <HStack justifyContent={'right'}>
             <Text color={colors.textSecondary}>{t('amm.staked')}</Text>
-            <Text>{toUsdVolume(new Decimal(deposited).mul(lpPrice).toString())}</Text>
+            <Text>{formatCurrency(new Decimal(deposited).mul(lpPrice).toString(), { symbol: '$', decimalPlaces: 2 })}</Text>
           </HStack>
 
           <Divider orientation="vertical" alignSelf="stretch" />
 
           <HStack width={['84px', '100px']} justifyContent={'center'}>
             <Text color={colors.textSecondary}>{t('liquidity.APR')}</Text>
-            <Text>{toAPRPercent(farm.apr * 100)}</Text>
+            <Text>{formatToRawLocaleStr(toAPRPercent(farm.apr * 100))}</Text>
           </HStack>
 
           <Divider orientation="vertical" alignSelf="stretch" />
 
           <HStack justifyContent={'left'}>
             <Text color={colors.textSecondary}>{t('amm.pending_reward')}</Text>
-            <Text>{toUsdVolume(pendingReward)}</Text>
+            <Text>{formatCurrency(pendingReward, { symbol: '$', decimalPlaces: 2 })}</Text>
           </HStack>
         </SimpleGrid>
       </GridItem>

@@ -299,7 +299,7 @@ function TokenInput(props: TokenInputProps) {
               sx={{ textUnderlineOffset: '1px' }}
               _hover={{ textDecorationThickness: '1.5px', textUnderlineOffset: '2px' }}
             >
-              {formatCurrency(maxString, { locale: currentLocale, decimalPlaces: token?.decimals })}
+              {formatCurrency(maxString, { decimalPlaces: token?.decimals })}
             </Text>
           </HStack>
         )}
@@ -360,7 +360,7 @@ function TokenInput(props: TokenInputProps) {
               }}
               onFocus={handleFocus}
               isDisabled={readonly || loading}
-              value={formatToRawLocaleStr(value, currentLocale)}
+              value={formatToRawLocaleStr(value)}
               min={0}
               width={width || '100%'}
               opacity={loading ? 0.2 : 1}
@@ -407,9 +407,7 @@ function TokenInput(props: TokenInputProps) {
         </GridItem>
 
         <GridItem area="price" color={colors.textTertiary} fontSize={sizes.opacityVolume}>
-          <Text textAlign="right">
-            ~{formatCurrency(totalPrice, { locale: currentLocale, symbol: '$', maximumDecimalTrailingZeroes: 5 })}
-          </Text>
+          <Text textAlign="right">~{formatCurrency(totalPrice, { symbol: '$', maximumDecimalTrailingZeroes: 5 })}</Text>
         </GridItem>
       </Grid>
       <TokenSelectDialog isOpen={isOpen} onClose={onClose} onSelectValue={handleSelectToken} filterFn={filterFn} />

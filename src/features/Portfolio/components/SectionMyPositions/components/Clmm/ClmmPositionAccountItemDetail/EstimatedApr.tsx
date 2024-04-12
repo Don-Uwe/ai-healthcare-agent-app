@@ -6,6 +6,7 @@ import { PoolListItemAprLine } from '@/features/Pools/components/PoolListItemApr
 import { AprKey, TimeAprData, TimeBasisOptionType, WeeklyRewardData, timeBasisOptions } from '@/hooks/pool/type'
 import { colors } from '@/theme/cssVariables'
 import toPercentString from '@/utils/numberish/toPercentString'
+import { formatToRawLocaleStr } from '@/utils/numberish/formatter'
 import { AprData } from '@/features/Clmm/utils/calApr'
 import { Box, Flex, HStack, SimpleGrid, Text, Tooltip } from '@chakra-ui/react'
 import { useTranslation } from 'react-i18next'
@@ -54,7 +55,7 @@ export default function EstimatedApr({ aprData, weeklyRewards, onTimeBasisChange
           columnGap={3}
         >
           <Text gridArea={'value'} fontSize="xl" fontWeight="medium" color={colors.textPrimary}>
-            {toPercentString(aprData.apr)}
+            {formatToRawLocaleStr(toPercentString(aprData.apr))}
           </Text>
           <Box gridArea={'line'}>
             <PoolListItemAprLine aprData={aprData} />

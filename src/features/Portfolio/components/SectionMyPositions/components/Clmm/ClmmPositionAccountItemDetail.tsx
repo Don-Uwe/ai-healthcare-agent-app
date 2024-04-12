@@ -8,7 +8,7 @@ import Close from '@/icons/misc/Close'
 import MinusIcon from '@/icons/misc/MinusIcon'
 import PlusIcon from '@/icons/misc/PlusIcon'
 import { colors } from '@/theme/cssVariables'
-import toUsdVolume from '@/utils/numberish/toUsdVolume'
+import { formatCurrency } from '@/utils/numberish/formatter'
 import { AprData } from '@/features/Clmm/utils/calApr'
 import EstimatedApr from './ClmmPositionAccountItemDetail/EstimatedApr'
 import PendingYield from './ClmmPositionAccountItemDetail/PendingYield'
@@ -86,7 +86,7 @@ export default function ClmmPositionAccountItemDetail({
               hasReward={hasReward}
               rewardInfos={rewardInfos}
               onHarvest={handleHarvest}
-              pendingYield={toUsdVolume(totalPendingYield)}
+              pendingYield={formatCurrency(totalPendingYield, { symbol: '$', decimalPlaces: 2 })}
               rewardTokens={poolInfo.rewardDefaultInfos.map((r) => r.mint)}
             />
           </Flex>

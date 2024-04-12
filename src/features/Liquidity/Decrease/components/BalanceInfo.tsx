@@ -1,5 +1,6 @@
 import { Flex, Text, VStack } from '@chakra-ui/react'
 import { useTranslation } from 'react-i18next'
+import { formatCurrency } from '@/utils/numberish/formatter'
 
 import { colors } from '@/theme/cssVariables'
 import { DecreaseTabOptionType } from '..'
@@ -27,7 +28,7 @@ export default function BalanceInfo({ currentTab, stakedLiquidity, unstakedLiqui
           fontSize="sm"
         >
           <Text>{t('liquidity.staked_liquidity')}</Text>
-          <Text>{stakedLiquidity}</Text>
+          <Text>{formatCurrency(stakedLiquidity)}</Text>
         </Flex>
 
         <Flex
@@ -38,7 +39,7 @@ export default function BalanceInfo({ currentTab, stakedLiquidity, unstakedLiqui
           fontSize="sm"
         >
           <Text>{t('liquidity.unstaked_liquidity')}</Text>
-          <Text>{unstakedLiquidity}</Text>
+          <Text>{formatCurrency(unstakedLiquidity)}</Text>
         </Flex>
       </VStack>
     </Flex>

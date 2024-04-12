@@ -9,7 +9,7 @@ import PlusIcon from '@/icons/misc/PlusIcon'
 import { useAppStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
 import toPercentString from '@/utils/numberish/toPercentString'
-import toUsdVolume from '@/utils/numberish/toUsdVolume'
+import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
 import { TokenPrice } from '@/hooks/token/useTokenPrice'
 import { AprKey } from '@/hooks/pool/type'
 import { getPositionAprCore } from '@/features/Clmm/utils/calApr'
@@ -61,8 +61,17 @@ export default function ClmmPositionAccountItemFace({
   const decimals = Math.max(poolInfo.mintA.decimals, poolInfo.mintB.decimals)
   const inRange = priceLower.price.lt(poolInfo.price) && priceUpper.price.gt(poolInfo.price)
   const rangeValue = baseIn
-    ? `${priceLower.price.toFixed(decimals)} - ${priceUpper.price.toFixed(decimals)}`
-    : `${new Decimal(1).div(priceUpper.price).toFixed(decimals)} - ${new Decimal(1).div(priceLower.price).toFixed(decimals)}`
+    ? `${formatCurrency(priceLower.price, {
+        decimalPlaces: decimals
+      })} - ${formatCurrency(priceUpper.price, {
+        decimalPlaces: decimals
+      })}`
+    : `${formatCurrency(new Decimal(1).div(priceUpper.price), {
+        decimalPlaces: decimals
+      })} - ${formatCurrency(new Decimal(1).div(priceLower.price), {
+        decimalPlaces: decimals
+      })}`
+
   const rangeValueUnit = t(isMobile ? 'common.per_unit_2' : 'common.per_unit', {
     subA: poolInfo[baseIn ? 'mintB' : 'mintA'].symbol,
     subB: poolInfo[baseIn ? 'mintA' : 'mintB'].symbol
@@ -129,7 +138,7 @@ export default function ClmmPositionAccountItemFace({
                     {t('clmm.position')}
                   </Text>
                   <Text whiteSpace={'nowrap'} color={colors.textPrimary}>
-                    {toUsdVolume(totalVolume.toString())}
+                    {formatCurrency(totalVolume.toString(), { symbol: '$', decimalPlaces: 2 })}
                   </Text>
                 </HStack>
 
@@ -138,7 +147,7 @@ export default function ClmmPositionAccountItemFace({
                     {t('field.apr')}
                   </Text>
                   <Text whiteSpace={'nowrap'} color={colors.textPrimary}>
-                    {toPercentString(apr.apr)}
+                    {formatToRawLocaleStr(toPercentString(apr.apr))}
                   </Text>
                   <AprMDSwitchWidget color={colors.textSecondary} />
                 </HStack>
@@ -199,7 +208,7 @@ export default function ClmmPositionAccountItemFace({
                       {t('clmm.position')}
                     </Text>
                     <Text fontSize="sm" color={colors.textPrimary}>
-                      {toUsdVolume(totalVolume.toString())}
+                      {formatCurrency(totalVolume.toString(), { symbol: '$', decimalPlaces: 2 })}
                     </Text>
                   </HStack>
                 </GridItem>
@@ -210,7 +219,7 @@ export default function ClmmPositionAccountItemFace({
                       {t('field.apr')}
                     </Text>
                     <Text fontSize="sm" color={colors.textPrimary}>
-                      {toPercentString(apr.apr)}
+                      {formatToRawLocaleStr(toPercentString(apr.apr))}
                     </Text>
                     <AprMDSwitchWidget color={colors.textSecondary} />
                   </HStack>

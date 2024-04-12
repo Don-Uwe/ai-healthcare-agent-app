@@ -14,8 +14,7 @@ import { KeyboardEvent, useCallback, useState } from 'react'
 import Decimal from 'decimal.js'
 
 export function SlippageToleranceSettingField() {
-  const { t, i18n } = useTranslation()
-  const currentLocale = i18n.language
+  const { t } = useTranslation()
   const slippage = useAppStore((s) => s.slippage)
   const isMobile = useAppStore((s) => s.isMobile)
   const [currentSlippage, setCurrentSlippage] = useState(String(slippage * 100))
@@ -60,7 +59,7 @@ export function SlippageToleranceSettingField() {
                     handleUpdateSlippage(v)
                   }}
                 >
-                  {formatToRawLocaleStr(toPercentString(v), currentLocale)}
+                  {formatToRawLocaleStr(toPercentString(v))}
                 </Button>
               ))}
             </Flex>

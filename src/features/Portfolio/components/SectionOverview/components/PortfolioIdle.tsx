@@ -4,7 +4,6 @@ import ChevronRightIcon from '@/icons/misc/ChevronRightIcon'
 import { useAppStore } from '@/store/useAppStore'
 import { panelCard } from '@/theme/cssBlocks'
 import { colors } from '@/theme/cssVariables'
-import toUsdVolume from '@/utils/numberish/toUsdVolume'
 import { routeToPage } from '@/utils/routeTools'
 import { Box, Flex, Grid, GridItem, SimpleGrid, Text } from '@chakra-ui/react'
 import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
@@ -12,7 +11,7 @@ import Decimal from 'decimal.js'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import PortfolioPieChart, { IDLE_TOKENS_COLORS } from './PortfolioPieChart'
-import { toVolume } from '@/utils/numberish/autoSuffixNumberish'
+import { formatCurrency } from '@/utils/numberish/formatter'
 
 export type IdleType = {
   token: ApiV3Token | undefined
@@ -86,7 +85,7 @@ export default function PortfolioIdle({ idleBalance, productiveBalance, idleList
 
             <GridItem area={'total'} justifySelf={['center', 'unset']}>
               <Text fontSize={['20px', '28px']} fontWeight="medium">
-                {toUsdVolume(idleBalance)}
+                {formatCurrency(idleBalance, { symbol: '$', decimalPlaces: 2 })}
               </Text>
             </GridItem>
 
@@ -135,11 +134,11 @@ function AssetsList(props: { idleList?: IdleType[] }) {
           </GridItem>
           <GridItem area={'i1'}>
             <Text color={colors.textSecondary}>
-              {idle.amount ? toVolume(idle.amount, { useShorterExpression: true, decimals: 2 }) : idle.amount}
+              {idle.amount ? formatCurrency(idle.amount, { decimalPlaces: 2, abbreviated: true }) : idle.amount}
             </Text>
           </GridItem>
           <GridItem area={'i2'}>
-            <Text color={colors.textSecondary}>{toUsdVolume(idle.amountInUSD)}</Text>
+            <Text color={colors.textSecondary}>{formatCurrency(idle.amountInUSD, { symbol: '$', decimalPlaces: 2 })}</Text>
           </GridItem>
           <GridItem area={'btn'} justifySelf={'end'}>
             {idle.token?.address ? (

@@ -15,8 +15,7 @@ import useFetchFarmBalance from '@/hooks/farm/useFetchFarmBalance'
 import useFarmPositions from '@/hooks/portfolio/farm/useFarmPositions'
 import { useAppStore, useFarmStore, useTokenAccountStore } from '@/store'
 import useTokenPrice from '@/hooks/token/useTokenPrice'
-import toUsdVolume from '@/utils/numberish/toUsdVolume'
-import { formatLocaleStr } from '@/utils/numberish/formatter'
+import { formatCurrency } from '@/utils/numberish/formatter'
 import SelectedFarm from '../../components/SelectedFarm'
 import SelectFarmListItem from '../../components/SelectFarmListItem'
 import IntervalCircle, { IntervalCircleHandler } from '@/components/IntervalCircle'
@@ -146,8 +145,8 @@ export default function UnStakeLiquidity({
           </Text>
         </Flex>
         <Box textAlign="right">
-          <Text fontSize="28px">{toUsdVolume(withdrawAmount.mul(lpPrice).toString())}</Text>
-          <Text variant="label">{formatLocaleStr(withdrawAmount.toString(), poolInfo?.lpMint.decimals)} LP</Text>
+          <Text fontSize="28px">{formatCurrency(withdrawAmount.mul(lpPrice).toString(), { symbol: '$', decimalPlaces: 2 })}</Text>
+          <Text variant="label">{formatCurrency(withdrawAmount.toString(), { decimalPlaces: poolInfo?.lpMint.decimals })} LP</Text>
         </Box>
       </Flex>
       <AmountSlider
@@ -176,7 +175,10 @@ export default function UnStakeLiquidity({
                   </HStack>
                 </HStack>
                 <Text fontSize="sm">
-                  {toUsdVolume(new Decimal(rewardAmount || 0).mul(tokenPrices[rewardMint.mint.address]?.value ?? 0).toFixed(10))}
+                  {formatCurrency(new Decimal(rewardAmount || 0).mul(tokenPrices[rewardMint.mint.address]?.value ?? 0).toFixed(10), {
+                    symbol: '$',
+                    decimalPlaces: 2
+                  })}
                 </Text>
               </Flex>
             )

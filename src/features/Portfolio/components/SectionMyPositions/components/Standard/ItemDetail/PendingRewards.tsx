@@ -1,7 +1,6 @@
 import ExclaimationTriangle from '@/icons/misc/ExclaimationTriangle'
 import InfoCircleIcon from '@/icons/misc/InfoCircleIcon'
 import { colors } from '@/theme/cssVariables'
-import toUsdVolume from '@/utils/numberish/toUsdVolume'
 import TokenAvatar from '@/components/TokenAvatar'
 import { formatCurrency } from '@/utils/numberish/formatter'
 import { getMintSymbol } from '@/utils/token'
@@ -32,7 +31,7 @@ export default function PendingRewards({ pendingReward, positionStatus, rewardIn
         </Text>
         <HStack color={colors.textSecondary}>
           <Text fontSize="sm" fontWeight="medium">
-            {toUsdVolume(pendingReward, { useShorterExpression: true })}
+            {formatCurrency(pendingReward, { symbol: '$', abbreviated: true, decimalPlaces: 2 })}
           </Text>
           {rewardInfo.length > 0 ? (
             <Tooltip
@@ -47,7 +46,7 @@ export default function PendingRewards({ pendingReward, positionStatus, rewardIn
                         })}
                       </Text>
                       <Text>{getMintSymbol({ mint: r.mint, transformSol: true })}</Text>
-                      <Text color={colors.textPrimary}>({toUsdVolume(r.amountUSD, { decimals: 4, decimalMode: 'trim' })})</Text>
+                      <Text color={colors.textPrimary}>({formatCurrency(r.amountUSD, { symbol: '$', decimalPlaces: 4 })})</Text>
                     </Flex>
                   ))}
                 </>
