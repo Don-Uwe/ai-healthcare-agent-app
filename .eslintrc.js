@@ -20,6 +20,7 @@ module.exports = {
     '@typescript-eslint/no-empty-function': 'off',
     'react-hooks/exhaustive-deps': 'off',
     'react/prop-types': 'off',
-    'typescript-eslint/ban-types': 0
+    'typescript-eslint/ban-types': 0,
+    'no-async-promise-executor': 'warn'
   }
 }
