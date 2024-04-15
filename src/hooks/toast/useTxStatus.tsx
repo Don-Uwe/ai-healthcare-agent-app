@@ -27,6 +27,7 @@ export interface TxMeta {
 export const txStatusSubject = new Subject<
   TxMeta & {
     txId: string
+    status?: ToastStatus
     txValues?: Record<string, any>
     mintInfo?: ApiV3Token[]
     hideResultToast?: boolean
@@ -73,6 +74,7 @@ function useTxStatus() {
       .subscribe(
         ({
           txId,
+          status,
           title,
           txHistoryTitle,
           description,
@@ -115,7 +117,7 @@ function useTxStatus() {
               ? `${description} ${t('transaction.multisig_wallet_initiation')}`
               : description || `${explorerUrl}/tx/${txId}`,
             detail: renderDetail(),
-            status: 'info',
+            status: status || 'info',
             duration: TOAST_DURATION,
             update,
             onClose
