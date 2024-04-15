@@ -31,7 +31,7 @@ import { toAPRPercent } from '../util'
 import { ChartWindow } from './PoolChart'
 import { aprColors } from './PoolListItemAprLine'
 import { PoolListItemAprPie } from './PoolListItemAprPie'
-import { wSolToSolString } from '@/utils/token'
+import { wSolToSolString, getMintSymbol } from '@/utils/token'
 import Decimal from 'decimal.js'
 
 type PoolDetailMobileDrawerProps = {
@@ -206,7 +206,7 @@ export default function PoolDetailMobileDrawer({
                     <HStack fontWeight="normal" color={colors.textSecondary} spacing={1}>
                       <TokenAvatar size="sm" token={reward.token} />
                       <Box color={colors.textPrimary}>{formatCurrency(reward.amount, { decimalPlaces: 2 })}</Box>
-                      <Box>{reward.token?.symbol}</Box>
+                      <Box>{getMintSymbol({ mint: reward.token, transformSol: true })}</Box>
                     </HStack>
                     <Box>
                       {formatCurrency(new Decimal(tokenPrices[reward.token.address]?.value || 0).mul(reward.amount).toString(), {
