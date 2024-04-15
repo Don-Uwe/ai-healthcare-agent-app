@@ -53,7 +53,10 @@ function useGlobalToast() {
       }
       const status = data.status === 'error' || data.status === 'info' || data.status === 'warning' ? data.status : 'success'
       if (close) {
-        id && toast.close(id)
+        if (id) {
+          toast.close(id)
+          userClosedToastIds.set(id as ToastId, status)
+        }
         return
       }
       if (id && userClosedToastIds.has(id) && userClosedToastIds.get(id) === status) return

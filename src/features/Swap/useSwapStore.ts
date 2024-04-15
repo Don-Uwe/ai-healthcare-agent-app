@@ -149,6 +149,7 @@ export const useSwapStore = createStore<SwapStore>(
           if (signedTxs.length <= 1) {
             if (processedId[0].status !== 'info') return
             txStatusSubject.next({
+              skipWatchSignature: true,
               txId: processedId[0].txId,
               ...swapMeta,
               mintInfo: [inputToken, outputToken],

@@ -63,6 +63,8 @@ export default function CreateMarket() {
           setUrlQuery({ mode: tabValueModeMapping['I have an ID'], id: marketRef.current })
         },
         onFinally: offSending
+      }).then((r) => {
+        marketRef.current = r.marketId
       })
     }
   })
