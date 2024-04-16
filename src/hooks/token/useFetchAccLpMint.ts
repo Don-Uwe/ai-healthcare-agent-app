@@ -75,6 +75,7 @@ export default function useFetchAccLpMint<T>({
   type
 }: Props<T>) {
   const connection = useAppStore((s) => s.connection)
+  const owner = useAppStore((s) => s.publicKey)
   const [tokenAccounts, getTokenBalanceUiAmount] = useTokenAccountStore((s) => [s.tokenAccounts, s.getTokenBalanceUiAmount], shallow)
 
   const readyFetchMints = tokenAccounts
@@ -87,7 +88,8 @@ export default function useFetchAccLpMint<T>({
   const { data, ...rest } = useSWR(fetch ? [connection, readyFetchMints] : null, fetcher, {
     refreshInterval,
     dedupingInterval: refreshInterval,
-    focusThrottleInterval: refreshInterval
+    focusThrottleInterval: refreshInterval,
+    keepPreviousData: !!owner
   })
   const lpMintList = useMemo(() => data?.filter((s) => s && poolLpAuthority.has(s.mintAuthority.toBase58())) || [], [data])
   const noneZeroLpMintList = useMemo(
@@ -99,7 +101,8 @@ export default function useFetchAccLpMint<T>({
   const { formattedData: poolData = [] } = useFetchPoolByLpMint({
     shouldFetch: fetchLpPoolInfo,
     lpMintList: noneZeroLpMintList.map((p) => p!.address.toBase58()),
-    refreshInterval: MINUTE_MILLISECONDS
+    refreshInterval: MINUTE_MILLISECONDS,
+    keepPreviousData: !!owner
   })
 
   let lpAll = new Decimal(0)

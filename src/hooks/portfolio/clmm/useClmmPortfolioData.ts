@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { ApiV3PoolInfoConcentratedItem, ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 import useClmmBalance, { ClmmDataMap, ClmmPosition } from '@/hooks/portfolio/clmm/useClmmBalance'
+import { useAppStore } from '@/store'
 import useFetchPoolById from '@/hooks/pool/useFetchPoolById'
 import useTokenPrice from '@/hooks/token/useTokenPrice'
 import Decimal from 'decimal.js'
@@ -9,6 +10,7 @@ export type { ClmmDataMap, ClmmPosition }
 
 export default function useClmmPortfolioData<T>({ type }: { type: T }) {
   const { clmmBalanceInfo, getPriceAndAmount, isLoading } = useClmmBalance({})
+  const owner = useAppStore((s) => s.publicKey)
   const allClmmBalanceData = useMemo(() => Array.from(clmmBalanceInfo.entries()), [clmmBalanceInfo])
   const allPositions = useMemo(() => allClmmBalanceData.map((d) => d[1]).flat(), [allClmmBalanceData])
   const { formattedDataMap } = useFetchPoolById<ApiV3PoolInfoConcentratedItem>({
@@ -75,6 +77,13 @@ export default function useClmmPortfolioData<T>({ type }: { type: T }) {
   clmmPoolAssets.forEach(
     (data) =>
       (data!.percentage = clmmAll.isZero() ? 100 : new Decimal(data!.value ?? 0).div(clmmAll).mul(100).toDecimalPlaces(2).toNumber())
+  )
+
+  useEffect(
+    () => () => {
+      setClmmAll(new Decimal(0))
+    },
+    [owner?.toBase58()]
   )
 
   return {
