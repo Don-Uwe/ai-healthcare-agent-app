@@ -24,7 +24,6 @@ import PanelCard from '@/components/PanelCard'
 import TokenAvatar from '@/components/TokenAvatar'
 import TokenAvatarPair from '@/components/TokenAvatarPair'
 import Tooltip from '@/components/Tooltip'
-import UsdVolume from '@/components/UsdVolume'
 import { AprKey, FormattedPoolInfoItem } from '@/hooks/pool/type'
 import ChartInfoIcon from '@/icons/misc/ChartInfoIcon'
 import OpenBookIcon from '@/icons/misc/OpenBookIcon'
@@ -33,9 +32,8 @@ import QuestionCircleIcon from '@/icons/misc/QuestionCircleIcon'
 import StarIcon from '@/icons/misc/StarIcon'
 import { useAppStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
-import { formatLocaleStr } from '@/utils/numberish/formatter'
+import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
 import toPercentString from '@/utils/numberish/toPercentString'
-import toUsdVolume from '@/utils/numberish/toUsdVolume'
 import { poolListGrid } from '../cssBlocks'
 import { TimeBase } from '../Pools'
 import { getFavoritePoolCache, setFavoritePoolCache, toAPRPercent } from '../util'
@@ -192,7 +190,7 @@ export default function PoolListItem({
                 <GridItem area="t">
                   <HStack align="center">
                     <Tag size="sm" variant="rounded">
-                      {toPercentString(pool.feeRate * 100)}
+                      {formatToRawLocaleStr(toPercentString(pool.feeRate * 100))}
                     </Tag>
 
                     {pool.isOpenBook && (
@@ -211,19 +209,19 @@ export default function PoolListItem({
           </Flex>
 
           <Desktop>
-            <UsdVolume decimals={0} fontSize={['sm', 'lg']} textAlign={'right'}>
-              {pool.tvl}
-            </UsdVolume>
+            <Text as={'span'} fontSize={['sm', 'lg']} textAlign={'right'}>
+              {formatCurrency(pool.tvl, { symbol: '$', decimalPlaces: 0 })}
+            </Text>
           </Desktop>
 
-          <UsdVolume decimals={0} fontSize={['sm', 'lg']} textAlign={'right'}>
-            {timeData.volume}
-          </UsdVolume>
+          <Text as={'span'} fontSize={['sm', 'lg']} textAlign={'right'}>
+            {formatCurrency(timeData.volume, { symbol: '$', abbreviated: isMobile, decimalPlaces: 0 })}
+          </Text>
 
           <Desktop>
-            <UsdVolume decimals={0} fontSize={['sm', 'lg']} textAlign={'right'}>
-              {timeData.volumeFee}
-            </UsdVolume>
+            <Text as={'span'} fontSize={['sm', 'lg']} textAlign={'right'}>
+              {formatCurrency(timeData.volumeFee, { symbol: '$', decimalPlaces: 0 })}
+            </Text>
           </Desktop>
           <Tooltip
             isContentCard
@@ -239,7 +237,7 @@ export default function PoolListItem({
             <HStack flexDirection={['column', 'column', 'row']} gap={[1, 2, 5]} alignItems={['revert', 'revert', 'center']}>
               <Box width={['unset', '80px', '100px']}>
                 <Text fontSize={['md', 'lg', 'xl']} fontWeight={500} whiteSpace="nowrap" align={['revert', 'revert', 'right']}>
-                  {toAPRPercent(timeData.apr)}
+                  {formatToRawLocaleStr(toAPRPercent(timeData.apr))}
                 </Text>
                 <PoolListItemAprLine aprData={aprData} />
               </Box>
@@ -326,7 +324,7 @@ export default function PoolListItem({
                               {t('field.total_apr')}
                             </Text>
                             <Text fontSize="sm" color={colors.textPrimary}>
-                              {toAPRPercent(pool.totalApr[field])}
+                              {formatToRawLocaleStr(toAPRPercent(pool.totalApr[field]))}
                             </Text>
                           </Flex>
                           <Grid templateColumns={'60px 1fr'} gap={8}>
@@ -354,7 +352,7 @@ export default function PoolListItem({
                                         {isTradingFee ? 'Trade Fees' : token?.symbol}
                                       </Flex>
                                       <Box fontSize={'xs'} color={colors.textPrimary}>
-                                        {toAPRPercent(Number(apr))}
+                                        {formatToRawLocaleStr(toAPRPercent(Number(apr)))}
                                       </Box>
                                     </Flex>
                                   ))}
@@ -367,7 +365,7 @@ export default function PoolListItem({
                     >
                       <Flex align="center" gap={1} w="full" justify="center">
                         <Text fontSize="xl" fontWeight="500" color={colors.secondary}>
-                          {toAPRPercent(pool.totalApr[field])} {t('field.apr')}
+                          {formatToRawLocaleStr(toAPRPercent(pool.totalApr[field]))} {t('field.apr')}
                         </Text>
                         <QuestionCircleIcon opacity={1} color={colors.textSecondary} />
                       </Flex>
@@ -386,7 +384,7 @@ export default function PoolListItem({
                           <Text color={colors.textSecondary} fontSize="sm">
                             <Highlight query="concentrated" styles={{ fontWeight: '700', color: `${colors.textSecondary}` }}>
                               {t('liquidity.pool_fee_desc', {
-                                feeRate: pool.feeRate * 100,
+                                feeRate: formatToRawLocaleStr(pool.feeRate * 100),
                                 type: t(`liquidity.${pool.type}`)
                               }) || 'liquidity.pool_fee_desc'}
                             </Highlight>
@@ -395,7 +393,7 @@ export default function PoolListItem({
                       }
                     >
                       <Tag size="sm" variant="rounded">
-                        {toPercentString(pool.feeRate * 100)}
+                        {formatToRawLocaleStr(toPercentString(pool.feeRate * 100))}
                       </Tag>
                     </Tooltip>
                   </HStack>
@@ -404,7 +402,7 @@ export default function PoolListItem({
                       {t(`field.${timeBase}_volume`)}
                     </Text>
                     <Text fontSize="sm" color={colors.textPrimary}>
-                      {toUsdVolume(timeData.volume)}
+                      {formatCurrency(timeData.volume, { symbol: '$', decimalPlaces: 2 })}
                     </Text>
                   </HStack>
                   <HStack justify="space-between" w="full">
@@ -412,7 +410,7 @@ export default function PoolListItem({
                       {t(`field.${timeBase}_fees`)}
                     </Text>
                     <Text fontSize="sm" color={colors.textPrimary}>
-                      {toUsdVolume(timeData.volumeFee)}
+                      {formatCurrency(timeData.volumeFee, { symbol: '$', decimalPlaces: 2 })}
                     </Text>
                   </HStack>
                   <HStack justify={'space-between'} w="full">
@@ -420,7 +418,7 @@ export default function PoolListItem({
                       {t(`common.tvl`)}
                     </Text>
                     <Text fontSize="sm" color={colors.textPrimary}>
-                      {toUsdVolume(pool.tvl)}
+                      {formatCurrency(pool.tvl, { symbol: '$', decimalPlaces: 2 })}
                     </Text>
                   </HStack>
                   <HStack justify={'space-between'} w="full">
@@ -462,7 +460,7 @@ export default function PoolListItem({
                       </HStack>
                       <HStack spacing="6px">
                         <Tag size="sm" variant="rounded">
-                          {toPercentString(pool.feeRate * 100)}
+                          {formatToRawLocaleStr(toPercentString(pool.feeRate * 100))}
                         </Tag>
                         {pool.isOpenBook ? (
                           <Tag size="sm" variant="rounded">
@@ -476,7 +474,7 @@ export default function PoolListItem({
                 <Box minW="85px" mr={4}>
                   <Flex flexWrap="wrap" mb={2}>
                     <Text overflowWrap="break-word" wordBreak="break-word" fontWeight="500">
-                      {toAPRPercent(timeData.apr)}
+                      {formatToRawLocaleStr(toAPRPercent(timeData.apr))}
                     </Text>
                     <HStack ml={1} spacing={'-7%'}>
                       {pool.weeklyRewards.map((reward, idx) => (
@@ -497,7 +495,7 @@ export default function PoolListItem({
                     {t('liquidity.title')}
                   </Text>
                   <Text fontSize="sm" color={colors.textSecondary}>
-                    ${formatLocaleStr(pool.tvl)}
+                    {formatCurrency(pool.tvl, { symbol: '$', decimalPlaces: 0 })}
                   </Text>
                 </Flex>
                 <Flex flex={3} direction="column">
@@ -505,7 +503,7 @@ export default function PoolListItem({
                     {t(`field.${timeBase}_volume`)}
                   </Text>
                   <Text fontSize="sm" color={colors.textSecondary}>
-                    {formatLocaleStr(timeData.volume)}
+                    {formatCurrency(timeData.volume, { decimalPlaces: 0 })}
                   </Text>
                 </Flex>
                 <Flex flex={2} direction="column">
@@ -513,7 +511,7 @@ export default function PoolListItem({
                     {t(`field.${timeBase}_fees`)}
                   </Text>
                   <Text fontSize="sm" color={colors.textSecondary}>
-                    {formatLocaleStr(timeData.volumeFee)}
+                    {formatCurrency(timeData.volumeFee, { decimalPlaces: 0 })}
                   </Text>
                 </Flex>
               </Flex>
@@ -535,9 +533,9 @@ export default function PoolListItem({
           onClose={onPoolDetailClose}
           onDeposit={onClickDeposit}
           timeBase={timeBase}
-          volume={formatLocaleStr(timeData.volume)}
-          fees={formatLocaleStr(timeData.volumeFee)}
-          tvl={formatLocaleStr(pool.tvl)}
+          volume={formatCurrency(timeData.volume, { decimalPlaces: 0 })}
+          fees={formatCurrency(timeData.volumeFee, { decimalPlaces: 0 })}
+          tvl={formatCurrency(pool.tvl, { decimalPlaces: 0 })}
           aprData={aprData}
           weeklyRewards={pool.weeklyRewards}
           isEcosystem={pool.rewardDefaultPoolInfos === 'Ecosystem'}

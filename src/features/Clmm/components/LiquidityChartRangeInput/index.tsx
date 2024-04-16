@@ -13,6 +13,7 @@ import { ZoomLevels } from './types'
 import { format } from 'd3'
 import useElementSizeRectDetector from '@/hooks/useElementSizeRectDetector'
 import { useTranslation } from 'react-i18next'
+import { formatToRawLocaleStr } from '@/utils/numberish/formatter'
 
 const theme = {
   brushHandle: '#22D1F8',
@@ -169,8 +170,7 @@ export default function LiquidityChartRangeInput({
       if (d === 'e' && ticksAtLimit[baseIn ? Bound.UPPER : Bound.LOWER]) return '∞'
 
       const percent = (x < price ? -1 : 1) * ((Math.max(x, price) - Math.min(x, price)) / price) * 100
-
-      return price ? `${format(Math.abs(percent) > 1 ? '.2~s' : '.2~f')(percent)}%` : ''
+      return price ? `${formatToRawLocaleStr(format(Math.abs(percent) > 1 ? '.2~s' : '.2~f')(percent))}%` : ''
     },
     [baseIn, price, ticksAtLimit]
   )

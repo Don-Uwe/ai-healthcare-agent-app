@@ -3,7 +3,7 @@ import { TooltipProps } from 'recharts'
 import { NameType, ValueType } from 'recharts/src/component/DefaultTooltipContent'
 
 import { toUTC } from '@/utils/date'
-import toUsdVolume from '@/utils/numberish/toUsdVolume'
+import { formatCurrency } from '@/utils/numberish/formatter'
 import { colors } from '@/theme/cssVariables'
 
 export default function ChartTooltip({ active, payload, label, category }: TooltipProps<ValueType, NameType> & { category?: string }) {
@@ -17,7 +17,7 @@ export default function ChartTooltip({ active, payload, label, category }: Toolt
         {payload.map((item, idx) => {
           return (
             <Box key={`payload-${item.name}-${idx}`} color={colors.textPrimary} fontSize="16px">
-              <Box>{`${toUsdVolume(item.value as string)} ${unit}`}</Box>
+              <Box>{`${formatCurrency(item.value as string, { symbol: '$', decimalPlaces: 2 })} ${unit}`}</Box>
             </Box>
           )
         })}

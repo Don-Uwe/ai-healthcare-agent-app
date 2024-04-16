@@ -45,6 +45,7 @@ import { colors } from '@/theme/cssVariables'
 import { appLayoutPaddingX, revertAppLayoutPaddingX } from '@/theme/detailConfig'
 import { isValidPublicKey } from '@/utils/publicKey'
 import toPercentString from '@/utils/numberish/toPercentString'
+import { formatToRawLocaleStr } from '@/utils/numberish/formatter'
 import { shakeUndefindedItem } from '@/utils/shakeUndefindedItem'
 import { useEffectWithUrl, useStateWithUrl } from '../../hooks/useStateWithUrl'
 import CreatePoolButton from './components/CreatePoolButton'
@@ -565,7 +566,7 @@ export default function Pools() {
                   {chartPoolInfo?.mintA.symbol} / {chartPoolInfo?.mintB.symbol}
                 </Text>
                 <Tag size={'sm'} variant="rounded">
-                  {toPercentString(chartPoolInfo?.feeRate, { alreadyPercented: false })}
+                  {formatToRawLocaleStr(toPercentString(chartPoolInfo?.feeRate, { alreadyPercented: false }))}
                 </Tag>
                 {chartPoolInfo?.isOpenBook ? (
                   <Tag size={'sm'} variant="rounded">

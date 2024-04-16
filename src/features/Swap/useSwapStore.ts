@@ -244,7 +244,8 @@ export const useSwapStore = createStore<SwapStore>(
               onError: (errorMsg?: string) => {
                 if (errorMsg !== 'tx failed') {
                   swapDone = true
-                  toastSubject.next({ id: signedTxs.length > 1 ? toastId : processedId[0].txId, close: true })
+                  if (errorMsg !== i18n.t('transaction.send_failed', { title: swapMeta.title }))
+                    toastSubject.next({ id: signedTxs.length > 1 ? toastId : processedId[0].txId, close: true })
                 }
               }
             }

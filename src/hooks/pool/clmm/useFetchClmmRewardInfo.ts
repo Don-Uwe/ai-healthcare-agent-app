@@ -130,38 +130,34 @@ export default function useFetchClmmRewardInfo({
       new Decimal(tokenFees.tokenFeeAmountB?.toString() || 0).div(10 ** poolInfo.mintB.decimals)
     ]
 
-    if (!feeAmountA.isZero()) {
-      const feeIndex = rewardToken.findIndex((r) => r.mint.address === poolInfo.mintA.address)
-      const usdValue = feeAmountA.mul(tokenPrices[poolInfo.mintA.address]?.value ?? 0).toFixed(4)
-      if (feeIndex > -1) {
-        rewardToken[feeIndex].amount = new Decimal(rewardToken[feeIndex].amount)
-          .add(feeAmountA.toFixed(poolInfo.mintA.decimals))
-          .toFixed(poolInfo.mintA.decimals)
-        rewardToken[feeIndex].amountUSD = new Decimal(rewardToken[feeIndex].amountUSD).add(usdValue).toFixed(4)
-      } else {
-        rewardToken.push({
-          mint: poolInfo.mintA,
-          amount: feeAmountA.toFixed(poolInfo.mintA.decimals),
-          amountUSD: usdValue
-        })
-      }
+    const feeIndexA = rewardToken.findIndex((r) => r.mint.address === poolInfo.mintA.address)
+    const usdValueA = feeAmountA.mul(tokenPrices[poolInfo.mintA.address]?.value ?? 0).toFixed(4)
+    if (feeIndexA > -1) {
+      rewardToken[feeIndexA].amount = new Decimal(rewardToken[feeIndexA].amount)
+        .add(feeAmountA.toFixed(poolInfo.mintA.decimals))
+        .toFixed(poolInfo.mintA.decimals)
+      rewardToken[feeIndexA].amountUSD = new Decimal(rewardToken[feeIndexA].amountUSD).add(usdValueA).toFixed(4)
+    } else {
+      rewardToken.push({
+        mint: poolInfo.mintA,
+        amount: feeAmountA.toFixed(poolInfo.mintA.decimals),
+        amountUSD: usdValueA
+      })
     }
 
-    if (!feeAmountB.isZero()) {
-      const feeIndex = rewardToken.findIndex((r) => r.mint.address === poolInfo.mintB.address)
-      const usdValue = feeAmountB.mul(tokenPrices[poolInfo.mintB.address]?.value ?? 0).toFixed(4)
-      if (feeIndex > -1) {
-        rewardToken[feeIndex].amount = new Decimal(rewardToken[feeIndex].amount)
-          .add(feeAmountB.toFixed(poolInfo.mintB.decimals))
-          .toFixed(poolInfo.mintB.decimals)
-        rewardToken[feeIndex].amountUSD = new Decimal(rewardToken[feeIndex].amountUSD).add(usdValue).toFixed(4)
-      } else {
-        rewardToken.push({
-          mint: poolInfo.mintB,
-          amount: feeAmountB.toFixed(poolInfo.mintB.decimals),
-          amountUSD: feeAmountB.mul(tokenPrices[poolInfo.mintB.address]?.value ?? 0).toFixed(4)
-        })
-      }
+    const feeIndexB = rewardToken.findIndex((r) => r.mint.address === poolInfo.mintB.address)
+    const usdValueB = feeAmountB.mul(tokenPrices[poolInfo.mintB.address]?.value ?? 0).toFixed(4)
+    if (feeIndexB > -1) {
+      rewardToken[feeIndexB].amount = new Decimal(rewardToken[feeIndexB].amount)
+        .add(feeAmountB.toFixed(poolInfo.mintB.decimals))
+        .toFixed(poolInfo.mintB.decimals)
+      rewardToken[feeIndexB].amountUSD = new Decimal(rewardToken[feeIndexB].amountUSD).add(usdValueB).toFixed(4)
+    } else {
+      rewardToken.push({
+        mint: poolInfo.mintB,
+        amount: feeAmountB.toFixed(poolInfo.mintB.decimals),
+        amountUSD: usdValueB
+      })
     }
     return rewardToken
   }, [tokenFees, rewards, tokenPrices, poolInfo?.id])

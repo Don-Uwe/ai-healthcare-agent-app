@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 
 import { colors } from '@/theme/cssVariables'
 import { appLayoutPaddingX } from '@/theme/detailConfig'
-import toUsdVolume from '@/utils/numberish/toUsdVolume'
+import { formatCurrency } from '@/utils/numberish/formatter'
 
 export default function TVLInfoPanel({ tvl, volume }: { tvl: string | number; volume: string | number }) {
   const { t } = useTranslation()
@@ -23,7 +23,7 @@ function TVLInfoItem({ name, value, decoratorImageSrc }: { name: string; value: 
           {name}
         </Text>
         <Text fontSize="18px" fontWeight={500} color={colors.textSecondary}>
-          {toUsdVolume(value)}
+          {formatCurrency(value, { symbol: '$', decimalPlaces: 2 })}
         </Text>
       </Box>
       <Image alignSelf="end" width="70px" objectFit="cover" alt="TVL image" src={decoratorImageSrc}></Image>
@@ -47,7 +47,7 @@ export function TVLInfoPanelMobile({ tvl, volume }: { tvl: string | number; volu
           {t('common.tvl')}
         </Text>
         <Text fontSize="md" fontWeight={500}>
-          {toUsdVolume(tvl)}
+          {formatCurrency(tvl, { symbol: '$', decimalPlaces: 2 })}
         </Text>
       </HStack>
 
@@ -56,7 +56,7 @@ export function TVLInfoPanelMobile({ tvl, volume }: { tvl: string | number; volu
           {t('common.volume')}
         </Text>
         <Text fontSize="md" fontWeight={500}>
-          {toUsdVolume(volume)}
+          {formatCurrency(volume, { symbol: '$', decimalPlaces: 2 })}
         </Text>
       </HStack>
     </HStack>

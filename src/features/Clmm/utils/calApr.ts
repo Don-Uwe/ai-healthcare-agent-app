@@ -73,7 +73,7 @@ export function getPositionAprCore({
         percentInTotal: (i / total) * 100,
         mint: poolInfo.rewardDefaultInfos[idx].mint
       })),
-      apr: planBApr.apr
+      apr: isNaN(planBApr.apr) ? 0 : planBApr.apr
     }
   } else {
     const planCApr = PoolUtils.estimateAprsForPriceRangeMultiplier({
@@ -94,7 +94,7 @@ export function getPositionAprCore({
         percentInTotal: (i / total) * 100,
         mint: poolInfo.rewardDefaultInfos[idx].mint
       })),
-      apr: planCApr.apr
+      apr: isNaN(planCApr.apr) ? 0 : planCApr.apr
     }
   }
 }

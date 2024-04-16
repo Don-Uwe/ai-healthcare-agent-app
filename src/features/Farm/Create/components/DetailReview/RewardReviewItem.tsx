@@ -1,7 +1,7 @@
 import TokenAvatar from '@/components/TokenAvatar'
 import { colors } from '@/theme/cssVariables'
 import { parseDateInfo } from '@/utils/date'
-import formatNumber from '@/utils/numberish/formatNumber'
+import { formatCurrency } from '@/utils/numberish/formatter'
 import { Box, HStack, SimpleGrid, Text } from '@chakra-ui/react'
 import { NewRewardInfo } from '@/features/Farm/Create/type'
 import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
@@ -76,9 +76,9 @@ function RewardItemHeadLabel(props: { rewardToken?: ApiV3Token }) {
 function AmountInfo(props: { rewardInfo: NewRewardInfo }) {
   return (
     <Box>
-      <Text>{formatNumber(props.rewardInfo.amount)}</Text>
+      <Text>{formatCurrency(props.rewardInfo.amount, { decimalPlaces: 2 })}</Text>
       <HStack fontSize="sm">
-        <Text color={colors.textSecondary}>{formatNumber(props.rewardInfo.perWeek)}</Text>
+        <Text color={colors.textSecondary}>{formatCurrency(props.rewardInfo.perWeek, { decimalPlaces: 2 })}</Text>
         <Text color={colors.textTertiary}>/week</Text>
       </HStack>
     </Box>

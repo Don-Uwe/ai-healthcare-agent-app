@@ -56,7 +56,7 @@ export default function useFetchFarmInfoByRpc(props: {
   const decodedLpVaultData = useMemo(() => (lpVaultData ? splAccountLayout.decode(lpVaultData.data) : undefined), [lpVaultData])
 
   if (decodedData && decodedLpVaultData) {
-    decodedData = updatePoolInfo(decodedData, decodedLpVaultData, slot ?? 0, onlineCurrentDate)
+    decodedData = updatePoolInfo(decodedData, decodedLpVaultData, slot ?? 0, Math.floor(onlineCurrentDate / 1000))
   }
 
   const refresh = useEvent(() => {

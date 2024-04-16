@@ -1,7 +1,7 @@
 import TokenAvatarPair from '@/components/TokenAvatarPair'
 import { colors } from '@/theme/cssVariables'
 import toApr from '@/utils/numberish/toApr'
-import toUsdVolume from '@/utils/numberish/toUsdVolume'
+import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
 import { Box, Text, Tag, Flex } from '@chakra-ui/react'
 import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 
@@ -33,13 +33,13 @@ export default function FarmInfoItem({ name, token1, token2, tvl, apr, feeRate }
           <Text fontSize={'xs'} fontWeight={500} color={colors.textTertiary}>
             TVL
           </Text>
-          <Text>{toUsdVolume(tvl)}</Text>
+          <Text>{formatCurrency(tvl, { symbol: '$', decimalPlaces: 2 })}</Text>
         </Box>
         <Box flex="1">
           <Text fontSize="xs" fontWeight={500} color={colors.textTertiary}>
             APR
           </Text>
-          <Text>{toApr({ val: apr, multiply: false })}</Text>
+          <Text>{formatToRawLocaleStr(toApr({ val: apr, multiply: false }))}</Text>
         </Box>
       </Flex>
     </Box>

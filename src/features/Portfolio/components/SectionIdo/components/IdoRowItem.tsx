@@ -4,7 +4,7 @@ import { OwnerFullData } from '@/hooks/portfolio/useFetchOwnerIdo'
 import { useAppStore, useFarmStore } from '@/store'
 import { panelCard } from '@/theme/cssBlocks'
 import { colors } from '@/theme/cssVariables/colors'
-import { toVolume } from '@/utils/numberish/autoSuffixNumberish'
+import { formatCurrency } from '@/utils/numberish/formatter'
 import { getMintName, getMintSymbol } from '@/utils/token'
 import { IdoKeysData } from '@raydium-io/raydium-sdk-v2'
 import { Box, Button, Divider, Flex, Grid, GridItem, HStack, Stack, Text, useDisclosure } from '@chakra-ui/react'
@@ -75,9 +75,8 @@ export default function IdoRowItem(ownerInfo: OwnerFullData & { idoKeys: IdoKeys
               {t('acceleraytor.unclaim')} {getMintSymbol({ mint: projectInfo.mint, transformSol: true })}
             </Text>
             <Text>
-              {toVolume(new Decimal(coin).div(10 ** projectInfo.mint.decimals).toString(), {
-                decimals: projectInfo.mint.decimals,
-                decimalMode: 'trim'
+              {formatCurrency(new Decimal(coin).div(10 ** projectInfo.mint.decimals).toString(), {
+                decimalPlaces: projectInfo.mint.decimals
               })}
             </Text>
           </Box>
@@ -91,9 +90,8 @@ export default function IdoRowItem(ownerInfo: OwnerFullData & { idoKeys: IdoKeys
               {t('acceleraytor.unclaim')} {getMintSymbol({ mint: buyInfo.mint, transformSol: true })}
             </Text>
             <Text>
-              {toVolume(new Decimal(pc).div(10 ** buyInfo.mint.decimals).toString(), {
-                decimals: buyInfo.mint.decimals,
-                decimalMode: 'trim'
+              {formatCurrency(new Decimal(pc).div(10 ** buyInfo.mint.decimals).toString(), {
+                decimalPlaces: buyInfo.mint.decimals
               })}
             </Text>
           </Box>

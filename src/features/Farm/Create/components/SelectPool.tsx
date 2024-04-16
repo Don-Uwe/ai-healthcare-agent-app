@@ -9,7 +9,7 @@ import { useEvent } from '@/hooks/useEvent'
 import CircleCheck from '@/icons/misc/CircleCheck'
 import SearchIcon from '@/icons/misc/SearchIcon'
 import { colors } from '@/theme/cssVariables'
-import formatNumber from '@/utils/numberish/formatNumber'
+import { formatCurrency } from '@/utils/numberish/formatter'
 import { getPoolName } from '@/features/Pools/util'
 import { CreateFarmType } from '@/features/Liquidity/utils'
 
@@ -186,7 +186,7 @@ function SelectPoolStandardContentSelectedPool({
             {pool.id.slice(0, 6)}...{pool.id.slice(-6)}
           </Text>
           <Text whiteSpace="nowrap" fontSize="sm" color={colors.textTertiary} align={'end'}>
-            TVL: {formatNumber(pool.tvl)}
+            TVL: {formatCurrency(pool.tvl, { decimalPlaces: 2 })}
           </Text>
         </Box>
       </HStack>
@@ -264,7 +264,7 @@ function CreatedPoolClmmItem({
           {pool.id.slice(0, 6)}...{pool.id.slice(-6)}
         </Text>
         <Text whiteSpace="nowrap" fontSize={['xs', 'sm']} color={colors.textTertiary} align={'end'}>
-          TVL: {formatNumber(pool.tvl)}
+          TVL: {formatCurrency(pool.tvl, { decimalPlaces: 2 })}
         </Text>
       </Box>
       <Box display="grid" placeItems={'center'} color={colors.secondary}>

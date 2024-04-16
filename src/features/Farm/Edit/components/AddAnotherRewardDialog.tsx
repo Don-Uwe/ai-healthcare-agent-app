@@ -27,6 +27,7 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import useAddNewRewardSchema from '../schema/useAddNewRewardSchema'
 import { EditReward } from '../util'
+import { formatToRawLocaleStr } from '@/utils/numberish/formatter'
 
 /**
  * used in [FarmingRewardItemm](../FarmingRewardItem.tsx)
@@ -73,7 +74,7 @@ export default function AddAnotherRewardDialog({
 
   const onAmountChange = useEvent((valNumber: string) => {
     const durations = rewardInfo.endTime && rewardInfo.openTime ? rewardInfo.endTime - rewardInfo.openTime : undefined
-    const newPerWeek = durations ? new Decimal(valNumber).div(durations / (60 * 60 * 24 * 1000 * 7)).toString() : undefined
+    const newPerWeek = durations ? new Decimal(valNumber || 0).div(durations / (60 * 60 * 24 * 1000 * 7)).toString() : undefined
     onChange({ ...rewardInfo, total: valNumber, perWeek: newPerWeek })
   })
 
@@ -188,7 +189,9 @@ export default function AddAnotherRewardDialog({
               </Text>
               <Text color={colors.textSecondary} fontSize="xl" fontWeight={500} mt={1}>
                 {rewardInfo.perWeek
-                  ? new Decimal(rewardInfo.perWeek || 0).toDecimalPlaces(rewardInfo.mint?.decimals || 6, Decimal.ROUND_FLOOR).toString()
+                  ? formatToRawLocaleStr(
+                      new Decimal(rewardInfo.perWeek || 0).toDecimalPlaces(rewardInfo.mint?.decimals || 6, Decimal.ROUND_FLOOR).toString()
+                    )
                   : '--'}{' '}
                 {rewardInfo.mint?.symbol}
               </Text>

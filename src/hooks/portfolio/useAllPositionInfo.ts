@@ -210,7 +210,8 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
 
           const txLength = transactions.length
           const { toastId, processedId, handler } = getDefaultToastData({
-            txLength
+            txLength,
+            onConfirmed: handleRefresh
           })
 
           try {

@@ -19,6 +19,7 @@ import TokenAvatar from '@/components/TokenAvatar'
 import Button from '@/components/Button'
 import useTokenInfo from '@/hooks/token/useTokenInfo'
 import { isValidPublicKey } from '@/utils/publicKey'
+import { formatToRawLocaleStr } from '@/utils/numberish/formatter'
 
 const perPage = 30
 
@@ -325,7 +326,7 @@ function TokenRowItem({
         </Flex>
         <Box flexShrink={0}>
           <Box color={colors.textSecondary} textAlign="right">
-            {balance()}
+            {formatToRawLocaleStr(balance())}
             <AddressChip
               onClick={(ev) => ev.stopPropagation()}
               color={colors.textTertiary}

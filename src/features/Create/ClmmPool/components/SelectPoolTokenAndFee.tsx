@@ -18,6 +18,7 @@ import { ApiClmmConfigInfo, ApiV3Token, PoolFetchType, TokenInfo, solToWSol } fr
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronDown } from 'react-feather'
 import { useTranslation } from 'react-i18next'
+import { formatToRawLocaleStr } from '@/utils/numberish/formatter'
 
 type Side = 'token1' | 'token2'
 
@@ -158,7 +159,7 @@ export default function SelectPoolTokenAndFee({ completed, isLoading, onConfirm,
               {tokens.token1?.symbol} / {tokens.token2?.symbol}
             </Text>
             <Tag size="sm" variant="rounded">
-              {t('field.fee')} {(currentConfig?.tradeFeeRate || 0) / 10000}%
+              {t('field.fee')} {formatToRawLocaleStr((currentConfig?.tradeFeeRate || 0) / 10000)}%
             </Tag>
           </Flex>
           <EditIcon cursor="pointer" onClick={() => onEdit(0)} />
@@ -244,7 +245,7 @@ export default function SelectPoolTokenAndFee({ completed, isLoading, onConfirm,
                 }}
               >
                 {selected ? <CircleCheck style={{ color: colors.secondary, position: 'absolute', top: '10px', right: '10px' }} /> : null}
-                <Text fontWeight="500">{config.tradeFeeRate / 10000}%</Text>
+                <Text fontWeight="500">{formatToRawLocaleStr(config.tradeFeeRate / 10000)}%</Text>
                 <Text color={colors.textSecondary}>{config.description}</Text>
                 <Spacer />
                 {Icon ? <Icon width="100%" /> : null}

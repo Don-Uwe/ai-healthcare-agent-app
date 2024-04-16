@@ -12,9 +12,8 @@ import useTokenPrice from '@/hooks/token/useTokenPrice'
 import usePrevious from '@/hooks/usePrevious'
 import { useAppStore, useClmmStore, useTokenAccountStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
-import { formatToMaxDigit, formatLocaleStr, getFirstNonZeroDecimal } from '@/utils/numberish/formatter'
+import { formatToMaxDigit, getFirstNonZeroDecimal, formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
 import toPercentString from '@/utils/numberish/toPercentString'
-import toUsdVolume from '@/utils/numberish/toUsdVolume'
 import IntervalCircle, { IntervalCircleHandler } from '@/components/IntervalCircle'
 import EstimatedAprInfo from '../components/AprInfo'
 import ChartPriceLabel from '../components/ChartPriceLabel'
@@ -421,7 +420,7 @@ export default function CreatePosition() {
               <TokenAvatarPair token1={currentPool?.mintA} token2={currentPool?.mintB} />
               {currentPool?.poolName.replace('-', '/')}
               <Tag size="sm" variant="rounded">
-                {toPercentString((currentPool?.feeRate || 0) * 100)}
+                {formatToRawLocaleStr(toPercentString((currentPool?.feeRate || 0) * 100))}
               </Tag>
             </Flex>
 
@@ -429,15 +428,15 @@ export default function CreatePosition() {
               <Flex gap={'clamp(32px, 2.7vw, 70px)'} justifyContent={'space-between'} whiteSpace={'nowrap'}>
                 <Flex gap="2" alignItems="center">
                   <Text color={colors.textTertiary}>{t('liquidity.title')}</Text>
-                  <Text color={colors.textSecondary}>{toUsdVolume(currentPool?.tvl)}</Text>
+                  <Text color={colors.textSecondary}>{formatCurrency(currentPool?.tvl, { symbol: '$', decimalPlaces: 2 })}</Text>
                 </Flex>
                 <Flex gap="2" alignItems="center">
                   <Text color={colors.textTertiary}>{t('field.24h_volume')}</Text>
-                  <Text color={colors.textSecondary}>{toUsdVolume(currentPool?.day.volume)}</Text>
+                  <Text color={colors.textSecondary}>{formatCurrency(currentPool?.day.volume, { symbol: '$', decimalPlaces: 2 })}</Text>
                 </Flex>
                 <Flex gap="2" alignItems="center">
                   <Text color={colors.textTertiary}>{t('field.24h_fees')}</Text>
-                  <Text color={colors.textSecondary}>{toUsdVolume(currentPool?.day.volumeFee)}</Text>
+                  <Text color={colors.textSecondary}>{formatCurrency(currentPool?.day.volumeFee, { symbol: '$', decimalPlaces: 2 })}</Text>
                 </Flex>
               </Flex>
             </Desktop>
@@ -512,15 +511,14 @@ export default function CreatePosition() {
               </GridItem>
               <GridItem gridArea="info" placeSelf={'center'}>
                 <ChartPriceLabel
-                  currentPrice={formatLocaleStr(currentPriceStr, currentPool?.poolDecimals) || ''}
+                  currentPrice={formatCurrency(currentPriceStr, { decimalPlaces: currentPool?.poolDecimals }) || ''}
                   currentPriceLabel={t('common.per_unit', {
                     subA: currentPool?.[baseIn ? 'mintB' : 'mintA'].symbol,
                     subB: currentPool?.[baseIn ? 'mintA' : 'mintB'].symbol
                   })}
-                  timePrice={`${formatLocaleStr(priceMin, currentPool?.poolDecimals)} - ${formatLocaleStr(
-                    priceMax,
-                    currentPool?.poolDecimals
-                  )}`}
+                  timePrice={`${formatCurrency(priceMin, { decimalPlaces: currentPool?.poolDecimals })} - ${formatCurrency(priceMax, {
+                    decimalPlaces: currentPool?.poolDecimals
+                  })}`}
                 />
               </GridItem>
             </Grid>
@@ -600,20 +598,24 @@ export default function CreatePosition() {
             <HStack justifyContent="space-between">
               <Text fontSize={['sm', 'md']}>{t('clmm.total_deposit')}</Text>
               <Text fontSize="lg" fontWeight="500">
-                {tokenAmount[0] && tokenAmount[1] ? toUsdVolume(totalPrice.toString()) : '--'}
+                {tokenAmount[0] && tokenAmount[1] ? formatCurrency(totalPrice.toString(), { symbol: '$', decimalPlaces: 2 }) : '--'}
               </Text>
             </HStack>
             <HStack justifyContent="space-between" mt={1.5}>
               <Text fontSize={['sm', 'md']}>{t('clmm.deposit_ratio')}</Text>
               <Flex alignItems="center" gap="2" fontWeight="500" fontSize="xs">
                 <Text>
-                  {toPercentString(ratioA, {
-                    decimals: 1
-                  })}{' '}
+                  {formatToRawLocaleStr(
+                    toPercentString(ratioA, {
+                      decimals: 1
+                    })
+                  )}{' '}
                   /{' '}
-                  {toPercentString(ratioB, {
-                    decimals: 1
-                  })}
+                  {formatToRawLocaleStr(
+                    toPercentString(ratioB, {
+                      decimals: 1
+                    })
+                  )}
                 </Text>
                 <TokenAvatarPair size="sm" token1={currentPool?.mintA} token2={currentPool?.mintB} />
               </Flex>

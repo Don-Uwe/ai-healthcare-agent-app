@@ -4,7 +4,7 @@ import TokenAvatarPair from '@/components/TokenAvatarPair'
 import { getPoolName } from '@/features/Pools/util'
 import { colors } from '@/theme/cssVariables'
 import toPercentString from '@/utils/numberish/toPercentString'
-import toUsdVolume from '@/utils/numberish/toUsdVolume'
+import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
 import { Box, HStack, Text } from '@chakra-ui/react'
 import { ApiV3PoolInfoItem } from '@raydium-io/raydium-sdk-v2'
 import { useTranslation } from 'react-i18next'
@@ -55,7 +55,7 @@ function RewardPoolItemTVLInfoBox(props: { tvl: number }) {
       <Text fontSize={'xs'} color={colors.textTertiary}>
         TVL
       </Text>
-      <Text>{toUsdVolume(props.tvl)}</Text>
+      <Text>{formatCurrency(props.tvl, { symbol: '$', decimalPlaces: 2 })}</Text>
     </Box>
   )
 }
@@ -67,9 +67,11 @@ function RewardPoolItemAPRInfoBox(props: { apr: number }) {
         APR
       </Text>
       <Text>
-        {toPercentString(props.apr, {
-          alreadyPercented: true
-        })}
+        {formatToRawLocaleStr(
+          toPercentString(props.apr, {
+            alreadyPercented: true
+          })
+        )}
       </Text>
     </Box>
   )

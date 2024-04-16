@@ -76,7 +76,7 @@ export const isIntlNumberFormatSupported = typeof Intl == 'object' && Intl && ty
 export function formatToRawLocaleStr(val: string | number | undefined): string | number {
   const locale = i18n.language
   if (!val) {
-    return '0'
+    return ''
   }
   const decimalSeparator = isIntlNumberFormatSupported
     ? new Intl.NumberFormat(locale).formatToParts(0.1).find((part) => part.type === 'decimal')?.value || '.'
@@ -106,6 +106,22 @@ function formatSmallNumberWithFixed(number: number, fixedDigits: number): number
   return parseFloat(`${baseFixed}e${exponent}`)
 }
 
+function formatWithAbbreviation(value: number, numDecimals: number) {
+  const thresholds = [
+    { sign: 'T', value: 1e12 },
+    { sign: 'B', value: 1e9 },
+    { sign: 'M', value: 1e6 },
+    { sign: 'K', value: 1e3 }
+  ]
+  for (let i = 0; i < thresholds.length; i++) {
+    if (value >= thresholds[i].value) {
+      const abbreviatedValue = trimTrailZero((value / thresholds[i].value).toFixed(numDecimals))
+      return `${abbreviatedValue}${thresholds[i].sign}`
+    }
+  }
+  return trimTrailZero(value.toFixed(numDecimals)) || ''
+}
+
 // Function to transform decimal trailing zeroes to exponent
 function decimalTrailingZeroesToExponent(formattedCurrency: string, maximumDecimalTrailingZeroes: number): string {
   const decimalTrailingZeroesPattern = new RegExp(`(\\.|,)(0{${maximumDecimalTrailingZeroes + 1},})(?=[1-9]?)`)
@@ -127,54 +143,36 @@ function generateFallbackFormatter(
   abbreviated: boolean,
   numDecimals: number
 ): { format: (value: number) => string } {
-  if (abbreviated) {
-    return {
-      format: (value: number): string => {
-        const thresholds = [
-          { sign: 'T', value: 1e12 },
-          { sign: 'B', value: 1e9 },
-          { sign: 'M', value: 1e6 },
-          { sign: 'K', value: 1e3 }
-        ]
-        for (let i = 0; i < thresholds.length; i++) {
-          if (value >= thresholds[i].value) {
-            const abbreviatedValue = trimTrailZero((value / thresholds[i].value).toFixed(numDecimals))
-            return symbol ? `${symbol}${abbreviatedValue}${thresholds[i].sign}` : `${abbreviatedValue}${thresholds[i].sign}`
-          }
-        }
-        return symbol ? `${symbol}${formatLocaleStr(value, numDecimals) || '-'}` : `${formatLocaleStr(value, numDecimals) || '-'}`
-      }
-    }
-  } else {
-    return {
-      format: (value: number): string => {
-        return symbol ? `${symbol}${formatLocaleStr(value, numDecimals) || '-'}` : `${formatLocaleStr(value, numDecimals) || '-'}`
-      }
+  return {
+    format: (value: number): string => {
+      const formattedValue = abbreviated ? formatWithAbbreviation(value, numDecimals) : formatLocaleStr(value, numDecimals)
+      return symbol ? `${symbol}${formattedValue}` : `${formattedValue}`
     }
   }
 }
 
 function generateIntlNumberFormatter(locale: string, symbol: string | undefined, abbreviated: boolean, numDecimals: number) {
-  let params: Intl.NumberFormatOptions = {
+  const params: Intl.NumberFormatOptions = {
     style: 'decimal',
     useGrouping: true,
     minimumFractionDigits: 0,
     maximumFractionDigits: numDecimals
   }
-  if (abbreviated) {
-    params.notation = 'compact'
-  }
-  // TODO: no other symbol need now,only $
-  if (symbol) {
-    params = {
-      ...params,
-      style: 'currency',
-      currency: 'USD',
-      currencyDisplay: 'narrowSymbol'
+  const formatter = new Intl.NumberFormat(locale, params)
+
+  return {
+    format: (value: number) => {
+      let formattedValue = formatter.format(value)
+      if (abbreviated) {
+        const matches = formatWithAbbreviation(value, numDecimals).match(/^(\d+(?:\.\d+)?)([TBMK]?)$/)
+        if (matches) {
+          const [, numericPart, sign] = matches
+          formattedValue = `${formatter.format(parseFloat(numericPart))}${sign}`
+        }
+      }
+      return symbol ? `${symbol}${formattedValue}` : formattedValue
     }
   }
-
-  return new Intl.NumberFormat(locale, params)
 }
 
 function generateFormatter(locale: string, symbol: string | undefined, abbreviated: boolean, numDecimals = 2) {
@@ -193,10 +191,10 @@ function generateFormatter(locale: string, symbol: string | undefined, abbreviat
  * formatCurrency(3220.12345, { symbol: '$', decimalPlaces: 3 }) // $3,220.123
  * formatCurrency(6553.83766, { symbol: '$',abbreviated:true, decimalPlaces: 3 }) // $6.554k
  * formatCurrency(0.00000000089912, { maximumDecimalTrailingZeroes: 5}) // locale:'es' result is '0,0₉8991';
- * formatCurrency(0.00000000089912, { symbol: '$', maximumDecimalTrailingZeroes: 5}) // locale:'es' result is '0,0₉8991$';
+ * formatCurrency(0.00000000089912, { symbol: '$', maximumDecimalTrailingZeroes: 5}) // locale:'es' result is '$0,0₉8991';
  * formatCurrency(1000.12345, { decimalPlaces: 3}) // locale:'es' result is "1.000,123";
- * formatCurrency(3220.12345, { symbol: '$', decimalPlaces: 3 }) // locale:'es' resultis  3.220,123$
- * formatCurrency(6553.83766, { symbol: '$',abbreviated:true, decimalPlaces: 3 }) // locale:'es' result is 6,554mil$
+ * formatCurrency(3220.12345, { symbol: '$', decimalPlaces: 3 }) // locale:'es' resultis  $3.220,123
+ * formatCurrency(6553.83766, { symbol: '$',abbreviated:true, decimalPlaces: 3 }) // locale:'es' result is $6.554k
  */
 export function formatCurrency(amount?: string | number | Decimal, params: FormatCurrencyParams = {}): string {
   const locale = i18n.language
