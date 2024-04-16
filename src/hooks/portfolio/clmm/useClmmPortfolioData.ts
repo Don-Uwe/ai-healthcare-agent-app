@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { ApiV3PoolInfoConcentratedItem, ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 import useClmmBalance, { ClmmDataMap, ClmmPosition } from '@/hooks/portfolio/clmm/useClmmBalance'
 import useFetchPoolById from '@/hooks/pool/useFetchPoolById'
@@ -24,9 +24,11 @@ export default function useClmmPortfolioData<T>({ type }: { type: T }) {
     )
   })
 
-  let clmmAll = new Decimal(0)
+  const [clmmAll, setClmmAll] = useState(new Decimal(0))
+
   const [clmmPoolAssets, clmmPoolAssetsByMint] = useMemo(() => {
     if (!Object.keys(formattedDataMap).length) return [[], {}]
+    let localClmmAll = new Decimal(0)
     const groupData: { [key: string]: ClmmPosition[] } = {}
     const groupDataByMint: {
       [key: string]: { mint: ApiV3Token; amount: string; usd: string }
@@ -58,7 +60,7 @@ export default function useClmmPortfolioData<T>({ type }: { type: T }) {
           usd: new Decimal(groupDataByMint[poolInfo.mintB.address]?.usd || 0).add(usdValueB).toString()
         }
       })
-      clmmAll = clmmAll.add(poolAllValue)
+      localClmmAll = localClmmAll.add(poolAllValue)
       return {
         key: poolName.replace(' - ', '/'),
         value: poolAllValue.toString(),
@@ -66,6 +68,7 @@ export default function useClmmPortfolioData<T>({ type }: { type: T }) {
         percentage: 0
       }
     })
+    setClmmAll(localClmmAll)
     return [allPositions, groupDataByMint]
   }, [formattedDataMap, tokenPrices, allClmmBalanceData, allPositions.length])
 
