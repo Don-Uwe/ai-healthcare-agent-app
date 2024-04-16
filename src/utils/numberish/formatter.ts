@@ -119,7 +119,7 @@ function formatWithAbbreviation(value: number, numDecimals: number) {
       return `${abbreviatedValue}${thresholds[i].sign}`
     }
   }
-  return `${formatLocaleStr(value, numDecimals)}`
+  return trimTrailZero(value.toFixed(numDecimals)) || ''
 }
 
 // Function to transform decimal trailing zeroes to exponent
