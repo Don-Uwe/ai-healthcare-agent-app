@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react'
 import { AccountInfo, PublicKey } from '@solana/web3.js'
-import { MultiTxBuildData, MultiTxV0BuildData, FormatFarmInfoOutV6, ApiV3PoolInfoConcentratedItem } from '@raydium-io/raydium-sdk-v2'
+import { FormatFarmInfoOutV6, ApiV3PoolInfoConcentratedItem } from '@raydium-io/raydium-sdk-v2'
 
 import useFetchPoolById from '../pool/useFetchPoolById'
 
@@ -8,19 +8,13 @@ import { useTokenAccountStore } from '@/store'
 import useFarmPositions from '@/hooks/portfolio/farm/useFarmPositions'
 import useFetchMultipleFarmInfo from '@/hooks/farm/useFetchMultipleFarmInfo'
 import useFetchMultipleFarmBalance from '@/hooks/farm/useFetchMultipleFarmBalance'
-import { toastSubject } from '@/hooks/toast/useGlobalToast'
 import useTokenPrice from '@/hooks/token/useTokenPrice'
 import { getTickArrayAddress } from '@/hooks/pool/formatter'
 import useClmmPortfolioData, { ClmmPosition } from './clmm/useClmmPortfolioData'
 import useFetchMultipleAccountInfo from '@/hooks/info/useFetchMultipleAccountInfo'
 import { useFarmStore, useClmmStore, useAppStore } from '@/store'
-import { getTxMeta as getFarmTxMeta } from '@/store/configs/farm'
-import { getTxMeta as getClmmTxMeta } from '@/store/configs/clmm'
-import { getDefaultToastData, transformProcessData, handleMultiTxToast } from '@/hooks/toast/multiToastUtil'
-import { handleMultiTxRetry } from '@/hooks/toast/retryTx'
 import { useEvent } from '../useEvent'
 import { debounce } from '@/utils/functionMethods'
-import { getComputeBudgetConfig } from '@/utils/tx/computeBudget'
 import Decimal from 'decimal.js'
 export interface UpdateClmmPendingYield {
   nftMint: string
@@ -34,6 +28,8 @@ export type PositionWithUpdateFn = ClmmPosition & {
   tickUpperRpcData?: AccountInfo<Buffer> | null
 }
 export type ClmmDataWithUpdateFn = Map<string, PositionWithUpdateFn[]>
+
+export type PositionTabValues = 'concentrated' | 'standard' | 'staked RAY'
 
 export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch?: boolean }) {
   const harvestAllFarmAct = useFarmStore((s) => s.harvestAllAct)
@@ -134,10 +130,14 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
     mintList: allFarmBalances.map((b) => stakedFarmMap.get(b?.id || '')?.rewardInfos.map((r) => r.mint.address)).flat()
   })
 
-  let [allFarmPendingReward, hasFarmReward] = [new Decimal(0), false]
+  let [allFarmPendingReward, hasFarmReward, allStakingPendingReward, hasStakingReward] = [new Decimal(0), false, new Decimal(0), false]
   allFarmBalances.forEach((b) => {
     const farm = stakedFarmMap.get(b?.id || '')
-    hasFarmReward = b?.pendingRewards.some((a) => !new Decimal(a || 0).isZero())
+    const isStaking = farm?.tags.includes('Stake')
+    const hasReward = b?.pendingRewards.some((a) => !new Decimal(a || 0).isZero())
+    if (isStaking) hasStakingReward = hasReward
+    else hasFarmReward = hasFarmReward || hasReward
+
     const pendingReward = b?.pendingRewards.reduce((acc, cur, idx) => {
       return farm?.rewardInfos[idx]
         ? acc.add(
@@ -145,10 +145,35 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
           )
         : acc
     }, new Decimal(0))
-    allFarmPendingReward = allFarmPendingReward.add(pendingReward)
+
+    if (isStaking) allStakingPendingReward = allFarmPendingReward.add(pendingReward)
+    else allFarmPendingReward = allFarmPendingReward.add(pendingReward)
   })
 
-  const isReady = hasFarmReward || allClmmPending.gt(0) || Array.from(clmmPendingYield.current.values()).some((d) => !d.isEmpty)
+  const standardFarmList = stakedFarmList.filter((f) => !f.tags.includes('Stake'))
+  const stakingFarmList = stakedFarmList.filter((f) => f.tags.includes('Stake'))
+
+  const rewardState: Record<
+    PositionTabValues,
+    {
+      isReady: boolean
+      pendingReward: string
+    }
+  > = {
+    concentrated: {
+      isReady: allClmmPending.gt(0) || Array.from(clmmPendingYield.current.values()).some((d) => !d.isEmpty),
+      pendingReward: allClmmPending.toFixed(10)
+    },
+    'staked RAY': {
+      isReady: hasStakingReward,
+      pendingReward: allStakingPendingReward.toFixed(10)
+    },
+    standard: {
+      isReady: hasFarmReward,
+      pendingReward: allFarmPendingReward.toFixed(10)
+    }
+  }
+
   const isLoading = isFarmLoading || isClmmBalanceLoading || isPoolLoading
 
   const handleRefresh = useEvent(() => {
@@ -161,23 +186,40 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
     useTokenAccountStore.setState({ refreshClmmPositionTag: Date.now() })
   })
 
-  const handleHarvest = useEvent(async (zeroClmmPos?: Set<string>) => {
-    if (!isReady) return
-
+  const handleHarvest = useEvent(async ({ tab, zeroClmmPos }: { tab: PositionTabValues; zeroClmmPos?: Set<string> }) => {
     setIsSending(true)
 
-    let buildData: MultiTxBuildData | MultiTxV0BuildData | undefined
-    if (hasFarmReward && stakedFarmList.length) {
-      const farmBuildData = await harvestAllFarmAct({
-        farmInfoList: stakedFarmList.filter(
-          (farm) => !!allFarmBalances.find((f) => f.id === farm.id)?.pendingRewards.some((r) => !new Decimal(r || 0).isZero())
-        ),
-        execute: !clmmBalanceInfo.size
-      })
-      buildData = farmBuildData.buildData
+    const handleRefreshFarm = () => {
+      mutateFarmPos()
+      mutateFarmsInfo()
+      mutateFarmBalance()
     }
 
-    if (clmmBalanceInfo.size) {
+    const handleRefreshClmm = () => {
+      mutatePoolInfo()
+      mutateClmmTicks()
+      useTokenAccountStore.setState({ refreshClmmPositionTag: Date.now() })
+    }
+
+    if (tab === 'standard' && rewardState.standard.isReady && standardFarmList.length) {
+      await harvestAllFarmAct({
+        farmInfoList: standardFarmList.filter(
+          (farm) => !!allFarmBalances.find((f) => f.id === farm.id)?.pendingRewards.some((r) => !new Decimal(r || 0).isZero())
+        ),
+        onConfirmed: handleRefreshFarm
+      })
+    }
+
+    if (tab === 'staked RAY' && rewardState['staked RAY'].isReady && stakingFarmList.length) {
+      await harvestAllFarmAct({
+        farmInfoList: stakingFarmList.filter(
+          (farm) => !!allFarmBalances.find((f) => f.id === farm.id)?.pendingRewards.some((r) => !new Decimal(r || 0).isZero())
+        ),
+        onConfirmed: handleRefreshFarm
+      })
+    }
+
+    if (tab === 'concentrated' && rewardState.concentrated.isReady) {
       const noneZeroPos = { ...clmmRecord }
       Object.keys(noneZeroPos).forEach((key) => {
         const readyList = noneZeroPos[key].filter((p) => (zeroClmmPos ? !zeroClmmPos.has(p.nftMint.toBase58()) : true))
@@ -187,7 +229,7 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
         }
         noneZeroPos[key] = readyList
       })
-      const clmmBuildData = await harvestAllClmmAct({
+      await harvestAllClmmAct({
         allPoolInfo: clmmData.reduce(
           (acc, cur) => ({
             ...acc,
@@ -196,49 +238,9 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
           {}
         ),
         allPositions: noneZeroPos,
-        execute: !buildData
+        execute: true,
+        onConfirmed: handleRefreshClmm
       })
-      if (clmmBuildData.buildData) {
-        if (buildData) {
-          buildData.builder.addInstruction(clmmBuildData.buildData.builder.AllTxData)
-          buildData.builder.addCustomComputeBudget(await getComputeBudgetConfig())
-          const { execute, transactions } = await buildData.builder.sizeCheckBuild()
-
-          const farmMeta = getFarmTxMeta({ action: 'harvest', values: {} })
-          const cmmMeta = getClmmTxMeta({ action: 'harvest', values: {} })
-          const harvestAllMeta = getClmmTxMeta({ action: 'harvestAll', values: { symbol: 'Clmm、Farm' } })
-
-          const txLength = transactions.length
-          const { toastId, processedId, handler } = getDefaultToastData({
-            txLength,
-            onConfirmed: handleRefresh
-          })
-
-          try {
-            await execute({
-              sequentially: true,
-              onTxUpdate: (data) => {
-                handleMultiTxRetry(data)
-                handleMultiTxToast({
-                  toastId,
-                  processedId: transformProcessData({ processedId, data }),
-                  txLength,
-                  meta: harvestAllMeta,
-                  handler,
-                  getSubTxTitle(idx) {
-                    return idx < buildData!.transactions.length ? farmMeta.txHistoryDesc : cmmMeta.txHistoryDesc
-                  }
-                })
-              }
-            })
-          } catch (e: any) {
-            toastSubject.next({ txError: e })
-          }
-          setIsSending(false)
-          return
-        }
-        setIsSending(false)
-      }
     }
     setIsSending(false)
   })
@@ -289,7 +291,7 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
   return {
     isLoading,
     isSending,
-    isReady,
+    rewardState,
 
     isFarmLoading: isFarmLoading || isFarmBalanceLoading,
     stakedFarmList,
@@ -313,6 +315,8 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
     updateClmmPendingYield,
 
     totalPendingYield: allClmmPending.add(allFarmPendingReward),
+    allClmmPending,
+    allFarmPendingReward,
 
     handleHarvest,
     handleRefresh

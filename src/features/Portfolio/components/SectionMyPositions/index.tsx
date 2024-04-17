@@ -14,12 +14,10 @@ import { Desktop, Mobile } from '@/components/MobileDesktop'
 import { Select } from '@/components/Select'
 import { useStateWithUrl } from '@/hooks/useStateWithUrl'
 import IntervalCircle, { IntervalCircleHandler } from '@/components/IntervalCircle'
-import useAllPositionInfo from '@/hooks/portfolio/useAllPositionInfo'
+import useAllPositionInfo, { PositionTabValues } from '@/hooks/portfolio/useAllPositionInfo'
 import { panelCard } from '@/theme/cssBlocks'
 import { formatCurrency } from '@/utils/numberish/formatter'
 import { useEvent } from '@/hooks/useEvent'
-
-export type PositionTabValues = 'concentrated' | 'standard' | 'staked RAY'
 
 export default function SectionMyPositions() {
   const { t } = useTranslation()
@@ -86,10 +84,13 @@ export default function SectionMyPositions() {
     clmmBalanceInfo,
     isClmmLoading,
     isFarmLoading,
-    totalPendingYield,
-    isReady,
+    allFarmPendingReward,
+    allClmmPending,
+    rewardState,
     isSending
   } = useAllPositionInfo({})
+
+  const currentRewardState = rewardState[currentTab as PositionTabValues]
 
   const handleRefreshAll = useEvent(() => {
     handleRefresh()
@@ -160,15 +161,15 @@ export default function SectionMyPositions() {
                   </Text>
                   <HStack>
                     <Text whiteSpace={'nowrap'} color={colors.textPrimary} fontWeight={500}>
-                      {formatCurrency(totalPendingYield.toString(), { symbol: '$', decimalPlaces: 4 })}
+                      {formatCurrency(currentRewardState.pendingReward, { symbol: '$', decimalPlaces: 4 })}
                     </Text>
                   </HStack>
                 </Flex>
                 <Button
                   size={['sm', 'md']}
                   isLoading={isSending}
-                  isDisabled={!isReady}
-                  onClick={() => handleHarvest(noRewardClmmPos.current)}
+                  isDisabled={!currentRewardState.isReady}
+                  onClick={() => handleHarvest({ tab: currentTab as PositionTabValues, zeroClmmPos: noRewardClmmPos.current })}
                 >
                   {t('portfolio.harvest_all_button')}
                 </Button>

@@ -195,7 +195,7 @@ export const useClmmStore = createStore<ClmmState>(
       if (execute) {
         const meta = getTxMeta({
           action: 'harvest',
-          values: { symbol: 'Clmm farms' }
+          values: { symbol: 'All Clmm' }
         })
 
         const txLength = buildData.transactions.length

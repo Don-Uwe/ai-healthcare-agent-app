@@ -296,7 +296,7 @@ export const useSwapStore = createStore<SwapStore>(
     wrapSolAct: async (amount: string): Promise<string | undefined> => {
       const raydium = useAppStore.getState().raydium
       if (!raydium) return
-      const { execute } = await raydium.tradeV2.wrapWSol(raydium.decimalAmount({ mint: SOLMint, amount })!)
+      const { execute } = await raydium.tradeV2.wrapWSol(new Decimal(amount).mul(10 ** SOL_INFO.decimals).toFixed(0))
       return execute()
         .then(({ txId, signedTx }) => {
           txStatusSubject.next({ txId, signedTx })
