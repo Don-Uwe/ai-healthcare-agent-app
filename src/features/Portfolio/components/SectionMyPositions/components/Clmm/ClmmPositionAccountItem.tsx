@@ -129,7 +129,12 @@ export default function ClmmPositionAccountItem({
   }, [isOpen, position.nftMint.toBase58()])
 
   useEffect(() => {
-    position.updateClmmPendingYield({ nftMint: position.nftMint.toString(), pendingYield: totalPendingYield, isEmpty: isEmptyReward })
+    position.updateClmmPendingYield({
+      nftMint: position.nftMint.toString(),
+      pendingYield: totalPendingYield,
+      isEmpty: isEmptyReward,
+      rewardInfo: allRewardInfos
+    })
   }, [totalPendingYield, position.nftMint.toBase58(), isEmptyReward])
 
   return position.tickLower !== undefined && position.tickUpper !== undefined ? (
