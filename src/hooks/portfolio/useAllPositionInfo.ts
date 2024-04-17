@@ -196,9 +196,11 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
     }
 
     const handleRefreshClmm = () => {
-      mutatePoolInfo()
-      mutateClmmTicks()
-      useTokenAccountStore.setState({ refreshClmmPositionTag: Date.now() })
+      setTimeout(() => {
+        mutatePoolInfo()
+        mutateClmmTicks()
+        useTokenAccountStore.setState({ refreshClmmPositionTag: Date.now() })
+      }, 2000)
     }
 
     if (tab === 'standard' && rewardState.standard.isReady && standardFarmList.length) {
