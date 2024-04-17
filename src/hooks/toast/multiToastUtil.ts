@@ -49,7 +49,7 @@ export const handleMultiTxToast = (
 ) => {
   const { toastId, txLength, processedId, meta, getSubTxTitle, handler, ...txProps } = props
   if (txLength <= 1) {
-    if (processedId[0].txId)
+    if (processedId[0].txId) {
       txStatusSubject.next({
         txId: processedId[0].txId,
         update: true,
@@ -57,6 +57,8 @@ export const handleMultiTxToast = (
         onError: txProps.onError,
         onConfirmed: txProps.onConfirmed || txProps.onSent
       })
+      handler(processedId)
+    }
     return
   }
 

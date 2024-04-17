@@ -4,7 +4,9 @@ import {
   CreatePoolAddress,
   Percent,
   ApiV3Token,
-  FormatFarmInfoOutV6
+  FormatFarmInfoOutV6,
+  toToken,
+  TokenAmount
 } from '@raydium-io/raydium-sdk-v2'
 import createStore from './createStore'
 import { useAppStore } from './useAppStore'
@@ -96,8 +98,14 @@ export const useLiquidityStore = createStore<LiquidityStore>(
       if (!raydium) return ''
       const { execute } = await raydium.liquidity.addLiquidity({
         ...params,
-        amountInA: params.amountA,
-        amountInB: params.amountB,
+        amountInA: new TokenAmount(
+          toToken(params.poolInfo.mintA),
+          new Decimal(params.amountA).mul(10 ** params.poolInfo.mintA.decimals).toFixed(0)
+        ),
+        amountInB: new TokenAmount(
+          toToken(params.poolInfo.mintB),
+          new Decimal(params.amountB).mul(10 ** params.poolInfo.mintB.decimals).toFixed(0)
+        ),
         txVersion
       })
 

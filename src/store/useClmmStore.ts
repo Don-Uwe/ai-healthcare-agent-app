@@ -187,7 +187,9 @@ export const useClmmStore = createStore<ClmmState>(
       const buildData = await raydium.clmm.harvestAllRewards({
         allPoolInfo,
         allPositions,
-        ownerInfo: {},
+        ownerInfo: {
+          useSOLBalance: true
+        },
         programId: programId ? new PublicKey(programId) : undefined,
         txVersion
         // computeBudgetConfig: execute ? await getComputeBudgetConfig() : undefined
@@ -195,7 +197,7 @@ export const useClmmStore = createStore<ClmmState>(
       if (execute) {
         const meta = getTxMeta({
           action: 'harvest',
-          values: { symbol: 'Clmm farms' }
+          values: { symbol: 'All Clmm' }
         })
 
         const txLength = buildData.transactions.length
