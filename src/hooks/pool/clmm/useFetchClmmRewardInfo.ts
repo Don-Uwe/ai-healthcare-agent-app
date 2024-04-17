@@ -84,7 +84,6 @@ export default function useFetchClmmRewardInfo({
     setRewards(rewardInfos)
 
     const totalRewards = rewardInfos
-      .filter((r) => r.gt(BN_ZERO))
       .map((r, idx) =>
         new Decimal(r.toString())
           .div(10 ** (poolInfo.rewardDefaultInfos[idx]?.mint.decimals || 0))
