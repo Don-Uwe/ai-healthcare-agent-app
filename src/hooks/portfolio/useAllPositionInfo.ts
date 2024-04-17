@@ -139,7 +139,7 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
   })
 
   let [allFarmPendingReward, hasFarmReward, allStakingPendingReward, hasStakingReward] = [new Decimal(0), false, new Decimal(0), false]
-  let [allFarmRewardInfo, allStakingRewardInfo] = [new Map<string, RewardInfo>(), new Map<string, RewardInfo>()]
+  const [allFarmRewardInfo, allStakingRewardInfo] = [new Map<string, RewardInfo>(), new Map<string, RewardInfo>()]
   allFarmBalances.forEach((b) => {
     const farm = stakedFarmMap.get(b?.id || '')
     const isStaking = farm?.tags.includes('Stake')
