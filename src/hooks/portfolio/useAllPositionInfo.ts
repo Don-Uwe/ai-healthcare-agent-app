@@ -191,7 +191,7 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
       return rewardInfo ? acc.add(usdValue) : acc
     }, new Decimal(0))
 
-    if (isStaking) allStakingPendingReward = allFarmPendingReward.add(pendingReward)
+    if (isStaking) allStakingPendingReward = allStakingPendingReward.add(pendingReward)
     else allFarmPendingReward = allFarmPendingReward.add(pendingReward)
   })
 
