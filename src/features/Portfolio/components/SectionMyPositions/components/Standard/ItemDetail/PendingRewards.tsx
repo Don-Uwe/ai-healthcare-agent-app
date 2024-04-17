@@ -23,6 +23,7 @@ export default function PendingRewards({ pendingReward, positionStatus, rewardIn
     unstaked: t('amm.farm_unstaked'),
     ended: t('amm.farm_ended')
   }
+  const isEmpty = !rewardInfo.some((r) => !new Decimal(r.amount).isZero())
   return (
     <Flex justify={'space-between'} bg={colors.backgroundDark} rounded="lg" py={2.5} px={4} gap={8}>
       <VStack align="flex-start" justifyContent={'space-between'}>
@@ -82,7 +83,7 @@ export default function PendingRewards({ pendingReward, positionStatus, rewardIn
         )}
         <Button
           isLoading={isLoading}
-          isDisabled={new Decimal(pendingReward).isZero()}
+          isDisabled={isEmpty}
           variant="outline"
           size="sm"
           px={5}

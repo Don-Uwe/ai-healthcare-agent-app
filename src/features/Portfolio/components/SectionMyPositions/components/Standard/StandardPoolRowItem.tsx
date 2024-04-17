@@ -152,7 +152,7 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
     const info: { mint: ApiV3Token; amount: string; amountUSD: string }[] = []
     Array.from(allPendingRewards.values()).forEach((r) => {
       r.amount.forEach((amount, idx) => {
-        if (amount === '0' || !info.length) return
+        if (amount === '0') return
         const infoIdx = info.findIndex((i) => i.mint.address === r.mint[idx].address)
         if (infoIdx > -1) {
           info[infoIdx].amount = new Decimal(info[infoIdx].amount).add(amount).toFixed(r.mint[idx].decimals)

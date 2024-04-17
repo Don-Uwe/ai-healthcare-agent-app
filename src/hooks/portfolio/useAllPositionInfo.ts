@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react'
 import { AccountInfo, PublicKey } from '@solana/web3.js'
-import { FormatFarmInfoOutV6, ApiV3PoolInfoConcentratedItem } from '@raydium-io/raydium-sdk-v2'
+import { FormatFarmInfoOutV6, ApiV3PoolInfoConcentratedItem, ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 
 import useFetchPoolById from '../pool/useFetchPoolById'
 
@@ -16,10 +16,17 @@ import { useFarmStore, useClmmStore, useAppStore } from '@/store'
 import { useEvent } from '../useEvent'
 import { debounce } from '@/utils/functionMethods'
 import Decimal from 'decimal.js'
+
+interface RewardInfo {
+  mint: ApiV3Token
+  amount: string
+  amountUSD: string
+}
 export interface UpdateClmmPendingYield {
   nftMint: string
   pendingYield: Decimal
   isEmpty: boolean
+  rewardInfo: RewardInfo[]
 }
 
 export type PositionWithUpdateFn = ClmmPosition & {
@@ -45,6 +52,7 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
       {
         usd: Decimal
         isEmpty: boolean
+        rewardInfo: RewardInfo[]
       }
     >
   >(new Map())
@@ -131,19 +139,56 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
   })
 
   let [allFarmPendingReward, hasFarmReward, allStakingPendingReward, hasStakingReward] = [new Decimal(0), false, new Decimal(0), false]
+  const [allFarmRewardInfo, allStakingRewardInfo] = [new Map<string, RewardInfo>(), new Map<string, RewardInfo>()]
   allFarmBalances.forEach((b) => {
     const farm = stakedFarmMap.get(b?.id || '')
     const isStaking = farm?.tags.includes('Stake')
     const hasReward = b?.pendingRewards.some((a) => !new Decimal(a || 0).isZero())
-    if (isStaking) hasStakingReward = hasReward
-    else hasFarmReward = hasFarmReward || hasReward
+    if (isStaking) {
+      hasStakingReward = hasStakingReward || hasReward
+    } else hasFarmReward = hasFarmReward || hasReward
 
     const pendingReward = b?.pendingRewards.reduce((acc, cur, idx) => {
-      return farm?.rewardInfos[idx]
-        ? acc.add(
-            new Decimal(cur).mul(tokenPrices[farm.rewardInfos[idx].mint.address]?.value || 0) // reward in usd
-          )
-        : acc
+      const rewardInfo = farm?.rewardInfos[idx]
+      const rewardMint = farm?.rewardInfos[idx]?.mint
+
+      if (!rewardInfo || !rewardMint) return acc
+      const usdValue = new Decimal(cur).mul(tokenPrices[rewardMint.address]?.value || 0)
+      if (rewardMint && new Decimal(cur).gt(0)) {
+        if (isStaking) {
+          if (allStakingRewardInfo.has(rewardMint.address)) {
+            const prevReward = allStakingRewardInfo.get(rewardMint.address)!
+            allStakingRewardInfo.set(rewardMint.address, {
+              mint: rewardMint,
+              amount: new Decimal(prevReward.amount).add(cur).toFixed(rewardMint.decimals),
+              amountUSD: new Decimal(prevReward.amountUSD).add(usdValue).toFixed(10)
+            })
+          } else {
+            allStakingRewardInfo.set(rewardMint.address, {
+              mint: rewardMint,
+              amount: cur,
+              amountUSD: usdValue.toFixed(10)
+            })
+          }
+        } else {
+          if (allFarmRewardInfo.has(rewardMint.address)) {
+            const prevReward = allFarmRewardInfo.get(rewardMint.address)!
+            allFarmRewardInfo.set(rewardMint.address, {
+              mint: rewardMint,
+              amount: new Decimal(prevReward.amount).add(cur).toFixed(rewardMint.decimals),
+              amountUSD: new Decimal(prevReward.amountUSD).add(usdValue).toFixed(10)
+            })
+          } else {
+            allFarmRewardInfo.set(rewardMint.address, {
+              mint: rewardMint,
+              amount: cur,
+              amountUSD: usdValue.toFixed(10)
+            })
+          }
+        }
+      }
+
+      return rewardInfo ? acc.add(usdValue) : acc
     }, new Decimal(0))
 
     if (isStaking) allStakingPendingReward = allFarmPendingReward.add(pendingReward)
@@ -153,24 +198,50 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
   const standardFarmList = stakedFarmList.filter((f) => !f.tags.includes('Stake'))
   const stakingFarmList = stakedFarmList.filter((f) => f.tags.includes('Stake'))
 
+  const clmmRewardInfo = new Map<string, RewardInfo>()
+  Array.from(clmmPendingYield.current.values())
+    .filter((d) => !d.isEmpty)
+    .forEach((data) => {
+      data.rewardInfo.forEach((reward) => {
+        if (clmmRewardInfo.has(reward.mint.address)) {
+          const prevReward = clmmRewardInfo.get(reward.mint.address)!
+          clmmRewardInfo.set(reward.mint.address, {
+            mint: reward.mint,
+            amount: new Decimal(prevReward.amount).add(reward.amount).toFixed(reward.mint.decimals),
+            amountUSD: new Decimal(prevReward.amountUSD).add(reward.amountUSD).toFixed(10)
+          })
+          return
+        }
+        clmmRewardInfo.set(reward.mint.address, {
+          mint: reward.mint,
+          amount: reward.amount,
+          amountUSD: reward.amountUSD
+        })
+      })
+    })
+
   const rewardState: Record<
     PositionTabValues,
     {
       isReady: boolean
       pendingReward: string
+      rewardInfo: RewardInfo[]
     }
   > = {
     concentrated: {
       isReady: allClmmPending.gt(0) || Array.from(clmmPendingYield.current.values()).some((d) => !d.isEmpty),
-      pendingReward: allClmmPending.toFixed(10)
+      pendingReward: allClmmPending.toFixed(10),
+      rewardInfo: Array.from(clmmRewardInfo.values())
     },
     'staked RAY': {
       isReady: hasStakingReward,
-      pendingReward: allStakingPendingReward.toFixed(10)
+      pendingReward: allStakingPendingReward.toFixed(10),
+      rewardInfo: Array.from(allStakingRewardInfo.values())
     },
     standard: {
       isReady: hasFarmReward,
-      pendingReward: allFarmPendingReward.toFixed(10)
+      pendingReward: allFarmPendingReward.toFixed(10),
+      rewardInfo: Array.from(allFarmRewardInfo.values())
     }
   }
 
@@ -256,8 +327,8 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
   )
 
   const updateClmmPendingYield = useCallback(
-    ({ nftMint, pendingYield, isEmpty }: UpdateClmmPendingYield) => {
-      clmmPendingYield.current.set(nftMint, { usd: pendingYield, isEmpty })
+    ({ nftMint, pendingYield, isEmpty, rewardInfo }: UpdateClmmPendingYield) => {
+      clmmPendingYield.current.set(nftMint, { usd: pendingYield, isEmpty, rewardInfo })
       setTotalClmmPending()
     },
     [setTotalClmmPending]

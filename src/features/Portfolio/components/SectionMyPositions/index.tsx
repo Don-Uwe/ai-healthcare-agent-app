@@ -6,7 +6,7 @@ import Button from '@/components/Button'
 import Tabs from '@/components/Tabs'
 import { colors } from '@/theme/cssVariables'
 import { useAppStore } from '@/store/useAppStore'
-
+import { QuestionToolTip } from '@/components/QuestionToolTip'
 import { ClmmMyPositionTabContent } from './TabClmm'
 import MyPositionTabStaked from './TabStaked'
 import MyPositionTabStandard from './TabStandard'
@@ -18,6 +18,8 @@ import useAllPositionInfo, { PositionTabValues } from '@/hooks/portfolio/useAllP
 import { panelCard } from '@/theme/cssBlocks'
 import { formatCurrency } from '@/utils/numberish/formatter'
 import { useEvent } from '@/hooks/useEvent'
+import TokenAvatar from '@/components/TokenAvatar'
+import { getMintSymbol } from '@/utils/token'
 
 export default function SectionMyPositions() {
   const { t } = useTranslation()
@@ -84,8 +86,6 @@ export default function SectionMyPositions() {
     clmmBalanceInfo,
     isClmmLoading,
     isFarmLoading,
-    allFarmPendingReward,
-    allClmmPending,
     rewardState,
     isSending
   } = useAllPositionInfo({})
@@ -160,9 +160,31 @@ export default function SectionMyPositions() {
                     {t('portfolio.harvest_all_label')}
                   </Text>
                   <HStack>
-                    <Text whiteSpace={'nowrap'} color={colors.textPrimary} fontWeight={500}>
-                      {formatCurrency(currentRewardState.pendingReward, { symbol: '$', decimalPlaces: 4 })}
-                    </Text>
+                    <Flex gap="2" alignItems="center" whiteSpace={'nowrap'} color={colors.textPrimary} fontWeight={500}>
+                      {formatCurrency(currentRewardState.pendingReward, { symbol: '$', maximumDecimalTrailingZeroes: 4 })}
+                      {currentRewardState.rewardInfo.length > 0 ? (
+                        <QuestionToolTip
+                          label={
+                            <>
+                              {currentRewardState.rewardInfo.map((r) => (
+                                <Flex key={r.mint.address} alignItems="center" gap="1" my="2">
+                                  <TokenAvatar key={`pool-reward-${r.mint.address}`} size={'sm'} token={r.mint} />
+                                  <Text color={colors.textPrimary}>
+                                    {formatCurrency(r.amount, {
+                                      maximumDecimalTrailingZeroes: 5
+                                    })}
+                                  </Text>
+                                  <Text>{getMintSymbol({ mint: r.mint, transformSol: true })}</Text>
+                                  <Text color={colors.textPrimary}>({formatCurrency(r.amountUSD, { symbol: '$', decimalPlaces: 4 })})</Text>
+                                </Flex>
+                              ))}
+                            </>
+                          }
+                          iconType="info"
+                          iconProps={{ width: 18, height: 18, fill: colors.textSecondary }}
+                        />
+                      ) : null}
+                    </Flex>
                   </HStack>
                 </Flex>
                 <Button
