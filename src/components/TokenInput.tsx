@@ -15,7 +15,7 @@ import {
 } from '@chakra-ui/react'
 import { ApiV3Token, TokenInfo, SOL_INFO } from '@raydium-io/raydium-sdk-v2'
 import Decimal from 'decimal.js'
-import React, { ReactNode, useState } from 'react'
+import React, { ReactNode, useEffect, useState } from 'react'
 import useTokenPrice from '@/hooks/token/useTokenPrice'
 import { useEvent } from '@/hooks/useEvent'
 import BalanceWalletIcon from '@/icons/misc/BalanceWalletIcon'
@@ -90,6 +90,8 @@ export interface TokenInputProps extends Pick<TokenSelectDialogProps, 'filterFn'
   /** for library:fomik  */
   onTokenChange?: (token: TokenInfo | ApiV3Token) => void
   onFocus?: () => void
+
+  defaultUnknownToken?: TokenInfo
 }
 
 /**
@@ -124,7 +126,8 @@ function TokenInput(props: TokenInputProps) {
     width,
     topBlockSx,
     ctrSx,
-    sx
+    sx,
+    defaultUnknownToken
   } = props
   const isMobile = useAppStore((s) => s.isMobile)
   const setExtraTokenListAct = useTokenStore((s) => s.setExtraTokenListAct)
@@ -257,6 +260,11 @@ function TokenInput(props: TokenInputProps) {
     // return val === '.' ? '0.' : val
   })
 
+  useEffect(() => {
+    if (!defaultUnknownToken) return
+    handleSelectToken(defaultUnknownToken)
+  }, [defaultUnknownToken?.address])
+
   return (
     <Box bg={colors.backgroundDark50} position={'relative'} rounded={12} sx={ctrSx}>
       {disableTotalInputByMask ? (
@@ -376,33 +384,6 @@ function TokenInput(props: TokenInputProps) {
               _hover={{ bg: 'transparent' }}
               _active={{ bg: 'transparent' }}
             />
-            {/* <NumberInput
-              sx={{ '& input[inputmode=decimal]': { opacity: 1 } }}
-              onChange={onChange}
-              onFocus={handleFocus}
-              parse={handleParseVal}
-              isDisabled={readonly || loading}
-              value={value}
-              min={0}
-              isValidCharacter={handleValidate}
-              width={width || '100%'}
-              opacity={loading ? 0.2 : 1}
-            >
-              <NumberInputField
-                id={id}
-                name={name}
-                textAlign="end"
-                fontWeight={500}
-                fontSize={sizes.inputText}
-                width={width || '100%'}
-                paddingX={0}
-                height="unset"
-                bg="transparent"
-                _focus={{ bg: 'transparent' }}
-                _hover={{ bg: 'transparent' }}
-                _active={{ bg: 'transparent' }}
-              />
-            </NumberInput> */}
           </InputGroup>
         </GridItem>
 
