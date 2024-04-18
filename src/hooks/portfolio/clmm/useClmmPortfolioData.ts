@@ -14,7 +14,8 @@ export default function useClmmPortfolioData<T>({ type }: { type: T }) {
   const allClmmBalanceData = useMemo(() => Array.from(clmmBalanceInfo.entries()), [clmmBalanceInfo])
   const allPositions = useMemo(() => allClmmBalanceData.map((d) => d[1]).flat(), [allClmmBalanceData])
   const { formattedDataMap } = useFetchPoolById<ApiV3PoolInfoConcentratedItem>({
-    idList: allClmmBalanceData.map((d) => d[0])
+    idList: allClmmBalanceData.map((d) => d[0]),
+    keepPreviousData: !!owner
   })
   const { data: tokenPrices } = useTokenPrice({
     mintList: Array.from(
