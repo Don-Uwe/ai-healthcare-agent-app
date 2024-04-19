@@ -2,11 +2,10 @@ import { PublicKey, VersionedTransaction, Transaction } from '@solana/web3.js'
 import { TxVersion, printSimulate, SOL_INFO } from '@raydium-io/raydium-sdk-v2'
 import { createStore, useAppStore, useTokenStore } from '@/store'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
-import { txStatusSubject } from '@/hooks/toast/useTxStatus'
+import { txStatusSubject, TOAST_DURATION } from '@/hooks/toast/useTxStatus'
 import { ApiSwapV1OutSuccess } from './type'
 import { isSolWSol } from '@/utils/token'
 import axios from '@/api/axios'
-import { v4 as uuid } from 'uuid'
 import { getTxMeta } from './swapMeta'
 import { formatLocaleStr } from '@/utils/numberish/formatter'
 import { getMintSymbol } from '@/utils/token'
@@ -15,7 +14,7 @@ import { TxCallbackProps } from '@/types/tx'
 import i18n from '@/i18n'
 import { fetchComputePrice } from '@/utils/tx/computeBudget'
 import { trimTailingZero } from '@/utils/numberish/formatNumber'
-import { getDefaultToastData, handleMultiTxToast, transformProcessData } from '@/hooks/toast/multiToastUtil'
+import { getDefaultToastData, handleMultiTxToast } from '@/hooks/toast/multiToastUtil'
 import { handleMultiTxRetry } from '@/hooks/toast/retryTx'
 
 const getSwapComputePrice = async () => {
@@ -176,10 +175,11 @@ export const useSwapStore = createStore<SwapStore>(
             })
             return
           }
-
-          connection.onSignature(
+          let timeout = 0
+          const subId = connection.onSignature(
             txId,
             (signatureResult) => {
+              timeout && window.clearTimeout(timeout)
               const targetTxIdx = processedId.findIndex((tx) => tx.txId === txId)
               if (targetTxIdx > -1) processedId[targetTxIdx].status = signatureResult.err ? 'error' : 'success'
               handleMultiTxRetry(processedId)
@@ -207,6 +207,11 @@ export const useSwapStore = createStore<SwapStore>(
             getSubTxTitle,
             onCloseToast
           })
+
+          timeout = window.setTimeout(() => {
+            connection.removeSignatureListener(subId)
+          }, TOAST_DURATION)
+
           i++
         }
         checkSendTx()

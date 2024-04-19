@@ -46,7 +46,8 @@ export default function useClmmPortfolioData<T>({ type }: { type: T }) {
       const positions = groupData[poolName]
       let poolAllValue = new Decimal(0)
       positions.forEach((position) => {
-        const poolInfo = formattedDataMap[position.poolId.toBase58()]!
+        const poolInfo = formattedDataMap[position.poolId.toBase58()]
+        if (!poolInfo) return
         const { amountA, amountB } = getPriceAndAmount({ poolInfo, position })
         const usdValueA = amountA.mul(tokenPrices[poolInfo.mintA.address]?.value || 0)
         const usdValueB = amountB.mul(tokenPrices[poolInfo.mintB.address]?.value || 0)
