@@ -1,9 +1,8 @@
 import { PublicKey, VersionedTransaction, Transaction } from '@solana/web3.js'
-import { SOLMint, TxVersion, printSimulate, SOL_INFO } from '@raydium-io/raydium-sdk-v2'
+import { TxVersion, printSimulate, SOL_INFO } from '@raydium-io/raydium-sdk-v2'
 import { createStore, useAppStore, useTokenStore } from '@/store'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
 import { txStatusSubject } from '@/hooks/toast/useTxStatus'
-import showMultiToast from '@/hooks/toast/multiToastUtil'
 import { ApiSwapV1OutSuccess } from './type'
 import { isSolWSol } from '@/utils/token'
 import axios from '@/api/axios'
@@ -14,10 +13,10 @@ import { getMintSymbol } from '@/utils/token'
 import Decimal from 'decimal.js'
 import { TxCallbackProps } from '@/types/tx'
 import i18n from '@/i18n'
-import { retry } from '@/utils/common'
 import { fetchComputePrice } from '@/utils/tx/computeBudget'
-import { ToastStatus } from '@/types/tx'
 import { trimTailingZero } from '@/utils/numberish/formatNumber'
+import { getDefaultToastData, handleMultiTxToast, transformProcessData } from '@/hooks/toast/multiToastUtil'
+import { handleMultiTxRetry } from '@/hooks/toast/retryTx'
 
 const getSwapComputePrice = async () => {
   const transactionFee = useAppStore.getState().transactionFee
@@ -114,11 +113,18 @@ export const useSwapStore = createStore<SwapStore>(
           }
         )
         if (!success) return
+
         const swapTransactions = data || []
         const allTxBuf = swapTransactions.map((tx) => Buffer.from(tx.transaction, 'base64'))
         const allTx = allTxBuf.map((txBuf) => (isV0Tx ? VersionedTransaction.deserialize(txBuf) : Transaction.from(txBuf)))
         printSimulate(allTx as any)
         const signedTxs = await signAllTransactions(allTx)
+
+        const txLength = signedTxs.length
+        const { toastId, handler } = getDefaultToastData({
+          txLength,
+          ...txProps
+        })
 
         const swapMeta = getTxMeta({
           action: 'swap',
@@ -135,126 +141,78 @@ export const useSwapStore = createStore<SwapStore>(
             symbolB: getMintSymbol({ mint: outputToken, transformSol: unwrapSol })
           }
         })
-        const toastId = uuid()
-        const processedId: { txId: string; status: 'success' | 'error' | 'info' }[] = []
-        for (let i = 0; i < signedTxs.length; i++) {
-          processedId.push({
-            txId: '',
-            status: 'info'
-          })
+
+        const processedId: {
+          txId: string
+          status: 'success' | 'error' | 'sent'
+          signedTx: Transaction | VersionedTransaction
+        }[] = []
+
+        const getSubTxTitle = (idx: number) => {
+          return idx === 0
+            ? 'transaction_history.set_up'
+            : idx === processedId.length - 1 && processedId.length > 2
+            ? 'transaction_history.clean_up'
+            : 'transaction_history.name_swap'
         }
-        let swapDone = false
-        const showToast = (processedId: { txId: string; status: ToastStatus }[]) => {
-          if (swapDone) return
-          if (signedTxs.length <= 1) {
-            if (processedId[0].status !== 'info') return
+
+        let i = 0
+        const checkSendTx = async (): Promise<void> => {
+          if (!signedTxs[i]) return
+          const tx = signedTxs[i]
+          const txId =
+            tx instanceof Transaction
+              ? await connection.sendRawTransaction(tx.serialize(), { skipPreflight: true, maxRetries: 0 })
+              : await connection.sendTransaction(tx, { skipPreflight: true, maxRetries: 0 })
+          processedId.push({ txId, signedTx: tx, status: 'sent' })
+
+          if (signedTxs.length === 1) {
             txStatusSubject.next({
-              txId: processedId[0].txId,
+              txId,
               ...swapMeta,
-              mintInfo: [inputToken, outputToken],
+              signedTx: tx,
               onClose: onCloseToast,
-              onConfirmed: () => {
-                txProps.onConfirmed?.()
-                processedId[0].status = 'success'
-              },
-              onError: () => {
-                txProps.onError?.()
-                processedId[0].status = 'error'
-              },
-              update: true
+              ...txProps
             })
-          } else {
-            showMultiToast({
-              toastId,
-              processedId,
-              meta: swapMeta,
-              txLength: signedTxs.length,
-              onClose: onCloseToast,
-              getSubTxTitle(idx: number) {
-                return idx === 0
-                  ? 'transaction_history.set_up'
-                  : idx === processedId.length - 1 && processedId.length > 2
-                  ? 'transaction_history.clean_up'
-                  : 'transaction_history.name_swap'
-              }
-            })
+            return
           }
-        }
 
-        const subscribedTx = new Set<string>()
-
-        const subscribeTx = (txId: string) => {
-          if (subscribedTx.has(txId) || processedId.length <= 1) return
-          subscribedTx.add(txId)
           connection.onSignature(
             txId,
             (signatureResult) => {
-              const idx = processedId.findIndex((p) => p.txId === txId)
-              if (processedId[idx]) {
-                processedId[idx].status = !signatureResult.err ? 'success' : 'error'
-              }
+              const targetTxIdx = processedId.findIndex((tx) => tx.txId === txId)
+              if (targetTxIdx > -1) processedId[targetTxIdx].status = signatureResult.err ? 'error' : 'success'
+              handleMultiTxRetry(processedId)
+              handleMultiTxToast({
+                toastId,
+                processedId: processedId.map((p) => ({ ...p, status: p.status === 'sent' ? 'info' : p.status })),
+                txLength,
+                meta: swapMeta,
+                handler,
+                getSubTxTitle,
+                onCloseToast
+              })
+              if (!signatureResult.err) checkSendTx()
             },
-            'confirmed'
+            'processed'
           )
           connection.getSignatureStatus(txId)
+          handleMultiTxRetry(processedId)
+          handleMultiTxToast({
+            toastId,
+            processedId: processedId.map((p) => ({ ...p, status: p.status === 'sent' ? 'info' : p.status })),
+            txLength,
+            meta: swapMeta,
+            handler,
+            getSubTxTitle,
+            onCloseToast
+          })
+          i++
         }
-
-        const checkStatus = (idx: number) => {
-          if (processedId[idx].status !== 'info') {
-            showToast(processedId)
-
-            if (processedId[idx].status === 'error') {
-              // 1 failed
-              swapDone = true
-              throw new Error('tx failed')
-            }
-
-            if (idx === signedTxs.length - 1) {
-              // all success
-              swapDone = true
-              return
-            }
-          }
-        }
-
-        for await (const [idx, tx] of signedTxs.entries()) {
-          if (swapDone) return
-          await retry(
-            async () => {
-              checkStatus(idx)
-              if (swapDone || processedId[idx].status !== 'info') return
-              const txId =
-                tx instanceof Transaction
-                  ? await connection.sendRawTransaction(tx.serialize(), { skipPreflight: true, maxRetries: 0 })
-                  : await connection.sendTransaction(tx, { skipPreflight: true, maxRetries: 0 })
-              processedId[idx].txId = txId
-              showToast(processedId)
-              subscribeTx(txId)
-              checkStatus(idx)
-              if (swapDone) return
-              throw new Error('sending')
-            },
-            {
-              retryCount: 40,
-              interval: 3000,
-              errorMsg: i18n.t('transaction.send_failed', { title: swapMeta.title }) as string,
-              onError: (errorMsg?: string) => {
-                if (errorMsg !== 'tx failed') {
-                  swapDone = true
-                  if (errorMsg !== i18n.t('transaction.send_failed', { title: swapMeta.title }))
-                    toastSubject.next({ id: signedTxs.length > 1 ? toastId : processedId[0].txId, close: true })
-                }
-              }
-            }
-          )
-        }
+        checkSendTx()
       } catch (e: any) {
         txProps.onError?.()
-        if (
-          e.message !== 'tx failed' &&
-          e.message !== i18n.t('transaction.send_failed', { title: i18n.t('transaction_history.name_swap') })
-        )
-          toastSubject.next({ txError: e })
+        if (e.message !== 'tx failed') toastSubject.next({ txError: e })
       } finally {
         txProps.onFinally?.()
       }

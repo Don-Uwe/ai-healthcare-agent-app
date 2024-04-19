@@ -38,6 +38,7 @@ export const handleMultiTxToast = (
       txHistoryDesc: string
       txValues: Record<string, unknown>
     }
+    skipWatchSignature?: boolean
     getSubTxTitle: (idx: number) => string
     handler: (
       processedId: {
@@ -45,17 +46,22 @@ export const handleMultiTxToast = (
         status: ToastStatus
       }[]
     ) => void
+    onCloseToast?: () => void
   } & TxCallbackProps
 ) => {
-  const { toastId, txLength, processedId, meta, getSubTxTitle, handler, ...txProps } = props
+  const { toastId, txLength, processedId, meta, skipWatchSignature, getSubTxTitle, handler, ...txProps } = props
   if (txLength <= 1) {
     if (processedId[0].txId) {
       txStatusSubject.next({
+        status: processedId[0].status,
+        skipWatchSignature,
         txId: processedId[0].txId,
         update: true,
         ...meta,
+        onSent: txProps.onSent,
         onError: txProps.onError,
-        onConfirmed: txProps.onConfirmed || txProps.onSent
+        onConfirmed: txProps.onConfirmed,
+        onClose: txProps.onCloseToast
       })
       handler(processedId)
     }

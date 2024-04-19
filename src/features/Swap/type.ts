@@ -3,7 +3,7 @@ export interface ApiSwapV1OutError {
   success: false
   version: 'V0' | 'V1'
   msg: string
-  openTime?: number
+  openTime?: string
   data: undefined
 }
 export interface ApiSwapV1OutSuccess {

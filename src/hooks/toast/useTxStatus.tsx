@@ -33,6 +33,7 @@ export const txStatusSubject = new Subject<
     hideResultToast?: boolean
     update?: boolean
     skipWatchSignature?: boolean
+    duration?: number
     signedTx?: Transaction | VersionedTransaction
     onConfirmed?: (signatureResult: SignatureResult, context: Context) => void
     onError?: (signatureResult: SignatureResult, context: Context) => void
@@ -85,6 +86,7 @@ function useTxStatus() {
           update,
           skipWatchSignature,
           signedTx,
+          duration,
           onConfirmed,
           onError,
           onSent,
@@ -118,14 +120,14 @@ function useTxStatus() {
               : description || `${explorerUrl}/tx/${txId}`,
             detail: renderDetail(),
             status: status || 'info',
-            duration: TOAST_DURATION,
+            duration: duration ?? TOAST_DURATION,
             update,
             onClose
           })
           onSent?.()
 
           setTxRecord({
-            status: 'info',
+            status: status || 'info',
             title: txHistoryTitle || 'transaction.title',
             description: txHistoryDesc || '',
             txId,
@@ -224,6 +226,9 @@ function useTxStatus() {
               duration: 8 * 1000,
               onClose
             })
+            // eslint-disable-next-line
+            // @ts-ignore
+            onError?.()
           }, TOAST_DURATION)
         }
       )

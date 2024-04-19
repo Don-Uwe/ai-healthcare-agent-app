@@ -199,7 +199,7 @@ export function SwapPanel({
       wrapSol: tokenInput?.address === PublicKey.default.toString(),
       unwrapSol: tokenOutput?.address === PublicKey.default.toString(),
       onCloseToast: offSending,
-      onSent: () => {
+      onConfirmed: () => {
         setAmountIn('')
         setNeedPriceUpdatedAlert(false)
         offSending()
@@ -207,8 +207,7 @@ export function SwapPanel({
       onError: () => {
         offSending()
         mutate()
-      },
-      onFinally: offSending
+      }
     })
   }
 
@@ -333,7 +332,7 @@ export function SwapPanel({
         onClick={isHighRiskTx ? onHightRiskOpen : handleClickSwap}
       >
         {swapDisabled ? t('common.disabled') : swapError || t('swap.title')}
-        {isPoolNotOpenError ? ` ${dayjs(openTime * 1000).format('YYYY/M/D HH:mm:ss')}` : null}
+        {isPoolNotOpenError ? ` ${dayjs(Number(openTime) * 1000).format('YYYY/M/D HH:mm:ss')}` : null}
       </ConnectedButton>
       <HighRiskAlert isOpen={isHightRiskOpen} onClose={offHightRiskOpen} onConfirm={handleHighRiskConfirm} />
     </>
