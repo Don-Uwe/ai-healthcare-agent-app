@@ -37,7 +37,8 @@ export default function useClmmPortfolioData<T>({ type }: { type: T }) {
       [key: string]: { mint: ApiV3Token; amount: string; usd: string }
     } = {}
     allClmmBalanceData.forEach(([poolId, positions]) => {
-      const poolInfo = formattedDataMap[poolId]!
+      const poolInfo = formattedDataMap[poolId]
+      if (!poolInfo) return
       if (!groupData[poolInfo.poolName]) groupData[poolInfo.poolName] = positions
       else groupData[poolInfo.poolName] = groupData[poolInfo.poolName].concat(positions)
     })
