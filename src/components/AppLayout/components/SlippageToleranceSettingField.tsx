@@ -18,7 +18,9 @@ export function SlippageToleranceSettingField() {
   const slippage = useAppStore((s) => s.slippage)
   const isMobile = useAppStore((s) => s.isMobile)
   const [currentSlippage, setCurrentSlippage] = useState(String(slippage * 100))
+  const [isFirstFocused, setIsFirstFocused] = useState(false)
   const handleChange = useEvent((val: string | number) => {
+    setIsFirstFocused(false)
     setCurrentSlippage(String(val))
   })
   const handleUpdateSlippage = useEvent((val: string | number) => {
@@ -27,6 +29,7 @@ export function SlippageToleranceSettingField() {
     useAppStore.setState({ slippage: setVal }, false, { type: 'SlippageToleranceSettingField' })
   })
   const handleBlur = useEvent(() => {
+    setIsFirstFocused(false)
     if (!currentSlippage) handleChange(0)
     handleUpdateSlippage(currentSlippage || 0)
   })
@@ -35,6 +38,9 @@ export function SlippageToleranceSettingField() {
       event.preventDefault()
     }
   }, [])
+  const handleFocus = useEvent(() => {
+    setIsFirstFocused(true)
+  })
 
   return (
     <SettingField
@@ -69,12 +75,14 @@ export function SlippageToleranceSettingField() {
               </Text>
               <DecimalInput
                 variant="filledDark"
-                value={currentSlippage}
+                value={isFirstFocused ? '' : currentSlippage}
+                placeholder={currentSlippage}
                 max={50}
                 decimals={2}
                 onBlur={handleBlur}
                 onChange={handleChange}
                 onKeyDown={handleKeyDown}
+                onFocus={handleFocus}
                 inputSx={{ textAlign: 'right', rounded: '40px', h: '36px', w: '70px', py: 0, px: '3' }}
               />
               <Text fontSize="xs" color={colors.textSecondary}>
