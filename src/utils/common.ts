@@ -37,7 +37,7 @@ export const retry = async <T>(
         const intervalId = window.setInterval(async () => {
           retryCounter++
           if (retryCounter > retryCount) {
-            onError?.()
+            onError?.(errorMsg)
             clearInterval(intervalId)
             intervalRecord.delete(intervalId)
             reject(new Error(errorMsg))
