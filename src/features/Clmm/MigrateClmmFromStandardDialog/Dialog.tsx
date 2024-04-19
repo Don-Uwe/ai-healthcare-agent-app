@@ -33,7 +33,7 @@ import {
 import { useEffect, useRef, useState } from 'react'
 
 import { useAppStore, useClmmStore, useLiquidityStore } from '@/store'
-
+import IntervalCircle, { IntervalCircleHandler } from '@/components/IntervalCircle'
 import TokenAvatar from '@/components/TokenAvatar'
 import useRefreshEpochInfo from '@/hooks/app/useRefreshEpochInfo'
 import useSubscribeClmmInfo from '@/hooks/pool/clmm/useSubscribeClmmInfo'
@@ -68,6 +68,7 @@ interface MigrateFromStandardDialogProps {
   pooledAmountB: string
   currentRewardInfo: { mint: ApiV3Token; amount: string }[]
   onClose(): void
+  onRefresh(): void
 }
 
 interface TickData {
@@ -89,6 +90,7 @@ function getExactPriceAndTick({ price, poolInfo, baseIn }: { price: Decimal; poo
 export default function MigrateFromStandardDialog({
   isOpen,
   onClose,
+  onRefresh,
   poolInfo,
   migrateClmmConfig,
   farmInfo,
@@ -104,6 +106,7 @@ export default function MigrateFromStandardDialog({
   const migrateToClmmAct = useLiquidityStore((s) => s.migrateToClmmAct)
   const epochInfo = useAppStore((s) => s.epochInfo)
   const refreshTag = useRef(Date.now())
+  const refreshCircleRef = useRef<IntervalCircleHandler>(null)
   useRefreshEpochInfo()
 
   const { formattedData } = useFetchPoolById<ApiV3PoolInfoConcentratedItem>({
@@ -112,11 +115,21 @@ export default function MigrateFromStandardDialog({
   })
   const clmmPoolInfo = formattedData?.[0]
 
-  const { currentPrice } = useSubscribeClmmInfo({
+  const { currentPrice, mutateRpcData } = useSubscribeClmmInfo({
     initialFetch: true,
     poolInfo: clmmPoolInfo,
     throttle: 1000,
     refreshTag: refreshTag.current
+  })
+
+  const handleRefresh = useEvent(() => {
+    onRefresh()
+    mutateRpcData()
+  })
+
+  const handleClick = useEvent(() => {
+    refreshCircleRef.current?.restart()
+    handleRefresh()
   })
 
   if (clmmPoolInfo) clmmPoolInfo.price = currentPrice || clmmPoolInfo.price
@@ -384,8 +397,19 @@ export default function MigrateFromStandardDialog({
             {/* price range */}
             <Box>
               <HStack mb={1} justify={'space-between'}>
-                <Heading fontSize={'md'} fontWeight={500} color={colors.textPrimary}>
+                <Heading display="flex" gap="2" alignItems={'center'} fontSize={'md'} fontWeight={500} color={colors.textPrimary}>
                   {t('migrate_clmm.heading_price_range')}
+                  <IntervalCircle
+                    componentRef={refreshCircleRef}
+                    duration={60 * 1000}
+                    svgWidth={18}
+                    strokeWidth={2}
+                    trackStrokeColor={colors.secondary}
+                    trackStrokeOpacity={0.5}
+                    filledTrackStrokeColor={colors.secondary}
+                    onClick={handleClick}
+                    onEnd={handleRefresh}
+                  />
                 </Heading>
                 <Tabs variant="roundedLight" bg={colors.backgroundDark} onChange={(index) => setBaseIn(index === 0)}>
                   <TabList>

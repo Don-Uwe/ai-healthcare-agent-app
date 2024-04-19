@@ -25,6 +25,7 @@ import {
   Text
 } from '@chakra-ui/react'
 import { ApiV3PoolInfoConcentratedItem } from '@raydium-io/raydium-sdk-v2'
+import IntervalCircle, { IntervalCircleHandler } from '@/components/IntervalCircle'
 import Decimal from 'decimal.js'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -36,12 +37,14 @@ export default function RemoveLiquidityModal({
   isOpen,
   onClose,
   onSyncSending,
+  onRefresh,
   poolInfo,
   position,
   initRpcPoolData
 }: {
   isOpen: boolean
   onClose: () => void
+  onRefresh?: () => void
   onSyncSending: (val: boolean) => void
   poolInfo: ApiV3PoolInfoConcentratedItem
   position: PositionWithUpdateFn
@@ -55,6 +58,12 @@ export default function RemoveLiquidityModal({
   const focusARef = useRef(true)
   const [decimalA, decimalB] = [poolInfo.mintA.decimals, poolInfo.mintB.decimals]
   const { amountSlippageA, amountSlippageB } = getPriceAndAmount({ poolInfo, position })
+  const circleRef = useRef<IntervalCircleHandler>(null)
+
+  const handleClick = useEvent(() => {
+    circleRef.current?.restart()
+    onRefresh?.()
+  })
 
   const [sending, setIsSending] = useState(false)
   const [percent, setPercent] = useState(0)
@@ -159,7 +168,19 @@ export default function RemoveLiquidityModal({
     <Modal isOpen={isOpen} onClose={onClose} size="lg">
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>{t('clmm.modal_header_remove_liquidity')}</ModalHeader>
+        <ModalHeader display={'flex'} gap="2" alignItems="center">
+          {t('clmm.modal_header_remove_liquidity')}
+          <IntervalCircle
+            componentRef={circleRef}
+            svgWidth={18}
+            strokeWidth={2}
+            trackStrokeColor={colors.secondary}
+            trackStrokeOpacity={0.5}
+            filledTrackStrokeColor={colors.secondary}
+            onClick={handleClick}
+            onEnd={onRefresh}
+          />
+        </ModalHeader>
         <ModalCloseButton top="25px" />
         <ModalBody mt="10px">
           <TokenInput

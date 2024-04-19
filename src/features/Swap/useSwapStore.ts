@@ -217,9 +217,6 @@ export const useSwapStore = createStore<SwapStore>(
           }
         }
 
-        // eslint-disable-next-line
-        // @ts-ignore
-        connection._confirmTransactionInitialTimeout = 3000
         for await (const [idx, tx] of signedTxs.entries()) {
           if (swapDone) return
           await retry(
@@ -255,9 +252,6 @@ export const useSwapStore = createStore<SwapStore>(
         txProps.onError?.()
         if (e.message !== 'tx failed') toastSubject.next({ txError: e })
       } finally {
-        // eslint-disable-next-line
-        // @ts-ignore
-        connection._confirmTransactionInitialTimeout = 30 * 1000
         txProps.onFinally?.()
       }
       return ''

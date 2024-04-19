@@ -72,7 +72,7 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
     return [farm, farmLpAmount]
   }, [position.data, stakedFarms])
 
-  const { data: rpcPoolData } = useFetchRpcPoolData({
+  const { data: rpcPoolData, mutate } = useFetchRpcPoolData({
     shouldFetch: isRpcFetching,
     poolId: pool?.id,
     refreshInterval: isMigrateOpen ? 1000 * 15 : undefined,
@@ -319,6 +319,7 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
           pooledAmountB={pooledAmountB}
           currentRewardInfo={currentRewardInfo}
           onClose={onMigrateClose}
+          onRefresh={mutate}
         />
       ) : null}
     </Box>
