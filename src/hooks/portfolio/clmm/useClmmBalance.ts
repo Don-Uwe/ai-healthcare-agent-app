@@ -22,7 +22,7 @@ import logMessage from '@/utils/log'
 export type ClmmPosition = ReturnType<typeof PositionInfoLayout.decode> & { key?: string }
 export type ClmmDataMap = Map<string, ClmmPosition[]>
 
-const NFT_CACHE_KEY = '_r_nft_b_'
+const NFT_CACHE_KEY = '_r_non_nft_'
 let lastRefreshTag = initTokenAccountSate.refreshClmmPositionTag
 const noneNftMintSet = new Set<string>(JSON.parse(getStorageItem(NFT_CACHE_KEY) || '[]'))
 
@@ -47,7 +47,7 @@ const fetcher = async ([connection, publicKeyList]: [Connection, string[]]) => {
   )
 
   const data = res.flat().filter((d, idx) => {
-    if (!d) noneNftMintSet.add(publicKeyList[idx])
+    if (!d) noneNftMintSet.add(readyList[idx])
     return !!d
   })
   try {
@@ -164,6 +164,10 @@ export default function useClmmBalance({
     lastRefreshTag = refreshClmmPositionTag
     mutate()
   }, [refreshClmmPositionTag, mutate])
+
+  useEffect(() => {
+    localStorage.removeItem('_r_nft_b_')
+  }, [])
 
   return {
     clmmBalanceInfo: balanceData,

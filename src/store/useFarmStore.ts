@@ -34,6 +34,7 @@ export interface FarmStore {
   farmLoading: boolean
   currentFarm?: FormatFarmInfoOut
   refreshTag: number
+  refreshIdoTag: number
 
   harvestAllAct: (
     props: { farmInfoList: FormatFarmInfoOut[]; execute?: boolean } & TxCallbackProps
@@ -64,11 +65,13 @@ export interface FarmStore {
   ) => Promise<string>
 
   refreshFarmAct: () => void
+  refreshIdoAct: () => void
 }
 
 const initFarmSate = {
   farmLoading: false,
-  refreshTag: 0
+  refreshTag: 0,
+  refreshIdoTag: 0
 }
 
 export const useFarmStore = createStore<FarmStore>(
@@ -394,6 +397,9 @@ export const useFarmStore = createStore<FarmStore>(
     },
     refreshFarmAct: () => {
       set({ refreshTag: Date.now() })
+    },
+    refreshIdoAct: () => {
+      set({ refreshIdoTag: Date.now() })
     }
   }),
   'useFarmStore'
