@@ -159,8 +159,14 @@ export default function CreatePosition() {
     poolId,
     priceRange,
     tokenAmount,
-    balanceA: getTokenBalanceUiAmount({ mint: tokens.mintA || '', decimals: clmmData?.mintA.decimals }).text,
-    balanceB: getTokenBalanceUiAmount({ mint: tokens.mintB || '', decimals: clmmData?.mintB.decimals }).text
+    balanceA: getTokenBalanceUiAmount({
+      mint: tokens.mintA || '',
+      decimals: tokens.mintA === clmmData?.mintA.address ? clmmData?.mintA.decimals : clmmData?.mintB.decimals
+    }).text,
+    balanceB: getTokenBalanceUiAmount({
+      mint: tokens.mintB || '',
+      decimals: tokens.mintB === clmmData?.mintB.address ? clmmData?.mintB.decimals : clmmData?.mintA.decimals
+    }).text
   })
 
   const formatDecimalToDigit = useCallback(
