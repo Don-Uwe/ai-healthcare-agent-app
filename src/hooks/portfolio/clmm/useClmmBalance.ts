@@ -47,7 +47,7 @@ const fetcher = async ([connection, publicKeyList]: [Connection, string[]]) => {
   )
 
   const data = res.flat().filter((d, idx) => {
-    if (!d) noneNftMintSet.add(publicKeyList[idx])
+    if (!d) noneNftMintSet.add(readyList[idx])
     return !!d
   })
   try {
