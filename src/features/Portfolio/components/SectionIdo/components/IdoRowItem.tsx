@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next'
 export default function IdoRowItem(ownerInfo: OwnerFullData & { idoKeys: IdoKeysData }) {
   const { t } = useTranslation()
   const claimIdoAct = useFarmStore((s) => s.claimIdoAct)
+  const refreshIdoAct = useFarmStore((s) => s.refreshIdoAct)
   const isMobile = useAppStore((s) => s.isMobile)
   const { isOpen: isLoading, onOpen: onLoading, onClose: offLoading } = useDisclosure()
 
@@ -25,6 +26,7 @@ export default function IdoRowItem(ownerInfo: OwnerFullData & { idoKeys: IdoKeys
     claimIdoAct({
       ownerInfo,
       idoKeys,
+      onConfirmed: () => setTimeout(() => refreshIdoAct(), 2000),
       onFinally: offLoading
     })
   }
