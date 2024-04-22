@@ -15,9 +15,9 @@ import BN from 'bn.js'
 
 import Decimal from 'decimal.js'
 import { useEvent } from '../useEvent'
-
+import logMessage from '@/utils/log'
 const fetcher = ([connection, publicKeyList]: [Connection, string[]]) => {
-  console.log('rpc: get multiple farm balance info')
+  logMessage('rpc: get multiple farm balance info')
   return connection.getMultipleAccountsInfo(
     publicKeyList.map((publicKey) => ToPublicKey(publicKey)),
     { commitment: 'confirmed' }

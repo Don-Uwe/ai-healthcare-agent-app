@@ -4,6 +4,7 @@ import { Connection, PublicKey, AccountInfo } from '@solana/web3.js'
 import { MINUTE_MILLISECONDS } from '@/utils/date'
 import { useMemo } from 'react'
 import ToPublicKey from '@/utils/publicKey'
+import logMessage from '@/utils/log'
 interface Props {
   name?: string
   publicKeyList?: (string | PublicKey)[]
@@ -14,7 +15,7 @@ interface Props {
 const accountCache: Map<string, AccountInfo<Buffer>> = new Map()
 
 const fetcher = ([connection, publicKeyList, name]: [Connection, string[], string]) => {
-  console.log('rpc: get multiple account info', name)
+  logMessage('rpc: get multiple account info', name)
   return connection.getMultipleAccountsInfo(publicKeyList.map((publicKey) => ToPublicKey(publicKey)))
 }
 

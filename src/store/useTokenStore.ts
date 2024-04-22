@@ -4,7 +4,7 @@ import { TokenInfo, JupTokenType, ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 import createStore from './createStore'
 import { useAppStore } from './useAppStore'
 import { getStorageItem, setStorageItem } from '@/utils/localStorage'
-
+import logMessage from '@/utils/log'
 const EXTRA_TOKEN_KEY = '_r_cus_t_'
 
 export interface TokenPrice {
@@ -160,7 +160,7 @@ export const useTokenStore = createStore<TokenStore>(
       if (cacheData) return cacheData
       const connection = useAppStore.getState().connection
       if (!connection) return
-      console.log('rpc: get token info')
+      logMessage('rpc: get token info')
       const accountData = await connection.getAccountInfo(new PublicKey(mint), { commitment: useAppStore.getState().commitment })
       if (!accountData || accountData.data.length !== MintLayout.span) return
       const tokenInfo = MintLayout.decode(accountData.data)

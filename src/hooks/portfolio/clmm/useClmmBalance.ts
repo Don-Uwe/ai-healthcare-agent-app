@@ -17,6 +17,7 @@ import { useAppStore, useTokenAccountStore, initTokenAccountSate } from '@/store
 import { useEvent } from '@/hooks/useEvent'
 import ToPublicKey from '@/utils/publicKey'
 import { setStorageItem, getStorageItem } from '@/utils/localStorage'
+import logMessage from '@/utils/log'
 
 export type ClmmPosition = ReturnType<typeof PositionInfoLayout.decode> & { key?: string }
 export type ClmmDataMap = Map<string, ClmmPosition[]>
@@ -26,7 +27,7 @@ let lastRefreshTag = initTokenAccountSate.refreshClmmPositionTag
 const noneNftMintSet = new Set<string>(JSON.parse(getStorageItem(NFT_CACHE_KEY) || '[]'))
 
 const fetcher = async ([connection, publicKeyList]: [Connection, string[]]) => {
-  console.log('rpc: get clmm position balance info')
+  logMessage('rpc: get clmm position balance info')
   const commitment = useAppStore.getState().commitment
   const readyList = publicKeyList.filter((k) => !noneNftMintSet.has(k))
 

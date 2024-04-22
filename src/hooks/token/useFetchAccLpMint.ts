@@ -9,6 +9,7 @@ import { MINUTE_MILLISECONDS } from '@/utils/date'
 import Decimal from 'decimal.js'
 import ToPublicKey from '@/utils/publicKey'
 import { setStorageItem, getStorageItem } from '@/utils/localStorage'
+import logMessage from '@/utils/log'
 
 interface Props<T> {
   shouldFetch?: boolean
@@ -30,7 +31,7 @@ const fetcher = async ([connection, publicKeyList]: [Connection, string[]]) => {
     else fetchedList.push(p)
   })
   if (!newFetchList.length) return fetchedList.map((p) => preFetchMints.get(p)!)
-  console.log('rpc: get multiple lp mint acc info')
+  logMessage('rpc: get multiple lp mint acc info')
 
   const chunkSize = 100
   const keyGroup = []

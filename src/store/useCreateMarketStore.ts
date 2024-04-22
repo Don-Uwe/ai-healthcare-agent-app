@@ -9,6 +9,7 @@ import { wSolToSol, solToWSol, solToWsolString } from '@/utils/token'
 import { getTxMeta } from './configs/market'
 import { getDefaultToastData, transformProcessData, handleMultiTxToast } from '@/hooks/toast/multiToastUtil'
 import { handleMultiTxRetry } from '@/hooks/toast/retryTx'
+import logMessage from '@/utils/log'
 // import { getComputeBudgetConfig } from '@/utils/tx/computeBudget'
 interface CreateMarketState {
   checkMarketAct: (marketId: string) => Promise<{ isValid: boolean; mintA?: string; mintB?: string }>
@@ -36,7 +37,7 @@ export const useCreateMarketStore = createStore<CreateMarketState>(
       if (!raydium || !connection) return { isValid: false }
       const { isVerifiedToken, getTokenDecimal } = useTokenStore.getState()
 
-      console.log('rpc: get market info')
+      logMessage('rpc: get market info')
       const marketBufferInfo = await connection.getAccountInfo(new PublicKey(marketId), { commitment: useAppStore.getState().commitment })
       if (!marketBufferInfo?.data) {
         toastSubject.next({ status: 'error', title: 'error', description: `can't find market ${marketId}` })
