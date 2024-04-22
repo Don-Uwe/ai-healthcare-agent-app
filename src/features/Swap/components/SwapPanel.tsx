@@ -6,7 +6,7 @@ import { useHover } from '@/hooks/useHover'
 import { useAppStore, useTokenAccountStore, useTokenStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
 import { Box, Button, Collapse, Flex, HStack, SimpleGrid, Text, useDisclosure, CircularProgress } from '@chakra-ui/react'
-import { ApiV3Token, RAYMint, SOL_INFO, TokenInfo } from '@raydium-io/raydium-sdk-v2'
+import { ApiV3Token, RAYMint, SOLMint, USDCMint, USDTMint, SOL_INFO, TokenInfo } from '@raydium-io/raydium-sdk-v2'
 import { PublicKey } from '@solana/web3.js'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -73,11 +73,19 @@ export function SwapPanel({
   const { tokenInfo: unknownTokenB } = useTokenInfo({
     mint: isTokenLoaded && !tokenOutput && outputMint ? outputMint : undefined
   })
+  const [notReadyMint, setNotReadyMint] = useState<Set<string>>(
+    new Set<string>([SOLMint.toBase58(), USDCMint.toBase58(), USDTMint.toBase58()])
+  )
 
   useEffect(() => {
     onInputMintChange?.(inputMint)
     onOutputMintChange?.(outputMint)
     setUrlQuery({ inputMint: mintToUrl(inputMint), outputMint: mintToUrl(outputMint) })
+    if (notReadyMint.has(inputMint) || notReadyMint.has(outputMint)) {
+      notReadyMint.delete(inputMint)
+      notReadyMint.delete(outputMint)
+      setNotReadyMint(new Set(notReadyMint))
+    }
   }, [inputMint, outputMint])
 
   const [amountIn, setAmountIn] = useState<string>('')
@@ -154,21 +162,29 @@ export function SwapPanel({
     setAmountIn(val)
   }, [])
 
-  const handleSelectToken = useCallback((token: TokenInfo | ApiV3Token, side?: 'input' | 'output') => {
-    if (side === 'input') {
-      setInputMint(token.address)
-      setOutputMint((mint) => (token.address === mint ? '' : mint))
-    }
-    if (side === 'output') {
-      setOutputMint(token.address)
-      setInputMint((mint) => {
-        if (token.address === mint) {
-          return ''
+  const handleSelectToken = useCallback(
+    (token: TokenInfo | ApiV3Token, side?: 'input' | 'output') => {
+      if (side === 'input') {
+        if (notReadyMint.has(token.address)) {
+          setInputMint(outputMint)
+          setOutputMint(token.address)
+        } else {
+          setInputMint(token.address)
+          setOutputMint((mint) => (token.address === mint ? '' : mint))
         }
-        return mint
-      })
-    }
-  }, [])
+      }
+      if (side === 'output') {
+        setOutputMint(token.address)
+        setInputMint((mint) => {
+          if (token.address === mint) {
+            return ''
+          }
+          return mint
+        })
+      }
+    },
+    [outputMint]
+  )
 
   const handleChangeSide = useEvent(() => {
     setInputMint(outputMint)
