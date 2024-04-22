@@ -14,7 +14,8 @@ export default function useClmmPortfolioData<T>({ type }: { type: T }) {
   const allClmmBalanceData = useMemo(() => Array.from(clmmBalanceInfo.entries()), [clmmBalanceInfo])
   const allPositions = useMemo(() => allClmmBalanceData.map((d) => d[1]).flat(), [allClmmBalanceData])
   const { formattedDataMap } = useFetchPoolById<ApiV3PoolInfoConcentratedItem>({
-    idList: allClmmBalanceData.map((d) => d[0])
+    idList: allClmmBalanceData.map((d) => d[0]),
+    keepPreviousData: !!owner
   })
   const { data: tokenPrices } = useTokenPrice({
     mintList: Array.from(
@@ -36,7 +37,8 @@ export default function useClmmPortfolioData<T>({ type }: { type: T }) {
       [key: string]: { mint: ApiV3Token; amount: string; usd: string }
     } = {}
     allClmmBalanceData.forEach(([poolId, positions]) => {
-      const poolInfo = formattedDataMap[poolId]!
+      const poolInfo = formattedDataMap[poolId]
+      if (!poolInfo) return
       if (!groupData[poolInfo.poolName]) groupData[poolInfo.poolName] = positions
       else groupData[poolInfo.poolName] = groupData[poolInfo.poolName].concat(positions)
     })
@@ -44,7 +46,8 @@ export default function useClmmPortfolioData<T>({ type }: { type: T }) {
       const positions = groupData[poolName]
       let poolAllValue = new Decimal(0)
       positions.forEach((position) => {
-        const poolInfo = formattedDataMap[position.poolId.toBase58()]!
+        const poolInfo = formattedDataMap[position.poolId.toBase58()]
+        if (!poolInfo) return
         const { amountA, amountB } = getPriceAndAmount({ poolInfo, position })
         const usdValueA = amountA.mul(tokenPrices[poolInfo.mintA.address]?.value || 0)
         const usdValueB = amountB.mul(tokenPrices[poolInfo.mintB.address]?.value || 0)

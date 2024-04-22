@@ -7,9 +7,10 @@ import ToPublicKey from '@/utils/publicKey'
 import { MINUTE_MILLISECONDS } from '@/utils/date'
 import { useAppStore } from '@/store'
 import { FARM_TYPE, FarmDecodeData, updatePoolInfo, farmRpcInfoCache } from './farmUtils'
+import logMessage from '@/utils/log'
 
 const fetcher = ([connection, publicKeyList, type]: [Connection, string[], 'farm' | 'farm lpVault']) => {
-  console.log(`rpc: get multiple ${type} info`)
+  logMessage(`rpc: get multiple ${type} info`)
   return connection.getMultipleAccountsInfo(
     publicKeyList.map((key) => ToPublicKey(key)),
     { commitment: 'confirmed' }

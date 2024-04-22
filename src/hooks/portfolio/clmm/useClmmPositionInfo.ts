@@ -6,6 +6,7 @@ import useSWR from 'swr'
 
 import { useAppStore, useTokenAccountStore, initTokenAccountSate } from '@/store'
 import ToPublicKey from '@/utils/publicKey'
+import logMessage from '@/utils/log'
 
 export type ClmmPosition = ReturnType<typeof PositionInfoLayout.decode>
 export type ClmmDataMap = Map<string, ClmmPosition[]>
@@ -13,7 +14,7 @@ export type ClmmDataMap = Map<string, ClmmPosition[]>
 let lastRefreshTag = initTokenAccountSate.refreshClmmPositionTag
 
 const fetcher = ([connection, publicKey]: [Connection, string]) => {
-  console.log('rpc: get clmm position nft info')
+  logMessage('rpc: get clmm position nft info')
   return connection.getAccountInfo(ToPublicKey(publicKey), 'confirmed')
 }
 

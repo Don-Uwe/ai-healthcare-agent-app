@@ -11,12 +11,12 @@ import ToPublicKey from '@/utils/publicKey'
 import useFetchFarmInfoByRpc from './useFetchFarmInfoByRpc'
 import { FARM_TYPE, FarmDecodeData } from './farmUtils'
 import { FarmBalanceInfo } from './type'
-
 import BN from 'bn.js'
 import Decimal from 'decimal.js'
+import logMessage from '@/utils/log'
 
 const fetcher = ([connection, publicKey]: [Connection, string | PublicKey]) => {
-  console.log('rpc: get farm ledger info')
+  logMessage('rpc: get farm ledger info')
   return connection.getAccountInfo(ToPublicKey(publicKey), { commitment: useAppStore.getState().commitment })
 }
 

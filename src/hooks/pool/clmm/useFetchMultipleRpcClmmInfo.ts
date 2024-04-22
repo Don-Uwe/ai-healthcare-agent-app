@@ -8,14 +8,14 @@ import { useAppStore } from '@/store'
 import { isValidPublicKey } from '@/utils/publicKey'
 import { MINUTE_MILLISECONDS } from '@/utils/date'
 import Decimal from 'decimal.js'
-
+import logMessage from '@/utils/log'
 type PoolData = ReturnType<typeof PoolInfoLayout.decode> & {
   id: string
   currentPrice: Decimal
 }
 
 const fetcher = ([connection, publicKeyList]: [Connection, string[]]) => {
-  console.log('rpc: get multiple clmm info')
+  logMessage('rpc: get multiple clmm info')
   return connection.getMultipleAccountsInfo(publicKeyList.map((publicKey) => ToPublicKey(publicKey)))
 }
 

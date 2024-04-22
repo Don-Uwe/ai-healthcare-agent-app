@@ -29,6 +29,7 @@ import dayjs from 'dayjs'
 import { NATIVE_MINT } from '@solana/spl-token'
 import { Trans } from 'react-i18next'
 import { formatToRawLocaleStr } from '@/utils/numberish/formatter'
+import useTokenInfo from '@/hooks/token/useTokenInfo'
 
 export function SwapPanel({
   onInputMintChange,
@@ -38,6 +39,10 @@ export function SwapPanel({
   onOutputMintChange?: (mint: string) => void
 }) {
   const query = useRouteQuery<{ inputMint: string; outputMint: string }>()
+  const [urlInputMint, urlOutputMint] = [urlToMint(query.inputMint), urlToMint(query.outputMint)]
+  const { inputMint: cacheInput, outputMint: cacheOutput } = getSwapPairCache()
+  const [defaultInput, defaultOutput] = [urlInputMint || cacheInput, urlOutputMint || cacheOutput]
+
   const { t, i18n } = useTranslation()
   const { swap: swapDisabled } = useAppStore().featureDisabled
   const swapTokenAct = useSwapStore((s) => s.swapTokenAct)
@@ -47,17 +52,27 @@ export function SwapPanel({
     (s) => [s.getTokenBalanceUiAmount, s.fetchTokenAccountAct, s.refreshTokenAccTime],
     shallow
   )
-
   const { isOpen: isSending, onOpen: onSending, onClose: offSending } = useDisclosure()
   const { isOpen: isUnWrapping, onOpen: onUnWrapping, onClose: offUnWrapping } = useDisclosure()
   const { isOpen: isHightRiskOpen, onOpen: onHightRiskOpen, onClose: offHightRiskOpen } = useDisclosure()
   const sendingResult = useRef<ApiSwapV1OutSuccess | undefined>()
   const wsolBalance = getTokenBalanceUiAmount({ mint: NATIVE_MINT.toBase58(), decimals: SOL_INFO.decimals })
-  const { inputMint: cacheInput, outputMint: cacheOutput } = getSwapPairCache()
-  const [inputMint, setInputMint] = useState<string>(cacheInput || PublicKey.default.toBase58())
+
+  const [inputMint, setInputMint] = useState<string>(defaultInput || PublicKey.default.toBase58())
   const [swapType, setSwapType] = useState<'BaseIn' | 'BaseOut'>('BaseIn')
 
-  const [outputMint, setOutputMint] = useState<string>(cacheOutput !== cacheInput ? cacheOutput : RAYMint.toBase58())
+  const [outputMint, setOutputMint] = useState<string>(
+    defaultOutput !== defaultInput ? defaultOutput : defaultInput !== RAYMint.toBase58() ? RAYMint.toBase58() : ''
+  )
+  const [tokenInput, tokenOutput] = [tokenMap.get(inputMint), tokenMap.get(outputMint)]
+
+  const isTokenLoaded = tokenMap.size > 0
+  const { tokenInfo: unknownTokenA } = useTokenInfo({
+    mint: isTokenLoaded && !tokenInput && inputMint ? inputMint : undefined
+  })
+  const { tokenInfo: unknownTokenB } = useTokenInfo({
+    mint: isTokenLoaded && !tokenOutput && outputMint ? outputMint : undefined
+  })
 
   useEffect(() => {
     onInputMintChange?.(inputMint)
@@ -77,7 +92,7 @@ export function SwapPanel({
       onError: offUnWrapping
     })
   })
-  const [tokenInput, tokenOutput] = [tokenMap.get(inputMint), tokenMap.get(outputMint)]
+
   const isSwapBaseIn = swapType === 'BaseIn'
   const { response, data, isLoading, isValidating, error, openTime, mutate } = useSwap({
     inputMint,
@@ -184,7 +199,7 @@ export function SwapPanel({
       wrapSol: tokenInput?.address === PublicKey.default.toString(),
       unwrapSol: tokenOutput?.address === PublicKey.default.toString(),
       onCloseToast: offSending,
-      onSent: () => {
+      onConfirmed: () => {
         setAmountIn('')
         setNeedPriceUpdatedAlert(false)
         offSending()
@@ -192,8 +207,7 @@ export function SwapPanel({
       onError: () => {
         offSending()
         mutate()
-      },
-      onFinally: offSending
+      }
     })
   }
 
@@ -237,6 +251,7 @@ export function SwapPanel({
           onChange={(v) => handleInputChange(v)}
           filterFn={inputFilterFn}
           onTokenChange={(token) => handleSelectToken(token, 'input')}
+          defaultUnknownToken={unknownTokenA}
         />
         <SwapIcon onClick={handleChangeSide} />
         {/* output */}
@@ -249,6 +264,7 @@ export function SwapPanel({
           onChange={handleInput2Change}
           filterFn={outputFilterFn}
           onTokenChange={(token) => handleSelectToken(token, 'output')}
+          defaultUnknownToken={unknownTokenB}
         />
       </Flex>
       {/* swap info */}
@@ -316,7 +332,7 @@ export function SwapPanel({
         onClick={isHighRiskTx ? onHightRiskOpen : handleClickSwap}
       >
         {swapDisabled ? t('common.disabled') : swapError || t('swap.title')}
-        {isPoolNotOpenError ? ` ${dayjs(openTime * 1000).format('YYYY/M/D HH:mm:ss')}` : null}
+        {isPoolNotOpenError ? ` ${dayjs(Number(openTime) * 1000).format('YYYY/M/D HH:mm:ss')}` : null}
       </ConnectedButton>
       <HighRiskAlert isOpen={isHightRiskOpen} onClose={offHightRiskOpen} onConfirm={handleHighRiskConfirm} />
     </>

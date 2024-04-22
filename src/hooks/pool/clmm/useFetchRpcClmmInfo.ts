@@ -8,9 +8,10 @@ import { useAppStore } from '@/store'
 import { isValidPublicKey } from '@/utils/publicKey'
 import { MINUTE_MILLISECONDS } from '@/utils/date'
 import Decimal from 'decimal.js'
+import logMessage from '@/utils/log'
 
 const fetcher = ([connection, publicKey]: [Connection, string]) => {
-  console.log('rpc: get clmm account info')
+  logMessage('rpc: get clmm account info')
   return connection.getAccountInfo(ToPublicKey(publicKey), { commitment: useAppStore.getState().commitment })
 }
 

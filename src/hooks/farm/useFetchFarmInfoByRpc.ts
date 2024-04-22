@@ -9,9 +9,9 @@ import { useAppStore } from '@/store'
 import ToPublicKey from '@/utils/publicKey'
 import { FARM_TYPE, updatePoolInfo, farmRpcInfoCache } from './farmUtils'
 import { useEvent } from '../useEvent'
-
+import logMessage from '@/utils/log'
 const fetcher = ([connection, publicKey]: [Connection, string | PublicKey]) => {
-  console.log('rpc: get farm info')
+  logMessage('rpc: get farm info')
   return connection.getAccountInfo(ToPublicKey(publicKey), { commitment: useAppStore.getState().commitment })
 }
 

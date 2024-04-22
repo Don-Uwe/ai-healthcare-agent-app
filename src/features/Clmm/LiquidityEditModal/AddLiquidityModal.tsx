@@ -32,6 +32,8 @@ import TokenAvatar from '@/components/TokenAvatar'
 import toPercentString from '@/utils/numberish/toPercentString'
 import { Desktop, Mobile } from '@/components/MobileDesktop'
 import useTokenPrice from '@/hooks/token/useTokenPrice'
+import { useEvent } from '@/hooks/useEvent'
+import IntervalCircle, { IntervalCircleHandler } from '@/components/IntervalCircle'
 import { calRatio } from '../utils/math'
 import Decimal from 'decimal.js'
 import BN from 'bn.js'
@@ -41,12 +43,14 @@ export default function AddLiquidityModal({
   baseIn,
   onClose,
   onSyncSending,
+  onRefresh,
   poolInfo,
   position
 }: {
   isOpen: boolean
   baseIn: boolean
   onClose: () => void
+  onRefresh?: () => void
   onSyncSending: (val: boolean) => void
   poolInfo: FormattedPoolInfoConcentratedItem
   position: ClmmPosition
@@ -56,6 +60,13 @@ export default function AddLiquidityModal({
   const getTokenBalanceUiAmount = useTokenAccountStore((s) => s.getTokenBalanceUiAmount)
   const { getPriceAndAmount } = useClmmBalance({})
   const { priceLower, priceUpper, amountA, amountB } = getPriceAndAmount({ poolInfo, position })
+
+  const circleRef = useRef<IntervalCircleHandler>(null)
+
+  const handleClick = useEvent(() => {
+    circleRef.current?.restart()
+    onRefresh?.()
+  })
 
   const currentPrice = baseIn ? new Decimal(poolInfo.price) : new Decimal(1).div(poolInfo.price)
   const [priceLowerDecimal, priceUpperDecimal] = baseIn
@@ -253,10 +264,20 @@ export default function AddLiquidityModal({
             </Flex>
           </Box>
 
-          <HStack mb="2" gap={2} justify="space-between" flexWrap={'wrap'}>
+          <HStack mb="2" gap={2} alignItems="center" flexWrap={'wrap'}>
             <Text variant="title" fontSize="md">
               {t('liquidity.add_liquidity')}
             </Text>
+            <IntervalCircle
+              componentRef={circleRef}
+              svgWidth={18}
+              strokeWidth={2}
+              trackStrokeColor={colors.secondary}
+              trackStrokeOpacity={0.5}
+              filledTrackStrokeColor={colors.secondary}
+              onClick={handleClick}
+              onEnd={onRefresh}
+            />
             {/* TODO not need now */}
             {/* <HStack justifySelf={'end'} fontSize="sm" color={colors.textTertiary}>
               <HStack>

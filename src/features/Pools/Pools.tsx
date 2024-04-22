@@ -388,7 +388,14 @@ export default function Pools() {
           >
             <GridItem area={'tabs'}>
               <Desktop>
-                <Tabs items={tabItems} size={['sm', 'xl']} value={activeTabItem.value} onChange={onPoolValueChange} variant="line" />
+                <Tabs
+                  items={tabItems}
+                  size={['sm', 'xl']}
+                  tabItemSX={{ px: '4px !important' }}
+                  value={activeTabItem.value}
+                  onChange={onPoolValueChange}
+                  variant="line"
+                />
               </Desktop>
               <Mobile>
                 <Select

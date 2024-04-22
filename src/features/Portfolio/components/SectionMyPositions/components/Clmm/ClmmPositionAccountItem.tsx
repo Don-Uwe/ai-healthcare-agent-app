@@ -202,6 +202,7 @@ export default function ClmmPositionAccountItem({
         onSyncSending={handleSyncSending}
         initRpcPoolData={initRpcPoolData}
         poolInfo={rpcData.data ? { ...poolInfo, price: rpcData.data.currentPrice.toNumber() } : poolInfo}
+        onRefresh={rpcData.mutate}
         position={position}
       />
       {isAddOpen ? (
@@ -210,8 +211,9 @@ export default function ClmmPositionAccountItem({
           onSyncSending={handleSyncSending}
           isOpen={isAddOpen}
           onClose={onAddClose}
-          poolInfo={poolInfo}
+          poolInfo={rpcData.data ? { ...poolInfo, price: rpcData.data.currentPrice.toNumber() } : poolInfo}
           position={position}
+          onRefresh={rpcData.mutate}
         />
       ) : null}
     </Box>

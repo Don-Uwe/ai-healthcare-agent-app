@@ -28,6 +28,8 @@ import { retry } from '@/utils/common'
 
 import Decimal from 'decimal.js'
 import BN from 'bn.js'
+import logMessage from '@/utils/log'
+
 export interface TokenAccountStore {
   tokenAccounts: TokenAccount[]
   tokenAccountRawInfos: TokenAccountRaw[]
@@ -197,15 +199,15 @@ export const useTokenAccountStore = createStore<TokenAccountStore>(
       loading = true
       preOwner = owner
       try {
-        console.log('rpc: get owner acc info')
+        logMessage('rpc: get owner acc info')
         const solAccountResp = await retry<Promise<AccountInfo<Buffer>>>(() =>
           connection.getAccountInfo(owner, { commitment: useAppStore.getState().commitment })
         )
-        console.log('rpc: get owner token acc info')
+        logMessage('rpc: get owner token acc info')
         const tokenAccountResp: any = await retry<Promise<AccountInfo<Buffer>>>(() =>
           connection.getTokenAccountsByOwner(owner, { programId: TOKEN_PROGRAM_ID }, { commitment: 'confirmed' })
         )
-        console.log('rpc: get owner token2022 acc info')
+        logMessage('rpc: get owner token2022 acc info')
         const token2022Req: any = await retry<Promise<AccountInfo<Buffer>>>(() =>
           connection.getTokenAccountsByOwner(owner, { programId: TOKEN_2022_PROGRAM_ID }, { commitment: 'confirmed' })
         )
