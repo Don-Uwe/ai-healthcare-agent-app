@@ -1,5 +1,5 @@
 import { Box, Flex, Grid, GridItem, HStack, Tag, Text, useDisclosure } from '@chakra-ui/react'
-import { ApiV3PoolInfoConcentratedItem, PoolFetchType, solToWSol } from '@raydium-io/raydium-sdk-v2'
+import { ApiV3PoolInfoConcentratedItem, ApiV3Token, PoolFetchType, solToWSol } from '@raydium-io/raydium-sdk-v2'
 import { useRouter } from 'next/router'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -64,13 +64,13 @@ export default function CreatePosition() {
   const [tokenAmount, setTokenAmount] = useState<[string, string]>(['', ''])
   const [rangePercent, setRangePercent] = useState(0.5)
   const [aprTab, setAprTab] = useState(AprKey.Day)
-  const [tokens, setTokens] = useState<{ mintA?: string; mintB?: string }>({})
+  const [tokens, setTokens] = useState<{ mintA?: ApiV3Token; mintB?: ApiV3Token }>({})
   const rpcRefreshTag = useRef(Date.now())
   const refreshCircleRef = useRef<IntervalCircleHandler>(null)
   const fetchPoolId = urlPoolId || '2QdhepnKRTLjjSqPL1PtKNwqrUkoLee5Gqs8bvZhRdMv'
 
   const { data: tokenPrices } = useTokenPrice({
-    mintList: [tokens.mintA, tokens.mintB]
+    mintList: [tokens.mintA?.address, tokens.mintB?.address]
   })
 
   const {
@@ -98,7 +98,7 @@ export default function CreatePosition() {
   const computeRef = useRef(false)
   const focusPoolARef = useRef<boolean>(true)
   const initialPriceRef = useRef<{ priceLower: string; priceUpper: string }>({ priceLower: '', priceUpper: '' })
-  const baseIn = !tokens.mintA || solToWSol(tokens.mintA).toString() === currentPool?.mintA?.address
+  const baseIn = !tokens.mintA || tokens.mintA.address === currentPool?.mintA?.address
   const poolId = currentPool?.id
   const prePoolId = usePrevious(`${poolId}-${baseIn}`)
   const poolMintAStr = currentPool?.mintA?.address
@@ -113,12 +113,8 @@ export default function CreatePosition() {
     : [false, false]
   if (!baseIn) disabledInput.reverse()
 
-  const totalMintAValue = new Decimal(tokenAmount[0] || '0').mul(
-    tokens.mintA ? tokenPrices[solToWSol(tokens.mintA).toString()]?.value || 0 : 0
-  )
-  const totalMintBValue = new Decimal(tokenAmount[1] || '0').mul(
-    tokens.mintB ? tokenPrices[solToWSol(tokens.mintB).toString()]?.value || 0 : 0
-  )
+  const totalMintAValue = new Decimal(tokenAmount[0] || '0').mul(tokens.mintA ? tokenPrices[tokens.mintA.address]?.value || 0 : 0)
+  const totalMintBValue = new Decimal(tokenAmount[1] || '0').mul(tokens.mintB ? tokenPrices[tokens.mintB.address]?.value || 0 : 0)
   const totalPrice = totalMintAValue.add(totalMintBValue)
 
   const { ratioA, ratioB } = calRatio({
@@ -160,12 +156,12 @@ export default function CreatePosition() {
     priceRange,
     tokenAmount,
     balanceA: getTokenBalanceUiAmount({
-      mint: tokens.mintA || '',
-      decimals: tokens.mintA === clmmData?.mintA.address ? clmmData?.mintA.decimals : clmmData?.mintB.decimals
+      mint: wSolToSol(tokens.mintA?.address) || '',
+      decimals: tokens.mintA?.decimals
     }).text,
     balanceB: getTokenBalanceUiAmount({
-      mint: tokens.mintB || '',
-      decimals: tokens.mintB === clmmData?.mintB.address ? clmmData?.mintB.decimals : clmmData?.mintA.decimals
+      mint: wSolToSol(tokens.mintB?.address) || '',
+      decimals: tokens.mintB?.decimals
     }).text
   })
 
@@ -329,8 +325,8 @@ export default function CreatePosition() {
   useEffect(() => {
     if (!currentPool) return
     setTokens({
-      mintA: wSolToSol(currentPool.mintA.address),
-      mintB: wSolToSol(currentPool.mintB.address)
+      mintA: currentPool.mintA,
+      mintB: currentPool.mintB
     })
   }, [currentPool?.id])
 
