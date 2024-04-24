@@ -44,7 +44,6 @@ export default function useFarmPositions(props: { shouldFetch?: boolean; refresh
     refreshInterval
   })
   const positionData = data?.data || {}
-
   /**
    * {
    *    [lpMint]: {

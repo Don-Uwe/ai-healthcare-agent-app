@@ -17,11 +17,11 @@ export interface OwnerFullData {
 }
 
 let lastRefreshTag = 0
+let isNoData = false
 const fetcher = (url: string) => axios.get<OwnerIdoInfo>(url, { skipError: true })
 
 export default function useFetchOwnerIdo(props: { owner?: string | PublicKey; shouldFetch?: boolean; refreshInterval?: number }) {
   const { owner, shouldFetch = true, refreshInterval = MINUTE_MILLISECONDS * 30 } = props || {}
-  const [isNoData, setIsNoData] = useState(false)
   const isOwnerValid = owner ? isValidPublicKey(owner) : false
 
   const refreshIdoTag = useFarmStore((s) => s.refreshIdoTag)
@@ -43,10 +43,7 @@ export default function useFetchOwnerIdo(props: { owner?: string | PublicKey; sh
     }))
   }, [data])
   const isEmptyResult = !isLoading && !(data && !error)
-
-  useEffect(() => {
-    if (error?.response?.status === 500 || error?.response?.status === 404) setIsNoData(true)
-  }, [error])
+  isNoData = error?.response?.status === 404
 
   useEffect(() => {
     if (lastRefreshTag === refreshIdoTag || isNoData) return
