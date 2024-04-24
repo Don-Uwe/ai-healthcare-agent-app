@@ -55,7 +55,7 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
   const isPc = !isMobile
 
   const hasStakeFarm = position.hasAmount
-  const stakedFarms = position.data.filter((d) => new Decimal(d.lpAmount).gt(0))
+  const stakedFarms = position.data.filter((d) => new Decimal(d.lpAmount || 0).gt(0))
   const stakeFarmCount = stakedFarms.length
   const stakedFarmList = stakedFarms.map((farm) => stakedFarmMap.get(farm.farmId)).filter((f) => !!f) as FormattedFarmInfoV6[]
 
@@ -64,8 +64,8 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
     let farmLpAmount = '0'
     farm = stakedFarmList.find((f) =>
       position.data.some((d) => {
-        const isFound = new Decimal(d.lpAmount).gt(0) && f.id === d.farmId
-        if (isFound) farmLpAmount = d.lpAmount
+        const isFound = new Decimal(d.lpAmount || 0).gt(0) && f.id === d.farmId
+        if (isFound) farmLpAmount = d.lpAmount || '0'
         return isFound
       })
     )
@@ -80,7 +80,7 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
   })
 
   const unStakeLpBalance = getTokenBalanceUiAmount({ mint: pool?.lpMint.address || '', decimals: pool?.lpMint.decimals }).rawAmount
-  const allLpUiAmount = new Decimal(position.totalLpAmount).add(unStakeLpBalance).div(10 ** (pool?.lpMint.decimals ?? 0))
+  const allLpUiAmount = new Decimal(position.totalLpAmount || 0).add(unStakeLpBalance).div(10 ** (pool?.lpMint.decimals ?? 0))
 
   const canMigrate = !!migrateData && allLpUiAmount.gt(0)
 
@@ -155,8 +155,8 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
         if (amount === '0') return
         const infoIdx = info.findIndex((i) => i.mint.address === r.mint[idx].address)
         if (infoIdx > -1) {
-          info[infoIdx].amount = new Decimal(info[infoIdx].amount).add(amount).toFixed(r.mint[idx].decimals)
-          info[infoIdx].amountUSD = new Decimal(info[infoIdx].amountUSD).add(r.rewardTokenUsd[idx]).toFixed(4)
+          info[infoIdx].amount = new Decimal(info[infoIdx].amount || 0).add(amount).toFixed(r.mint[idx].decimals)
+          info[infoIdx].amountUSD = new Decimal(info[infoIdx].amountUSD || 0).add(r.rewardTokenUsd[idx]).toFixed(4)
         } else {
           info.push({
             mint: r.mint[idx],

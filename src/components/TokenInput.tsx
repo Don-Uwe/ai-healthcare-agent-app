@@ -173,7 +173,9 @@ function TokenInput(props: TokenInputProps) {
   const getTokenBalanceUiAmount = useTokenAccountStore((s) => s.getTokenBalanceUiAmount)
   const balanceInfo = getTokenBalanceUiAmount({ mint: token?.address || '', decimals: token?.decimals })
   const balanceAmount = balanceInfo.amount
-  const balanceMaxString = hideBalance ? null : trimTrailZero(balanceAmount.mul(maxMultiplier || 1).toString())
+  const balanceMaxString = hideBalance
+    ? null
+    : trimTrailZero(balanceAmount.mul(maxMultiplier || 1).toFixed(token?.decimals ?? 6, Decimal.ROUND_FLOOR))
   const maxString = forceBalanceAmount ? trimTrailZero(String(forceBalanceAmount)) : balanceMaxString
   const maxDecimal = forceBalanceAmount ? new Decimal(forceBalanceAmount) : balanceAmount
 
