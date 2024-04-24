@@ -42,8 +42,13 @@ export default function useFetchOwnerIdo(props: { owner?: string | PublicKey; sh
       userIdoInfo: key
     }))
   }, [data])
+
   const isEmptyResult = !isLoading && !(data && !error)
-  isNoData = error?.response?.status === 404
+
+  useEffect(() => {
+    if (!url || isLoading) return
+    isNoData = error?.response?.status === 404
+  }, [isLoading, error, url])
 
   useEffect(() => {
     if (lastRefreshTag === refreshIdoTag || isNoData) return
