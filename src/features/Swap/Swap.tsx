@@ -37,9 +37,16 @@ export default function Swap() {
   const tokenMap = useTokenStore((s) => s.tokenMap)
   const baseToken = useMemo(() => tokenMap.get(baseMint), [tokenMap, baseMint])
   const quoteToken = useMemo(() => tokenMap.get(quoteMint), [tokenMap, quoteMint])
+  const [isDirectionNeedReverse, setIsDirectionNeedReverse] = useState<boolean>(false)
   // reset directionReverse when inputMint or outputMint changed
   useIsomorphicLayoutEffect(() => {
-    setDirectionReverse(false)
+    if (isDirectionNeedReverse) {
+      setDirectionReverse(true)
+      setIsDirectionNeedReverse(false)
+    } else {
+      setDirectionReverse(false)
+    }
+
     setSwapPairCache({
       inputMint,
       outputMint
@@ -102,7 +109,11 @@ export default function Swap() {
       >
         <GridItem ref={swapPanelRef} gridArea="panel">
           <PanelCard p={[3, 6]} flexGrow={['1', 'unset']}>
-            <SwapPanel onInputMintChange={setInputMint} onOutputMintChange={setOutputMint} />
+            <SwapPanel
+              onInputMintChange={setInputMint}
+              onOutputMintChange={setOutputMint}
+              onDirectionNeedReverse={() => setIsDirectionNeedReverse((b) => !b)}
+            />
           </PanelCard>
         </GridItem>
 

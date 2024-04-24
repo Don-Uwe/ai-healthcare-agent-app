@@ -33,10 +33,12 @@ import useTokenInfo from '@/hooks/token/useTokenInfo'
 
 export function SwapPanel({
   onInputMintChange,
-  onOutputMintChange
+  onOutputMintChange,
+  onDirectionNeedReverse
 }: {
   onInputMintChange?: (mint: string) => void
   onOutputMintChange?: (mint: string) => void
+  onDirectionNeedReverse?(): void
 }) {
   const query = useRouteQuery<{ inputMint: string; outputMint: string }>()
   const [urlInputMint, urlOutputMint] = [urlToMint(query.inputMint), urlToMint(query.outputMint)]
@@ -73,19 +75,11 @@ export function SwapPanel({
   const { tokenInfo: unknownTokenB } = useTokenInfo({
     mint: isTokenLoaded && !tokenOutput && outputMint ? outputMint : undefined
   })
-  const [notReadyMint, setNotReadyMint] = useState<Set<string>>(
-    new Set<string>([SOLMint.toBase58(), USDCMint.toBase58(), USDTMint.toBase58()])
-  )
 
   useEffect(() => {
     onInputMintChange?.(inputMint)
     onOutputMintChange?.(outputMint)
     setUrlQuery({ inputMint: mintToUrl(inputMint), outputMint: mintToUrl(outputMint) })
-    if (notReadyMint.has(inputMint) || notReadyMint.has(outputMint)) {
-      notReadyMint.delete(inputMint)
-      notReadyMint.delete(outputMint)
-      setNotReadyMint(new Set(notReadyMint))
-    }
   }, [inputMint, outputMint])
 
   const [amountIn, setAmountIn] = useState<string>('')
@@ -164,16 +158,14 @@ export function SwapPanel({
 
   const handleSelectToken = useCallback(
     (token: TokenInfo | ApiV3Token, side?: 'input' | 'output') => {
+      const defaultMints = new Set<string>([SOLMint.toBase58(), USDCMint.toBase58(), USDTMint.toBase58()])
       if (side === 'input') {
-        if (notReadyMint.has(token.address)) {
-          setInputMint(outputMint)
-          setOutputMint(token.address)
-        } else {
-          setInputMint(token.address)
-          setOutputMint((mint) => (token.address === mint ? '' : mint))
-        }
+        defaultMints.has(token.address) && !defaultMints.has(outputMint) && onDirectionNeedReverse?.()
+        setInputMint(token.address)
+        setOutputMint((mint) => (token.address === mint ? '' : mint))
       }
       if (side === 'output') {
+        defaultMints.has(inputMint) && !defaultMints.has(token.address) && onDirectionNeedReverse?.()
         setOutputMint(token.address)
         setInputMint((mint) => {
           if (token.address === mint) {
@@ -183,7 +175,7 @@ export function SwapPanel({
         })
       }
     },
-    [outputMint]
+    [inputMint, outputMint]
   )
 
   const handleChangeSide = useEvent(() => {
