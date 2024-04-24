@@ -191,8 +191,8 @@ export const useClmmStore = createStore<ClmmState>(
           useSOLBalance: true
         },
         programId: programId ? new PublicKey(programId) : undefined,
-        txVersion
-        // computeBudgetConfig: execute ? await getComputeBudgetConfig() : undefined
+        txVersion,
+        computeBudgetConfig: execute ? await getComputeBudgetConfig() : undefined
       })
       if (execute) {
         const meta = getTxMeta({

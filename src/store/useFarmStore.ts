@@ -89,8 +89,8 @@ export const useFarmStore = createStore<FarmStore>(
             [cur.id]: cur
           }),
           {}
-        )
-        // computeBudgetConfig: execute ? await getComputeBudgetConfig() : undefined
+        ),
+        computeBudgetConfig: execute ? await getComputeBudgetConfig() : undefined
       })
 
       if (execute) {
