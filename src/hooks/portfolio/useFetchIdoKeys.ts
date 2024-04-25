@@ -10,7 +10,7 @@ import { MINUTE_MILLISECONDS } from '@/utils/date'
 const fetcher = (url: string) => axios.get<IdoKeysData[]>(url, { skipError: true })
 const idoCache = new Map<string, IdoKeysData>([])
 
-export default function useFetchOwnerIdo(props: { idList?: (string | undefined)[]; shouldFetch?: boolean; refreshInterval?: number }) {
+export default function useFetchIdoKeys(props: { idList?: (string | undefined)[]; shouldFetch?: boolean; refreshInterval?: number }) {
   const { idList = [], shouldFetch = true, refreshInterval = MINUTE_MILLISECONDS * 30 } = props || {}
   const readyIdList = useMemo(() => idList.filter((i) => i && isValidPublicKey(i)) as string[], [JSON.stringify(idList)])
   const fetchIdList = useMemo(() => readyIdList.filter((i) => !idoCache.get(i)), [readyIdList])

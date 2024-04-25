@@ -17,7 +17,7 @@ export interface OwnerFullData {
 }
 
 let lastRefreshTag = 0
-let noDataSet = new Set<string>()
+const noDataSet = new Set<string>()
 const fetcher = (url: string) => axios.get<OwnerIdoInfo>(url, { skipError: true })
 
 export default function useFetchOwnerIdo(props: { owner?: string | PublicKey; shouldFetch?: boolean; refreshInterval?: number }) {
@@ -26,10 +26,8 @@ export default function useFetchOwnerIdo(props: { owner?: string | PublicKey; sh
 
   const refreshIdoTag = useFarmStore((s) => s.refreshIdoTag)
   const [host, ownerIdoUrl] = useAppStore((s) => [s.urlConfigs.OWNER_BASE_HOST, s.urlConfigs.OWNER_IDO], shallow)
-  const url =
-    noDataSet.has(owner?.toString() || '') || !isOwnerValid || !shouldFetch
-      ? null
-      : host + ownerIdoUrl.replace('{owner}', owner!.toString())
+  const isNoData = noDataSet.has(owner?.toString() || '')
+  const url = isNoData || !isOwnerValid || !shouldFetch ? null : host + ownerIdoUrl.replace('{owner}', owner!.toString())
 
   const { data, isLoading, error, ...rest } = useSWR(url, fetcher, {
     dedupingInterval: refreshInterval,
@@ -55,10 +53,10 @@ export default function useFetchOwnerIdo(props: { owner?: string | PublicKey; sh
   }, [isLoading, error, url, owner])
 
   useEffect(() => {
-    if (lastRefreshTag === refreshIdoTag) return
+    if (lastRefreshTag === refreshIdoTag || isNoData) return
     lastRefreshTag = refreshIdoTag
     rest.mutate()
-  }, [refreshIdoTag, rest.mutate])
+  }, [refreshIdoTag, rest.mutate, isNoData])
 
   return {
     data: data?.data,
