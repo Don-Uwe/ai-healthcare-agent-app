@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 import { PublicKey } from '@solana/web3.js'
 import { OwnerIdoInfo } from '@raydium-io/raydium-sdk-v2'
 import useSWR from 'swr'
@@ -17,7 +17,7 @@ export interface OwnerFullData {
 }
 
 let lastRefreshTag = 0
-let isNoData = false
+let noDataSet = new Set<string>()
 const fetcher = (url: string) => axios.get<OwnerIdoInfo>(url, { skipError: true })
 
 export default function useFetchOwnerIdo(props: { owner?: string | PublicKey; shouldFetch?: boolean; refreshInterval?: number }) {
@@ -26,7 +26,10 @@ export default function useFetchOwnerIdo(props: { owner?: string | PublicKey; sh
 
   const refreshIdoTag = useFarmStore((s) => s.refreshIdoTag)
   const [host, ownerIdoUrl] = useAppStore((s) => [s.urlConfigs.OWNER_BASE_HOST, s.urlConfigs.OWNER_IDO], shallow)
-  const url = isNoData || !isOwnerValid || !shouldFetch ? null : host + ownerIdoUrl.replace('{owner}', owner!.toString())
+  const url =
+    noDataSet.has(owner?.toString() || '') || !isOwnerValid || !shouldFetch
+      ? null
+      : host + ownerIdoUrl.replace('{owner}', owner!.toString())
 
   const { data, isLoading, error, ...rest } = useSWR(url, fetcher, {
     dedupingInterval: refreshInterval,
@@ -46,15 +49,16 @@ export default function useFetchOwnerIdo(props: { owner?: string | PublicKey; sh
   const isEmptyResult = !isLoading && !(data && !error)
 
   useEffect(() => {
-    if (!url || isLoading) return
-    isNoData = error?.response?.status === 404
-  }, [isLoading, error, url])
+    if (!url || isLoading || !owner) return
+    if (error?.response?.status === 404) noDataSet.add(owner.toString())
+    else noDataSet.delete(owner.toString())
+  }, [isLoading, error, url, owner])
 
   useEffect(() => {
-    if (lastRefreshTag === refreshIdoTag || isNoData) return
+    if (lastRefreshTag === refreshIdoTag) return
     lastRefreshTag = refreshIdoTag
     rest.mutate()
-  }, [isNoData, refreshIdoTag, rest.mutate])
+  }, [refreshIdoTag, rest.mutate])
 
   return {
     data: data?.data,
