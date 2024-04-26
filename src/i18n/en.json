@@ -499,7 +499,9 @@
     "cannot_find_pool": "Can’t find the pool you’re looking for? Try entering the token address or check the pool lists below.",
     "no_chart_data": "No data for this chart.",
     "no_chart_data_hint": "Please wait for a moment or try refreshing the page.",
-    "liquidity_not_enough": "Liquidity not enough"
+    "liquidity_not_enough": "Liquidity not enough",
+    "swap_slippage_error_title": "Swap failed due to slippage error!",
+    "swap_slippage_error_desc": "Slippage has exceeded user settings.\nTry again or adjust your slippage tolerance."
   },
   "input": {
     "max_button": "Max",
