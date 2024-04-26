@@ -17,7 +17,6 @@ import { useEvent } from '@/hooks/useEvent'
 import { useAppStore } from '@/store'
 import { useClmmStore } from '@/store/useClmmStore'
 import { RpcPoolData } from '@/hooks/pool/clmm/useSubscribeClmmInfo'
-import { getOpenCache, setOpenCache } from '../../utils'
 import BN from 'bn.js'
 
 type ClmmPositionAccountItemProps = {
@@ -30,7 +29,7 @@ type ClmmPositionAccountItemProps = {
 }
 
 const ZERO = new BN(0)
-
+export const openCache = new Map<string, boolean>()
 const realTimeRefresh = 15 * 1000
 
 export default function ClmmPositionAccountItem({
@@ -45,7 +44,7 @@ export default function ClmmPositionAccountItem({
   const removeLiquidityAct = useClmmStore((s) => s.removeLiquidityAct)
   const closePositionAct = useClmmStore((s) => s.closePositionAct)
 
-  const { isOpen, onToggle } = useDisclosure({ defaultIsOpen: getOpenCache(position.nftMint.toBase58()) })
+  const { isOpen, onToggle } = useDisclosure({ defaultIsOpen: !!openCache.get(position.nftMint.toBase58()) })
   const { isOpen: isRemoveOpen, onClose: onRemoveClose, onOpen: onRemoveOpen } = useDisclosure()
   const { isOpen: isAddOpen, onClose: onAddClose, onOpen: onAddOpen } = useDisclosure()
   const { isOpen: isSending, onClose: offSending, onOpen: onSending } = useDisclosure()
@@ -125,7 +124,7 @@ export default function ClmmPositionAccountItem({
   })
 
   useEffect(() => {
-    setOpenCache(position.nftMint.toBase58(), isOpen)
+    openCache.set(position.nftMint.toBase58(), isOpen)
   }, [isOpen, position.nftMint.toBase58()])
 
   useEffect(() => {
