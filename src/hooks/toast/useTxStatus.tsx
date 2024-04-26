@@ -15,6 +15,7 @@ import CircleCheck from '@/icons/misc/CircleCheck'
 import CircleError from '@/icons/misc/CircleError'
 import CircleInfo from '@/icons/misc/CircleInfo'
 import { ToastStatus } from '@/types/tx'
+import { isSwapSlippageError } from '@/utils/tx/swapError'
 import retryTx, { cancelRetryTx } from './retryTx'
 
 export interface TxMeta {
@@ -34,6 +35,7 @@ export const txStatusSubject = new Subject<
     update?: boolean
     skipWatchSignature?: boolean
     duration?: number
+    isSwap?: boolean
     signedTx?: Transaction | VersionedTransaction
     onConfirmed?: (signatureResult: SignatureResult, context: Context) => void
     onError?: (signatureResult: SignatureResult, context: Context) => void
@@ -52,7 +54,7 @@ export const multiTxStatusSubject = new Subject<
     mintInfo?: ApiV3Token[]
     duration?: number
     skipWatchSignature?: boolean
-
+    isSwap?: boolean
     onError?: (signatureResult: SignatureResult, context: Context) => void
     onSent?: () => void
     onClose?: () => void
@@ -87,6 +89,7 @@ function useTxStatus() {
           skipWatchSignature,
           signedTx,
           duration,
+          isSwap,
           onConfirmed,
           onError,
           onSent,
@@ -153,18 +156,22 @@ function useTxStatus() {
               if (signatureResult.err) {
                 onError?.(signatureResult, context)
                 // update toast status to error
-                !hideResultToast &&
-                  toastSubject.next({
-                    id: txId,
-                    update: true,
-                    title:
-                      (isMultisigWallet ? `${title} ${t('transaction.multisig_wallet_initiation')}` : title) +
+                if (hideResultToast) return
+                const isSlippageError = isSwap && isSwapSlippageError(signatureResult)
+
+                toastSubject.next({
+                  id: txId,
+                  update: true,
+                  title: isSlippageError
+                    ? t('error.swap_slippage_error_title')
+                    : (isMultisigWallet ? `${title} ${t('transaction.multisig_wallet_initiation')}` : title) +
                       ` ${t('transaction.failed')}`,
-                    status: 'error',
-                    description: description || `${explorerUrl}/tx/${txId}`,
-                    detail: renderDetail('error'),
-                    onClose
-                  })
+                  status: 'error',
+                  description: isSlippageError ? t('error.swap_slippage_error_desc') : description || `${explorerUrl}/tx/${txId}`,
+                  detail: renderDetail('error'),
+                  onClose
+                })
+
                 setTxRecord({
                   status: 'error',
                   title: txHistoryTitle || 'transaction.title',
@@ -222,6 +229,7 @@ function useTxStatus() {
             connection.removeSignatureListener(subId)
             toastSubject.next({
               title: t('transaction.send_timeout'),
+              description,
               status: 'warning',
               duration: 8 * 1000,
               onClose
@@ -256,6 +264,7 @@ function useTxStatus() {
           update,
           duration,
           skipWatchSignature,
+          isSwap,
           onError,
           onSent,
           onClose
@@ -379,15 +388,17 @@ function useTxStatus() {
                   txStatus[txId] = signatureResult.err ? 'error' : 'success'
                   if (signatureResult.err) {
                     subscribeMap.set(toastId, true)
-                    // update toast status to error
+                    const isSlippageError = isSwap && isSwapSlippageError(signatureResult)
+
                     toastSubject.next({
                       id: toastId,
                       update: true,
-                      title:
-                        (isMultisigWallet ? `${title} ${t('transaction.multisig_wallet_initiation')}` : title || t('transaction.title')) +
-                        t('transaction.failed'),
+                      title: isSlippageError
+                        ? t('error.swap_slippage_error_title')
+                        : (isMultisigWallet ? `${title} ${t('transaction.multisig_wallet_initiation')}` : title || t('transaction.title')) +
+                          t('transaction.failed'),
                       status: 'error',
-                      description,
+                      description: isSlippageError ? t('error.swap_slippage_error_desc') : description,
                       detail: renderDetail(),
                       onClose
                     })

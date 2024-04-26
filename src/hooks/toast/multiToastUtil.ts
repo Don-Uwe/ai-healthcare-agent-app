@@ -32,13 +32,14 @@ export const handleMultiTxToast = (
     processedId: ProcessedId
     txLength: number
     meta: {
-      title: string
-      description: JSX.Element
+      title: string | JSX.Element
+      description: string | JSX.Element
       txHistoryTitle: string
       txHistoryDesc: string
       txValues: Record<string, unknown>
     }
     skipWatchSignature?: boolean
+    isSwap?: boolean
     getSubTxTitle: (idx: number) => string
     handler: (
       processedId: {
@@ -49,7 +50,7 @@ export const handleMultiTxToast = (
     onCloseToast?: () => void
   } & TxCallbackProps
 ) => {
-  const { toastId, txLength, processedId, meta, skipWatchSignature, getSubTxTitle, handler, ...txProps } = props
+  const { toastId, txLength, processedId, meta, skipWatchSignature, isSwap, getSubTxTitle, handler, ...txProps } = props
   if (txLength <= 1) {
     if (processedId[0].txId) {
       txStatusSubject.next({
@@ -57,6 +58,7 @@ export const handleMultiTxToast = (
         skipWatchSignature,
         txId: processedId[0].txId,
         update: true,
+        isSwap,
         ...meta,
         onSent: txProps.onSent,
         onError: txProps.onError,
@@ -70,14 +72,14 @@ export const handleMultiTxToast = (
 
   const isError = processedId.some((t) => t.status === 'error')
   const isSuccess = processedId.filter((s) => s.status === 'success').length >= (props.txLength ?? props.processedId.length)
-
   multiTxStatusSubject.next({
     toastId,
     skipWatchSignature: true,
     update: true,
     status: isError ? 'error' : isSuccess ? 'success' : 'info',
     ...meta,
-    title: props.meta.title + (isError ? ` ${i18n.t('transaction.failed')}` : ''),
+    isSwap,
+    title: meta.title + (isError && !isSwap ? ` ${i18n.t('transaction.failed')}` : ''),
     duration: isError || isSuccess ? 8000 : undefined,
     subTxIds: processedId.map((tx, idx) => {
       const titleKey = getSubTxTitle(idx)

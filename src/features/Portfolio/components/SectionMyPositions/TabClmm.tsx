@@ -8,8 +8,8 @@ import { ClmmDataWithUpdateFn } from '@/hooks/portfolio/useAllPositionInfo'
 import { colors } from '@/theme/cssVariables'
 import { Box, Flex, Text } from '@chakra-ui/react'
 import { ClmmPositionItemsCard } from './components/Clmm/ClmmPositionItemsCard'
+import { openCache } from './components/Clmm/ClmmPositionAccountItem'
 import { ApiV3PoolInfoConcentratedItem } from '@raydium-io/raydium-sdk-v2'
-import { deleteOpenCache } from './utils'
 
 export function ClmmMyPositionTabContent({
   isLoading,
@@ -45,7 +45,7 @@ export function ClmmMyPositionTabContent({
   })
 
   useEffect(() => {
-    return () => deleteOpenCache()
+    return () => openCache.clear()
   }, [])
 
   return (

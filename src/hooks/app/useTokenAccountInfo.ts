@@ -25,7 +25,7 @@ function useTokenAccountInfo() {
     const listenerId = connection.onAccountChange(
       publicKey,
       () => {
-        fetchTokenAccountAct({ commitment })
+        fetchTokenAccountAct({ commitment, forceFetch: true })
         accountChangeCbk.forEach((cb) => cb())
         if (timeoutId) window.clearTimeout(timeoutId)
         timeoutId = window.setTimeout(() => {

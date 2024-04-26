@@ -16,6 +16,7 @@ import { fetchComputePrice } from '@/utils/tx/computeBudget'
 import { trimTailingZero } from '@/utils/numberish/formatNumber'
 import { getDefaultToastData, handleMultiTxToast } from '@/hooks/toast/multiToastUtil'
 import { handleMultiTxRetry } from '@/hooks/toast/retryTx'
+import { isSwapSlippageError } from '@/utils/tx/swapError'
 
 const getSwapComputePrice = async () => {
   const transactionFee = useAppStore.getState().transactionFee
@@ -171,6 +172,8 @@ export const useSwapStore = createStore<SwapStore>(
               ...swapMeta,
               signedTx: tx,
               onClose: onCloseToast,
+              isSwap: true,
+              mintInfo: [inputToken, outputToken],
               ...txProps
             })
             return
@@ -183,11 +186,17 @@ export const useSwapStore = createStore<SwapStore>(
               const targetTxIdx = processedId.findIndex((tx) => tx.txId === txId)
               if (targetTxIdx > -1) processedId[targetTxIdx].status = signatureResult.err ? 'error' : 'success'
               handleMultiTxRetry(processedId)
+              const isSlippageError = isSwapSlippageError(signatureResult)
               handleMultiTxToast({
                 toastId,
                 processedId: processedId.map((p) => ({ ...p, status: p.status === 'sent' ? 'info' : p.status })),
                 txLength,
-                meta: swapMeta,
+                meta: {
+                  ...swapMeta,
+                  title: isSlippageError ? i18n.t('error.error.swap_slippage_error_title')! : swapMeta.title,
+                  description: isSlippageError ? i18n.t('error.error.swap_slippage_error_desc')! : swapMeta.description
+                },
+                isSwap: true,
                 handler,
                 getSubTxTitle,
                 onCloseToast
@@ -203,6 +212,7 @@ export const useSwapStore = createStore<SwapStore>(
             processedId: processedId.map((p) => ({ ...p, status: p.status === 'sent' ? 'info' : p.status })),
             txLength,
             meta: swapMeta,
+            isSwap: true,
             handler,
             getSubTxTitle,
             onCloseToast
