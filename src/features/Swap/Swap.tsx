@@ -1,5 +1,5 @@
 import { Box, Grid, GridItem, HStack, VStack } from '@chakra-ui/react'
-import { RAYMint } from '@raydium-io/raydium-sdk-v2'
+import { RAYMint, SOLMint, USDCMint, USDTMint } from '@raydium-io/raydium-sdk-v2'
 import { PublicKey } from '@solana/web3.js'
 import { useMemo, useState, useRef } from 'react'
 
@@ -58,6 +58,8 @@ export default function Swap() {
       const height = `${swapPanelRef.current?.getBoundingClientRect().height}px`
       klineRef.current.style.height = height
     }
+    const defaultMints = new Set<string>([SOLMint.toBase58(), USDCMint.toBase58(), USDTMint.toBase58()])
+    defaultMints.has(baseMint) && !defaultMints.has(quoteMint) && setDirectionReverse(true)
   }, [])
 
   return (

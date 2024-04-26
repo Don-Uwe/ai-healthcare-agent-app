@@ -6,23 +6,25 @@ import { SvgIcon } from '@/icons/type'
 import { useAppStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
 import { Box, Button, HStack, SimpleGrid, Text, VStack } from '@chakra-ui/react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import ResponsiveModal from './ResponsiveModal'
 import Tooltip from './Tooltip'
 
 export default function AprMDSwitchWidget(props: SvgIcon) {
   const { t } = useTranslation()
-  const aprMode = useAppStore((s) => s.aprMode)
-  const setAprMode = (to: 'M' | 'D') => {
-    useAppStore.setState({
-      aprMode: to
-    })
-  }
+  const appAprMode = useAppStore((s) => s.aprMode)
+  const setAprModeAct = useAppStore((s) => s.setAprModeAct)
+  const [aprMode, setAprMode] = useState<'M' | 'D'>('M')
   const [isAprDialogOpen, setIsAprDialogOpen] = useState(false)
   const toggleAprMode = () => {
-    setAprMode(aprMode === 'D' ? 'M' : 'D')
+    setAprModeAct(aprMode === 'D' ? 'M' : 'D')
   }
+
+  useEffect(() => {
+    setAprMode(appAprMode)
+  }, [appAprMode])
+
   const text = {
     D: {
       title: t('apr_dialog.mode_D_title'),
@@ -81,13 +83,14 @@ export default function AprMDSwitchWidget(props: SvgIcon) {
 }
 
 export function AprCalcDialog(props: { isOpen: boolean; onClose(): void }) {
-  const aprMode = useAppStore((s) => s.aprMode)
+  const appAprMode = useAppStore((s) => s.aprMode)
+  const setAprModeAct = useAppStore((s) => s.setAprModeAct)
+  const [aprMode, setAprMode] = useState<'M' | 'D'>('M')
   const { t } = useTranslation()
-  const setAprMode = (to: 'M' | 'D') => {
-    useAppStore.setState({
-      aprMode: to
-    })
-  }
+  useEffect(() => {
+    setAprMode(appAprMode)
+  }, [appAprMode])
+
   const choices: {
     aprCalcMethod: 'M' | 'D'
     title: string
@@ -132,7 +135,7 @@ export function AprCalcDialog(props: { isOpen: boolean; onClose(): void }) {
               rounded={'xl'}
               bg={colors.backgroundDark}
               border={`1.5px ${isCurrent ? colors.secondary : 'transparent'} solid`}
-              onClick={() => setAprMode(choice.aprCalcMethod)}
+              onClick={() => setAprModeAct(choice.aprCalcMethod)}
             >
               <Text color={colors.textPrimary} fontWeight={500}>
                 {choice.title}

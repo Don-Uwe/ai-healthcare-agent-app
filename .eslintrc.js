@@ -21,6 +21,7 @@ module.exports = {
     'react-hooks/exhaustive-deps': 'off',
     'react/prop-types': 'off',
     'typescript-eslint/ban-types': 0,
-    'no-async-promise-executor': 'warn'
+    'no-async-promise-executor': 'warn',
+    'prefer-const': 'warn'
   }
 }
