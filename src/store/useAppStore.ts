@@ -38,6 +38,7 @@ import { retry, isProdEnv } from '@/utils/common'
 
 export const defaultNetWork = WalletAdapterNetwork.Mainnet // Can be set to 'devnet', 'testnet', or 'mainnet-beta'
 export const defaultEndpoint = clusterApiUrl(defaultNetWork) // You can also provide a custom RPC endpoint
+export const APR_MODE_KEY = '_r_apr_'
 export const EXPLORER_KEY = '_r_explorer_'
 export const supportedExplorers = [
   {
@@ -115,6 +116,7 @@ interface AppState {
   setUrlConfigAct: (urls: API_URL_CONFIG) => void
   setProgramIdConfigAct: (urls: ProgramIdConfig) => void
   setRpcUrlAct: (url: string, skipToast?: boolean, skipError?: boolean) => Promise<boolean>
+  setAprModeAct: (mode: 'M' | 'D') => void
 
   buildMultipleTx: (props: {
     txBuildDataList: (TxBuildData | TxV0BuildData)[]
@@ -130,7 +132,7 @@ const appInitState = {
   explorerUrl: getStorageItem(EXPLORER_KEY) || supportedExplorers[0].host,
   isMobile: false,
   isLaptop: false,
-  aprMode: 'M' as 'M' | 'D',
+  aprMode: (getStorageItem(APR_MODE_KEY) || 'M') as 'M' | 'D',
   rpcs: [],
   urlConfigs: {
     ...API_URLS,
@@ -309,6 +311,10 @@ export const useAppStore = createStore<AppState>(
           })
         return false
       }
+    },
+    setAprModeAct: (mode) => {
+      setStorageItem(APR_MODE_KEY, mode)
+      set({ aprMode: mode })
     },
 
     buildMultipleTx: async ({ txBuildDataList }) => {

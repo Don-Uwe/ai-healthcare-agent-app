@@ -14,14 +14,10 @@ import Tooltip from './Tooltip'
 export default function AprMDSwitchWidget(props: SvgIcon) {
   const { t } = useTranslation()
   const aprMode = useAppStore((s) => s.aprMode)
-  const setAprMode = (to: 'M' | 'D') => {
-    useAppStore.setState({
-      aprMode: to
-    })
-  }
+  const setAprModeAct = useAppStore((s) => s.setAprModeAct)
   const [isAprDialogOpen, setIsAprDialogOpen] = useState(false)
   const toggleAprMode = () => {
-    setAprMode(aprMode === 'D' ? 'M' : 'D')
+    setAprModeAct(aprMode === 'D' ? 'M' : 'D')
   }
   const text = {
     D: {
@@ -82,12 +78,9 @@ export default function AprMDSwitchWidget(props: SvgIcon) {
 
 export function AprCalcDialog(props: { isOpen: boolean; onClose(): void }) {
   const aprMode = useAppStore((s) => s.aprMode)
+  const setAprModeAct = useAppStore((s) => s.setAprModeAct)
   const { t } = useTranslation()
-  const setAprMode = (to: 'M' | 'D') => {
-    useAppStore.setState({
-      aprMode: to
-    })
-  }
+
   const choices: {
     aprCalcMethod: 'M' | 'D'
     title: string
@@ -132,7 +125,7 @@ export function AprCalcDialog(props: { isOpen: boolean; onClose(): void }) {
               rounded={'xl'}
               bg={colors.backgroundDark}
               border={`1.5px ${isCurrent ? colors.secondary : 'transparent'} solid`}
-              onClick={() => setAprMode(choice.aprCalcMethod)}
+              onClick={() => setAprModeAct(choice.aprCalcMethod)}
             >
               <Text color={colors.textPrimary} fontWeight={500}>
                 {choice.title}
