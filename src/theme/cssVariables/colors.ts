@@ -112,6 +112,9 @@ export const darkColors: Record<keyof typeof colors, string> = {
   filledProgressBg: 'linear-gradient(270deg, #8C6EEF 0%, #4F53F3 100%)',
   transparentContainerBg: 'linear-gradient(271.31deg, rgba(96, 59, 200, 0.2) 1.47%, rgba(140, 110, 239, 0.12) 100%)',
   modalContainerBg: '#ABC4FF12',
+  infoButtonBg: '#ABC4FF33',
+  warnButtonBg: '#FED33A33',
+  warnButtonLightBg: '#FED33A1A',
   /** it's designer's variable name in Figma */
   brandGradient: 'linear-gradient(244deg, #7748FC 8.17%, #39D0D8 101.65%)',
   dividerDashGradient: 'repeating-linear-gradient(to right, currentColor 0 5px, transparent 5px 10px)',
@@ -237,6 +240,9 @@ export const lightColors: Partial<typeof darkColors> = {
   filledProgressBg: 'linear-gradient(270deg, #8C6EEF 0%, #4F53F3 100%)',
   transparentContainerBg: '#F5F8FF',
   modalContainerBg: '#ABC4FF12',
+  infoButtonBg: '#ABC4FF33',
+  warnButtonBg: '#FED33A33',
+  warnButtonLightBg: '#FED33A1A',
   /** it's designer's variable name in Figma */
   brandGradient: 'linear-gradient(244deg, #7748FC 8.17%, #39D0D8 101.65%)',
   dividerDashGradient: 'repeating-linear-gradient(to right, currentColor 0 5px, transparent 5px 10px)',
@@ -365,6 +371,9 @@ export const colors = {
   filledProgressBg: 'var(--filled-progress-bg)',
   transparentContainerBg: 'var(--transparent-container-bg)',
   modalContainerBg: 'var(--modal-container-bg)',
+  infoButtonBg: 'var(--info-button-bg)',
+  warnButtonBg: 'var(--warn-button-bg)',
+  warnButtonLightBg: 'var(--warn-button-light-bg)',
   /** it's designer's variable name in Figma */
   brandGradient: 'var(--brand-gradient)',
   dividerDashGradient: 'var(--divider-dash-gradient)',
