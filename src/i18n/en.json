@@ -124,7 +124,21 @@
     "fee_high": "High",
     "fee_turbo": "Turbo",
     "transaction_priority": "Transaction Priority",
-    "transaction_priority_desc": "The priority fee is paid to the Solana network. This additional fee helps boost how a transaction is prioritized against others, resulting in faster transaction execution times."
+    "transaction_priority_desc": "The priority fee is paid to the Solana network. This additional fee helps boost how a transaction is prioritized against others, resulting in faster transaction execution times.",
+    "transaction_priority_fee": "Transaction Priority Fee",
+    "transaction_priority_fee_tip": "The priority fee is paid to the Solana network. This additional fee boosts transaction prioritization, resulting in faster execution times. Note that the fee is taken even if a transaction ultimately fails.",
+    "transaction_priority_fee_usage": "Fee settings are applied across all Raydium features, including Swap, Liquidity, and Staking.",
+    "priority_level": "Priority Level",
+    "priority_level_fast": "Fast",
+    "priority_level_turbo": "Turbo",
+    "priority_level_ultra": "Ultra",
+    "priority_mode": "Priority Mode",
+    "priority_mode_max_cap": "Max Cap",
+    "priority_mode_exact_fee": "Exact Fee",
+    "priority_mode_set_max_cap": "Set Max Cap",
+    "priority_fee_auto_optimizes": "Raydium auto-optimizes priority fees for your transaction. Set a max cap to prevent overpaying.",
+    "priority_fee_exact": "Transactions will use the exact fee set below.",
+    "priority_fee_below_market_rate": "Your current maximum fee is below the market rate. Please raise it to ensure your transactions are processed."
   },
   "wallet_connect_panel": {
     "title": "Connect your wallet to Raydium",
@@ -285,7 +299,7 @@
       "unStaked_successfully": "Unstaked {{symbol}}",
       "unStaked_desc": "You Unstaked <sub>{{amount}} {{symbol}}</sub>"
     },
-    "rewards_ends": "Ends",
+    "rewards_ends": "Ended",
     "tvl_dsc": "Trading Volume (dsc)",
     "tvl_asc": "Trading Volume (asc)",
     "lp_dsc": "Liquidity (dsc)",
@@ -508,7 +522,8 @@
     "search_for_a_pair_or_enter_amm_id": "Search for a pair or enter AMM ID",
     "enter_search_token": "Search for token or paste mint address.",
     "search_amm_title": "Search for a pair or paste AMM ID",
-    "placeholder_input_amm_id": "input AmmId / TVL"
+    "placeholder_input_amm_id": "input AmmId / TVL",
+    "enter_custom_value": "Enter custom value"
   },
   "date_picker": {
     "farm_will_end_at": "Farm will end at",

@@ -25,7 +25,7 @@ import {
 } from '@chakra-ui/react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useRef } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import MobileDesktop, { Desktop, Mobile } from '../MobileDesktop'
 import SolWallet from '../SolWallet'
@@ -39,6 +39,7 @@ import { Divider } from './components/SettingFieldDivider'
 import { SlippageToleranceSettingField } from './components/SlippageToleranceSettingField'
 import { VersionedTransactionSettingField } from './components/VersionedTransactionSettingField'
 import { TransactionFeeSetting } from './components/TransactionFeeSetting'
+import { PriorityButton } from './components/PriorityButton'
 import useSwr from 'swr'
 import axios from '@/api/axios'
 import { keyframes } from '@emotion/react'
@@ -61,7 +62,7 @@ function AppNavLayout({
   const { t } = useTranslation()
   const { pathname } = useRouter()
 
-  const betaTooltipRef = React.useRef<HTMLDivElement>(null)
+  const betaTooltipRef = useRef<HTMLDivElement>(null)
   const { isOpen, onClose } = useDisclosure({ defaultIsOpen: true })
   const closeBetaTooltip = () => {
     if (betaTooltipRef.current) {
@@ -182,6 +183,7 @@ function AppNavLayout({
 
         {/* wallet button */}
         <Flex gap={[0.5, 2]} align="center">
+          <PriorityButton />
           <SettingsMenu />
           {/* <EVMWallet />  don't need currently yet*/}
           <SolWallet />
@@ -251,7 +253,7 @@ function RouteLink(props: { isActive?: boolean; children: ReactNode; href: strin
 
 function SettingsMenu() {
   const { isOpen, onClose, onOpen } = useDisclosure()
-  const triggerRef = React.useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLDivElement>(null)
   return (
     <>
       <Box
@@ -274,7 +276,7 @@ function SettingsMenu() {
 }
 
 function SettingsMenuModalContent(props: { isOpen: boolean; triggerRef: React.RefObject<HTMLDivElement>; onClose: () => void }) {
-  const contentRef = React.useRef<HTMLDivElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
   const { t } = useTranslation()
   const triggerPanelGap = 8
   const isMobile = useAppStore((s) => s.isMobile)
