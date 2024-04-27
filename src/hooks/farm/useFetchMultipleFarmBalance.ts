@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import useSWR from 'swr'
 import shallow from 'zustand/shallow'
-import { ApiV3Token, getAssociatedLedgerAccount } from '@raydium-io/raydium-sdk-v2'
+import { ApiV3Token, getAssociatedLedgerAccount, RewardInfoV6 } from '@raydium-io/raydium-sdk-v2'
 import { Connection } from '@solana/web3.js'
 
 import { useAppStore } from '@/store'
@@ -31,6 +31,7 @@ export default function useFetchMultipleFarmBalance(props: {
     programId: string
     id: string
     lpMint: ApiV3Token
+    rewardInfos: RewardInfoV6[]
   }[]
   refreshInterval?: number
 }) {
@@ -136,7 +137,7 @@ export default function useFetchMultipleFarmBalance(props: {
                   .div(multiplier)
                   .sub(rewardDebt)
                 if (pendingReward.lt(new BN(0))) pendingReward = new BN(0)
-                return new Decimal(pendingReward.toString()).div(10 ** farmInfo!.lpMint.decimals).toString()
+                return new Decimal(pendingReward.toString()).div(10 ** (farmInfo!.rewardInfos[index]?.mint.decimals ?? 0)).toString()
               })
             : []
 

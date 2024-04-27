@@ -155,7 +155,7 @@ const appInitState = {
   txVersion: TxVersion.V0,
   tokenAccLoaded: false,
   commitment: 'confirmed' as Commitment,
-  transactionFee: getStorageItem(FEE_KEY) === null ? '0.005' : getStorageItem(FEE_KEY) || ''
+  transactionFee: getStorageItem(FEE_KEY) === null ? '0.0001' : getStorageItem(FEE_KEY) || ''
 }
 
 let rpcLoading = false

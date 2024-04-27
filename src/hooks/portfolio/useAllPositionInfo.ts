@@ -129,7 +129,8 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
             return {
               id: data.id,
               programId: data.programId,
-              lpMint: data.lpMint
+              lpMint: data.lpMint,
+              rewardInfos: data.rewardInfos
             }
           })
       : []
