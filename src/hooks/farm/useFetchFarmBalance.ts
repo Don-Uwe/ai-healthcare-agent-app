@@ -27,6 +27,7 @@ export default function useFetchFarmBalance(props: {
     programId: string
     id: string
     lpMint: ApiV3Token
+    rewardInfos: { mint: ApiV3Token }[]
   }
   prefetchedFarmData?: FarmDecodeData
   refreshInterval?: number
@@ -102,7 +103,7 @@ export default function useFetchFarmBalance(props: {
             .sub(rewardDebt)
 
           if (pendingReward.lt(new BN(0))) pendingReward = new BN(0)
-          return new Decimal(pendingReward.toString()).div(10 ** farmInfo!.lpMint.decimals).toString()
+          return new Decimal(pendingReward.toString()).div(10 ** (farmInfo!.rewardInfos[index]?.mint.decimals ?? 0)).toString()
         })
       : []
 
