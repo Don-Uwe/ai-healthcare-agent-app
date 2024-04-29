@@ -165,7 +165,9 @@ export function PriorityModalContent(props: {
                 w="full"
               >
                 <Flex align="flex-start">
-                  <WarningIcon width={32} height={32} />
+                  <Text pt={0.5}>
+                    <WarningIcon />
+                  </Text>
                   <Text pl={2}>{t('setting_board.priority_fee_below_market_rate')}</Text>
                 </Flex>
               </Flex>

@@ -138,7 +138,7 @@
     "priority_mode_set_max_cap": "Set Max Cap",
     "priority_fee_auto_optimizes": "Raydium auto-optimizes priority fees for your transaction. Set a max cap to prevent overpaying.",
     "priority_fee_exact": "Transactions will use the exact fee set below.",
-    "priority_fee_below_market_rate": "Your current maximum fee is below the market rate. Please raise it to ensure your transactions are processed."
+    "priority_fee_below_market_rate": "Your current max fee is below market rate. Increase it to ensure your transactions are processed."
   },
   "wallet_connect_panel": {
     "title": "Connect your wallet to Raydium",
