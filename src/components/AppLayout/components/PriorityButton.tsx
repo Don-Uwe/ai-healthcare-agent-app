@@ -12,7 +12,7 @@ export function PriorityButton() {
   const transactionFee = useAppStore((s) => s.transactionFee)
   // TODO: need compare with market rate
   const triggerRef = useRef<HTMLDivElement>(null)
-  const [currentFee, setCurrentFee] = useState<string | undefined>(transactionFee)
+  const [currentFee, setCurrentFee] = useState<string | undefined>()
   const feeWarn = Number(currentFee) <= 0
   const handleChangeFee = useEvent((val?: string) => {
     setCurrentFee(val)
@@ -47,7 +47,7 @@ export function PriorityButton() {
           <Text as="span" fontSize="md" color={colors.textSecondary}>
             Priority:
             <Text as="span" color={colors.textLink} ml="1">
-              {transactionFee} SOL
+              {currentFee} SOL
             </Text>
           </Text>
         </Button>
