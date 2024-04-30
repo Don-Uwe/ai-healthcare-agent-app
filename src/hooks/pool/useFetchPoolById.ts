@@ -88,7 +88,7 @@ export default function useFetchPoolById<T = ApiV3PoolInfoItem>(
   }, [resData])
 
   return {
-    data: data?.data as T[],
+    data: data?.data.filter(Boolean) as T[],
     dataMap,
     formattedData,
     formattedDataMap,

@@ -305,10 +305,13 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
       })
       await harvestAllClmmAct({
         allPoolInfo: clmmData.reduce(
-          (acc, cur) => ({
-            ...acc,
-            [cur.id]: cur
-          }),
+          (acc, cur) =>
+            cur?.id
+              ? {
+                  ...acc,
+                  [cur.id]: cur
+                }
+              : acc,
           {}
         ),
         allPositions: noneZeroPos,
@@ -379,10 +382,13 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
     clmmPoolAssets,
     clmmBalanceInfo: balanceInfoWithUpdate,
     clmmPoolInfo: clmmData.reduce(
-      (acc, cur) => ({
-        ...acc,
-        [cur.id]: cur
-      }),
+      (acc, cur) =>
+        cur?.id
+          ? {
+              ...acc,
+              [cur.id]: cur
+            }
+          : acc,
       {}
     ),
     clmmTickAddressData,
