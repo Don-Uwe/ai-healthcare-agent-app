@@ -29,6 +29,7 @@ import { Desktop, Mobile } from '@/components/MobileDesktop'
 import { TokenPrice } from '@/hooks/token/useTokenPrice'
 import { useEvent } from '@/hooks/useEvent'
 import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
+import { extractNumberOnly } from '@/utils/numberish/regex'
 
 const IconStyle = {
   cursor: 'pointer',
@@ -144,12 +145,13 @@ export default function SetPriceAndRange({
   const debouncePriceChange = useEvent(debounce(onPriceChange, 150))
 
   const handlePriceChange = useCallback(
-    (val: string) => {
+    (propsVal: string) => {
       if (switchRef.current) {
         switchRef.current = false
         return
       }
       switchRef.current = false
+      const val = extractNumberOnly(propsVal)
       setCurrentPrice(val)
       debouncePriceChange({ price: val })
       handleLeftRangeBlur(new Decimal(val || 0).mul(0.5).toString())

@@ -1,4 +1,4 @@
-import { numberRegExp } from '@/utils/numberish/regex'
+import { numberRegExp, extractNumberOnly } from '@/utils/numberish/regex'
 import { formatToRawLocaleStr, isIntlNumberFormatSupported } from '@/utils/numberish/formatter'
 import { Flex, InputGroup, NumberInput, NumberInputField, SystemStyleObject, Text } from '@chakra-ui/react'
 import React, { MouseEvent, KeyboardEvent, ReactNode, useCallback, useEffect, useMemo, useRef } from 'react'
@@ -127,11 +127,11 @@ function DecimalInput(props: Props) {
   }, [handleChange])
 
   const shakeValueDecimal = (value: number | string | undefined, decimals?: number) =>
-    value && !String(value).endsWith('.') && decimals != null && new Decimal(value).decimalPlaces() > decimals
+    value && !String(value).endsWith('.') && decimals != null && new Decimal(extractNumberOnly(value, 0)).decimalPlaces() > decimals
       ? new Decimal(value).toDecimalPlaces(decimals, Decimal.ROUND_FLOOR).toString()
       : value
 
-  // // shaked decimal
+  // shaked decimal
   const showedValue = useMemo(() => shakeValueDecimal(value, decimals), [value, decimals])
   return (
     <Flex flexDirection="column" width={width} opacity={disabled ? '0.5' : '1'} sx={ctrSx}>
@@ -157,7 +157,7 @@ function DecimalInput(props: Props) {
             isReadOnly={readonly}
             isDisabled={disabled || false}
             isInvalid={clampValueOnBlur ? undefined : false}
-            value={showedValue} //FIXME: why still uncontrolled🤔?
+            value={showedValue}
             format={(value: string | number) => {
               return formatToRawLocaleStr(value)
             }}
