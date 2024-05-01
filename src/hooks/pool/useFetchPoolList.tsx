@@ -7,7 +7,7 @@ import shallow from 'zustand/shallow'
 import { PoolsApiReturn, SearchPoolsApiReturn, ApiV3PoolInfoItem, PoolFetchType } from '@raydium-io/raydium-sdk-v2'
 import { useAppStore } from '@/store'
 import { MINUTE_MILLISECONDS } from '@/utils/date'
-import { formatPoolData } from './formatter'
+import { formatPoolData, formatAprData } from './formatter'
 import { ReturnPoolType, ReturnFormattedPoolType } from './type'
 
 let refreshTag = Date.now()
@@ -67,7 +67,11 @@ export default function useFetchPoolList<T extends PoolFetchType>(props?: {
   )
 
   const issues = useMemo(
-    () => (data || []).reduce((acc, cur) => acc.concat(cur.data.data), [] as ApiV3PoolInfoItem[]),
+    () =>
+      (data || [])
+        .reduce((acc, cur) => acc.concat(cur.data.data), [] as ApiV3PoolInfoItem[])
+        .filter(Boolean)
+        .map(formatAprData),
     [data]
   ) as ReturnPoolType<T>[]
   const formattedData = useMemo(() => issues.map((i) => formatPoolData(i)), [issues]) as ReturnFormattedPoolType<T>[]
@@ -75,7 +79,6 @@ export default function useFetchPoolList<T extends PoolFetchType>(props?: {
   const isLoadEnded = !lastData || !lastData.data.hasNextPage || lastData.data.data.length < pageSize || !!error
   const loadMore = useCallback(() => setSize((s) => s + 1), [type, sort, order])
   const isEmpty = isLoadEnded && (!data || !data.length)
-
   return {
     ...swrProps,
     setSize,

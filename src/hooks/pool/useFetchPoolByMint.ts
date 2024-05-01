@@ -4,7 +4,7 @@ import shallow from 'zustand/shallow'
 import axios from '@/api/axios'
 import { MINUTE_MILLISECONDS } from '@/utils/date'
 import { useAppStore } from '@/store'
-import { formatPoolData } from './formatter'
+import { formatPoolData, formatAprData } from './formatter'
 import { ReturnPoolType, ReturnFormattedPoolType } from './type'
 
 import useSWRInfinite from 'swr/infinite'
@@ -85,7 +85,8 @@ export default function useFetchPoolByMint<T extends PoolFetchType>(
   const loadMore = useCallback(() => setSize((s) => s + 1), [type, sort, order])
 
   const resData = useMemo(
-    () => (data || []).reduce((acc, cur) => acc.concat(cur?.data?.data || []), [] as ApiV3PoolInfoItem[]),
+    () =>
+      (data || []).reduce((acc, cur) => acc.concat(cur?.data?.data || []).filter(Boolean), [] as ApiV3PoolInfoItem[]).map(formatAprData),
     [data]
   ) as ReturnPoolType<T>[]
   const formattedData = useMemo(() => resData.map((i) => formatPoolData(i)), [resData]) as ReturnFormattedPoolType<T>[]

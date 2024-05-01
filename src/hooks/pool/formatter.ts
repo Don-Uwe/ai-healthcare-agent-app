@@ -1,5 +1,5 @@
 import { PublicKey } from '@solana/web3.js'
-import { ApiV3PoolInfoItem, TickUtils, ApiV3PoolInfoConcentratedItem } from '@raydium-io/raydium-sdk-v2'
+import { ApiV3PoolInfoItem, TickUtils, ApiV3PoolInfoConcentratedItem, ApiV3PoolInfoCountItem } from '@raydium-io/raydium-sdk-v2'
 import { getPoolName } from '@/features/Pools/util'
 import { wSolToSolString } from '@/utils/token'
 import { toTotalPercent } from '@/utils/numberish/toPercentString'
@@ -10,6 +10,27 @@ import { AprKey, TimeAprData, FormattedPoolInfoItem } from './type'
 import Decimal from 'decimal.js'
 import dayjs from 'dayjs'
 
+export const formatAprData = (data: ApiV3PoolInfoItem): ApiV3PoolInfoItem => {
+  return {
+    ...data,
+    day: {
+      ...data.day,
+      apr: data.day.apr ?? 0,
+      feeApr: data.day.feeApr ?? 0
+    },
+    week: {
+      ...data.week,
+      apr: data.week.apr ?? 0,
+      feeApr: data.week.feeApr ?? 0
+    },
+    month: {
+      ...data.month,
+      apr: data.month.apr ?? 0,
+      feeApr: data.month.feeApr ?? 0
+    }
+  }
+}
+
 export function formatPoolData(pool: ApiV3PoolInfoItem): FormattedPoolInfoItem {
   const allApr: TimeAprData = Object.values(AprKey).reduce(
     (acc, cur) => {
@@ -18,13 +39,13 @@ export function formatPoolData(pool: ApiV3PoolInfoItem): FormattedPoolInfoItem {
         ...acc,
         [cur]: [
           {
-            apr: aprData.feeApr,
-            percent: toTotalPercent(aprData.feeApr, aprData.apr),
+            apr: aprData.feeApr ?? 0,
+            percent: toTotalPercent(aprData.feeApr ?? 0, aprData.apr ?? 0),
             isTradingFee: true
           },
           ...aprData.rewardApr.map((r, idx) => ({
             apr: r,
-            percent: toTotalPercent(r, aprData.apr),
+            percent: toTotalPercent(r, aprData.apr ?? 0),
             token: { ...pool.rewardDefaultInfos[idx].mint }
           }))
         ]
@@ -95,7 +116,7 @@ export function formatPoolData(pool: ApiV3PoolInfoItem): FormattedPoolInfoItem {
   }
 
   return {
-    ...pool,
+    ...formatAprData(pool),
     poolName: getPoolName(pool),
     poolDecimals,
     recommendDecimal,

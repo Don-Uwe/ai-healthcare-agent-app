@@ -3,6 +3,7 @@ import i18n from '@/i18n'
 
 export function formatLocaleStr(num?: string | number | Decimal, decimalPlace?: number) {
   if (num === null || num === undefined) return '-'
+
   const decimalNum = new Decimal(num || 0)
   const numStr = decimalNum.toFixed(decimalPlace || 0)
   const numArr = numStr.split('.')

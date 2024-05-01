@@ -9,7 +9,7 @@ import { MINUTE_MILLISECONDS } from '@/utils/date'
 
 import { ConditionalPoolType } from './type'
 import { useAppStore, useTokenStore } from '@/store'
-import { formatPoolData, poolInfoCache } from './formatter'
+import { formatPoolData, poolInfoCache, formatAprData } from './formatter'
 
 const fetcher = ([url]: [url: string]) => axios.get<ApiV3PoolInfoItem[]>(url, { skipError: true })
 
@@ -88,7 +88,7 @@ export default function useFetchPoolById<T = ApiV3PoolInfoItem>(
   }, [resData])
 
   return {
-    data: data?.data.filter(Boolean) as T[],
+    data: data?.data.filter(Boolean).map(formatAprData) as T[],
     dataMap,
     formattedData,
     formattedDataMap,

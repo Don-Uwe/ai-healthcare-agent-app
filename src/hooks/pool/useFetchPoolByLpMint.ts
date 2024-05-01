@@ -9,7 +9,7 @@ import { MINUTE_MILLISECONDS } from '@/utils/date'
 
 import { FormattedPoolInfoStandardItem } from './type'
 import { useAppStore } from '@/store'
-import { formatPoolData, poolInfoCache } from './formatter'
+import { formatPoolData, poolInfoCache, formatAprData } from './formatter'
 
 const fetcher = ([url]: [url: string]) => axios.get<ApiV3PoolInfoStandardItem[]>(url, { skipError: true })
 
@@ -44,7 +44,7 @@ export default function useFetchPoolByLpMint(
     keepPreviousData
   })
 
-  const resData = useMemo(() => data?.data.filter((d) => !!d) || [], [data]) as ApiV3PoolInfoStandardItem[]
+  const resData = useMemo(() => data?.data.filter((d) => !!d).map(formatAprData) || [], [data]) as ApiV3PoolInfoStandardItem[]
   const dataMap = useMemo(() => resData.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}), [resData]) as {
     [key: string]: ApiV3PoolInfoStandardItem
   }
@@ -62,7 +62,7 @@ export default function useFetchPoolByLpMint(
   }, [data])
 
   return {
-    data: data?.data,
+    data: data?.data.filter((d) => !!d).map(formatAprData) as ApiV3PoolInfoStandardItem[],
     dataMap,
     formattedData,
     formattedDataMap,
