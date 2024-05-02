@@ -326,7 +326,8 @@ export const useClmmStore = createStore<ClmmState>(
             ...txProps
           })
 
-          const getSubTxTitle = (idx: number) => (idx !== transactions.length - 1 ? 'transaction_history.set_up' : 'create_market.create')
+          const getSubTxTitle = (idx: number) =>
+            idx !== transactions.length - 1 ? 'transaction_history.create_pool' : 'transaction_history.name_add_liquidity'
 
           return execute({
             sequentially: true,
@@ -336,7 +337,7 @@ export const useClmmStore = createStore<ClmmState>(
                 toastId,
                 processedId: transformProcessData({ processedId, data }),
                 txLength,
-                meta,
+                meta: createPoolMeta,
                 handler,
                 getSubTxTitle
               })
@@ -347,7 +348,7 @@ export const useClmmStore = createStore<ClmmState>(
                 toastId,
                 processedId: transformProcessData({ processedId, data: [] }),
                 txLength,
-                meta,
+                meta: createPoolMeta,
                 handler,
                 getSubTxTitle
               })
