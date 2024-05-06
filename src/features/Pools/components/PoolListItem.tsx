@@ -16,7 +16,7 @@ import {
 import router from 'next/router'
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-
+import { wSolToSol } from '@/utils/token'
 import AddressChip from '@/components/AddressChip'
 import Button from '@/components/Button'
 import { Desktop, Mobile } from '@/components/MobileDesktop'
@@ -26,6 +26,7 @@ import TokenAvatarPair from '@/components/TokenAvatarPair'
 import Tooltip from '@/components/Tooltip'
 import { AprKey, FormattedPoolInfoItem } from '@/hooks/pool/type'
 import ChartInfoIcon from '@/icons/misc/ChartInfoIcon'
+import SwapPoolItemIcon from '@/icons/misc/SwapPoolItemIcon'
 import OpenBookIcon from '@/icons/misc/OpenBookIcon'
 import PulseIcon from '@/icons/misc/PulseIcon'
 import QuestionCircleIcon from '@/icons/misc/QuestionCircleIcon'
@@ -92,6 +93,17 @@ export default function PoolListItem({
       query: {
         ...(isStandard ? { mode: 'add' } : {}),
         pool_id: pool.id
+      }
+    })
+  }, [pool])
+
+  const onClickSwap = useCallback(() => {
+    const [inputMint, outputMint] = [wSolToSol(pool.mintA.address), wSolToSol(pool.mintB.address)]
+    router.push({
+      pathname: '/swap',
+      query: {
+        inputMint: inputMint,
+        outputMint: outputMint
       }
     })
   }, [pool])
@@ -279,6 +291,22 @@ export default function PoolListItem({
                   </Box>
                 </Tooltip>
               </Box>
+              <Box>
+                <Tooltip label={t('swap.title')}>
+                  <Box
+                    display={'grid'}
+                    placeItems={'center'}
+                    cursor={'pointer'}
+                    rounded={'full'}
+                    border={`2px solid ${colors.chart03}`}
+                    px={3}
+                    py={1}
+                    onClick={onClickSwap}
+                  >
+                    <SwapPoolItemIcon fill={colors.buttonSecondary} />
+                  </Box>
+                </Tooltip>
+              </Box>
 
               <Button variant="outline" size="sm" onClick={onClickDeposit}>
                 {t('button.deposit')}
@@ -430,14 +458,24 @@ export default function PoolListItem({
                 </VStack>
 
                 <VStack w="full" spacing={1}>
-                  <Button variant="ghost" display="block" width="100%" onClick={onOpenChart}>
-                    <HStack justify="center" align="center" color={colors.secondary}>
-                      <Text fontSize="md" fontWeight="500">
-                        {t('common.view_chart')}
-                      </Text>
-                      <PulseIcon />
-                    </HStack>
-                  </Button>
+                  <HStack justify="center" align="center" color={colors.secondary}>
+                    <Button variant="ghost" display="block" width="100%" onClick={onOpenChart}>
+                      <HStack>
+                        <Text fontSize="md" fontWeight="500">
+                          {t('common.view_chart')}
+                        </Text>
+                        <PulseIcon />
+                      </HStack>
+                    </Button>
+                    <Button variant="ghost" display="block" width="100%" onClick={onClickSwap}>
+                      <HStack>
+                        <Text fontSize="md" fontWeight="500">
+                          {t('swap.title')}
+                        </Text>
+                        <SwapPoolItemIcon fill={colors.buttonPrimary} />
+                      </HStack>
+                    </Button>
+                  </HStack>
                   <Button display="block" width="100%" onClick={onClickDeposit}>
                     {t('button.deposit')}
                   </Button>
