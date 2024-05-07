@@ -1,7 +1,7 @@
 import {
   ApiV3PoolInfoStandardItem,
   ApiV3PoolInfoConcentratedItem,
-  CreatePoolAddress,
+  CreateCpmmPoolAddress,
   Percent,
   ApiV3Token,
   FormatFarmInfoOutV6,
@@ -13,7 +13,6 @@ import { useAppStore } from './useAppStore'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
 import { txStatusSubject } from '@/hooks/toast/useTxStatus'
 import { getDefaultToastData, transformProcessData, handleMultiTxToast } from '@/hooks/toast/multiToastUtil'
-import { PublicKey } from '@solana/web3.js'
 import { TxCallbackProps } from '@/types/tx'
 import { formatLocaleStr } from '@/utils/numberish/formatter'
 
@@ -27,7 +26,7 @@ import Decimal from 'decimal.js'
 import { getComputeBudgetConfig } from '@/utils/tx/computeBudget'
 
 interface LiquidityStore {
-  newCreatedPool?: CreatePoolAddress
+  newCreatedPool?: CreateCpmmPoolAddress
   addLiquidityAct: (
     params: {
       poolInfo: ApiV3PoolInfoStandardItem
@@ -66,7 +65,6 @@ interface LiquidityStore {
   createPoolAct: (
     params: {
       pool: {
-        marketId: string
         mintA: ApiV3Token
         mintB: ApiV3Token
       }
@@ -280,7 +278,6 @@ export const useLiquidityStore = createStore<LiquidityStore>(
       if (!raydium) return ''
       const computeBudgetConfig = await getComputeBudgetConfig()
 
-      /*
       const { execute, extInfo } = await raydium.liquidity.createCpmmPool({
         programId: programIdConfig.CREATE_POOL_PROGRAM,
         poolFeeAccount: programIdConfig.CREATE_POOL_FEE_ACC,
@@ -293,35 +290,35 @@ export const useLiquidityStore = createStore<LiquidityStore>(
           useSOLBalance: true
         },
         associatedOnly: false,
-        txVersion
-      })
-      */
-
-      const { execute, extInfo } = await raydium.liquidity.createPoolV4({
-        programId: programIdConfig.AMM_V4,
-        marketInfo: {
-          marketId: new PublicKey(pool.marketId),
-          programId: programIdConfig.OPEN_BOOK_PROGRAM
-        },
-        baseMintInfo: {
-          mint: new PublicKey(pool.mintA.address),
-          decimals: pool.mintA.decimals
-        },
-        quoteMintInfo: {
-          mint: new PublicKey(pool.mintB.address),
-          decimals: pool.mintB.decimals
-        },
-        baseAmount: new BN(baseAmount),
-        quoteAmount: new BN(quoteAmount),
-        startTime: new BN((startTime ? Number(startTime) : Date.now() + 2 * 60 * 1000) / 1000),
-        ownerInfo: {
-          useSOLBalance: true
-        },
-        associatedOnly: false,
         txVersion,
-        feeDestinationId: new PublicKey('7YttLkHDoNj9wyDur5pM1ejNaAvT9X4eqaYcHQqtj2G5'),
         computeBudgetConfig
       })
+
+      // const { execute, extInfo } = await raydium.liquidity.createPoolV4({
+      //   programId: programIdConfig.AMM_V4,
+      //   marketInfo: {
+      //     marketId: new PublicKey(pool.marketId),
+      //     programId: programIdConfig.OPEN_BOOK_PROGRAM
+      //   },
+      //   baseMintInfo: {
+      //     mint: new PublicKey(pool.mintA.address),
+      //     decimals: pool.mintA.decimals
+      //   },
+      //   quoteMintInfo: {
+      //     mint: new PublicKey(pool.mintB.address),
+      //     decimals: pool.mintB.decimals
+      //   },
+      //   baseAmount: new BN(baseAmount),
+      //   quoteAmount: new BN(quoteAmount),
+      //   startTime: new BN((startTime ? Number(startTime) : Date.now() + 2 * 60 * 1000) / 1000),
+      //   ownerInfo: {
+      //     useSOLBalance: true
+      //   },
+      //   associatedOnly: false,
+      //   txVersion,
+      //   feeDestinationId: new PublicKey('7YttLkHDoNj9wyDur5pM1ejNaAvT9X4eqaYcHQqtj2G5'),
+      //   computeBudgetConfig
+      // })
 
       const meta = getTxMeta({
         action: 'createPool',

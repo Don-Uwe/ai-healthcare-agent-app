@@ -5,7 +5,7 @@ import FocusTrap from 'focus-trap-react'
 import { usePopper } from 'react-popper'
 import { useTranslation } from 'react-i18next'
 import { PublicKey } from '@solana/web3.js'
-import { ApiV3Token, RAYMint, TokenInfo } from '@raydium-io/raydium-sdk-v2'
+import { ApiV3Token, RAYMint, TokenInfo, solToWSolToken } from '@raydium-io/raydium-sdk-v2'
 import { DatePick, HourPick, MinutePick } from '@/components/DateTimePicker'
 import DecimalInput from '@/components/DecimalInput'
 import Button from '@/components/Button'
@@ -74,24 +74,21 @@ export default function Initialize() {
     [inputMint, outputMint]
   )
 
-  //TODO: createPoolAct
   const onInitializeClick = () => {
     onLoading()
-    // createPoolAct({
-    //   pool: {
-    // marketId: marketId!,
-    // mintA: baseToken!,
-    // mintB: quoteToken!
-    //   },
-    //   baseAmount: new Decimal(tokenAmount.base).mul(10 ** baseToken!.decimals).toString(),
-    //   quoteAmount: new Decimal(tokenAmount.quote).mul(10 ** quoteToken!.decimals).toString(),
-    //   startTime: startDate,
-    //   onError: onTxError,
-    //   onFinally: offLoading
-    // })
+    createPoolAct({
+      pool: {
+        mintA: solToWSolToken(baseToken!),
+        mintB: solToWSolToken(quoteToken!)
+      },
+      baseAmount: new Decimal(tokenAmount.base).mul(10 ** baseToken!.decimals).toString(),
+      quoteAmount: new Decimal(tokenAmount.quote).mul(10 ** quoteToken!.decimals).toString(),
+      startTime: startDate,
+      onError: onTxError,
+      onFinally: offLoading
+    })
   }
 
-  // TODO: need initial price value
   return (
     <VStack borderRadius="20px" w="full" bg={colors.backgroundLight} p={6} spacing={5}>
       {/* initial liquidity */}
@@ -133,7 +130,7 @@ export default function Initialize() {
           postFixInField
           variant="filledDark"
           readonly
-          value={'0'}
+          value={currentPrice}
           inputSx={{ pl: '4px', fontWeight: 500, fontSize: ['md', 'xl'] }}
           ctrSx={{ bg: colors.backgroundDark, borderRadius: 'xl', pr: '14px', py: '6px' }}
           inputGroupSx={{ w: '100%', bg: colors.backgroundDark, alignItems: 'center', borderRadius: 'xl' }}
@@ -287,7 +284,7 @@ export default function Initialize() {
           {t('create_standard_pool.button_initialize_liquidity_pool')}
         </Button>
       </HStack>
-      {newCreatedPool ? <CreateSuccessModal ammId={newCreatedPool.ammId.toString()} /> : null}
+      {newCreatedPool ? <CreateSuccessModal ammId={newCreatedPool.poolId.toString()} /> : null}
       <TxErrorModal description="Failed to create pool. Please try again later." isOpen={isTxError} onClose={offTxError} />
     </VStack>
   )

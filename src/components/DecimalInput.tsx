@@ -169,6 +169,7 @@ function DecimalInput(props: Props) {
             <NumberInputField
               px={'0px'}
               sx={inputSx}
+              cursor={readonly ? 'default' : undefined}
               id={id}
               name={name}
               placeholder={placeholder}
