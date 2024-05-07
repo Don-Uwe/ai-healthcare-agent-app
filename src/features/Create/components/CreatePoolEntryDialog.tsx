@@ -51,8 +51,7 @@ export function CreatePoolEntryDialog({
     router.push({
       pathname: to,
       query: {
-        ...router.query,
-        ...(isStandardAmm ? { mode: 'no_id' } : {})
+        ...router.query
       }
     })
   }, [router, type])

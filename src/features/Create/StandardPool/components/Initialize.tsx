@@ -1,10 +1,11 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useCallback, useState, useRef } from 'react'
 import { Box, Flex, HStack, Text, VStack, useDisclosure } from '@chakra-ui/react'
 import shallow from 'zustand/shallow'
 import FocusTrap from 'focus-trap-react'
 import { usePopper } from 'react-popper'
 import { useTranslation } from 'react-i18next'
-
+import { PublicKey } from '@solana/web3.js'
+import { ApiV3Token, RAYMint, TokenInfo } from '@raydium-io/raydium-sdk-v2'
 import { DatePick, HourPick, MinutePick } from '@/components/DateTimePicker'
 import DecimalInput from '@/components/DecimalInput'
 import Button from '@/components/Button'
@@ -13,27 +14,23 @@ import Tabs from '@/components/Tabs'
 import { QuestionToolTip } from '@/components/QuestionToolTip'
 import HorizontalSwitchSmallIcon from '@/icons/misc/HorizontalSwitchSmallIcon'
 import AddLiquidityPlus from '@/icons/misc/AddLiquidityPlus'
-import { useLiquidityStore } from '@/store'
+import { useLiquidityStore, useTokenStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
-import { wSolToSolString, wsolToSolToken } from '@/utils/token'
+import { wSolToSolString } from '@/utils/token'
 import { TxErrorModal } from '@/components/Modal/TxErrorModal'
 
 import CreateSuccessModal from './CreateSuccessModal'
 import useInitPoolSchema from '../hooks/useInitPoolSchema'
-import useTokenInfo from '@/hooks/token/useTokenInfo'
 
 import Decimal from 'decimal.js'
 import dayjs from 'dayjs'
 
-type InitializeProps = {
-  marketId?: string
-  mintA?: string
-  mintB?: string
-  onGoBack?: () => void
-}
-
-export default function Initialize({ marketId, mintA, mintB }: InitializeProps) {
+export default function Initialize() {
   const { t } = useTranslation()
+  const tokenMap = useTokenStore((s) => s.tokenMap)
+  const [inputMint, setInputMint] = useState<string>(PublicKey.default.toBase58())
+  const [outputMint, setOutputMint] = useState<string>(RAYMint.toBase58())
+  const [baseToken, quoteToken] = [tokenMap.get(inputMint), tokenMap.get(outputMint)]
 
   const [createPoolAct, newCreatedPool] = useLiquidityStore((s) => [s.createPoolAct, s.newCreatedPool], shallow)
 
@@ -47,12 +44,6 @@ export default function Initialize({ marketId, mintA, mintB }: InitializeProps) 
   const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null)
   const popper = usePopper(popperRef.current, popperElement, {
     placement: 'top-start'
-  })
-  const { tokenInfo: baseToken } = useTokenInfo({
-    mint: mintA
-  })
-  const { tokenInfo: quoteToken } = useTokenInfo({
-    mint: mintB
   })
   const [tokenAmount, setTokenAmount] = useState<{ base: string; quote: string }>({ base: '', quote: '' })
   const [baseSymbol, quoteSymbol] = [wSolToSolString(baseToken?.symbol), wSolToSolString(quoteToken?.symbol)]
@@ -69,22 +60,38 @@ export default function Initialize({ marketId, mintA, mintB }: InitializeProps) 
 
   useEffect(() => () => useLiquidityStore.setState({ newCreatedPool: undefined }), [])
 
+  const handleSelectToken = useCallback(
+    (token: TokenInfo | ApiV3Token, side?: 'input' | 'output') => {
+      if (side === 'input') {
+        setInputMint(token.address)
+        setOutputMint((mint) => (token.address === mint ? '' : mint))
+      }
+      if (side === 'output') {
+        setOutputMint(token.address)
+        setInputMint((mint) => (token.address === mint ? '' : mint))
+      }
+    },
+    [inputMint, outputMint]
+  )
+
+  //TODO: createPoolAct
   const onInitializeClick = () => {
     onLoading()
-    createPoolAct({
-      pool: {
-        marketId: marketId!,
-        mintA: baseToken!,
-        mintB: quoteToken!
-      },
-      baseAmount: new Decimal(tokenAmount.base).mul(10 ** baseToken!.decimals).toString(),
-      quoteAmount: new Decimal(tokenAmount.quote).mul(10 ** quoteToken!.decimals).toString(),
-      startTime: startDate,
-      onError: onTxError,
-      onFinally: offLoading
-    })
+    // createPoolAct({
+    //   pool: {
+    // marketId: marketId!,
+    // mintA: baseToken!,
+    // mintB: quoteToken!
+    //   },
+    //   baseAmount: new Decimal(tokenAmount.base).mul(10 ** baseToken!.decimals).toString(),
+    //   quoteAmount: new Decimal(tokenAmount.quote).mul(10 ** quoteToken!.decimals).toString(),
+    //   startTime: startDate,
+    //   onError: onTxError,
+    //   onFinally: offLoading
+    // })
   }
 
+  // TODO: need initial price value
   return (
     <VStack borderRadius="20px" w="full" bg={colors.backgroundLight} p={6} spacing={5}>
       {/* initial liquidity */}
@@ -94,31 +101,48 @@ export default function Initialize({ marketId, mintA, mintB }: InitializeProps) 
         </Text>
         <Flex direction="column" w="full" align={'center'}>
           <TokenInput
-            ctrSx={{ w: '100%', textColor: colors.textSecondary }}
-            topLeftLabel={t('create_standard_pool.base_token_initial_liquidity')}
-            disableSelectToken
-            hideControlButton
+            ctrSx={{ w: '100%', textColor: colors.textTertiary }}
+            topLeftLabel={t('common.base_token')}
+            token={baseToken}
             value={tokenAmount.base}
             onChange={(val) => setTokenAmount((prev) => ({ ...prev, base: val }))}
-            token={baseToken ? wsolToSolToken(baseToken) : undefined}
+            onTokenChange={(token) => handleSelectToken(token, 'input')}
           />
           <Box my={'-10px'} zIndex={1}>
             <AddLiquidityPlus />
           </Box>
           <TokenInput
-            ctrSx={{ w: '100%', textColor: colors.textSecondary }}
-            topLeftLabel={t('create_standard_pool.quote_token_initial_liquidity')}
-            disableSelectToken
-            hideControlButton
-            onChange={(val) => setTokenAmount((prev) => ({ ...prev, quote: val }))}
+            ctrSx={{ w: '100%', textColor: colors.textTertiary }}
+            topLeftLabel={t('common.quote_token')}
+            token={quoteToken}
             value={tokenAmount.quote}
-            token={quoteToken ? wsolToSolToken(quoteToken) : undefined}
+            onChange={(val) => setTokenAmount((prev) => ({ ...prev, quote: val }))}
+            onTokenChange={(token) => handleSelectToken(token, 'output')}
           />
         </Flex>
       </Flex>
 
-      {/* initial price */}
       <Flex direction="column" w="full" align={'flex-start'} gap={3}>
+        <HStack gap={1}>
+          <Text fontWeight="medium" fontSize="sm">
+            {t('clmm.initial_price')}
+          </Text>
+          <QuestionToolTip iconType="question" label={t('create_standard_pool.initial_price_tooltip')} />
+        </HStack>
+        <DecimalInput
+          postFixInField
+          variant="filledDark"
+          readonly
+          value={'0'}
+          inputSx={{ pl: '4px', fontWeight: 500, fontSize: ['md', 'xl'] }}
+          ctrSx={{ bg: colors.backgroundDark, borderRadius: 'xl', pr: '14px', py: '6px' }}
+          inputGroupSx={{ w: '100%', bg: colors.backgroundDark, alignItems: 'center', borderRadius: 'xl' }}
+          postfix={
+            <Text variant="label" size="sm" whiteSpace="nowrap" color={colors.textTertiary}>
+              {baseIn ? quoteSymbol : baseSymbol}/{baseIn ? baseSymbol : quoteSymbol}
+            </Text>
+          }
+        />
         <HStack spacing={1}>
           <Text fontWeight="400" fontSize="sm" color={colors.textTertiary}>
             {t('create_standard_pool.current_price')}:
@@ -252,7 +276,7 @@ export default function Initialize({ marketId, mintA, mintB }: InitializeProps) 
             {/* TODO need creation fee */}
             {t('create_standard_pool.pool_creation_fee_note', { subject: `${''}` })}
           </Text>
-          <QuestionToolTip iconType="info" label={t('create_standard_pool.pool_creation_fee_tooltip')} />
+          <QuestionToolTip iconType="question" label={t('create_standard_pool.pool_creation_fee_tooltip')} />
         </HStack>
         <Text color="red" my="-2">
           {error}
