@@ -16,7 +16,7 @@ import HorizontalSwitchSmallIcon from '@/icons/misc/HorizontalSwitchSmallIcon'
 import AddLiquidityPlus from '@/icons/misc/AddLiquidityPlus'
 import { useLiquidityStore, useTokenStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
-import { wSolToSolString } from '@/utils/token'
+import { wSolToSolString, wsolToSolToken } from '@/utils/token'
 import { TxErrorModal } from '@/components/Modal/TxErrorModal'
 
 import CreateSuccessModal from './CreateSuccessModal'
@@ -103,7 +103,7 @@ export default function Initialize() {
           <TokenInput
             ctrSx={{ w: '100%', textColor: colors.textTertiary }}
             topLeftLabel={t('common.base_token')}
-            token={baseToken}
+            token={baseToken ? wsolToSolToken(baseToken) : undefined}
             value={tokenAmount.base}
             onChange={(val) => setTokenAmount((prev) => ({ ...prev, base: val }))}
             onTokenChange={(token) => handleSelectToken(token, 'input')}
@@ -114,7 +114,7 @@ export default function Initialize() {
           <TokenInput
             ctrSx={{ w: '100%', textColor: colors.textTertiary }}
             topLeftLabel={t('common.quote_token')}
-            token={quoteToken}
+            token={quoteToken ? wsolToSolToken(quoteToken) : undefined}
             value={tokenAmount.quote}
             onChange={(val) => setTokenAmount((prev) => ({ ...prev, quote: val }))}
             onTokenChange={(token) => handleSelectToken(token, 'output')}
