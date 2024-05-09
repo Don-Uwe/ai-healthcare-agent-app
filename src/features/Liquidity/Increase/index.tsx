@@ -19,6 +19,7 @@ import Stake from './Stake'
 import PoolInfo from './components/PoolInfo'
 import PositionBalance from './components/PositionBalance'
 import StakeableHint from './components/StakeableHint'
+import useFetchFarmByLpMint from '@/hooks/farm/useFetchFarmByLpMint'
 
 export type IncreaseLiquidityPageQuery = {
   pool_id?: string
@@ -52,6 +53,7 @@ export default function Increase() {
     idList: [urlPoolId]
   })
   const pool = formattedData?.[0]
+  const { formattedData: farms } = useFetchFarmByLpMint({ poolLp: pool?.lpMint.address })
   const isPoolNotFound = !!tokenPair.base && !!tokenPair.quote && !isLoading && !pool
 
   const lpBalance = getTokenBalanceUiAmount({
@@ -62,7 +64,7 @@ export default function Increase() {
   const stakedData = new Decimal(pool ? lpBasedData.get(pool.lpMint.address)?.totalLpAmount || '0' : '0')
     .div(10 ** (pool?.lpMint.decimals ?? 0))
     .toString()
-  const hasFarmInfo = pool ? pool.farmOngoingCount > 0 : false
+  const hasFarmInfo = pool ? pool.farmOngoingCount > 0 || !!farms.find((f) => f.isOngoing) : false
 
   increaseTabOptions[1].disabled = !hasFarmInfo
   increaseTabOptions[1].tooltipProps = !hasFarmInfo ? { label: t('liquidity.no_active_farm'), hasArrow: false } : undefined
