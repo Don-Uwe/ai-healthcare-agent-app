@@ -284,7 +284,7 @@ function SettingsMenuModalContent(props: { isOpen: boolean; triggerRef: React.Re
   const getTriggerRect = () => props.triggerRef.current?.getBoundingClientRect()
 
   const { data } = useSwr(
-    `${urlConfigs.BASE_HOST}${urlConfigs.VERSION}`,
+    `${urlConfigs.NEW_BASE_HOST}${urlConfigs.VERSION}`,
     (url) =>
       axios.get<
         any,

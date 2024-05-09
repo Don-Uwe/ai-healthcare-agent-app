@@ -1,4 +1,4 @@
-import { DEV_API_URLS, TokenInfo, ApiV3Token } from '@raydium-io/raydium-sdk-v2'
+import { TokenInfo, ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 import axios from '@/api/axios'
 import { PublicKey, Connection, AccountInfo } from '@solana/web3.js'
 import {
@@ -136,10 +136,11 @@ export const getTokenInfo = async ({
   let isOnlineFetched = false
 
   try {
-    const { data } = await axios.get<TokenInfo>(
-      DEV_API_URLS.BASE_HOST + useAppStore.getState().urlConfigs.TOKEN_INFO.replace('{mint}', mint.toString()),
+    const { data: dataList } = await axios.get<TokenInfo[]>(
+      useAppStore.getState().urlConfigs.NEW_BASE_HOST + useAppStore.getState().urlConfigs.MINT_INFO_ID + `?mints=${mint.toString()}`,
       { skipError: true }
     )
+    const data = dataList?.[0]
 
     if (data) {
       data.priority = 2

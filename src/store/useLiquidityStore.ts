@@ -323,7 +323,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
         poolInfo: pool,
         amount,
         baseIn,
-        slippage: new Percent(slippage * 10000, 100000)
+        slippage: slippage * 100
       })
 
       return {

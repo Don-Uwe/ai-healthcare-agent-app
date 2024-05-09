@@ -13,7 +13,6 @@ import {
   RaydiumLoadParams,
   API_URLS,
   API_URL_CONFIG,
-  DEV_API_URLS,
   ProgramIdConfig,
   ALL_PROGRAM_ID,
   JupTokenType,
@@ -136,12 +135,18 @@ const appInitState = {
   rpcs: [],
   urlConfigs: {
     ...API_URLS,
-    ...(!isProdEnv()
-      ? {
-          BASE_HOST: DEV_API_URLS.BASE_HOST,
-          SWAP_HOST: DEV_API_URLS.SWAP_HOST
-        }
-      : {})
+    NEW_BASE_HOST: 'https://api-v3.asdf1234.win',
+    VERSION: '/main/version',
+    RPCS: '/main/rpcs',
+    CHAIN_TIME: '/main/chain-time',
+    INFO: '/main/info',
+    MIGRATE_CONFIG: '/main/migrate-lp',
+    AMM_V3_CONFIG: '/main/clmm-config',
+
+    TOKEN_LIST: '/mint/list',
+    MINT_PRICE: '/mint/price',
+
+    IDO_KEYS: '/ido/key/ids'
   },
   programIdConfig: ALL_PROGRAM_ID,
   jupTokenType: JupTokenType.Strict,
@@ -174,6 +179,7 @@ export const useAppStore = createStore<AppState>(
       const connection = payload.connection || new Connection(rpcNodeUrl)
       set({ initialing: true }, false, action)
       const isDev = window.location.host === 'localhost:3002'
+
       const raydium = await Raydium.load({
         ...payload,
         connection,
@@ -230,7 +236,7 @@ export const useAppStore = createStore<AppState>(
     fetchChainTimeAct: () => {
       const { urlConfigs } = get()
       axios
-        .get(`${urlConfigs.BASE_HOST}${urlConfigs.CHAIN_TIME}`)
+        .get(`${urlConfigs.NEW_BASE_HOST}${urlConfigs.CHAIN_TIME}`)
         .then((data) => {
           set({ chainTimeOffset: isNaN(data?.data.offset) ? 0 : 16 * 1000 }, false, { type: 'fetchChainTimeAct' })
         })
@@ -257,7 +263,7 @@ export const useAppStore = createStore<AppState>(
       try {
         const {
           data: { rpcs }
-        } = await axios.get<{ rpcs: RpcItem[] }>(urlConfigs.BASE_HOST + urlConfigs.RPCS)
+        } = await axios.get<{ rpcs: RpcItem[] }>(urlConfigs.NEW_BASE_HOST + urlConfigs.RPCS)
         set({ rpcs }, false, { type: 'fetchRpcsAct' })
 
         let i = 0
