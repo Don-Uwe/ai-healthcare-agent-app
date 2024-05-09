@@ -241,9 +241,15 @@ export const useLiquidityStore = createStore<LiquidityStore>(
 
       if (!raydium) return ''
       const { poolInfo, lpAmount } = params
+
+      const ratioA = new Decimal(poolInfo.mintAmountA).div(poolInfo.lpAmount)
+      const ratioB = new Decimal(poolInfo.mintAmountB).div(poolInfo.lpAmount)
+
       const { execute } = await raydium.liquidity.withdrawCpmmLiquidity({
         poolInfo,
         lpAmount: new BN(lpAmount),
+        amountMintA: new BN(new Decimal(lpAmount).mul(ratioA).toFixed(0, Decimal.ROUND_DOWN)),
+        amountMintB: new BN(new Decimal(lpAmount).mul(ratioB).toFixed(0, Decimal.ROUND_DOWN)),
         txVersion
       })
 
@@ -430,11 +436,12 @@ export const useLiquidityStore = createStore<LiquidityStore>(
           maxOutput: '0',
           liquidity: new BN(0)
         }
+
       const r = raydium.liquidity.computePairAmount({
         poolInfo: pool,
         amount,
         baseIn,
-        slippage: new Percent(slippage * 10000, 100000)
+        slippage: slippage * 100
       })
 
       return {
