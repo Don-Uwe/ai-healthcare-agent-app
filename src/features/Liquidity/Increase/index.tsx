@@ -53,7 +53,10 @@ export default function Increase() {
     idList: [urlPoolId]
   })
   const pool = formattedData?.[0]
-  const { formattedData: farms } = useFetchFarmByLpMint({ poolLp: pool?.lpMint.address })
+  const { formattedData: farms } = useFetchFarmByLpMint({
+    shouldFetch: !!pool && pool.farmOngoingCount === 0,
+    poolLp: pool?.lpMint.address
+  })
   const isPoolNotFound = !!tokenPair.base && !!tokenPair.quote && !isLoading && !pool
 
   const lpBalance = getTokenBalanceUiAmount({
