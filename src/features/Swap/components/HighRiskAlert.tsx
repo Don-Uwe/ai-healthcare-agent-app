@@ -3,7 +3,17 @@ import { useTranslation, Trans } from 'react-i18next'
 import CircleInfo from '@/icons/misc/CircleInfo'
 import { colors } from '@/theme/cssVariables'
 
-export default function HighRiskAlert({ isOpen, onClose, onConfirm }: { isOpen: boolean; onClose: () => void; onConfirm: () => void }) {
+export default function HighRiskAlert({
+  isOpen,
+  percent,
+  onClose,
+  onConfirm
+}: {
+  isOpen: boolean
+  onClose: () => void
+  onConfirm: () => void
+  percent: number
+}) {
   const { t } = useTranslation()
 
   return (
@@ -19,7 +29,7 @@ export default function HighRiskAlert({ isOpen, onClose, onConfirm }: { isOpen: 
             <Trans
               i18nKey="swap.alert_high_price_warn_desc" // optional -> fallbacks to defaults if not provided
               components={{ sub: <Text display="inline-block" color={colors.textPink} variant="title" /> }}
-              values={{ percent: '20%' }}
+              values={{ percent: `${percent}%` }}
             />
           </Text>
         </ModalBody>

@@ -23,7 +23,8 @@ import {
   MultiTxV0BuildData,
   Owner,
   AvailabilityCheckAPI3,
-  TxVersion
+  TxVersion,
+  TokenInfo
 } from '@raydium-io/raydium-sdk-v2'
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base'
 import { Wallet } from '@solana/wallet-adapter-react'
@@ -196,16 +197,25 @@ export const useAppStore = createStore<AppState>(
           raydium.token.mintGroup.official.add(t.address)
         }
       })
+      const tokenMap = new Map(Array.from(raydium.token.tokenMap))
+      const tokenList = (JSON.parse(JSON.stringify(raydium.token.tokenList)) as TokenInfo[]).map((t) => {
+        if (t.type === 'jupiter') {
+          const newInfo = { ...t, logoURI: t.logoURI ? `https://wsrv.nl/?w=48&h=48&url=${t.logoURI}` : t.logoURI }
+          tokenMap.set(t.address, newInfo)
+          return newInfo
+        }
+        return t
+      })
       useTokenStore.setState(
         {
-          tokenList: raydium.token.tokenList,
-          displayTokenList: raydium.token.tokenList.filter((token) => {
+          tokenList,
+          displayTokenList: tokenList.filter((token) => {
             return (
               (displayTokenSettings.official && raydium.token.mintGroup.official.has(token.address)) ||
               (displayTokenSettings.jup && raydium.token.mintGroup.jup.has(token.address))
             )
           }),
-          tokenMap: raydium.token.tokenMap,
+          tokenMap,
           mintGroup: raydium.token.mintGroup
         },
         false,

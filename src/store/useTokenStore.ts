@@ -86,10 +86,19 @@ export const useTokenStore = createStore<TokenStore>(
             raydium.token.mintGroup.official.add(t.address)
           }
         })
+        const tokenMap = new Map(Array.from(raydium.token.tokenMap))
+        const tokenList = (JSON.parse(JSON.stringify(raydium.token.tokenList)) as TokenInfo[]).map((t) => {
+          if (t.type === 'jupiter') {
+            const newInfo = { ...t, logoURI: t.logoURI ? `https://wsrv.nl/?w=48&h=48&url=${t.logoURI}` : t.logoURI }
+            tokenMap.set(t.address, newInfo)
+            return newInfo
+          }
+          return t
+        })
         set(
           {
-            tokenList: raydium.token.tokenList,
-            tokenMap: raydium.token.tokenMap,
+            tokenList,
+            tokenMap,
             mintGroup: raydium.token.mintGroup
           },
           false,
