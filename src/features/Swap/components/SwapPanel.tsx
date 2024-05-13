@@ -342,7 +342,12 @@ export function SwapPanel({
         {swapDisabled ? t('common.disabled') : swapError || t('swap.title')}
         {isPoolNotOpenError ? ` ${dayjs(Number(openTime) * 1000).format('YYYY/M/D HH:mm:ss')}` : null}
       </ConnectedButton>
-      <HighRiskAlert isOpen={isHightRiskOpen} onClose={offHightRiskOpen} onConfirm={handleHighRiskConfirm} />
+      <HighRiskAlert
+        isOpen={isHightRiskOpen}
+        onClose={offHightRiskOpen}
+        onConfirm={handleHighRiskConfirm}
+        percent={computeResult?.priceImpactPct ?? 0}
+      />
     </>
   )
 }
