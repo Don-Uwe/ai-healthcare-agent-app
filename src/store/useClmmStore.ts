@@ -264,7 +264,6 @@ export const useClmmStore = createStore<ClmmState>(
         return { txId: '' }
       }
       if (!poolInfo) return { txId: '' }
-
       try {
         const computeBudgetConfig = await getComputeBudgetConfig()
         const buildData = await raydium.clmm.openPositionFromBase({

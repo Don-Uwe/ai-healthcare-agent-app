@@ -38,7 +38,7 @@ export default function useFetchFarmInfoById<T = FormatFarmInfoOut>(props: {
   )
   const url = !readyIdList.length || cacheDataList.length === readyIdList.length || !shouldFetch ? null : host + farmInfoUrl
 
-  const { data, isLoading, error, mutate, ...rest } = useSWR(url ? url.replace('{ids}', readyIdList.join(',')) : url, fetcher, {
+  const { data, isLoading, error, mutate, ...rest } = useSWR(url ? url + `?ids=${readyIdList.join(',')}` : url, fetcher, {
     dedupingInterval: refreshInterval,
     focusThrottleInterval: refreshInterval,
     refreshInterval

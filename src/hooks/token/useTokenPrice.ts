@@ -29,7 +29,7 @@ const prepareFetchList = new Set<string>([
 export default function useTokenPrice(props: { mintList: (string | PublicKey | undefined)[]; refreshInterval?: number; timeout?: number }) {
   const { mintList, refreshInterval = 3 * MINUTE_MILLISECONDS, timeout = 800 } = props || {}
   const tokenPriceRecord = useTokenStore((s) => s.tokenPriceRecord)
-  const BASE_HOST = useAppStore((s) => s.urlConfigs.NEW_BASE_HOST)
+  const BASE_HOST = useAppStore((s) => s.urlConfigs.BASE_HOST)
   const MINT_PRICE = useAppStore((s) => s.urlConfigs.MINT_PRICE)
   const [startFetch, setStartFetch] = useState(timeout === 0)
   const [refreshTag, setRefreshTag] = useState(Date.now())

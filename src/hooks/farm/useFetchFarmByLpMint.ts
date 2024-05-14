@@ -25,11 +25,11 @@ export default function useFetchFarmByLpMint(
   const [host, farmLpInfoUrl] = useAppStore((s) => [s.urlConfigs.BASE_HOST, s.urlConfigs.FARM_LP_INFO], shallow)
   const url = !poolLp || !shouldFetch ? null : host + farmLpInfoUrl
 
-  const { data, isLoading, error, ...rest } = useSWR(
-    url ? url.replace('{pool_lp}', poolLp.toString()).replace('{page_size}', String(perPage)).replace('{page}', String(page)) : url,
-    fetcher,
-    { dedupingInterval: refreshInterval, focusThrottleInterval: refreshInterval, refreshInterval }
-  )
+  const { data, isLoading, error, ...rest } = useSWR(url ? url + `?lp=${poolLp}&page=${page}&pageSize=${perPage}` : url, fetcher, {
+    dedupingInterval: refreshInterval,
+    focusThrottleInterval: refreshInterval,
+    refreshInterval
+  })
 
   const orgData =
     (

@@ -8,6 +8,7 @@ import useGlobalToast from '../hooks/toast/useGlobalToast'
 import useTxStatus from '../hooks/toast/useTxStatus'
 import useTokenSetting from '../hooks/token/useTokenSetting'
 import useInitMobileDetector from '@/hooks/app/useInitMobileDetector'
+import AppVersion from './AppVersion'
 
 export default function Content({ children, ...props }: PropsWithChildren) {
   // data related hooks
@@ -21,5 +22,10 @@ export default function Content({ children, ...props }: PropsWithChildren) {
   useTxStatus()
   useGlobalToast()
   useWindowDimensions()
-  return <>{children}</>
+  return (
+    <>
+      <AppVersion />
+      {children}
+    </>
+  )
 }

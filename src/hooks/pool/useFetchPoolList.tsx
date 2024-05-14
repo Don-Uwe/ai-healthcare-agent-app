@@ -49,14 +49,10 @@ export default function useFetchPoolList<T extends PoolFetchType>(props?: {
   } = props || {}
   const [host, listUrl] = useAppStore((s) => [s.urlConfigs.BASE_HOST, s.urlConfigs.POOL_LIST], shallow)
 
-  const url = (host + listUrl)
-    .replace('{type}', showFarms ? `${type}_farm` : type)
-    .replace('{sort}', sort)
-    .replace('{order}', order)
-    .replace('{page_size}', String(pageSize))
+  const url = host + listUrl + `?poolType=${showFarms ? `${type}Farm` : type}&poolSortField=${sort}&sortType=${order}&pageSize=${pageSize}`
 
   const { data, setSize, error, ...swrProps } = useSWRInfinite(
-    (index) => (shouldFetch ? [url.replace('{page}', String(index + 1)), refreshTag] : null),
+    (index) => (shouldFetch ? [url + `&page=${index + 1}`, refreshTag] : null),
     fetcher,
     {
       revalidateFirstPage: false,

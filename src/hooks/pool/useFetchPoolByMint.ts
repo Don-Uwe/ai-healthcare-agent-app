@@ -55,24 +55,17 @@ export default function useFetchPoolByMint<T extends PoolFetchType>(
   )
 
   const [mint1, mint2] = [propMint1 ? solToWSol(propMint1).toBase58() : propMint1, propMint2 ? solToWSol(propMint2).toBase58() : propMint2]
-  const [host, mintUrl, mintsUrl] = useAppStore(
-    (s) => [s.urlConfigs.BASE_HOST, s.urlConfigs.POOL_SEARCH_MINT, s.urlConfigs.POOL_SEARCH_MINT_2],
-    shallow
-  )
+  const [host, mintUrl] = useAppStore((s) => [s.urlConfigs.BASE_HOST, s.urlConfigs.POOL_SEARCH_MINT], shallow)
   const [baseMint, quoteMint] = mint2 && mint1 > mint2 ? [mint2, mint1] : [mint1, mint2]
-  const url = (!mint1 && !mint2) || !shouldFetch ? null : host + (quoteMint ? mintsUrl : mintUrl)
+  const url = (!mint1 && !mint2) || !shouldFetch ? null : host + mintUrl
 
   const { data, setSize, error, ...swrProps } = useSWRInfinite(
     (index) =>
       url
-        ? url
-            .replace('{mint1}', baseMint)
-            .replace('{mint2}', quoteMint)
-            .replace('{type}', showFarms ? `${type}_farm` : type)
-            .replace('{sort}', sort)
-            .replace('{order}', order)
-            .replace('{page_size}', String(pageSize))
-            .replace('{page}', String(index + 1))
+        ? url +
+          `?mint1=${baseMint}&mint2=${quoteMint}&poolType=${
+            showFarms ? `${type}Farm` : type
+          }&poolSortField=${sort}&sortType=${order}&pageSize=${pageSize}&page=${index + 1}`
         : url,
     fetcher,
     {

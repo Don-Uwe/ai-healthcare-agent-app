@@ -5,6 +5,7 @@ function useRefreshChainTime() {
   const [fetchChainTimeAct, fetchBlockSlotCountAct, raydium] = useAppStore((s) => [
     s.fetchChainTimeAct,
     s.fetchBlockSlotCountAct,
+    s.checkAppVersionAct,
     s.raydium
   ])
 

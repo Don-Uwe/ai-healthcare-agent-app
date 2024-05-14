@@ -67,7 +67,11 @@
     "user_added": "User Added",
     "beta_tooltip": "This site is in Beta, updates are ongoing. Use at your own risk. <0>Share feedback</0>, earn RAY.",
     "days": "Days",
-    "sort_by": "Sort By"
+    "sort_by": "Sort By",
+    "app_version_available": "New version available",
+    "refresh_update": "Refresh the page to update and use the app.",
+    "refresh": "Refresh",
+    "update_later": "Update later"
   },
   "button": {
     "deposit": "Deposit",

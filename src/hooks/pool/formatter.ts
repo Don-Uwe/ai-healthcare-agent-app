@@ -43,11 +43,13 @@ export function formatPoolData(pool: ApiV3PoolInfoItem): FormattedPoolInfoItem {
             percent: toTotalPercent(aprData.feeApr ?? 0, aprData.apr ?? 0),
             isTradingFee: true
           },
-          ...aprData.rewardApr.map((r, idx) => ({
-            apr: r,
-            percent: toTotalPercent(r, aprData.apr ?? 0),
-            token: { ...pool.rewardDefaultInfos[idx].mint }
-          }))
+          ...aprData.rewardApr
+            .filter((_, idx) => !!pool.rewardDefaultInfos[idx])
+            .map((r, idx) => ({
+              apr: r,
+              percent: toTotalPercent(r, aprData.apr ?? 0),
+              token: { ...pool.rewardDefaultInfos[idx].mint }
+            }))
         ]
       }
     },

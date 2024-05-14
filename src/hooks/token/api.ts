@@ -137,7 +137,7 @@ export const getTokenInfo = async ({
 
   try {
     const { data: dataList } = await axios.get<TokenInfo[]>(
-      useAppStore.getState().urlConfigs.NEW_BASE_HOST + useAppStore.getState().urlConfigs.MINT_INFO_ID + `?mints=${mint.toString()}`,
+      useAppStore.getState().urlConfigs.BASE_HOST + useAppStore.getState().urlConfigs.MINT_INFO_ID + `?mints=${mint.toString()}`,
       { skipError: true }
     )
     const data = dataList?.[0]

@@ -8,7 +8,7 @@ const fetcher = (url: string) => axios.get<{ tvl: number; volume24: number }>(ur
 export default function useFetchMainInfo(props: { refreshInterval?: number }) {
   const { refreshInterval = 1000 * 60 * 15 } = props || {}
 
-  const [host, infoUrl] = useAppStore((s) => [s.urlConfigs.NEW_BASE_HOST, s.urlConfigs.INFO], shallow)
+  const [host, infoUrl] = useAppStore((s) => [s.urlConfigs.BASE_HOST, s.urlConfigs.INFO], shallow)
 
   const { data, isLoading, error, ...rest } = useSWR(host + infoUrl, fetcher, {
     refreshInterval,

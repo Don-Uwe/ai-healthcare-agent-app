@@ -40,9 +40,8 @@ import { SlippageToleranceSettingField } from './components/SlippageToleranceSet
 import { VersionedTransactionSettingField } from './components/VersionedTransactionSettingField'
 import { TransactionFeeSetting } from './components/TransactionFeeSetting'
 import { PriorityButton } from './components/PriorityButton'
-import useSwr from 'swr'
-import axios from '@/api/axios'
 import { keyframes } from '@emotion/react'
+import AppVersion from './AppVersion'
 
 export interface NavSettings {
   // colorTheme: 'dark' | 'light'
@@ -280,29 +279,7 @@ function SettingsMenuModalContent(props: { isOpen: boolean; triggerRef: React.Re
   const { t } = useTranslation()
   const triggerPanelGap = 8
   const isMobile = useAppStore((s) => s.isMobile)
-  const urlConfigs = useAppStore((s) => s.urlConfigs)
   const getTriggerRect = () => props.triggerRef.current?.getBoundingClientRect()
-
-  const { data } = useSwr(
-    `${urlConfigs.NEW_BASE_HOST}${urlConfigs.VERSION}`,
-    (url) =>
-      axios.get<
-        any,
-        {
-          id: string
-          success: boolean
-          data: {
-            latest: string
-            least: string
-          }
-        }
-      >(url, { skipError: true }),
-    {
-      refreshInterval: 60 * 60 * 1000,
-      focusThrottleInterval: 60 * 60 * 1000,
-      dedupingInterval: 60 * 60 * 1000
-    }
-  )
 
   return (
     <Modal size={'lg'} isOpen={props.isOpen} onClose={props.onClose}>
@@ -341,12 +318,7 @@ function SettingsMenuModalContent(props: { isOpen: boolean; triggerRef: React.Re
           <Divider />
           <RPCConnectionSettingField />
           <Divider />
-          <Flex fontSize="sm" color={colors.textTertiary} direction={['row', 'column']} columnGap={5} mt={3}>
-            {/* version */}
-            <Text>{data?.data.latest}</Text>
-            {/* **block chain** current time */}
-            <Text>{toUTC(Date.now())}</Text>
-          </Flex>
+          <AppVersion />
         </ModalBody>
       </ModalContent>
     </Modal>

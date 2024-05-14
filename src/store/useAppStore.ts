@@ -107,6 +107,8 @@ interface AppState {
   epochInfo?: EpochInfo
   txVersion: TxVersion
   tokenAccLoaded: boolean
+  appVersion: string
+  needRefresh: boolean
 
   getEpochInfo: () => Promise<EpochInfo | undefined>
   initRaydiumAct: (payload: RaydiumLoadParams) => Promise<void>
@@ -117,6 +119,7 @@ interface AppState {
   setProgramIdConfigAct: (urls: ProgramIdConfig) => void
   setRpcUrlAct: (url: string, skipToast?: boolean, skipError?: boolean) => Promise<boolean>
   setAprModeAct: (mode: 'M' | 'D') => void
+  checkAppVersionAct: () => Promise<void>
 
   buildMultipleTx: (props: {
     txBuildDataList: (TxBuildData | TxV0BuildData)[]
@@ -136,18 +139,7 @@ const appInitState = {
   rpcs: [],
   urlConfigs: {
     ...API_URLS,
-    NEW_BASE_HOST: 'https://api-v3.asdf1234.win',
-    VERSION: '/main/version',
-    RPCS: '/main/rpcs',
-    CHAIN_TIME: '/main/chain-time',
-    INFO: '/main/info',
-    MIGRATE_CONFIG: '/main/migrate-lp',
-    AMM_V3_CONFIG: '/main/clmm-config',
-
-    TOKEN_LIST: '/mint/list',
-    MINT_PRICE: '/mint/price',
-
-    IDO_KEYS: '/ido/key/ids'
+    BASE_HOST: 'https://api-v3.asdf1234.win'
   },
   programIdConfig: ALL_PROGRAM_ID,
   jupTokenType: JupTokenType.Strict,
@@ -159,6 +151,8 @@ const appInitState = {
   featureDisabled: {},
   slippage: Number(getStorageItem(SLIPPAGE_KEY) || 0.005),
   txVersion: TxVersion.V0,
+  appVersion: 'V3.0.1',
+  needRefresh: false,
   tokenAccLoaded: false,
   commitment: 'confirmed' as Commitment,
   transactionFee: getStorageItem(FEE_KEY) === null ? '0.0001' : getStorageItem(FEE_KEY) || ''
@@ -246,7 +240,7 @@ export const useAppStore = createStore<AppState>(
     fetchChainTimeAct: () => {
       const { urlConfigs } = get()
       axios
-        .get(`${urlConfigs.NEW_BASE_HOST}${urlConfigs.CHAIN_TIME}`)
+        .get(`${urlConfigs.BASE_HOST}${urlConfigs.CHAIN_TIME}`)
         .then((data) => {
           set({ chainTimeOffset: isNaN(data?.data.offset) ? 0 : 16 * 1000 }, false, { type: 'fetchChainTimeAct' })
         })
@@ -273,7 +267,7 @@ export const useAppStore = createStore<AppState>(
       try {
         const {
           data: { rpcs }
-        } = await axios.get<{ rpcs: RpcItem[] }>(urlConfigs.NEW_BASE_HOST + urlConfigs.RPCS)
+        } = await axios.get<{ rpcs: RpcItem[] }>(urlConfigs.BASE_HOST + urlConfigs.RPCS)
         set({ rpcs }, false, { type: 'fetchRpcsAct' })
 
         let i = 0
@@ -331,6 +325,17 @@ export const useAppStore = createStore<AppState>(
     setAprModeAct: (mode) => {
       setStorageItem(APR_MODE_KEY, mode)
       set({ aprMode: mode })
+    },
+    checkAppVersionAct: async () => {
+      const { urlConfigs, appVersion } = get()
+      const res = await axios.get<{
+        latest: string
+        least: string
+      }>(`${urlConfigs.BASE_HOST}${urlConfigs.VERSION}`)
+
+      const current = Number(appVersion.match(new RegExp(`[0-9]`, 'gi'))?.join('') ?? 0)
+      const least = Number(res.data.least.match(new RegExp(`[0-9]`, 'gi'))?.join('') ?? 0)
+      set({ needRefresh: current < least })
     },
 
     buildMultipleTx: async ({ txBuildDataList }) => {
