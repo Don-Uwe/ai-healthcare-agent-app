@@ -10,10 +10,11 @@ import { PriorityModalContent } from './PriorityModalContent'
 export function PriorityButton() {
   const { isOpen, onClose, onOpen } = useDisclosure()
   const transactionFee = useAppStore((s) => s.transactionFee)
+  const feeConfig = useAppStore((s) => s.feeConfig)
   const triggerRef = useRef<HTMLDivElement>(null)
   const [currentFee, setCurrentFee] = useState<string | undefined>()
   // TODO: need compare with market rate
-  const feeWarn = Number(currentFee) <= 0
+  const feeWarn = Number(currentFee) <= (feeConfig[0] ?? 0)
   const handleChangeFee = useEvent((val?: string) => {
     setCurrentFee(val)
   })

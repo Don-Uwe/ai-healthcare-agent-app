@@ -309,8 +309,8 @@ function SettingsMenuModalContent(props: { isOpen: boolean; triggerRef: React.Re
           <VersionedTransactionSettingField />
           <Divider />
           <DefaultExplorerSettingField />
-          <Divider />
-          <TransactionFeeSetting />
+          {/* <Divider />
+          <TransactionFeeSetting /> */}
           <Divider />
           <LanguageSettingField />
           <Divider />

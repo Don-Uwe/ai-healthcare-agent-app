@@ -16,6 +16,7 @@ export default function AppVersion() {
       checkAppVersionAct()
     }, 60 * 1000)
     checkAppVersionAct()
+    useAppStore.getState().fetchPriorityFeeAct()
     return () => window.clearInterval(interval)
   }, [checkAppVersionAct])
 

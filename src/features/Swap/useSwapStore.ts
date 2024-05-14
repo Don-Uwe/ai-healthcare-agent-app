@@ -19,7 +19,7 @@ import { handleMultiTxRetry } from '@/hooks/toast/retryTx'
 import { isSwapSlippageError } from '@/utils/tx/swapError'
 
 const getSwapComputePrice = async () => {
-  const transactionFee = useAppStore.getState().transactionFee
+  const transactionFee = useAppStore.getState().getPriorityFee()
   if (isNaN(parseFloat(String(transactionFee) || ''))) {
     const json = await fetchComputePrice()
     const { avg } = json?.[15] ?? {}

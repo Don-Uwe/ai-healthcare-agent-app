@@ -61,8 +61,19 @@ export const supportedExplorers = [
 const RPC_URL_KEY = '_r_rpc_'
 const RPC_URL_PROD_KEY = '_r_rpc_pro_'
 export const FEE_KEY = '_r_fee_'
+export const PRIORITY_LEVEL_KEY = '_r_fee_level_'
+export const PRIORITY_MODE_KEY = '_r_fee_mode_'
 export const SLIPPAGE_KEY = '_r_slippage_'
 export const USER_ADDED_KEY = '_r_u_added_'
+export enum PriorityLevel {
+  Fast,
+  Turbo,
+  Ultra
+}
+export enum PriorityMode {
+  MaxCap,
+  Exact
+}
 
 interface RpcItem {
   url: string
@@ -87,7 +98,7 @@ interface AppState {
   chainTimeOffset: number
   blockSlotCountForSecond: number
   commitment: Commitment
-  transactionFee?: string
+
   rpcNodeUrl?: string
   wsNodeUrl?: string
   rpcs: RpcItem[]
@@ -107,9 +118,16 @@ interface AppState {
   epochInfo?: EpochInfo
   txVersion: TxVersion
   tokenAccLoaded: boolean
+
   appVersion: string
   needRefresh: boolean
 
+  priorityLevel: PriorityLevel
+  priorityMode: PriorityMode
+  transactionFee?: string
+  feeConfig: Partial<Record<PriorityLevel, number>>
+
+  getPriorityFee: () => string | undefined
   getEpochInfo: () => Promise<EpochInfo | undefined>
   initRaydiumAct: (payload: RaydiumLoadParams) => Promise<void>
   fetchChainTimeAct: () => void
@@ -120,6 +138,7 @@ interface AppState {
   setRpcUrlAct: (url: string, skipToast?: boolean, skipError?: boolean) => Promise<boolean>
   setAprModeAct: (mode: 'M' | 'D') => void
   checkAppVersionAct: () => Promise<void>
+  fetchPriorityFeeAct: () => Promise<void>
 
   buildMultipleTx: (props: {
     txBuildDataList: (TxBuildData | TxV0BuildData)[]
@@ -155,6 +174,10 @@ const appInitState = {
   needRefresh: false,
   tokenAccLoaded: false,
   commitment: 'confirmed' as Commitment,
+
+  priorityLevel: getStorageItem(PRIORITY_LEVEL_KEY) ? Number(getStorageItem(PRIORITY_LEVEL_KEY)) : PriorityLevel.Turbo,
+  priorityMode: getStorageItem(PRIORITY_MODE_KEY) ? Number(getStorageItem(PRIORITY_MODE_KEY)) : PriorityMode.MaxCap,
+  feeConfig: {},
   transactionFee: getStorageItem(FEE_KEY) === null ? '0.0001' : getStorageItem(FEE_KEY) || ''
 }
 
@@ -336,6 +359,31 @@ export const useAppStore = createStore<AppState>(
       const current = Number(appVersion.match(new RegExp(`[0-9]`, 'gi'))?.join('') ?? 0)
       const least = Number(res.data.least.match(new RegExp(`[0-9]`, 'gi'))?.join('') ?? 0)
       set({ needRefresh: current < least })
+    },
+
+    fetchPriorityFeeAct: async () => {
+      const { urlConfigs } = get()
+      const { data } = await axios.get<{
+        default: {
+          h: number
+          m: number
+          vh: number
+        }
+      }>(`${urlConfigs.BASE_HOST}${urlConfigs.PRIORITY_FEE}`)
+      set({
+        feeConfig: {
+          [PriorityLevel.Fast]: data.default.m / 10 ** 9,
+          [PriorityLevel.Turbo]: data.default.h / 10 ** 9,
+          [PriorityLevel.Ultra]: data.default.vh / 10 ** 9
+        }
+      })
+    },
+
+    getPriorityFee: () => {
+      const { priorityMode, priorityLevel, transactionFee, feeConfig } = get()
+      if (priorityMode === PriorityMode.Exact) return transactionFee ? String(transactionFee) : transactionFee
+      if (feeConfig[priorityLevel] === undefined || transactionFee === undefined) return String(feeConfig[PriorityLevel.Turbo] ?? 0)
+      return String(Math.min(Number(transactionFee), feeConfig[priorityLevel]!))
     },
 
     buildMultipleTx: async ({ txBuildDataList }) => {
