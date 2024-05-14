@@ -518,7 +518,9 @@ export default function CreatePosition() {
                     subA: currentPool?.[baseIn ? 'mintB' : 'mintA'].symbol,
                     subB: currentPool?.[baseIn ? 'mintA' : 'mintB'].symbol
                   })}
-                  timePrice={`${formatCurrency(priceMin, { decimalPlaces: currentPool?.poolDecimals })} - ${formatCurrency(priceMax, {
+                  timePrice={`${formatCurrency(priceMin < 0 ? currentPriceStr : priceMin, {
+                    decimalPlaces: currentPool?.poolDecimals
+                  })} - ${formatCurrency(priceMax < 0 ? currentPriceStr : priceMax, {
                     decimalPlaces: currentPool?.poolDecimals
                   })}`}
                 />
