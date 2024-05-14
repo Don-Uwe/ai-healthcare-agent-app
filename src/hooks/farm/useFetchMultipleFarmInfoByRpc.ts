@@ -53,15 +53,18 @@ export default function useFetchMultipleFarmInfoByRpc(props: {
   })
 
   let decodedDataList = data
-    ? readyFetchList.map((farmInfo, idx) => {
-        const layout = FARM_TYPE[farmInfo.programId].stateLayout
-        const res = layout.decode(data[idx]!.data) as FarmDecodeData
-        farmRpcInfoCache.set(farmInfo.id, res)
-        return {
-          id: farmInfo.id,
-          ...res
-        }
-      })
+    ? (readyFetchList
+        .map((farmInfo, idx) => {
+          if (!data[idx]) return
+          const layout = FARM_TYPE[farmInfo.programId].stateLayout
+          const res = layout.decode(data[idx]!.data) as FarmDecodeData
+          farmRpcInfoCache.set(farmInfo.id, res)
+          return {
+            id: farmInfo.id,
+            ...res
+          }
+        })
+        .filter(Boolean) as FarmRpcInfo[])
     : ([] as FarmRpcInfo[])
   decodedDataList = decodedDataList.concat(
     cacheDataList.map((d) => ({

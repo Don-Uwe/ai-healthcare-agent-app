@@ -1,7 +1,7 @@
 import {
   ApiV3PoolInfoStandardItem,
   ApiV3PoolInfoConcentratedItem,
-  CreatePoolAddress,
+  CreateCpmmPoolAddress,
   Percent,
   ApiV3Token,
   FormatFarmInfoOutV6,
@@ -13,7 +13,6 @@ import { useAppStore } from './useAppStore'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
 import { txStatusSubject } from '@/hooks/toast/useTxStatus'
 import { getDefaultToastData, transformProcessData, handleMultiTxToast } from '@/hooks/toast/multiToastUtil'
-import { PublicKey } from '@solana/web3.js'
 import { TxCallbackProps } from '@/types/tx'
 import { formatLocaleStr } from '@/utils/numberish/formatter'
 
@@ -27,13 +26,22 @@ import Decimal from 'decimal.js'
 import { getComputeBudgetConfig } from '@/utils/tx/computeBudget'
 
 interface LiquidityStore {
-  newCreatedPool?: CreatePoolAddress
+  newCreatedPool?: CreateCpmmPoolAddress
   addLiquidityAct: (
     params: {
       poolInfo: ApiV3PoolInfoStandardItem
       amountA: string
       amountB: string
       fixedSide: 'a' | 'b'
+    } & TxCallbackProps
+  ) => Promise<string>
+  addCpmmLiquidityAct: (
+    params: {
+      poolInfo: ApiV3PoolInfoStandardItem
+      inputAmount: string
+      anotherAmount: string
+      liquidity: BN
+      baseIn: boolean
     } & TxCallbackProps
   ) => Promise<string>
   removeLiquidityAct: (
@@ -45,10 +53,18 @@ interface LiquidityStore {
       }
     } & TxCallbackProps
   ) => Promise<string>
+  removeCpmmLiquidityAct: (
+    params: {
+      poolInfo: ApiV3PoolInfoStandardItem
+      lpAmount: string
+      config?: {
+        bypassAssociatedCheck?: boolean
+      }
+    } & TxCallbackProps
+  ) => Promise<string>
   createPoolAct: (
     params: {
       pool: {
-        marketId: string
         mintA: ApiV3Token
         mintB: ApiV3Token
       }
@@ -93,9 +109,51 @@ export const useLiquidityStore = createStore<LiquidityStore>(
   (set) => ({
     ...initLiquiditySate,
 
+    addCpmmLiquidityAct: async ({ onSent, onError, onFinally, ...params }) => {
+      const { raydium, txVersion } = useAppStore.getState()
+      if (!raydium) return ''
+      const { execute } = await raydium.cpmm.addLiquidity({
+        ...params,
+        inputAmount: new BN(new Decimal(params.inputAmount).mul(10 ** params.poolInfo.mintA.decimals).toFixed(0)),
+        anotherAmount: new BN(new Decimal(params.anotherAmount).mul(10 ** params.poolInfo.mintA.decimals).toFixed(0)),
+        txVersion
+      })
+
+      const meta = getTxMeta({
+        action: 'addLiquidity',
+        values: {
+          amountA: formatLocaleStr(params.inputAmount, params.poolInfo.mintA.decimals)!,
+          symbolA: getMintSymbol({ mint: params.poolInfo.mintA, transformSol: true }),
+          amountB: formatLocaleStr(params.anotherAmount, params.poolInfo.mintB.decimals)!,
+          symbolB: getMintSymbol({ mint: params.poolInfo.mintB, transformSol: true })
+        }
+      })
+
+      return execute()
+        .then(({ txId, signedTx }) => {
+          txStatusSubject.next({
+            txId,
+            ...meta,
+            signedTx,
+            mintInfo: [params.poolInfo.mintA, params.poolInfo.mintB],
+            onError,
+            onConfirmed: params.onConfirmed
+          })
+          onSent?.()
+          return txId
+        })
+        .catch((e) => {
+          onError?.()
+          toastSubject.next({ ...meta, txError: e })
+          return ''
+        })
+        .finally(onFinally)
+    },
+
     addLiquidityAct: async ({ onSent, onError, onFinally, ...params }) => {
       const { raydium, txVersion } = useAppStore.getState()
       if (!raydium) return ''
+
       const { execute } = await raydium.liquidity.addLiquidity({
         ...params,
         amountInA: new TokenAmount(
@@ -178,36 +236,95 @@ export const useLiquidityStore = createStore<LiquidityStore>(
         .finally(onFinally)
     },
 
+    removeCpmmLiquidityAct: async ({ onSent, onError, onFinally, ...params }) => {
+      const { raydium, txVersion } = useAppStore.getState()
+
+      if (!raydium) return ''
+      const { poolInfo, lpAmount } = params
+
+      const ratioA = new Decimal(poolInfo.mintAmountA).div(poolInfo.lpAmount)
+      const ratioB = new Decimal(poolInfo.mintAmountB).div(poolInfo.lpAmount)
+
+      const { execute } = await raydium.cpmm.withdrawLiquidity({
+        poolInfo,
+        lpAmount: new BN(lpAmount),
+        amountMintA: new BN(new Decimal(lpAmount).mul(ratioA).toFixed(0, Decimal.ROUND_DOWN)),
+        amountMintB: new BN(new Decimal(lpAmount).mul(ratioB).toFixed(0, Decimal.ROUND_DOWN)),
+        txVersion
+      })
+
+      const percent = new Decimal(lpAmount).div(10 ** poolInfo.lpMint.decimals).div(poolInfo?.lpAmount || 1)
+
+      const meta = getTxMeta({
+        action: 'removeLiquidity',
+        values: {
+          amountA: formatLocaleStr(percent.mul(poolInfo?.mintAmountA || 0).toString(), params.poolInfo.mintA.decimals)!,
+          symbolA: getMintSymbol({ mint: params.poolInfo.mintA, transformSol: true }),
+          amountB: formatLocaleStr(percent.mul(poolInfo?.mintAmountB || 0).toString(), params.poolInfo.mintB.decimals)!,
+          symbolB: getMintSymbol({ mint: params.poolInfo.mintB, transformSol: true })
+        }
+      })
+
+      return execute()
+        .then(({ txId, signedTx }) => {
+          txStatusSubject.next({ txId, ...meta, signedTx, mintInfo: [params.poolInfo.mintA, params.poolInfo.mintB], onError })
+          onSent?.()
+          return txId
+        })
+        .catch((e) => {
+          onError?.()
+          toastSubject.next({ ...meta, txError: e })
+          return ''
+        })
+        .finally(onFinally)
+    },
+
     createPoolAct: async ({ pool, baseAmount, quoteAmount, startTime, onSent, onError, onFinally, onConfirmed }) => {
       const { raydium, programIdConfig, txVersion } = useAppStore.getState()
       if (!raydium) return ''
       const computeBudgetConfig = await getComputeBudgetConfig()
 
-      const { execute, extInfo } = await raydium.liquidity.createPoolV4({
-        programId: programIdConfig.AMM_V4,
-        marketInfo: {
-          marketId: new PublicKey(pool.marketId),
-          programId: programIdConfig.OPEN_BOOK_PROGRAM
-        },
-        baseMintInfo: {
-          mint: new PublicKey(pool.mintA.address),
-          decimals: pool.mintA.decimals
-        },
-        quoteMintInfo: {
-          mint: new PublicKey(pool.mintB.address),
-          decimals: pool.mintB.decimals
-        },
-        baseAmount: new BN(baseAmount),
-        quoteAmount: new BN(quoteAmount),
-        startTime: new BN((startTime ? Number(startTime) : Date.now() + 2 * 60 * 1000) / 1000),
+      const { execute, extInfo } = await raydium.cpmm.createPool({
+        programId: programIdConfig.CREATE_POOL_PROGRAM,
+        poolFeeAccount: programIdConfig.CREATE_POOL_FEE_ACC,
+        mintA: pool.mintA,
+        mintB: pool.mintB,
+        mintAAmount: new BN(baseAmount),
+        mintBAmount: new BN(quoteAmount),
+        startTime: new BN((startTime ? Number(startTime) : Date.now() + 60 * 1000) / 1000),
         ownerInfo: {
           useSOLBalance: true
         },
         associatedOnly: false,
         txVersion,
-        feeDestinationId: new PublicKey('7YttLkHDoNj9wyDur5pM1ejNaAvT9X4eqaYcHQqtj2G5'),
         computeBudgetConfig
       })
+
+      // const { execute, extInfo } = await raydium.liquidity.createPoolV4({
+      //   programId: programIdConfig.AMM_V4,
+      //   marketInfo: {
+      //     marketId: new PublicKey(pool.marketId),
+      //     programId: programIdConfig.OPEN_BOOK_PROGRAM
+      //   },
+      //   baseMintInfo: {
+      //     mint: new PublicKey(pool.mintA.address),
+      //     decimals: pool.mintA.decimals
+      //   },
+      //   quoteMintInfo: {
+      //     mint: new PublicKey(pool.mintB.address),
+      //     decimals: pool.mintB.decimals
+      //   },
+      //   baseAmount: new BN(baseAmount),
+      //   quoteAmount: new BN(quoteAmount),
+      //   startTime: new BN((startTime ? Number(startTime) : Date.now() + 2 * 60 * 1000) / 1000),
+      //   ownerInfo: {
+      //     useSOLBalance: true
+      //   },
+      //   associatedOnly: false,
+      //   txVersion,
+      //   feeDestinationId: new PublicKey('7YttLkHDoNj9wyDur5pM1ejNaAvT9X4eqaYcHQqtj2G5'),
+      //   computeBudgetConfig
+      // })
 
       const meta = getTxMeta({
         action: 'createPool',
@@ -319,6 +436,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
           maxOutput: '0',
           liquidity: new BN(0)
         }
+
       const r = raydium.liquidity.computePairAmount({
         poolInfo: pool,
         amount,
