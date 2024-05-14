@@ -1,16 +1,24 @@
 {
-  "name": "ultimate_health_backend",
+  "name": "ultimate_health",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "ultimate health backend",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
   },
-  "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/meghanagottapu/UltimateHealth.git"
+  },
   "author": "",
   "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/meghanagottapu/UltimateHealth/issues"
+  },
+  "homepage": "https://github.com/meghanagottapu/UltimateHealth#readme",
   "dependencies": {
-    "env": "^0.0.2",
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "mongoose": "^8.3.4"
   }
 }

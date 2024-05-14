@@ -1,9 +1,16 @@
 const express = require('express');
+const mongoose = require('mongoose');
+const routes = require('./routes/index');
 
 const app = express();
 
-app.get('/', (req, res) => {
-  res.send('Successful response.');
+mongoose.connect(
+    'mongodb://localhost:27017'
+) // DB URI
+
+app.listen(3025,()=>{
+    console.log('Server in Running on port 3025');
 });
 
-app.listen(3000, () => console.log('Example app is listening on port 3000.'));
+routes(app);
+module.exports = app;

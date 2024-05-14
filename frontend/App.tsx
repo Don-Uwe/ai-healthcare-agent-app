@@ -8,6 +8,7 @@
 import React from 'react';
 import type {PropsWithChildren} from 'react';
 import {
+  Platform,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -24,6 +25,7 @@ import {
   LearnMoreLinks,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
+import { PRIMARY_COLOR } from './src/Theme';
 
 type SectionProps = PropsWithChildren<{
   title: string;
@@ -62,12 +64,15 @@ function App(): React.JSX.Element {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
+  const BarStyle = Platform.OS==="ios" ? 'dark-content' : 'light-content'
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
+        barStyle={isDarkMode ? 'light-content' : BarStyle}
+        backgroundColor={isDarkMode ? backgroundStyle.backgroundColor : PRIMARY_COLOR}
       />
+
+
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         style={backgroundStyle}>
@@ -87,7 +92,7 @@ function App(): React.JSX.Element {
             <DebugInstructions />
           </Section>
           <Section title="Learn More">
-            Read the docs to discover what to do next:
+            Read the docs to discover what to do next
           </Section>
           <LearnMoreLinks />
         </View>
