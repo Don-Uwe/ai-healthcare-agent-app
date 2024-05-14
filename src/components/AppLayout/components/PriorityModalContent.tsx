@@ -1,5 +1,6 @@
 import React, { KeyboardEvent, useRef, useState, useCallback } from 'react'
 import {
+  Collapse,
   Divider,
   Flex,
   Button,
@@ -96,6 +97,48 @@ export function PriorityModalContent(props: {
               {t('setting_board.transaction_priority_fee_usage')}
             </Text>
             <Divider />
+            {/* <Collapse in={priorityMode === 0} animateOpacity style={{ width: '100%' }}>
+              <VStack width="full" align="flex-start">
+                <Text fontSize="sm" color={colors.textSecondary}>
+                  {t('setting_board.priority_level')}
+                </Text>
+                <Tabs w="full" variant="roundedLight" bg={colors.backgroundDark}>
+                  <TabList>
+                    <Tab
+                      flex="1"
+                      fontSize="xs"
+                      fontWeight="normal"
+                      color={colors.textSecondary}
+                      opacity={0.5}
+                      sx={{ _selected: { bg: colors.dividerBg, rounded: 'lg', opacity: 1 } }}
+                    >
+                      <Text>{t('setting_board.priority_level_fast')}</Text>
+                    </Tab>
+                    <Tab
+                      flex="1"
+                      fontSize="xs"
+                      fontWeight="normal"
+                      color={colors.textSecondary}
+                      opacity={0.5}
+                      sx={{ _selected: { bg: colors.dividerBg, rounded: 'lg', opacity: 1 } }}
+                    >
+                      <Text>{t('setting_board.priority_level_turbo')}</Text>
+                    </Tab>
+                    <Tab
+                      flex="1"
+                      fontSize="xs"
+                      fontWeight="normal"
+                      color={colors.textSecondary}
+                      opacity={0.5}
+                      sx={{ _selected: { bg: colors.dividerBg, rounded: 'lg', opacity: 1 } }}
+                    >
+                      <Text>{t('setting_board.priority_level_ultra')}</Text>
+                    </Tab>
+                  </TabList>
+                </Tabs>
+              </VStack>
+              <Divider />
+            </Collapse> */}
             <VStack width="full" align="stretch" gap={3}>
               <Flex justify="space-between" align="center">
                 <Text fontSize="sm" color={colors.textSecondary}>
@@ -164,12 +207,10 @@ export function PriorityModalContent(props: {
                 borderRadius="8px"
                 w="full"
               >
-                <Flex align="flex-start">
-                  <Text pt={0.5}>
-                    <WarningIcon />
-                  </Text>
-                  <Text pl={2}>{t('setting_board.priority_fee_below_market_rate')}</Text>
-                </Flex>
+                <Text pt={0.5}>
+                  <WarningIcon />
+                </Text>
+                <Text pl={2}>{t('setting_board.priority_fee_below_market_rate')}</Text>
               </Flex>
             )}
             <Divider />

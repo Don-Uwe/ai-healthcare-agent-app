@@ -224,7 +224,7 @@ export default function TokenSearchInput({
             h={['34px', 10]}
           >
             {selectedList.length > 0 ? (
-              <HStack>
+              <HStack flexShrink={0}>
                 {selectedList.map((token, idx) => (
                   <TokenTag key={token.address} handleRemove={handleRemove} token={token} idx={idx}></TokenTag>
                 ))}
