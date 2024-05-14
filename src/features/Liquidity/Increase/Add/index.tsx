@@ -21,7 +21,6 @@ import shallow from 'zustand/shallow'
 import { useEvent } from '@/hooks/useEvent'
 import { throttle } from '@/utils/functionMethods'
 import useRefreshEpochInfo from '@/hooks/app/useRefreshEpochInfo'
-import BN from 'bn.js'
 
 const InputWidth = ['100%']
 

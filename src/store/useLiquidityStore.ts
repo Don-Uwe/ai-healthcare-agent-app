@@ -2,7 +2,6 @@ import {
   ApiV3PoolInfoStandardItem,
   ApiV3PoolInfoConcentratedItem,
   CreateCpmmPoolAddress,
-  Percent,
   ApiV3Token,
   FormatFarmInfoOutV6,
   toToken,

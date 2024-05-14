@@ -38,7 +38,7 @@ import { RPCConnectionSettingField } from './components/RPCConnectionSettingFiel
 import { Divider } from './components/SettingFieldDivider'
 import { SlippageToleranceSettingField } from './components/SlippageToleranceSettingField'
 import { VersionedTransactionSettingField } from './components/VersionedTransactionSettingField'
-import { TransactionFeeSetting } from './components/TransactionFeeSetting'
+// import { TransactionFeeSetting } from './components/TransactionFeeSetting'
 import { PriorityButton } from './components/PriorityButton'
 import { keyframes } from '@emotion/react'
 import AppVersion from './AppVersion'
