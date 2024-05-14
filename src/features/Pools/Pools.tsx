@@ -244,7 +244,7 @@ export default function Pools() {
     shouldFetch: !hasSearch,
     type: activeTabItem.value,
     order: order ? 'desc' : 'asc',
-    sort: sortKey !== 'liquidity' && sortKey !== 'default' ? `${sortKey}_${timeBase}` : sortKey
+    sort: sortKey !== 'liquidity' && sortKey !== 'default' ? `${sortKey}${timeBase}` : sortKey
   })
 
   const {
@@ -257,7 +257,7 @@ export default function Pools() {
     mint2: searchTokens[1]?.address,
     type: activeTabItem.value,
     order: order ? 'desc' : 'asc',
-    sort: (sortKey !== 'liquidity' && sortKey !== 'default' ? `${sortKey}_${timeBase}` : sortKey) as FetchPoolParams['sort']
+    sort: (sortKey !== 'liquidity' && sortKey !== 'default' ? `${sortKey}${timeBase}` : sortKey) as FetchPoolParams['sort']
   })
 
   const { formattedData: searchIdData, isLoading: isSearchIdLoading } = useFetchPoolById({
