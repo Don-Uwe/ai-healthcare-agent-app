@@ -23,8 +23,8 @@ import { Wallet } from '@solana/wallet-adapter-react'
 
 import CircleSuccess from '@/icons/misc/CircleSuccess'
 import CircleInfo from '@/icons/misc/CircleInfo'
-import WarningCircle from '@/icons/misc/WarningCircle'
-import ErrorCircle from '@/icons/misc/ErrorCircle'
+import CircleWarning from '@/icons/misc/CircleWarning'
+import CircleError from '@/icons/misc/CircleError'
 import { colors } from '@/theme/cssVariables'
 import { toUTC } from '@/utils/date'
 import SolanaNetworkIcon from '@/icons/networks/SolanaNetworkIcon'
@@ -262,11 +262,11 @@ function RecentTransactionCard({ transaction }: { transaction: RecentTransaction
           {transaction.status === 'info' ? (
             <CircleInfo width="16px" height="16px" />
           ) : transaction.status === 'warning' ? (
-            <WarningCircle width="16px" height="16px" />
+            <CircleWarning width="16px" height="16px" />
           ) : transaction.status === 'success' ? (
             <CircleSuccess />
           ) : (
-            <ErrorCircle width="16px" height="16px" />
+            <CircleError width="16px" height="16px" />
           )}
         </Box>
         <Box
@@ -307,11 +307,11 @@ function RecentTransactionCard({ transaction }: { transaction: RecentTransaction
                       {subTransaction.status === 'info' ? (
                         <CircleInfo width="14px" height="14px" />
                       ) : subTransaction.status === 'warning' ? (
-                        <WarningCircle width="14px" height="14px" />
+                        <CircleWarning width="14px" height="14px" />
                       ) : subTransaction.status === 'success' ? (
                         <CircleSuccess width="14px" height="14px" />
                       ) : (
-                        <ErrorCircle width="14px" height="14px" />
+                        <CircleError width="14px" height="14px" />
                       )}
                     </Box>
                     <Box
