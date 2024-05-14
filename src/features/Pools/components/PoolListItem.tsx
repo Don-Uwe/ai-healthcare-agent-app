@@ -303,7 +303,7 @@ export default function PoolListItem({
                     py={1}
                     onClick={onClickSwap}
                   >
-                    <SwapPoolItemIcon fill={colors.buttonSecondary} />
+                    <SwapPoolItemIcon fill={colors.chart03} />
                   </Box>
                 </Tooltip>
               </Box>
@@ -472,7 +472,7 @@ export default function PoolListItem({
                         <Text fontSize="md" fontWeight="500">
                           {t('swap.title')}
                         </Text>
-                        <SwapPoolItemIcon fill={colors.buttonPrimary} />
+                        <SwapPoolItemIcon fill={colors.secondary} />
                       </HStack>
                     </Button>
                   </HStack>
