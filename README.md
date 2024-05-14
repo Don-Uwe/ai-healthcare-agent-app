@@ -33,16 +33,15 @@ cd  UltimateHealth
 ```
 
 
-**Select your preference (FrontEnd or BackEnd)**.
+**Checkout develop branch and select your preferences (backend or frontend)**.
 
 ```
-For Frontend : git checkout ultimate_health_frontend
-For Backend :  git checkout ultimate_health_backend
+ git checkout develop
 ```
 
 **Install dependencies:**
 ```
-npm install
+npm install --legacy-peer-deps
 ```
 
 **Configure the application: (For IOS and Backend)**
@@ -56,8 +55,13 @@ To run the frontend server use:
  
 For android :
 `npm run android`
+
 For ios: 
 `npm run ios`
+
+For backend:
+
+`node server.js`
 
 
 **Access the application:**
@@ -66,8 +70,22 @@ If you would like to contribute to the project, please follow the contribution g
 
 ## Contribution GuideLines:
 
-Will available soon.
+* **Checkout and make your changes for the develop branch only:** When working on your contributions, switch to the **develop** branch in your local repository. This ensures that you are working on the latest version of the codebase.
+
+* **Create pull requests only for the develop branch:** When you are ready to submit your changes, create a pull request (PR) targeting the **develop** branch. This allows the maintainers to review and merge your code into the main development branch.
+
+* **Maintain contribution guidelines:** Each project may have its own specific contribution guidelines. It's important to familiarize yourself with these guidelines before submitting your contributions. Adhering to these guidelines ensures consistency and helps maintain the quality of the codebase.
+
+* **Format your commit message with the issue number:** When making commits related to an issue, follow the format Fixes: #32 in your commit message. Replace 32 with the issue number you are addressing. This helps track and manage issues more efficiently.
+
+* **Attach a Postman response screenshot for backend tasks:** For tasks related to the backend, it is recommended to include a screenshot of the Postman response along with your pull request. This provides additional context and helps reviewers understand the changes made and their impact on the backend functionality.
+
+* **Make your pull request descriptive and include examples:** When creating a pull request, provide a clear and descriptive explanation of the changes you made. This helps reviewers understand the purpose and significance of your contribution. Additionally, including at least one example that demonstrates the intended usage or effect of your changes can be beneficial.
+
+* **Rebase your commits and optimize file changes:** When submitting your pull request, consider rebasing your commits into one commit and optimizing your file changes. This helps keep the commit history clean and makes it easier for reviewers to understand your changes.
+
+Remember, following these guidelines will help ensure a smooth and efficient contribution process. Happy coding!
     
 ## Contact:
      
-Discord Server (Susmita Bhattacharya, user_name: susmita_5116)
+Discord Server (Susmita Bhattacharya, user_name: susmita_)
