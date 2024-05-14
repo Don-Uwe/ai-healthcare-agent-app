@@ -21,6 +21,7 @@ import shallow from 'zustand/shallow'
 import { useEvent } from '@/hooks/useEvent'
 import { throttle } from '@/utils/functionMethods'
 import useRefreshEpochInfo from '@/hooks/app/useRefreshEpochInfo'
+import BN from 'bn.js'
 
 const InputWidth = ['100%']
 
@@ -39,7 +40,10 @@ export default function AddLiquidity({
   onSelectToken: (token: TokenInfo | ApiV3Token, side: 'base' | 'quote') => void
 }) {
   const { t } = useTranslation()
-  const [addLiquidityAct, computePairAmount] = useLiquidityStore((s) => [s.addLiquidityAct, s.computePairAmount], shallow)
+  const [addLiquidityAct, computePairAmount, addCpmmLiquidityAct] = useLiquidityStore(
+    (s) => [s.addLiquidityAct, s.computePairAmount, s.addCpmmLiquidityAct],
+    shallow
+  )
   const epochInfo = useAppStore((s) => s.epochInfo)
   useRefreshEpochInfo()
 
@@ -153,11 +157,8 @@ export default function AddLiquidity({
   const handleClickAdd = () => {
     if (!pool) return
     setIsTxSending(true)
-    addLiquidityAct({
-      poolInfo: pool,
-      amountA: computeAmountRef.current.base,
-      amountB: computeAmountRef.current.quote,
-      fixedSide: focusRef.current === 'base' ? 'a' : 'b',
+
+    const callBacks = {
       onSent: () => {
         setPairAmount({ base: '', quote: '' })
         computeAmountRef.current = { base: '', quote: '' }
@@ -166,6 +167,27 @@ export default function AddLiquidity({
         if (pool.farmOngoingCount > 0) onOpenStakeLp()
       },
       onFinally: () => setIsTxSending(false)
+    }
+
+    const isCpmm = pool.programId === useAppStore.getState().programIdConfig.CREATE_POOL_PROGRAM.toBase58()
+    const baseIn = focusRef.current === 'base'
+
+    if (isCpmm) {
+      addCpmmLiquidityAct({
+        poolInfo: pool,
+        inputAmount: baseIn ? computeAmountRef.current.base : computeAmountRef.current.quote,
+        anotherAmount: baseIn ? computeAmountRef.current.quote : computeAmountRef.current.base,
+        liquidity: computedLpRef.current.toString(),
+        baseIn
+      })
+      return
+    }
+    addLiquidityAct({
+      poolInfo: pool,
+      amountA: computeAmountRef.current.base,
+      amountB: computeAmountRef.current.quote,
+      fixedSide: baseIn ? 'a' : 'b',
+      ...callBacks
     })
   }
 

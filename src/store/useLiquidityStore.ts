@@ -40,7 +40,7 @@ interface LiquidityStore {
       poolInfo: ApiV3PoolInfoStandardItem
       inputAmount: string
       anotherAmount: string
-      liquidity: BN
+      liquidity: string
       baseIn: boolean
     } & TxCallbackProps
   ) => Promise<string>
@@ -114,6 +114,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
       if (!raydium) return ''
       const { execute } = await raydium.cpmm.addLiquidity({
         ...params,
+        liquidity: new BN(new Decimal(params.liquidity).mul(10 ** params.poolInfo.lpMint.decimals).toString()),
         inputAmount: new BN(new Decimal(params.inputAmount).mul(10 ** params.poolInfo.mintA.decimals).toFixed(0)),
         anotherAmount: new BN(new Decimal(params.anotherAmount).mul(10 ** params.poolInfo.mintA.decimals).toFixed(0)),
         txVersion
@@ -237,7 +238,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
     },
 
     removeCpmmLiquidityAct: async ({ onSent, onError, onFinally, ...params }) => {
-      const { raydium, txVersion } = useAppStore.getState()
+      const { raydium, txVersion, slippage } = useAppStore.getState()
 
       if (!raydium) return ''
       const { poolInfo, lpAmount } = params
@@ -248,8 +249,18 @@ export const useLiquidityStore = createStore<LiquidityStore>(
       const { execute } = await raydium.cpmm.withdrawLiquidity({
         poolInfo,
         lpAmount: new BN(lpAmount),
-        amountMintA: new BN(new Decimal(lpAmount).mul(ratioA).toFixed(0, Decimal.ROUND_DOWN)),
-        amountMintB: new BN(new Decimal(lpAmount).mul(ratioB).toFixed(0, Decimal.ROUND_DOWN)),
+        amountMintA: new BN(
+          new Decimal(lpAmount)
+            .mul(ratioA)
+            .mul(1 - slippage)
+            .toFixed(0, Decimal.ROUND_DOWN)
+        ),
+        amountMintB: new BN(
+          new Decimal(lpAmount)
+            .mul(ratioB)
+            .mul(1 - slippage)
+            .toFixed(0, Decimal.ROUND_DOWN)
+        ),
         txVersion
       })
 
@@ -299,32 +310,6 @@ export const useLiquidityStore = createStore<LiquidityStore>(
         txVersion,
         computeBudgetConfig
       })
-
-      // const { execute, extInfo } = await raydium.liquidity.createPoolV4({
-      //   programId: programIdConfig.AMM_V4,
-      //   marketInfo: {
-      //     marketId: new PublicKey(pool.marketId),
-      //     programId: programIdConfig.OPEN_BOOK_PROGRAM
-      //   },
-      //   baseMintInfo: {
-      //     mint: new PublicKey(pool.mintA.address),
-      //     decimals: pool.mintA.decimals
-      //   },
-      //   quoteMintInfo: {
-      //     mint: new PublicKey(pool.mintB.address),
-      //     decimals: pool.mintB.decimals
-      //   },
-      //   baseAmount: new BN(baseAmount),
-      //   quoteAmount: new BN(quoteAmount),
-      //   startTime: new BN((startTime ? Number(startTime) : Date.now() + 2 * 60 * 1000) / 1000),
-      //   ownerInfo: {
-      //     useSOLBalance: true
-      //   },
-      //   associatedOnly: false,
-      //   txVersion,
-      //   feeDestinationId: new PublicKey('7YttLkHDoNj9wyDur5pM1ejNaAvT9X4eqaYcHQqtj2G5'),
-      //   computeBudgetConfig
-      // })
 
       const meta = getTxMeta({
         action: 'createPool',

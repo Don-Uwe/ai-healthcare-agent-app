@@ -28,9 +28,11 @@ export default function UnStakeLiquidity({
   const { t } = useTranslation()
   const featureDisabled = useAppStore((s) => s.featureDisabled.removeStandardPosition)
   const removeLiquidityAct = useLiquidityStore((s) => s.removeLiquidityAct)
+  const removeCpmmLiquidityAct = useLiquidityStore((s) => s.removeCpmmLiquidityAct)
   const [removePercent, setRemovePercent] = useState(0)
   const getTokenBalanceUiAmount = useTokenAccountStore((s) => s.getTokenBalanceUiAmount)
   const liquidity = getTokenBalanceUiAmount({ mint: poolInfo?.lpMint.address || '', decimals: poolInfo?.lpMint.decimals }).amount
+  const [isTxSending, setIsTxSending] = useState(false)
   const circleRef = useRef<IntervalCircleHandler>(null)
   const amountA = rpcPoolData
     ? new Decimal(rpcPoolData.baseReserve.toString()).div(10 ** rpcPoolData.baseDecimals)
@@ -46,12 +48,30 @@ export default function UnStakeLiquidity({
   const quoteRatio = amountB.div(lpAmount)
 
   const removeAmount = new Decimal(liquidity).mul(removePercent).div(100)
-
   const handleRemove = () => {
     if (!poolInfo) return
+    setIsTxSending(true)
+
+    const callBacks = {
+      onSent: () => {
+        setRemovePercent(0)
+      },
+      onFinally: () => setIsTxSending(false)
+    }
+
+    const isCpmm = useAppStore.getState().programIdConfig.CREATE_POOL_PROGRAM.toBase58() === poolInfo.programId
+    if (isCpmm) {
+      removeCpmmLiquidityAct({
+        poolInfo,
+        lpAmount: removeAmount.mul(10 ** poolInfo.lpMint.decimals).toFixed(0),
+        ...callBacks
+      })
+      return
+    }
     removeLiquidityAct({
       poolInfo,
-      amount: removeAmount.mul(10 ** poolInfo.lpMint.decimals).toFixed(0)
+      amount: removeAmount.mul(10 ** poolInfo.lpMint.decimals).toFixed(0),
+      ...callBacks
     })
   }
 
@@ -107,7 +127,7 @@ export default function UnStakeLiquidity({
         </Flex>
         <SimpleGrid columns={2} rowGap="6px" columnGap="44px"></SimpleGrid>
       </Box>
-      <Button mt={10} isDisabled={featureDisabled || !poolInfo || removeAmount.isZero()} onClick={handleRemove}>
+      <Button mt={10} isLoading={isTxSending} isDisabled={featureDisabled || !poolInfo || removeAmount.isZero()} onClick={handleRemove}>
         {featureDisabled ? t('common.disabled') : t('liquidity.remove_liquidity')}
       </Button>
     </Flex>
