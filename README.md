@@ -76,7 +76,7 @@ If you would like to contribute to the project, please follow the contribution g
 
 * **Maintain contribution guidelines:** Each project may have its own specific contribution guidelines. It's important to familiarize yourself with these guidelines before submitting your contributions. Adhering to these guidelines ensures consistency and helps maintain the quality of the codebase.
 
-* **Format your commit message with the issue number:** When making commits related to an issue, follow the format Fixes: #32 in your commit message. Replace 32 with the issue number you are addressing. This helps track and manage issues more efficiently.
+* **Format your commit message with the issue number:** When making commits related to an issue, follow the format **Fixes: #32 in your commit message. Replace 32 with the issue number you are addressing.** This helps track and manage issues more efficiently.
 
 * **Attach a Postman response screenshot for backend tasks:** For tasks related to the backend, it is recommended to include a screenshot of the Postman response along with your pull request. This provides additional context and helps reviewers understand the changes made and their impact on the backend functionality.
 
