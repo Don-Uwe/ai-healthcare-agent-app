@@ -130,7 +130,6 @@ export default function CandleChart({ onPriceChange, baseMint, quoteMint, timeTy
     chartRef.current.chart = chart
     chartRef.current.candle = candlestickSeries
     chartRef.current.volume = volumeSeries
-
     return () => {
       chart.remove()
       chartRef.current = {}
@@ -141,7 +140,7 @@ export default function CandleChart({ onPriceChange, baseMint, quoteMint, timeTy
     if (!chartRef.current.chart) return
     chartRef.current.candle?.setData(data)
     chartRef.current.volume?.setData(data)
-  }, [data, timeType])
+  }, [data, timeType, pair])
 
   useEffect(() => {
     chartRef.current.chart?.timeScale().resetTimeScale()
