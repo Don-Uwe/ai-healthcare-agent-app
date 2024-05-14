@@ -295,8 +295,8 @@ export const useLiquidityStore = createStore<LiquidityStore>(
       const computeBudgetConfig = await getComputeBudgetConfig()
 
       const { execute, extInfo } = await raydium.cpmm.createPool({
-        programId: programIdConfig.CREATE_POOL_PROGRAM,
-        poolFeeAccount: programIdConfig.CREATE_POOL_FEE_ACC,
+        programId: programIdConfig.CREATE_CPMM_POOL_PROGRAM,
+        poolFeeAccount: programIdConfig.CREATE_CPMM_POOL_FEE_ACC,
         mintA: pool.mintA,
         mintB: pool.mintB,
         mintAAmount: new BN(baseAmount),

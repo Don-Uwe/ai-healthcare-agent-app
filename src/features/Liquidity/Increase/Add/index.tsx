@@ -168,7 +168,7 @@ export default function AddLiquidity({
       onFinally: () => setIsTxSending(false)
     }
 
-    const isCpmm = pool.programId === useAppStore.getState().programIdConfig.CREATE_POOL_PROGRAM.toBase58()
+    const isCpmm = pool.programId === useAppStore.getState().programIdConfig.CREATE_CPMM_POOL_PROGRAM.toBase58()
     const baseIn = focusRef.current === 'base'
 
     if (isCpmm) {

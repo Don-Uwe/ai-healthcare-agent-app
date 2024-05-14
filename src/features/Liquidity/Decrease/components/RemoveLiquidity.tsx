@@ -59,7 +59,7 @@ export default function UnStakeLiquidity({
       onFinally: () => setIsTxSending(false)
     }
 
-    const isCpmm = useAppStore.getState().programIdConfig.CREATE_POOL_PROGRAM.toBase58() === poolInfo.programId
+    const isCpmm = useAppStore.getState().programIdConfig.CREATE_CPMM_POOL_PROGRAM.toBase58() === poolInfo.programId
     if (isCpmm) {
       removeCpmmLiquidityAct({
         poolInfo,
