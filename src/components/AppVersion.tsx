@@ -1,7 +1,8 @@
-import { useAppStore } from '@/store/useAppStore'
+import { useAppStore, PRIORITY_LEVEL_KEY, PRIORITY_MODE_KEY, PriorityLevel, PriorityMode } from '@/store/useAppStore'
 import { useCallback, useEffect } from 'react'
 import { Modal, ModalBody, ModalOverlay, ModalHeader, ModalContent, ModalFooter, Button } from '@chakra-ui/react'
 import { useTranslation } from 'react-i18next'
+import { getStorageItem } from '@/utils/localStorage'
 
 export default function AppVersion() {
   const { t } = useTranslation()
@@ -12,6 +13,11 @@ export default function AppVersion() {
   }, [])
 
   useEffect(() => {
+    useAppStore.setState({
+      priorityLevel: getStorageItem(PRIORITY_LEVEL_KEY) ? Number(getStorageItem(PRIORITY_LEVEL_KEY)) : PriorityLevel.Turbo,
+      priorityMode: getStorageItem(PRIORITY_MODE_KEY) ? Number(getStorageItem(PRIORITY_MODE_KEY)) : PriorityMode.MaxCap
+    })
+
     const interval = window.setInterval(() => {
       checkAppVersionAct()
     }, 60 * 1000)

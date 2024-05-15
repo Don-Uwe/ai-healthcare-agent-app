@@ -20,8 +20,12 @@ interface Props<T> {
 type MintData = RawMint & { address: PublicKey }
 
 const preFetchMints: Map<string, MintData> = new Map()
-const poolLpAuthority = new Set(['5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1', '3uaZBfHPfmpAHW7dsimC1SnyR61X4bJqQZKWmRSCXJxv'])
-const LP_CACHE_KEY = '_r_lp_b_'
+const poolLpAuthority = new Set([
+  '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1',
+  '3uaZBfHPfmpAHW7dsimC1SnyR61X4bJqQZKWmRSCXJxv',
+  'GpMZbSM2GgvTKHJirzeGfMFoaZ8UR2X7F4v8vHTvxFbL'
+])
+const LP_CACHE_KEY = '_r_lp_b2_'
 const noneLpMintSet = new Set<string>(JSON.parse(getStorageItem(LP_CACHE_KEY) || '[]'))
 
 const fetcher = async ([connection, publicKeyList]: [Connection, string[]]) => {
@@ -30,6 +34,7 @@ const fetcher = async ([connection, publicKeyList]: [Connection, string[]]) => {
     if (!preFetchMints.has(p)) newFetchList.push(ToPublicKey(p))
     else fetchedList.push(p)
   })
+
   if (!newFetchList.length) return fetchedList.map((p) => preFetchMints.get(p)!)
   logMessage('rpc: get multiple lp mint acc info')
 
@@ -86,6 +91,8 @@ export default function useFetchAccLpMint<T>({
 
   const fetch = shouldFetch && !!connection
 
+  //Ff68JGeEiUEF859B2xEaPX82vuFeuwxqoxGNHTZPAuKR
+  console.log(123123444, readyFetchMints)
   const { data, ...rest } = useSWR(fetch ? [connection, readyFetchMints] : null, fetcher, {
     refreshInterval,
     dedupingInterval: refreshInterval,

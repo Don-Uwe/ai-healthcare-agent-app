@@ -175,8 +175,8 @@ const appInitState = {
   tokenAccLoaded: false,
   commitment: 'confirmed' as Commitment,
 
-  priorityLevel: getStorageItem(PRIORITY_LEVEL_KEY) ? Number(getStorageItem(PRIORITY_LEVEL_KEY)) : PriorityLevel.Turbo,
-  priorityMode: getStorageItem(PRIORITY_MODE_KEY) ? Number(getStorageItem(PRIORITY_MODE_KEY)) : PriorityMode.MaxCap,
+  priorityLevel: PriorityLevel.Turbo,
+  priorityMode: PriorityMode.MaxCap,
   feeConfig: {},
   transactionFee: getStorageItem(FEE_KEY) === null ? '0.0001' : getStorageItem(FEE_KEY) || ''
 }

@@ -26,7 +26,7 @@ import { handleMultiTxRetry } from '@/hooks/toast/retryTx'
 import BN from 'bn.js'
 import Decimal from 'decimal.js'
 import { getComputeBudgetConfig } from '@/utils/tx/computeBudget'
-
+setLoggerLevel('Raydium_cpmm', LogLevel.Debug)
 interface LiquidityStore {
   newCreatedPool?: CreateCpmmPoolAddress
   addLiquidityAct: (
@@ -255,7 +255,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
       const { execute } = await raydium.cpmm.withdrawLiquidity({
         poolInfo,
         lpAmount: new BN(lpAmount),
-        slippage: new Percent(slippage / 10000, 10000),
+        slippage: new Percent(slippage * 10000, 10000),
         txVersion
       })
 
