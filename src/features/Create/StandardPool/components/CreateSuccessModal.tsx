@@ -34,14 +34,14 @@ export default function CreateSuccessModal({ ammId }: Props) {
             <Text variant="dialogTitle" mt="4" mb="2">
               Pool created successfully!
             </Text>
-            <Flex alignItems="center">
-              <Text fontSize="sm" color={colors.primary} mr="1">
+            <Flex alignItems="center" maxW="100%" flexWrap="wrap" gap="1.5">
+              <Text fontSize="sm" color={colors.primary}>
                 AMMID:
               </Text>
-              <Text fontSize="sm" color={colors.textPurple} mr="2">
+              <Text fontSize="md" color={colors.textPurple} maxW="80%">
                 {ammId}
+                <CopyIcon cursor="pointer" onClick={onCopy} style={{ display: 'inline-block', marginLeft: '2px', marginBottom: '2px' }} />
               </Text>
-              <CopyIcon onClick={onCopy} />
             </Flex>
             <Text borderRadius="lg" my="4" fontSize="sm" color={colors.semanticWarning} bg={colors.backgroundDark} p="2">
               Note: Your pool may take a few minutes before appearing in the pool list. Please kindly wait and refresh the page, and then
