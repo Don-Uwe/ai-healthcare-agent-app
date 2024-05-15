@@ -268,9 +268,8 @@ export default function Initialize() {
             )}
           </div>
         )}
-        <HStack>
-          <Text fontWeight="medium" fontSize="sm" color={colors.semanticWarning} my="-2">
-            {/* TODO need creation fee */}
+        <HStack color={colors.semanticWarning}>
+          <Text fontWeight="medium" fontSize="sm" my="-2">
             {t('create_standard_pool.pool_creation_fee_note', { subject: `${''}` })}
           </Text>
           <QuestionToolTip iconType="question" label={t('create_standard_pool.pool_creation_fee_tooltip')} />
