@@ -292,7 +292,7 @@ function useTxStatus() {
                   >
                     <Flex alignItems="center" gap="2">
                       {txStatus[txId] === 'error' ? (
-                        <CircleError />
+                        <CircleError width="16px" height="16px" />
                       ) : txStatus[txId] === 'info' ? (
                         <CircleInfo width="16px" height="16px" />
                       ) : (

@@ -107,21 +107,21 @@ export default function FarmEdit() {
         poolInfo: clmmData,
         rewardInfos: editedRewardRef.current.getRewards().map((r) => ({
           mint: solToWSolToken(r.mint),
-          openTime: Math.floor(Math.max(r.openTime, onlineCurrentDate + 30000) / 1000),
+          openTime: Math.floor(Math.max(r.openTime, onlineCurrentDate) / 1000),
           endTime: Math.floor(r.endTime / 1000),
-          perSecond: new Decimal(r.perWeek)
+          perSecond: new Decimal(r.total)
             .mul(10 ** r.mint.decimals)
-            .div(WEEK_SECONDS)
-            .toDecimalPlaces(20)
+            .div(new Decimal(r.endTime).sub(Math.max(r.openTime, onlineCurrentDate)).div(1000))
+            .toDecimalPlaces(0, Decimal.ROUND_DOWN)
         })),
         newRewardInfos: newRewardRef.current.getRewards().map((r) => ({
           mint: solToWSolToken(r.mint),
           openTime: Math.floor(r.openTime / 1000),
           endTime: Math.floor(r.endTime / 1000),
-          perSecond: new Decimal(r.perWeek)
+          perSecond: new Decimal(r.total)
             .mul(10 ** r.mint.decimals)
-            .div(WEEK_SECONDS)
-            .toDecimalPlaces(20)
+            .div(new Decimal(r.endTime).sub(r.openTime).div(1000))
+            .toDecimalPlaces(0, Decimal.ROUND_DOWN)
         })),
         onFinally: offSending,
         onConfirmed: () => {
@@ -137,20 +137,20 @@ export default function FarmEdit() {
         mint: new PublicKey(r.mint.address),
         openTime: Math.floor(Math.max(r.openTime, onlineCurrentDate + 30000) / 1000),
         endTime: Math.floor(r.endTime / 1000),
-        perSecond: new Decimal(r.perWeek)
+        perSecond: new Decimal(r.total)
           .mul(10 ** r.mint.decimals)
-          .div(WEEK_SECONDS)
-          .toFixed(0),
+          .div(new Decimal(r.endTime).sub(Math.max(r.openTime, onlineCurrentDate)).div(1000))
+          .toFixed(0, Decimal.ROUND_DOWN),
         rewardType: farmData!.rewardInfos.find((oldR) => r.mint.address === oldR.mint.address)!.type
       })),
       newRewards: newRewardRef.current.getRewards().map((r) => ({
         mint: new PublicKey(r.mint.address),
         openTime: Math.floor(r.openTime / 1000),
         endTime: Math.floor(r.endTime / 1000),
-        perSecond: new Decimal(r.perWeek)
+        perSecond: new Decimal(r.total)
           .mul(10 ** r.mint.decimals)
-          .div(WEEK_SECONDS)
-          .toFixed(0),
+          .div(new Decimal(r.endTime).sub(Math.max(r.openTime, onlineCurrentDate)).div(1000))
+          .toFixed(0, Decimal.ROUND_DOWN),
         rewardType: 'Standard SPL'
       })),
       onFinally: offSending,

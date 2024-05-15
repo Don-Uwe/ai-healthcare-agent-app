@@ -21,9 +21,10 @@ import {
 } from '@chakra-ui/react'
 import { Wallet } from '@solana/wallet-adapter-react'
 
-import CircleError from '@/icons/misc/CircleError'
 import CircleSuccess from '@/icons/misc/CircleSuccess'
 import CircleInfo from '@/icons/misc/CircleInfo'
+import CircleWarning from '@/icons/misc/CircleWarning'
+import CircleError from '@/icons/misc/CircleError'
 import { colors } from '@/theme/cssVariables'
 import { toUTC } from '@/utils/date'
 import SolanaNetworkIcon from '@/icons/networks/SolanaNetworkIcon'
@@ -260,10 +261,12 @@ function RecentTransactionCard({ transaction }: { transaction: RecentTransaction
         <Box gridArea="statu" alignSelf={'center'}>
           {transaction.status === 'info' ? (
             <CircleInfo width="16px" height="16px" />
+          ) : transaction.status === 'warning' ? (
+            <CircleWarning width="16px" height="16px" />
           ) : transaction.status === 'success' ? (
             <CircleSuccess />
           ) : (
-            <CircleError />
+            <CircleError width="16px" height="16px" />
           )}
         </Box>
         <Box
@@ -303,6 +306,8 @@ function RecentTransactionCard({ transaction }: { transaction: RecentTransaction
                     <Box gridArea="statu" alignSelf="center">
                       {subTransaction.status === 'info' ? (
                         <CircleInfo width="14px" height="14px" />
+                      ) : subTransaction.status === 'warning' ? (
+                        <CircleWarning width="14px" height="14px" />
                       ) : subTransaction.status === 'success' ? (
                         <CircleSuccess width="14px" height="14px" />
                       ) : (
