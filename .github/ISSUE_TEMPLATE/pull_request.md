@@ -1,7 +1,7 @@
 ## Pull Request Template
 
 **PR Description** 
-Please include a summary of the changes and the related issue. Describe your changes in detail.
+  Please include a summary of the changes and the related issue. Describe your changes in detail.
 
 **Type of Change** 
 (put an 'x' for the conditions that apply)
@@ -9,14 +9,26 @@ Please include a summary of the changes and the related issue. Describe your cha
 [] New feature (change which adds functionality)
 [] Documentation update
 
+**Select your work-area**
+[] Frontend
+[] Backend
+[] Documentation
+[] Others
+
 **Related Issue**
 Please provide a link to the issue solved if applicable.
 
+**Add your Work Example**
+  Add a Snapshot 
+
 **Fixes** (mention the issue number which this fixes)
-#closes 
+  #closes 
 
 **Checklist**
-[] I have updated my branch and synced it with project 'main' branch before making this PR.
+[] I have updated my branch and synced it with project 'develop' branch before making this PR.
+[] I have optimized the file changes.
+[] I have added a snapshot of my work example.
+[] I have made a PR to project develop branch.
 
 **Undertaking**
 1. My code follows the style guidelines of this project.
