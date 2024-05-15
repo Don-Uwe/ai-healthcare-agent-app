@@ -158,7 +158,7 @@ const appInitState = {
   rpcs: [],
   urlConfigs: {
     ...API_URLS,
-    BASE_HOST: 'https://api-v3.asdf1234.win'
+    BASE_HOST: !isProdEnv() ? getStorageItem('_r_api_host_') || API_URLS.BASE_HOST : API_URLS.BASE_HOST
   },
   programIdConfig: ALL_PROGRAM_ID,
   jupTokenType: JupTokenType.Strict,
