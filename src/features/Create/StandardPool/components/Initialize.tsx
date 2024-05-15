@@ -51,10 +51,13 @@ export default function Initialize() {
   const [startDateMode, setStartDateMode] = useState<'now' | 'custom'>('now')
   const isStartNow = startDateMode === 'now'
 
-  const currentPrice = new Decimal(tokenAmount[baseIn ? 'quote' : 'base'] || 0)
-    .div(tokenAmount[baseIn ? 'base' : 'quote'] || 1)
-    .toDecimalPlaces(baseToken?.decimals ?? 6)
-    .toString()
+  const currentPrice =
+    new Decimal(tokenAmount.base || 0).lte(0) || new Decimal(tokenAmount.quote || 0).lte(0)
+      ? ''
+      : new Decimal(tokenAmount[baseIn ? 'quote' : 'base'] || 0)
+          .div(tokenAmount[baseIn ? 'base' : 'quote'] || 1)
+          .toDecimalPlaces(baseToken?.decimals ?? 6)
+          .toString()
 
   const error = useInitPoolSchema({ baseToken, quoteToken, tokenAmount, startTime: startDate })
 
@@ -145,7 +148,7 @@ export default function Initialize() {
             {t('create_standard_pool.current_price')}:
           </Text>
           <Text pl={1} fontSize="sm" color={colors.textSecondary} fontWeight="medium">
-            1 {baseIn ? baseSymbol : quoteSymbol} ≈ {currentPrice} {baseIn ? quoteSymbol : baseSymbol}
+            1 {baseIn ? baseSymbol : quoteSymbol} ≈ {currentPrice || '-'} {baseIn ? quoteSymbol : baseSymbol}
           </Text>
           <Box
             padding="1px"

@@ -323,8 +323,6 @@ export const useLiquidityStore = createStore<LiquidityStore>(
         set({ newCreatedPool: extInfo.address })
       }
 
-      console.log(123123111, extInfo.address)
-
       return execute()
         .then(({ txId, signedTx }) => {
           txStatusSubject.next({
