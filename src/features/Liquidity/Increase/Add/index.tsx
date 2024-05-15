@@ -1,5 +1,5 @@
 import { Flex, HStack, Text, useDisclosure } from '@chakra-ui/react'
-import { ApiV3PoolInfoStandardItem, ApiV3Token, TokenInfo } from '@raydium-io/raydium-sdk-v2'
+import { ApiV3PoolInfoStandardItem, ApiV3Token, TokenInfo, setLoggerLevel, LogLevel } from '@raydium-io/raydium-sdk-v2'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -23,7 +23,7 @@ import { throttle } from '@/utils/functionMethods'
 import useRefreshEpochInfo from '@/hooks/app/useRefreshEpochInfo'
 
 const InputWidth = ['100%']
-
+setLoggerLevel('Raydium_LiquidityV2', LogLevel.Debug)
 export default function AddLiquidity({
   pool,
   poolNotFound,
@@ -86,7 +86,7 @@ export default function AddLiquidity({
       baseIn: isBase
     })
     computeAmountRef.current[updateSide] = r.maxOutput
-    computedLpRef.current = new Decimal(r.liquidity.toString()).div(10 ** pool.lpMint.decimals)
+    computedLpRef.current = new Decimal(r.liquidity.toString())
     setPairAmount((prev) => ({
       ...prev,
       [updateSide]: r.output
@@ -177,7 +177,8 @@ export default function AddLiquidity({
         inputAmount: baseIn ? computeAmountRef.current.base : computeAmountRef.current.quote,
         anotherAmount: baseIn ? computeAmountRef.current.quote : computeAmountRef.current.base,
         liquidity: computedLpRef.current.toString(),
-        baseIn
+        baseIn,
+        ...callBacks
       })
       return
     }
@@ -258,7 +259,9 @@ export default function AddLiquidity({
           {t('liquidity.total_deposit')}
         </Text>
         <Text fontSize="xl" color={colors.textPrimary} fontWeight="medium">
-          {formatCurrency(new Decimal(pool?.lpPrice ?? 0).mul(computedLpRef.current).toString(), { symbol: '$' })}
+          {formatCurrency(new Decimal(pool?.lpPrice ?? 0).mul(computedLpRef.current.div(10 ** (pool?.lpMint.decimals ?? 0))).toString(), {
+            symbol: '$'
+          })}
         </Text>
       </Flex>
       {/* footer */}

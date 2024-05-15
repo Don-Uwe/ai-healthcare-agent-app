@@ -5,7 +5,10 @@ import {
   ApiV3Token,
   FormatFarmInfoOutV6,
   toToken,
-  TokenAmount
+  TokenAmount,
+  Percent,
+  setLoggerLevel,
+  LogLevel
 } from '@raydium-io/raydium-sdk-v2'
 import createStore from './createStore'
 import { useAppStore } from './useAppStore'
@@ -109,22 +112,29 @@ export const useLiquidityStore = createStore<LiquidityStore>(
     ...initLiquiditySate,
 
     addCpmmLiquidityAct: async ({ onSent, onError, onFinally, ...params }) => {
-      const { raydium, txVersion } = useAppStore.getState()
+      const { raydium, txVersion, slippage } = useAppStore.getState()
       if (!raydium) return ''
+      const baseIn = params.baseIn
+
       const { execute } = await raydium.cpmm.addLiquidity({
         ...params,
-        liquidity: new BN(new Decimal(params.liquidity).mul(10 ** params.poolInfo.lpMint.decimals).toString()),
-        inputAmount: new BN(new Decimal(params.inputAmount).mul(10 ** params.poolInfo.mintA.decimals).toFixed(0)),
-        anotherAmount: new BN(new Decimal(params.anotherAmount).mul(10 ** params.poolInfo.mintA.decimals).toFixed(0)),
+        inputAmount: new BN(new Decimal(params.inputAmount).mul(10 ** params.poolInfo[baseIn ? 'mintA' : 'mintB'].decimals).toFixed(0)),
+        slippage: new Percent(slippage * 10000, 10000),
         txVersion
       })
 
       const meta = getTxMeta({
         action: 'addLiquidity',
         values: {
-          amountA: formatLocaleStr(params.inputAmount, params.poolInfo.mintA.decimals)!,
+          amountA: formatLocaleStr(
+            baseIn ? params.inputAmount : params.anotherAmount,
+            params.poolInfo[baseIn ? 'mintA' : 'mintB'].decimals
+          )!,
           symbolA: getMintSymbol({ mint: params.poolInfo.mintA, transformSol: true }),
-          amountB: formatLocaleStr(params.anotherAmount, params.poolInfo.mintB.decimals)!,
+          amountB: formatLocaleStr(
+            baseIn ? params.anotherAmount : params.inputAmount,
+            params.poolInfo[baseIn ? 'mintB' : 'mintA'].decimals
+          )!,
           symbolB: getMintSymbol({ mint: params.poolInfo.mintB, transformSol: true })
         }
       })
@@ -242,24 +252,10 @@ export const useLiquidityStore = createStore<LiquidityStore>(
       if (!raydium) return ''
       const { poolInfo, lpAmount } = params
 
-      const ratioA = new Decimal(poolInfo.mintAmountA).div(poolInfo.lpAmount)
-      const ratioB = new Decimal(poolInfo.mintAmountB).div(poolInfo.lpAmount)
-
       const { execute } = await raydium.cpmm.withdrawLiquidity({
         poolInfo,
         lpAmount: new BN(lpAmount),
-        amountMintA: new BN(
-          new Decimal(lpAmount)
-            .mul(ratioA)
-            .mul(1 - slippage)
-            .toFixed(0, Decimal.ROUND_DOWN)
-        ),
-        amountMintB: new BN(
-          new Decimal(lpAmount)
-            .mul(ratioB)
-            .mul(1 - slippage)
-            .toFixed(0, Decimal.ROUND_DOWN)
-        ),
+        slippage: new Percent(slippage / 10000, 10000),
         txVersion
       })
 
@@ -413,7 +409,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
     },
 
     computePairAmount: ({ pool, amount, baseIn }) => {
-      const { raydium, slippage } = useAppStore.getState()
+      const { raydium, slippage, programIdConfig } = useAppStore.getState()
       if (!raydium)
         return {
           output: '0',
@@ -421,12 +417,14 @@ export const useLiquidityStore = createStore<LiquidityStore>(
           liquidity: new BN(0)
         }
 
-      const r = raydium.liquidity.computePairAmount({
+      const isCpmm = pool.programId === programIdConfig.CREATE_CPMM_POOL_PROGRAM.toBase58()
+      const params = {
         poolInfo: pool,
         amount,
         baseIn,
-        slippage: slippage * 100
-      })
+        slippage: new Percent(slippage * 10000, 10000)
+      }
+      const r = isCpmm ? raydium.cpmm.computePairAmount(params) : raydium.liquidity.computePairAmount(params)
 
       return {
         output: r.anotherAmount.toExact(),
