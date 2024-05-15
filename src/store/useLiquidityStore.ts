@@ -115,12 +115,13 @@ export const useLiquidityStore = createStore<LiquidityStore>(
       const { raydium, txVersion, slippage } = useAppStore.getState()
       if (!raydium) return ''
       const baseIn = params.baseIn
-
+      const computeBudgetConfig = await getComputeBudgetConfig()
       const { execute } = await raydium.cpmm.addLiquidity({
         ...params,
         inputAmount: new BN(new Decimal(params.inputAmount).mul(10 ** params.poolInfo[baseIn ? 'mintA' : 'mintB'].decimals).toFixed(0)),
         slippage: new Percent(slippage * 10000, 10000),
-        txVersion
+        txVersion,
+        computeBudgetConfig
       })
 
       const meta = getTxMeta({
@@ -212,12 +213,14 @@ export const useLiquidityStore = createStore<LiquidityStore>(
       const { raydium, txVersion } = useAppStore.getState()
 
       if (!raydium) return ''
+      const computeBudgetConfig = await getComputeBudgetConfig()
       const { poolInfo, amount, config } = params
       const { execute } = await raydium.liquidity.removeLiquidity({
         poolInfo,
         amountIn: new BN(amount),
         config,
-        txVersion
+        txVersion,
+        computeBudgetConfig
       })
 
       const percent = new Decimal(amount).div(10 ** poolInfo.lpMint.decimals).div(poolInfo?.lpAmount || 1)
@@ -251,12 +254,13 @@ export const useLiquidityStore = createStore<LiquidityStore>(
 
       if (!raydium) return ''
       const { poolInfo, lpAmount } = params
-
+      const computeBudgetConfig = await getComputeBudgetConfig()
       const { execute } = await raydium.cpmm.withdrawLiquidity({
         poolInfo,
         lpAmount: new BN(lpAmount),
         slippage: new Percent(slippage * 10000, 10000),
-        txVersion
+        txVersion,
+        computeBudgetConfig
       })
 
       const percent = new Decimal(lpAmount).div(10 ** poolInfo.lpMint.decimals).div(poolInfo?.lpAmount || 1)
