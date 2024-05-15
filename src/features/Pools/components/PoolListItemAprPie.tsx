@@ -7,6 +7,7 @@ import { aprColors, emptyAprColor } from './PoolListItemAprLine'
 export function PoolListItemAprPie({ aprs, w = 16, h = 16 }: { aprs: AprData; w?: number; h?: number }) {
   const isNotZeroApr = useMemo(() => Boolean(aprs.rewards.some(({ apr }) => !eq(apr, 0))), [aprs])
   const isZeroApr = !isNotZeroApr
+  const rewards = aprs.fee.apr > 0 ? [aprs.fee, ...aprs.rewards] : aprs.rewards
 
   return (
     <Box
@@ -14,7 +15,7 @@ export function PoolListItemAprPie({ aprs, w = 16, h = 16 }: { aprs: AprData; w?
         background: `conic-gradient(${
           isZeroApr
             ? `${emptyAprColor} 0%, ${emptyAprColor} 100%`
-            : (aprs.rewards ?? [])
+            : (rewards ?? [])
                 .map(({ percentInTotal: percent }, idx, aprValues) => {
                   const startAt = aprValues.slice(0, idx).reduce((a, { percentInTotal: b }) => a + Number(b), 0)
                   const endAt = Number(startAt) + Number(percent)
