@@ -24,6 +24,48 @@ in case you are stuck:
 
 <br>
 
+## **Contributing Process**
+
+
+We follow the "fork and pull request" workflow for accepting contributions. To contribute to the project, please follow these steps:
+
+
+1.Fork the repository to your GitHub account.
+
+2.Clone the forked repository to your local machine.
+
+3.Create a new branch for your changes: git checkout -b my-branch.
+
+4.Make your changes and test them thoroughly.
+
+5.Commit your changes: git commit -m "Add descriptive commit message".
+
+6.Push the changes to your forked repository: git push origin my-branch.
+
+7.Open a pull request (PR) against the main repository.
+
+<br>
+
+
+## **Style Guide**
+
+
+To maintain consistency and readability, please adhere to our style guide when contributing code or documentation. Some key points to keep in mind:
+
+
+1.Use consistent indentation and spacing.
+
+2.Follow the naming conventions used in the project.
+
+3.Write clear and concise comments.
+
+4.Use meaningful variable and function names.
+
+5.Keep code and documentation formatting consistent.
+
+<br>
+
+
 ## **Issue Report Process 📌**
 
 1. Go to the project's issues.
