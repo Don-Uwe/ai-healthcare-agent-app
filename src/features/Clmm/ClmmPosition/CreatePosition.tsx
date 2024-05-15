@@ -39,6 +39,7 @@ import Decimal from 'decimal.js'
 import { trimTrailZero } from '@/utils/numberish/formatter'
 import useClmmApr from '@/features/Clmm/useClmmApr'
 import { useEvent } from '@/hooks/useEvent'
+import { SlippageAdjuster } from '@/components/SlippageAdjuster'
 
 type FormatParams = Parameters<typeof formatToMaxDigit>[0]
 
@@ -568,17 +569,20 @@ export default function CreatePosition() {
         >
           <Flex alignItems="center" justifyContent="space-between" mb="3">
             <Flex>{t('clmm.add_deposit_amount')}</Flex>
-            <IntervalCircle
-              componentRef={refreshCircleRef}
-              duration={60 * 1000}
-              svgWidth={18}
-              strokeWidth={2}
-              trackStrokeColor={colors.secondary}
-              trackStrokeOpacity={0.5}
-              filledTrackStrokeColor={colors.secondary}
-              onClick={handleClickRefresh}
-              onEnd={handleClickRefresh}
-            />
+            <Flex align="center" gap={3}>
+              <SlippageAdjuster />
+              <IntervalCircle
+                componentRef={refreshCircleRef}
+                duration={60 * 1000}
+                svgWidth={18}
+                strokeWidth={2}
+                trackStrokeColor={colors.secondary}
+                trackStrokeOpacity={0.5}
+                filledTrackStrokeColor={colors.secondary}
+                onClick={handleClickRefresh}
+                onEnd={handleClickRefresh}
+              />
+            </Flex>
           </Flex>
           {/* TODO not need now */}
           {/* <Flex color={colors.textSecondary} fontSize="sm" mb="4" alignItems="center" gap="1" mt="2">

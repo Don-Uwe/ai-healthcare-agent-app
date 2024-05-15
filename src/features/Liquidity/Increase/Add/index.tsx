@@ -14,6 +14,7 @@ import { formatCurrency } from '@/utils/numberish/formatter'
 import { getMintSymbol, wSolToSolString } from '@/utils/token'
 // import AutoSwapModal from './components/AutoSwapModal'
 import StakeLpModal from './components/StakeLpModal'
+import { SlippageAdjuster } from '@/components/SlippageAdjuster'
 
 import Decimal from 'decimal.js'
 import shallow from 'zustand/shallow'
@@ -278,6 +279,7 @@ export default function AddLiquidity({
           <HorizontalSwitchSmallIcon cursor="pointer" onClick={onToggleReverse} />
         </HStack>
         <HStack fontSize="xl" color={colors.textPrimary} fontWeight="medium" spacing={3}>
+          <SlippageAdjuster />
           <IntervalCircle
             componentRef={circleRef}
             svgWidth={18}

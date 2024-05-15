@@ -13,6 +13,7 @@ import { formatCurrency, getFirstNonZeroDecimal } from '@/utils/numberish/format
 import { getMintSymbol } from '@/utils/token'
 import {
   Box,
+  Collapse,
   Flex,
   HStack,
   Modal,
@@ -26,12 +27,15 @@ import {
 } from '@chakra-ui/react'
 import { ApiV3PoolInfoConcentratedItem } from '@raydium-io/raydium-sdk-v2'
 import IntervalCircle, { IntervalCircleHandler } from '@/components/IntervalCircle'
+import { SlippageAdjuster } from '@/components/SlippageAdjuster'
+import { SlippageSettingField } from '@/components/SlippageAdjuster/SlippageSettingField'
 import Decimal from 'decimal.js'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { removeValidateSchema } from './validateSchema'
 import { useEvent } from '@/hooks/useEvent'
 import { RpcPoolData } from '@/hooks/pool/clmm/useSubscribeClmmInfo'
+import { useDisclosure } from '@/hooks/useDelayDisclosure'
 
 export default function RemoveLiquidityModal({
   isOpen,
@@ -59,10 +63,16 @@ export default function RemoveLiquidityModal({
   const [decimalA, decimalB] = [poolInfo.mintA.decimals, poolInfo.mintB.decimals]
   const { amountSlippageA, amountSlippageB } = getPriceAndAmount({ poolInfo, position })
   const circleRef = useRef<IntervalCircleHandler>(null)
+  const { isOpen: isSlippageOpen, onToggle: onToggleSlippage, onClose: onSlippageClose } = useDisclosure()
 
   const handleClick = useEvent(() => {
     circleRef.current?.restart()
     onRefresh?.()
+  })
+
+  const handleCloseModal = useEvent(() => {
+    onClose()
+    onSlippageClose()
   })
 
   const [sending, setIsSending] = useState(false)
@@ -165,21 +175,11 @@ export default function RemoveLiquidityModal({
   }, [sending, onSyncSending])
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="lg">
+    <Modal isOpen={isOpen} onClose={handleCloseModal} size="lg">
       <ModalOverlay />
       <ModalContent>
         <ModalHeader display={'flex'} gap="2" alignItems="center">
           {t('clmm.modal_header_remove_liquidity')}
-          <IntervalCircle
-            componentRef={circleRef}
-            svgWidth={18}
-            strokeWidth={2}
-            trackStrokeColor={colors.secondary}
-            trackStrokeOpacity={0.5}
-            filledTrackStrokeColor={colors.secondary}
-            onClick={handleClick}
-            onEnd={onRefresh}
-          />
         </ModalHeader>
         <ModalCloseButton top="25px" />
         <ModalBody mt="10px">
@@ -207,6 +207,22 @@ export default function RemoveLiquidityModal({
           />
           <Box mt={[3, 4]}>
             <AmountSlider actionRef={sliderRef} percent={percent} onChange={handlePercentChange} isDisabled={position.liquidity.isZero()} />
+            <Flex align="center" justify="flex-end" gap={3}>
+              <SlippageAdjuster onClick={onToggleSlippage} />
+              <IntervalCircle
+                componentRef={circleRef}
+                svgWidth={18}
+                strokeWidth={2}
+                trackStrokeColor={colors.secondary}
+                trackStrokeOpacity={0.5}
+                filledTrackStrokeColor={colors.secondary}
+                onClick={handleClick}
+                onEnd={onRefresh}
+              />
+            </Flex>
+            <Collapse in={isSlippageOpen} animateOpacity>
+              <SlippageSettingField onClose={onSlippageClose} />
+            </Collapse>
             <Flex
               flexDirection="column"
               gap="2"
@@ -279,7 +295,7 @@ export default function RemoveLiquidityModal({
                   setPercent(0)
                   setTokenAmount(['', ''])
                   setMinTokenAmount(['', ''])
-                  onClose()
+                  handleCloseModal()
                 },
                 onError: () => setIsSending(false)
               })
@@ -287,7 +303,7 @@ export default function RemoveLiquidityModal({
           >
             {featureDisabled ? t('common.disabled') : position.liquidity.isZero() ? t('clmm.close_position') : error || t('button.confirm')}
           </Button>
-          <Button w="full" variant="ghost" fontSize="sm" color={colors.textSecondary} onClick={onClose}>
+          <Button w="full" variant="ghost" fontSize="sm" color={colors.textSecondary} onClick={handleCloseModal}>
             {t('button.cancel')}
           </Button>
         </ModalFooter>

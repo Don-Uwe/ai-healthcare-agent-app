@@ -117,6 +117,7 @@
     "slippage_tolerance": "Slippage Tolerance",
     "slippage_tolerance_tooltip": "Select maximum slippage tolerance",
     "slippage_tolerance_forerun": "Your transaction may be frontrun and result in an unfavorable trade",
+    "slippage_tolerance_fail": "Your transaction may fail",
     "language": "Language",
     "language_tooltip": "Select preferred language",
     "versioned_transaction": "Versioned Transaction",

@@ -22,6 +22,7 @@ import IntervalCircle, { IntervalCircleHandler } from '@/components/IntervalCirc
 import { colors } from '@/theme/cssVariables'
 import Decimal from 'decimal.js'
 import { useEvent } from '@/hooks/useEvent'
+import { SlippageAdjuster } from '@/components/SlippageAdjuster'
 
 export default function UnStakeLiquidity({
   poolInfo,
@@ -111,16 +112,6 @@ export default function UnStakeLiquidity({
         <Text fontSize="xl" fontWeight="medium" color={colors.textPrimary}>
           {t('liquidity.select_farm')}
         </Text>
-        <IntervalCircle
-          componentRef={circleRef}
-          svgWidth={18}
-          strokeWidth={2}
-          trackStrokeColor={colors.secondary}
-          trackStrokeOpacity={0.5}
-          filledTrackStrokeColor={colors.secondary}
-          onClick={handleClick}
-          onEnd={handleRefresh}
-        />
       </Flex>
       <Select<FormattedFarmInfo>
         sx={{ py: '12px', px: '14px', borderRadius: '8px', bg: colors.backgroundDark, width: 'full' }}
@@ -155,6 +146,19 @@ export default function UnStakeLiquidity({
         onChange={setWithdrawPercent}
         mt={4}
       />
+      <Flex align="center" justify="flex-end" mb={2} gap={3}>
+        <SlippageAdjuster />
+        <IntervalCircle
+          componentRef={circleRef}
+          svgWidth={18}
+          strokeWidth={2}
+          trackStrokeColor={colors.secondary}
+          trackStrokeOpacity={0.5}
+          filledTrackStrokeColor={colors.secondary}
+          onClick={handleClick}
+          onEnd={handleRefresh}
+        />
+      </Flex>
       <Box bg={colors.backgroundDark} borderRadius="12px" py={3} px={6}>
         <Text fontSize="md" fontWeight="medium" color={colors.textSecondary}>
           {t('liquidity.rewards_to_be_harvested')}

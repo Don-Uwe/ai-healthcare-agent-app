@@ -17,6 +17,7 @@ import { SwapKlinePanelMobileDrawer } from './components/SwapKlinePanelMobileDra
 import { SwapKlinePanelMobileThumbnail } from './components/SwapKlinePanelMobileThumbnail'
 import { SwapPanel } from './components/SwapPanel'
 import { TimeType } from '@/hooks/pool/useFetchPoolKLine'
+import { SlippageAdjuster } from '@/components/SlippageAdjuster'
 
 export default function Swap() {
   const { inputMint: cacheInput, outputMint: cacheOutput } = getSwapPairCache()
@@ -69,6 +70,7 @@ export default function Swap() {
       width={!isMobile && isPCChartShown ? 'min(100%, 1300px)' : undefined}
     >
       <HStack alignSelf="flex-end" my={[1, 0]}>
+        <SlippageAdjuster />
         {!isMobile && isPCChartShown && (
           <Box
             cursor="pointer"

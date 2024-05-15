@@ -8,6 +8,7 @@ import TokenAvatarPair from '@/components/TokenAvatarPair'
 import { FormattedPoolInfoStandardItem } from '@/hooks/pool/type'
 import { useAppStore, useTokenAccountStore } from '@/store'
 import IntervalCircle, { IntervalCircleHandler } from '@/components/IntervalCircle'
+import { SlippageAdjuster } from '@/components/SlippageAdjuster'
 import { formatCurrency } from '@/utils/numberish/formatter'
 import { useLiquidityStore } from '@/store/useLiquidityStore'
 
@@ -82,18 +83,6 @@ export default function UnStakeLiquidity({
 
   return (
     <Flex borderRadius="24px" direction="column" w="full" px="24px" py="32px" bg={colors.backgroundLight}>
-      <Flex justifyContent="flex-end" mb="3">
-        <IntervalCircle
-          componentRef={circleRef}
-          svgWidth={18}
-          strokeWidth={2}
-          trackStrokeColor={colors.secondary}
-          trackStrokeOpacity={0.5}
-          filledTrackStrokeColor={colors.secondary}
-          onClick={handleEnd}
-          onEnd={onRefresh}
-        />
-      </Flex>
       <Flex justifyContent="space-between" align="center" py="6" px="4" bg={colors.backgroundDark} borderRadius="12px">
         <Flex gap="2" alignItems="center">
           <TokenAvatarPair token1={poolInfo?.mintA} token2={poolInfo?.mintB} />
@@ -109,6 +98,19 @@ export default function UnStakeLiquidity({
         </Box>
       </Flex>
       <AmountSlider isDisabled={featureDisabled || liquidity.isZero()} percent={removePercent} onChange={setRemovePercent} mt={4} />
+      <Flex align="center" gap={3} justifyContent="flex-end" mb="2">
+        <SlippageAdjuster />
+        <IntervalCircle
+          componentRef={circleRef}
+          svgWidth={18}
+          strokeWidth={2}
+          trackStrokeColor={colors.secondary}
+          trackStrokeOpacity={0.5}
+          filledTrackStrokeColor={colors.secondary}
+          onClick={handleEnd}
+          onEnd={onRefresh}
+        />
+      </Flex>
       <Box bg={colors.backgroundDark} borderRadius="12px" py={3} px={6}>
         <Text fontSize="md" fontWeight="medium" mb="2" color={colors.textSecondary}>
           {t('liquidity.assets_to_received')}:

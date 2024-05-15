@@ -42,12 +42,13 @@ export function PriorityModalContent(props: {
   const triggerPanelGap = 24
   const isMobile = useAppStore((s) => s.isMobile)
 
+  const feeConfig = useAppStore((s) => s.feeConfig)
   const appPriorityLevel = useAppStore((s) => s.priorityLevel)
   const appPriorityMode = useAppStore((s) => s.priorityMode)
 
   const getTriggerRect = () => props.triggerRef.current?.getBoundingClientRect()
   const { currentFee, onChangeFee, onSaveFee, isOpen } = props
-  const feeWarn = Number(currentFee) <= 0
+  const feeWarn = Number(currentFee) <= (feeConfig[0] ?? 0)
 
   const [priorityMode, setPriorityMode] = useState(PriorityMode.MaxCap)
   const [priorityLevel, setPriorityLevel] = useState(PriorityLevel.Turbo)

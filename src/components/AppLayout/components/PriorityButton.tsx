@@ -17,7 +17,6 @@ export function PriorityButton() {
 
   const triggerRef = useRef<HTMLDivElement>(null)
   const [currentFee, setCurrentFee] = useState<string | undefined>()
-  // TODO: need compare with market rate
   const feeWarn = Number(currentFee) <= (feeConfig[0] ?? 0)
   const handleChangeFee = useEvent((val?: string) => {
     setCurrentFee(val)
