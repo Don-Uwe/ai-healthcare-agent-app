@@ -91,8 +91,6 @@ export default function useFetchAccLpMint<T>({
 
   const fetch = shouldFetch && !!connection
 
-  //Ff68JGeEiUEF859B2xEaPX82vuFeuwxqoxGNHTZPAuKR
-  console.log(123123444, readyFetchMints)
   const { data, ...rest } = useSWR(fetch ? [connection, readyFetchMints] : null, fetcher, {
     refreshInterval,
     dedupingInterval: refreshInterval,
