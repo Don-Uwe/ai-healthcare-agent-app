@@ -1,10 +1,9 @@
 import { Box, Flex, HStack, Spacer, Text, VStack } from '@chakra-ui/react'
-import { ApiV3PoolInfoItem, solToWSol, RAYMint } from '@raydium-io/raydium-sdk-v2'
+import { ApiV3PoolInfoItem, solToWSol } from '@raydium-io/raydium-sdk-v2'
 
 import Button from '@/components/Button'
 import EditIcon from '@/icons/misc/EditIcon'
 import { colors } from '@/theme/cssVariables'
-import { useTokenStore, useTokenAccountStore } from '@/store'
 
 import PoolReviewItem from './PoolReviewItem'
 import RewardReviewItem from './RewardReviewItem'
@@ -24,8 +23,6 @@ export default function DetailReview(props: {
   onJumpToStepReward(): void
 }) {
   const { t } = useTranslation()
-  const getTokenBalanceUiAmount = useTokenAccountStore((s) => s.getTokenBalanceUiAmount)
-  const tokenMap = useTokenStore((s) => s.tokenMap)
   const { data: tokenPrices } = useTokenPrice({
     mintList: props.rewardInfos.map((r) => r.token?.address)
   })
@@ -35,14 +32,6 @@ export default function DetailReview(props: {
   props.rewardInfos.forEach((r) => {
     total = total.add(new Decimal(r.amount || 0).mul(tokenPrices[solToWSol(r.token?.address || '').toString() || '']?.value || 0))
   })
-
-  const rayToken = tokenMap.get(RAYMint.toString())
-  const error =
-    props.poolInfo?.type === 'Standard' &&
-    rayToken &&
-    getTokenBalanceUiAmount({ mint: rayToken.address, decimals: rayToken.decimals }).amount.lt('300')
-      ? t('create_farm.error_text_create_farm')
-      : undefined
 
   return (
     <Box>
@@ -88,14 +77,8 @@ export default function DetailReview(props: {
           <Button size={['lg', 'md']} variant="outline" flexBasis="120px" onClick={props.onClickBackButton}>
             {t('button.back')}
           </Button>
-          <Button
-            size={['lg', 'md']}
-            flexBasis="300px"
-            isDisabled={!!error}
-            isLoading={props.isSending}
-            onClick={props.onClickCreateFarmButton}
-          >
-            {error || t('create_farm.button_create_farm')}
+          <Button size={['lg', 'md']} flexBasis="300px" isLoading={props.isSending} onClick={props.onClickCreateFarmButton}>
+            {t('create_farm.button_create_farm')}
           </Button>
         </Flex>
       </Flex>
