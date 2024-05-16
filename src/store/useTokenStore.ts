@@ -77,7 +77,7 @@ export const useTokenStore = createStore<TokenStore>(
       useAppStore.setState({ jupTokenType: type }, false, action)
 
       const update = !!forceUpdate || useAppStore.getState().jupTokenType !== type
-      raydium.token.load({ forceUpdate: update, type, fetchTokenPrice: update }).then(() => {
+      raydium.token.load({ forceUpdate: update, type }).then(() => {
         get().extraLoadedTokenList.forEach((t) => {
           const existed = raydium.token.tokenMap.has(t.address)
           if (!existed) {

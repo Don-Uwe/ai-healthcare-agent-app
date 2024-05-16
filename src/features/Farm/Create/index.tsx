@@ -92,10 +92,10 @@ export default function CreateFarm() {
         poolInfo: selectedPool as ApiV3PoolInfoStandardItem,
         rewardInfos: rewardInfos.map((r) => ({
           mint: new PublicKey(r.token!.address),
-          perSecond: new Decimal(r.perWeek!)
+          perSecond: new Decimal(r.amount!)
             .mul(10 ** r.token!.decimals)
-            .div(WEEK_SECONDS)
-            .toFixed(0),
+            .div(new Decimal(r.farmEnd!).sub(new Decimal(Math.max(r.farmStart!, Date.now()))).div(1000))
+            .toFixed(0, Decimal.ROUND_DOWN),
           openTime: Number(new Decimal(Math.max(r.farmStart!, Date.now())).div(1000).toFixed(0)),
           endTime: Number(new Decimal(r.farmEnd!).div(1000).toFixed(0)),
           rewardType: 'Standard SPL'
@@ -118,10 +118,10 @@ export default function CreateFarm() {
       poolInfo: selectedPool as ApiV3PoolInfoConcentratedItem,
       rewardInfos: rewardInfos.map((r) => ({
         mint: r.token!,
-        perSecond: new Decimal(r.perWeek!)
+        perSecond: new Decimal(r.amount!)
           .mul(10 ** r.token!.decimals)
-          .div(WEEK_SECONDS)
-          .toDecimalPlaces(0),
+          .div(new Decimal(r.farmEnd!).sub(new Decimal(Math.max(r.farmStart!, Date.now()))).div(1000))
+          .toDecimalPlaces(0, Decimal.ROUND_DOWN),
         openTime: Math.floor(new Decimal(Math.max(r.farmStart!, Date.now())).div(1000).toNumber()),
         endTime: Math.floor(new Decimal(r.farmEnd!).div(1000).toNumber())
       })),

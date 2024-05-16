@@ -22,8 +22,8 @@ export function farmV6RewardToEditReward(reward: FormattedRewardInfoV6): EditRew
   return {
     mint: reward.mint,
     total: reward.totalRewards,
-    openTime: reward.openTime,
-    endTime: reward.endTime,
+    openTime: Number(reward.openTime),
+    endTime: Number(reward.endTime),
     perWeek: reward.weekly,
     status: getFarmStatus(reward),
     apr: reward.apr

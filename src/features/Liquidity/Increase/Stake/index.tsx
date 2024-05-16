@@ -19,6 +19,7 @@ import Decimal from 'decimal.js'
 import SelectFarmListItem from '../../components/SelectFarmListItem'
 import SelectedFarm from '../../components/SelectedFarm'
 import IntervalCircle, { IntervalCircleHandler } from '@/components/IntervalCircle'
+import { SlippageAdjuster } from '@/components/SlippageAdjuster'
 import { useEvent } from '@/hooks/useEvent'
 interface Props {
   poolInfo?: FormattedPoolInfoStandardItem
@@ -111,16 +112,19 @@ export default function Stake({ poolInfo, disabled, onRefresh }: Props) {
         <Text fontSize="xl" fontWeight="medium" color={colors.textPrimary}>
           {t('liquidity.select_farm')}
         </Text>
-        <IntervalCircle
-          componentRef={circleRef}
-          svgWidth={18}
-          strokeWidth={2}
-          trackStrokeColor={colors.secondary}
-          trackStrokeOpacity={0.5}
-          filledTrackStrokeColor={colors.secondary}
-          onClick={handleClick}
-          onEnd={handleRefresh}
-        />
+        <Flex align="center" gap={3}>
+          <SlippageAdjuster />
+          <IntervalCircle
+            componentRef={circleRef}
+            svgWidth={18}
+            strokeWidth={2}
+            trackStrokeColor={colors.secondary}
+            trackStrokeOpacity={0.5}
+            filledTrackStrokeColor={colors.secondary}
+            onClick={handleClick}
+            onEnd={handleRefresh}
+          />
+        </Flex>
       </Flex>
       <Select<FormattedFarmInfo>
         sx={{ py: '12px', px: '14px', borderRadius: '8px', bg: colors.backgroundDark, width: 'full' }}

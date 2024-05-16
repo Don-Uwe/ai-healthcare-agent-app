@@ -29,7 +29,7 @@ export type RpcAmmPool =
 
 const fetcher = async (url: string) => {
   try {
-    const data = await axios.get<AmmV4Keys | AmmV5Keys>(url)
+    const data = await axios.get<(AmmV4Keys | AmmV5Keys)[]>(url)
     return data
   } catch (e) {
     return undefined
@@ -53,14 +53,14 @@ export default function useFetchRpcPoolData({ poolId, refreshInterval = MINUTE_M
   const [connection, host, poolKeyUrl] = useAppStore((s) => [s.connection, s.urlConfigs.BASE_HOST, s.urlConfigs.POOL_KEY_BY_ID], shallow)
   const readyFetch = !!(connection && poolId && shouldFetch)
 
-  const { data: poolKeysData } = useSWR(readyFetch ? `${host}${poolKeyUrl}`.replace('{id}', poolId) : null, fetcher, {
+  const { data: poolKeysData } = useSWR(readyFetch ? `${host}${poolKeyUrl}?ids=${poolId}` : null, fetcher, {
     dedupingInterval: 60 * MINUTE_MILLISECONDS,
     focusThrottleInterval: 60 * MINUTE_MILLISECONDS,
     refreshInterval: 60 * MINUTE_MILLISECONDS
   })
 
   const { data, isLoading, mutate } = useSWR(
-    readyFetch && poolKeysData ? [connection, poolKeysData.data, refreshTag] : null,
+    readyFetch && poolKeysData ? [connection, poolKeysData.data[0], refreshTag] : null,
     poolDataFetcher,
     {
       dedupingInterval: refreshInterval,

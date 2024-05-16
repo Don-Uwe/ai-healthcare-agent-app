@@ -21,7 +21,7 @@ export const fetchComputePrice = async () => {
 }
 
 export async function getComputeBudgetConfig(): Promise<ComputeBudgetConfig | undefined> {
-  const transactionFee = useAppStore.getState().transactionFee
+  const transactionFee = useAppStore.getState().getPriorityFee()
   if (isNaN(parseFloat(String(transactionFee) || ''))) {
     const json = await fetchComputePrice()
     const { avg } = json?.[15] ?? {}

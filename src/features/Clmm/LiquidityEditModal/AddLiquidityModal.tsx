@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import {
   Box,
   Badge,
+  Collapse,
   Flex,
   Text,
   Modal,
@@ -34,6 +35,9 @@ import { Desktop, Mobile } from '@/components/MobileDesktop'
 import useTokenPrice from '@/hooks/token/useTokenPrice'
 import { useEvent } from '@/hooks/useEvent'
 import IntervalCircle, { IntervalCircleHandler } from '@/components/IntervalCircle'
+import { SlippageAdjuster } from '@/components/SlippageAdjuster'
+import { SlippageSettingField } from '@/components/SlippageAdjuster/SlippageSettingField'
+import { useDisclosure } from '@/hooks/useDelayDisclosure'
 import { calRatio } from '../utils/math'
 import Decimal from 'decimal.js'
 import BN from 'bn.js'
@@ -62,10 +66,16 @@ export default function AddLiquidityModal({
   const { priceLower, priceUpper, amountA, amountB } = getPriceAndAmount({ poolInfo, position })
 
   const circleRef = useRef<IntervalCircleHandler>(null)
+  const { isOpen: isSlippageOpen, onToggle: onToggleSlippage, onClose: onSlippageClose } = useDisclosure()
 
   const handleClick = useEvent(() => {
     circleRef.current?.restart()
     onRefresh?.()
+  })
+
+  const handleCloseModal = useEvent(() => {
+    onClose()
+    onSlippageClose()
   })
 
   const currentPrice = baseIn ? new Decimal(poolInfo.price) : new Decimal(1).div(poolInfo.price)
@@ -176,7 +186,7 @@ export default function AddLiquidityModal({
   }, [sending, onSyncSending])
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="lg">
+    <Modal isOpen={isOpen} onClose={handleCloseModal} size="lg">
       <ModalOverlay />
       <ModalContent>
         <ModalHeader display="flex" gap={[1, 2]} alignItems={'center'}>
@@ -264,20 +274,23 @@ export default function AddLiquidityModal({
             </Flex>
           </Box>
 
-          <HStack mb="2" gap={2} alignItems="center" flexWrap={'wrap'}>
+          <HStack mb="2" gap={2} justifyContent="space-between" alignItems="center" flexWrap={'wrap'}>
             <Text variant="title" fontSize="md">
               {t('liquidity.add_liquidity')}
             </Text>
-            <IntervalCircle
-              componentRef={circleRef}
-              svgWidth={18}
-              strokeWidth={2}
-              trackStrokeColor={colors.secondary}
-              trackStrokeOpacity={0.5}
-              filledTrackStrokeColor={colors.secondary}
-              onClick={handleClick}
-              onEnd={onRefresh}
-            />
+            <Flex align="center" gap={3}>
+              <SlippageAdjuster onClick={onToggleSlippage} />
+              <IntervalCircle
+                componentRef={circleRef}
+                svgWidth={18}
+                strokeWidth={2}
+                trackStrokeColor={colors.secondary}
+                trackStrokeOpacity={0.5}
+                filledTrackStrokeColor={colors.secondary}
+                onClick={handleClick}
+                onEnd={onRefresh}
+              />
+            </Flex>
             {/* TODO not need now */}
             {/* <HStack justifySelf={'end'} fontSize="sm" color={colors.textTertiary}>
               <HStack>
@@ -287,6 +300,9 @@ export default function AddLiquidityModal({
               <Switch name="matchDepositRatio" defaultChecked={true} />
             </HStack> */}
           </HStack>
+          <Collapse in={isSlippageOpen} animateOpacity>
+            <SlippageSettingField onClose={onSlippageClose} />
+          </Collapse>
           <CLMMTokenInputGroup
             disableSelectToken
             pool={poolInfo}
@@ -333,14 +349,14 @@ export default function AddLiquidityModal({
                 amountMaxB: new Decimal(tokenAmount[baseIn ? 1 : 0]!).mul(10 ** poolInfo.mintB.decimals).toFixed(0),
                 onFinally: () => {
                   setIsSending(false)
-                  onClose()
+                  handleCloseModal()
                 }
               })
             }}
           >
             {featureDisabled ? t('common.disabled') : error || t('button.confirm')}
           </Button>
-          <Button w="full" variant="ghost" fontSize="sm" color={colors.textSecondary} onClick={onClose}>
+          <Button w="full" variant="ghost" fontSize="sm" color={colors.textSecondary} onClick={handleCloseModal}>
             {t('button.cancel')}
           </Button>
         </ModalFooter>

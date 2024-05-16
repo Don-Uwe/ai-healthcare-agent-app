@@ -88,11 +88,12 @@ export default function PoolListItemAprDetailPopoverContent({
               <Flex gap={4} w="full" key={String(reward.token?.address)} justify="space-between" align="center" fontSize="12px" mt="8px">
                 <HStack fontWeight="normal" color={colors.textSecondary} spacing="5px">
                   <TokenAvatar size="xs" token={reward.token} />
-                  <Box color={colors.textPrimary}>({formatCurrency(reward.amount, { decimalPlaces: 1, abbreviated: true })})</Box>
+                  <Box color={colors.textPrimary}>{formatCurrency(reward.amount, { decimalPlaces: 1, abbreviated: true })}</Box>
                   <Box>{reward.token?.symbol}</Box>
                   <Box color={colors.textPrimary}>
                     (
                     {formatCurrency(new Decimal(tokenPrices[reward.token.address]?.value || 0).mul(reward.amount).toString(), {
+                      symbol: '$',
                       abbreviated: true,
                       decimalPlaces: 2
                     })}

@@ -37,7 +37,7 @@ export default function useFetchPoolByLpMint(
   const [host, searchLpUrl] = useAppStore((s) => [s.urlConfigs.BASE_HOST, s.urlConfigs.POOL_SEARCH_LP], shallow)
   const url = !lpMintList || !shouldFetch || !readyIdList.length ? null : host + searchLpUrl
 
-  const { data, isLoading, error, ...rest } = useSWR(url ? [url.replace('{lp_mints}', lpMintList.join(',')), refreshTag] : url, fetcher, {
+  const { data, isLoading, error, ...rest } = useSWR(url ? [url + `?lps=${lpMintList.join(',')}`, refreshTag] : url, fetcher, {
     dedupingInterval: refreshInterval,
     focusThrottleInterval: refreshInterval,
     refreshInterval,

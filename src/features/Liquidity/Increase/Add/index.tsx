@@ -1,5 +1,5 @@
 import { Flex, HStack, Text, useDisclosure } from '@chakra-ui/react'
-import { ApiV3PoolInfoStandardItem, ApiV3Token, TokenInfo } from '@raydium-io/raydium-sdk-v2'
+import { ApiV3PoolInfoStandardItem, ApiV3Token, TokenInfo, setLoggerLevel, LogLevel } from '@raydium-io/raydium-sdk-v2'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -14,6 +14,7 @@ import { formatCurrency } from '@/utils/numberish/formatter'
 import { getMintSymbol, wSolToSolString } from '@/utils/token'
 // import AutoSwapModal from './components/AutoSwapModal'
 import StakeLpModal from './components/StakeLpModal'
+import { SlippageAdjuster } from '@/components/SlippageAdjuster'
 
 import Decimal from 'decimal.js'
 import shallow from 'zustand/shallow'
@@ -23,7 +24,7 @@ import { throttle } from '@/utils/functionMethods'
 import useRefreshEpochInfo from '@/hooks/app/useRefreshEpochInfo'
 
 const InputWidth = ['100%']
-
+setLoggerLevel('Raydium_LiquidityV2', LogLevel.Debug)
 export default function AddLiquidity({
   pool,
   poolNotFound,
@@ -39,7 +40,10 @@ export default function AddLiquidity({
   onSelectToken: (token: TokenInfo | ApiV3Token, side: 'base' | 'quote') => void
 }) {
   const { t } = useTranslation()
-  const [addLiquidityAct, computePairAmount] = useLiquidityStore((s) => [s.addLiquidityAct, s.computePairAmount], shallow)
+  const [addLiquidityAct, computePairAmount, addCpmmLiquidityAct] = useLiquidityStore(
+    (s) => [s.addLiquidityAct, s.computePairAmount, s.addCpmmLiquidityAct],
+    shallow
+  )
   const epochInfo = useAppStore((s) => s.epochInfo)
   useRefreshEpochInfo()
 
@@ -83,7 +87,7 @@ export default function AddLiquidity({
       baseIn: isBase
     })
     computeAmountRef.current[updateSide] = r.maxOutput
-    computedLpRef.current = new Decimal(r.liquidity.toString()).div(10 ** pool.lpMint.decimals)
+    computedLpRef.current = new Decimal(r.liquidity.toString())
     setPairAmount((prev) => ({
       ...prev,
       [updateSide]: r.output
@@ -153,11 +157,8 @@ export default function AddLiquidity({
   const handleClickAdd = () => {
     if (!pool) return
     setIsTxSending(true)
-    addLiquidityAct({
-      poolInfo: pool,
-      amountA: computeAmountRef.current.base,
-      amountB: computeAmountRef.current.quote,
-      fixedSide: focusRef.current === 'base' ? 'a' : 'b',
+
+    const callBacks = {
       onSent: () => {
         setPairAmount({ base: '', quote: '' })
         computeAmountRef.current = { base: '', quote: '' }
@@ -166,6 +167,28 @@ export default function AddLiquidity({
         if (pool.farmOngoingCount > 0) onOpenStakeLp()
       },
       onFinally: () => setIsTxSending(false)
+    }
+
+    const isCpmm = pool.programId === useAppStore.getState().programIdConfig.CREATE_CPMM_POOL_PROGRAM.toBase58()
+    const baseIn = focusRef.current === 'base'
+
+    if (isCpmm) {
+      addCpmmLiquidityAct({
+        poolInfo: pool,
+        inputAmount: baseIn ? computeAmountRef.current.base : computeAmountRef.current.quote,
+        anotherAmount: baseIn ? computeAmountRef.current.quote : computeAmountRef.current.base,
+        liquidity: computedLpRef.current.toString(),
+        baseIn,
+        ...callBacks
+      })
+      return
+    }
+    addLiquidityAct({
+      poolInfo: pool,
+      amountA: computeAmountRef.current.base,
+      amountB: computeAmountRef.current.quote,
+      fixedSide: baseIn ? 'a' : 'b',
+      ...callBacks
     })
   }
 
@@ -237,7 +260,9 @@ export default function AddLiquidity({
           {t('liquidity.total_deposit')}
         </Text>
         <Text fontSize="xl" color={colors.textPrimary} fontWeight="medium">
-          {formatCurrency(new Decimal(pool?.lpPrice ?? 0).mul(computedLpRef.current).toString(), { symbol: '$' })}
+          {formatCurrency(new Decimal(pool?.lpPrice ?? 0).mul(computedLpRef.current.div(10 ** (pool?.lpMint.decimals ?? 0))).toString(), {
+            symbol: '$'
+          })}
         </Text>
       </Flex>
       {/* footer */}
@@ -254,6 +279,7 @@ export default function AddLiquidity({
           <HorizontalSwitchSmallIcon cursor="pointer" onClick={onToggleReverse} />
         </HStack>
         <HStack fontSize="xl" color={colors.textPrimary} fontWeight="medium" spacing={3}>
+          <SlippageAdjuster />
           <IntervalCircle
             componentRef={circleRef}
             svgWidth={18}

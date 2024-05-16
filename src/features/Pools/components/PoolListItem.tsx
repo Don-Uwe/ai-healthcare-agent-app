@@ -102,8 +102,8 @@ export default function PoolListItem({
     router.push({
       pathname: '/swap',
       query: {
-        inputMint: inputMint,
-        outputMint: outputMint
+        inputMint,
+        outputMint
       }
     })
   }, [pool])

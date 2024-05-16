@@ -1,4 +1,4 @@
-import React, { KeyboardEvent, useRef, useState, useCallback } from 'react'
+import React, { KeyboardEvent, useRef, useState, useCallback, useEffect } from 'react'
 import {
   Collapse,
   Divider,
@@ -21,11 +21,13 @@ import { SOLMint } from '@raydium-io/raydium-sdk-v2'
 import { QuestionToolTip } from '@/components/QuestionToolTip'
 import DecimalInput from '@/components/DecimalInput'
 import { colors } from '@/theme/cssVariables'
-import { useAppStore } from '@/store/useAppStore'
+import { useAppStore, PriorityLevel, PriorityMode, PRIORITY_LEVEL_KEY, PRIORITY_MODE_KEY } from '@/store/useAppStore'
 import useTokenPrice from '@/hooks/token/useTokenPrice'
 import { useTranslation } from 'react-i18next'
 import WarningIcon from '@/icons/misc/WarningIcon'
 import { formatCurrency } from '@/utils/numberish/formatter'
+import { setStorageItem } from '@/utils/localStorage'
+import { useEvent } from '@/hooks/useEvent'
 
 export function PriorityModalContent(props: {
   isOpen: boolean
@@ -39,24 +41,51 @@ export function PriorityModalContent(props: {
   const contentRef = useRef<HTMLDivElement>(null)
   const triggerPanelGap = 24
   const isMobile = useAppStore((s) => s.isMobile)
+
+  const feeConfig = useAppStore((s) => s.feeConfig)
+  const appPriorityLevel = useAppStore((s) => s.priorityLevel)
+  const appPriorityMode = useAppStore((s) => s.priorityMode)
+
   const getTriggerRect = () => props.triggerRef.current?.getBoundingClientRect()
-  const { currentFee, onChangeFee, onSaveFee } = props
-  const feeWarn = Number(currentFee) <= 0
-  const [priorityMode, setPriorityMode] = useState(0)
+  const { currentFee, onChangeFee, onSaveFee, isOpen } = props
+  const feeWarn = Number(currentFee) <= (feeConfig[0] ?? 0)
+
+  const [priorityMode, setPriorityMode] = useState(PriorityMode.MaxCap)
+  const [priorityLevel, setPriorityLevel] = useState(PriorityLevel.Turbo)
+
   const handleKeyDown = useCallback((event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
       event.preventDefault()
     }
   }, [])
+
+  const handlePriorityLevelChange = useCallback((index: number) => {
+    setPriorityLevel(index)
+  }, [])
   const handlePriorityModeChange = useCallback((index: number) => {
     setPriorityMode(index)
   }, [])
+
+  const handleSave = useEvent(() => {
+    setStorageItem(PRIORITY_LEVEL_KEY, priorityLevel)
+    setStorageItem(PRIORITY_MODE_KEY, priorityMode)
+    useAppStore.setState({
+      priorityLevel,
+      priorityMode
+    })
+    onSaveFee()
+  })
 
   const { data: tokenPrice } = useTokenPrice({
     mintList: [SOLMint.toBase58()]
   })
   const price = tokenPrice[SOLMint.toBase58()]?.value
   const totalPrice = price && currentFee ? new Decimal(price ?? 0).mul(currentFee).toString() : ''
+
+  useEffect(() => {
+    setPriorityLevel(appPriorityLevel)
+    setPriorityMode(appPriorityMode)
+  }, [appPriorityLevel, appPriorityMode, isOpen])
 
   return (
     <Modal size={'md'} isOpen={props.isOpen} onClose={props.onClose}>
@@ -97,12 +126,12 @@ export function PriorityModalContent(props: {
               {t('setting_board.transaction_priority_fee_usage')}
             </Text>
             <Divider />
-            {/* <Collapse in={priorityMode === 0} animateOpacity style={{ width: '100%' }}>
+            <Collapse in={priorityMode === 0} animateOpacity style={{ width: '100%' }}>
               <VStack width="full" align="flex-start">
                 <Text fontSize="sm" color={colors.textSecondary}>
                   {t('setting_board.priority_level')}
                 </Text>
-                <Tabs w="full" variant="roundedLight" bg={colors.backgroundDark}>
+                <Tabs index={priorityLevel} w="full" variant="roundedLight" bg={colors.backgroundDark} onChange={handlePriorityLevelChange}>
                   <TabList>
                     <Tab
                       flex="1"
@@ -138,7 +167,7 @@ export function PriorityModalContent(props: {
                 </Tabs>
               </VStack>
               <Divider />
-            </Collapse> */}
+            </Collapse>
             <VStack width="full" align="stretch" gap={3}>
               <Flex justify="space-between" align="center">
                 <Text fontSize="sm" color={colors.textSecondary}>
@@ -220,7 +249,7 @@ export function PriorityModalContent(props: {
               mt="1rem"
               background={colors.solidButtonBg}
               isDisabled={Number(currentFee) <= 0}
-              onClick={onSaveFee}
+              onClick={handleSave}
             >
               <Text fontSize="md" fontWeight="medium" bgClip="text" color={colors.buttonSolidText}>
                 {t('button.save')}

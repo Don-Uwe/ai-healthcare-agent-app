@@ -59,7 +59,7 @@ export default function useFetchPoolById<T = ApiV3PoolInfoItem>(
 
   const url = !readyIdList.length || readyIdList.length === cacheDataList.length || !shouldFetch ? null : host + searchIdUrl
 
-  const { data, isLoading, error, ...rest } = useSWR(url ? [url.replace('{ids}', readyIdList.join(',')), refreshTag] : null, fetcher, {
+  const { data, isLoading, error, ...rest } = useSWR(url ? [url + `?ids=${readyIdList.join(',')}`, refreshTag] : null, fetcher, {
     dedupingInterval: refreshInterval,
     focusThrottleInterval: refreshInterval,
     refreshInterval,

@@ -94,8 +94,8 @@ export function formatFarmData<T = FormatFarmInfoOut>(farm: FormatFarmInfoOut): 
   const formattedRewardInfos = farm.rewardInfos.map((r) => {
     const now = dayjs(Date.now() + useAppStore.getState().chainTimeOffset)
     const isV6 = farm.programId === FARM_PROGRAM_ID_V6.toString()
-    const openTime = isV6 ? dayjs((r as RewardInfoV6).openTime * 1000) : now
-    const endTime = isV6 ? dayjs((r as RewardInfoV6).endTime * 1000) : now
+    const openTime = isV6 ? dayjs(Number((r as RewardInfoV6).openTime) * 1000) : now
+    const endTime = isV6 ? dayjs(Number((r as RewardInfoV6).endTime) * 1000) : now
     const totalRewards = new Decimal(endTime.diff(openTime, 'seconds'))
       .mul(r.perSecond)
       .div(10 ** r.mint.decimals)
@@ -103,8 +103,8 @@ export function formatFarmData<T = FormatFarmInfoOut>(farm: FormatFarmInfoOut): 
     const ongoing =
       (r as RewardInfoV6).openTime && (r as RewardInfoV6).endTime
         ? openTime.isBefore(now, 'seconds') && endTime.isAfter(now, 'seconds')
-        : r.perSecond > 0
-    const ended = endTime.isBefore(now, 'seconds') && r.perSecond === 0
+        : Number(r.perSecond) > 0
+    const ended = endTime.isBefore(now, 'seconds') && Number(r.perSecond) === 0
     const unEmitRewards = new Decimal(Math.max(endTime.diff(now, 'seconds'), 0))
       .mul(r.perSecond)
       .div(10 ** r.mint.decimals)
@@ -131,7 +131,7 @@ export function formatFarmData<T = FormatFarmInfoOut>(farm: FormatFarmInfoOut): 
       upcoming: isV6 ? openTime.isBefore(now) : false,
       ongoing,
       ended
-    } as ConditionalFormattedRewardType<T>
+    } as any
   })
 
   return {

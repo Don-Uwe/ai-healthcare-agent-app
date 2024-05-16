@@ -8,6 +8,7 @@ import TokenAvatarPair from '@/components/TokenAvatarPair'
 import { FormattedPoolInfoStandardItem } from '@/hooks/pool/type'
 import { useAppStore, useTokenAccountStore } from '@/store'
 import IntervalCircle, { IntervalCircleHandler } from '@/components/IntervalCircle'
+import { SlippageAdjuster } from '@/components/SlippageAdjuster'
 import { formatCurrency } from '@/utils/numberish/formatter'
 import { useLiquidityStore } from '@/store/useLiquidityStore'
 
@@ -28,9 +29,11 @@ export default function UnStakeLiquidity({
   const { t } = useTranslation()
   const featureDisabled = useAppStore((s) => s.featureDisabled.removeStandardPosition)
   const removeLiquidityAct = useLiquidityStore((s) => s.removeLiquidityAct)
+  const removeCpmmLiquidityAct = useLiquidityStore((s) => s.removeCpmmLiquidityAct)
   const [removePercent, setRemovePercent] = useState(0)
   const getTokenBalanceUiAmount = useTokenAccountStore((s) => s.getTokenBalanceUiAmount)
   const liquidity = getTokenBalanceUiAmount({ mint: poolInfo?.lpMint.address || '', decimals: poolInfo?.lpMint.decimals }).amount
+  const [isTxSending, setIsTxSending] = useState(false)
   const circleRef = useRef<IntervalCircleHandler>(null)
   const amountA = rpcPoolData
     ? new Decimal(rpcPoolData.baseReserve.toString()).div(10 ** rpcPoolData.baseDecimals)
@@ -46,12 +49,30 @@ export default function UnStakeLiquidity({
   const quoteRatio = amountB.div(lpAmount)
 
   const removeAmount = new Decimal(liquidity).mul(removePercent).div(100)
-
   const handleRemove = () => {
     if (!poolInfo) return
+    setIsTxSending(true)
+
+    const callBacks = {
+      onSent: () => {
+        setRemovePercent(0)
+      },
+      onFinally: () => setIsTxSending(false)
+    }
+
+    const isCpmm = useAppStore.getState().programIdConfig.CREATE_CPMM_POOL_PROGRAM.toBase58() === poolInfo.programId
+    if (isCpmm) {
+      removeCpmmLiquidityAct({
+        poolInfo,
+        lpAmount: removeAmount.mul(10 ** poolInfo.lpMint.decimals).toFixed(0),
+        ...callBacks
+      })
+      return
+    }
     removeLiquidityAct({
       poolInfo,
-      amount: removeAmount.mul(10 ** poolInfo.lpMint.decimals).toFixed(0)
+      amount: removeAmount.mul(10 ** poolInfo.lpMint.decimals).toFixed(0),
+      ...callBacks
     })
   }
 
@@ -62,18 +83,6 @@ export default function UnStakeLiquidity({
 
   return (
     <Flex borderRadius="24px" direction="column" w="full" px="24px" py="32px" bg={colors.backgroundLight}>
-      <Flex justifyContent="flex-end" mb="3">
-        <IntervalCircle
-          componentRef={circleRef}
-          svgWidth={18}
-          strokeWidth={2}
-          trackStrokeColor={colors.secondary}
-          trackStrokeOpacity={0.5}
-          filledTrackStrokeColor={colors.secondary}
-          onClick={handleEnd}
-          onEnd={onRefresh}
-        />
-      </Flex>
       <Flex justifyContent="space-between" align="center" py="6" px="4" bg={colors.backgroundDark} borderRadius="12px">
         <Flex gap="2" alignItems="center">
           <TokenAvatarPair token1={poolInfo?.mintA} token2={poolInfo?.mintB} />
@@ -89,6 +98,19 @@ export default function UnStakeLiquidity({
         </Box>
       </Flex>
       <AmountSlider isDisabled={featureDisabled || liquidity.isZero()} percent={removePercent} onChange={setRemovePercent} mt={4} />
+      <Flex align="center" gap={3} justifyContent="flex-end" mb="2">
+        <SlippageAdjuster />
+        <IntervalCircle
+          componentRef={circleRef}
+          svgWidth={18}
+          strokeWidth={2}
+          trackStrokeColor={colors.secondary}
+          trackStrokeOpacity={0.5}
+          filledTrackStrokeColor={colors.secondary}
+          onClick={handleEnd}
+          onEnd={onRefresh}
+        />
+      </Flex>
       <Box bg={colors.backgroundDark} borderRadius="12px" py={3} px={6}>
         <Text fontSize="md" fontWeight="medium" mb="2" color={colors.textSecondary}>
           {t('liquidity.assets_to_received')}:
@@ -107,7 +129,7 @@ export default function UnStakeLiquidity({
         </Flex>
         <SimpleGrid columns={2} rowGap="6px" columnGap="44px"></SimpleGrid>
       </Box>
-      <Button mt={10} isDisabled={featureDisabled || !poolInfo || removeAmount.isZero()} onClick={handleRemove}>
+      <Button mt={10} isLoading={isTxSending} isDisabled={featureDisabled || !poolInfo || removeAmount.isZero()} onClick={handleRemove}>
         {featureDisabled ? t('common.disabled') : t('liquidity.remove_liquidity')}
       </Button>
     </Flex>
