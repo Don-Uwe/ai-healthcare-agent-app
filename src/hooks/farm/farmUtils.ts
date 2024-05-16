@@ -104,12 +104,11 @@ export function formatFarmData<T = FormatFarmInfoOut>(farm: FormatFarmInfoOut): 
       (r as RewardInfoV6).openTime && (r as RewardInfoV6).endTime
         ? openTime.isBefore(now, 'seconds') && endTime.isAfter(now, 'seconds')
         : Number(r.perSecond) > 0
-    const ended = endTime.isBefore(now, 'seconds') && Number(r.perSecond) === 0
+    const ended = endTime.isBefore(now, 'seconds') || Number(r.perSecond) === 0
     const unEmitRewards = new Decimal(Math.max(endTime.diff(now, 'seconds'), 0))
       .mul(r.perSecond)
       .div(10 ** r.mint.decimals)
       .toString()
-
     return {
       ...r,
       apr: r.apr * 100,
@@ -128,7 +127,7 @@ export function formatFarmData<T = FormatFarmInfoOut>(farm: FormatFarmInfoOut): 
         ...r.mint,
         symbol: getMintSymbol({ mint: r.mint, transformSol: true })
       },
-      upcoming: isV6 ? openTime.isBefore(now) : false,
+      upcoming: isV6 ? openTime.isBefore(now) && endTime.isAfter(now) : false,
       ongoing,
       ended
     } as any

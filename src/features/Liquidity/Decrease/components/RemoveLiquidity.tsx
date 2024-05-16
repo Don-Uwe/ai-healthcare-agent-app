@@ -22,7 +22,7 @@ export default function UnStakeLiquidity({
   rpcPoolData,
   onRefresh
 }: {
-  poolInfo?: FormattedPoolInfoStandardItem
+  poolInfo?: FormattedPoolInfoStandardItem | FormattedPoolInfoStandardItemCpmm
   rpcPoolData?: RpcAmmPool
   onRefresh: () => void
 }) {
@@ -63,14 +63,14 @@ export default function UnStakeLiquidity({
     const isCpmm = useAppStore.getState().programIdConfig.CREATE_CPMM_POOL_PROGRAM.toBase58() === poolInfo.programId
     if (isCpmm) {
       removeCpmmLiquidityAct({
-        poolInfo: poolInfo as unknown as FormattedPoolInfoStandardItemCpmm,
+        poolInfo: poolInfo as FormattedPoolInfoStandardItemCpmm,
         lpAmount: removeAmount.mul(10 ** poolInfo.lpMint.decimals).toFixed(0),
         ...callBacks
       })
       return
     }
     removeLiquidityAct({
-      poolInfo,
+      poolInfo: poolInfo as FormattedPoolInfoStandardItem,
       amount: removeAmount.mul(10 ** poolInfo.lpMint.decimals).toFixed(0),
       ...callBacks
     })
