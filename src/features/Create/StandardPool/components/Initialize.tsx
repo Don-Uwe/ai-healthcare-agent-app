@@ -33,10 +33,7 @@ export default function Initialize() {
   const [baseToken, quoteToken] = [tokenMap.get(inputMint), tokenMap.get(outputMint)]
 
   const connection = useAppStore((s) => s.connection)
-  const [createPoolAct, createPoolFee, newCreatedPool, getCreatePoolFeeAct] = useLiquidityStore(
-    (s) => [s.createPoolAct, s.createPoolFee, s.newCreatedPool, s.getCreatePoolFeeAct],
-    shallow
-  )
+  const [createPoolAct, newCreatedPool] = useLiquidityStore((s) => [s.createPoolAct, s.newCreatedPool], shallow)
 
   const [baseIn, setBaeIn] = useState(true)
   const [startDate, setStartDate] = useState<Date | undefined>()
@@ -66,10 +63,6 @@ export default function Initialize() {
   const error = useInitPoolSchema({ baseToken, quoteToken, tokenAmount, startTime: startDate })
 
   useEffect(() => () => useLiquidityStore.setState({ newCreatedPool: undefined }), [])
-  useEffect(() => {
-    if (!connection) return
-    getCreatePoolFeeAct()
-  }, [connection])
 
   const handleSelectToken = useCallback(
     (token: TokenInfo | ApiV3Token, side?: 'input' | 'output') => {
@@ -281,7 +274,7 @@ export default function Initialize() {
         )}
         <HStack color={colors.semanticWarning}>
           <Text fontWeight="medium" fontSize="sm" my="-2">
-            {t('create_standard_pool.pool_creation_fee_note', { subject: createPoolFee })}
+            {t('create_standard_pool.pool_creation_fee_note', { subject: '~0.2' })}
           </Text>
           <QuestionToolTip iconType="question" label={t('create_standard_pool.pool_creation_fee_tooltip')} />
         </HStack>
