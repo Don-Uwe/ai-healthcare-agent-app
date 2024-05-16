@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import Button from '@/components/Button'
 import AmountSlider from '@/components/AmountSlider'
 import TokenAvatarPair from '@/components/TokenAvatarPair'
-import { FormattedPoolInfoStandardItem } from '@/hooks/pool/type'
+import { FormattedPoolInfoStandardItem, FormattedPoolInfoStandardItemCpmm } from '@/hooks/pool/type'
 import { useAppStore, useTokenAccountStore } from '@/store'
 import IntervalCircle, { IntervalCircleHandler } from '@/components/IntervalCircle'
 import { SlippageAdjuster } from '@/components/SlippageAdjuster'
@@ -63,7 +63,7 @@ export default function UnStakeLiquidity({
     const isCpmm = useAppStore.getState().programIdConfig.CREATE_CPMM_POOL_PROGRAM.toBase58() === poolInfo.programId
     if (isCpmm) {
       removeCpmmLiquidityAct({
-        poolInfo,
+        poolInfo: poolInfo as unknown as FormattedPoolInfoStandardItemCpmm,
         lpAmount: removeAmount.mul(10 ** poolInfo.lpMint.decimals).toFixed(0),
         ...callBacks
       })

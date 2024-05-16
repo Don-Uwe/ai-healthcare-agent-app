@@ -4,7 +4,7 @@ import { KeyedMutator } from 'swr'
 import { AxiosResponse } from 'axios'
 import axios from '@/api/axios'
 import shallow from 'zustand/shallow'
-import { PoolsApiReturn, SearchPoolsApiReturn, ApiV3PoolInfoItem, PoolFetchType } from '@raydium-io/raydium-sdk-v2'
+import { PoolsApiReturn, ApiV3PoolInfoItem, PoolFetchType } from '@raydium-io/raydium-sdk-v2'
 import { useAppStore } from '@/store'
 import { MINUTE_MILLISECONDS } from '@/utils/date'
 import { formatPoolData, formatAprData } from './formatter'
@@ -13,7 +13,7 @@ import { ReturnPoolType, ReturnFormattedPoolType } from './type'
 let refreshTag = Date.now()
 export const refreshPoolCache = () => (refreshTag = Date.now())
 
-const fetcher = ([url]: [url: string]) => axios.get<PoolsApiReturn | SearchPoolsApiReturn>(url)
+const fetcher = ([url]: [url: string]) => axios.get<PoolsApiReturn>(url)
 
 const PAGE_SIZE = 100
 
@@ -29,10 +29,10 @@ export default function useFetchPoolList<T extends PoolFetchType>(props?: {
   data: ReturnPoolType<T>[]
   formattedData: ReturnFormattedPoolType<T>[]
   isLoadEnded: boolean
-  setSize: (size: number | ((_size: number) => number)) => Promise<AxiosResponse<PoolsApiReturn | SearchPoolsApiReturn, any>[] | undefined>
+  setSize: (size: number | ((_size: number) => number)) => Promise<AxiosResponse<PoolsApiReturn, any>[] | undefined>
   size: number
   loadMore: () => void
-  mutate: KeyedMutator<AxiosResponse<PoolsApiReturn | SearchPoolsApiReturn, any>[]>
+  mutate: KeyedMutator<AxiosResponse<PoolsApiReturn, any>[]>
   isValidating: boolean
   isLoading: boolean
   isEmpty: boolean

@@ -2,6 +2,7 @@ import {
   ApiV3PoolInfoItem,
   ApiV3PoolInfoStandardItem,
   ApiV3PoolInfoConcentratedItem,
+  ApiV3PoolInfoStandardItemCpmm,
   ApiV3Token,
   PoolFarmRewardInfo,
   PoolFetchType
@@ -40,6 +41,7 @@ type FormattedExtendInfo = {
 export type FormattedPoolInfoItem = ApiV3PoolInfoItem & FormattedExtendInfo
 
 export type FormattedPoolInfoStandardItem = ApiV3PoolInfoStandardItem & FormattedExtendInfo
+export type FormattedPoolInfoStandardItemCpmm = ApiV3PoolInfoStandardItemCpmm & FormattedExtendInfo
 
 export type FormattedPoolInfoConcentratedItem = ApiV3PoolInfoConcentratedItem & FormattedExtendInfo
 

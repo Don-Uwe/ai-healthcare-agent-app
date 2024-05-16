@@ -1,5 +1,6 @@
 import {
   ApiV3PoolInfoStandardItem,
+  ApiV3PoolInfoStandardItemCpmm,
   ApiV3PoolInfoConcentratedItem,
   CreateCpmmPoolAddress,
   ApiV3Token,
@@ -42,7 +43,7 @@ interface LiquidityStore {
   ) => Promise<string>
   addCpmmLiquidityAct: (
     params: {
-      poolInfo: ApiV3PoolInfoStandardItem
+      poolInfo: ApiV3PoolInfoStandardItemCpmm
       inputAmount: string
       anotherAmount: string
       liquidity: string
@@ -60,7 +61,7 @@ interface LiquidityStore {
   ) => Promise<string>
   removeCpmmLiquidityAct: (
     params: {
-      poolInfo: ApiV3PoolInfoStandardItem
+      poolInfo: ApiV3PoolInfoStandardItemCpmm
       lpAmount: string
       config?: {
         bypassAssociatedCheck?: boolean
@@ -96,7 +97,7 @@ interface LiquidityStore {
     } & TxCallbackProps
   ) => Promise<string>
 
-  computePairAmount: (params: { pool: ApiV3PoolInfoStandardItem; amount: string; baseIn: boolean }) => {
+  computePairAmount: (params: { pool: ApiV3PoolInfoStandardItem | ApiV3PoolInfoStandardItemCpmm; amount: string; baseIn: boolean }) => {
     output: string
     maxOutput: string
     liquidity: BN
@@ -432,7 +433,9 @@ export const useLiquidityStore = createStore<LiquidityStore>(
         baseIn,
         slippage: new Percent(slippage * 10000, 10000)
       }
-      const r = isCpmm ? raydium.cpmm.computePairAmount(params) : raydium.liquidity.computePairAmount(params)
+      const r = isCpmm
+        ? raydium.cpmm.computePairAmount({ ...params, poolInfo: params.poolInfo as ApiV3PoolInfoStandardItemCpmm })
+        : raydium.liquidity.computePairAmount({ ...params, poolInfo: params.poolInfo as ApiV3PoolInfoStandardItem })
 
       return {
         output: r.anotherAmount.toExact(),

@@ -1,5 +1,12 @@
 import { Flex, HStack, Text, useDisclosure } from '@chakra-ui/react'
-import { ApiV3PoolInfoStandardItem, ApiV3Token, TokenInfo, setLoggerLevel, LogLevel } from '@raydium-io/raydium-sdk-v2'
+import {
+  ApiV3PoolInfoStandardItem,
+  ApiV3Token,
+  TokenInfo,
+  setLoggerLevel,
+  LogLevel,
+  ApiV3PoolInfoStandardItemCpmm
+} from '@raydium-io/raydium-sdk-v2'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -174,7 +181,7 @@ export default function AddLiquidity({
 
     if (isCpmm) {
       addCpmmLiquidityAct({
-        poolInfo: pool,
+        poolInfo: pool as unknown as ApiV3PoolInfoStandardItemCpmm,
         inputAmount: baseIn ? computeAmountRef.current.base : computeAmountRef.current.quote,
         anotherAmount: baseIn ? computeAmountRef.current.quote : computeAmountRef.current.base,
         liquidity: computedLpRef.current.toString(),
