@@ -20,7 +20,7 @@ export default function AppVersion() {
 
     const interval = window.setInterval(() => {
       checkAppVersionAct()
-    }, 60 * 1000)
+    }, 60 * 1000 * 2)
     checkAppVersionAct()
     useAppStore.getState().fetchPriorityFeeAct()
     return () => window.clearInterval(interval)

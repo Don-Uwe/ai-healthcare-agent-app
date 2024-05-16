@@ -35,6 +35,7 @@ import axios from '@/api/axios'
 import { isValidUrl } from '@/utils/url'
 import { setStorageItem, getStorageItem } from '@/utils/localStorage'
 import { retry, isProdEnv } from '@/utils/common'
+import { compare } from 'compare-versions'
 
 export const defaultNetWork = WalletAdapterNetwork.Mainnet // Can be set to 'devnet', 'testnet', or 'mainnet-beta'
 export const defaultEndpoint = clusterApiUrl(defaultNetWork) // You can also provide a custom RPC endpoint
@@ -355,10 +356,7 @@ export const useAppStore = createStore<AppState>(
         latest: string
         least: string
       }>(`${urlConfigs.BASE_HOST}${urlConfigs.VERSION}`)
-
-      const current = Number(appVersion.match(new RegExp(`[0-9]`, 'gi'))?.join('') ?? 0)
-      const least = Number(res.data.least.match(new RegExp(`[0-9]`, 'gi'))?.join('') ?? 0)
-      set({ needRefresh: current < least })
+      set({ needRefresh: compare(appVersion, res.data.latest, '<') })
     },
 
     fetchPriorityFeeAct: async () => {
