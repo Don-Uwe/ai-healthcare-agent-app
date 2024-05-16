@@ -5,7 +5,7 @@ import FocusTrap from 'focus-trap-react'
 import { usePopper } from 'react-popper'
 import { useTranslation } from 'react-i18next'
 import { PublicKey } from '@solana/web3.js'
-import { ApiV3Token, RAYMint, TokenInfo, solToWSolToken, setLoggerLevel, LogLevel } from '@raydium-io/raydium-sdk-v2'
+import { ApiV3Token, RAYMint, TokenInfo, solToWSolToken } from '@raydium-io/raydium-sdk-v2'
 import { DatePick, HourPick, MinutePick } from '@/components/DateTimePicker'
 import DecimalInput from '@/components/DecimalInput'
 import Button from '@/components/Button'
@@ -14,7 +14,7 @@ import Tabs from '@/components/Tabs'
 import { QuestionToolTip } from '@/components/QuestionToolTip'
 import HorizontalSwitchSmallIcon from '@/icons/misc/HorizontalSwitchSmallIcon'
 import AddLiquidityPlus from '@/icons/misc/AddLiquidityPlus'
-import { useLiquidityStore, useTokenStore } from '@/store'
+import { useAppStore, useLiquidityStore, useTokenStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
 import { wSolToSolString, wsolToSolToken } from '@/utils/token'
 import { TxErrorModal } from '@/components/Modal/TxErrorModal'
@@ -32,7 +32,11 @@ export default function Initialize() {
   const [outputMint, setOutputMint] = useState<string>(RAYMint.toBase58())
   const [baseToken, quoteToken] = [tokenMap.get(inputMint), tokenMap.get(outputMint)]
 
-  const [createPoolAct, newCreatedPool] = useLiquidityStore((s) => [s.createPoolAct, s.newCreatedPool], shallow)
+  const connection = useAppStore((s) => s.connection)
+  const [createPoolAct, createPoolFee, newCreatedPool, getCreatePoolFeeAct] = useLiquidityStore(
+    (s) => [s.createPoolAct, s.createPoolFee, s.newCreatedPool, s.getCreatePoolFeeAct],
+    shallow
+  )
 
   const [baseIn, setBaeIn] = useState(true)
   const [startDate, setStartDate] = useState<Date | undefined>()
@@ -62,6 +66,10 @@ export default function Initialize() {
   const error = useInitPoolSchema({ baseToken, quoteToken, tokenAmount, startTime: startDate })
 
   useEffect(() => () => useLiquidityStore.setState({ newCreatedPool: undefined }), [])
+  useEffect(() => {
+    if (!connection) return
+    getCreatePoolFeeAct()
+  }, [connection])
 
   const handleSelectToken = useCallback(
     (token: TokenInfo | ApiV3Token, side?: 'input' | 'output') => {
@@ -273,12 +281,12 @@ export default function Initialize() {
         )}
         <HStack color={colors.semanticWarning}>
           <Text fontWeight="medium" fontSize="sm" my="-2">
-            {t('create_standard_pool.pool_creation_fee_note', { subject: `${''}` })}
+            {t('create_standard_pool.pool_creation_fee_note', { subject: createPoolFee })}
           </Text>
           <QuestionToolTip iconType="question" label={t('create_standard_pool.pool_creation_fee_tooltip')} />
         </HStack>
         <Text color="red" my="-2">
-          {error}
+          {tokenAmount.base || tokenAmount.quote ? error : ''}
         </Text>
       </Flex>
       <HStack w="full" spacing={4} mt={2}>

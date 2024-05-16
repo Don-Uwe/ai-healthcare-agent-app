@@ -8,7 +8,9 @@ import {
   TokenAmount,
   Percent,
   setLoggerLevel,
-  LogLevel
+  LogLevel,
+  getCpmmPdaAmmConfigId,
+  CpmmConfigInfoLayout
 } from '@raydium-io/raydium-sdk-v2'
 import createStore from './createStore'
 import { useAppStore } from './useAppStore'
@@ -29,6 +31,7 @@ import { getComputeBudgetConfig } from '@/utils/tx/computeBudget'
 setLoggerLevel('Raydium_cpmm', LogLevel.Debug)
 interface LiquidityStore {
   newCreatedPool?: CreateCpmmPoolAddress
+  createPoolFee: string
   addLiquidityAct: (
     params: {
       poolInfo: ApiV3PoolInfoStandardItem
@@ -99,16 +102,17 @@ interface LiquidityStore {
     liquidity: BN
   }
 
+  getCreatePoolFeeAct: () => Promise<void>
+
   resetComputeStateAct: () => void
 }
 
 const initLiquiditySate = {
-  poolList: [],
-  poolMap: new Map()
+  createPoolFee: ''
 }
 
 export const useLiquidityStore = createStore<LiquidityStore>(
-  (set) => ({
+  (set, get) => ({
     ...initLiquiditySate,
 
     addCpmmLiquidityAct: async ({ onSent, onError, onFinally, ...params }) => {
@@ -434,6 +438,16 @@ export const useLiquidityStore = createStore<LiquidityStore>(
         output: r.anotherAmount.toExact(),
         maxOutput: r.maxAnotherAmount.toExact(),
         liquidity: r.liquidity
+      }
+    },
+
+    getCreatePoolFeeAct: async () => {
+      const { connection, programIdConfig } = useAppStore.getState()
+      if (!connection || get().createPoolFee) return
+      const configId = getCpmmPdaAmmConfigId(programIdConfig.CREATE_CPMM_POOL_PROGRAM, 0)
+      const r = await connection.getAccountInfo(configId.publicKey)
+      if (r) {
+        set({ createPoolFee: new Decimal(CpmmConfigInfoLayout.decode(r.data).createPoolFee.toString()).div(10 ** 9).toString() })
       }
     },
 
