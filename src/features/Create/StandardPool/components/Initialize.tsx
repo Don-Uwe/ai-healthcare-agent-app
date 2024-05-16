@@ -14,7 +14,7 @@ import Tabs from '@/components/Tabs'
 import { QuestionToolTip } from '@/components/QuestionToolTip'
 import HorizontalSwitchSmallIcon from '@/icons/misc/HorizontalSwitchSmallIcon'
 import AddLiquidityPlus from '@/icons/misc/AddLiquidityPlus'
-import { useAppStore, useLiquidityStore, useTokenStore } from '@/store'
+import { useLiquidityStore, useTokenStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
 import { wSolToSolString, wsolToSolToken } from '@/utils/token'
 import { TxErrorModal } from '@/components/Modal/TxErrorModal'
@@ -32,7 +32,6 @@ export default function Initialize() {
   const [outputMint, setOutputMint] = useState<string>(RAYMint.toBase58())
   const [baseToken, quoteToken] = [tokenMap.get(inputMint), tokenMap.get(outputMint)]
 
-  const connection = useAppStore((s) => s.connection)
   const [createPoolAct, newCreatedPool] = useLiquidityStore((s) => [s.createPoolAct, s.newCreatedPool], shallow)
 
   const [baseIn, setBaeIn] = useState(true)

@@ -65,7 +65,7 @@
     "remove_token": "Remove token",
     "confirm_token": "Confirm Token",
     "user_added": "User Added",
-    "beta_tooltip": "This site is in Beta, updates are ongoing. Use at your own risk. <0>Share feedback</0>, earn RAY.",
+    "beta_tooltip": "Welcome to Raydium V3 ! Updates are ongoing. The V2 site can still be accessed <0>here</0>.",
     "days": "Days",
     "sort_by": "Sort By",
     "app_version_available": "New version available",
@@ -667,7 +667,7 @@
     "pool_create_integrated_with_openbook_link": "here",
     "initial_price_tooltip": "Initial price is set by the ratio of tokens deposited for initial liquidity. If the token is already trading on Raydium, initial price will be auto-filled with the current price.",
     "pool_creation_fee_note": "Note: A creation fee of {{subject}} SOL is required for new pools.",
-    "pool_creation_fee_tooltip": "Pool creation fee ensures lookup table support for optimized pool indexing, swap routing, and API functionality.",
+    "pool_creation_fee_tooltip": "A pool creation fee of 0.15 SOL is currently reserved to support front and backend infrastructure. Approximately 0.05 SOL is required for program account creation and network fees.",
     "custom": "Custom",
     "start_now": "Start Now",
     "current_price_tooltip": "This is the current price of an existing pool on Raydium. You can still enter a different initial price but be aware this may lead to arbitrage if the price difference is large."

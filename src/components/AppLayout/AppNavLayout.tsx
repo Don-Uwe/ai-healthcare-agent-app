@@ -100,8 +100,8 @@ function AppNavLayout({
         <Box display="flex" alignItems="center" justifyContent="center" textAlign="center" width="95%" mt="0.5em" mb="0.5em">
           <Text as="span" textColor={colors.textPrimary} fontSize="0.85em" fontWeight="normal" color={colors.textPrimary}>
             <Trans i18nKey="common.beta_tooltip">
-              <a href="https://tally.so/r/n9WZZV" rel="noreferrer" target="_blank" style={{ color: colors.textLink }}>
-                Share feedback
+              <a href="https://v2.raydium.io" rel="noreferrer" target="_blank" style={{ color: colors.textLink }}>
+                here
               </a>
             </Trans>
           </Text>
