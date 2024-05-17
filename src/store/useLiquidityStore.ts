@@ -8,7 +8,6 @@ import {
   toToken,
   TokenAmount,
   Percent,
-  setLoggerLevel,
   LogLevel,
   getCpmmPdaAmmConfigId,
   CpmmConfigInfoLayout
@@ -29,7 +28,6 @@ import { handleMultiTxRetry } from '@/hooks/toast/retryTx'
 import BN from 'bn.js'
 import Decimal from 'decimal.js'
 import { getComputeBudgetConfig } from '@/utils/tx/computeBudget'
-setLoggerLevel('Raydium_cpmm', LogLevel.Debug)
 interface LiquidityStore {
   newCreatedPool?: CreateCpmmPoolAddress
   createPoolFee: string
@@ -169,7 +167,6 @@ export const useLiquidityStore = createStore<LiquidityStore>(
     addLiquidityAct: async ({ onSent, onError, onFinally, ...params }) => {
       const { raydium, txVersion } = useAppStore.getState()
       if (!raydium) return ''
-
       const { execute } = await raydium.liquidity.addLiquidity({
         ...params,
         amountInA: new TokenAmount(
@@ -180,7 +177,8 @@ export const useLiquidityStore = createStore<LiquidityStore>(
           toToken(params.poolInfo.mintB),
           new Decimal(params.amountB).mul(10 ** params.poolInfo.mintB.decimals).toFixed(0)
         ),
-        txVersion
+        txVersion,
+        computeBudgetConfig: await getComputeBudgetConfig()
       })
 
       const meta = getTxMeta({

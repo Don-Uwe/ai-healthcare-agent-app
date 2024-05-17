@@ -1,12 +1,5 @@
 import { Flex, HStack, Text, useDisclosure } from '@chakra-ui/react'
-import {
-  ApiV3PoolInfoStandardItem,
-  ApiV3Token,
-  TokenInfo,
-  setLoggerLevel,
-  LogLevel,
-  ApiV3PoolInfoStandardItemCpmm
-} from '@raydium-io/raydium-sdk-v2'
+import { ApiV3PoolInfoStandardItem, ApiV3Token, TokenInfo, ApiV3PoolInfoStandardItemCpmm } from '@raydium-io/raydium-sdk-v2'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -31,7 +24,6 @@ import { throttle } from '@/utils/functionMethods'
 import useRefreshEpochInfo from '@/hooks/app/useRefreshEpochInfo'
 
 const InputWidth = ['100%']
-setLoggerLevel('Raydium_LiquidityV2', LogLevel.Debug)
 export default function AddLiquidity({
   pool,
   poolNotFound,
