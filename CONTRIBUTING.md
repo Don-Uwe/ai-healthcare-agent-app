@@ -34,15 +34,17 @@ We follow the "fork and pull request" workflow for accepting contributions. To c
 
 2.Clone the forked repository to your local machine.
 
-3.Create a new branch for your changes: git checkout -b my-branch.
+3.For **development** related changes, checkout the **develop** branch.
 
-4.Make your changes and test them thoroughly.
+4.Create a new branch for your changes: git checkout -b my-branch.
 
-5.Commit your changes: git commit -m "Add descriptive commit message".
+5.Make your changes and test them thoroughly.
 
-6.Push the changes to your forked repository: git push origin my-branch.
+6.Commit your changes: git commit -m "Add descriptive commit message".
 
-7.Open a pull request (PR) against the main repository.
+7.Push the changes to your forked repository: git push origin my-branch.
+
+8.Open a pull request (PR) against the **develop** repository for code related tasks and **main** repository for documentation related tasks.
 
 <br>
 
