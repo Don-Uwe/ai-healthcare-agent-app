@@ -89,7 +89,7 @@ export default function PoolListItemAprDetailPopoverContent({
                 <HStack fontWeight="normal" color={colors.textSecondary} spacing="5px">
                   <TokenAvatar size="xs" token={reward.token} />
                   <Box color={colors.textPrimary}>{formatCurrency(reward.amount, { decimalPlaces: 1, abbreviated: true })}</Box>
-                  <Box>{reward.token?.symbol}</Box>
+                  <Box>{wSolToSolString(reward.token?.symbol)}</Box>
                   <Box color={colors.textPrimary}>
                     (
                     {formatCurrency(new Decimal(tokenPrices[reward.token.address]?.value || 0).mul(reward.amount).toString(), {
