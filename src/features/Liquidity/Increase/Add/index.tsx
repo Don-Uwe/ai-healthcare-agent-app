@@ -39,7 +39,7 @@ export default function AddLiquidity({
   onSelectToken,
   onRefresh
 }: {
-  pool?: ApiV3PoolInfoStandardItem
+  pool?: ApiV3PoolInfoStandardItem | ApiV3PoolInfoStandardItemCpmm
   isLoading: boolean
   poolNotFound: boolean
   tokenPair: { base?: ApiV3Token; quote?: ApiV3Token }
@@ -181,7 +181,7 @@ export default function AddLiquidity({
 
     if (isCpmm) {
       addCpmmLiquidityAct({
-        poolInfo: pool as unknown as ApiV3PoolInfoStandardItemCpmm,
+        poolInfo: pool as ApiV3PoolInfoStandardItemCpmm,
         inputAmount: baseIn ? computeAmountRef.current.base : computeAmountRef.current.quote,
         anotherAmount: baseIn ? computeAmountRef.current.quote : computeAmountRef.current.base,
         liquidity: computedLpRef.current.toString(),
@@ -191,7 +191,7 @@ export default function AddLiquidity({
       return
     }
     addLiquidityAct({
-      poolInfo: pool,
+      poolInfo: pool as ApiV3PoolInfoStandardItem,
       amountA: computeAmountRef.current.base,
       amountB: computeAmountRef.current.quote,
       fixedSide: baseIn ? 'a' : 'b',
