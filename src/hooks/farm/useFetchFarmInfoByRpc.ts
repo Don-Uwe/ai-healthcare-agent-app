@@ -39,7 +39,7 @@ export default function useFetchFarmInfoByRpc(props: {
     refreshInterval
   })
 
-  const layout = farmInfo ? FARM_TYPE[farmInfo.programId].stateLayout : undefined
+  const layout = farmInfo && FARM_TYPE[farmInfo.programId] ? FARM_TYPE[farmInfo.programId].stateLayout : undefined
   let decodedData = useMemo(() => cacheData || (layout && data ? layout.decode(data.data) : undefined), [data, cacheData])
   if (decodedData) farmRpcInfoCache.set(farmInfo!.id, decodedData)
 

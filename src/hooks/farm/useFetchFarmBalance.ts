@@ -46,7 +46,8 @@ export default function useFetchFarmBalance(props: {
   })
 
   const rpcInfoData = prefetchedFarmData || farmData
-  const fetch = shouldFetch && farmInfo && publicKey && connection
+  const fetch = shouldFetch && farmInfo && FARM_TYPE[farmInfo.programId] && publicKey && connection
+
   // check fetch
   const ledger = fetch
     ? getAssociatedLedgerAccount({

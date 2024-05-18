@@ -55,7 +55,7 @@ export default function useFetchMultipleFarmInfoByRpc(props: {
   let decodedDataList = data
     ? (readyFetchList
         .map((farmInfo, idx) => {
-          if (!data[idx]) return
+          if (!data[idx] || !FARM_TYPE[farmInfo.programId]) return
           const layout = FARM_TYPE[farmInfo.programId].stateLayout
           const res = layout.decode(data[idx]!.data) as FarmDecodeData
           farmRpcInfoCache.set(farmInfo.id, res)

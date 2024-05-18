@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import useSWR from 'swr'
 import shallow from 'zustand/shallow'
 import { ApiV3Token, getAssociatedLedgerAccount } from '@raydium-io/raydium-sdk-v2'
-import { Connection } from '@solana/web3.js'
+import { Connection, PublicKey } from '@solana/web3.js'
 
 import { useAppStore } from '@/store'
 import { addAccChangeCbk, removeAccChangeCbk } from '@/hooks/app/useTokenAccountInfo'
@@ -47,17 +47,20 @@ export default function useFetchMultipleFarmBalance(props: {
   })
 
   const fetch = shouldFetch && farmInfoList.length && publicKey && connection
-
   // check fetch
   const ledgerList = fetch
-    ? farmInfoList.map((farmInfo) =>
-        getAssociatedLedgerAccount({
-          programId: ToPublicKey(farmInfo.programId),
-          poolId: ToPublicKey(farmInfo.id),
-          owner: publicKey,
-          version: FARM_TYPE[farmInfo.programId].version
-        })
-      )
+    ? (farmInfoList
+        .map((farmInfo) =>
+          FARM_TYPE[farmInfo.programId]
+            ? getAssociatedLedgerAccount({
+                programId: ToPublicKey(farmInfo.programId),
+                poolId: ToPublicKey(farmInfo.id),
+                owner: publicKey,
+                version: FARM_TYPE[farmInfo.programId].version
+              })
+            : undefined
+        )
+        .filter(Boolean) as PublicKey[])
     : []
 
   const {
