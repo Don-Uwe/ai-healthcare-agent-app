@@ -1,5 +1,5 @@
 import { Box, Flex, SimpleGrid, Text } from '@chakra-ui/react'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import Button from '@/components/Button'
@@ -16,6 +16,10 @@ import { colors } from '@/theme/cssVariables'
 import Decimal from 'decimal.js'
 import { RpcAmmPool } from '@/hooks/pool/amm/useFetchRpcPoolData'
 import { useEvent } from '@/hooks/useEvent'
+import { getTransferAmountFeeV2 } from '@raydium-io/raydium-sdk-v2'
+import BN from 'bn.js'
+
+const BN_ZERO = new BN(0)
 
 export default function UnStakeLiquidity({
   poolInfo,
@@ -28,6 +32,7 @@ export default function UnStakeLiquidity({
 }) {
   const { t } = useTranslation()
   const featureDisabled = useAppStore((s) => s.featureDisabled.removeStandardPosition)
+  const [epochInfo, getEpochInfo, connection] = useAppStore((s) => [s.epochInfo, s.getEpochInfo, s.connection])
   const removeLiquidityAct = useLiquidityStore((s) => s.removeLiquidityAct)
   const removeCpmmLiquidityAct = useLiquidityStore((s) => s.removeCpmmLiquidityAct)
   const [removePercent, setRemovePercent] = useState(0)
@@ -49,6 +54,29 @@ export default function UnStakeLiquidity({
   const quoteRatio = amountB.div(lpAmount)
 
   const removeAmount = new Decimal(liquidity).mul(removePercent).div(100)
+
+  const [withdrawAmountA, withdrawAmountB] = [
+    removeAmount.mul(baseRatio).mul(10 ** (poolInfo?.mintA.decimals || 0)),
+    removeAmount.mul(quoteRatio).mul(10 ** (poolInfo?.mintB.decimals || 0))
+  ]
+
+  useEffect(() => {
+    getEpochInfo()
+    const id = window.setInterval(() => {
+      getEpochInfo()
+    }, 60 * 1000)
+    return () => window.clearInterval(id)
+  }, [connection])
+
+  const [feeA, feeB] = [
+    epochInfo
+      ? getTransferAmountFeeV2(new BN(withdrawAmountA.toFixed(0)), poolInfo?.mintA.extensions.feeConfig, epochInfo, true).fee ?? BN_ZERO
+      : BN_ZERO,
+    epochInfo
+      ? getTransferAmountFeeV2(new BN(withdrawAmountB.toFixed(0)), poolInfo?.mintB.extensions.feeConfig, epochInfo, true).fee ?? BN_ZERO
+      : BN_ZERO
+  ]
+
   const handleRemove = () => {
     if (!poolInfo) return
     setIsTxSending(true)
@@ -117,12 +145,24 @@ export default function UnStakeLiquidity({
         </Text>
         <Flex alignItems="center" gap="1" fontSize="sm">
           <TokenAvatarPair mr="1" token1={poolInfo?.mintA} token2={poolInfo?.mintB} />
-          {formatCurrency(removeAmount.mul(baseRatio).toString(), { decimalPlaces: poolInfo?.mintA.decimals })}{' '}
+          {formatCurrency(
+            withdrawAmountA
+              .sub(feeA.toString())
+              .div(10 ** (poolInfo?.mintA.decimals || 0))
+              .toString(),
+            { decimalPlaces: poolInfo?.mintA.decimals }
+          )}{' '}
           <Text fontSize="sm" variant="label">
             {poolInfo?.mintA.symbol}
           </Text>
           <Box>/</Box>
-          {formatCurrency(removeAmount.mul(quoteRatio).toString(), { decimalPlaces: poolInfo?.mintB.decimals })}{' '}
+          {formatCurrency(
+            withdrawAmountB
+              .sub(feeB.toString())
+              .div(10 ** (poolInfo?.mintB.decimals || 0))
+              .toString(),
+            { decimalPlaces: poolInfo?.mintB.decimals }
+          )}{' '}
           <Text fontSize="sm" variant="label">
             {poolInfo?.mintB.symbol}
           </Text>

@@ -8,9 +8,11 @@ import {
   toToken,
   TokenAmount,
   Percent,
+  setLoggerLevel,
   LogLevel,
   getCpmmPdaAmmConfigId,
-  CpmmConfigInfoLayout
+  CpmmConfigInfoLayout,
+  getTransferAmountFeeV2
 } from '@raydium-io/raydium-sdk-v2'
 import createStore from './createStore'
 import { useAppStore } from './useAppStore'
@@ -28,6 +30,8 @@ import { handleMultiTxRetry } from '@/hooks/toast/retryTx'
 import BN from 'bn.js'
 import Decimal from 'decimal.js'
 import { getComputeBudgetConfig } from '@/utils/tx/computeBudget'
+
+setLoggerLevel('Raydium_cpmm', LogLevel.Debug)
 interface LiquidityStore {
   newCreatedPool?: CreateCpmmPoolAddress
   createPoolFee: string
@@ -95,11 +99,15 @@ interface LiquidityStore {
     } & TxCallbackProps
   ) => Promise<string>
 
-  computePairAmount: (params: { pool: ApiV3PoolInfoStandardItem | ApiV3PoolInfoStandardItemCpmm; amount: string; baseIn: boolean }) => {
+  computePairAmount: (params: {
+    pool: ApiV3PoolInfoStandardItem | ApiV3PoolInfoStandardItemCpmm
+    amount: string
+    baseIn: boolean
+  }) => Promise<{
     output: string
     maxOutput: string
     liquidity: BN
-  }
+  }>
 
   getCreatePoolFeeAct: () => Promise<void>
 
@@ -415,8 +423,8 @@ export const useLiquidityStore = createStore<LiquidityStore>(
         })
     },
 
-    computePairAmount: ({ pool, amount, baseIn }) => {
-      const { raydium, slippage, programIdConfig } = useAppStore.getState()
+    computePairAmount: async ({ pool, amount, baseIn }) => {
+      const { raydium, slippage, programIdConfig, getEpochInfo } = useAppStore.getState()
       if (!raydium)
         return {
           output: '0',
@@ -432,12 +440,31 @@ export const useLiquidityStore = createStore<LiquidityStore>(
         slippage: new Percent(slippage * 10000, 10000)
       }
       const r = isCpmm
-        ? raydium.cpmm.computePairAmount({ ...params, poolInfo: params.poolInfo as ApiV3PoolInfoStandardItemCpmm })
+        ? raydium.cpmm.computePairAmount({
+            ...params,
+            slippage: new Percent(0),
+            epochInfo: (await getEpochInfo())!,
+            poolInfo: params.poolInfo as ApiV3PoolInfoStandardItemCpmm
+          })
         : raydium.liquidity.computePairAmount({ ...params, poolInfo: params.poolInfo as ApiV3PoolInfoStandardItem })
 
+      const outputMint = baseIn ? pool.mintB : pool.mintA
+
       return {
-        output: r.anotherAmount.toExact(),
-        maxOutput: r.maxAnotherAmount.toExact(),
+        output:
+          r.anotherAmount instanceof TokenAmount
+            ? r.anotherAmount.toExact()
+            : new Decimal(r.anotherAmount.amount.toString())
+                .div(10 ** outputMint.decimals)
+                .toDecimalPlaces(outputMint.decimals)
+                .toString(),
+        maxOutput:
+          r.maxAnotherAmount instanceof TokenAmount
+            ? r.maxAnotherAmount.toExact()
+            : new Decimal(r.maxAnotherAmount.amount.toString())
+                .div(10 ** outputMint.decimals)
+                .toDecimalPlaces(outputMint.decimals)
+                .toString(),
         liquidity: r.liquidity
       }
     },

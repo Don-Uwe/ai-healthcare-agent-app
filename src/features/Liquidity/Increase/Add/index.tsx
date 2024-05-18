@@ -75,7 +75,7 @@ export default function AddLiquidity({
       return
     }
 
-    const r = computePairAmount({
+    computePairAmount({
       pool: {
         ...pool,
         mintAmountA: rpcData ? new Decimal(rpcData.baseReserve.toString()).div(10 ** rpcData.baseDecimals).toNumber() : pool.mintAmountA,
@@ -84,13 +84,14 @@ export default function AddLiquidity({
       },
       amount: computeAmountRef.current[focusRef.current] || '0',
       baseIn: isBase
+    }).then((r) => {
+      computeAmountRef.current[updateSide] = r.maxOutput
+      computedLpRef.current = new Decimal(r.liquidity.toString())
+      setPairAmount((prev) => ({
+        ...prev,
+        [updateSide]: r.output
+      }))
     })
-    computeAmountRef.current[updateSide] = r.maxOutput
-    computedLpRef.current = new Decimal(r.liquidity.toString())
-    setPairAmount((prev) => ({
-      ...prev,
-      [updateSide]: r.output
-    }))
   })
 
   const handleAmountChange = useEvent((val: string, side: 'base' | 'quote') => {
