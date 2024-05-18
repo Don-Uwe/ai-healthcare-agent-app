@@ -17,6 +17,7 @@ import { trimTailingZero } from '@/utils/numberish/formatNumber'
 import { getDefaultToastData, handleMultiTxToast } from '@/hooks/toast/multiToastUtil'
 import { handleMultiTxRetry } from '@/hooks/toast/retryTx'
 import { isSwapSlippageError } from '@/utils/tx/swapError'
+import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
 
 const getSwapComputePrice = async () => {
   const transactionFee = useAppStore.getState().getPriorityFee()
@@ -75,6 +76,7 @@ export const useSwapStore = createStore<SwapStore>(
         const [isInputSol, isOutputSol] = [isSolWSol(swapResponse.data.inputMint), isSolWSol(swapResponse.data.outputMint)]
 
         const inputTokenAcc = await raydium.account.getCreatedTokenAccount({
+          programId: new PublicKey(inputToken.programId ?? TOKEN_PROGRAM_ID),
           mint: new PublicKey(inputToken.address)
         })
 
@@ -84,6 +86,7 @@ export const useSwapStore = createStore<SwapStore>(
         }
 
         const outputTokenAcc = await raydium.account.getCreatedTokenAccount({
+          programId: new PublicKey(outputToken.programId ?? TOKEN_PROGRAM_ID),
           mint: new PublicKey(outputToken.address)
         })
 
