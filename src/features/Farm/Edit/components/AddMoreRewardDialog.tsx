@@ -30,6 +30,7 @@ import dayjs from 'dayjs'
 import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 import DatePickerModal from '@/components/FarmDatePickerModal'
 import { formatToRawLocaleStr } from '@/utils/numberish/formatter'
+import { wSolToSol, wsolToSolToken } from '@/utils/token'
 
 /**
  * used in [FarmingRewardItem](../FarmingRewardItem.tsx)
@@ -117,7 +118,7 @@ export default function AddMoreRewardDialog({
 
   const error = useAddNewRewardSchema({
     onlineCurrentDate,
-    balance: getTokenBalanceUiAmount({ mint: rewardInfo.mint.address, decimals: rewardInfo.mint.decimals }).text,
+    balance: getTokenBalanceUiAmount({ mint: wSolToSol(rewardToken.address) ?? '', decimals: rewardToken.decimals }).text,
     amount: rewardInfo.total,
     endTime: rewardInfo.endTime,
     openTime: rewardInfo.openTime,
@@ -137,7 +138,7 @@ export default function AddMoreRewardDialog({
               readonly={isEcoSystemAddMore}
               filterFn={tokenFilterFn}
               disableSelectToken={!isNewData}
-              token={rewardToken}
+              token={wsolToSolToken(rewardToken)}
               hideControlButton
               value={rewardInfo.total}
               onTokenChange={onTokenChange}

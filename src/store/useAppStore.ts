@@ -171,7 +171,7 @@ const appInitState = {
   featureDisabled: {},
   slippage: Number(getStorageItem(SLIPPAGE_KEY) || 0.005),
   txVersion: TxVersion.V0,
-  appVersion: 'V3.0.1',
+  appVersion: 'V3.0.2',
   needRefresh: false,
   tokenAccLoaded: false,
   commitment: 'confirmed' as Commitment,

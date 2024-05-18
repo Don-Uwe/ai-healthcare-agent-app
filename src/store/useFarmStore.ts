@@ -22,7 +22,7 @@ import { TxCallbackProps } from '../types/tx'
 import createStore from './createStore'
 import { useAppStore } from './useAppStore'
 import { getTxMeta } from './configs/farm'
-import { getMintSymbol } from '@/utils/token'
+import { getMintSymbol, wSolToSol } from '@/utils/token'
 import { refreshCreatedFarm } from '@/hooks/portfolio/farm/useCreatedFarmInfo'
 import { getDefaultToastData, transformProcessData, handleMultiTxToast } from '@/hooks/toast/multiToastUtil'
 import { getComputeBudgetConfig } from '@/utils/tx/computeBudget'
@@ -289,10 +289,11 @@ export const useFarmStore = createStore<FarmStore>(
         values: { pool: farmInfo.id.slice(0, 6) }
       })
 
+      wSolToSol
       if (editedRewards.length) {
         const buildData = await raydium.farm.restartRewards({
           farmInfo,
-          newRewardInfos: editedRewards,
+          newRewardInfos: editedRewards.map((r) => ({ ...r, mint: new PublicKey(wSolToSol(r.mint.toBase58())!) })),
           txVersion
         })
 
@@ -315,7 +316,7 @@ export const useFarmStore = createStore<FarmStore>(
       if (newRewards.length) {
         const buildData = await raydium.farm.addNewRewardsToken({
           farmInfo,
-          newRewardInfos: newRewards,
+          newRewardInfos: newRewards.map((r) => ({ ...r, mint: new PublicKey(wSolToSol(r.mint.toBase58())!) })),
           txVersion
         })
 
