@@ -77,6 +77,17 @@ export default function UnStakeLiquidity({
       : BN_ZERO
   ]
 
+  const [withdrawAmountAFee, withdrawAmountBFee] = [
+    withdrawAmountA
+      .sub(feeA.toString())
+      .div(10 ** (poolInfo?.mintA.decimals || 0))
+      .toString(),
+    withdrawAmountB
+      .sub(feeB.toString())
+      .div(10 ** (poolInfo?.mintB.decimals || 0))
+      .toString()
+  ]
+
   const handleRemove = () => {
     if (!poolInfo) return
     setIsTxSending(true)
@@ -93,6 +104,8 @@ export default function UnStakeLiquidity({
       removeCpmmLiquidityAct({
         poolInfo: poolInfo as FormattedPoolInfoStandardItemCpmm,
         lpAmount: removeAmount.mul(10 ** poolInfo.lpMint.decimals).toFixed(0),
+        amountA: withdrawAmountAFee,
+        amountB: withdrawAmountBFee,
         ...callBacks
       })
       return
@@ -145,24 +158,14 @@ export default function UnStakeLiquidity({
         </Text>
         <Flex alignItems="center" gap="1" fontSize="sm">
           <TokenAvatarPair mr="1" token1={poolInfo?.mintA} token2={poolInfo?.mintB} />
-          {formatCurrency(
-            withdrawAmountA
-              .sub(feeA.toString())
-              .div(10 ** (poolInfo?.mintA.decimals || 0))
-              .toString(),
-            { decimalPlaces: poolInfo?.mintA.decimals }
-          )}{' '}
+          {formatCurrency(withdrawAmountAFee, {
+            decimalPlaces: poolInfo?.mintA.decimals
+          })}{' '}
           <Text fontSize="sm" variant="label">
             {poolInfo?.mintA.symbol}
           </Text>
           <Box>/</Box>
-          {formatCurrency(
-            withdrawAmountB
-              .sub(feeB.toString())
-              .div(10 ** (poolInfo?.mintB.decimals || 0))
-              .toString(),
-            { decimalPlaces: poolInfo?.mintB.decimals }
-          )}{' '}
+          {formatCurrency(withdrawAmountBFee, { decimalPlaces: poolInfo?.mintB.decimals })}{' '}
           <Text fontSize="sm" variant="label">
             {poolInfo?.mintB.symbol}
           </Text>

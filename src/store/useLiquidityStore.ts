@@ -65,6 +65,8 @@ interface LiquidityStore {
     params: {
       poolInfo: ApiV3PoolInfoStandardItemCpmm
       lpAmount: string
+      amountA: string
+      amountB: string
       config?: {
         bypassAssociatedCheck?: boolean
       }
@@ -264,7 +266,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
       const { raydium, txVersion, slippage } = useAppStore.getState()
 
       if (!raydium) return ''
-      const { poolInfo, lpAmount } = params
+      const { poolInfo, lpAmount, amountA, amountB } = params
       const computeBudgetConfig = await getComputeBudgetConfig()
       const { execute } = await raydium.cpmm.withdrawLiquidity({
         poolInfo,
@@ -274,14 +276,12 @@ export const useLiquidityStore = createStore<LiquidityStore>(
         computeBudgetConfig
       })
 
-      const percent = new Decimal(lpAmount).div(10 ** poolInfo.lpMint.decimals).div(poolInfo?.lpAmount || 1)
-
       const meta = getTxMeta({
         action: 'removeLiquidity',
         values: {
-          amountA: formatLocaleStr(percent.mul(poolInfo?.mintAmountA || 0).toString(), params.poolInfo.mintA.decimals)!,
+          amountA: formatLocaleStr(amountA, params.poolInfo.mintA.decimals)!,
           symbolA: getMintSymbol({ mint: params.poolInfo.mintA, transformSol: true }),
-          amountB: formatLocaleStr(percent.mul(poolInfo?.mintAmountB || 0).toString(), params.poolInfo.mintB.decimals)!,
+          amountB: formatLocaleStr(amountB, params.poolInfo.mintB.decimals)!,
           symbolB: getMintSymbol({ mint: params.poolInfo.mintB, transformSol: true })
         }
       })
