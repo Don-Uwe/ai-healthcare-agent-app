@@ -289,7 +289,6 @@ export const useFarmStore = createStore<FarmStore>(
         values: { pool: farmInfo.id.slice(0, 6) }
       })
 
-      wSolToSol
       if (editedRewards.length) {
         const buildData = await raydium.farm.restartRewards({
           farmInfo,

@@ -17,7 +17,8 @@ import {
   OpenPositionFromBaseExtInfo,
   toToken,
   solToWSolToken,
-  TxVersion
+  TxVersion,
+  getTransferAmountFeeV2
 } from '@raydium-io/raydium-sdk-v2'
 import { PublicKey } from '@solana/web3.js'
 import createStore from '@/store/createStore'
@@ -404,8 +405,26 @@ export const useClmmStore = createStore<ClmmState>(
       onFinally,
       onConfirmed
     }) => {
-      const { raydium, txVersion, slippage } = useAppStore.getState()
+      const { raydium, txVersion, slippage, getEpochInfo } = useAppStore.getState()
       if (!raydium) return ''
+
+      const [_amountMinA, _amountMinB] = [
+        new BN(
+          new Decimal(amountMinA.toString())
+            .mul(1 - slippage)
+            .mul(10 ** poolInfo.mintA.decimals)
+            .toFixed(0)
+        ),
+        new BN(
+          new Decimal(amountMinB.toString())
+            .mul(1 - slippage)
+            .mul(10 ** poolInfo.mintB.decimals)
+            .toFixed(0)
+        )
+      ]
+      const epochInfo = await getEpochInfo()
+      const { fee: feeA = new BN(0) } = getTransferAmountFeeV2(_amountMinA, poolInfo.mintA.extensions.feeConfig, epochInfo!, false)
+      const { fee: feeB = new BN(0) } = getTransferAmountFeeV2(_amountMinB, poolInfo.mintB.extensions.feeConfig, epochInfo!, false)
 
       try {
         const computeBudgetConfig = await getComputeBudgetConfig()
@@ -417,18 +436,8 @@ export const useClmmStore = createStore<ClmmState>(
             closePosition: position.liquidity.eq(new BN(liquidity))
           },
           liquidity: new BN(liquidity),
-          amountMinA: new BN(
-            new Decimal(amountMinA.toString())
-              .mul(1 - slippage)
-              .mul(10 ** poolInfo.mintA.decimals)
-              .toFixed(0)
-          ),
-          amountMinB: new BN(
-            new Decimal(amountMinB.toString())
-              .mul(1 - slippage)
-              .mul(10 ** poolInfo.mintB.decimals)
-              .toFixed(0)
-          ),
+          amountMinA: _amountMinA.sub(feeA),
+          amountMinB: _amountMinB.sub(feeB),
           computeBudgetConfig,
           txVersion
         })

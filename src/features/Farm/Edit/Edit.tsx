@@ -134,6 +134,7 @@ export default function FarmEdit() {
     editFarmRewardsAct({
       farmInfo: farmData!,
       editedRewards: editedRewardRef.current.getRewards().map((r) => ({
+        programId: new PublicKey(r.mint.programId),
         mint: new PublicKey(r.mint.address),
         openTime: Math.floor(Math.max(r.openTime, onlineCurrentDate + 30000) / 1000),
         endTime: Math.floor(r.endTime / 1000),
@@ -144,6 +145,7 @@ export default function FarmEdit() {
         rewardType: farmData!.rewardInfos.find((oldR) => r.mint.address === oldR.mint.address)!.type
       })),
       newRewards: newRewardRef.current.getRewards().map((r) => ({
+        programId: new PublicKey(r.mint.programId),
         mint: new PublicKey(r.mint.address),
         openTime: Math.floor(r.openTime / 1000),
         endTime: Math.floor(r.endTime / 1000),

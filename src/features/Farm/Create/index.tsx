@@ -91,6 +91,7 @@ export default function CreateFarm() {
       return createStandardFarmAct({
         poolInfo: selectedPool as ApiV3PoolInfoStandardItem,
         rewardInfos: rewardInfos.map((r) => ({
+          programId: new PublicKey(r.token!.programId),
           mint: new PublicKey(r.token!.address),
           perSecond: new Decimal(r.amount!)
             .mul(10 ** r.token!.decimals)

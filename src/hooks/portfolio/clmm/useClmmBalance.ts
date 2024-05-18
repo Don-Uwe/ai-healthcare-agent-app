@@ -16,25 +16,24 @@ import useRefreshEpochInfo from '@/hooks/app/useRefreshEpochInfo'
 import { useAppStore, useTokenAccountStore, initTokenAccountSate } from '@/store'
 import { useEvent } from '@/hooks/useEvent'
 import ToPublicKey from '@/utils/publicKey'
-import { setStorageItem, getStorageItem } from '@/utils/localStorage'
 import logMessage from '@/utils/log'
 
 export type ClmmPosition = ReturnType<typeof PositionInfoLayout.decode> & { key?: string }
 export type ClmmDataMap = Map<string, ClmmPosition[]>
 
-const NFT_CACHE_KEY = '_r_non_nft_'
+// const NFT_CACHE_KEY = '_r_non_nft_'
 let lastRefreshTag = initTokenAccountSate.refreshClmmPositionTag
-const noneNftMintSet = new Set<string>(JSON.parse(getStorageItem(NFT_CACHE_KEY) || '[]'))
+// const noneNftMintSet = new Set<string>(JSON.parse(getStorageItem(NFT_CACHE_KEY) || '[]'))
 
 const fetcher = async ([connection, publicKeyList]: [Connection, string[]]) => {
   logMessage('rpc: get clmm position balance info')
   const commitment = useAppStore.getState().commitment
-  const readyList = publicKeyList.filter((k) => !noneNftMintSet.has(k))
+  // const readyList = publicKeyList.filter((k) => !noneNftMintSet.has(k))
 
   const chunkSize = 100
   const keyGroup = []
-  for (let i = 0; i < readyList.length; i += chunkSize) {
-    keyGroup.push(readyList.slice(i, i + chunkSize))
+  for (let i = 0; i < publicKeyList.length; i += chunkSize) {
+    keyGroup.push(publicKeyList.slice(i, i + chunkSize))
   }
 
   const res = await Promise.all(
@@ -46,16 +45,17 @@ const fetcher = async ([connection, publicKeyList]: [Connection, string[]]) => {
     )
   )
 
-  const data = res.flat().filter((d, idx) => {
-    if (!d) noneNftMintSet.add(readyList[idx])
-    return !!d
-  })
-  try {
-    setStorageItem(NFT_CACHE_KEY, JSON.stringify(Array.from(noneNftMintSet)))
-  } catch {
-    console.error('unable set non nft mints')
-  }
-  return data
+  // const data = res.flat().filter((d, idx) => {
+  //   if (!d) noneNftMintSet.add(readyList[idx])
+  //   return !!d
+  // })
+
+  // try {
+  //   setStorageItem(NFT_CACHE_KEY, JSON.stringify(Array.from(noneNftMintSet)))
+  // } catch {
+  //   console.error('unable set non nft mints')
+  // }
+  return res.flat()
 }
 
 export default function useClmmBalance({

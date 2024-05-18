@@ -16,6 +16,7 @@ import { colors } from '@/theme/cssVariables'
 import Decimal from 'decimal.js'
 import { RpcAmmPool } from '@/hooks/pool/amm/useFetchRpcPoolData'
 import { useEvent } from '@/hooks/useEvent'
+import useRefreshEpochInfo from '@/hooks/useRefreshEpochInfo'
 import { getTransferAmountFeeV2 } from '@raydium-io/raydium-sdk-v2'
 import BN from 'bn.js'
 
@@ -32,7 +33,7 @@ export default function UnStakeLiquidity({
 }) {
   const { t } = useTranslation()
   const featureDisabled = useAppStore((s) => s.featureDisabled.removeStandardPosition)
-  const [epochInfo, getEpochInfo, connection] = useAppStore((s) => [s.epochInfo, s.getEpochInfo, s.connection])
+  const epochInfo = useRefreshEpochInfo()
   const removeLiquidityAct = useLiquidityStore((s) => s.removeLiquidityAct)
   const removeCpmmLiquidityAct = useLiquidityStore((s) => s.removeCpmmLiquidityAct)
   const [removePercent, setRemovePercent] = useState(0)
@@ -59,14 +60,6 @@ export default function UnStakeLiquidity({
     removeAmount.mul(baseRatio).mul(10 ** (poolInfo?.mintA.decimals || 0)),
     removeAmount.mul(quoteRatio).mul(10 ** (poolInfo?.mintB.decimals || 0))
   ]
-
-  useEffect(() => {
-    getEpochInfo()
-    const id = window.setInterval(() => {
-      getEpochInfo()
-    }, 60 * 1000)
-    return () => window.clearInterval(id)
-  }, [connection])
 
   const [feeA, feeB] = [
     epochInfo
