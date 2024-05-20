@@ -264,9 +264,9 @@ export const useAppStore = createStore<AppState>(
     fetchChainTimeAct: () => {
       const { urlConfigs } = get()
       axios
-        .get(`${urlConfigs.BASE_HOST}${urlConfigs.CHAIN_TIME}`)
+        .get<{ offset: number }>(`${urlConfigs.BASE_HOST}${urlConfigs.CHAIN_TIME}`)
         .then((data) => {
-          set({ chainTimeOffset: isNaN(data?.data.offset) ? 0 : 16 * 1000 }, false, { type: 'fetchChainTimeAct' })
+          set({ chainTimeOffset: isNaN(data?.data.offset) ? 0 : data.data.offset * 1000 }, false, { type: 'fetchChainTimeAct' })
         })
         .catch(() => {
           set({ chainTimeOffset: 0 }, false, { type: 'fetchChainTimeAct' })
