@@ -179,7 +179,7 @@ const appInitState = {
   priorityLevel: PriorityLevel.Turbo,
   priorityMode: PriorityMode.MaxCap,
   feeConfig: {},
-  transactionFee: getStorageItem(FEE_KEY) === null ? '0.0001' : getStorageItem(FEE_KEY) || ''
+  transactionFee: getStorageItem(FEE_KEY) === null ? '0.0003' : getStorageItem(FEE_KEY) || ''
 }
 
 let rpcLoading = false
