@@ -27,6 +27,8 @@ export default function PoolListItemAprDetailPopoverContent({
     mintList: weeklyRewards.map((r) => r.token.address)
   })
 
+  const haveWeeklyRewards = weeklyRewards.length > 0 && weeklyRewards.some((reward) => Number(reward.amount) !== 0)
+
   return (
     <Flex flexDir="column" p={2} gap={4}>
       <Box>
@@ -71,7 +73,7 @@ export default function PoolListItemAprDetailPopoverContent({
         </Grid>
       </Box>
 
-      {weeklyRewards.length > 0 && (
+      {haveWeeklyRewards && (
         <Box>
           <Flex mb={2} alignItems="center" justifyContent="space-between">
             <Box fontSize={sizes.textSM} color={colors.textSecondary}>
