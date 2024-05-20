@@ -6,3 +6,9 @@ function PortfolioPage() {
 }
 
 export default PortfolioPage
+
+export async function getStaticProps() {
+  return {
+    props: { title: 'Portfolio' }
+  }
+}

@@ -6,3 +6,9 @@ function DecreasePage() {
 }
 
 export default DecreasePage
+
+export async function getStaticProps() {
+  return {
+    props: { title: 'Liquidity Decrease' }
+  }
+}

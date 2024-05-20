@@ -79,3 +79,9 @@ export default function DisclaimerPage() {
     </Box>
   )
 }
+
+export async function getStaticProps() {
+  return {
+    props: { title: 'Disclaimer' }
+  }
+}

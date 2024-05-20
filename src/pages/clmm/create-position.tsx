@@ -24,3 +24,9 @@ function CreatePositionPage() {
 }
 
 export default CreatePositionPage
+
+export async function getStaticProps() {
+  return {
+    props: { title: 'Create Clmm Position' }
+  }
+}

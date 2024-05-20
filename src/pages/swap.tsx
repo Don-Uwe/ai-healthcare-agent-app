@@ -7,3 +7,9 @@ function SwapPage() {
 }
 
 export default SwapPage
+
+export async function getStaticProps() {
+  return {
+    props: { title: 'Swap' }
+  }
+}

@@ -6,3 +6,9 @@ function CreateFarmPage() {
 }
 
 export default CreateFarmPage
+
+export async function getStaticProps() {
+  return {
+    props: { title: 'Create Farm' }
+  }
+}

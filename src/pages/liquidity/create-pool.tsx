@@ -6,3 +6,9 @@ function CreatePoolPage() {
 }
 
 export default CreatePoolPage
+
+export async function getStaticProps() {
+  return {
+    props: { title: 'Create Pool' }
+  }
+}

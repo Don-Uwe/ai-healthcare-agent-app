@@ -6,3 +6,9 @@ function LiquidityPoolsPage() {
 }
 
 export default LiquidityPoolsPage
+
+export async function getStaticProps() {
+  return {
+    props: { title: 'Liquidity Pools' }
+  }
+}

@@ -5,3 +5,9 @@ function StakingPage() {
 }
 
 export default StakingPage
+
+export async function getStaticProps() {
+  return {
+    props: { title: 'Staking' }
+  }
+}

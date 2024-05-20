@@ -6,3 +6,9 @@ function IncreasePage() {
 }
 
 export default IncreasePage
+
+export async function getStaticProps() {
+  return {
+    props: { title: 'Liquidity Increase' }
+  }
+}

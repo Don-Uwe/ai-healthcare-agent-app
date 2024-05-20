@@ -14,3 +14,9 @@ function FarmEditPage() {
 }
 
 export default FarmEditPage
+
+export async function getStaticProps() {
+  return {
+    props: { title: 'Edit Farm' }
+  }
+}
