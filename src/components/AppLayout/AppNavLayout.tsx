@@ -120,10 +120,9 @@ function AppNavLayout({
       </Box>
       <HStack
         flex="none"
-        pt={{ base: 2, sm: 0 }}
-        height={{ sm: '80px' }}
+        height={['64px', '80px']}
         px={['20px', '38px']}
-        gap={['24px', 'max(64px, 6.1vw)']}
+        gap={['4px', 'max(64px, 6.1vw)']}
         alignItems="center"
         justifyContent="space-between"
       >
@@ -136,7 +135,7 @@ function AppNavLayout({
           </Box>
         </Desktop>
         <Mobile>
-          <HStack alignSelf={{ base: 'baseline', sm: 'initial' }}>
+          <HStack>
             <RaydiumLogoOutline />
             <Text fontSize="xl" fontWeight="medium" color={colors.textSecondary}>
               {pathname === '/swap'
@@ -182,19 +181,11 @@ function AppNavLayout({
         </Desktop>
 
         {/* wallet button */}
-        <Flex
-          direction={{ base: 'column-reverse', sm: 'row' }}
-          gap={[0.5, 2]}
-          align="center"
-          alignItems={{ base: 'end', sm: 'initial' }}
-          alignSelf={{ base: 'baseline', sm: 'initial' }}
-        >
+        <Flex gap={[0.5, 2]} align="center">
           <PriorityButton />
-          <Flex gap={[0.5, 2]}>
-            <SettingsMenu />
-            {/* <EVMWallet />  don't need currently yet*/}
-            <SolWallet />
-          </Flex>
+          <SettingsMenu />
+          {/* <EVMWallet />  don't need currently yet*/}
+          <SolWallet />
         </Flex>
       </HStack>
 

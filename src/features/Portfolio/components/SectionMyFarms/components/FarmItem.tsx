@@ -115,7 +115,9 @@ function FarmItemHeader({ name, baseToken, quoteToken, id, type, feeRate }: Farm
   return (
     <HStack borderTopRadius="xl" bg={colors.backgroundTransparent07} px={[3, 9]} py={[4, 3]} justify={'space-between'}>
       <HStack spacing={[2, 3]}>
-        <TokenAvatarPair size={['sm', 'md']} token1={baseToken} token2={quoteToken} />
+        <Desktop>
+          <TokenAvatarPair size={['sm', 'md']} token1={baseToken} token2={quoteToken} />
+        </Desktop>
         <Text fontSize={['md', 'lg']} color={colors.textPrimary} fontWeight="medium" whiteSpace={'nowrap'}>
           {name}
         </Text>
@@ -137,7 +139,7 @@ function FarmItemHeader({ name, baseToken, quoteToken, id, type, feeRate }: Farm
         </Desktop>
         <Mobile>
           <Text mr={2} fontSize="xs" color={colors.textSecondary}>
-            {encodeStr(id, 6, 3)}
+            {encodeStr(id)}
           </Text>
         </Mobile>
         <HStack spacing={1}>

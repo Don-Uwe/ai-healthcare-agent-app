@@ -47,7 +47,7 @@ export function TVLInfoPanelMobile({ tvl, volume }: { tvl: string | number; volu
           {t('common.tvl')}
         </Text>
         <Text fontSize="md" fontWeight={500}>
-          {formatCurrency(tvl, { symbol: '$', decimalPlaces: 2 })}
+          {formatCurrency(tvl, { symbol: '$', abbreviated: true, decimalPlaces: 6 })}
         </Text>
       </HStack>
 
@@ -56,7 +56,7 @@ export function TVLInfoPanelMobile({ tvl, volume }: { tvl: string | number; volu
           {t('common.volume')}
         </Text>
         <Text fontSize="md" fontWeight={500}>
-          {formatCurrency(volume, { symbol: '$', decimalPlaces: 2 })}
+          {formatCurrency(volume, { symbol: '$', abbreviated: true, decimalPlaces: 6 })}
         </Text>
       </HStack>
     </HStack>
