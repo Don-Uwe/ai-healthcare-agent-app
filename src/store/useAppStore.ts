@@ -409,6 +409,7 @@ export const useAppStore = createStore<AppState>(
       const txBuilder = new TxBuilder({
         connection,
         feePayer: owner,
+        cluster: 'mainnet',
         owner: new Owner(owner),
         signAllTransactions
       })

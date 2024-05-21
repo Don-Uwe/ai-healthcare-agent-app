@@ -319,7 +319,7 @@ export const useTokenAccountStore = createStore<TokenAccountStore>(
       const tokenAccounts = get().tokenAccounts
       if (!connection || !publicKey || !signAllTransactions || !tokenAccounts.length) return
 
-      const txBuilder = new TxBuilder({ connection, feePayer: publicKey, signAllTransactions })
+      const txBuilder = new TxBuilder({ connection, cluster: 'mainnet', feePayer: publicKey, signAllTransactions })
 
       migrateAccounts.forEach((tokenAcc) => {
         if (!tokenAcc.publicKey) return
