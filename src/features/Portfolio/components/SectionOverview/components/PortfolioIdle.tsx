@@ -41,7 +41,7 @@ export default function PortfolioIdle({ idleBalance, productiveBalance, idleList
       direction="column"
       overflow="hidden"
       flex={5}
-      minW="350px"
+      minW="300px"
       borderRadius={'20px'}
       scrollSnapAlign={'end'}
       scrollMargin={5}

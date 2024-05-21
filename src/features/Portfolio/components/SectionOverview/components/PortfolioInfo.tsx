@@ -100,7 +100,7 @@ export default function PortfolioInfo({ poolAssets, tokenAssets }: { poolAssets?
       borderRadius="20px"
       overflow="hidden"
       flex={4}
-      minW="350px"
+      minW="300px"
       scrollSnapAlign={'start'}
       scrollMargin={5}
       onClick={({ currentTarget }) => {
@@ -109,7 +109,15 @@ export default function PortfolioInfo({ poolAssets, tokenAssets }: { poolAssets?
         }
       }}
     >
-      <Tabs isFitted items={assetsCategoryOptions} value={tab} size="md" variant="folder" onChange={setTab} />
+      <Tabs
+        isFitted
+        items={assetsCategoryOptions}
+        value={tab}
+        size="md"
+        variant="folder"
+        onChange={setTab}
+        tabItemSX={{ whiteSpace: 'normal' }}
+      />
 
       <Flex flexWrap="wrap" py="30px" px={['20px', '30px']} flexGrow="inherit" bg={colors.backgroundLight}>
         {connected ? (
