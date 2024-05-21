@@ -1,5 +1,5 @@
 import { AvatarProps, Box, Image, forwardRef, useColorMode } from '@chakra-ui/react'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 import { colors } from '@/theme/cssVariables'
 import useTokenInfo from '@/hooks/token/useTokenInfo'
@@ -44,6 +44,8 @@ export default forwardRef(function TokenAvatar(
   const { colorMode } = useColorMode()
   const isLight = colorMode !== 'dark'
 
+  const [queryUrl, setQueryUrl] = useState('')
+
   const boxSize = Array.isArray(size) ? size.map((s) => parseSize(s) ?? s) : parseSize(size) ?? size
   const { tokenInfo } = useTokenInfo({
     mint: tokenMint
@@ -75,7 +77,11 @@ export default forwardRef(function TokenAvatar(
           <Image
             loading="lazy"
             objectFit="cover"
-            src={iconSrc}
+            src={queryUrl || iconSrc}
+            onError={() => {
+              if (!iconSrc) return
+              setQueryUrl(new URLSearchParams(iconSrc).get('url') || '')
+            }}
             alt={name || token?.address}
             title={haveHTMLTitle && (name || token) ? `${name || token?.symbol || token?.address}` : undefined}
           />
