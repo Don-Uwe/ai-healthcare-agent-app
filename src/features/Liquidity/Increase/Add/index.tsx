@@ -63,6 +63,13 @@ export default function AddLiquidity({
 
   const circleRef = useRef<IntervalCircleHandler>(null)
 
+  const rpcMintAmountA = rpcData
+    ? new Decimal(rpcData.baseReserve.toString()).div(10 ** rpcData.baseDecimals).toNumber()
+    : pool?.mintAmountA
+  const rpcMintAmountB = rpcData
+    ? new Decimal(rpcData.quoteReserve.toString()).div(10 ** rpcData.quoteDecimals).toNumber()
+    : pool?.mintAmountB
+
   const handleCompute = useEvent(() => {
     if (!pool) return
     const isBase = focusRef.current === 'base'
@@ -78,8 +85,8 @@ export default function AddLiquidity({
     computePairAmount({
       pool: {
         ...pool,
-        mintAmountA: rpcData ? new Decimal(rpcData.baseReserve.toString()).div(10 ** rpcData.baseDecimals).toNumber() : pool.mintAmountA,
-        mintAmountB: rpcData ? new Decimal(rpcData.quoteReserve.toString()).div(10 ** rpcData.quoteDecimals).toNumber() : pool.mintAmountB,
+        mintAmountA: rpcData ? rpcMintAmountA! : pool.mintAmountA,
+        mintAmountB: rpcData ? rpcMintAmountB! : pool.mintAmountB,
         lpAmount: rpcData ? new Decimal(rpcData.lpSupply.toString()).div(10 ** rpcData.lpDecimals).toNumber() : pool.lpAmount
       },
       amount: computeAmountRef.current[focusRef.current] || '0',
@@ -271,8 +278,10 @@ export default function AddLiquidity({
           <Text>
             {pool
               ? `1 ${wSolToSolString(pool[isReverse ? 'mintB' : 'mintA'].symbol)} ≈ ${formatCurrency(
-                  new Decimal(pool[isReverse ? 'mintAmountA' : 'mintAmountB'] / pool[isReverse ? 'mintAmountB' : 'mintAmountA']),
-                  { decimalPlaces: Math.max(pool[isReverse ? 'mintA' : 'mintB'].decimals, 6) }
+                  new Decimal((isReverse ? rpcMintAmountA! : rpcMintAmountB!) / (isReverse ? rpcMintAmountB! : rpcMintAmountA!)).toFixed(
+                    Math.max(pool[isReverse ? 'mintA' : 'mintB'].decimals, 6),
+                    Decimal.ROUND_UP
+                  )
                 )} ${wSolToSolString(pool[isReverse ? 'mintA' : 'mintB'].symbol)}`
               : '-'}
           </Text>
