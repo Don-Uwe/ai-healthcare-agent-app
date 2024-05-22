@@ -84,8 +84,8 @@ export default function Initialize() {
         mintA: solToWSolToken(baseToken!),
         mintB: solToWSolToken(quoteToken!)
       },
-      baseAmount: new Decimal(tokenAmount.base).mul(10 ** baseToken!.decimals).toString(),
-      quoteAmount: new Decimal(tokenAmount.quote).mul(10 ** quoteToken!.decimals).toString(),
+      baseAmount: new Decimal(tokenAmount.base).mul(10 ** baseToken!.decimals).toFixed(0),
+      quoteAmount: new Decimal(tokenAmount.quote).mul(10 ** quoteToken!.decimals).toFixed(0),
       startTime: startDate,
       onError: onTxError,
       onFinally: offLoading

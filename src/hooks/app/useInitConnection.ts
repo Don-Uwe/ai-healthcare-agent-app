@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useMemo } from 'react'
 import { PublicKey, Transaction, VersionedTransaction } from '@solana/web3.js'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
-import { validateAndParsePublicKey } from '@raydium-io/raydium-sdk-v2'
+import { TxVersion, validateAndParsePublicKey } from '@raydium-io/raydium-sdk-v2'
 import { useAppStore, defaultEndpoint } from '@/store/useAppStore'
 import usePrevious from '@/hooks/usePrevious'
 import shallow from 'zustand/shallow'
@@ -127,6 +127,11 @@ function useInitConnection(props: SSRData) {
   }, [publicKey?.toBase58(), wallet?.adapter.name])
 
   useEffect(() => cancelAllRetry, [connection.rpcEndpoint])
+  useEffect(() => {
+    if (!wallet) return
+    if (wallet.adapter.name === 'SafePal') useAppStore.setState({ txVersion: TxVersion.LEGACY })
+    return () => useAppStore.setState({ txVersion: TxVersion.V0 })
+  }, [wallet?.adapter.name])
 }
 
 export default useInitConnection
