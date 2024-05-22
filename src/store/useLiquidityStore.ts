@@ -11,8 +11,7 @@ import {
   setLoggerLevel,
   LogLevel,
   getCpmmPdaAmmConfigId,
-  CpmmConfigInfoLayout,
-  getTransferAmountFeeV2
+  CpmmConfigInfoLayout
 } from '@raydium-io/raydium-sdk-v2'
 import createStore from './createStore'
 import { useAppStore } from './useAppStore'
@@ -31,7 +30,7 @@ import BN from 'bn.js'
 import Decimal from 'decimal.js'
 import { getComputeBudgetConfig } from '@/utils/tx/computeBudget'
 
-setLoggerLevel('Raydium_cpmm', LogLevel.Debug)
+// setLoggerLevel('Raydium_LiquidityV2', LogLevel.Debug)
 interface LiquidityStore {
   newCreatedPool?: CreateCpmmPoolAddress
   createPoolFee: string

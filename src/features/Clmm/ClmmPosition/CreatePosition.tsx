@@ -112,7 +112,7 @@ export default function CreatePosition() {
   const disabledInput = currentPool
     ? [new Decimal(currentPriceStr || 0).gt(priceRange[1] || 0), new Decimal(currentPriceStr || 0).lt(priceRange[0] || 0)]
     : [false, false]
-  if (!baseIn) disabledInput.reverse()
+  // if (!baseIn) disabledInput.reverse()
 
   const totalMintAValue = new Decimal(tokenAmount[0] || '0').mul(tokens.mintA ? tokenPrices[tokens.mintA.address]?.value || 0 : 0)
   const totalMintBValue = new Decimal(tokenAmount[1] || '0').mul(tokens.mintB ? tokenPrices[tokens.mintB.address]?.value || 0 : 0)
