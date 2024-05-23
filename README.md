@@ -59,10 +59,91 @@ For android :
 For ios: 
 `npm run ios`
 
-For backend:
+## For Backend:
+
+## MongoDB Installation
+
+1. **Install MongoDB**
+   - Download the appropriate MongoDB installation package for your operating system from the official MongoDB website: https://www.mongodb.com/try/download
+   - Follow the installation instructions for your specific platform.
+
+2. **Set up a MongoDB database**
+   - After installation, start the MongoDB server by running the `mongod` command.
+   - MongoDB will create a default data directory to store your databases.
+   - Use the `mongo` shell or a GUI client like MongoDB Compass to interact with your databases.
+
+3. **Follow the Steps to Initialize the backend server**
+
+## Setting up a Backend Server
+
+Follow the steps to setup backend in your system
+
+```
+ cd backend
+```
+Create .env file if not present and add the following variables in the file
+
+```
+PORT=
+MONGODB_URL=""
+JWT_SECRET=""
+```
+
+**Install necessary dependency from package.json**
+
+`npm install -s`
+
+**Once dependencies are installed, run the server using following command**
+
+`npm run dev`
+
+Alternate Command to run the server once
 
 `node server.js`
 
+**Backend API URL**
+```
+ http://localhost:{PORT}/api/
+```
+**Make Sure to replace the proper PORT value for Backend API**
+
+**Access the application:**
+Open your web browser and navigate to (LOCAL_HOST_URL).
+If you would like to contribute to the project, please follow the contribution guidelines.
+
+## Testing Frontend with Localhost Backend Server
+
+When working with a backend server running on localhost, frontend developers can follow these guidelines to test their application:
+
+1. **Start the backend server**
+   - Before testing the frontend application, ensure that the backend server is running on localhost.
+   - Navigate to the backend project directory and start the server (e.g., `node server.js` for a Node.js server).
+   - The server should be listening on a specific port (e.g., `http://localhost:{PORT}`).
+
+2. **Configure the frontend application**
+   - In the frontend application, locate the configuration file or the section where the API base URL is defined.
+   - Set the API base URL to point to the local backend server.
+
+3. **Use appropriate HTTP clients**
+   - During development, frontend developers can use browser tools like the Network tab in the developer tools or dedicated HTTP clients like Postman or Insomnia to test the backend API endpoints.
+   - Send HTTP requests to the local backend server and observe the responses.
+
+4. **Handle CORS (Cross-Origin Resource Sharing)**
+   - If the frontend application is running on a different port or domain than the backend server, the browser may block the requests due to CORS restrictions.
+   - To handle CORS, the backend server should be configured to allow cross-origin requests from the frontend application's origin.
+   - CORS is handled in the current backend server
+
+5. **Proxy requests (optional)**
+   - Some frontend frameworks (e.g., Create React App, Vue CLI) provide a built-in proxy feature that forwards requests from the frontend application to the backend server.
+   - Configure the proxy in the frontend application's development settings to automatically forward API requests to the local backend server.
+
+6. **Use environment variables**
+   - Avoid hardcoding the backend server URL in the frontend application.
+   - Instead, use environment variables to store the backend server URL and read it during runtime.
+
+7. **Test different scenarios**
+   - Test various user flows and interactions with the backend API, such as creating, reading, updating, and deleting data.
+   - Simulate different scenarios, including error cases and edge cases, to ensure the frontend application and backend server handle them correctly.
 
 **Access the application:**
 Open your web browser and navigate to (LOCAL_HOST_URL).
@@ -89,15 +170,3 @@ Remember, following these guidelines will help ensure a smooth and efficient con
 ## Contact:
      
 Discord Server (Susmita Bhattacharya, user_name: susmita_)
-
- 
-<h2 align = "center">Our Contributors ❤️</h2>
-<div align = "center">
- <h3>Thank you for contributing to our repository</h3>
-
-![Contributors](https://contrib.rocks/image?repo=SB2318/UltimateHealth)
-
-
-</div>
-
-
