@@ -8,7 +8,8 @@ import {
   TransferFeeConfig,
   Mint,
   TransferFeeConfigLayout,
-  ExtensionType
+  ExtensionType,
+  MintLayout
 } from '@solana/spl-token'
 
 import { useAppStore } from '@/store/useAppStore'
@@ -62,14 +63,22 @@ export const getOnlineTokenInfo = async ({
       const address = new PublicKey(mint)
       const info = await connection.getAccountInfo(address, 'confirmed')
       const space = (info as AccountInfo<Buffer> & { space?: number })?.space ?? 0
-      if (space === 82 || space > 165) {
+      if (space === 82 || space >= 165) {
+        const tags = []
         if (info?.owner.equals(TOKEN_2022_PROGRAM_ID)) {
           programId = TOKEN_2022_PROGRAM_ID
+          tags.push('token-2022')
         }
         const onlineData = unpackMint(address, info, programId)
         const mintAddress = mint.toString()
 
+        try {
+          if (info && MintLayout.decode(info?.data).freezeAuthorityOption === 1) tags.push('hasFreeze')
+        } catch {
+          console.error('decode mint error:', mint.toString())
+        }
         const config = getTransferFeeConfig(onlineData)
+        if (getTransferFeeConfig(onlineData)) tags.push('hasTransferFee')
         if (onlineData) {
           const res = {
             chainId: 101,
@@ -79,7 +88,7 @@ export const getOnlineTokenInfo = async ({
             symbol: mintAddress.slice(0, 6),
             name: mintAddress.slice(0, 6),
             decimals: onlineData.decimals,
-            tags: config ? ['hasTransferFee'] : [],
+            tags,
             extensions: {
               ...(config
                 ? {
