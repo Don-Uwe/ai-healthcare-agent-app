@@ -18,18 +18,21 @@ export default function retryTx({ tx, id }: { tx: Transaction | VersionedTransac
   let serialized = tx.serialize({ requireAllSignatures: false, verifySignatures: false })
   if (tx instanceof VersionedTransaction) serialized = toBuffer(serialized)
   const base64 = serialized.toString('base64')
-  axios
-    .post(
-      `${urlConfigs.SERVICE_BASE_HOST}${urlConfigs.SEND_TRANSACTION}`,
-      {
-        data: [base64]
-      },
-      { skipError: true }
-    )
-    .catch((e) => {
-      console.error('send tx to be error', e.message)
-    })
 
+  const sendApi = () => {
+    axios
+      .post(
+        `${urlConfigs.SERVICE_BASE_HOST}${urlConfigs.SEND_TRANSACTION}`,
+        {
+          data: [base64]
+        },
+        { skipError: true }
+      )
+      .catch((e) => {
+        console.error('send tx to be error', e.message)
+      })
+  }
+  sendApi()
   if (!connection) return
   retryRecord.set(id, {
     done: false
@@ -40,6 +43,8 @@ export default function retryTx({ tx, id }: { tx: Transaction | VersionedTransac
       tx instanceof Transaction
         ? await connection.sendRawTransaction(tx.serialize(), { skipPreflight: true, maxRetries: 0 })
         : await connection.sendTransaction(tx, { skipPreflight: true, maxRetries: 0 })
+      sendApi()
+
       throw new Error('sending')
     },
     {

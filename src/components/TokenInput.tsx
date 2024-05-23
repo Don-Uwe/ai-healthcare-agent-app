@@ -131,6 +131,7 @@ function TokenInput(props: TokenInputProps) {
   } = props
   const isMobile = useAppStore((s) => s.isMobile)
   const setExtraTokenListAct = useTokenStore((s) => s.setExtraTokenListAct)
+  const whiteListMap = useTokenStore((s) => s.whiteListMap)
   const { colorMode } = useColorMode()
   const isLight = colorMode === 'light'
   const { isOpen, onOpen, onClose } = useDisclosure()
@@ -266,6 +267,11 @@ function TokenInput(props: TokenInputProps) {
     if (!defaultUnknownToken) return
     handleSelectToken(defaultUnknownToken)
   }, [defaultUnknownToken?.address])
+
+  // to do freezed
+  if (token?.tags.includes('hasFreeze') && !whiteListMap.has(token.address)) {
+    // show alert popup
+  }
 
   return (
     <Box bg={colors.backgroundDark50} position={'relative'} rounded={12} sx={ctrSx}>

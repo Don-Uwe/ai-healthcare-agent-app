@@ -25,6 +25,7 @@ export interface TokenStore {
   >
   mintGroup: { official: Set<string>; jup: Set<string> }
   extraLoadedTokenList: TokenInfo[]
+  whiteListMap: Set<string>
 
   loadTokensAct: (forceUpdate?: boolean, jupTokenType?: JupTokenType) => void
   setDisplayTokenListAct: () => void
@@ -50,7 +51,8 @@ const initTokenSate = {
   extraLoadedTokenList: preSetList,
   tokenMap: new Map(),
   tokenPriceRecord: new Map(),
-  mintGroup: { official: new Set<string>(), jup: new Set<string>() }
+  mintGroup: { official: new Set<string>(), jup: new Set<string>() },
+  whiteListMap: new Set<string>()
 }
 
 export const cachedTokenInfo: Map<string, RawMint> = new Map()
@@ -118,7 +120,8 @@ export const useTokenStore = createStore<TokenStore>(
           {
             tokenList,
             tokenMap,
-            mintGroup: raydium.token.mintGroup
+            mintGroup: raydium.token.mintGroup,
+            whiteListMap: new Set(Array.from(raydium.token.whiteListMap))
           },
           false,
           action
