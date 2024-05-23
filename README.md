@@ -39,7 +39,11 @@ cd  UltimateHealth
  git checkout develop
 ```
 
+## For Frontend:
+
+
 **Install dependencies:**
+
 ```
 npm install --legacy-peer-deps
 ```
