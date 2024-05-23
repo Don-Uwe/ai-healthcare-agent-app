@@ -13,13 +13,18 @@ const retryRecord = new Map<
 export default function retryTx({ tx, id }: { tx: Transaction | VersionedTransaction; id: string }) {
   const { connection, urlConfigs } = useAppStore.getState()
   if (retryRecord.has(id)) return
-  try {
-    axios.post(`${urlConfigs.SERVICE_BASE_HOST}${urlConfigs.SEND_TRANSACTION}`, {
-      data: [tx.serialize({ verifySignatures: false }).toString('base64')]
+  axios
+    .post(
+      `${urlConfigs.SERVICE_BASE_HOST}${urlConfigs.SEND_TRANSACTION}`,
+      {
+        data: [tx.serialize({ verifySignatures: false }).toString('base64')]
+      },
+      { skipError: true }
+    )
+    .catch((e) => {
+      console.error('send tx to be error', e.message)
     })
-  } catch {
-    console.error('send tx to be error')
-  }
+
   if (!connection) return
   retryRecord.set(id, {
     done: false
