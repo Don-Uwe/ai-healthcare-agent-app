@@ -250,6 +250,7 @@ export function SwapPanel({
       <Flex mb={[4, 5]} direction="column">
         {/* input */}
         <TokenInput
+          name="swap"
           topLeftLabel={t('swap.from_label')}
           ctrSx={getCtrSx('BaseIn')}
           token={tokenInput}
@@ -264,6 +265,7 @@ export function SwapPanel({
         <SwapIcon onClick={handleChangeSide} />
         {/* output */}
         <TokenInput
+          name="swap"
           topLeftLabel={t('swap.to_label')}
           ctrSx={getCtrSx('BaseOut')}
           token={tokenOutput}

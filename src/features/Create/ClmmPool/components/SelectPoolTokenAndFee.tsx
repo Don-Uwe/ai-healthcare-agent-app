@@ -13,6 +13,8 @@ import { useClmmStore } from '@/store/useClmmStore'
 import { colors } from '@/theme/cssVariables/colors'
 import ConnectedButton from '@/components/ConnectedButton'
 import useTokenPrice from '@/hooks/token/useTokenPrice'
+import { useTokenStore } from '@/store'
+import { toastSubject } from '@/hooks/toast/useGlobalToast'
 import { Box, Flex, Spacer, SystemStyleObject, Tag, Text, useDisclosure } from '@chakra-ui/react'
 import { ApiClmmConfigInfo, ApiV3Token, PoolFetchType, TokenInfo, solToWSol } from '@raydium-io/raydium-sdk-v2'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -84,6 +86,7 @@ export default function SelectPoolTokenAndFee({ completed, isLoading, onConfirm,
     mintList: token1 && token2 ? [token1.address, token2.address] : [],
     timeout: 100
   })
+  const whiteListMap = useTokenStore((s) => s.whiteListMap)
 
   const { data, isLoading: isExistingLoading } = useFetchPoolByMint({
     shouldFetch: !!token1 && !!token2,
@@ -130,6 +133,15 @@ export default function SelectPoolTokenAndFee({ completed, isLoading, onConfirm,
   )
 
   const handleSelect = useCallback((val: ApiV3Token) => {
+    if (val?.tags.includes('hasFreeze') && !whiteListMap.has(val.address)) {
+      toastSubject.next({
+        title: t('token_selector.token_freeze_warning'),
+        description: t('token_selector.token_has_freeze_disable'),
+        status: 'warning'
+      })
+      return
+    }
+    onClose()
     setTokens((preVal) => {
       const anotherSide = selectRef.current === 'token1' ? 'token2' : 'token1'
       const isDuplicated = val.address === preVal[anotherSide]?.address
