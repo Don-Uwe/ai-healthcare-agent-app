@@ -1,6 +1,7 @@
 import { VersionedTransaction, Transaction } from '@solana/web3.js'
 import { retry, idToIntervalRecord, cancelRetry } from '@/utils/common'
 import { useAppStore } from '@/store'
+import axios from '@/api/axios'
 
 const retryRecord = new Map<
   string,
@@ -10,8 +11,16 @@ const retryRecord = new Map<
 >()
 
 export default function retryTx({ tx, id }: { tx: Transaction | VersionedTransaction; id: string }) {
-  const connection = useAppStore.getState().connection
-  if (!connection || retryRecord.has(id)) return
+  const { connection, urlConfigs } = useAppStore.getState()
+  if (retryRecord.has(id)) return
+  try {
+    axios.post(`${urlConfigs.SERVICE_BASE_HOST}${urlConfigs.SEND_TRANSACTION}`, {
+      data: [tx.serialize({ verifySignatures: false }).toString('base64')]
+    })
+  } catch {
+    console.error('send tx to be error')
+  }
+  if (!connection) return
   retryRecord.set(id, {
     done: false
   })
@@ -25,9 +34,9 @@ export default function retryTx({ tx, id }: { tx: Transaction | VersionedTransac
     },
     {
       id,
-      retryCount: 40,
-      interval: 3000,
-      sleepTime: 3000
+      retryCount: 60,
+      interval: 2000,
+      sleepTime: 2000
     }
   ).catch((e) => {
     console.error('retry failed', e.message)
