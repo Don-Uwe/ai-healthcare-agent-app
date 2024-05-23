@@ -2,6 +2,7 @@ import { VersionedTransaction, Transaction } from '@solana/web3.js'
 import { retry, idToIntervalRecord, cancelRetry } from '@/utils/common'
 import { useAppStore } from '@/store'
 import axios from '@/api/axios'
+import { printSimulate, toBuffer } from '@raydium-io/raydium-sdk-v2'
 
 const retryRecord = new Map<
   string,
@@ -13,11 +14,15 @@ const retryRecord = new Map<
 export default function retryTx({ tx, id }: { tx: Transaction | VersionedTransaction; id: string }) {
   const { connection, urlConfigs } = useAppStore.getState()
   if (retryRecord.has(id)) return
+
+  let serialized = tx.serialize({ requireAllSignatures: false, verifySignatures: false })
+  if (tx instanceof VersionedTransaction) serialized = toBuffer(serialized)
+  const base64 = serialized.toString('base64')
   axios
     .post(
       `${urlConfigs.SERVICE_BASE_HOST}${urlConfigs.SEND_TRANSACTION}`,
       {
-        data: [tx.serialize({ verifySignatures: false }).toString('base64')]
+        data: [base64]
       },
       { skipError: true }
     )
