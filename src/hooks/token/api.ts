@@ -78,6 +78,7 @@ export const getOnlineTokenInfo = async ({
           console.error('decode mint error:', mint.toString())
         }
         const config = getTransferFeeConfig(onlineData)
+        if (getTransferFeeConfig(onlineData)) tags.push('hasTransferFee')
         if (onlineData) {
           const res = {
             chainId: 101,
