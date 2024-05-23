@@ -22,7 +22,6 @@ import {
 import { Wallet } from '@solana/wallet-adapter-react'
 
 import CircleSuccess from '@/icons/misc/CircleSuccess'
-import CircleInfo from '@/icons/misc/CircleInfo'
 import CircleWarning from '@/icons/misc/CircleWarning'
 import CircleError from '@/icons/misc/CircleError'
 import { colors } from '@/theme/cssVariables'
@@ -33,6 +32,7 @@ import BinanceNetworkIcon from '@/icons/networks/BinanceNetworkIcon'
 import PolygonNetworkIcon from '@/icons/networks/PolygonNetworkIcon'
 import ChevronLeftIcon from '@/icons/misc/ChevronLeftIcon'
 import ChevronRightIcon from '@/icons/misc/ChevronRightIcon'
+import ExternalLinkLargeIcon from '@/icons/misc/ExternalLinkLargeIcon'
 import { useAppStore } from '@/store'
 
 import ChevronUpDownArrow from './ChevronUpDownArrow'
@@ -260,7 +260,7 @@ function RecentTransactionCard({ transaction }: { transaction: RecentTransaction
       >
         <Box gridArea="statu" alignSelf={'center'}>
           {transaction.status === 'info' ? (
-            <CircleInfo width="16px" height="16px" />
+            <CircleWarning width="16px" height="16px" />
           ) : transaction.status === 'warning' ? (
             <CircleWarning width="16px" height="16px" />
           ) : transaction.status === 'success' ? (
@@ -269,16 +269,25 @@ function RecentTransactionCard({ transaction }: { transaction: RecentTransaction
             <CircleError width="16px" height="16px" />
           )}
         </Box>
-        <Box
-          gridArea={'name'}
-          cursor={transaction.txId ? 'pointer' : ''}
-          onClick={transaction.txId ? () => window.open(`${explorerUrl}/tx/${transaction.txId}`) : undefined}
-          fontSize="sm"
-          fontWeight={500}
-          color={colors.textPrimary}
-        >
-          {transaction.name}
-        </Box>
+        <HStack gridArea={'name'} fontSize="sm" fontWeight={500} color={colors.textPrimary} gap={1}>
+          <Box
+            cursor={transaction.txId ? 'pointer' : ''}
+            onClick={transaction.txId ? () => window.open(`${explorerUrl}/tx/${transaction.txId}`) : undefined}
+            _hover={{ textDecoration: transaction.txId ? 'underline' : 'none' }}
+            whiteSpace="nowrap"
+          >
+            {transaction.name}
+          </Box>
+          {transaction.txId && (
+            <ExternalLinkLargeIcon
+              cursor="pointer"
+              onClick={() => window.open(`${explorerUrl}/tx/${transaction.txId}`)}
+              color={colors.textSecondary}
+              width={'16px'}
+              height={'16px'}
+            />
+          )}
+        </HStack>
         <Flex gridArea={'token'} alignSelf={'center'}>
           {transaction.relatedTokens.map((token) => (
             <TokenAvatar key={token.address} token={{ ...token, decimals: 0 }} size="sm" />
@@ -305,7 +314,7 @@ function RecentTransactionCard({ transaction }: { transaction: RecentTransaction
                   >
                     <Box gridArea="statu" alignSelf="center">
                       {subTransaction.status === 'info' ? (
-                        <CircleInfo width="14px" height="14px" />
+                        <CircleWarning width="14px" height="14px" />
                       ) : subTransaction.status === 'warning' ? (
                         <CircleWarning width="14px" height="14px" />
                       ) : subTransaction.status === 'success' ? (
@@ -314,15 +323,25 @@ function RecentTransactionCard({ transaction }: { transaction: RecentTransaction
                         <CircleError width="14px" height="14px" />
                       )}
                     </Box>
-                    <Box
-                      gridArea={'name'}
-                      cursor={subTransaction.txId ? 'pointer' : ''}
-                      onClick={subTransaction.txId ? () => window.open(`${explorerUrl}/tx/${subTransaction.txId}`) : undefined}
-                      fontSize="xs"
-                      color={colors.textSecondary}
-                    >
-                      {t(subTransaction.name) || `${t('transaction.title')} ${idx + 1}`}
-                    </Box>
+                    <HStack gridArea={'name'} fontSize="xs" color={colors.textSecondary} gap={1}>
+                      <Box
+                        cursor={subTransaction.txId ? 'pointer' : ''}
+                        onClick={subTransaction.txId ? () => window.open(`${explorerUrl}/tx/${subTransaction.txId}`) : undefined}
+                        _hover={{ textDecoration: subTransaction.txId ? 'underline' : 'none' }}
+                        whiteSpace="nowrap"
+                      >
+                        {t(subTransaction.name) || `${t('transaction.title')} ${idx + 1}`}
+                      </Box>
+                      {subTransaction.txId && (
+                        <ExternalLinkLargeIcon
+                          cursor="pointer"
+                          onClick={() => window.open(`${explorerUrl}/tx/${subTransaction.txId}`)}
+                          color={colors.textSecondary}
+                          width={'16px'}
+                          height={'16px'}
+                        />
+                      )}
+                    </HStack>
                     <Box gridArea={'date'} fontSize="xs" color={colors.textTertiary}>
                       {toUTC(new Date(subTransaction.date))}
                     </Box>
