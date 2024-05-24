@@ -2,7 +2,7 @@ import { VersionedTransaction, Transaction } from '@solana/web3.js'
 import { retry, idToIntervalRecord, cancelRetry } from '@/utils/common'
 import { useAppStore } from '@/store'
 import axios from '@/api/axios'
-import { printSimulate, toBuffer } from '@raydium-io/raydium-sdk-v2'
+import { toBuffer } from '@raydium-io/raydium-sdk-v2'
 
 const retryRecord = new Map<
   string,
@@ -20,17 +20,21 @@ export default function retryTx({ tx, id }: { tx: Transaction | VersionedTransac
   const base64 = serialized.toString('base64')
 
   const sendApi = () => {
-    axios
-      .post(
-        `${urlConfigs.SERVICE_BASE_HOST}${urlConfigs.SEND_TRANSACTION}`,
-        {
-          data: [base64]
-        },
-        { skipError: true }
-      )
-      .catch((e) => {
-        console.error('send tx to be error', e.message)
-      })
+    try {
+      axios
+        .post(
+          `${urlConfigs.SERVICE_BASE_HOST}${urlConfigs.SEND_TRANSACTION}`,
+          {
+            data: [base64]
+          },
+          { skipError: true }
+        )
+        .catch((e) => {
+          console.error('send tx to be error', e.message)
+        })
+    } catch {
+      console.error('send tx to be error')
+    }
   }
   sendApi()
   if (!connection) return
@@ -40,9 +44,13 @@ export default function retryTx({ tx, id }: { tx: Transaction | VersionedTransac
   retry(
     async () => {
       if (retryRecord.get(id)!.done) return true
-      tx instanceof Transaction
-        ? await connection.sendRawTransaction(tx.serialize(), { skipPreflight: true, maxRetries: 0 })
-        : await connection.sendTransaction(tx, { skipPreflight: true, maxRetries: 0 })
+      try {
+        tx instanceof Transaction
+          ? await connection.sendRawTransaction(tx.serialize(), { skipPreflight: true, maxRetries: 0 })
+          : await connection.sendTransaction(tx, { skipPreflight: true, maxRetries: 0 })
+      } catch {
+        console.error('send tx to rpc error')
+      }
       sendApi()
 
       throw new Error('sending')
