@@ -152,24 +152,21 @@ const appInitState = {
   connected: false,
   chainTimeOffset: 0,
   blockSlotCountForSecond: 0,
-  explorerUrl: getStorageItem(EXPLORER_KEY) || supportedExplorers[0].host,
+  explorerUrl: supportedExplorers[0].host,
   isMobile: false,
   isLaptop: false,
-  aprMode: (getStorageItem(APR_MODE_KEY) || 'M') as 'M' | 'D',
+  aprMode: 'M' as 'M' | 'D',
   rpcs: [],
-  urlConfigs: {
-    ...API_URLS,
-    BASE_HOST: !isProdEnv() ? getStorageItem('_r_api_host_') || API_URLS.BASE_HOST : API_URLS.BASE_HOST
-  },
+  urlConfigs: API_URLS,
   programIdConfig: ALL_PROGRAM_ID,
   jupTokenType: JupTokenType.Strict,
   displayTokenSettings: {
     official: true,
     jup: true,
-    userAdded: getStorageItem(USER_ADDED_KEY) ? getStorageItem(USER_ADDED_KEY) === 'true' : true
+    userAdded: true
   },
   featureDisabled: {},
-  slippage: Number(getStorageItem(SLIPPAGE_KEY) || 0.005),
+  slippage: 0.005,
   txVersion: TxVersion.V0,
   appVersion: 'V3.0.2',
   needRefresh: false,
@@ -179,7 +176,7 @@ const appInitState = {
   priorityLevel: PriorityLevel.Turbo,
   priorityMode: PriorityMode.MaxCap,
   feeConfig: {},
-  transactionFee: getStorageItem(FEE_KEY) === null ? '0.0003' : getStorageItem(FEE_KEY) || ''
+  transactionFee: '0.0003'
 }
 
 let rpcLoading = false
@@ -202,7 +199,10 @@ export const useAppStore = createStore<AppState>(
       const raydium = await Raydium.load({
         ...payload,
         connection,
-        urlConfigs,
+        urlConfigs: {
+          ...urlConfigs,
+          BASE_HOST: !isProdEnv() ? getStorageItem('_r_api_host_') || urlConfigs.BASE_HOST : urlConfigs.BASE_HOST
+        },
         jupTokenType,
         logRequests: !isDev,
         disableFeatureCheck: true

@@ -1,7 +1,7 @@
 import { Box, Grid, GridItem, HStack, VStack } from '@chakra-ui/react'
 import { RAYMint, SOLMint, USDCMint, USDTMint } from '@raydium-io/raydium-sdk-v2'
 import { PublicKey } from '@solana/web3.js'
-import { useMemo, useState, useRef } from 'react'
+import { useMemo, useState, useRef, useEffect } from 'react'
 
 import PanelCard from '@/components/PanelCard'
 import { useIsomorphicLayoutEffect } from '@/hooks/useIsomorphicLayoutEffect'
@@ -20,15 +20,16 @@ import { TimeType } from '@/hooks/pool/useFetchPoolKLine'
 import { SlippageAdjuster } from '@/components/SlippageAdjuster'
 
 export default function Swap() {
-  const { inputMint: cacheInput, outputMint: cacheOutput } = getSwapPairCache()
-  const [inputMint, setInputMint] = useState<string>(cacheInput || PublicKey.default.toBase58())
-  const [outputMint, setOutputMint] = useState<string>(cacheOutput !== cacheInput ? cacheOutput : RAYMint.toBase58())
+  // const { inputMint: cacheInput, outputMint: cacheOutput } = getSwapPairCache()
+  const [inputMint, setInputMint] = useState<string>(PublicKey.default.toBase58())
+  const [outputMint, setOutputMint] = useState<string>(RAYMint.toBase58())
   const [isPCChartShown, setIsPCChartShown] = useState<boolean>(true)
   const [isMobileChartShown, setIsMobileChartShown] = useState<boolean>(false)
   const [isChartLeft, setIsChartLeft] = useState<boolean>(true)
   const isMobile = useAppStore((s) => s.isMobile)
   const [directionReverse, setDirectionReverse] = useState<boolean>(false)
   const [selectedTimeType, setSelectedTimeType] = useState<TimeType>('15m')
+  const [cacheLoaded, setCacheLoaded] = useState(false)
   const untilDate = useRef(Math.floor(Date.now() / 1000))
   const swapPanelRef = useRef<HTMLDivElement>(null)
   const klineRef = useRef<HTMLDivElement>(null)
@@ -39,8 +40,16 @@ export default function Swap() {
   const baseToken = useMemo(() => tokenMap.get(baseMint), [tokenMap, baseMint])
   const quoteToken = useMemo(() => tokenMap.get(quoteMint), [tokenMap, quoteMint])
   const [isDirectionNeedReverse, setIsDirectionNeedReverse] = useState<boolean>(false)
+
+  useEffect(() => {
+    const { inputMint: cacheInput, outputMint: cacheOutput } = getSwapPairCache()
+    if (cacheInput) setInputMint(cacheInput)
+    if (cacheOutput && cacheOutput !== cacheInput) setOutputMint(cacheOutput)
+    setCacheLoaded(true)
+  }, [])
   // reset directionReverse when inputMint or outputMint changed
   useIsomorphicLayoutEffect(() => {
+    if (!cacheLoaded) return
     if (isDirectionNeedReverse) {
       setDirectionReverse(true)
       setIsDirectionNeedReverse(false)
@@ -52,7 +61,7 @@ export default function Swap() {
       inputMint,
       outputMint
     })
-  }, [inputMint, outputMint])
+  }, [inputMint, outputMint, cacheLoaded])
 
   useIsomorphicLayoutEffect(() => {
     if (klineRef.current) {

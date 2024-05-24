@@ -8,6 +8,7 @@ import useGlobalToast from '../hooks/toast/useGlobalToast'
 import useTxStatus from '../hooks/toast/useTxStatus'
 import useTokenSetting from '../hooks/token/useTokenSetting'
 import useInitMobileDetector from '@/hooks/app/useInitMobileDetector'
+import useLoadStorageData from '@/hooks/app/useLoadStorageData'
 import AppVersion from './AppVersion'
 
 export default function Content({ children, ...props }: PropsWithChildren) {
@@ -16,6 +17,7 @@ export default function Content({ children, ...props }: PropsWithChildren) {
   useTokenAccountInfo()
   useRefreshChainTime()
   useTokenSetting()
+  useLoadStorageData()
 
   // ui related hooks
   useInitMobileDetector()

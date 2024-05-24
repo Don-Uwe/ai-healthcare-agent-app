@@ -60,14 +60,12 @@ export function SwapPanel({
   const sendingResult = useRef<ApiSwapV1OutSuccess | undefined>()
   const wsolBalance = getTokenBalanceUiAmount({ mint: NATIVE_MINT.toBase58(), decimals: SOL_INFO.decimals })
 
-  const [inputMint, setInputMint] = useState<string>(defaultInput || PublicKey.default.toBase58())
+  const [inputMint, setInputMint] = useState<string>(PublicKey.default.toBase58())
   const [swapType, setSwapType] = useState<'BaseIn' | 'BaseOut'>('BaseIn')
 
-  const [outputMint, setOutputMint] = useState<string>(
-    defaultOutput !== defaultInput ? defaultOutput : defaultInput !== RAYMint.toBase58() ? RAYMint.toBase58() : ''
-  )
+  const [outputMint, setOutputMint] = useState<string>(RAYMint.toBase58())
   const [tokenInput, tokenOutput] = [tokenMap.get(inputMint), tokenMap.get(outputMint)]
-
+  const [cacheLoaded, setCacheLoaded] = useState(false)
   const isTokenLoaded = tokenMap.size > 0
   const { tokenInfo: unknownTokenA } = useTokenInfo({
     mint: isTokenLoaded && !tokenInput && inputMint ? inputMint : undefined
@@ -77,10 +75,17 @@ export function SwapPanel({
   })
 
   useEffect(() => {
+    if (defaultInput) setInputMint(defaultInput)
+    if (defaultOutput && defaultOutput !== defaultInput) setOutputMint(defaultOutput)
+    setCacheLoaded(true)
+  }, [defaultInput, defaultOutput])
+
+  useEffect(() => {
+    if (!cacheLoaded) return
     onInputMintChange?.(inputMint)
     onOutputMintChange?.(outputMint)
     setUrlQuery({ inputMint: mintToUrl(inputMint), outputMint: mintToUrl(outputMint) })
-  }, [inputMint, outputMint])
+  }, [inputMint, outputMint, cacheLoaded])
 
   const [amountIn, setAmountIn] = useState<string>('')
   const [needPriceUpdatedAlert, setNeedPriceUpdatedAlert] = useState(false)
@@ -125,6 +130,7 @@ export function SwapPanel({
       : computeResult?.outputAmount || ''
 
   useEffect(() => {
+    if (!cacheLoaded) return
     const [inputMint, outputMint] = [urlToMint(query.inputMint), urlToMint(query.outputMint)]
     if (inputMint && tokenMap.get(inputMint)) {
       setInputMint(inputMint)
@@ -138,7 +144,7 @@ export function SwapPanel({
         outputMint
       })
     }
-  }, [tokenMap])
+  }, [tokenMap, cacheLoaded])
 
   useEffect(() => {
     if (isSending && response && response.data?.outputAmount !== sendingResult.current?.data.outputAmount) {

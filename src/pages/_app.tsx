@@ -32,10 +32,10 @@ const MyApp = ({ Component, pageProps, lng, ...props }: AppProps & { lng: string
     [pathname]
   )
 
-  if (isLocal()) {
-    const lang = lng || (getCookie('i18nextLng') as string) || 'en'
-    i18n.changeLanguage(lang)
-  }
+  // if (isLocal()) {
+  //   const lang = lng || (getCookie('i18nextLng') as string) || 'en'
+  //   i18n.changeLanguage(lang)
+  // }
 
   return (
     <>
