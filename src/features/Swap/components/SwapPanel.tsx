@@ -60,12 +60,10 @@ export function SwapPanel({
   const sendingResult = useRef<ApiSwapV1OutSuccess | undefined>()
   const wsolBalance = getTokenBalanceUiAmount({ mint: NATIVE_MINT.toBase58(), decimals: SOL_INFO.decimals })
 
-  const [inputMint, setInputMint] = useState<string>(defaultInput || PublicKey.default.toBase58())
+  const [inputMint, setInputMint] = useState<string>(PublicKey.default.toBase58())
   const [swapType, setSwapType] = useState<'BaseIn' | 'BaseOut'>('BaseIn')
 
-  const [outputMint, setOutputMint] = useState<string>(
-    defaultOutput !== defaultInput ? defaultOutput : defaultInput !== RAYMint.toBase58() ? RAYMint.toBase58() : ''
-  )
+  const [outputMint, setOutputMint] = useState<string>(RAYMint.toBase58())
   const [tokenInput, tokenOutput] = [tokenMap.get(inputMint), tokenMap.get(outputMint)]
 
   const isTokenLoaded = tokenMap.size > 0
@@ -75,6 +73,11 @@ export function SwapPanel({
   const { tokenInfo: unknownTokenB } = useTokenInfo({
     mint: isTokenLoaded && !tokenOutput && outputMint ? outputMint : undefined
   })
+
+  useEffect(() => {
+    if (defaultInput) setInputMint(defaultInput)
+    if (defaultOutput && defaultOutput !== defaultInput) setOutputMint(defaultOutput)
+  }, [defaultInput, defaultOutput])
 
   useEffect(() => {
     onInputMintChange?.(inputMint)
