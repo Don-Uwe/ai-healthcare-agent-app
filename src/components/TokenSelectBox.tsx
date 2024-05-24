@@ -36,6 +36,7 @@ export default function TokenSelectBox({ token, label, placeholder: _placeholder
   const handleSelectValue = useCallback(
     (token: TokenInfo) => {
       onSelectToken(token, name)
+      onClose()
     },
     [onSelectToken, name]
   )

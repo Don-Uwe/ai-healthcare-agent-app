@@ -163,7 +163,10 @@
     "token_not_found": "Can’t find the token you’re looking for? Try entering the mint address or check token list settings below.",
     "input_token_symbol": "input a symbol for this token",
     "input_token_name": "input a name for this token (optional)",
-    "add_user_token": "Add User Token"
+    "add_user_token": "Add User Token",
+    "token_freeze_warning": "Freeze Authority Warning",
+    "token_has_freeze": "This token has freeze authority enabled and could prevent you from transferring or trading the token later.",
+    "token_has_freeze_disable": "The selected token has freeze authority enabled. Disable freeze authority and try again or choose a different token."
   },
   "field": {
     "24h_volume": "Volume 24H",

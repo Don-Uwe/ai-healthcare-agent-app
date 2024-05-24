@@ -53,7 +53,6 @@ export default function TokenSelectDialog({ onSelectValue, isOpen, filterFn, onC
             onOpenTokenList={() => setCurrentPage(PageType.TokenListSetting)}
             onChooseToken={(token) => {
               onSelectValue(token)
-              handleClose()
             }}
             isDialogOpen={isOpen}
             filterFn={filterFn}
@@ -110,11 +109,13 @@ export default function TokenSelectDialog({ onSelectValue, isOpen, filterFn, onC
   )
 
   const handleClose = useEvent(() => {
-    setCurrentPage(PageType.TokenList)
     onClose()
   })
+  const onCloseComplete = useEvent(() => {
+    setCurrentPage(PageType.TokenList)
+  })
   return (
-    <Modal variant={'mobileFullPage'} isOpen={isOpen} onClose={handleClose}>
+    <Modal variant={'mobileFullPage'} isOpen={isOpen} onClose={handleClose} onCloseComplete={onCloseComplete}>
       <ModalOverlay />
       <ModalContent>{renderModalContent()}</ModalContent>
     </Modal>

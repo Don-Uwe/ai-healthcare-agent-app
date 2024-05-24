@@ -18,6 +18,7 @@ import Decimal from 'decimal.js'
 import React, { ReactNode, useEffect, useState } from 'react'
 import useTokenPrice from '@/hooks/token/useTokenPrice'
 import { useEvent } from '@/hooks/useEvent'
+import { toastSubject } from '@/hooks/toast/useGlobalToast'
 import BalanceWalletIcon from '@/icons/misc/BalanceWalletIcon'
 import ChevronDownIcon from '@/icons/misc/ChevronDownIcon'
 import { useAppStore, useTokenAccountStore, useTokenStore } from '@/store'
@@ -29,6 +30,7 @@ import Button from './Button'
 import TokenAvatar from './TokenAvatar'
 import TokenSelectDialog, { TokenSelectDialogProps } from './TokenSelectDialog'
 import TokenUnknownAddDialog from './TokenSelectDialog/components/TokenUnknownAddDialog'
+import TokenFreezeDialog from './TokenSelectDialog/components/TokenFreezeDialog'
 import { useTranslation } from 'react-i18next'
 
 export const DEFAULT_SOL_RESERVER = 0.01
@@ -131,10 +133,12 @@ function TokenInput(props: TokenInputProps) {
   } = props
   const isMobile = useAppStore((s) => s.isMobile)
   const setExtraTokenListAct = useTokenStore((s) => s.setExtraTokenListAct)
+  const whiteListMap = useTokenStore((s) => s.whiteListMap)
   const { colorMode } = useColorMode()
   const isLight = colorMode === 'light'
   const { isOpen, onOpen, onClose } = useDisclosure()
   const { isOpen: isOpenUnknownTokenConfirm, onOpen: onOpenUnknownTokenConfirm, onClose: onCloseUnknownTokenConfirm } = useDisclosure()
+  const { isOpen: isOpenFreezeTokenConfirm, onOpen: onOpenFreezeTokenConfirm, onClose: onCloseFreezeTokenConfirm } = useDisclosure()
 
   const { i18n } = useTranslation()
   const currentLocale = i18n.language
@@ -182,6 +186,7 @@ function TokenInput(props: TokenInputProps) {
   const displayTokenSettings = useAppStore((s) => s.displayTokenSettings)
 
   const [unknownToken, setUnknownToken] = useState<TokenInfo | ApiV3Token>()
+  const [freezeToken, setFreezeToken] = useState<TokenInfo | ApiV3Token>()
 
   // const handleValidate = useEvent((value: string) => {
   //   return numberRegExp.test(value)
@@ -222,24 +227,64 @@ function TokenInput(props: TokenInputProps) {
     return isUnknown && (!isTrusted || !isUserAddedTokenEnable)
   })
 
+  const isFreezeToken = useEvent((token: TokenInfo | ApiV3Token) => {
+    return token?.tags.includes('hasFreeze') && !whiteListMap.has(token.address)
+  })
+
   const handleSelectToken = useEvent((token: TokenInfo) => {
+    const isFreeze = isFreezeToken(token)
+    if (isFreeze) {
+      setFreezeToken(token)
+    }
     const shouldShowUnknownTokenConfirm = isUnknownToken(token)
     if (shouldShowUnknownTokenConfirm) {
       setUnknownToken(token)
       onOpenUnknownTokenConfirm()
-    } else {
-      onTokenChange?.(token)
-      onClose()
+      return
     }
+    if (isFreeze) {
+      if (name === 'swap') {
+        onOpenFreezeTokenConfirm()
+      } else {
+        toastSubject.next({
+          title: t('token_selector.token_freeze_warning'),
+          description: t('token_selector.token_has_freeze_disable'),
+          status: 'warning'
+        })
+      }
+      return
+    }
+    onTokenChange?.(token)
+    onClose()
   })
 
   const handleUnknownTokenConfirm = useEvent((token: TokenInfo | ApiV3Token) => {
     setExtraTokenListAct({ token: { ...token, userAdded: true } as TokenInfo, addToStorage: true, update: true })
     onCloseUnknownTokenConfirm()
+    const isFreeze = isFreezeToken(token)
+    if (isFreeze) {
+      if (name === 'swap') {
+        onOpenFreezeTokenConfirm()
+      } else {
+        toastSubject.next({
+          title: t('token_selector.token_freeze_warning'),
+          description: t('token_selector.token_has_freeze_disable'),
+          status: 'warning'
+        })
+      }
+      return
+    }
     onTokenChange?.(token)
     setTimeout(() => {
       onTokenChange?.(token)
     }, 0)
+    onClose()
+  })
+
+  const handleFreezeTokenConfirm = useEvent((token: TokenInfo | ApiV3Token) => {
+    onTokenChange?.(token)
+    onCloseFreezeTokenConfirm()
+    onClose()
   })
 
   const handleParseVal = useEvent((propVal: string) => {
@@ -400,6 +445,14 @@ function TokenInput(props: TokenInputProps) {
           onClose={onCloseUnknownTokenConfirm}
           token={unknownToken}
           onConfirm={handleUnknownTokenConfirm}
+        />
+      )}
+      {freezeToken !== undefined && (
+        <TokenFreezeDialog
+          isOpen={isOpenFreezeTokenConfirm}
+          onClose={onCloseFreezeTokenConfirm}
+          token={freezeToken}
+          onConfirm={handleFreezeTokenConfirm}
         />
       )}
     </Box>

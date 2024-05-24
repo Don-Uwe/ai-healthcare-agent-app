@@ -215,6 +215,7 @@ export const useAppStore = createStore<AppState>(
           raydium.token.mintGroup.official.add(t.address)
         }
       })
+      console.log(123123123, raydium.token.whiteListMap)
       const tokenMap = new Map(Array.from(raydium.token.tokenMap))
       const tokenList = (JSON.parse(JSON.stringify(raydium.token.tokenList)) as TokenInfo[]).map((t) => {
         if (t.type === 'jupiter') {
@@ -234,7 +235,8 @@ export const useAppStore = createStore<AppState>(
             )
           }),
           tokenMap,
-          mintGroup: raydium.token.mintGroup
+          mintGroup: raydium.token.mintGroup,
+          whiteListMap: new Set(Array.from(raydium.token.whiteListMap))
         },
         false,
         action
