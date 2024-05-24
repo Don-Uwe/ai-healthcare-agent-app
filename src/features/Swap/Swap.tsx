@@ -29,6 +29,7 @@ export default function Swap() {
   const isMobile = useAppStore((s) => s.isMobile)
   const [directionReverse, setDirectionReverse] = useState<boolean>(false)
   const [selectedTimeType, setSelectedTimeType] = useState<TimeType>('15m')
+  const [cacheLoaded, setCacheLoaded] = useState(false)
   const untilDate = useRef(Math.floor(Date.now() / 1000))
   const swapPanelRef = useRef<HTMLDivElement>(null)
   const klineRef = useRef<HTMLDivElement>(null)
@@ -44,9 +45,11 @@ export default function Swap() {
     const { inputMint: cacheInput, outputMint: cacheOutput } = getSwapPairCache()
     if (cacheInput) setInputMint(cacheInput)
     if (cacheOutput && cacheOutput !== cacheInput) setOutputMint(cacheOutput)
+    setCacheLoaded(true)
   }, [])
   // reset directionReverse when inputMint or outputMint changed
   useIsomorphicLayoutEffect(() => {
+    if (!cacheLoaded) return
     if (isDirectionNeedReverse) {
       setDirectionReverse(true)
       setIsDirectionNeedReverse(false)
@@ -58,7 +61,7 @@ export default function Swap() {
       inputMint,
       outputMint
     })
-  }, [inputMint, outputMint])
+  }, [inputMint, outputMint, cacheLoaded])
 
   useIsomorphicLayoutEffect(() => {
     if (klineRef.current) {
