@@ -46,6 +46,7 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
 
   const [isSending, setIsSending] = useState(false)
   const [allClmmPending, setAllClmmPending] = useState(new Decimal(0))
+
   const clmmPendingYield = useRef<
     Map<
       string,

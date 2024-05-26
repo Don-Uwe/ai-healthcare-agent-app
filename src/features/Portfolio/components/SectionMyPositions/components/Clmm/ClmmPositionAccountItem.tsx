@@ -18,6 +18,7 @@ import { useAppStore } from '@/store'
 import { useClmmStore } from '@/store/useClmmStore'
 import { RpcPoolData } from '@/hooks/pool/clmm/useSubscribeClmmInfo'
 import BN from 'bn.js'
+import Decimal from 'decimal.js'
 
 type ClmmPositionAccountItemProps = {
   poolInfo: FormattedPoolInfoConcentratedItem
@@ -134,6 +135,15 @@ export default function ClmmPositionAccountItem({
       isEmpty: isEmptyReward,
       rewardInfo: allRewardInfos
     })
+
+    return () => {
+      position.updateClmmPendingYield({
+        nftMint: position.nftMint.toString(),
+        pendingYield: new Decimal(0),
+        isEmpty: true,
+        rewardInfo: []
+      })
+    }
   }, [totalPendingYield, position.nftMint.toBase58(), isEmptyReward])
 
   return position.tickLower !== undefined && position.tickUpper !== undefined ? (

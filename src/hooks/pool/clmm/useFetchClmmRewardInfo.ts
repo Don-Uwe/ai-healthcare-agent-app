@@ -5,7 +5,8 @@ import {
   PositionUtils,
   TickArrayLayout,
   ApiV3PoolInfoConcentratedItem,
-  U64_IGNORE_RANGE
+  U64_IGNORE_RANGE,
+  ApiV3Token
 } from '@raydium-io/raydium-sdk-v2'
 import { AccountInfo } from '@solana/web3.js'
 import useTokenPrice from '@/hooks/token/useTokenPrice'
@@ -84,12 +85,16 @@ export default function useFetchClmmRewardInfo({
     setRewards(rewardInfos)
 
     const totalRewards = rewardInfos
-      .map((r, idx) =>
-        new Decimal(r.toString())
-          .div(10 ** (poolInfo.rewardDefaultInfos[idx]?.mint.decimals || 0))
-          .mul(tokenPrices[poolInfo.rewardDefaultInfos[idx]?.mint.address]?.value || 0)
+      .map((r, idx) => {
+        const rewardMint = poolInfo.rewardDefaultInfos.find(
+          (r) => r.mint.address === rpcPoolData.rewardInfos[idx].tokenMint.toBase58()
+        )?.mint
+        if (!rewardMint) return '0'
+        return new Decimal(r.toString())
+          .div(10 ** (rewardMint.decimals || 0))
+          .mul(tokenPrices[rewardMint.address]?.value || 0)
           .toString()
-      )
+      })
       .reduce((acc, cur) => acc.add(cur), new Decimal(0))
 
     setTotalPendingYield(
@@ -111,18 +116,25 @@ export default function useFetchClmmRewardInfo({
   }, [data.mutate])
 
   const allRewardInfos = useMemo(() => {
-    if (!poolInfo) return []
+    if (!poolInfo || !rpcPoolData) return []
     const rewardToken = rewards
       .map((r, idx) => {
-        const rewardMint = poolInfo.rewardDefaultInfos[idx]?.mint
+        const rewardMint = poolInfo.rewardDefaultInfos.find(
+          (r) => r.mint.address === rpcPoolData.rewardInfos[idx].tokenMint.toBase58()
+        )?.mint
+        // const rewardMint = poolInfo.rewardDefaultInfos[idx]?.mint
         const amount = new Decimal(r?.toString() || 0).div(10 ** (rewardMint?.decimals ?? 0))
         return {
           mint: rewardMint,
-          amount: amount.toFixed(rewardMint?.decimals ?? 6),
-          amountUSD: amount.mul(tokenPrices[rewardMint?.address || '']?.value ?? 0).toFixed(4)
+          amount: rewardMint ? amount.toFixed(rewardMint?.decimals ?? 6) : '0',
+          amountUSD: rewardMint ? amount.mul(tokenPrices[rewardMint?.address || '']?.value ?? 0).toFixed(4) : '0'
         }
       })
-      .filter((r) => !!r.mint)
+      .filter((r) => !!r.mint) as {
+      mint: ApiV3Token
+      amount: string
+      amountUSD: string
+    }[]
 
     const [feeAmountA, feeAmountB] = [
       new Decimal(tokenFees.tokenFeeAmountA?.toString() || 0).div(10 ** poolInfo.mintA.decimals),
