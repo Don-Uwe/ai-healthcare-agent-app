@@ -329,7 +329,7 @@ export const useAppStore = createStore<AppState>(
         await retry<Promise<EpochInfo>>(() => axios.post(url, { method: 'getEpochInfo' }, { skipError: true }), { retryCount: 6 })
         const rpcNode = get().rpcs.find((r) => r.url === url)
         set({ rpcNodeUrl: url, wsNodeUrl: rpcNode?.ws, tokenAccLoaded: false }, false, { type: 'setRpcUrlAct' })
-        setStorageItem(RPC_URL_KEY, url)
+        setStorageItem(isProdEnv() ? RPC_URL_PROD_KEY : RPC_URL_KEY, url)
         if (!skipToast)
           toastSubject.next({
             status: 'success',
