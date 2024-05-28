@@ -6,6 +6,7 @@ import { Flex, Text, Box, Button, Modal, ModalBody, ModalContent, ModalOverlay }
 import WarningIcon from '@/icons/misc/WarningIcon'
 import AddressChip from '@/components/AddressChip'
 import TokenAvatar from '@/components/TokenAvatar'
+import { getStorageToken } from '@/store/useTokenStore'
 
 export interface TokenUnknownAddDialogProps {
   onConfirm: (token: TokenInfo | ApiV3Token) => void
@@ -16,6 +17,17 @@ export interface TokenUnknownAddDialogProps {
 
 export default function TokenUnknownAddDialog({ onConfirm, isOpen, onClose, token }: TokenUnknownAddDialogProps) {
   const { t } = useTranslation()
+  const cacheInfo = getStorageToken(token.address)
+
+  const tokenInfo = {
+    ...token,
+    ...(cacheInfo
+      ? {
+          symbol: cacheInfo.symbol,
+          name: cacheInfo.name
+        }
+      : {})
+  }
 
   const handleClose = useEvent(() => {
     onClose()
@@ -57,15 +69,15 @@ export default function TokenUnknownAddDialog({ onConfirm, isOpen, onClose, toke
               alignItems="center"
               justifyContent={'space-between'}
             >
-              <TokenAvatar token={token} />
-              <Text color={colors.textSecondary}>{token?.symbol}</Text>
+              <TokenAvatar token={tokenInfo} />
+              <Text color={colors.textSecondary}>{tokenInfo?.symbol}</Text>
               <Box color={colors.textSecondary} textAlign="right">
                 <AddressChip
                   onClick={(ev) => ev.stopPropagation()}
                   color={colors.textTertiary}
                   canExternalLink
                   fontSize="xs"
-                  address={token?.address}
+                  address={tokenInfo?.address}
                 />
               </Box>
             </Flex>
@@ -74,7 +86,7 @@ export default function TokenUnknownAddDialog({ onConfirm, isOpen, onClose, toke
               mt={5}
               borderRadius={12}
               onClick={() => {
-                onConfirm(token)
+                onConfirm(tokenInfo)
               }}
             >
               {t('button.confirm_understand')}

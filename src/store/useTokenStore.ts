@@ -5,8 +5,7 @@ import createStore from './createStore'
 import { useAppStore } from './useAppStore'
 import { getStorageItem, setStorageItem } from '@/utils/localStorage'
 import logMessage from '@/utils/log'
-import dayjs from 'dayjs'
-const EXTRA_TOKEN_KEY = '_r_cus_t_'
+export const EXTRA_TOKEN_KEY = '_r_cus_t_'
 
 export interface TokenPrice {
   value: number
@@ -37,18 +36,10 @@ export interface TokenStore {
   isVerifiedToken: (props: { mint: string | PublicKey; tokenInfo?: ApiV3Token; useWhiteList?: boolean }) => Promise<boolean>
 }
 
-const preSetList = JSON.parse(getStorageItem(EXTRA_TOKEN_KEY) || '[]')
-  .map((t: ApiV3Token & { time: number }) => ({
-    ...t,
-    time: t.time || Date.now()
-  }))
-  .filter((t: ApiV3Token & { time: number }) => dayjs().diff(t.time, 'd') < 3)
-setStorageItem(EXTRA_TOKEN_KEY, JSON.stringify(preSetList))
-
 const initTokenSate = {
   tokenList: [],
   displayTokenList: [],
-  extraLoadedTokenList: preSetList,
+  extraLoadedTokenList: [],
   tokenMap: new Map(),
   tokenPriceRecord: new Map(),
   mintGroup: { official: new Set<string>(), jup: new Set<string>() },
@@ -84,6 +75,12 @@ export const setTokenToStorage = (token: TokenInfo) => {
 export const unsetTokenToStorage = (token: TokenInfo) => {
   const storageTokenList: TokenInfo[] = JSON.parse(getStorageItem(EXTRA_TOKEN_KEY) || '[]')
   setStorageItem(EXTRA_TOKEN_KEY, JSON.stringify(storageTokenList.filter((t) => t.address !== token.address)))
+}
+
+export const getStorageToken = (mint: string): TokenInfo | undefined => {
+  const storageTokenList: (TokenInfo & { time?: number })[] = JSON.parse(getStorageItem(EXTRA_TOKEN_KEY) || '[]')
+  const cacheInfo = storageTokenList.find((t) => t.address === mint)
+  return cacheInfo
 }
 
 export const useTokenStore = createStore<TokenStore>(
@@ -168,7 +165,7 @@ export const useTokenStore = createStore<TokenStore>(
           : [...extraLoadedTokenList, token]
       })
       setDisplayTokenListAct()
-      if (addToStorage) setTokenToStorage(token)
+      if (addToStorage && token.type === 'unknown') setTokenToStorage(token)
     },
     unsetExtraTokenListAct: (token) => {
       const { tokenList, tokenMap, mintGroup, extraLoadedTokenList, setDisplayTokenListAct } = get()
