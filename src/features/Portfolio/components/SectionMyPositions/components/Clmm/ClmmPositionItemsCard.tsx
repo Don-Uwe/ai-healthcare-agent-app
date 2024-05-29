@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { PublicKey } from '@solana/web3.js'
 import Button from '@/components/Button'
 import TokenAvatarPair from '@/components/TokenAvatarPair'
+import List from '@/components/List'
 import { colors } from '@/theme/cssVariables'
 import { PositionWithUpdateFn } from '@/hooks/portfolio/useAllPositionInfo'
 import { FormattedPoolInfoConcentratedItem } from '@/hooks/pool/type'
@@ -40,6 +41,19 @@ export function ClmmPositionItemsCard({
   if (poolInfo && rpcData.currentPrice) poolInfo.price = rpcData.currentPrice
   if (!poolInfo) return isLoading ? <Skeleton w="full" height="140px" rounded="lg" /> : null
 
+  const renderPoolListItem = (position: PositionWithUpdateFn) => {
+    return (
+      <ClmmPositionAccountItem
+        key={position.nftMint.toBase58()}
+        poolInfo={poolInfo!}
+        position={position}
+        baseIn={baseIn}
+        initRpcPoolData={initRpcPoolData}
+        setNoRewardClmmPos={setNoRewardClmmPos}
+        onSubscribe={onSubscribe}
+      />
+    )
+  }
   return (
     <Grid
       {...panelCard}
@@ -128,18 +142,17 @@ export function ClmmPositionItemsCard({
       </GridItem>
 
       <GridItem area={'items'}>
-        <Flex flexDir="column" gap={3} mt={[1, 0]}>
-          {props.positions.map((position) => (
-            <ClmmPositionAccountItem
-              key={position.nftMint.toBase58()}
-              poolInfo={poolInfo!}
-              position={position}
-              baseIn={baseIn}
-              initRpcPoolData={initRpcPoolData}
-              setNoRewardClmmPos={setNoRewardClmmPos}
-              onSubscribe={onSubscribe}
-            />
-          ))}
+        <Flex flexDir="column" mt={[1, 0]}>
+          <List
+            maxHeight="40vh"
+            gap={3}
+            items={props.positions}
+            initRenderCount={5}
+            reachBottomMargin={150}
+            getItemKey={(position) => position.nftMint.toBase58()}
+          >
+            {renderPoolListItem}
+          </List>
         </Flex>
       </GridItem>
     </Grid>
