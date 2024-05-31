@@ -24,7 +24,8 @@ I'm thrilled to be a part of this amazing team and excited to work together to m
 
 ### Project Requirements:
 
-**Java version:**  17
+* Java Installed on your machine. (**Java version:**  17)
+* Android Studio installed on your machine.
    
 ###  Install JDK:
 
@@ -75,7 +76,34 @@ To ensure that your project runs smoothly, make sure you have Java 17 installed 
 * Close and reopen any Command Prompt windows for the changes to take effect.
 * To verify that **JAVA_HOME** is set correctly, run the command ~echo %JAVA_HOME%~ in a Command Prompt window. It should display the JDK installation path.
 
-Follow these steps to get started with UltimateHealth:
+### Setting ANDROID_HOME Environment Variable:
+
+To set the **ANDROID_HOME** variable for both Windows and macOS, you can follow the instructions below:
+
+### Windows:
+
+* Open the System Properties window by right-clicking on the Computer icon and selecting "Properties".
+* Click on "Advanced system settings" on the left-hand side.
+* In the System Properties window, click on the "Environment Variables" button.
+* In the Environment Variables window, under the "System variables" section, click on the "New" button.
+* Enter **ANDROID_HOME** as the variable name.
+* Enter the path to the Android SDK directory as the variable value. (Default Path: ` C:\Users\User_Name\AppData\Local\Android\Sdk `)
+* Click "OK" to save the changes.
+
+### macOS:
+
+* Open a terminal window.
+* Open the .bash_profile file in a text editor by running the command nano `~/.bash_profile.`
+* Add the following line to the file:
+* export ANDROID_HOME=/path/to/android/sdk
+* Replace /path/to/android/sdk with the actual path to the Android SDK directory.
+* Press Control + O to save the file, then press Enter to confirm the file name, and finally press Control + X to exit the text editor.
+* Close the terminal window and reopen it for the changes to take effect.
+
+Please note that the exact path to the Android SDK directory may vary depending on how you installed it. Make sure to replace **/path/to/android/sdk** with the correct path on your system.
+
+
+### Follow these steps to get started with UltimateHealth:
 
 **Clone the repository:**
 
