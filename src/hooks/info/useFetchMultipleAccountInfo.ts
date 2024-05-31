@@ -27,31 +27,38 @@ export default function useFetchMultipleAccountInfo(props: Props) {
   const { publicKeyList = [], name = '', refreshInterval = MINUTE_MILLISECONDS * 2 } = props || {}
   const shouldFetch = connection && publicKeyList.length
 
-  const { data, isLoading, error, ...rest } = useSWR(
-    shouldFetch ? [connection, publicKeyList.map((p) => p?.toString()), name] : null,
-    fetcher,
-    {
-      refreshInterval,
-      dedupingInterval: refreshInterval,
-      focusThrottleInterval: refreshInterval
-    }
-  )
+  const readyList = Array.from(new Set(publicKeyList.filter(Boolean).map((p) => p.toString())))
+  const { data, isLoading, error, ...rest } = useSWR(shouldFetch ? [connection, readyList, name] : null, fetcher, {
+    refreshInterval,
+    dedupingInterval: refreshInterval,
+    focusThrottleInterval: refreshInterval
+  })
 
   const dataWithId: { [key: string]: AccountInfo<Buffer> | null } = useMemo(() => {
     return (
       data?.value.reduce(
         (acc, cur, idx) => ({
           ...acc,
-          [publicKeyList[idx]?.toString()]: cur
+          [readyList[idx]]: cur
         }),
         {}
       ) || {}
     )
   }, [data])
   const isEmptyResult = !isLoading && !(data && !error)
+  const mapData = useMemo(
+    () =>
+      data
+        ? {
+            context: data.context,
+            value: publicKeyList.map((p) => dataWithId[p.toString()])
+          }
+        : data,
+    [data]
+  )
 
   return {
-    data,
+    data: mapData,
     dataWithId,
     isLoading,
     error,
