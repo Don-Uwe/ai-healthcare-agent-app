@@ -38,13 +38,12 @@ const fetcher = async ([connection, publicKeyList]: [Connection, string[]]) => {
 
   const res = await Promise.all(
     keyGroup.map((list) =>
-      connection.getMultipleAccountsInfo(
+      connection.getMultipleAccountsInfoAndContext(
         list.map((publicKey) => ToPublicKey(publicKey)),
         commitment
       )
     )
   )
-
   // const data = res.flat().filter((d, idx) => {
   //   if (!d) noneNftMintSet.add(readyList[idx])
   //   return !!d
@@ -139,11 +138,13 @@ export default function useClmmBalance({
     refreshInterval,
     keepPreviousData: !!needFetch && !!owner
   })
+
   const data = useMemo(() => chunkData?.filter(Boolean) || [], [chunkData])
 
   const balanceData = useMemo(() => {
+    const allData = data.map((d) => d.value).flat()
     const positionMap: ClmmDataMap = new Map()
-    data.forEach((positionRes, idx) => {
+    allData.forEach((positionRes, idx) => {
       if (!positionRes) return
       const position = PositionInfoLayout.decode(positionRes.data)
       const poolId = position.poolId.toBase58()
@@ -175,6 +176,7 @@ export default function useClmmBalance({
     getPriceAndAmount,
     isLoading,
     isValidating,
+    slot: data?.[0]?.context.slot ?? 0,
     ...swrProps
   }
 }

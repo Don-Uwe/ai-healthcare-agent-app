@@ -15,7 +15,7 @@ let lastRefreshTag = initTokenAccountSate.refreshClmmPositionTag
 
 const fetcher = ([connection, publicKey]: [Connection, string]) => {
   logMessage('rpc: get clmm position nft info')
-  return connection.getAccountInfo(ToPublicKey(publicKey), 'confirmed')
+  return connection.getAccountInfo(ToPublicKey(publicKey), useAppStore.getState().commitment)
 }
 
 export default function useClmmPositionInfo({

@@ -16,7 +16,10 @@ type PoolData = ReturnType<typeof PoolInfoLayout.decode> & {
 
 const fetcher = ([connection, publicKeyList]: [Connection, string[]]) => {
   logMessage('rpc: get multiple clmm info')
-  return connection.getMultipleAccountsInfo(publicKeyList.map((publicKey) => ToPublicKey(publicKey)))
+  return connection.getMultipleAccountsInfo(
+    publicKeyList.map((publicKey) => ToPublicKey(publicKey)),
+    { commitment: useAppStore.getState().commitment }
+  )
 }
 
 export default function useFetchMultipleRpcClmmInfo(props: {

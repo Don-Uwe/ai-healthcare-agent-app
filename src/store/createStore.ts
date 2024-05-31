@@ -47,7 +47,7 @@ const createStore = <T>(
         //   if (typeof newState[key] === 'function') {
         //     /* @ts-ignore */
         //     newState[key] = (...props: any) => {
-        //       if (key.indexOf('Act') !== -1) console.log(12312311, 'call', key)
+        //       if (key.indexOf('Act') !== -1) console.log( 'call', key)
         //       /* @ts-ignore */
         //       return storeState[key].bind({})(...props)
         //     }

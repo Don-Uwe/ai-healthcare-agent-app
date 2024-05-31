@@ -20,7 +20,7 @@ const fetcher = ([connection, publicKeyList]: [Connection, string[]]) => {
   logMessage('rpc: get multiple farm balance info')
   return connection.getMultipleAccountsInfo(
     publicKeyList.map((publicKey) => ToPublicKey(publicKey)),
-    { commitment: 'confirmed' }
+    { commitment: useAppStore.getState().commitment }
   )
 }
 

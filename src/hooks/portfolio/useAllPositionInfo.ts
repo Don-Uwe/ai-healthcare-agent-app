@@ -58,7 +58,12 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
     >
   >(new Map())
 
-  const { data: clmmPoolAssets, clmmBalanceInfo, isLoading: isClmmBalanceLoading } = useClmmPortfolioData({ type: '' })
+  const {
+    data: clmmPoolAssets,
+    clmmBalanceInfo,
+    isLoading: isClmmBalanceLoading,
+    slot: clmmPositionSlot
+  } = useClmmPortfolioData({ type: '' })
   const {
     data: clmmData = [],
     dataMap: clmmDataMap,
@@ -88,12 +93,29 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
         })
       })
     : []
-
-  const { dataWithId: clmmTickAddressData, mutate: mutateClmmTicks } = useFetchMultipleAccountInfo({
+  const {
+    dataWithId: clmmTickAddressData,
+    mutate: mutateClmmTicks,
+    slot: tickSlot
+  } = useFetchMultipleAccountInfo({
     name: 'get clmm position tick',
     publicKeyList: readyList.flat().flat() as PublicKey[],
     refreshInterval: 60 * 1000 * 10
   })
+
+  const skipUpdate = useRef(false)
+  skipUpdate.current = tickSlot < clmmPositionSlot
+
+  const refreshClmmTicks = useEvent(
+    debounce(() => {
+      if (!skipUpdate.current) return
+      mutateClmmTicks()
+    }, 1500)
+  )
+
+  useEffect(() => {
+    if (tickSlot !== 0 && clmmPositionSlot !== 0 && clmmPositionSlot > tickSlot) refreshClmmTicks()
+  }, [tickSlot, clmmPositionSlot, refreshClmmTicks])
 
   // fetch farm position info
   const {
@@ -252,7 +274,6 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
   const handleRefresh = useEvent(() => {
     fetchTokenAccountAct({})
     mutatePoolInfo()
-    mutateClmmTicks()
     mutateFarmPos()
     mutateFarmsInfo()
     mutateFarmBalance()
@@ -271,7 +292,6 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
     const handleRefreshClmm = () => {
       setTimeout(() => {
         mutatePoolInfo()
-        mutateClmmTicks()
         useTokenAccountStore.setState({ refreshClmmPositionTag: Date.now() })
       }, 2000)
     }
@@ -333,6 +353,7 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
 
   const updateClmmPendingYield = useCallback(
     ({ nftMint, pendingYield, isEmpty, rewardInfo }: UpdateClmmPendingYield) => {
+      if (skipUpdate.current && !isEmpty) return
       clmmPendingYield.current.set(nftMint, { usd: pendingYield, isEmpty, rewardInfo })
       setTotalClmmPending()
     },

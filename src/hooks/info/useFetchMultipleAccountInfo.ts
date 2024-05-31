@@ -12,11 +12,13 @@ interface Props {
   refreshInterval?: number
 }
 
-const accountCache: Map<string, AccountInfo<Buffer>> = new Map()
-
 const fetcher = ([connection, publicKeyList, name]: [Connection, string[], string]) => {
   logMessage('rpc: get multiple account info', name)
-  return connection.getMultipleAccountsInfo(publicKeyList.map((publicKey) => ToPublicKey(publicKey)))
+  const commitment = useAppStore.getState().commitment
+  return connection.getMultipleAccountsInfoAndContext(
+    publicKeyList.map((publicKey) => ToPublicKey(publicKey)),
+    { commitment }
+  )
 }
 
 export default function useFetchMultipleAccountInfo(props: Props) {
@@ -34,21 +36,18 @@ export default function useFetchMultipleAccountInfo(props: Props) {
       focusThrottleInterval: refreshInterval
     }
   )
-  data?.forEach((d, idx) => {
-    if (d) accountCache.set(publicKeyList[idx].toString(), d)
-  })
 
-  const dataWithId: { [key: string]: AccountInfo<Buffer> | null } = useMemo(
-    () =>
-      data?.reduce(
+  const dataWithId: { [key: string]: AccountInfo<Buffer> | null } = useMemo(() => {
+    return (
+      data?.value.reduce(
         (acc, cur, idx) => ({
           ...acc,
           [publicKeyList[idx]?.toString()]: cur
         }),
         {}
-      ) || {},
-    [data]
-  )
+      ) || {}
+    )
+  }, [data])
   const isEmptyResult = !isLoading && !(data && !error)
 
   return {
@@ -57,6 +56,7 @@ export default function useFetchMultipleAccountInfo(props: Props) {
     isLoading,
     error,
     isEmptyResult,
+    slot: data?.context.slot ?? 0,
     ...rest
   }
 }

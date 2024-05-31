@@ -62,7 +62,7 @@ export default function useFetchClmmRewardInfo({
     refreshInterval: 60 * 1000 * 10
   })
 
-  const [tickLowerData, tickUpperData] = [tickLowerPrefetchData || data.data?.[0], tickUpperPrefetchData || data.data?.[1]]
+  const [tickLowerData, tickUpperData] = [tickLowerPrefetchData || data?.data?.value[0], tickUpperPrefetchData || data?.data?.value[1]]
 
   useEffect(() => {
     if (!tickLowerData || !tickUpperData || !rpcPoolData || !poolInfo) return

@@ -46,7 +46,7 @@ const fetcher = async ([connection, publicKeyList]: [Connection, string[]]) => {
     keyGroup.map((list) =>
       connection.getMultipleAccountsInfo(
         list.map((publicKey) => ToPublicKey(publicKey)),
-        { commitment: 'confirmed' }
+        { commitment: useAppStore.getState().commitment }
       )
     )
   )

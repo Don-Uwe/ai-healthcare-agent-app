@@ -472,7 +472,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
       const { connection, programIdConfig } = useAppStore.getState()
       if (!connection || get().createPoolFee) return
       const configId = getCpmmPdaAmmConfigId(programIdConfig.CREATE_CPMM_POOL_PROGRAM, 0)
-      const r = await connection.getAccountInfo(configId.publicKey)
+      const r = await connection.getAccountInfo(configId.publicKey, useAppStore.getState().commitment)
       if (r) {
         set({ createPoolFee: new Decimal(CpmmConfigInfoLayout.decode(r.data).createPoolFee.toString()).div(10 ** 9).toString() })
       }
