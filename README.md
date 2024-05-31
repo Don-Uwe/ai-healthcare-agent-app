@@ -74,7 +74,7 @@ To ensure that your project runs smoothly, make sure you have Java 17 installed 
 * Click "OK" to save the variable.
 * Click "OK" again to close the Environment Variables window.
 * Close and reopen any Command Prompt windows for the changes to take effect.
-* To verify that **JAVA_HOME** is set correctly, run the command ~echo %JAVA_HOME%~ in a Command Prompt window. It should display the JDK installation path.
+* To verify that **JAVA_HOME** is set correctly, run the command echo %JAVA_HOME% in a Command Prompt window. It should display the JDK installation path.
 
 ### Setting ANDROID_HOME Environment Variable:
 
