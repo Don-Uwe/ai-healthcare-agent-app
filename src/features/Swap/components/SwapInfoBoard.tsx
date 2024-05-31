@@ -180,7 +180,7 @@ function PriceDetector({
           ) : (
             <Skeleton width={`${12 * ((reverse ? tokenInput?.decimals : tokenOutput?.decimals) || 1)}px`} height="24px" />
           )}
-          {reverse ? tokenInput?.symbol : tokenOutput?.symbol}
+          <Text as="div">{reverse ? tokenInput?.symbol : tokenOutput?.symbol}</Text>
         </Flex>
       </Text>
       <Tooltip label={t(`swap.price_impact_${priceImpact}_tooltip`)}>
