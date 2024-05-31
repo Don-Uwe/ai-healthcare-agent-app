@@ -21,6 +21,60 @@ I'm thrilled to be a part of this amazing team and excited to work together to m
 
 ## Getting Started:
 
+
+### Project Requirements:
+
+**Java version:**  17
+   
+###  Install JDK:
+
+To ensure that your project runs smoothly, make sure you have Java 17 installed on your system. You can follow these steps to set up Java 17:
+
+* Visit the Oracle website or the OpenJDK website to download the Java 17 JDK (Java Development Kit) for your operating system.
+* Follow the installation instructions provided for your specific operating system.
+
+### Installing JDK 17 on macOS:
+
+* Visit the Oracle JDK download page or the AdoptOpenJDK website.
+* Download the JDK 17 installer for macOS (e.g., .dmg or .pkg file).
+* Open the downloaded installer and follow the installation instructions.
+* After the installation is complete, you can verify the installation by opening a Terminal window and running the command java -version. It should display the installed JDK version.
+
+### Setting JAVA_HOME on macOS:
+
+* Open a Terminal window.
+* Determine the installation path of JDK 17. You can use the java_home command to find the path by running /usr/libexec/java_home -v 17.
+* Copy the JDK installation path.
+* Create or edit the .zshrc file in your user home directory by running nano ~/.zshrc in the Terminal.
+* Add the following line to the file, replacing <JDK_PATH> with the copied JDK installation path:
+
+  **export JAVA_HOME=<JDK_PATH>**
+* Save the file and exit the text editor.
+* Close the Terminal window and open a new one to apply the changes.
+* To verify that JAVA_HOME is set correctly, run the command echo $JAVA_HOME in the Terminal. It should display the JDK installation path.
+
+
+### Installing JDK 17 on Windows:
+
+* Visit the Oracle JDK download page or the AdoptOpenJDK website.
+* Download the JDK 17 installer for Windows (e.g., .exe file).
+* Run the downloaded installer and follow the installation instructions.
+* After the installation is complete, you can verify the installation by opening a Command Prompt window and running the command java -version. It should display the installed JDK version.
+
+
+### Setting JAVA_HOME on Windows:
+
+* Right-click on the Windows Start button and select "System".
+* In the System window, click on "Advanced System Settings" on the left sidebar.
+* Click the "Environment Variables" button.
+* Under the "System Variables" section, click "New".
+* Enter **JAVA_HOME** as the Variable name.
+* Enter the path to the JDK 17 installation directory (e.g., C:\Program Files\Java\jdk-17) as the Variable value.
+* Click "OK" to save the variable.
+* Click "OK" again to close the Environment Variables window.
+* Close and reopen any Command Prompt windows for the changes to take effect.
+* To verify that **JAVA_HOME** is set correctly, run the command ~echo %JAVA_HOME%~ in a Command Prompt window. It should display the JDK installation path.
+
 Follow these steps to get started with UltimateHealth:
 
 **Clone the repository:**
