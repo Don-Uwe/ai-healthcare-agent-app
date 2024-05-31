@@ -109,17 +109,19 @@ Please note that the exact path to the Android SDK directory may vary depending 
 
 ```
 https://github.com/SB2318/UltimateHealth.git
-
-cd  UltimateHealth
+```
+**Change the directory**
 
 ```
-
+cd  UltimateHealth
+```
 
 **Checkout the develop branch and select your preferences (backend or frontend)**.
 
 ```
  git checkout develop
 ```
+### If u couldn't find the 'develop' branch in your own forked repository , Please go to [CONTRIBUTING.md](./CONTRIBUTING.md) and follow the instructions written in detail.
 
 ## For Frontend:
 

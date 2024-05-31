@@ -30,21 +30,45 @@ in case you are stuck:
 We follow the "fork and pull request" workflow for accepting contributions. To contribute to the project, please follow these steps:
 
 
-1.Fork the repository to your GitHub account.
+### 1. Fork the repository to your GitHub account.
+![Fork](https://github.com/Sibam-Paul/UltimateHealth/assets/158052549/62853996-aa19-4892-9ba1-89b181fe1fdf)
 
-2.Clone the forked repository to your local machine.
+### 2. Please be careful of this to uncheck "copy only the main"
+![Uncheck](https://github.com/Sibam-Paul/UltimateHealth/assets/158052549/35db6049-feca-4743-a18a-eef4e6bf77f7)
 
-3.For **development** related changes, checkout the **develop** branch.
+### 3.For **development** related changes,now in your forked REPO checkout to the **develop** branch.
+![image](https://github.com/Sibam-Paul/UltimateHealth/assets/158052549/4cdd3f5f-bd65-4a1f-8d3b-aadf9d710e87)
 
-4.Create a new branch for your changes: git checkout -b my-branch.
+### 4. Create a folder at your desired location (usually at your desktop).
+### 5. Clone your forked repository of the project.
+```
+$ git clone https://github.com/<your_username>/repository_name.git
+```
+### 6. Navigate to the project directory.
+```
+$ cd UltimateHealth
+```
+### 7. Checkout to **develop** branch.
+```
+$ git checkout develop
+```
+### 8.Create a new branch for your changes
+```
+$ git checkout -b my-branch
+```
+### 9. Make your changes in your code and test them thoroughly.
 
-5.Make your changes and test them thoroughly.
+### 10.Commit your changes
+```
+$ git commit -m "Add descriptive commit message"
+```
 
-6.Commit your changes: git commit -m "Add descriptive commit message".
+### 11.Push the changes to your forked repository.
+```
+$ git push origin my-branch
+```
 
-7.Push the changes to your forked repository: git push origin my-branch.
-
-8.Open a pull request (PR) against the **develop** repository for code related tasks and **main** repository for documentation related tasks.
+### 12.Open a pull request (PR) against the **develop** repository for code related tasks and **main** repository for documentation related tasks.
 
 <br>
 
