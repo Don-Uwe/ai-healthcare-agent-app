@@ -17,6 +17,8 @@ import ClmmPositionAccountItem from './ClmmPositionAccountItem'
 import toPercentString from '@/utils/numberish/toPercentString'
 import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
 
+const LIST_THRESHOLD = 2
+
 export function ClmmPositionItemsCard({
   poolInfo,
   isLoading,
@@ -142,17 +144,32 @@ export function ClmmPositionItemsCard({
       </GridItem>
 
       <GridItem area={'items'}>
-        <Flex flexDir="column" mt={[1, 0]}>
-          <List
-            maxHeight="40vh"
-            gap={3}
-            items={props.positions}
-            initRenderCount={5}
-            reachBottomMargin={150}
-            getItemKey={(position) => position.nftMint.toBase58()}
-          >
-            {renderPoolListItem}
-          </List>
+        <Flex flexDir="column" mt={[1, 0]} gap={props.positions.length > LIST_THRESHOLD ? 0 : 3}>
+          {props.positions.length > LIST_THRESHOLD ? (
+            <List
+              maxHeight="240px"
+              overflowX="hidden"
+              gap={3}
+              items={props.positions}
+              initRenderCount={LIST_THRESHOLD + 1}
+              reachBottomMargin={100}
+              getItemKey={(position) => position.nftMint.toBase58()}
+            >
+              {renderPoolListItem}
+            </List>
+          ) : (
+            props.positions.map((position) => (
+              <ClmmPositionAccountItem
+                key={position.nftMint.toBase58()}
+                poolInfo={poolInfo!}
+                position={position}
+                baseIn={baseIn}
+                initRpcPoolData={initRpcPoolData}
+                setNoRewardClmmPos={setNoRewardClmmPos}
+                onSubscribe={onSubscribe}
+              />
+            ))
+          )}
         </Flex>
       </GridItem>
     </Grid>

@@ -1,6 +1,5 @@
 import { PropsWithChildren } from 'react'
 
-import useWindowDimensions from '@/hooks/useWindowDimensions'
 import useInitConnection from '../hooks/app/useInitConnection'
 import useTokenAccountInfo from '../hooks/app/useTokenAccountInfo'
 import useRefreshChainTime from '../hooks/app/useRefreshChainTime'
@@ -23,7 +22,6 @@ export default function Content({ children, ...props }: PropsWithChildren) {
   useInitMobileDetector()
   useTxStatus()
   useGlobalToast()
-  useWindowDimensions()
   return (
     <>
       <AppVersion />

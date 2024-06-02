@@ -16,6 +16,7 @@ import RangeChart from './ClmmPositionAccountItemDetail/RangeChart'
 import { useEvent } from '@/hooks/useEvent'
 import { useTranslation } from 'react-i18next'
 import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
+import useWindowDimensions from '@/hooks/useWindowDimensions'
 
 type DetailProps = {
   poolInfo: FormattedPoolInfoConcentratedItem
@@ -54,6 +55,8 @@ export default function ClmmPositionAccountItemDetail({
 }: DetailProps) {
   const { isOpen: isLoading, onOpen: onSend, onClose: onFinally } = useDisclosure()
   const { isOpen: isCloseLoading, onOpen: onCloseSend, onClose: onCloseFinally } = useDisclosure()
+  const { isMobile } = useWindowDimensions(1152)
+
   const handleHarvest = useEvent(() => {
     onHarvest({
       onSend,
@@ -75,6 +78,7 @@ export default function ClmmPositionAccountItemDetail({
           <RangeChart flex={6} poolInfo={poolInfo} positionData={position} baseIn={baseIn} nftMint={nftMint} />
           <Flex direction="column" flex={3} gap={4} w="full">
             <EstimatedApr
+              isMobile={isMobile}
               timeAprData={poolInfo.allApr}
               aprData={aprData}
               weeklyRewards={poolInfo.weeklyRewards}
@@ -82,6 +86,7 @@ export default function ClmmPositionAccountItemDetail({
               onTimeBasisChange={onTimeBasisChange}
             />
             <PendingYield
+              isMobile={isMobile}
               isLoading={isLoading}
               hasReward={hasReward}
               rewardInfos={rewardInfos}

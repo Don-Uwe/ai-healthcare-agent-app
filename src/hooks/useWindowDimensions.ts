@@ -6,8 +6,8 @@ type WindowDimentions = {
   isMobile: boolean
 }
 
-const useWindowDimensions = (): WindowDimentions => {
-  const mobileWidth = 768
+const useWindowDimensions = (breakPoint?: number): WindowDimentions => {
+  const mobileWidth = breakPoint ?? 768
   const [windowDimensions, setWindowDimensions] = useState<WindowDimentions>({
     width: undefined,
     height: undefined,

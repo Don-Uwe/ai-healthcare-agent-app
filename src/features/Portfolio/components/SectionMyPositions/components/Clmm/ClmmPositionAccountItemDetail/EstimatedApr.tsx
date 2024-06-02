@@ -18,9 +18,10 @@ type EstimatedAprProps = {
   timeAprData: TimeAprData
   weeklyRewards: WeeklyRewardData
   defaultTimeBasis?: TimeBasisOptionType['value']
+  isMobile?: boolean
 }
 
-export default function EstimatedApr({ aprData, weeklyRewards, onTimeBasisChange }: EstimatedAprProps) {
+export default function EstimatedApr({ aprData, weeklyRewards, isMobile, onTimeBasisChange }: EstimatedAprProps) {
   const { t } = useTranslation()
 
   return (
@@ -35,7 +36,12 @@ export default function EstimatedApr({ aprData, weeklyRewards, onTimeBasisChange
       gap={[1, 2]}
       fontSize="sm"
     >
-      <HStack justify="space-between">
+      <HStack
+        justify="space-between"
+        mb={isMobile ? 3 : 0}
+        flexDirection={isMobile ? 'column' : 'row'}
+        alignItems={isMobile ? 'start' : 'center'}
+      >
         <HStack spacing={2}>
           <Text color={colors.textSecondary}>{t('common.estimated_APR')}</Text>
           <AprMDSwitchWidget />
