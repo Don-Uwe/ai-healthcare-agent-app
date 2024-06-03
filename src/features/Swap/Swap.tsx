@@ -50,7 +50,9 @@ export default function Swap() {
   useEffect(() => {
     // preserve swap chart default direction on page refresh for SOL, USDC, and USDT basein
     const defaultMints = new Set<string>([SOLMint.toBase58(), USDCMint.toBase58(), USDTMint.toBase58()])
-    defaultMints.has(baseMint) && !defaultMints.has(quoteMint) && setIsDirectionNeedReverse(true)
+    if (cacheLoaded) {
+      defaultMints.has(baseMint) && !defaultMints.has(quoteMint) && setDirectionReverse(true)
+    }
   }, [cacheLoaded])
   // reset directionReverse when inputMint or outputMint changed
   useIsomorphicLayoutEffect(() => {

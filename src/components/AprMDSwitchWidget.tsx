@@ -38,6 +38,7 @@ export default function AprMDSwitchWidget(props: SvgIcon) {
   return (
     <>
       <Tooltip
+        usePortal={true}
         label={(handlers) => (
           <SimpleGrid gridTemplateColumns={'auto auto'} alignItems={'center'} rowGap={2}>
             <Text fontSize={'sm'} fontWeight={500} color={colors.textPrimary}>

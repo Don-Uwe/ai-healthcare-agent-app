@@ -1,7 +1,7 @@
 import { useHover } from '@/hooks/useHover'
 import { useOutsideClick } from '@/hooks/useOutsideClick'
 import { colors } from '@/theme/cssVariables'
-import { Box, BoxProps, Popover, PopoverArrow, PopoverContent, PopoverProps, PopoverTrigger, forwardRef } from '@chakra-ui/react'
+import { Box, BoxProps, Popover, PopoverArrow, PopoverContent, PopoverProps, PopoverTrigger, Portal, forwardRef } from '@chakra-ui/react'
 import { ReactNode, useEffect, useMemo, useRef } from 'react'
 import { useDisclosure } from '../hooks/useDelayDisclosure'
 import { shrinkToValue } from '@/utils/shrinkToValue'
@@ -20,6 +20,7 @@ let prevTooltipHandler: TooltipHandles | undefined = undefined
 export default forwardRef(function Tooltip(
   {
     isLazy = true,
+    usePortal = false,
     label,
     children,
     isOpen,
@@ -29,6 +30,7 @@ export default forwardRef(function Tooltip(
   }: {
     /** render content only when content is open */
     isLazy?: boolean
+    usePortal?: boolean
     label?: ReactNode | ((handlers: TooltipHandles) => ReactNode)
     children?: ReactNode
     isOpen?: boolean
@@ -80,6 +82,13 @@ export default forwardRef(function Tooltip(
     return node
   }
 
+  function PopoverContentWrapper({ usePortal, children }: { usePortal?: boolean; children?: ReactNode }) {
+    if (usePortal) {
+      return <Portal>{children}</Portal>
+    }
+    return <>{children}</>
+  }
+
   return (
     <Popover isOpen={isTooltipOpen} placement="top" defaultIsOpen={defaultIsOpen} {...restPopoverProps}>
       <PopoverTrigger>
@@ -95,23 +104,25 @@ export default forwardRef(function Tooltip(
         </Box>
       </PopoverTrigger>
 
-      <PopoverContent ref={ref}>
-        <Box>
-          <PopoverArrow />
-          <Box
-            ref={tooltipBoxRef}
-            fontSize="sm"
-            color={colors.textSecondary}
-            py={restPopoverProps.variant == 'card' ? undefined : 3}
-            px={restPopoverProps.variant == 'card' ? undefined : 4}
-            rounded={restPopoverProps.variant == 'card' ? 'xl' : 'lg'}
-            bg={colors.tooltipBg}
-            {...contentBoxProps}
-          >
-            {(isLazy && isTooltipOpen) || !isLazy ? renderLabel() : null}
+      <PopoverContentWrapper usePortal={usePortal}>
+        <PopoverContent ref={ref}>
+          <Box>
+            <PopoverArrow />
+            <Box
+              ref={tooltipBoxRef}
+              fontSize="sm"
+              color={colors.textSecondary}
+              py={restPopoverProps.variant == 'card' ? undefined : 3}
+              px={restPopoverProps.variant == 'card' ? undefined : 4}
+              rounded={restPopoverProps.variant == 'card' ? 'xl' : 'lg'}
+              bg={colors.tooltipBg}
+              {...contentBoxProps}
+            >
+              {(isLazy && isTooltipOpen) || !isLazy ? renderLabel() : null}
+            </Box>
           </Box>
-        </Box>
-      </PopoverContent>
+        </PopoverContent>
+      </PopoverContentWrapper>
     </Popover>
   )
 })
