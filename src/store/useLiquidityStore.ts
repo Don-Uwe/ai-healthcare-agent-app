@@ -27,7 +27,6 @@ import { handleMultiTxRetry } from '@/hooks/toast/retryTx'
 import BN from 'bn.js'
 import Decimal from 'decimal.js'
 import { getComputeBudgetConfig } from '@/utils/tx/computeBudget'
-
 interface LiquidityStore {
   newCreatedPool?: CreateCpmmPoolAddress
   createPoolFee: string
@@ -121,14 +120,26 @@ export const useLiquidityStore = createStore<LiquidityStore>(
     ...initLiquiditySate,
 
     addCpmmLiquidityAct: async ({ onSent, onError, onFinally, ...params }) => {
-      const { raydium, txVersion, slippage } = useAppStore.getState()
+      const { raydium, txVersion, slippage, getEpochInfo } = useAppStore.getState()
       if (!raydium) return ''
       const baseIn = params.baseIn
       const computeBudgetConfig = await getComputeBudgetConfig()
+
+      const computeResult = await raydium.cpmm.computePairAmount({
+        baseIn: params.baseIn,
+        amount: params.inputAmount,
+        slippage: new Percent(0),
+        epochInfo: (await getEpochInfo())!,
+        poolInfo: params.poolInfo as ApiV3PoolInfoStandardItemCpmm
+      })
       const { execute } = await raydium.cpmm.addLiquidity({
         ...params,
         inputAmount: new BN(new Decimal(params.inputAmount).mul(10 ** params.poolInfo[baseIn ? 'mintA' : 'mintB'].decimals).toFixed(0)),
         slippage: new Percent(slippage * 10000, 10000),
+        computeResult: {
+          ...computeResult,
+          liquidity: new Percent(new BN(1)).sub(new Percent(slippage * 10000, 10000)).mul(computeResult.liquidity).quotient
+        },
         txVersion,
         computeBudgetConfig
       })

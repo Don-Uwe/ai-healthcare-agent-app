@@ -204,7 +204,12 @@ export default function AddLiquidity({
 
     if (isCpmm) {
       addCpmmLiquidityAct({
-        poolInfo: pool as ApiV3PoolInfoStandardItemCpmm,
+        poolInfo: {
+          ...pool,
+          mintAmountA: rpcData ? rpcMintAmountA! : pool.mintAmountA,
+          mintAmountB: rpcData ? rpcMintAmountB! : pool.mintAmountB,
+          lpAmount: rpcData ? new Decimal(rpcCpmmData!.lpAmount.toString()).div(10 ** rpcData.lpDecimals).toNumber() : pool.lpAmount
+        } as ApiV3PoolInfoStandardItemCpmm,
         inputAmount: baseIn ? computeAmountRef.current.base : computeAmountRef.current.quote,
         anotherAmount: baseIn ? computeAmountRef.current.quote : computeAmountRef.current.base,
         liquidity: computedLpRef.current.toString(),
