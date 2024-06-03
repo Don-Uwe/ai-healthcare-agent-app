@@ -29,6 +29,7 @@ import shallow from 'zustand/shallow'
 import { useEvent } from '@/hooks/useEvent'
 import { throttle } from '@/utils/functionMethods'
 import useRefreshEpochInfo from '@/hooks/app/useRefreshEpochInfo'
+import BN from 'bn.js'
 
 const InputWidth = ['100%']
 export default function AddLiquidity({
@@ -69,11 +70,15 @@ export default function AddLiquidity({
     shouldFetch: isCpmm,
     poolId: pool?.id
   })
-  rpcAmmData?.lpSupply
-  rpcCpmmData?.lpAmount
 
   const rpcData = isCpmm ? rpcCpmmData : rpcAmmData
   const mutate = isCpmm ? mutateCpmm : mutateAmm
+  const rpcMintAmountA = rpcData
+    ? new Decimal(rpcData.baseReserve.toString()).div(10 ** (pool?.mintA.decimals ?? 0)).toNumber()
+    : pool?.mintAmountA
+  const rpcMintAmountB = rpcData
+    ? new Decimal(rpcData.quoteReserve.toString()).div(10 ** (pool?.mintB.decimals ?? 0)).toNumber()
+    : pool?.mintAmountB
 
   const [computeFlag, setComputeFlag] = useState(Date.now())
   const [isTxSending, setIsTxSending] = useState(false)
@@ -84,13 +89,6 @@ export default function AddLiquidity({
   const focusRef = useRef<'base' | 'quote'>('base')
 
   const circleRef = useRef<IntervalCircleHandler>(null)
-
-  const rpcMintAmountA = rpcData
-    ? new Decimal(rpcData.baseReserve.toString()).div(10 ** (pool?.mintA.decimals ?? 0)).toNumber()
-    : pool?.mintAmountA
-  const rpcMintAmountB = rpcData
-    ? new Decimal(rpcData.quoteReserve.toString()).div(10 ** (pool?.mintB.decimals ?? 0)).toNumber()
-    : pool?.mintAmountB
 
   const handleCompute = useEvent(() => {
     if (!pool) return
@@ -108,11 +106,11 @@ export default function AddLiquidity({
     computePairAmount({
       pool: {
         ...pool,
-        mintAmountA: rpcData ? rpcMintAmountA! : pool.mintAmountA,
-        mintAmountB: rpcData ? rpcMintAmountB! : pool.mintAmountB,
         lpAmount: rpcData ? new Decimal(rpcLpAmount!.toString()).div(10 ** rpcData.lpDecimals).toNumber() : pool.lpAmount
       },
       amount: computeAmountRef.current[focusRef.current] || '0',
+      baseReserve: rpcData?.baseReserve || new BN(new Decimal(pool.mintAmountA).mul(10 ** pool.mintA.decimals).toString()),
+      quoteReserve: rpcData?.quoteReserve || new BN(new Decimal(pool.mintAmountB).mul(10 ** pool.mintB.decimals).toString()),
       baseIn: isBase
     }).then((r) => {
       computeAmountRef.current[updateSide] = r.maxOutput
@@ -204,12 +202,7 @@ export default function AddLiquidity({
 
     if (isCpmm) {
       addCpmmLiquidityAct({
-        poolInfo: {
-          ...pool,
-          mintAmountA: rpcData ? rpcMintAmountA! : pool.mintAmountA,
-          mintAmountB: rpcData ? rpcMintAmountB! : pool.mintAmountB,
-          lpAmount: rpcData ? new Decimal(rpcCpmmData!.lpAmount.toString()).div(10 ** rpcData.lpDecimals).toNumber() : pool.lpAmount
-        } as ApiV3PoolInfoStandardItemCpmm,
+        poolInfo: pool as ApiV3PoolInfoStandardItemCpmm,
         inputAmount: baseIn ? computeAmountRef.current.base : computeAmountRef.current.quote,
         anotherAmount: baseIn ? computeAmountRef.current.quote : computeAmountRef.current.base,
         liquidity: computedLpRef.current.toString(),

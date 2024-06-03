@@ -27,6 +27,7 @@ import { handleMultiTxRetry } from '@/hooks/toast/retryTx'
 import BN from 'bn.js'
 import Decimal from 'decimal.js'
 import { getComputeBudgetConfig } from '@/utils/tx/computeBudget'
+
 interface LiquidityStore {
   newCreatedPool?: CreateCpmmPoolAddress
   createPoolFee: string
@@ -98,6 +99,8 @@ interface LiquidityStore {
 
   computePairAmount: (params: {
     pool: ApiV3PoolInfoStandardItem | ApiV3PoolInfoStandardItemCpmm
+    baseReserve: BN
+    quoteReserve: BN
     amount: string
     baseIn: boolean
   }) => Promise<{
@@ -125,20 +128,28 @@ export const useLiquidityStore = createStore<LiquidityStore>(
       const baseIn = params.baseIn
       const computeBudgetConfig = await getComputeBudgetConfig()
 
+      const percentSlippage = new Percent(slippage * 10000, 10000)
+      const rpcData = await raydium.cpmm.getRpcPoolInfo(params.poolInfo.id)
+
       const computeResult = await raydium.cpmm.computePairAmount({
         baseIn: params.baseIn,
         amount: params.inputAmount,
         slippage: new Percent(0),
         epochInfo: (await getEpochInfo())!,
-        poolInfo: params.poolInfo as ApiV3PoolInfoStandardItemCpmm
+        baseReserve: rpcData.baseReserve,
+        quoteReserve: rpcData.quoteReserve,
+        poolInfo: {
+          ...params.poolInfo,
+          lpAmount: new Decimal(rpcData.lpAmount.toString()).div(10 ** rpcData.lpDecimals).toNumber()
+        } as ApiV3PoolInfoStandardItemCpmm
       })
       const { execute } = await raydium.cpmm.addLiquidity({
         ...params,
         inputAmount: new BN(new Decimal(params.inputAmount).mul(10 ** params.poolInfo[baseIn ? 'mintA' : 'mintB'].decimals).toFixed(0)),
-        slippage: new Percent(slippage * 10000, 10000),
+        slippage: percentSlippage,
         computeResult: {
           ...computeResult,
-          liquidity: new Percent(new BN(1)).sub(new Percent(slippage * 10000, 10000)).mul(computeResult.liquidity).quotient
+          liquidity: new Percent(new BN(1)).sub(percentSlippage).mul(computeResult.liquidity).quotient
         },
         txVersion,
         computeBudgetConfig
@@ -430,7 +441,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
         })
     },
 
-    computePairAmount: async ({ pool, amount, baseIn }) => {
+    computePairAmount: async ({ pool, amount, baseIn, baseReserve, quoteReserve }) => {
       const { raydium, slippage, programIdConfig, getEpochInfo } = useAppStore.getState()
       if (!raydium)
         return {
@@ -452,9 +463,18 @@ export const useLiquidityStore = createStore<LiquidityStore>(
             ...params,
             slippage: new Percent(0),
             epochInfo: (await getEpochInfo())!,
-            poolInfo: params.poolInfo as ApiV3PoolInfoStandardItemCpmm
+            poolInfo: params.poolInfo as ApiV3PoolInfoStandardItemCpmm,
+            baseReserve,
+            quoteReserve
           })
-        : raydium.liquidity.computePairAmount({ ...params, poolInfo: params.poolInfo as ApiV3PoolInfoStandardItem })
+        : raydium.liquidity.computePairAmount({
+            ...params,
+            poolInfo: {
+              ...params.poolInfo,
+              mintAmountA: new Decimal(baseReserve.toString()).div(10 ** pool.mintA.decimals).toNumber(),
+              mintAmountB: new Decimal(quoteReserve.toString()).div(10 ** pool.mintB.decimals).toNumber()
+            } as ApiV3PoolInfoStandardItem
+          })
 
       const outputMint = baseIn ? pool.mintB : pool.mintA
 
