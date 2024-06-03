@@ -8,8 +8,6 @@ import {
   toToken,
   TokenAmount,
   Percent,
-  setLoggerLevel,
-  LogLevel,
   getCpmmPdaAmmConfigId,
   CpmmConfigInfoLayout
 } from '@raydium-io/raydium-sdk-v2'
@@ -30,7 +28,6 @@ import BN from 'bn.js'
 import Decimal from 'decimal.js'
 import { getComputeBudgetConfig } from '@/utils/tx/computeBudget'
 
-// setLoggerLevel('Raydium_LiquidityV2', LogLevel.Debug)
 interface LiquidityStore {
   newCreatedPool?: CreateCpmmPoolAddress
   createPoolFee: string
@@ -438,6 +435,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
         baseIn,
         slippage: new Percent(slippage * 10000, 10000)
       }
+
       const r = isCpmm
         ? raydium.cpmm.computePairAmount({
             ...params,

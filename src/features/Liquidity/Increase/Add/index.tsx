@@ -1,5 +1,11 @@
 import { Flex, HStack, Text, useDisclosure } from '@chakra-ui/react'
-import { ApiV3PoolInfoStandardItem, ApiV3Token, TokenInfo, ApiV3PoolInfoStandardItemCpmm } from '@raydium-io/raydium-sdk-v2'
+import {
+  ApiV3PoolInfoStandardItem,
+  ApiV3Token,
+  TokenInfo,
+  ApiV3PoolInfoStandardItemCpmm,
+  CREATE_CPMM_POOL_PROGRAM
+} from '@raydium-io/raydium-sdk-v2'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -9,6 +15,7 @@ import TokenInput from '@/components/TokenInput'
 import HorizontalSwitchSmallIcon from '@/icons/misc/HorizontalSwitchSmallIcon'
 import { useAppStore, useLiquidityStore, useTokenAccountStore } from '@/store'
 import useFetchRpcPoolData from '@/hooks/pool/amm/useFetchRpcPoolData'
+import useFetchCpmmRpcPoolData from '@/hooks/pool/amm/useFetchCpmmRpcPoolData'
 import { colors } from '@/theme/cssVariables'
 import { formatCurrency } from '@/utils/numberish/formatter'
 import { getMintSymbol, wSolToSolString } from '@/utils/token'
@@ -50,8 +57,23 @@ export default function AddLiquidity({
   const { isOpen: isStakeLpOpen, onOpen: onOpenStakeLp, onClose: onCloseStakeLp } = useDisclosure()
   const { isOpen: isReverse, onToggle: onToggleReverse } = useDisclosure()
 
+  const isCpmm = pool && pool.programId === CREATE_CPMM_POOL_PROGRAM.toBase58()
+
   const getTokenBalanceUiAmount = useTokenAccountStore((s) => s.getTokenBalanceUiAmount)
-  const { data: rpcData, mutate } = useFetchRpcPoolData({ poolId: pool?.id })
+  const { data: rpcAmmData, mutate: mutateAmm } = useFetchRpcPoolData({
+    shouldFetch: !isCpmm,
+    poolId: pool?.id
+  })
+
+  const { data: rpcCpmmData, mutate: mutateCpmm } = useFetchCpmmRpcPoolData({
+    shouldFetch: isCpmm,
+    poolId: pool?.id
+  })
+  rpcAmmData?.lpSupply
+  rpcCpmmData?.lpAmount
+
+  const rpcData = isCpmm ? rpcCpmmData : rpcAmmData
+  const mutate = isCpmm ? mutateCpmm : mutateAmm
 
   const [computeFlag, setComputeFlag] = useState(Date.now())
   const [isTxSending, setIsTxSending] = useState(false)
@@ -64,10 +86,10 @@ export default function AddLiquidity({
   const circleRef = useRef<IntervalCircleHandler>(null)
 
   const rpcMintAmountA = rpcData
-    ? new Decimal(rpcData.baseReserve.toString()).div(10 ** rpcData.baseDecimals).toNumber()
+    ? new Decimal(rpcData.baseReserve.toString()).div(10 ** (pool?.mintA.decimals ?? 0)).toNumber()
     : pool?.mintAmountA
   const rpcMintAmountB = rpcData
-    ? new Decimal(rpcData.quoteReserve.toString()).div(10 ** rpcData.quoteDecimals).toNumber()
+    ? new Decimal(rpcData.quoteReserve.toString()).div(10 ** (pool?.mintB.decimals ?? 0)).toNumber()
     : pool?.mintAmountB
 
   const handleCompute = useEvent(() => {
@@ -82,12 +104,13 @@ export default function AddLiquidity({
       return
     }
 
+    const rpcLpAmount = isCpmm ? rpcCpmmData?.lpAmount : rpcAmmData?.lpSupply
     computePairAmount({
       pool: {
         ...pool,
         mintAmountA: rpcData ? rpcMintAmountA! : pool.mintAmountA,
         mintAmountB: rpcData ? rpcMintAmountB! : pool.mintAmountB,
-        lpAmount: rpcData ? new Decimal(rpcData.lpSupply.toString()).div(10 ** rpcData.lpDecimals).toNumber() : pool.lpAmount
+        lpAmount: rpcData ? new Decimal(rpcLpAmount!.toString()).div(10 ** rpcData.lpDecimals).toNumber() : pool.lpAmount
       },
       amount: computeAmountRef.current[focusRef.current] || '0',
       baseIn: isBase
