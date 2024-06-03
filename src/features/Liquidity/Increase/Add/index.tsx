@@ -14,8 +14,8 @@ import IntervalCircle, { IntervalCircleHandler } from '@/components/IntervalCirc
 import TokenInput from '@/components/TokenInput'
 import HorizontalSwitchSmallIcon from '@/icons/misc/HorizontalSwitchSmallIcon'
 import { useAppStore, useLiquidityStore, useTokenAccountStore } from '@/store'
-import useFetchRpcPoolData from '@/hooks/pool/amm/useFetchRpcPoolData'
-import useFetchCpmmRpcPoolData from '@/hooks/pool/amm/useFetchCpmmRpcPoolData'
+import { RpcAmmPool } from '@/hooks/pool/amm/useFetchRpcPoolData'
+import { RpcCpmmPool } from '@/hooks/pool/amm/useFetchCpmmRpcPoolData'
 import { colors } from '@/theme/cssVariables'
 import { formatCurrency } from '@/utils/numberish/formatter'
 import { getMintSymbol, wSolToSolString } from '@/utils/token'
@@ -36,6 +36,8 @@ export default function AddLiquidity({
   pool,
   poolNotFound,
   tokenPair,
+  rpcData,
+  mutate,
   onSelectToken,
   onRefresh
 }: {
@@ -43,6 +45,8 @@ export default function AddLiquidity({
   isLoading: boolean
   poolNotFound: boolean
   tokenPair: { base?: ApiV3Token; quote?: ApiV3Token }
+  rpcData?: RpcAmmPool | RpcCpmmPool
+  mutate: () => void
   onRefresh: () => void
   onSelectToken: (token: TokenInfo | ApiV3Token, side: 'base' | 'quote') => void
 }) {
@@ -58,21 +62,7 @@ export default function AddLiquidity({
   const { isOpen: isStakeLpOpen, onOpen: onOpenStakeLp, onClose: onCloseStakeLp } = useDisclosure()
   const { isOpen: isReverse, onToggle: onToggleReverse } = useDisclosure()
 
-  const isCpmm = pool && pool.programId === CREATE_CPMM_POOL_PROGRAM.toBase58()
-
   const getTokenBalanceUiAmount = useTokenAccountStore((s) => s.getTokenBalanceUiAmount)
-  const { data: rpcAmmData, mutate: mutateAmm } = useFetchRpcPoolData({
-    shouldFetch: !isCpmm,
-    poolId: pool?.id
-  })
-
-  const { data: rpcCpmmData, mutate: mutateCpmm } = useFetchCpmmRpcPoolData({
-    shouldFetch: isCpmm,
-    poolId: pool?.id
-  })
-
-  const rpcData = isCpmm ? rpcCpmmData : rpcAmmData
-  const mutate = isCpmm ? mutateCpmm : mutateAmm
   const rpcMintAmountA = rpcData
     ? new Decimal(rpcData.baseReserve.toString()).div(10 ** (pool?.mintA.decimals ?? 0)).toNumber()
     : pool?.mintAmountA
@@ -102,7 +92,7 @@ export default function AddLiquidity({
       return
     }
 
-    const rpcLpAmount = isCpmm ? rpcCpmmData?.lpAmount : rpcAmmData?.lpSupply
+    const rpcLpAmount = (rpcData as RpcCpmmPool)?.lpAmount ?? (rpcData as RpcAmmPool)?.lpSupply
     computePairAmount({
       pool: {
         ...pool,

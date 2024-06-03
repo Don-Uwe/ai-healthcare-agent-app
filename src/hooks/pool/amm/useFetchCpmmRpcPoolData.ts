@@ -15,18 +15,7 @@ interface Props {
   refreshTag?: number
 }
 
-export type RpcAmmPool =
-  | {
-      status: BN
-      baseDecimals: number
-      quoteDecimals: number
-      lpDecimals: number
-      baseReserve: BN
-      quoteReserve: BN
-      lpSupply: BN
-      startTime: BN
-    }
-  | undefined
+export type RpcCpmmPool = (ReturnType<typeof CpmmPoolInfoLayout.decode> & { baseReserve: BN; quoteReserve: BN }) | undefined
 
 const fetcher = async ([connection, id]: [Connection, string]) => {
   try {

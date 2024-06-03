@@ -131,7 +131,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
       const percentSlippage = new Percent(slippage * 10000, 10000)
       const rpcData = await raydium.cpmm.getRpcPoolInfo(params.poolInfo.id)
 
-      const computeResult = await raydium.cpmm.computePairAmount({
+      const computeResult = raydium.cpmm.computePairAmount({
         baseIn: params.baseIn,
         amount: params.inputAmount,
         slippage: new Percent(0),

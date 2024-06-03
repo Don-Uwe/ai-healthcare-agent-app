@@ -1,3 +1,9 @@
+import { ReactNode, useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Box, Grid, GridItem, HStack, Text, TooltipProps, VStack } from '@chakra-ui/react'
+import { ApiV3PoolInfoStandardItem, ApiV3Token, TokenInfo, CREATE_CPMM_POOL_PROGRAM } from '@raydium-io/raydium-sdk-v2'
+import Decimal from 'decimal.js'
+
 import Tabs, { TabItem } from '@/components/Tabs'
 import useFetchPoolById from '@/hooks/pool/useFetchPoolById'
 import useFarmPositions from '@/hooks/portfolio/farm/useFarmPositions'
@@ -8,11 +14,8 @@ import { panelCard } from '@/theme/cssBlocks'
 import { colors } from '@/theme/cssVariables'
 import { routeBack, setUrlQuery, useRouteQuery } from '@/utils/routeTools'
 import { wsolToSolToken } from '@/utils/token'
-import { Box, Grid, GridItem, HStack, Text, TooltipProps, VStack } from '@chakra-ui/react'
-import { ApiV3PoolInfoStandardItem, ApiV3Token, TokenInfo } from '@raydium-io/raydium-sdk-v2'
-import Decimal from 'decimal.js'
-import { ReactNode, useCallback, useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import useFetchRpcPoolData from '@/hooks/pool/amm/useFetchRpcPoolData'
+import useFetchCpmmRpcPoolData from '@/hooks/pool/amm/useFetchCpmmRpcPoolData'
 import { LiquidityActionModeType, LiquidityTabOptionType, tabValueModeMapping } from '../utils'
 import AddLiquidity from './Add'
 import Stake from './Stake'
@@ -53,6 +56,21 @@ export default function Increase() {
     idList: [urlPoolId]
   })
   const pool = formattedData?.[0]
+
+  const isCpmm = pool && pool.programId === CREATE_CPMM_POOL_PROGRAM.toBase58()
+  const { data: rpcAmmData, mutate: mutateAmm } = useFetchRpcPoolData({
+    shouldFetch: !isCpmm,
+    poolId: pool?.id
+  })
+
+  const { data: rpcCpmmData, mutate: mutateCpmm } = useFetchCpmmRpcPoolData({
+    shouldFetch: isCpmm,
+    poolId: pool?.id
+  })
+
+  const rpcData = isCpmm ? rpcCpmmData : rpcAmmData
+  const mutateRpc = isCpmm ? mutateCpmm : mutateAmm
+
   const { formattedData: farms } = useFetchFarmByLpMint({
     shouldFetch: !!pool && pool.farmOngoingCount === 0,
     poolLp: pool?.lpMint.address
@@ -156,6 +174,8 @@ export default function Increase() {
                   pool={pool}
                   isLoading={isLoading}
                   poolNotFound={isPoolNotFound}
+                  rpcData={rpcData}
+                  mutate={mutateRpc}
                   onSelectToken={handleSelectToken}
                   onRefresh={handleRefresh}
                   tokenPair={{
@@ -172,7 +192,17 @@ export default function Increase() {
         {/* right */}
         <GridItem>
           <VStack maxW={['revert', '400px']} justify="flex-start" align="stretch" spacing={4}>
-            <PoolInfo pool={pool} />
+            <PoolInfo
+              pool={
+                pool && rpcData
+                  ? {
+                      ...pool,
+                      mintAmountA: new Decimal(rpcData.baseReserve.toString()).div(10 ** pool.mintA.decimals).toNumber(),
+                      mintAmountB: new Decimal(rpcData.quoteReserve.toString()).div(10 ** pool.mintB.decimals).toNumber()
+                    }
+                  : pool
+              }
+            />
             <PositionBalance
               myPosition={Number(lpBalance.amount.mul(pool?.lpPrice ?? 0).toFixed(pool?.lpMint.decimals ?? 6))}
               staked={stakedData}

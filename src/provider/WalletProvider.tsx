@@ -42,7 +42,6 @@ const App: FC<PropsWithChildren<any>> = ({ children }) => {
       new WalletConnectWalletAdapter({
         network: network as WalletAdapterNetwork.Mainnet,
         options: {
-          // TODO: register project to walletconnect.com and obtain project ID
           projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PJ_ID,
           metadata: {
             name: 'Raydium',
