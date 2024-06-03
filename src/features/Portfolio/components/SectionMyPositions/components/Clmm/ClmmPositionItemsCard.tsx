@@ -147,7 +147,7 @@ export function ClmmPositionItemsCard({
         <Flex flexDir="column" mt={[1, 0]} gap={props.positions.length > LIST_THRESHOLD ? 0 : 3}>
           {props.positions.length > LIST_THRESHOLD ? (
             <List
-              maxHeight="320px"
+              maxHeight="400px"
               overflowX="hidden"
               gap={3}
               items={props.positions}

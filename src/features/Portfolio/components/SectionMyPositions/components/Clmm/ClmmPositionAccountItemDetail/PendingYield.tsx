@@ -31,9 +31,19 @@ export default function PendingYield({
   const { t } = useTranslation()
 
   return (
-    <Flex flex={1} bg={colors.backgroundDark} w="full" borderRadius="12px" p={4} gap={2} fontSize="sm" flexDirection="column">
+    <Flex
+      flex={1}
+      bg={colors.backgroundDark}
+      justify="space-around"
+      w="full"
+      borderRadius="12px"
+      p={4}
+      gap={2}
+      fontSize="sm"
+      flexDirection="column"
+    >
       <Text color={colors.textSecondary}>{t('portfolio.section_positions_clmm_account_pending_yield')}</Text>
-      <Flex flexDirection={isMobile ? 'column' : 'row'} gap={isMobile ? 2 : 6}>
+      <Flex justify="space-between" flexDirection={isMobile ? 'column' : 'row'} gap={isMobile ? 2 : 6}>
         <HStack>
           <Text fontSize="xl" fontWeight="medium" color={colors.textPrimary}>
             {pendingYield ?? '$0'}
