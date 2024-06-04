@@ -4,6 +4,7 @@
 
 UltimateHealth is an innovative open-source project that aims to provide a comprehensive online library and article management application focused on health. The project is designed to cater to users looking for reliable and trustworthy information on various health-related topics.
 
+
 ## Features:
 
 From the beginner's perspective, the]is project consists of three main modules: Article Section, Chat Section, and Podcasts. The Article Section includes:
@@ -19,10 +20,8 @@ Users can also listen to articles(audio features) if they prefer. The Chat Secti
 Hello! Congratulations to all the GSSOC'24 contributors and mentors!🎉
 I'm thrilled to be a part of this amazing team and excited to work together to make the Ultimate Health project a huge success. Let's collaborate, learn, and grow together!
 
-## Getting Started:
 
-
-### Project Requirements:
+## Project Requirements:
 
 * Java Installed on your machine. (**Java version:**  17)
 * Android Studio installed on your machine.
@@ -102,6 +101,8 @@ To set the **ANDROID_HOME** variable for both Windows and macOS, you can follow 
 
 Please note that the exact path to the Android SDK directory may vary depending on how you installed it. Make sure to replace **/path/to/android/sdk** with the correct path on your system.
 
+
+## Getting Started:
 
 ### Follow these steps to get started with UltimateHealth:
 
