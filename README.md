@@ -322,6 +322,6 @@ Discord Server (Susmita Bhattacharya, user_name: susmita_)
 
 ![Contributors](https://contrib.rocks/image?repo=SB2318/UltimateHealth)<br>
 
-![Contributors History](https://github.com/SB2318/UltimateHealth/graphs/contributors)
+
 
 </div>
