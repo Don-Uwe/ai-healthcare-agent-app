@@ -92,7 +92,7 @@ export const Brush = ({
       const { type, selection, mode } = event
       handleRef.current = (mode === 'drag' || mode === 'handle') && type !== 'end'
       if (!selection) {
-        setLocalBrushExtent(null)
+        // setLocalBrushExtent(null)
         return
       }
 
