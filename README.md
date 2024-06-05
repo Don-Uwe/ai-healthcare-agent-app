@@ -8,7 +8,7 @@
             <td><b>🐛 Issues</b></td>
             <td><b>🔔 Open PRs</b></td>
             <td><b>🔕 Close PRs</b></td>
-            <td><b> last commit</b></td>
+            <td><b> Last Commit</b></td>
         </tr>
      </thead>
     <tbody>
@@ -51,6 +51,20 @@
 
 UltimateHealth is an innovative open-source project that aims to provide a comprehensive online library and article management application focused on health. The project is designed to cater to users looking for reliable and trustworthy information on various health-related topics.
 
+## Headers
+
+### Contents:
+- [Features](https://github.com/SB2318/UltimateHealth#features)
+- [Technology Stack](https://github.com/SB2318/UltimateHealth#technology-stack)
+- [Project Requirements](https://github.com/SB2318/UltimateHealth#project-requirements)<br>
+     (i)  [Install JDK](https://github.com/SB2318/UltimateHealth#install-jdk)<br>
+     (ii) [Set Up Android Development Environment](https://github.com/SB2318/UltimateHealth#setting-android_home-environment-variable)
+- [Getting Started](https://github.com/SB2318/UltimateHealth#getting-started)<br>
+     (i)  [Frontend](https://github.com/SB2318/UltimateHealth#for-frontend)<br>
+     (ii) [Backend](https://github.com/SB2318/UltimateHealth#for-backend)
+- [Testing Frontend with Localhost Backend Server](https://github.com/SB2318/UltimateHealth#testing-frontend-with-localhost-backend-server)
+- [Contribution Guidelines](https://github.com/SB2318/UltimateHealth#contribution-guidelines)
+- [Our Contributors](https://github.com/SB2318/UltimateHealth#our-contributors-%EF%B8%8F)
 
 ## Features:
 
@@ -61,13 +75,13 @@ From the beginner's perspective, the project consists of three main modules: Art
 * Survival experiences from critical diseases
 * Backend Development
 
-Users can also listen to articles(audio features) if they prefer. The Chat Section features a guide bot that helps users solve health-related problems.  
+Users can also listen to articles (audio features) if they prefer. The Chat Section features a guide bot that helps users solve health-related problems.  
 
 
 Hello! Congratulations to all the GSSOC'24 contributors and mentors!🎉
 I'm thrilled to be a part of this amazing team and excited to work together to make the Ultimate Health project a huge success. Let's collaborate, learn, and grow together!
 
-## Technology Stack
+## Technology Stacks
 
 <p>
     <a href="https://www.w3schools.com/java/"><img src="https://i.pinimg.com/originals/79/5e/bb/795ebb5f4a470cd7242136237f61fc53.png" alt="Java" width="70" height="50" /></a>
@@ -79,19 +93,19 @@ I'm thrilled to be a part of this amazing team and excited to work together to m
 
 ## Project Requirements:
 
-* Java Installed on your machine. (**Java version:**  17)
+* Java installed on your machine. (**Java version:**  17)
 * Android Studio installed on your machine.
    
 ###  Install JDK:
 
 To ensure that your project runs smoothly, make sure you have Java 17 installed on your system. You can follow these steps to set up Java 17:
 
-* Visit the Oracle website or the OpenJDK website to download the Java 17 JDK (Java Development Kit) for your operating system.
+* Visit the [Oracle website](https://www.oracle.com/in/java/) or the OpenJDK website to download the Java 17 JDK (Java Development Kit) for your operating system.
 * Follow the installation instructions provided for your specific operating system.
 
 ### Installing JDK 17 on macOS:
 
-* Visit the Oracle JDK download page or the AdoptOpenJDK website.
+* Visit the [Oracle JDK download page](https://www.oracle.com/in/java/technologies/downloads/#java17) or the AdoptOpenJDK website.
 * Download the JDK 17 installer for macOS (e.g., .dmg or .pkg file).
 * Open the downloaded installer and follow the installation instructions.
 * After the installation is complete, you can verify the installation by opening a Terminal window and running the command java -version. It should display the installed JDK version.
@@ -112,7 +126,7 @@ To ensure that your project runs smoothly, make sure you have Java 17 installed 
 
 ### Installing JDK 17 on Windows:
 
-* Visit the Oracle JDK download page or the AdoptOpenJDK website.
+* Visit the [Oracle JDK download page](https://www.oracle.com/in/java/technologies/downloads/#java17) or the AdoptOpenJDK website.
 * Download the JDK 17 installer for Windows (e.g., .exe file).
 * Run the downloaded installer and follow the installation instructions.
 * After the installation is complete, you can verify the installation by opening a Command Prompt window and running the command java -version. It should display the installed JDK version.
@@ -178,7 +192,7 @@ cd  UltimateHealth
 ```
  git checkout develop
 ```
-### If u couldn't find the 'develop' branch in your own forked repository , Please go to [CONTRIBUTING.md](./CONTRIBUTING.md) and follow the instructions written in detail.
+### If you couldn't find the 'develop' branch in your own forked repository, please go to [CONTRIBUTING.md](./CONTRIBUTING.md) and follow the instructions written in detail.
 
 ## For Frontend:
 
