@@ -1,5 +1,6 @@
 import { SystemCSSProperties } from '@chakra-ui/react'
 import { Bound } from './Bound'
+import { FeeAmount } from './FeeAmount'
 
 export interface ChartEntry {
   activeLiquidity: number
@@ -63,7 +64,7 @@ export interface LiquidityChartRangeInputProps {
   brushDomain: [number, number] | undefined
   onBrushDomainChange: (domain: [number, number], mode: string | undefined) => void
 
-  isLowFeePool?: boolean
+  feeAmount?: FeeAmount
   zoomLevels: ZoomLevels
   autoZoom?: boolean
   zoomBlockStyle?: SystemCSSProperties

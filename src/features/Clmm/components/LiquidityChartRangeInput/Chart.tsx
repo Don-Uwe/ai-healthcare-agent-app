@@ -7,6 +7,7 @@ import { Brush } from './Brush'
 import { Line } from './Line'
 import { ChartEntry, LiquidityChartRangeInputProps } from './types'
 import Zoom, { ZoomOverlay } from './Zoom'
+import { FeeAmount } from './FeeAmount'
 
 export const xAccessor = (d: ChartEntry) => d.price0
 export const yAccessor = (d: ChartEntry) => d.activeLiquidity
@@ -21,7 +22,7 @@ export function Chart({
   brushDomain,
   brushLabels,
   onBrushDomainChange,
-  isLowFeePool,
+  feeAmount,
   zoomLevels,
   autoZoom,
   zoomBlockStyle
@@ -69,12 +70,11 @@ export function Chart({
       const newXscale = zoom.rescaleX(scales.xScale)
       // to do, zoom level should based on fee rate
 
+      const zoomNum = feeAmount === FeeAmount.LOWEST ? 0.0005 : feeAmount === FeeAmount.LOW ? 0.01 : 0.1
+
       const positionDomain =
         autoZoomRef.current || !interactive
-          ? [
-              Math.max(brushDomain?.[0] || 0, 0) * (isLowFeePool ? 0.99 : 0.9),
-              Math.min(brushDomain?.[1] || 100, Number.MAX_SAFE_INTEGER) * (isLowFeePool ? 1.01 : 1.1)
-            ]
+          ? [Math.max(brushDomain?.[0] || 0, 0) * (1 - zoomNum), Math.min(brushDomain?.[1] || 100, Number.MAX_SAFE_INTEGER) * (1 + zoomNum)]
           : [
               Math.max(brushDomain?.[0] || 0, priceMin || 0, 0) * 0.9,
               Math.min(brushDomain?.[1] || 100, priceMax || 100, Number.MAX_SAFE_INTEGER) * 1.1
@@ -84,7 +84,7 @@ export function Chart({
     }
 
     return scales
-  }, [innerWidth, series, innerHeight, zoom, zoomLevels.initialMin, autoZoom, brushDomain, interactive, isLowFeePool])
+  }, [innerWidth, series, innerHeight, zoom, zoomLevels.initialMin, autoZoom, brushDomain, interactive, feeAmount])
 
   useEffect(() => {
     // reset zoom as necessary
