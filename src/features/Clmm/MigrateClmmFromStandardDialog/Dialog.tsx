@@ -28,7 +28,8 @@ import {
   FormatFarmInfoOutV6,
   PoolFetchType,
   TickUtils,
-  getLiquidityFromAmounts
+  getLiquidityFromAmounts,
+  FARM_PROGRAM_TO_VERSION
 } from '@raydium-io/raydium-sdk-v2'
 import { useEffect, useRef, useState } from 'react'
 
@@ -56,6 +57,7 @@ import EstimatedAprInfo from './AprInfo'
 import RangeInput from './RangeInput'
 import useValidateSchema from './useValidateSchema'
 import { MigrateClmmConfig } from '@/hooks/pool/useMigratePoolConfig'
+import { PublicKey } from '@solana/web3.js'
 
 interface MigrateFromStandardDialogProps {
   isOpen: boolean
@@ -67,6 +69,7 @@ interface MigrateFromStandardDialogProps {
   pooledAmountA: string
   pooledAmountB: string
   currentRewardInfo: { mint: ApiV3Token; amount: string }[]
+  userAuxiliaryLedgers?: string[]
   onClose(): void
   onRefresh(): void
 }
@@ -92,6 +95,7 @@ export default function MigrateFromStandardDialog({
   onClose,
   onRefresh,
   poolInfo,
+  userAuxiliaryLedgers,
   migrateClmmConfig,
   farmInfo,
   lpAmount,
@@ -300,6 +304,7 @@ export default function MigrateFromStandardDialog({
         otherAmountMax: isMintABase ? clmmAmount.amountSlippageB : clmmAmount.amountSlippageA
       },
       farmInfo,
+      userAuxiliaryLedgers: userAuxiliaryLedgers?.length ? userAuxiliaryLedgers.filter(Boolean).map((p) => new PublicKey(p)) : undefined,
       base: isMintABase ? 'MintA' : 'MintB',
       userFarmLpAmount: new BN(farmLpAmount),
       onSent: () => {

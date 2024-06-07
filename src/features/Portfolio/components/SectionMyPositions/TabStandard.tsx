@@ -69,6 +69,7 @@ export default function MyPositionTabStandard({
               lpMint: '',
               totalLpAmount: '0',
               totalV1LpAmount: '0',
+              vault: '',
               data: []
             }}
           />
