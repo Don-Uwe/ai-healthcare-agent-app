@@ -11,6 +11,7 @@ import {
   getCpmmPdaAmmConfigId,
   CpmmConfigInfoLayout
 } from '@raydium-io/raydium-sdk-v2'
+import { PublicKey } from '@solana/web3.js'
 import createStore from './createStore'
 import { useAppStore } from './useAppStore'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
@@ -85,6 +86,7 @@ interface LiquidityStore {
       poolInfo: ApiV3PoolInfoStandardItem
       clmmPoolInfo: ApiV3PoolInfoConcentratedItem
       removeLpAmount: BN
+      userAuxiliaryLedgers?: PublicKey[]
       createPositionInfo: {
         tickLower: number
         tickUpper: number

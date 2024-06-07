@@ -14,6 +14,7 @@ export type FarmPositionInfo = {
   totalLpAmount: string
   totalV1LpAmount: string
   lpMint: string
+  vault: string
   data: {
     programId: string
     lpAmount: string
@@ -69,6 +70,7 @@ export default function useFarmPositions(props: { shouldFetch?: boolean; refresh
           const prevData = all.get(lpMint)
           all.set(lpMint, {
             lpMint,
+            vault: userVault,
             hasAmount: prevData?.hasAmount || new Decimal(data.lpAmount || 0).gt(0),
             hasV1Data: prevData?.hasV1Data || data.version === 'V1',
             totalLpAmount: new Decimal(prevData?.totalLpAmount ?? 0).add(data.lpAmount || 0).toString(),

@@ -318,6 +318,7 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
           pooledAmountA={pooledAmountA}
           pooledAmountB={pooledAmountB}
           currentRewardInfo={currentRewardInfo}
+          userAuxiliaryLedgers={position.vault ? [position.vault] : undefined}
           onClose={onMigrateClose}
           onRefresh={mutate}
         />
