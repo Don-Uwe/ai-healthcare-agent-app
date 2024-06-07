@@ -3,6 +3,7 @@ import { Badge, Box, Button, Divider, Grid, GridItem, HStack, SimpleGrid, Text }
 import { useTranslation } from 'react-i18next'
 import TokenAvatar from '@/components/TokenAvatar'
 import useFetchFarmInfoById from '@/hooks/farm/useFetchFarmInfoById'
+import useFetchPoolById from '@/hooks/pool/useFetchPoolById'
 import FarmRewardIcon from '@/icons/pool/FarmRewardIcon'
 import { colors } from '@/theme/cssVariables'
 import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
@@ -11,7 +12,7 @@ import { toAPRPercent } from '@/features/Pools/util'
 import useTokenPrice from '@/hooks/token/useTokenPrice'
 import { FarmBalanceInfo } from '@/hooks/farm/type'
 import Decimal from 'decimal.js'
-import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
+import { ApiV3Token, ApiV3PoolInfoConcentratedItem, PoolFetchType } from '@raydium-io/raydium-sdk-v2'
 
 /** subItem of standard Pool */
 export default function StandardPoolRowStakeFarmItem({
@@ -34,7 +35,12 @@ export default function StandardPoolRowStakeFarmItem({
 }) {
   const { t } = useTranslation()
   const { data } = useFetchFarmInfoById({ idList: [farmId] })
+  const { formattedData } = useFetchPoolById<ApiV3PoolInfoConcentratedItem>({
+    idList: [poolId],
+    type: PoolFetchType.Standard
+  })
   const farm = data?.[0]
+  const pool = formattedData?.[0]
   const { data: tokenPrices } = useTokenPrice({
     mintList: farm?.rewardInfos.map((r) => r.mint.address) || []
   })
@@ -102,7 +108,7 @@ export default function StandardPoolRowStakeFarmItem({
               <TokenAvatar key={`${farmId}-${r.mint.address}`} token={r.mint} ml={-1 * idx * 2} size="smi" />
             ))}
           </HStack>
-          <Badge variant="crooked">{t('badge.ecosystem')}</Badge>
+          {pool?.rewardDefaultPoolInfos === 'Ecosystem' && <Badge variant="crooked">{t('badge.ecosystem')}</Badge>}
         </HStack>
       </GridItem>
 
