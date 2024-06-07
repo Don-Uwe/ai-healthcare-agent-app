@@ -314,7 +314,9 @@
     "lp_asc": "Liquidity (asc)",
     "yield_dsc": "Yield (dsc)",
     "yield_asc": "Yield (asc)",
-    "default": "default"
+    "default": "default",
+    "keep_my_position_open": "Keep my position open",
+    "keep_my_position_open_tip": "You can remove all your tokens and still keep your position open in order to  add position seamless next time."
   },
   "create_pool": {
     "modal_title": "I want to start from...",
