@@ -92,7 +92,6 @@ interface ClmmState {
       amountMinB: number | string | BN
       needRefresh?: boolean
       harvest?: boolean
-      closePosition?: boolean
     } & TxCallbackProps
   ) => Promise<string>
   increaseLiquidityAct: (
@@ -400,7 +399,6 @@ export const useClmmStore = createStore<ClmmState>(
       amountMinA,
       amountMinB,
       needRefresh,
-      closePosition,
       harvest,
       onSent,
       onError,
@@ -435,7 +433,7 @@ export const useClmmStore = createStore<ClmmState>(
           ownerPosition: position,
           ownerInfo: {
             useSOLBalance: true,
-            closePosition: closePosition ?? position.liquidity.eq(new BN(liquidity))
+            closePosition: position.liquidity.eq(new BN(liquidity))
           },
           liquidity: new BN(liquidity),
           amountMinA: _amountMinA.sub(feeA),

@@ -9,8 +9,7 @@ const baseStyle = definePartsStyle({
     color: colors.backgroundDark
   },
   control: {
-    backgroundColor: colors.buttonBg01,
-    borderWidth: '0',
+    backgroundColor: colors.backgroundDark,
     borderRadius: '4px',
     _checked: {
       backgroundColor: colors.secondary,
