@@ -88,7 +88,6 @@ export default function RemoveLiquidityModal({
   ]
   const [tokenAmount, setTokenAmount] = useState(['', ''])
   const [minTokenAmount, setMinTokenAmount] = useState(['', ''])
-
   const { rewards } = useFetchClmmRewardInfo({
     poolInfo,
     position,
@@ -126,7 +125,7 @@ export default function RemoveLiquidityModal({
       setTokenAmount(() => {
         if (!val) return ['', '']
         const inputRate = new Decimal(val).gte(positionAmountA) ? new Decimal(1) : Decimal.min(new Decimal(val).div(positionAmountA), 1)
-        debounceSetPercent(inputRate.mul(100).toDecimalPlaces(2).toNumber())
+        debounceSetPercent(inputRate.mul(100).toDecimalPlaces(2, Decimal.ROUND_DOWN).toNumber())
         return [val, new Decimal(positionAmountB).mul(inputRate).toDecimalPlaces(decimalB).toString()]
       }),
     [debounceSetPercent, positionAmountA, positionAmountB, decimalB]
@@ -136,7 +135,7 @@ export default function RemoveLiquidityModal({
       setTokenAmount(() => {
         if (!val) return ['', '']
         const inputRate = new Decimal(val).gte(positionAmountB) ? new Decimal(1) : Decimal.min(new Decimal(val).div(positionAmountB), 1)
-        debounceSetPercent(inputRate.mul(100).toDecimalPlaces(2).toNumber())
+        debounceSetPercent(inputRate.mul(100).toDecimalPlaces(2, Decimal.ROUND_DOWN).toNumber())
         return [new Decimal(positionAmountA).mul(inputRate).toDecimalPlaces(decimalA).toString(), val]
       })
     },
@@ -184,6 +183,8 @@ export default function RemoveLiquidityModal({
     onSyncSending(sending)
     return () => onSyncSending(false)
   }, [sending, onSyncSending])
+
+  useEffect(() => () => setClosePosition(true), [isOpen])
 
   return (
     <Modal isOpen={isOpen} onClose={handleCloseModal} size="lg">
