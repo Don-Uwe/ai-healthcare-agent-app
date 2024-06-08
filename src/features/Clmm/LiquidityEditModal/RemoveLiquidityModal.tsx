@@ -3,6 +3,7 @@ import Button from '@/components/Button'
 import TokenAvatar from '@/components/TokenAvatar'
 import TokenAvatarPair from '@/components/TokenAvatarPair'
 import TokenInput from '@/components/TokenInput'
+import { QuestionToolTip } from '@/components/QuestionToolTip'
 import useClmmBalance from '@/hooks/portfolio/clmm/useClmmBalance'
 import { PositionWithUpdateFn } from '@/hooks/portfolio/useAllPositionInfo'
 import useFetchClmmRewardInfo from '@/hooks/pool/clmm/useFetchClmmRewardInfo'
@@ -13,6 +14,7 @@ import { formatCurrency, getFirstNonZeroDecimal } from '@/utils/numberish/format
 import { getMintSymbol } from '@/utils/token'
 import {
   Box,
+  Checkbox,
   Collapse,
   Flex,
   HStack,
@@ -30,7 +32,7 @@ import IntervalCircle, { IntervalCircleHandler } from '@/components/IntervalCirc
 import { SlippageAdjuster } from '@/components/SlippageAdjuster'
 import { SlippageSettingField } from '@/components/SlippageAdjuster/SlippageSettingField'
 import Decimal from 'decimal.js'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, ChangeEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { removeValidateSchema } from './validateSchema'
 import { useEvent } from '@/hooks/useEvent'
@@ -77,6 +79,8 @@ export default function RemoveLiquidityModal({
 
   const [sending, setIsSending] = useState(false)
   const [percent, setPercent] = useState(0)
+  const [closePosition, setClosePosition] = useState(true)
+  const [closePositionOpen, setClosePositionOpen] = useState(false)
 
   const [positionAmountA, positionAmountB] = [
     amountSlippageA.toDecimalPlaces(poolInfo.mintA.decimals, Decimal.ROUND_FLOOR).toString(),
@@ -84,7 +88,6 @@ export default function RemoveLiquidityModal({
   ]
   const [tokenAmount, setTokenAmount] = useState(['', ''])
   const [minTokenAmount, setMinTokenAmount] = useState(['', ''])
-
   const { rewards } = useFetchClmmRewardInfo({
     poolInfo,
     position,
@@ -122,7 +125,7 @@ export default function RemoveLiquidityModal({
       setTokenAmount(() => {
         if (!val) return ['', '']
         const inputRate = new Decimal(val).gte(positionAmountA) ? new Decimal(1) : Decimal.min(new Decimal(val).div(positionAmountA), 1)
-        debounceSetPercent(inputRate.mul(100).toDecimalPlaces(2).toNumber())
+        debounceSetPercent(inputRate.mul(100).toDecimalPlaces(2, Decimal.ROUND_DOWN).toNumber())
         return [val, new Decimal(positionAmountB).mul(inputRate).toDecimalPlaces(decimalB).toString()]
       }),
     [debounceSetPercent, positionAmountA, positionAmountB, decimalB]
@@ -132,7 +135,7 @@ export default function RemoveLiquidityModal({
       setTokenAmount(() => {
         if (!val) return ['', '']
         const inputRate = new Decimal(val).gte(positionAmountB) ? new Decimal(1) : Decimal.min(new Decimal(val).div(positionAmountB), 1)
-        debounceSetPercent(inputRate.mul(100).toDecimalPlaces(2).toNumber())
+        debounceSetPercent(inputRate.mul(100).toDecimalPlaces(2, Decimal.ROUND_DOWN).toNumber())
         return [new Decimal(positionAmountA).mul(inputRate).toDecimalPlaces(decimalA).toString(), val]
       })
     },
@@ -156,11 +159,18 @@ export default function RemoveLiquidityModal({
     },
     [debounceCalculate]
   )
+  const handleClosePositionChange = useEvent((event: ChangeEvent<HTMLInputElement>) => {
+    setClosePosition(!event.target.checked)
+  })
 
   useEffect(() => {
     setPercent(0)
     setTokenAmount(['', ''])
   }, [isOpen])
+
+  useEffect(() => {
+    setClosePositionOpen(percent === 100)
+  }, [percent])
 
   useEffect(() => {
     setMinTokenAmount([
@@ -173,6 +183,8 @@ export default function RemoveLiquidityModal({
     onSyncSending(sending)
     return () => onSyncSending(false)
   }, [sending, onSyncSending])
+
+  useEffect(() => () => setClosePosition(true), [isOpen])
 
   return (
     <Modal isOpen={isOpen} onClose={handleCloseModal} size="lg">
@@ -207,18 +219,32 @@ export default function RemoveLiquidityModal({
           />
           <Box mt={[3, 4]}>
             <AmountSlider actionRef={sliderRef} percent={percent} onChange={handlePercentChange} isDisabled={position.liquidity.isZero()} />
-            <Flex align="center" justify="flex-end" gap={3}>
-              <SlippageAdjuster onClick={onToggleSlippage} />
-              <IntervalCircle
-                componentRef={circleRef}
-                svgWidth={18}
-                strokeWidth={2}
-                trackStrokeColor={colors.secondary}
-                trackStrokeOpacity={0.5}
-                filledTrackStrokeColor={colors.secondary}
-                onClick={handleClick}
-                onEnd={onRefresh}
-              />
+            <Flex align="center" justify={closePositionOpen ? 'space-between' : 'flex-end'} gap={3}>
+              {closePositionOpen && (
+                <HStack gap={1}>
+                  <Checkbox color={colors.textSecondary} isChecked={!closePosition} onChange={handleClosePositionChange}>
+                    <Box fontSize="sm">{t('liquidity.keep_my_position_open')}</Box>
+                  </Checkbox>
+                  <QuestionToolTip
+                    iconType="info"
+                    iconProps={{ color: colors.textSecondary }}
+                    label={t('liquidity.keep_my_position_open_tip')}
+                  />
+                </HStack>
+              )}
+              <Flex align="center" justify="flex-end" gap={3}>
+                <SlippageAdjuster onClick={onToggleSlippage} />
+                <IntervalCircle
+                  componentRef={circleRef}
+                  svgWidth={18}
+                  strokeWidth={2}
+                  trackStrokeColor={colors.secondary}
+                  trackStrokeOpacity={0.5}
+                  filledTrackStrokeColor={colors.secondary}
+                  onClick={handleClick}
+                  onEnd={onRefresh}
+                />
+              </Flex>
             </Flex>
             <Collapse in={isSlippageOpen} animateOpacity>
               <SlippageSettingField onClose={onSlippageClose} />
@@ -290,6 +316,7 @@ export default function RemoveLiquidityModal({
                 amountMinA: minTokenAmount[0],
                 amountMinB: minTokenAmount[1],
                 needRefresh: percent <= 100,
+                closePosition: percent === 100 ? closePosition : undefined,
                 onSent: () => {
                   setIsSending(false)
                   setPercent(0)
