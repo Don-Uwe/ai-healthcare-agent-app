@@ -3,6 +3,7 @@ import Button from '@/components/Button'
 import TokenAvatar from '@/components/TokenAvatar'
 import TokenAvatarPair from '@/components/TokenAvatarPair'
 import TokenInput from '@/components/TokenInput'
+import { QuestionToolTip } from '@/components/QuestionToolTip'
 import useClmmBalance from '@/hooks/portfolio/clmm/useClmmBalance'
 import { PositionWithUpdateFn } from '@/hooks/portfolio/useAllPositionInfo'
 import useFetchClmmRewardInfo from '@/hooks/pool/clmm/useFetchClmmRewardInfo'
@@ -13,6 +14,7 @@ import { formatCurrency, getFirstNonZeroDecimal } from '@/utils/numberish/format
 import { getMintSymbol } from '@/utils/token'
 import {
   Box,
+  Checkbox,
   Collapse,
   Flex,
   HStack,
@@ -30,7 +32,7 @@ import IntervalCircle, { IntervalCircleHandler } from '@/components/IntervalCirc
 import { SlippageAdjuster } from '@/components/SlippageAdjuster'
 import { SlippageSettingField } from '@/components/SlippageAdjuster/SlippageSettingField'
 import Decimal from 'decimal.js'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, ChangeEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { removeValidateSchema } from './validateSchema'
 import { useEvent } from '@/hooks/useEvent'
@@ -77,6 +79,8 @@ export default function RemoveLiquidityModal({
 
   const [sending, setIsSending] = useState(false)
   const [percent, setPercent] = useState(0)
+  const [closePosition, setClosePosition] = useState(true)
+  const [closePositionOpen, setClosePositionOpen] = useState(false)
 
   const [positionAmountA, positionAmountB] = [
     amountSlippageA.toDecimalPlaces(poolInfo.mintA.decimals, Decimal.ROUND_FLOOR).toString(),
@@ -156,11 +160,18 @@ export default function RemoveLiquidityModal({
     },
     [debounceCalculate]
   )
+  const handleClosePositionChange = useEvent((event: ChangeEvent<HTMLInputElement>) => {
+    setClosePosition(!event.target.checked)
+  })
 
   useEffect(() => {
     setPercent(0)
     setTokenAmount(['', ''])
   }, [isOpen])
+
+  useEffect(() => {
+    setClosePositionOpen(percent === 100)
+  }, [percent])
 
   useEffect(() => {
     setMinTokenAmount([
@@ -207,18 +218,32 @@ export default function RemoveLiquidityModal({
           />
           <Box mt={[3, 4]}>
             <AmountSlider actionRef={sliderRef} percent={percent} onChange={handlePercentChange} isDisabled={position.liquidity.isZero()} />
-            <Flex align="center" justify="flex-end" gap={3}>
-              <SlippageAdjuster onClick={onToggleSlippage} />
-              <IntervalCircle
-                componentRef={circleRef}
-                svgWidth={18}
-                strokeWidth={2}
-                trackStrokeColor={colors.secondary}
-                trackStrokeOpacity={0.5}
-                filledTrackStrokeColor={colors.secondary}
-                onClick={handleClick}
-                onEnd={onRefresh}
-              />
+            <Flex align="center" justify={closePositionOpen ? 'space-between' : 'flex-end'} gap={3}>
+              {closePositionOpen && (
+                <HStack gap={1}>
+                  <Checkbox color={colors.textSecondary} isChecked={!closePosition} onChange={handleClosePositionChange}>
+                    <Box fontSize="sm">{t('liquidity.keep_my_position_open')}</Box>
+                  </Checkbox>
+                  <QuestionToolTip
+                    iconType="info"
+                    iconProps={{ color: colors.textSecondary }}
+                    label={t('liquidity.keep_my_position_open_tip')}
+                  />
+                </HStack>
+              )}
+              <Flex align="center" justify="flex-end" gap={3}>
+                <SlippageAdjuster onClick={onToggleSlippage} />
+                <IntervalCircle
+                  componentRef={circleRef}
+                  svgWidth={18}
+                  strokeWidth={2}
+                  trackStrokeColor={colors.secondary}
+                  trackStrokeOpacity={0.5}
+                  filledTrackStrokeColor={colors.secondary}
+                  onClick={handleClick}
+                  onEnd={onRefresh}
+                />
+              </Flex>
             </Flex>
             <Collapse in={isSlippageOpen} animateOpacity>
               <SlippageSettingField onClose={onSlippageClose} />
@@ -290,6 +315,7 @@ export default function RemoveLiquidityModal({
                 amountMinA: minTokenAmount[0],
                 amountMinB: minTokenAmount[1],
                 needRefresh: percent <= 100,
+                closePosition: percent === 100 ? closePosition : undefined,
                 onSent: () => {
                   setIsSending(false)
                   setPercent(0)
