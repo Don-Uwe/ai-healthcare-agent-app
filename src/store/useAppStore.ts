@@ -205,7 +205,8 @@ export const useAppStore = createStore<AppState>(
         },
         jupTokenType,
         logRequests: !isDev,
-        disableFeatureCheck: true
+        disableFeatureCheck: true,
+        blockhashCommitment: 'finalized'
       })
       useTokenStore.getState().extraLoadedTokenList.forEach((t) => {
         const existed = raydium.token.tokenMap.has(t.address)
