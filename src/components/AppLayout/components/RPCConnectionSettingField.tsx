@@ -1,6 +1,6 @@
 import { colors } from '@/theme/cssVariables'
 import { Flex, Input, InputGroup, InputRightElement, useDisclosure, Spinner } from '@chakra-ui/react'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import shallow from 'zustand/shallow'
 import Button from '../../Button'
@@ -84,6 +84,10 @@ export function RPCConnectionSettingField() {
               onChange={({ currentTarget: { value } }) => {
                 const customUrl = value.replace(/^(https?:\/\/)?(https?:\/\/)/, '$2')
                 setCustomUrl(customUrl)
+              }}
+              onKeyDown={(event: KeyboardEvent<HTMLInputElement>) => {
+                const { key } = event
+                key === 'Enter' && handleSwitchCustomRpc()
               }}
             />
             {isLoading ? (
