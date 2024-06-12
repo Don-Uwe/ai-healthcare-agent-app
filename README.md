@@ -368,7 +368,8 @@ Discord Server (Susmita Bhattacharya, user_name: susmita_)
  <tr>
     <td align="center"><a href="https://github.com/Kamaleshbala01"><img src="https://avatars.githubusercontent.com/u/139665559?v=4" width="120px;" alt=""/><br/><sub><b>Kamalesh Bala</b></sub></a></td>
     <td align="center"><a href="https://github.com/ParthNakum21"><img src="https://avatars.githubusercontent.com/u/134558990?v=4" width="120px;" alt=""/><br/><sub><b>Parth Nakum</b></sub></a></td>
-     
+     <td align="center"><a href="https://github.com/Abhigna-arsam"><img src="https://avatars.githubusercontent.com/u/125258286?v=4" width="120px;" alt=""/><br/><sub><b>Abhigna Arsam</b></sub></a></td>
+      <td align="center"><a href="https://github.com/MaryamMohamedYahya"><img src="https://avatars.githubusercontent.com/u/147263523?v=4" width="120px;" alt=""/><br/><sub><b>MaryamMohamedYahya</b></sub></a></td>
  </tr>
  
    </p>
