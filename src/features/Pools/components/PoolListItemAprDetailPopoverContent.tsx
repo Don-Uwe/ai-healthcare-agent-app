@@ -86,6 +86,7 @@ export default function PoolListItemAprDetailPopoverContent({
           {/* total apr */}
           {weeklyRewards.map((reward) => {
             if (reward.amount === '0') return null
+            const isRewardEnded = reward.endTime ? reward.endTime * 1000 < Date.now() : true
             return (
               <Flex gap={4} w="full" key={String(reward.token?.address)} justify="space-between" align="center" fontSize="12px" mt="8px">
                 <HStack fontWeight="normal" color={colors.textSecondary} spacing="5px">
@@ -104,7 +105,8 @@ export default function PoolListItemAprDetailPopoverContent({
                 </HStack>
                 {reward.endTime ? (
                   <Box fontSize="10px" fontWeight="normal" color={colors.textSecondary}>
-                    {t('liquidity.rewards_ends')} {dayjs(reward.endTime * 1000).format('MM/DD/YY')}
+                    {isRewardEnded ? t('liquidity.rewards_ended') : t('liquidity.rewards_ends')}{' '}
+                    {dayjs(reward.endTime * 1000).format('MM/DD/YY')}
                   </Box>
                 ) : null}
               </Flex>

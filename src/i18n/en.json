@@ -307,7 +307,8 @@
       "unStaked_successfully": "Unstaked {{symbol}}",
       "unStaked_desc": "You Unstaked <sub>{{amount}} {{symbol}}</sub>"
     },
-    "rewards_ends": "Ended",
+    "rewards_ended": "Ended",
+    "rewards_ends": "Ends",
     "tvl_dsc": "Trading Volume (dsc)",
     "tvl_asc": "Trading Volume (asc)",
     "lp_dsc": "Liquidity (dsc)",
