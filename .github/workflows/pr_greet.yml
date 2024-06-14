@@ -15,6 +15,6 @@ jobs:
           script: |
             const { owner, repo, number } = context.issue;
             const commentAuthor = context.payload.sender.login;
-            const commentBody = `Thank you @${commentAuthor}, for creating the PR and contributing to our UltimateHealth 💗 \n Review team will review the PR and will reach out to you soon! 😇 \n Make sure that you have marked all the tasks that you are done with ✅. \n Thank you for your patience! 😀`; 
+            const commentBody = `Thank you @${commentAuthor}, for creating the PR and contributing to our UltimateHealth project 💗. \n Our team will review the PR and will reach out to you soon! 😇 \n Make sure that you have marked all the tasks that you are done with ✅. \n Thank you for your patience! 😀`; 
             await github.issues.createComment({ owner, repo, issue_number: number, body: commentBody });
             console.log(`Commented on the PR: ${commentBody}.`);
