@@ -102,6 +102,7 @@ interface ClmmState {
       liquidity: BN
       amountMaxA: number | string | BN
       amountMaxB: number | string | BN
+      onCloseToast?: () => void
     } & TxCallbackProps
   ) => Promise<string>
   fetchAmmConfigsAct: () => void
@@ -566,7 +567,9 @@ export const useClmmStore = createStore<ClmmState>(
               signedTx,
               mintInfo: [poolInfo.mintA, poolInfo.mintB],
               onSent: txProps.onSent,
+              onClose: txProps.onCloseToast,
               onConfirmed: () => {
+                txProps.onConfirmed?.()
                 setTimeout(() => {
                   useTokenAccountStore.setState({ refreshClmmPositionTag: Date.now() })
                 }, 500)

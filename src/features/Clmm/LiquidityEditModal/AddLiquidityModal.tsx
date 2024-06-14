@@ -347,9 +347,14 @@ export default function AddLiquidityModal({
                 liquidity: tickPriceRef.current.liquidity!,
                 amountMaxA: new Decimal(tokenAmount[baseIn ? 0 : 1]!).mul(10 ** poolInfo.mintA.decimals).toFixed(0),
                 amountMaxB: new Decimal(tokenAmount[baseIn ? 1 : 0]!).mul(10 ** poolInfo.mintB.decimals).toFixed(0),
-                onFinally: () => {
+                onCloseToast: () => setIsSending(false),
+                onConfirmed: () => {
                   setIsSending(false)
                   handleCloseModal()
+                },
+                onError: () => {
+                  handleClick()
+                  setIsSending(false)
                 }
               })
             }}
