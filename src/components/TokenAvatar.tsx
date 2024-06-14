@@ -1,5 +1,5 @@
 import { AvatarProps, Box, Image, forwardRef, useColorMode } from '@chakra-ui/react'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 import { colors } from '@/theme/cssVariables'
 import useTokenInfo from '@/hooks/token/useTokenInfo'
@@ -45,6 +45,10 @@ export default forwardRef(function TokenAvatar(
   const isLight = colorMode !== 'dark'
 
   const [queryUrl, setQueryUrl] = useState('')
+
+  useEffect(() => {
+    setQueryUrl('')
+  }, [originalToken])
 
   const boxSize = Array.isArray(size) ? size.map((s) => parseSize(s) ?? s) : parseSize(size) ?? size
   const { tokenInfo } = useTokenInfo({
