@@ -7,6 +7,8 @@ import WalletSelectWalletIcon from '@/icons/misc/WalletSelectWalletIcon'
 // import EthereumNetworkIcon from '@/icons/networks/EthereumNetworkIcon'
 // import PolygonNetworkIcon from '@/icons/networks/PolygonNetworkIcon'
 // import SolanaNetworkIcon from '@/icons/networks/SolanaNetworkIcon'
+import { QuestionToolTip } from '@/components/QuestionToolTip'
+import { toastSubject } from '@/hooks/toast/useGlobalToast'
 import { colors } from '@/theme/cssVariables'
 import {
   Box,
@@ -29,7 +31,7 @@ import {
 import { WalletReadyState } from '@solana/wallet-adapter-base'
 import { Wallet } from '@solana/wallet-adapter-react'
 import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import NextLink from 'next/link'
 
 interface Props {
@@ -56,7 +58,7 @@ export default function SelectWalletModal({ wallets, isOpen, onSelectWallet, onC
   */
   const [canShowUninstalledWallets, setCanShowUninstalledWallets] = useState(false)
 
-  const { installedWallets, notInstalledWallets } = splitWallets(wallets)
+  const { recommendedWallets, notInstalledWallets } = splitWallets(wallets)
 
   return (
     <Modal variant={'mobileFullPage'} isOpen={isOpen} onClose={onClose}>
@@ -95,7 +97,7 @@ export default function SelectWalletModal({ wallets, isOpen, onSelectWallet, onC
               </Text>
               {/* have divider  */}
               <SimpleGrid gridTemplateColumns={['1fr', '1fr 1fr']} rowGap={['10px', 3]} columnGap={4}>
-                {installedWallets.map((wallet) => (
+                {recommendedWallets.map((wallet) => (
                   <WalletItem key={wallet.adapter.name} selectable wallet={wallet} onClick={onSelectWallet} />
                 ))}
               </SimpleGrid>
@@ -171,11 +173,11 @@ function WalletItem({
   onClick: (wallet: Wallet) => void
   isCurrent?: boolean
 }) {
+  const { t } = useTranslation()
   const { colorMode } = useColorMode()
   const isLight = colorMode !== 'dark'
   return (
     <Flex
-      gap={3}
       align="center"
       cursor={selectable ? 'pointer' : undefined}
       rounded="md"
@@ -184,12 +186,38 @@ function WalletItem({
       }
       bg={colors.backgroundDark}
       py={3}
-      px={7}
-      pl={[9, 7]}
-      onClick={() => onClick(wallet)}
+      px={3}
+      pl={[9, 3]}
+      onClick={() => {
+        if (wallet.readyState == WalletReadyState.NotDetected && wallet.adapter.name === 'Phantom') {
+          toastSubject.next({
+            description: t('wallet_connect_panel.wallet_uninstalled', {
+              sub: wallet.adapter.name
+            }),
+            status: 'warning'
+          })
+          return
+        }
+        onClick(wallet)
+      }}
     >
-      <Image src={wallet.adapter.icon} w={8} h={8} ml={1} />
+      <Image src={wallet.adapter.icon} w={8} h={8} ml={1} mr={3} />
       <Text fontWeight={700}>{wallet.adapter.name}</Text>
+      {wallet.adapter.name === 'Phantom' && (
+        <HStack spacing={1} backgroundColor={colors.secondary10} px={3} py={0.5} borderRadius="0.5rem">
+          <Text fontSize="0.625rem" bgGradient={colors.solidButtonBg} bgClip="text">
+            {t('wallet_connect_panel.auto_confirm')}
+          </Text>
+          <QuestionToolTip
+            label={
+              <Trans i18nKey="wallet_connect_panel.auto_confirm_tip">
+                <Link href="https://phantom.app/learn/blog/auto-confirm" isExternal></Link>
+              </Trans>
+            }
+            iconProps={{ color: colors.textSecondary }}
+          />
+        </HStack>
+      )}
     </Flex>
   )
 }
@@ -218,11 +246,13 @@ function NetworkItem({
   )
 }
 */
-function splitWallets(wallets: Wallet[]): { installedWallets: Wallet[]; notInstalledWallets: Wallet[] } {
+function splitWallets(wallets: Wallet[]): { recommendedWallets: Wallet[]; notInstalledWallets: Wallet[] } {
   const supportedWallets = wallets.filter((w) => w.readyState !== WalletReadyState.Unsupported)
-  const installedWallets = supportedWallets.filter((w) => w.readyState !== WalletReadyState.NotDetected && w.adapter.name !== 'Sollet')
-  const notInstalledWallets = supportedWallets.filter((w) => w.readyState == WalletReadyState.NotDetected)
+  const recommendedWallets = supportedWallets.filter((w) => w.readyState !== WalletReadyState.NotDetected && w.adapter.name !== 'Sollet')
+  const notInstalledWallets = supportedWallets.filter((w) => w.readyState == WalletReadyState.NotDetected && w.adapter.name !== 'Phantom')
   const solletWallet = supportedWallets.find((w) => w.adapter.name === 'Sollet')
   solletWallet && notInstalledWallets.push(solletWallet)
-  return { installedWallets, notInstalledWallets }
+  const phantomWallet = supportedWallets.find((w) => w.adapter.name === 'Phantom')
+  phantomWallet && phantomWallet.readyState == WalletReadyState.NotDetected && recommendedWallets.unshift(phantomWallet)
+  return { recommendedWallets, notInstalledWallets }
 }

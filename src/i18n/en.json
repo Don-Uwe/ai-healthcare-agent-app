@@ -154,7 +154,10 @@
     "show_uninstalled_wallets": "Show uninstalled wallets",
     "tour_title": "New here?",
     "tour_desc": "Get started on Raydium",
-    "disconnect": "Disconnect"
+    "disconnect": "Disconnect",
+    "auto_confirm": "Auto Confirm",
+    "auto_confirm_tip": "Auto-confirm is now available for all transactions on Raydium. <0>Learn More</0>",
+    "wallet_uninstalled": "{{sub}} wallet uninstalled"
   },
   "token_selector": {
     "search_placeholder": "Search by token or paste address",
