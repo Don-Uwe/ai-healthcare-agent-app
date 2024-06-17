@@ -69,7 +69,10 @@ export default function SelectWalletModal({ wallets, isOpen, onSelectWallet, onC
         <ModalBody display={'grid'}>
           <Box overflow={'hidden'} display={'flex'} flexDirection={'column'}>
             <Box mb={5} color={colors.textTertiary} bg={colors.backgroundTransparent07} p={3} fontSize={['xs', 'sm']} rounded="md">
-              {t('wallet_connect_panel.desc')} <Link>{t('wallet_connect_panel.desc_link')}</Link>
+              {t('wallet_connect_panel.desc')}{' '}
+              <Link href="https://raydium.io/docs/disclaimer/" isExternal>
+                {t('wallet_connect_panel.desc_link')}
+              </Link>
             </Box>
 
             {/* <Box mb={6}>
@@ -178,6 +181,7 @@ function WalletItem({
   const isLight = colorMode !== 'dark'
   return (
     <Flex
+      gap={2}
       align="center"
       cursor={selectable ? 'pointer' : undefined}
       rounded="md"
@@ -201,11 +205,11 @@ function WalletItem({
         onClick(wallet)
       }}
     >
-      <Image src={wallet.adapter.icon} w={8} h={8} ml={1} mr={3} />
+      <Image src={wallet.adapter.icon} w={8} h={8} ml={1} />
       <Text fontWeight={700}>{wallet.adapter.name}</Text>
       {wallet.adapter.name === 'Phantom' && (
-        <HStack spacing={1} backgroundColor={colors.secondary10} px={3} py={0.5} borderRadius="0.5rem">
-          <Text fontSize="0.625rem" bgGradient={colors.solidButtonBg} bgClip="text">
+        <HStack gap={1} backgroundColor={colors.selectInactive} px={2} py={1} borderRadius="8px">
+          <Text fontSize="12px" color={colors.textPurple}>
             {t('wallet_connect_panel.auto_confirm')}
           </Text>
           <QuestionToolTip
@@ -214,7 +218,7 @@ function WalletItem({
                 <Link href="https://phantom.app/learn/blog/auto-confirm" isExternal></Link>
               </Trans>
             }
-            iconProps={{ color: colors.textSecondary }}
+            iconProps={{ color: colors.textPurple }}
           />
         </HStack>
       )}
