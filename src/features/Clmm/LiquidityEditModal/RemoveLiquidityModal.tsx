@@ -88,7 +88,7 @@ export default function RemoveLiquidityModal({
   ]
   const [tokenAmount, setTokenAmount] = useState(['', ''])
   const [minTokenAmount, setMinTokenAmount] = useState(['', ''])
-  const { rewards } = useFetchClmmRewardInfo({
+  const { allRewardInfos } = useFetchClmmRewardInfo({
     poolInfo,
     position,
     subscribe: false,
@@ -278,21 +278,19 @@ export default function RemoveLiquidityModal({
               <Flex justifyContent="space-between" alignItems="center">
                 <Flex alignItems="center" gap="2">
                   <Text fontSize={['sm', 'md']}>{t('clmm.pending_rewards')}</Text>
-                  {poolInfo.rewardDefaultInfos.map((r, idx) => (
-                    <TokenAvatar key={r.mint.address} size={['smi', 'md']} token={r.mint} ml={idx ? '-2px' : '0'} />
-                  ))}
+                  <Flex>
+                    {allRewardInfos.map((r, idx) => (
+                      <TokenAvatar key={r.mint.address} mr="-1" size={['smi', 'md']} token={r.mint} ml={idx ? '-2px' : '0'} />
+                    ))}
+                  </Flex>
                 </Flex>
                 <Flex fontSize="sm" gap="1">
-                  {position.rewardInfos.map((r, idx) => {
-                    const rewardToken = poolInfo.rewardDefaultInfos[idx]?.mint
-                    if (!rewardToken) return null
-
-                    const rewardAmount = new Decimal(rewards[idx]?.toString() || 0).div(10 ** rewardToken.decimals).toString()
+                  {allRewardInfos.map((r, idx) => {
                     return (
-                      <HStack key={`reward-${rewardToken.address}`} fontSize={['xs', 'sm']} gap="1">
+                      <HStack key={`reward-${r.mint.address}`} fontSize={['xs', 'sm']} gap="1">
                         {idx > 0 ? <Text>+</Text> : null}
-                        <Text>{formatCurrency(rewardAmount, { decimalPlaces: getFirstNonZeroDecimal(rewardAmount) + 1 })}</Text>
-                        <Text color={colors.textTertiary}>{getMintSymbol({ mint: rewardToken, transformSol: true })}</Text>
+                        <Text>{formatCurrency(r.amount, { decimalPlaces: getFirstNonZeroDecimal(r.amount) + 1 })}</Text>
+                        <Text color={colors.textTertiary}>{getMintSymbol({ mint: r.mint, transformSol: true })}</Text>
                       </HStack>
                     )
                   })}
