@@ -39,6 +39,6 @@ export const birdeyePairPriceApiAddress = ({
   timeType: string
   timeFrom: number
   timeTo: number
-}) => `${birdeyHost}/defi/history_price?address=${baseMint}&type=${timeType}&address_type=pair&time_from=${timeFrom}&time_to=${timeTo}`
+}) => `${birdeyHost}/defi/history_price?address=${baseMint}&type=${timeType}&address_type=token&time_from=${timeFrom}&time_to=${timeTo}`
 
 export const birdeyePriceUrl = `${birdeyHost}/defi/multi_price`
