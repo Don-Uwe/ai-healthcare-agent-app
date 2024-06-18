@@ -5,11 +5,13 @@ export default function useFetchPoolChartData({
   category,
   timeType,
   poolAddress,
+  baseMint,
   refreshInterval
 }: {
   category: 'liquidity' | 'volume'
   timeType: TimeType
   poolAddress?: string
+  baseMint?: string
   refreshInterval?: number
 }) {
   const {
@@ -29,6 +31,7 @@ export default function useFetchPoolChartData({
   } = useFetchPoolChartVolume({
     disable: category !== 'volume',
     poolAddress,
+    baseMint,
     timeType,
     refreshInterval
   })

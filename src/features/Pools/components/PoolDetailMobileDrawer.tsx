@@ -221,6 +221,7 @@ export default function PoolDetailMobileDrawer({
             <ContentCard>
               <ChartWindow
                 poolAddress={poolId}
+                baseMint={baseToken?.address}
                 categories={[
                   { label: 'Volume', value: 'volume' },
                   { label: 'Liquidity', value: 'liquidity' }

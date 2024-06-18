@@ -70,12 +70,14 @@ let lastFetchDate = Math.floor(Date.now() / 1000)
 export default function useFetchPoolChartVolume({
   disable = false,
   poolAddress,
+  baseMint,
   timeType = '4H',
   untilDate: propUntilDate = Math.floor(Date.now() / 1000), // in seconds
   refreshInterval = 3 * MINUTE_MILLISECONDS
 }: {
   disable?: boolean
   poolAddress?: string
+  baseMint?: string
   timeType?: TimeType
   untilDate?: number
   refreshInterval?: number
@@ -118,9 +120,9 @@ export default function useFetchPoolChartVolume({
     isLoading: isPriceLoading
   } = useSWRInfinite(
     (index) =>
-      shouldFetch && !disable
+      baseMint && !disable
         ? birdeyePairPriceApiAddress({
-            poolAddress: poolAddress ?? '',
+            baseMint,
             timeType,
             timeFrom: untilDate - getOffset(timeType, index + 1),
             timeTo: untilDate - getOffset(timeType, index)

@@ -30,15 +30,15 @@ export const birdeyePairVolumeApiAddress = ({
 }) => `${birdeyHost}/defi/ohlcv/pair?address=${poolAddress}&type=${timeType}&time_from=${timeFrom}&time_to=${timeTo}`
 
 export const birdeyePairPriceApiAddress = ({
-  poolAddress,
+  baseMint,
   timeType,
   timeFrom,
   timeTo
 }: {
-  poolAddress: string
+  baseMint: string
   timeType: string
   timeFrom: number
   timeTo: number
-}) => `${birdeyHost}/defi/history_price?address=${poolAddress}&type=${timeType}&address_type=pair&time_from=${timeFrom}&time_to=${timeTo}`
+}) => `${birdeyHost}/defi/history_price?address=${baseMint}&type=${timeType}&address_type=pair&time_from=${timeFrom}&time_to=${timeTo}`
 
 export const birdeyePriceUrl = `${birdeyHost}/defi/multi_price`

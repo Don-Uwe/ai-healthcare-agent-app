@@ -11,12 +11,14 @@ import { TimeType, availableTimeType } from './const'
 
 export default function PoolChartModal<T extends string>({
   poolAddress,
+  baseMint,
   isOpen,
   onClose,
   renderModalHeader,
   categories
 }: {
   poolAddress: string | undefined
+  baseMint?: string
   isOpen: boolean
 
   /** it base on provided chartData */
@@ -34,7 +36,7 @@ export default function PoolChartModal<T extends string>({
         <ModalCloseButton />
 
         <ModalBody>
-          <ChartWindow poolAddress={poolAddress} categories={categories} />
+          <ChartWindow poolAddress={poolAddress} baseMint={baseMint} categories={categories} />
         </ModalBody>
 
         <ModalFooter justifyContent="center">
@@ -50,9 +52,11 @@ export default function PoolChartModal<T extends string>({
 /** used in mobile  */
 export function ChartWindow<T extends string>({
   poolAddress,
+  baseMint,
   categories
 }: {
-  poolAddress: string | undefined
+  poolAddress?: string
+  baseMint?: string
   /** it base on provided chartData */
   categories: { label: string; value: T }[]
 }) {
@@ -63,6 +67,7 @@ export function ChartWindow<T extends string>({
   const { data, isLoading, isEmptyResult } = useFetchPoolChartData({
     category: currentCategory === 'liquidity' ? 'liquidity' : 'volume',
     poolAddress,
+    baseMint,
     timeType: currentTimeType
   })
   if (isMobile && isEmptyResult) return null

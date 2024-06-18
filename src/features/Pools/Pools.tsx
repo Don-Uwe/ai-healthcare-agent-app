@@ -583,6 +583,7 @@ export default function Pools() {
               </Flex>
             }
             poolAddress={chartPoolInfo?.id}
+            baseMint={chartPoolInfo?.mintA.address}
             categories={[
               { label: t('liquidity_pools.chart_tab_volume'), value: 'volume' },
               { label: t('liquidity_pools.chart_tab_liquidity'), value: 'liquidity' }
