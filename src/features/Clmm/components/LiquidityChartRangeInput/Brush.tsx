@@ -61,6 +61,7 @@ export const Brush = ({
   brushLabelValue,
   brushExtent,
   onBrushDomainChange,
+  onClickArrow,
   innerWidth,
   innerHeight,
   westHandleColor,
@@ -72,6 +73,7 @@ export const Brush = ({
   brushLabelValue: (d: 'w' | 'e', x: number) => string
   brushExtent: [number, number]
   onBrushDomainChange: (extent: [number, number], mode: string | undefined) => void
+  onClickArrow: (side: 'left' | 'right') => void
   innerWidth: number
   innerHeight: number
   westHandleColor: string
@@ -227,10 +229,10 @@ export const Brush = ({
                 </LabelGroup>
               </g>
             ) : null}
-            {showWestArrow && <OffScreenHandle color={westHandleColor} />}
+            {showWestArrow && <OffScreenHandle onClick={() => onClickArrow('left')} color={westHandleColor} />}
             {showEastArrow && (
               <g transform={`translate(${innerWidth}, 0) scale(-1, 1)`}>
-                <OffScreenHandle color={eastHandleColor} />
+                <OffScreenHandle onClick={() => onClickArrow('right')} color={eastHandleColor} />
               </g>
             )}
           </>

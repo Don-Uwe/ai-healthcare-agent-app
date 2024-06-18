@@ -9,6 +9,8 @@ import { ChartEntry, LiquidityChartRangeInputProps } from './types'
 import Zoom, { ZoomOverlay } from './Zoom'
 import { FeeAmount } from './FeeAmount'
 
+import { useEvent } from '@/hooks/useEvent'
+
 export const xAccessor = (d: ChartEntry) => d.price0
 export const yAccessor = (d: ChartEntry) => d.activeLiquidity
 
@@ -101,6 +103,12 @@ export function Chart({
     }
   }, [brushDomain, onBrushDomainChange, xScale])
 
+  const onClickArrow = useEvent((side: 'left' | 'right') => {
+    const scale = xScale.domain()
+    const gap = (scale[1] - scale[0]) / 20
+    onBrushDomainChange(side === 'left' ? [scale[0] + gap, brushDomain![1]] : [brushDomain![0], scale[1] - gap], 'handle')
+  })
+
   return (
     <>
       <Zoom
@@ -108,6 +116,7 @@ export function Chart({
         svg={zoomRef.current}
         xScale={xScale}
         setZoom={setZoom}
+        feeAmount={feeAmount}
         width={innerWidth}
         height={
           // allow zooming inside the x-axis
@@ -175,6 +184,7 @@ export function Chart({
             onBrushDomainChange={onBrushDomainChange}
             westHandleColor={styles.brush.handle.west}
             eastHandleColor={styles.brush.handle.east}
+            onClickArrow={onClickArrow}
           />
         </g>
         {/* current price line */}

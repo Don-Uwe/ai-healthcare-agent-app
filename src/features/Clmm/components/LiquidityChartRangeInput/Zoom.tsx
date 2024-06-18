@@ -3,7 +3,7 @@ import { ScaleLinear, select, zoom, ZoomBehavior, zoomIdentity, ZoomTransform } 
 import React, { useEffect, useMemo, useRef } from 'react'
 import { RefreshCcw, ZoomIn, ZoomOut } from 'react-feather'
 import styled from '@emotion/styled'
-
+import { FeeAmount } from './FeeAmount'
 import { ZoomLevels } from './types'
 
 export const ZoomOverlay = styled.rect<{ cursor?: string }>`
@@ -32,6 +32,7 @@ export default function Zoom({
   showResetButton,
   zoomLevels,
   interactive,
+  feeAmount,
   style
 }: {
   svg: SVGElement | null
@@ -43,18 +44,20 @@ export default function Zoom({
   showResetButton: boolean
   zoomLevels: ZoomLevels
   interactive: boolean
+  feeAmount?: FeeAmount
   style?: SystemCSSProperties
 }) {
   const zoomBehavior = useRef<ZoomBehavior<Element, unknown>>()
 
   const [zoomIn, zoomOut, zoomInitial, zoomReset] = useMemo(
     () => [
-      () =>
+      () => {
         svg &&
-        zoomBehavior.current &&
-        select(svg as Element)
-          .transition()
-          .call(zoomBehavior.current.scaleBy, 2),
+          zoomBehavior.current &&
+          select(svg as Element)
+            .transition()
+            .call(zoomBehavior.current.scaleBy, 2)
+      },
       () =>
         svg &&
         zoomBehavior.current &&
@@ -80,9 +83,9 @@ export default function Zoom({
 
   useEffect(() => {
     if (!svg) return
-
+    const multiplier = feeAmount === FeeAmount['LOWEST'] ? 10 : 1
     zoomBehavior.current = zoom()
-      .scaleExtent([zoomLevels.min, zoomLevels.max])
+      .scaleExtent([zoomLevels.min * (1 / multiplier), zoomLevels.max * multiplier])
       .extent([
         [0, 0],
         [width, height]
@@ -90,7 +93,7 @@ export default function Zoom({
       .on('zoom', ({ transform }: { transform: ZoomTransform }) => setZoom(transform))
 
     if (interactive) select(svg as Element).call(zoomBehavior.current)
-  }, [height, width, setZoom, svg, xScale, zoomBehavior, zoomLevels.max, zoomLevels.min, interactive])
+  }, [height, width, setZoom, svg, xScale, zoomBehavior, zoomLevels.max, zoomLevels.min, interactive, feeAmount])
 
   useEffect(() => {
     // reset zoom to initial on zoomLevel change

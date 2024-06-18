@@ -54,6 +54,7 @@ export const OffScreenHandle = ({
 }) => (
   <polygon
     onClick={onClick}
+    cursor={onClick ? 'pointer' : 'default'}
     points={`0 0, ${size} ${size}, 0 ${size}`}
     transform={` translate(${size + margin}, ${margin}) rotate(45) `}
     fill={color}

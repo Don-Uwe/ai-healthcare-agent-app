@@ -40,10 +40,11 @@ export const Area = ({
             .x((d: unknown) => xScale(xValue(d as ChartEntry)))
             .y1((d: unknown) => yScale(yValue(d as ChartEntry)))
             .y0(yScale(0))(
-            series.filter((d) => {
-              const value = xScale(xValue(d))
-              return value > 0 && value <= window.innerWidth
-            }) as Iterable<[number, number]>
+            series as Iterable<[number, number]>
+            // series.filter((d) => {
+            //   const value = xScale(xValue(d))
+            //   return value > 0 && value <= window.innerWidth
+            // }) as Iterable<[number, number]>
           ) ?? undefined
         }
       />
