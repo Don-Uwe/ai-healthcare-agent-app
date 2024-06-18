@@ -156,8 +156,18 @@
     "tour_desc": "Get started on Raydium",
     "disconnect": "Disconnect",
     "auto_confirm": "Auto Confirm",
+    "auto_approve": "Auto Approve",
     "auto_confirm_tip": "Auto-confirm is now available for all transactions on Raydium. <0>Learn More</0>",
-    "wallet_uninstalled": "{{sub}} wallet uninstalled"
+    "auto_approve_tip_solflare": "Auto-approve is now available for all transactions on Raydium.",
+    "phantom_wallet_not_installed": "Oops... Looks like you don’t have Phantom installed!",
+    "install_phantom": "Install Phantom",
+    "how_to_install_phantom": "How to install Phantom?",
+    "on_mobile": "On mobile:",
+    "mobile_open_wallet": "Download and open the wallet app instead",
+    "on_desktop": "On desktop:",
+    "install_refresh_page": "Install at link above then refresh this page",
+    "wallet_installed_refresh_page": "I’ve already Installed, Refresh page",
+    "goback": "Go back"
   },
   "token_selector": {
     "search_placeholder": "Search by token or paste address",
