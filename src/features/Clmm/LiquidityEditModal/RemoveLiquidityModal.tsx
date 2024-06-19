@@ -277,7 +277,7 @@ export default function RemoveLiquidityModal({
 
               <Flex justifyContent="space-between" alignItems="center">
                 <Flex alignItems="center" gap="2">
-                  <Text fontSize={['sm', 'md']}>{t('clmm.pending_rewards')}</Text>
+                  <Text fontSize={['sm', 'md']}>{t('portfolio.section_positions_clmm_account_pending_yield')}</Text>
                   <Flex>
                     {allRewardInfos.map((r, idx) => (
                       <TokenAvatar key={r.mint.address} mr="-1" size={['smi', 'md']} token={r.mint} ml={idx ? '-2px' : '0'} />
