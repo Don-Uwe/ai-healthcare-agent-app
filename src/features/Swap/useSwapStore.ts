@@ -77,7 +77,8 @@ export const useSwapStore = createStore<SwapStore>(
 
         const inputTokenAcc = await raydium.account.getCreatedTokenAccount({
           programId: new PublicKey(inputToken.programId ?? TOKEN_PROGRAM_ID),
-          mint: new PublicKey(inputToken.address)
+          mint: new PublicKey(inputToken.address),
+          associatedOnly: false
         })
 
         if (!inputTokenAcc && !isInputSol) {
