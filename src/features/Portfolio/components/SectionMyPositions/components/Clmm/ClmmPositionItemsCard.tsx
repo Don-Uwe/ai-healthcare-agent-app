@@ -17,7 +17,7 @@ import ClmmPositionAccountItem from './ClmmPositionAccountItem'
 import toPercentString from '@/utils/numberish/toPercentString'
 import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
 
-const LIST_THRESHOLD = 2
+const LIST_THRESHOLD = 5
 
 export function ClmmPositionItemsCard({
   poolInfo,
