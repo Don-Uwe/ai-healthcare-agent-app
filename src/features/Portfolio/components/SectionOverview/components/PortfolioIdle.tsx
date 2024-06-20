@@ -41,6 +41,7 @@ export default function PortfolioIdle({ idleBalance, productiveBalance, idleList
       display={isMobile ? 'none' : 'flex'}
       direction="column"
       overflow="hidden"
+      boxShadow="none"
       flex={5}
       minW="300px"
       borderRadius={'20px'}

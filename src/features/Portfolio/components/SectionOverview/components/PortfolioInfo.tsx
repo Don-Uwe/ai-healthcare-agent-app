@@ -99,6 +99,7 @@ export default function PortfolioInfo({ poolAssets, tokenAssets }: { poolAssets?
       bg={colors.backgroundMedium}
       borderRadius="20px"
       overflow="hidden"
+      boxShadow="none"
       flex={4}
       minW="300px"
       scrollSnapAlign={'start'}
