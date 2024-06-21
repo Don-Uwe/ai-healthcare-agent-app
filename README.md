@@ -1,4 +1,4 @@
-# UltimateHealth  (Due to an urgent basis please don't take further pull from any branch until 7 p.m IST)
+# UltimateHealth  (Due to an urgent basis please don't take further pull from any branch)
 
 <table align="center">
     <thead align="center">
