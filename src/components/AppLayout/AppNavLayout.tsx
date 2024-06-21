@@ -57,7 +57,6 @@ function AppNavLayout({
 }) {
   const { colorMode } = useColorMode()
   const isDark = colorMode === 'dark'
-  const planetLeft = useBreakpointValue({ base: '40%', md: '60%' })
   const { t } = useTranslation()
   const { pathname } = useRouter()
 
@@ -80,16 +79,7 @@ function AppNavLayout({
   to { transform: translateY(-100%); }
 `
   return (
-    <Flex
-      direction="column"
-      id="app-layout"
-      height="full"
-      overflow={overflowHidden ? 'hidden' : 'auto'}
-      backgroundImage={isDark ? "url('/images/planet.png')" : undefined}
-      backgroundPosition={`top -5% left ${planetLeft}`}
-      backgroundSize="800px 493px"
-      backgroundRepeat="no-repeat"
-    >
+    <Flex direction="column" id="app-layout" height="full" overflow={overflowHidden ? 'hidden' : 'auto'}>
       <Box
         ref={betaTooltipRef}
         display={isOpen ? 'flex' : 'none'}
