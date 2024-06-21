@@ -268,7 +268,13 @@ export default function FarmEdit() {
             )}
           </HStack>
           <Text fontSize="sm" color={colors.textSecondary}>
-            {t('edit_farm.title_des')} <Link isExternal>{t('edit_farm.title_des_link')}</Link>
+            {t('edit_farm.title_des')}{' '}
+            <Link
+              href="https://docs.raydium.io/raydium/pool-creation/creating-a-constant-product-pool/creating-an-ecosystem-farm"
+              isExternal
+            >
+              {t('edit_farm.title_des_link')}
+            </Link>
           </Text>
         </Flex>
       </GridItem>
