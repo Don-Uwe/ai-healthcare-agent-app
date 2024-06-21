@@ -1,4 +1,4 @@
-import { TOKEN_WSOL, WSOLMint, SOLMint, ApiV3Token, SOL_INFO, TokenInfo } from '@raydium-io/raydium-sdk-v2'
+import { TOKEN_WSOL, WSOLMint, SOLMint, USDCMint, USDTMint, ApiV3Token, SOL_INFO, TokenInfo } from '@raydium-io/raydium-sdk-v2'
 import { PublicKey } from '@solana/web3.js'
 import { sortItems } from '@/utils/sortItems'
 
@@ -99,4 +99,18 @@ export const mintToUrl = (mint: string) => {
   if (!mint) return
   if (mint === SOL_INFO.address) return 'sol'
   return mint
+}
+
+const MINT_PRIORITYS: { [mint: string]: number } = {
+  [USDCMint.toBase58()]: 100,
+  [USDTMint.toBase58()]: 90,
+  [SOLMint.toBase58()]: 80
+}
+const DEFAULT_QUOTE_PRIORITY = 0
+export function getMintPriority(mint: string): number {
+  const value = MINT_PRIORITYS[mint]
+  if (value) {
+    return value
+  }
+  return DEFAULT_QUOTE_PRIORITY
 }

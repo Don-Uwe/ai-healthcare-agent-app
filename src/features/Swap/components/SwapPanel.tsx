@@ -6,14 +6,14 @@ import { useHover } from '@/hooks/useHover'
 import { useAppStore, useTokenAccountStore, useTokenStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
 import { Box, Button, Collapse, Flex, HStack, SimpleGrid, Text, useDisclosure, CircularProgress } from '@chakra-ui/react'
-import { ApiV3Token, RAYMint, SOLMint, USDCMint, USDTMint, SOL_INFO, TokenInfo } from '@raydium-io/raydium-sdk-v2'
+import { ApiV3Token, RAYMint, SOL_INFO, TokenInfo } from '@raydium-io/raydium-sdk-v2'
 import { PublicKey } from '@solana/web3.js'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import shallow from 'zustand/shallow'
 import CircleInfo from '@/icons/misc/CircleInfo'
 import { getSwapPairCache, setSwapPairCache } from '../util'
-import { urlToMint, mintToUrl } from '@/utils/token'
+import { urlToMint, mintToUrl, isSolWSol, getMintPriority } from '@/utils/token'
 import { SwapInfoBoard } from './SwapInfoBoard'
 import SwapButtonTwoTurnIcon from '@/icons/misc/SwapButtonTwoTurnIcon'
 import SwapButtonOneTurnIcon from '@/icons/misc/SwapButtonOneTurnIcon'
@@ -22,7 +22,6 @@ import { ApiSwapV1OutSuccess } from '../type'
 import { useSwapStore } from '../useSwapStore'
 import Decimal from 'decimal.js'
 import HighRiskAlert from './HighRiskAlert'
-import { isSolWSol } from '@/utils/token'
 import { useRouteQuery, setUrlQuery } from '@/utils/routeTools'
 import WarningIcon from '@/icons/misc/WarningIcon'
 import dayjs from 'dayjs'
@@ -177,14 +176,17 @@ export function SwapPanel({
 
   const handleSelectToken = useCallback(
     (token: TokenInfo | ApiV3Token, side?: 'input' | 'output') => {
-      const defaultMints = new Set<string>([SOLMint.toBase58(), USDCMint.toBase58(), USDTMint.toBase58()])
       if (side === 'input') {
-        defaultMints.has(token.address) && !defaultMints.has(outputMint) && onDirectionNeedReverse?.()
+        if (getMintPriority(token.address) > getMintPriority(outputMint)) {
+          onDirectionNeedReverse?.()
+        }
         setInputMint(token.address)
         setOutputMint((mint) => (token.address === mint ? '' : mint))
       }
       if (side === 'output') {
-        defaultMints.has(inputMint) && !defaultMints.has(token.address) && onDirectionNeedReverse?.()
+        if (getMintPriority(inputMint) > getMintPriority(token.address)) {
+          onDirectionNeedReverse?.()
+        }
         setOutputMint(token.address)
         setInputMint((mint) => {
           if (token.address === mint) {
@@ -297,7 +299,7 @@ export function SwapPanel({
         />
       </Flex>
       {/* swap info */}
-      {hasValidAmountIn && (
+      <Collapse in={hasValidAmountIn} animateOpacity>
         <Box mb={[4, 5]}>
           <SwapInfoBoard
             amountIn={amountIn}
@@ -308,7 +310,7 @@ export function SwapPanel({
             onRefresh={handleRefresh}
           />
         </Box>
-      )}
+      </Collapse>
 
       <Collapse in={needPriceUpdatedAlert}>
         <Box pb={[4, 5]}>

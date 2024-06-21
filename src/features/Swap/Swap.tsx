@@ -1,5 +1,5 @@
 import { Box, Grid, GridItem, HStack, VStack } from '@chakra-ui/react'
-import { RAYMint, SOLMint, USDCMint, USDTMint } from '@raydium-io/raydium-sdk-v2'
+import { RAYMint } from '@raydium-io/raydium-sdk-v2'
 import { PublicKey } from '@solana/web3.js'
 import { useMemo, useState, useRef, useEffect } from 'react'
 
@@ -18,6 +18,7 @@ import { SwapKlinePanelMobileThumbnail } from './components/SwapKlinePanelMobile
 import { SwapPanel } from './components/SwapPanel'
 import { TimeType } from '@/hooks/pool/useFetchPoolKLine'
 import { SlippageAdjuster } from '@/components/SlippageAdjuster'
+import { getMintPriority } from '@/utils/token'
 
 export default function Swap() {
   // const { inputMint: cacheInput, outputMint: cacheOutput } = getSwapPairCache()
@@ -48,10 +49,11 @@ export default function Swap() {
     setCacheLoaded(true)
   }, [])
   useEffect(() => {
-    // preserve swap chart default direction on page refresh for SOL, USDC, and USDT basein
-    const defaultMints = new Set<string>([SOLMint.toBase58(), USDCMint.toBase58(), USDTMint.toBase58()])
+    // preserve swap chart default direction on page refresh by mint priority
     if (cacheLoaded) {
-      defaultMints.has(baseMint) && !defaultMints.has(quoteMint) && setDirectionReverse(true)
+      if (getMintPriority(baseMint) > getMintPriority(quoteMint)) {
+        setDirectionReverse(true)
+      }
     }
   }, [cacheLoaded])
   // reset directionReverse when inputMint or outputMint changed
