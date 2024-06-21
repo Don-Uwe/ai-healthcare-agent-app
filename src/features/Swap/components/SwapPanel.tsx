@@ -30,6 +30,7 @@ import { NATIVE_MINT } from '@solana/spl-token'
 import { Trans } from 'react-i18next'
 import { formatToRawLocaleStr } from '@/utils/numberish/formatter'
 import useTokenInfo from '@/hooks/token/useTokenInfo'
+import { debounce } from '@/utils/functionMethods'
 
 export function SwapPanel({
   onInputMintChange,
@@ -89,6 +90,7 @@ export function SwapPanel({
 
   const [amountIn, setAmountIn] = useState<string>('')
   const [needPriceUpdatedAlert, setNeedPriceUpdatedAlert] = useState(false)
+  const [hasValidAmountIn, setHasValidAmountIn] = useState(false)
 
   const handleUnwrap = useEvent(() => {
     onUnWrapping()
@@ -151,6 +153,17 @@ export function SwapPanel({
       setNeedPriceUpdatedAlert(true)
     }
   }, [response?.id, isSending])
+
+  const debounceUpdate = useCallback(
+    debounce((amountIn) => {
+      setHasValidAmountIn(Number(amountIn) !== 0)
+    }, 150),
+    []
+  )
+
+  useEffect(() => {
+    debounceUpdate(amountIn)
+  }, [amountIn])
 
   const handleInputChange = useCallback((val: string) => {
     setSwapType('BaseIn')
@@ -284,16 +297,19 @@ export function SwapPanel({
         />
       </Flex>
       {/* swap info */}
-      <Box mb={[4, 5]}>
-        <SwapInfoBoard
-          amountIn={amountIn}
-          tokenInput={tokenInput}
-          tokenOutput={tokenOutput}
-          isComputing={isComputing && !isSending}
-          computedSwapResult={computeResult}
-          onRefresh={handleRefresh}
-        />
-      </Box>
+      {hasValidAmountIn && (
+        <Box mb={[4, 5]}>
+          <SwapInfoBoard
+            amountIn={amountIn}
+            tokenInput={tokenInput}
+            tokenOutput={tokenOutput}
+            isComputing={isComputing && !isSending}
+            computedSwapResult={computeResult}
+            onRefresh={handleRefresh}
+          />
+        </Box>
+      )}
+
       <Collapse in={needPriceUpdatedAlert}>
         <Box pb={[4, 5]}>
           <SwapPriceUpdatedAlert onConfirm={onPriceUpdatedConfirm} />

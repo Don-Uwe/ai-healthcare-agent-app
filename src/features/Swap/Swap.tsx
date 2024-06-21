@@ -72,7 +72,8 @@ export default function Swap() {
 
   useIsomorphicLayoutEffect(() => {
     if (klineRef.current) {
-      const height = `${swapPanelRef.current?.getBoundingClientRect().height}px`
+      const swapPanelHeight = swapPanelRef.current?.getBoundingClientRect().height
+      const height = Number(swapPanelHeight) > 500 ? `${swapPanelHeight}px` : '522px'
       klineRef.current.style.height = height
     }
   }, [])
