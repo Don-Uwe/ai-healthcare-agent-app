@@ -1,4 +1,4 @@
-# UltimateHealth  (Due to an urgent basis please don't take further pull from any branch)
+# UltimateHealth
 
 <table align="center">
     <thead align="center">
@@ -373,6 +373,11 @@ Discord Server (Susmita Bhattacharya, user_name: susmita_)
     <td align="center"><a href="https://github.com/thevijayshankersharma"><img src="https://avatars.githubusercontent.com/u/109781385?v=4" width="120px;" alt=""/><br/><sub><b>Vijay Shanker Sharma</b></sub></a></td>
     <td align="center"><a href="https://github.com/TonyStark-47"><img src="https://avatars.githubusercontent.com/u/73957207?v=4" width="120px;" alt=""/><br/><sub><b>Tony Stark</b></sub></a>
         </td>
+ </tr>
+
+ <tr>
+   <td align="center"><a href="https://github.com/iamworrell"><img src="https://avatars.githubusercontent.com/u/99043769?v=4" width="120px;" alt=""/><br/><sub><b>Worrell Seville</b></sub></a>
+        </td>  
  </tr>
  
    </p>
