@@ -134,12 +134,12 @@ export default function SelectPoolTokenAndFee({ completed, isLoading, onConfirm,
 
   const handleSelect = useCallback((val: ApiV3Token) => {
     if (val?.tags.includes('hasFreeze') && !whiteListMap.has(val.address)) {
-      toastSubject.next({
-        title: t('token_selector.token_freeze_warning'),
-        description: t('token_selector.token_has_freeze_disable'),
-        status: 'warning'
-      })
-      return
+      // toastSubject.next({
+      //   title: t('token_selector.token_freeze_warning'),
+      //   description: t('token_selector.token_has_freeze_disable'),
+      //   status: 'warning'
+      // })
+      // return
     }
     onClose()
     setTokens((preVal) => {

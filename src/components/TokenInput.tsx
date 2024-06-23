@@ -245,14 +245,15 @@ function TokenInput(props: TokenInputProps) {
     if (isFreeze) {
       if (name === 'swap') {
         onOpenFreezeTokenConfirm()
+        return
       } else {
-        toastSubject.next({
-          title: t('token_selector.token_freeze_warning'),
-          description: t('token_selector.token_has_freeze_disable'),
-          status: 'warning'
-        })
+        // toastSubject.next({
+        //   title: t('token_selector.token_freeze_warning'),
+        //   description: t('token_selector.token_has_freeze_disable'),
+        //   status: 'warning'
+        // })
       }
-      return
+      // return
     }
     onTokenChange?.(token)
     onClose()
@@ -265,14 +266,15 @@ function TokenInput(props: TokenInputProps) {
     if (isFreeze) {
       if (name === 'swap') {
         onOpenFreezeTokenConfirm()
+        return
       } else {
-        toastSubject.next({
-          title: t('token_selector.token_freeze_warning'),
-          description: t('token_selector.token_has_freeze_disable'),
-          status: 'warning'
-        })
+        // toastSubject.next({
+        //   title: t('token_selector.token_freeze_warning'),
+        //   description: t('token_selector.token_has_freeze_disable'),
+        //   status: 'warning'
+        // })
       }
-      return
+      // return
     }
     onTokenChange?.(token)
     setTimeout(() => {
