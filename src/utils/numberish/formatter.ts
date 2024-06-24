@@ -201,7 +201,7 @@ export function formatCurrency(amount?: string | number | Decimal, params: Forma
   const locale = i18n.language
   const { noDecimal = false, symbol, abbreviated = false, decimalPlaces, maximumDecimalTrailingZeroes } = params
   if (!amount) {
-    return '0'
+    return symbol ? `${symbol}0` : '0'
   }
   const amountDecimal = amount instanceof Decimal ? amount : new Decimal(String(amount).replace(/,/gi, ''))
   const amountNumber = amountDecimal.toNumber()
