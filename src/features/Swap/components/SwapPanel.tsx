@@ -89,7 +89,7 @@ export function SwapPanel({
 
   const [amountIn, setAmountIn] = useState<string>('')
   const [needPriceUpdatedAlert, setNeedPriceUpdatedAlert] = useState(false)
-  const [hasValidAmountIn, setHasValidAmountIn] = useState(false)
+  const [hasValidAmountOut, setHasValidAmountOut] = useState(false)
 
   const handleUnwrap = useEvent(() => {
     onUnWrapping()
@@ -154,15 +154,15 @@ export function SwapPanel({
   }, [response?.id, isSending])
 
   const debounceUpdate = useCallback(
-    debounce((amountIn) => {
-      setHasValidAmountIn(Number(amountIn) !== 0)
+    debounce(({ outputAmount, isComputing }) => {
+      setHasValidAmountOut(Number(outputAmount) !== 0 || isComputing)
     }, 150),
     []
   )
 
   useEffect(() => {
-    debounceUpdate(amountIn)
-  }, [amountIn])
+    debounceUpdate({ outputAmount, isComputing })
+  }, [outputAmount, isComputing])
 
   const handleInputChange = useCallback((val: string) => {
     setSwapType('BaseIn')
@@ -299,7 +299,7 @@ export function SwapPanel({
         />
       </Flex>
       {/* swap info */}
-      <Collapse in={hasValidAmountIn} animateOpacity>
+      <Collapse in={hasValidAmountOut} animateOpacity>
         <Box mb={[4, 5]}>
           <SwapInfoBoard
             amountIn={amountIn}

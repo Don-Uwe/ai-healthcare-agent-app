@@ -104,13 +104,14 @@ export const mintToUrl = (mint: string) => {
 const MINT_PRIORITYS: { [mint: string]: number } = {
   [USDCMint.toBase58()]: 100,
   [USDTMint.toBase58()]: 90,
-  [SOLMint.toBase58()]: 80
+  [SOLMint.toBase58()]: 80,
+  [WSOLMint.toBase58()]: 80
 }
-const DEFAULT_QUOTE_PRIORITY = 0
+const DEFAULT_MINT_PRIORITY = 0
 export function getMintPriority(mint: string): number {
   const value = MINT_PRIORITYS[mint]
   if (value) {
     return value
   }
-  return DEFAULT_QUOTE_PRIORITY
+  return DEFAULT_MINT_PRIORITY
 }
