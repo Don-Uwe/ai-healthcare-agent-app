@@ -20,6 +20,7 @@ import Button from '@/components/Button'
 import useTokenInfo from '@/hooks/token/useTokenInfo'
 import { isValidPublicKey } from '@/utils/publicKey'
 import { formatToRawLocaleStr } from '@/utils/numberish/formatter'
+import useTokenPrice, { TokenPrice } from '@/hooks/token/useTokenPrice'
 
 const perPage = 30
 
@@ -44,14 +45,31 @@ export default function TokenList({
   const orgTokenMap = useTokenStore((s) => s.tokenMap)
   const setExtraTokenListAct = useTokenStore((s) => s.setExtraTokenListAct)
   const unsetExtraTokenListAct = useTokenStore((s) => s.unsetExtraTokenListAct)
-  const [getTokenBalanceUiAmount, tokenAccountMap] = useTokenAccountStore((s) => [s.getTokenBalanceUiAmount, s.tokenAccountMap])
+  const [getTokenBalanceUiAmount, tokenAccountMap, tokenAccounts] = useTokenAccountStore((s) => [
+    s.getTokenBalanceUiAmount,
+    s.tokenAccountMap,
+    s.tokenAccounts
+  ])
+  const [tokenPrice, setTokenPrice] = useState<Record<string, TokenPrice>>({})
+
+  const fetchPriceList = useMemo(() => tokenAccounts.filter((a) => !a.amount.isZero()).map((a) => a.mint.toBase58()), [tokenAccounts])
+  const { data } = useTokenPrice({
+    mintList: fetchPriceList,
+    refreshInterval: 1000 * 60 * 10
+  })
+
+  useEffect(() => {
+    if (fetchPriceList.some((m) => !data[m])) return
+    setTokenPrice(data)
+  }, [data, fetchPriceList])
+
   const tokenList = useMemo(() => (filterFn ? orgTokenList.filter(filterFn) : orgTokenList), [filterFn, orgTokenList])
   const [filteredList, setFilteredList] = useState<TokenInfo[]>(tokenList)
   const [displayList, setDisplayList] = useState<TokenInfo[]>([])
   const [search, setSearch] = useState('')
   const customTokenInfo = useRef<{ name?: string; symbol?: string }>({})
-
   const listControllerRef = useRef<ListPropController>()
+
   useEffect(() => {
     listControllerRef.current?.resetRenderCount()
   }, [filteredList.length])
@@ -64,8 +82,12 @@ export default function TokenList({
     const compareFn = (_a: number, _b: number, items: { itemA: TokenInfo; itemB: TokenInfo }) => {
       const accountA = tokenAccountMap.get(items.itemA.address)
       const accountB = tokenAccountMap.get(items.itemB.address)
-      const amountA = new Decimal(accountA?.[0].amount.toString() || Number.MIN_VALUE).div(10 ** items.itemA.decimals)
-      const amountB = new Decimal(accountB?.[0].amount.toString() || Number.MIN_VALUE).div(10 ** items.itemB.decimals)
+      const amountA = new Decimal(accountA?.[0].amount.toString() || Number.MIN_VALUE)
+        .div(10 ** items.itemA.decimals)
+        .mul(tokenPrice[items.itemA.address]?.value ?? 1)
+      const amountB = new Decimal(accountB?.[0].amount.toString() || Number.MIN_VALUE)
+        .div(10 ** items.itemB.decimals)
+        .mul(tokenPrice[items.itemB.address]?.value ?? 1)
 
       if (amountB.gt(amountA)) return 1
       if (amountB.eq(amountA)) return 0
@@ -73,15 +95,14 @@ export default function TokenList({
     }
     const sortedTokenList = sortItems(tokenList, {
       sortRules: [
-        { value: (i) => (i.address === SOLMint || i.address === RAYMint ? i.address : null) },
+        // { value: (i) => (i.address === SOLMint || i.address === RAYMint ? i.address : null) },
         { value: (i) => (i.tags.includes('unknown') ? null : i.symbol.length), compareFn }
       ]
     })
     const filteredList = search ? filterTokenFn(sortedTokenList, { searchStr: search }) : sortedTokenList
-
     setDisplayList(filteredList.slice(0, perPage))
     setFilteredList(filteredList)
-  }, [search, tokenList, tokenAccountMap])
+  }, [search, tokenList, tokenAccountMap, orgTokenMap, tokenPrice])
 
   const tempSetNewToken = orgTokenMap.get(search)
   const { tokenInfo: newToken } = useTokenInfo({

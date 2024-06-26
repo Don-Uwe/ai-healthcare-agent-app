@@ -7,7 +7,7 @@ import {
   getATAAddress,
   TxBuilder
 } from '@raydium-io/raydium-sdk-v2'
-import { PublicKey, KeyedAccountInfo, Commitment, AccountInfo } from '@solana/web3.js'
+import { PublicKey, KeyedAccountInfo, Commitment, AccountInfo, RpcResponseAndContext, GetProgramAccountsResponse } from '@solana/web3.js'
 import {
   TOKEN_PROGRAM_ID,
   TOKEN_2022_PROGRAM_ID,
@@ -204,13 +204,14 @@ export const useTokenAccountStore = createStore<TokenAccountStore>(
           connection.getAccountInfo(owner, { commitment: useAppStore.getState().commitment })
         )
         logMessage('rpc: get owner token acc info')
-        const tokenAccountResp: any = await retry<Promise<AccountInfo<Buffer>>>(() =>
-          connection.getTokenAccountsByOwner(owner, { programId: TOKEN_PROGRAM_ID }, { commitment: 'confirmed' })
+        const tokenAccountResp = await retry<Promise<RpcResponseAndContext<GetProgramAccountsResponse>>>(() =>
+          connection.getTokenAccountsByOwner(owner, { programId: TOKEN_PROGRAM_ID }, { commitment: useAppStore.getState().commitment })
         )
         logMessage('rpc: get owner token2022 acc info')
-        const token2022Req: any = await retry<Promise<AccountInfo<Buffer>>>(() =>
-          connection.getTokenAccountsByOwner(owner, { programId: TOKEN_2022_PROGRAM_ID }, { commitment: 'confirmed' })
+        const token2022Req = await retry<Promise<RpcResponseAndContext<GetProgramAccountsResponse>>>(() =>
+          connection.getTokenAccountsByOwner(owner, { programId: TOKEN_2022_PROGRAM_ID }, { commitment: useAppStore.getState().commitment })
         )
+
         lastFetchTime = Date.now()
         loading = false
         const tokenAccountData = parseTokenAccountResp({
