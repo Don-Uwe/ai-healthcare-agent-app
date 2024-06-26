@@ -1,5 +1,5 @@
 import { ChangeEvent, useCallback, useEffect, useMemo, useState, useRef } from 'react'
-import { TokenInfo } from '@raydium-io/raydium-sdk-v2'
+import { TokenInfo, WSOLMint } from '@raydium-io/raydium-sdk-v2'
 import { useTranslation } from 'react-i18next'
 import { PublicKey } from '@solana/web3.js'
 import { useEvent } from '@/hooks/useEvent'
@@ -82,15 +82,17 @@ export default function TokenList({
     const compareFn = (_a: number, _b: number, items: { itemA: TokenInfo; itemB: TokenInfo }) => {
       const accountA = tokenAccountMap.get(items.itemA.address)
       const accountB = tokenAccountMap.get(items.itemB.address)
-      const amountA = new Decimal(accountA?.[0].amount.toString() || Number.MIN_VALUE)
-        .div(10 ** items.itemA.decimals)
-        .mul(tokenPrice[items.itemA.address]?.value ?? 1)
-      const amountB = new Decimal(accountB?.[0].amount.toString() || Number.MIN_VALUE)
-        .div(10 ** items.itemB.decimals)
-        .mul(tokenPrice[items.itemB.address]?.value ?? 1)
+      const amountA = new Decimal(accountA?.[0].amount.toString() || Number.MIN_VALUE).div(10 ** items.itemA.decimals)
+      const amountB = new Decimal(accountB?.[0].amount.toString() || Number.MIN_VALUE).div(10 ** items.itemB.decimals)
 
-      if (amountB.gt(amountA)) return 1
-      if (amountB.eq(amountA)) return 0
+      const usdA = amountA.mul(tokenPrice[items.itemA.address]?.value || 0)
+      const usdB = amountB.mul(tokenPrice[items.itemB.address]?.value || 0)
+
+      if (usdB.gt(usdA)) return 1
+      if (usdB.eq(usdA)) {
+        if (amountB.gt(amountA)) return 1
+        if (amountB.eq(amountA)) return 0
+      }
       return -1
     }
     const sortedTokenList = sortItems(tokenList, {
