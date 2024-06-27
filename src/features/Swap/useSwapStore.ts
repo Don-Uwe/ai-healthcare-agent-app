@@ -112,7 +112,7 @@ export const useSwapStore = createStore<SwapStore>(
             txVersion: isV0Tx ? 'V0' : 'LEGACY',
             wrapSol: isInputSol,
             unwrapSol,
-            inputAccount: inputTokenAcc?.toBase58(),
+            inputAccount: isInputSol ? undefined : inputTokenAcc?.toBase58(),
             outputAccount: isOutputSol ? undefined : outputTokenAcc?.toBase58()
           }
         )
