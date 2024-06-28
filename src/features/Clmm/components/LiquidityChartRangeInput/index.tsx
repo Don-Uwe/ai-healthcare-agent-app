@@ -213,7 +213,7 @@ export default function LiquidityChartRangeInput({
             brushDomain={brushDomain}
             onBrushDomainChange={onBrushDomainChangeEnded}
             feeAmount={feeAmount}
-            zoomLevels={ZOOM_LEVELS[feeAmount ?? FeeAmount.MEDIUM]}
+            zoomLevels={ZOOM_LEVELS[feeAmount ?? FeeAmount.MEDIUM] || ZOOM_LEVELS[FeeAmount.MEDIUM]}
             ticksAtLimit={ticksAtLimit}
             autoZoom={autoZoom}
             zoomBlockStyle={zoomBlockStyle}
