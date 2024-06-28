@@ -98,7 +98,7 @@ export default function Swap() {
     const walletAddress = publicKey?.toBase58()
     const copyUrl = connected ? href + `&referrer=${walletAddress}` : href
     setValue(copyUrl)
-  }, [inputMint, outputMint, connected])
+  }, [inputMint, outputMint, connected, publicKey])
 
   return (
     <VStack
@@ -110,7 +110,7 @@ export default function Swap() {
         <SlippageAdjuster />
         <Tooltip
           label={t('swap.blink_referral_desc', {
-            symbol: outputMint === solMintAddress ? tokenMap.get(inputMint)?.symbol : tokenMap.get(outputMint)?.symbol
+            symbol: quoteMint === solMintAddress ? baseToken?.symbol : quoteToken?.symbol
           })}
         >
           <HStack gap={0.5} opacity={isBlinkReferralActive ? 1 : 0.6}>
