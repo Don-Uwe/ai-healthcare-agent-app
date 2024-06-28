@@ -389,8 +389,19 @@ This project is licensed under the [MIT License](./LICENSE).
 <hr>
 
 ## Contact Us:
-<div> <img src="https://discord.com/assets/847541504914fd33810e70a0ea73177e.ico" alt="Discord Logo" width="50" height="50"></div>
-<div>Bhattacharya, user_name: susmita_</div>
+
+
+
+<p align="left" style="display: inline;">
+ <a href="mailto:ultimate.health25@gmail.com" target="blank"><img align="center" src="https://github.com/SB2318/UltimateHealth/assets/87614560/5e44b23b-3249-44d7-a858-902e4cd9854d" alt="Email" height="30" width="40" /></a>
+ 
+<a href="https://www.linkedin.com/in/susmita-n-m-bhattacharya" target="blank"><img align="center" src="https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/linked-in-alt.svg" alt="https://www.linkedin.com/in/susmita-n-m-bhattacharya" height="30" width="40" /></a>
+
+</p>
+
+
+
+
 
 <hr>
           
@@ -441,6 +452,9 @@ This project is licensed under the [MIT License](./LICENSE).
 
  <tr>
    <td align="center"><a href="https://github.com/iamworrell"><img src="https://avatars.githubusercontent.com/u/99043769?v=4" width="120px;" alt=""/><br/><sub><b>Worrell Seville</b></sub></a>
+        </td>  
+
+   <td align="center"><a href="https://github.com/Aditijainnn"><img src="https://avatars.githubusercontent.com/u/144632601?v=4" width="120px;" alt=""/><br/><sub><b>Aditi</b></sub></a>
         </td>  
  </tr>
  
