@@ -1,0 +1,8 @@
+{
+  "rules": [
+    {
+      "pathPattern": "/swap/**",
+      "apiPath": "https://share.raydium.io/dialect/actions/swap/info/**"
+    }
+  ]
+}
