@@ -1,13 +1,16 @@
-import { Box, Grid, GridItem, HStack, VStack } from '@chakra-ui/react'
-import { RAYMint } from '@raydium-io/raydium-sdk-v2'
+import { Box, Grid, GridItem, HStack, VStack, useClipboard } from '@chakra-ui/react'
+import { RAYMint, SOLMint } from '@raydium-io/raydium-sdk-v2'
 import { PublicKey } from '@solana/web3.js'
 import { useMemo, useState, useRef, useEffect } from 'react'
+import { useWallet } from '@solana/wallet-adapter-react'
+import { useTranslation } from 'react-i18next'
 
 import PanelCard from '@/components/PanelCard'
 import { useIsomorphicLayoutEffect } from '@/hooks/useIsomorphicLayoutEffect'
 import SwapChatEmptyIcon from '@/icons/misc/SwapChatEmptyIcon'
 import SwapChatIcon from '@/icons/misc/SwapChatIcon'
 import SwapExchangeIcon from '@/icons/misc/SwapExchangeIcon'
+import LinkIcon from '@/icons/misc/LinkIcon'
 import { useAppStore, useTokenStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
 import { getVHExpression } from '../../theme/cssValue/getViewportExpression'
@@ -19,6 +22,8 @@ import { SwapPanel } from './components/SwapPanel'
 import { TimeType } from '@/hooks/pool/useFetchPoolKLine'
 import { SlippageAdjuster } from '@/components/SlippageAdjuster'
 import { getMintPriority } from '@/utils/token'
+import Tooltip from '@/components/Tooltip'
+import { toastSubject } from '@/hooks/toast/useGlobalToast'
 
 export default function Swap() {
   // const { inputMint: cacheInput, outputMint: cacheOutput } = getSwapPairCache()
@@ -34,6 +39,11 @@ export default function Swap() {
   const untilDate = useRef(Math.floor(Date.now() / 1000))
   const swapPanelRef = useRef<HTMLDivElement>(null)
   const klineRef = useRef<HTMLDivElement>(null)
+  const { t } = useTranslation()
+  const { publicKey, connected } = useWallet()
+  const { onCopy, setValue } = useClipboard('')
+  const [isBlinkReferralActive, setIsBlinkReferralActive] = useState(false)
+  const solMintAddress = SOLMint.toBase58()
 
   const baseMint = directionReverse ? outputMint : inputMint
   const quoteMint = directionReverse ? inputMint : outputMint
@@ -80,6 +90,16 @@ export default function Swap() {
     }
   }, [])
 
+  useEffect(() => {
+    inputMint === solMintAddress || outputMint === solMintAddress ? setIsBlinkReferralActive(true) : setIsBlinkReferralActive(false)
+    const href = `https://raydium.io/swap/?inputMint=So11111111111111111111111111111111111111112&outputMint=${
+      outputMint === solMintAddress ? inputMint : outputMint
+    }`
+    const walletAddress = publicKey?.toBase58()
+    const copyUrl = connected ? href + `&referrer=${walletAddress}` : href
+    setValue(copyUrl)
+  }, [inputMint, outputMint, connected])
+
   return (
     <VStack
       mx={['unset', 'auto']}
@@ -88,6 +108,29 @@ export default function Swap() {
     >
       <HStack alignSelf="flex-end" my={[1, 0]}>
         <SlippageAdjuster />
+        <Tooltip
+          label={t('swap.blink_referral_desc', {
+            symbol: outputMint === solMintAddress ? tokenMap.get(inputMint)?.symbol : tokenMap.get(outputMint)?.symbol
+          })}
+        >
+          <HStack gap={0.5} opacity={isBlinkReferralActive ? 1 : 0.6}>
+            <Box
+              cursor="pointer"
+              onClick={() => {
+                if (isBlinkReferralActive) {
+                  onCopy()
+                  toastSubject.next({
+                    status: 'success',
+                    title: t('common.copy_success')
+                  })
+                }
+              }}
+            >
+              <LinkIcon />
+            </Box>
+          </HStack>
+        </Tooltip>
+
         {!isMobile && isPCChartShown && (
           <Box
             cursor="pointer"
