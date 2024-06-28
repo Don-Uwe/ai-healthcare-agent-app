@@ -1,5 +1,11 @@
-# UltimateHealth (HealthGuide)
+<a id="top"></a>
+<h1 align="center">UltimateHealth (HealthGuide)</h1>
+<h3 align="center">    
+ 
+[![Typing SVG](https://readme-typing-svg.herokuapp.com?font=Roboto&size=22&duration=4995&pause=1000&color=F7F7F7&random=false&width=431&height=58&lines=Trusted+Source+for+Reliable+Health+Insights)](https://git.io/typing-svg)
+</h3>
 
+<br/>
 <table align="center">
     <thead align="center">
         <tr border: 1px;>
@@ -23,14 +29,17 @@
     </tbody>
 </table>
 </div>
+<hr>
+<!------------------------------------------------------------------------FEATURED IN------------------------------------------------------------------------------>
 
-## Featured In
+
+## :zap: Featured In:
+
+
  <div>
     <h2><img src="https://github.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/blob/master/Emojis/Hand%20gestures/Flexed%20Biceps.png?raw=true" width="35" height="35" > Open Source Programs</h2>
   </div>
-  
 <table>
-
    <tr>
       <th>Event Logo</th>
       <th>Event Name</th>
@@ -41,60 +50,65 @@
       <td>GirlScript Summer of Code 2024</td>
       <td>GirlScript Summer of Code is a three-month-long Open Source Program conducted every summer by GirlScript Foundation. It is an initiative to bring more beginners to Open-Source Software Development.</td>
    </tr>
-
 </table>
+<hr>
+<!--ABOUT US--->
+:zap: ABOUT Us:
+UltimateHealth is an innovative open-source project that aims to provide a comprehensive online library and article management application focused on health. The project is designed to cater to users looking for reliable and trustworthy information on various health-related topics.
 
 <hr>
 
 
-## About:
+<!------TECH STACKS-------->
 
-UltimateHealth is an innovative open-source project that aims to provide a comprehensive online library and article management application focused on health. The project is designed to cater to users looking for reliable and trustworthy information on various health-related topics.
+<div>
+<h2><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/High%20Voltage.png" alt="High Voltage" width="35" height="35" />Tech Stack</h2>
+</div>
 
-## Headers
-
-### Contents:
-- [Features](https://github.com/SB2318/UltimateHealth#features)
-- [Technology Stack](https://github.com/SB2318/UltimateHealth#technology-stack)
-- [Project Requirements](https://github.com/SB2318/UltimateHealth#project-requirements)<br>
-     (i)  [Install JDK](https://github.com/SB2318/UltimateHealth#install-jdk)<br>
-     (ii) [Set Up Android Development Environment](https://github.com/SB2318/UltimateHealth#setting-android_home-environment-variable)
-- [Getting Started](https://github.com/SB2318/UltimateHealth#getting-started)<br>
-     (i)  [Frontend](https://github.com/SB2318/UltimateHealth#for-frontend)<br>
-     (ii) [Backend](https://github.com/SB2318/UltimateHealth#for-backend)
-- [Testing Frontend with Localhost Backend Server](https://github.com/SB2318/UltimateHealth#testing-frontend-with-localhost-backend-server)
-- [Contribution Guidelines](https://github.com/SB2318/UltimateHealth#contribution-guidelines)
-- [Our Contributors](https://github.com/SB2318/UltimateHealth#our-contributors-%EF%B8%8F)
-
-## Features:
-
-From the beginner's perspective, the project consists of three main modules: Article Section, Chat Section, and Podcasts. The Article Section includes:
-
-* Diseases-related information
-* General health-related guidance
-* Survival experiences from critical diseases
-* Backend Development
-
-Users can also listen to articles (audio features) if they prefer. The Chat Section features a guide bot that helps users solve health-related problems.  
-
-
-Hello! Congratulations to all the GSSOC'24 contributors and mentors!🎉
-I'm thrilled to be a part of this amazing team and excited to work together to make the Ultimate Health project a huge success. Let's collaborate, learn, and grow together!
-
-## Technology Stacks
-
-<p>
-    <a href="https://www.w3schools.com/java/"><img src="https://i.pinimg.com/originals/79/5e/bb/795ebb5f4a470cd7242136237f61fc53.png" alt="Java" width="70" height="50" /></a>
+<p><a href="https://www.w3schools.com/java/"><img src="https://i.pinimg.com/originals/79/5e/bb/795ebb5f4a470cd7242136237f61fc53.png" alt="Java" width="70" height="50" /></a>
 <a href="https://www.w3schools.com/nodejs/"><img src="https://e7.pngegg.com/pngimages/247/558/png-clipart-node-js-javascript-express-js-npm-react-github-angle-text.png" alt="Node.js" width="50" height="50" /></a>
 <a href="https://www.javatpoint.com/expressjs-tutorial"><img src="https://cdn.icon-icons.com/icons2/2699/PNG/512/expressjs_logo_icon_169185.png" alt="expressjs" width="50" height="50" /></a>
 <a href="https://www.w3schools.com/REACT/DEFAULT.ASP"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/React-icon.svg/2300px-React-icon.svg.png" alt="React.js" width="50" height="50" /></a>
 </p>
+<hr>
+<!---------------------------------------------------------------------- HEADERS--------------------------------------------------------------->
+<details>
+  <img src="https://github.com/Vi1234sh12/Face-X/blob/master/.github/Assests/isometric.png" height="290px" align="right"/>
+  <summary><h2>:pushpin:Contents: </h2></summary>
 
+- [Features](https://github.com/SB2318/UltimateHealth#features)
+- [Technology Stack](https://github.com/SB2318/UltimateHealth#technology-stack)
+- [Project Requirements](https://github.com/SB2318/UltimateHealth#project-requirements)<br>
+      - [Install JDK](https://github.com/SB2318/UltimateHealth#install-jdk)<br>
+      - [Set Up Android Development Environment](https://github.com/SB2318/UltimateHealth#setting-android_home-environment-variable)
+- [Getting Started](https://github.com/SB2318/UltimateHealth#getting-started)<br>
+      - [Frontend](https://github.com/SB2318/UltimateHealth#for-frontend)<br>
+      - [Backend](https://github.com/SB2318/UltimateHealth#for-backend)
+- [Testing Frontend with Localhost Backend Server](https://github.com/SB2318/UltimateHealth#testing-frontend-with-localhost-backend-server)
+- [Contribution Guidelines](https://github.com/SB2318/UltimateHealth#contribution-guidelines)
+- [Our Contributors](https://github.com/SB2318/UltimateHealth#our-contributors-%EF%B8%8F)
+ <!---------------------------------------------------------------------- FEATURES--------------------------------------------------------------->
+ <details>
+   <summary><h3>Features :crystal_ball:</h3></summary>
+    
+From the beginner's perspective, the project consists of three main modules: Article Section, Chat Section, and Podcasts. The Article Section includes:
 
-## Project Requirements:
+* Diseases-related information
+* General health-related guidance :books:
+* Survival experiences from critical diseases
+* Backend Development
 
-* Java installed on your machine. (**Java version:**  17)
-* Android Studio installed on your machine.
+Users can also listen to articles (audio features) if they prefer. The Chat Section features a guide bot that helps users solve health-related problems.:sparkles:
+  </details>
+
+   <!--------------------------------------------------------- PROJECT REQUIREMENTS-------------------------------------------------------------------------------->
+
+  <details>
+   <summary><h3>Project Requirements :mailbox_with_mail:</h3></summary>
+   
+   
+   * Java installed on your machine. (**Java version:**  17)
+   * Android Studio installed on your machine.
    
 ###  Install JDK:
 
@@ -145,7 +159,7 @@ To ensure that your project runs smoothly, make sure you have Java 17 installed 
 * Close and reopen any Command Prompt windows for the changes to take effect.
 * To verify that **JAVA_HOME** is set correctly, run the command echo %JAVA_HOME% in a Command Prompt window. It should display the JDK installation path.
 
-### Setting ANDROID_HOME Environment Variable:
+### Setting ANDROID_HOME Environment Variable:💥
 
 To set the **ANDROID_HOME** variable for both Windows and macOS, you can follow the instructions below:
 
@@ -170,10 +184,12 @@ To set the **ANDROID_HOME** variable for both Windows and macOS, you can follow 
 * Close the terminal window and reopen it for the changes to take effect.
 
 Please note that the exact path to the Android SDK directory may vary depending on how you installed it. Make sure to replace **/path/to/android/sdk** with the correct path on your system.
+  </details>
+<!-------------------------------------------------------------------GETTING STARTED------------------------------------------------------------------------------->
 
-
-## Getting Started:
-
+  <details>
+   <summary><h3>Getting Started :zap:</h3></summary>
+   
 ### Follow these steps to get started with UltimateHealth:
 
 **Clone the repository:**
@@ -306,11 +322,20 @@ When working with a backend server running on localhost, frontend developers can
 
 **Access the application:**
 Open your web browser and navigate to (LOCAL_HOST_URL).
-If you would like to contribute to the project, please follow the contribution guidelines.
+If you would like to contribute to the project, please follow the contribution guidelines. 
+  </details>
 
-## Contribution Guidelines:
+</details>
 
-* **Checkout and make your changes for the develop branch only:** When working on your contributions, switch to the **develop** branch in your local repository. This ensures that you are working on the latest version of the codebase.
+<hr>
+    
+ <!---------------------------------------------------------------CONTRIBUTION GUIDELINES--------------------------------------------------------------------------->
+
+<details>
+ <summary><h2>:sparkles:Contribution Guidelines:</h2></summary>
+ 
+ 
+ * **Checkout and make your changes for the develop branch only:** When working on your contributions, switch to the **develop** branch in your local repository. This ensures that you are working on the latest version of the codebase.
 
 * **Create pull requests only for the develop branch:** When you are ready to submit your changes, create a pull request (PR) targeting the **develop** branch. This allows the maintainers to review and merge your code into the main development branch.
 
@@ -325,17 +350,56 @@ If you would like to contribute to the project, please follow the contribution g
 * **Rebase your commits and optimize file changes:** When submitting your pull request, consider rebasing your commits into one commit and optimizing your file changes. This helps keep the commit history clean and makes it easier for reviewers to understand your changes.
 
 Remember, following these guidelines will help ensure a smooth and efficient contribution process. Happy coding!
-    
-## Contact:
-     
-Discord Server (Susmita Bhattacharya, user_name: susmita_)
 
+</details>
+
+<hr>
+
+
+
+## :zap:Our Vision:
+
+We are committed to delivering reliable health information and comprehensive resources that empower individuals to take charge of their well-being. Our mission is to foster a healthier society by providing trustworthy, accessible, and engaging content, enabling users to make informed decisions and lead healthier lives.
+
+
+ <!-------------------------------------------------------------------FEEDBACK--------------------------------------------------------------------------->
+
+
+
+## ✍️ Feedback and Support:
+
+If you encounter any issues or have any feedback or suggestions, please open an issue in the Issues section of this repository. We appreciate your feedback and will respond as soon as possible.
+
+<!-- Code of conduct -->
+<div>
+<h2><img src = "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand%20gestures/Handshake.png" width="35" height="35"> Code of Conduct:</h2>
+</div>
+
+Please note that this project is released with a [Contributor Code of Conduct](./CODE_OF_CONDUCT.md). By participating in this project you agree to abide by its terms.
+<hr>
+
+<!-- License -->
+<div>
+<h2><img src = "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Page%20with%20Curl.png" width="35" height="35"> License:</h2>
+</div>
+
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)<br>
+This project is licensed under the [MIT License](./LICENSE).
+
+<hr>
+
+## Contact Us:
+<div> <img src="https://discord.com/assets/847541504914fd33810e70a0ea73177e.ico" alt="Discord Logo" width="50" height="50"></div>
+<div>Bhattacharya, user_name: susmita_</div>
+
+<hr>
+          
 <h2 align = "center">Our Contributors ❤️</h2>
 <div align = "center">
  <h3>Thank you for contributing to our repository</h3>
-<!--
-![Contributors](https://contrib.rocks/image?repo=SB2318/UltimateHealth)<br>
--->
+ <h1> We appreciate your help in making UltimateHealth even better.😃</h1>
+
+
  <table>
   <p align="center">
   <tr>
@@ -382,7 +446,19 @@ Discord Server (Susmita Bhattacharya, user_name: susmita_)
  
    </p>
  </table>
-
-
-
 </div>
+
+
+<hr>
+<div>
+  <h2><img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f64f_1f3fb/512.webp" width="35" height="35"> Support </h2>
+</div>
+
+<div>
+  Don't forget to leave a star<img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f31f/512.webp" width="35" height="30"> for this project!
+</div> <br>
+
+<a href="#top" style="position: fixed; bottom: 20px; right: 20px; background-color: black ; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; border-radius: 5px; font-family: Arial; font-size: 16px;">Go to Top</a>
+
+
+
