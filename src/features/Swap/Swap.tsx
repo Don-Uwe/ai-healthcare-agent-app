@@ -2,7 +2,6 @@ import { Box, Grid, GridItem, HStack, VStack, useClipboard } from '@chakra-ui/re
 import { RAYMint, SOLMint } from '@raydium-io/raydium-sdk-v2'
 import { PublicKey } from '@solana/web3.js'
 import { useMemo, useState, useRef, useEffect } from 'react'
-import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'react-i18next'
 
 import PanelCard from '@/components/PanelCard'
@@ -33,6 +32,8 @@ export default function Swap() {
   const [isMobileChartShown, setIsMobileChartShown] = useState<boolean>(false)
   const [isChartLeft, setIsChartLeft] = useState<boolean>(true)
   const isMobile = useAppStore((s) => s.isMobile)
+  const publicKey = useAppStore((s) => s.publicKey)
+  const connected = useAppStore((s) => s.connected)
   const [directionReverse, setDirectionReverse] = useState<boolean>(false)
   const [selectedTimeType, setSelectedTimeType] = useState<TimeType>('15m')
   const [cacheLoaded, setCacheLoaded] = useState(false)
@@ -40,7 +41,6 @@ export default function Swap() {
   const swapPanelRef = useRef<HTMLDivElement>(null)
   const klineRef = useRef<HTMLDivElement>(null)
   const { t } = useTranslation()
-  const { publicKey, connected } = useWallet()
   const { onCopy, setValue } = useClipboard('')
   const [isBlinkReferralActive, setIsBlinkReferralActive] = useState(false)
   const solMintAddress = SOLMint.toBase58()
@@ -110,27 +110,25 @@ export default function Swap() {
         <SlippageAdjuster />
         <Tooltip
           label={t('swap.blink_referral_desc', {
-            symbol: quoteMint === solMintAddress ? baseToken?.symbol : quoteToken?.symbol
+            symbol: outputMint === solMintAddress ? tokenMap.get(inputMint)?.symbol : tokenMap.get(outputMint)?.symbol
           })}
         >
-          <HStack gap={0.5} opacity={isBlinkReferralActive ? 1 : 0.6}>
-            <Box
-              cursor="pointer"
-              onClick={() => {
-                if (isBlinkReferralActive) {
-                  onCopy()
-                  toastSubject.next({
-                    status: 'success',
-                    title: t('common.copy_success')
-                  })
-                }
-              }}
-            >
-              <LinkIcon />
-            </Box>
-          </HStack>
+          <Box
+            cursor="pointer"
+            opacity={isBlinkReferralActive ? 1 : 0.6}
+            onClick={() => {
+              if (isBlinkReferralActive) {
+                onCopy()
+                toastSubject.next({
+                  status: 'success',
+                  title: t('common.copy_success')
+                })
+              }
+            }}
+          >
+            <LinkIcon />
+          </Box>
         </Tooltip>
-
         {!isMobile && isPCChartShown && (
           <Box
             cursor="pointer"
