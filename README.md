@@ -290,6 +290,8 @@ If you would like to contribute to the project, please follow the contribution g
 
 When working with a backend server running on localhost, frontend developers can follow these guidelines to test their application:
 
+### Since our server is currently hosted locally, it is advisable to utilize an emulator instead of a real device for API testing. 
+
 1. **Start the backend server**
    - Before testing the frontend application, ensure that the backend server is running on localhost.
    - Navigate to the backend project directory and start the server (e.g., `node server.js` for a Node.js server).
