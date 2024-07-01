@@ -29,8 +29,13 @@ export const Area = ({
   opacity?: string
   curveAfter?: boolean
 }) =>
-  useMemo(
-    () => (
+  useMemo(() => {
+    const rangeSeries = series.filter((d) => {
+      const value = xScale(xValue(d))
+      return value > 0 && value <= window.innerWidth
+    })
+
+    return (
       <Path
         opacity={opacity}
         fill={fill}
@@ -39,15 +44,8 @@ export const Area = ({
             .curve(curveAfter ? curveStepAfter : curveStepBefore)
             .x((d: unknown) => xScale(xValue(d as ChartEntry)))
             .y1((d: unknown) => yScale(yValue(d as ChartEntry)))
-            .y0(yScale(0))(
-            series as Iterable<[number, number]>
-            // series.filter((d) => {
-            //   const value = xScale(xValue(d))
-            //   return value > 0 && value <= window.innerWidth
-            // }) as Iterable<[number, number]>
-          ) ?? undefined
+            .y0(yScale(0))((rangeSeries.length < 2 ? series : rangeSeries) as Iterable<[number, number]>) ?? undefined
         }
       />
-    ),
-    [fill, series, xScale, xValue, yScale, yValue, curveAfter]
-  )
+    )
+  }, [fill, series, xScale, xValue, yScale, yValue, curveAfter])
