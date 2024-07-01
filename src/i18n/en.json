@@ -242,7 +242,7 @@
     "unwrap_all_wsol": "Unwrapped all WSOL",
     "unwrap_all_wsol_desc": "Unwrapped total {{amount}} WSOL",
     "unwrap_wsol_info": "You have {{amount}} WSOL that you can <sub>Unwrap</sub>",
-    "blink_referral_desc": "Earn fess when someone uses your referral Blink to swap for {{symbol}}. Click to copy your Blink."
+    "blink_referral_desc": "Copy your custom referral link and earn 1% rewards when it's used on Twitter with Blink!"
   },
   "liquidity_pools": {
     "view_chart_tooltip": "View pool charts",

@@ -41,7 +41,7 @@ const MyApp = ({ Component, pageProps, lng, ...props }: AppProps & { lng: string
     <>
       <Head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-        <meta name="twitter:image" content="https://img-v1.raydium.io/share/main.png" />
+        <meta name="twitter:image" content="https://img-v1.raydium.io/share/7be7ee6c-56b2-451e-a010-6c21e0db2ee5.png" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:site" content="@RaydiumProtocol" />
         <meta name="twitter:creator" content="@RaydiumProtocol" />
@@ -50,7 +50,7 @@ const MyApp = ({ Component, pageProps, lng, ...props }: AppProps & { lng: string
         <meta property="og:description" content="An on-chain order book AMM powering the evolution of DeFi " />
         <meta property="og:url" content="https://raydium.io/" />
         <meta property="og:type" content="website" />
-        <meta property="og:image" content="https://img-v1.raydium.io/share/main.png" />
+        <meta property="og:image" content="https://img-v1.raydium.io/share/7be7ee6c-56b2-451e-a010-6c21e0db2ee5.png" />
         <meta property="og:image:alt" content="Raydium" />
         <meta property="og:locale" content="en" />
         <meta property="og:site_name" content="Raydium" />

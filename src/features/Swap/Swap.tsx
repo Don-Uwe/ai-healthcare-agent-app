@@ -91,10 +91,12 @@ export default function Swap() {
   }, [])
 
   useEffect(() => {
-    inputMint === solMintAddress || outputMint === solMintAddress ? setIsBlinkReferralActive(true) : setIsBlinkReferralActive(false)
-    const href = `https://raydium.io/swap/?inputMint=So11111111111111111111111111111111111111112&outputMint=${
-      outputMint === solMintAddress ? inputMint : outputMint
-    }`
+    // inputMint === solMintAddress || outputMint === solMintAddress ? setIsBlinkReferralActive(true) : setIsBlinkReferralActive(false)
+    setIsBlinkReferralActive(true)
+    const def = PublicKey.default.toString()
+    const _inputMint = inputMint === def ? 'sol' : inputMint
+    const _outputMint = outputMint === def ? 'sol' : outputMint
+    const href = `https://raydium.io/swap/?inputMint=${_inputMint}&outputMint=${_outputMint}`
     const walletAddress = publicKey?.toBase58()
     const copyUrl = connected ? href + `&referrer=${walletAddress}` : href
     setValue(copyUrl)
