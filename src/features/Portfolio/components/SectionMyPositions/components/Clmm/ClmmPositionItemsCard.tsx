@@ -4,20 +4,21 @@ import Link from 'next/link'
 import { PublicKey } from '@solana/web3.js'
 import Button from '@/components/Button'
 import TokenAvatarPair from '@/components/TokenAvatarPair'
-import List from '@/components/List'
 import { colors } from '@/theme/cssVariables'
 import { PositionWithUpdateFn } from '@/hooks/portfolio/useAllPositionInfo'
 import { FormattedPoolInfoConcentratedItem } from '@/hooks/pool/type'
 import useSubscribeClmmInfo, { RpcPoolData } from '@/hooks/pool/clmm/useSubscribeClmmInfo'
 import Decimal from 'decimal.js'
 import SwapHorizontalIcon from '@/icons/misc/SwapHorizontalIcon'
+import ChevronDoubleDownIcon from '@/icons/misc/ChevronDoubleDownIcon'
 import { Desktop, Mobile } from '@/components/MobileDesktop'
 import { panelCard } from '@/theme/cssBlocks'
 import ClmmPositionAccountItem from './ClmmPositionAccountItem'
 import toPercentString from '@/utils/numberish/toPercentString'
 import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
+import React, { useCallback, useState, useEffect } from 'react'
 
-const LIST_THRESHOLD = 5
+const LIST_THRESHOLD = 10
 
 export function ClmmPositionItemsCard({
   poolInfo,
@@ -37,25 +38,24 @@ export function ClmmPositionItemsCard({
   const { isOpen: baseIn, onToggle } = useDisclosure({ defaultIsOpen: true })
   const { isOpen: isSubscribe, onOpen: onSubscribe } = useDisclosure()
   const data = useSubscribeClmmInfo({ poolInfo, subscribe: isSubscribe || false })
+  const { positions: totalPositions } = props
+  const [positions, setPositions] = useState<PositionWithUpdateFn[]>([])
+  const [pageCurrent, setPageCurrent] = useState(2)
+  const pageTotal = Math.ceil(totalPositions.length / LIST_THRESHOLD)
 
   const rpcData = initRpcPoolData || data
+
+  useEffect(() => {
+    const currentIndex = pageCurrent * LIST_THRESHOLD
+    const positions = totalPositions.length > currentIndex ? totalPositions.slice(0, currentIndex) : totalPositions
+    setPositions(positions)
+  }, [totalPositions, pageCurrent])
+
+  const loadMore = useCallback(() => setPageCurrent((s) => (s < pageTotal ? s + 1 : s)), [])
 
   if (poolInfo && rpcData.currentPrice) poolInfo.price = rpcData.currentPrice
   if (!poolInfo) return isLoading ? <Skeleton w="full" height="140px" rounded="lg" /> : null
 
-  const renderPoolListItem = (position: PositionWithUpdateFn) => {
-    return (
-      <ClmmPositionAccountItem
-        key={position.nftMint.toBase58()}
-        poolInfo={poolInfo!}
-        position={position}
-        baseIn={baseIn}
-        initRpcPoolData={initRpcPoolData}
-        setNoRewardClmmPos={setNoRewardClmmPos}
-        onSubscribe={onSubscribe}
-      />
-    )
-  }
   return (
     <Grid
       {...panelCard}
@@ -68,7 +68,7 @@ export function ClmmPositionItemsCard({
       `,
         `
         "face price action " auto
-        "items items items  " auto / 1fr 1fr 1fr
+        "items items items  " auto / 3fr 3fr 1fr
       `
       ]}
       py={[4, 5]}
@@ -78,18 +78,41 @@ export function ClmmPositionItemsCard({
       borderRadius="xl"
       alignItems={'center'}
     >
-      <GridItem area="face">
-        <HStack>
-          <TokenAvatarPair size={['smi', 'md']} token1={poolInfo.mintA} token2={poolInfo.mintB} />
-
-          <Text fontSize={['md', '20px']} fontWeight="500">
-            {poolInfo.poolName}
+      <GridItem area="face" justifySelf={['stretch', 'left']}>
+        <HStack justify="space-between">
+          <HStack>
+            <TokenAvatarPair size={['smi', 'md']} token1={poolInfo.mintA} token2={poolInfo.mintB} />
+            <Text fontSize={['md', '20px']} fontWeight="500">
+              {poolInfo.poolName.replace(' - ', '/')}
+            </Text>
+            <Tag size={['sm', 'md']} variant="rounded">
+              {formatToRawLocaleStr(toPercentString(poolInfo.feeRate * 100))}
+            </Tag>
+          </HStack>
+          <Text ml={6} color={colors.textTertiary}>
+            {t('portfolio.id')}: {poolInfo.id.slice(0, 17).toLocaleLowerCase()}
           </Text>
+        </HStack>
+      </GridItem>
 
-          <Tag size={['sm', 'md']} variant="rounded">
-            {formatToRawLocaleStr(toPercentString(poolInfo.feeRate * 100))}
-          </Tag>
-
+      <GridItem area="price" justifySelf={['stretch', 'left']}>
+        <HStack justify="space-between">
+          <Text color={colors.textTertiary}>
+            {t('field.current_price')}:{' '}
+            <Text as="span" color={colors.textPrimary}>
+              {baseIn
+                ? formatCurrency(poolInfo.price, {
+                    decimalPlaces: poolInfo.recommendDecimal(poolInfo.price)
+                  })
+                : formatCurrency(new Decimal(1).div(poolInfo.price).toString(), {
+                    decimalPlaces: poolInfo.recommendDecimal(new Decimal(1).div(poolInfo.price).toString())
+                  })}
+            </Text>{' '}
+            {t('common.per_unit', {
+              subA: poolInfo[baseIn ? 'mintB' : 'mintA'].symbol,
+              subB: poolInfo[baseIn ? 'mintA' : 'mintB'].symbol
+            })}
+          </Text>
           {/* switch button */}
           <Box alignSelf="center" ml={[0, 2]}>
             <Tooltip label={t('portfolio.section_positions_clmm_switch_direction_tooltip')}>
@@ -116,25 +139,6 @@ export function ClmmPositionItemsCard({
         </HStack>
       </GridItem>
 
-      <GridItem area="price" justifySelf={['left', 'left']}>
-        <Text color={colors.textTertiary}>
-          {t('field.current_price')}:{' '}
-          <Text as="span" color={colors.textPrimary}>
-            {baseIn
-              ? formatCurrency(poolInfo.price, {
-                  decimalPlaces: poolInfo.recommendDecimal(poolInfo.price)
-                })
-              : formatCurrency(new Decimal(1).div(poolInfo.price).toString(), {
-                  decimalPlaces: poolInfo.recommendDecimal(new Decimal(1).div(poolInfo.price).toString())
-                })}
-          </Text>{' '}
-          {t('common.per_unit', {
-            subA: poolInfo[baseIn ? 'mintB' : 'mintA'].symbol,
-            subB: poolInfo[baseIn ? 'mintA' : 'mintB'].symbol
-          })}
-        </Text>
-      </GridItem>
-
       <GridItem area={'action'} justifySelf={['center', 'right']}>
         <Link href={`/clmm/create-position?pool_id=${poolInfo.id}`}>
           <Button size="sm" variant="outline">
@@ -144,32 +148,31 @@ export function ClmmPositionItemsCard({
       </GridItem>
 
       <GridItem area={'items'}>
-        <Flex flexDir="column" mt={[1, 0]} gap={props.positions.length > LIST_THRESHOLD ? 0 : 3}>
-          {props.positions.length > LIST_THRESHOLD ? (
-            <List
-              maxHeight="400px"
-              overflowX="hidden"
-              gap={3}
-              items={props.positions}
-              initRenderCount={LIST_THRESHOLD + 1}
-              reachBottomMargin={100}
-              getItemKey={(position) => position.nftMint.toBase58()}
-            >
-              {renderPoolListItem}
-            </List>
-          ) : (
-            props.positions.map((position) => (
-              <ClmmPositionAccountItem
-                key={position.nftMint.toBase58()}
-                poolInfo={poolInfo!}
-                position={position}
-                baseIn={baseIn}
-                initRpcPoolData={initRpcPoolData}
-                setNoRewardClmmPos={setNoRewardClmmPos}
-                onSubscribe={onSubscribe}
-              />
-            ))
-          )}
+        <Flex flexDir="column" mt={[1, 0]} gap={3}>
+          {positions.map((position) => (
+            <ClmmPositionAccountItem
+              key={position.nftMint.toBase58()}
+              poolInfo={poolInfo!}
+              position={position}
+              baseIn={baseIn}
+              initRpcPoolData={initRpcPoolData}
+              setNoRewardClmmPos={setNoRewardClmmPos}
+              onSubscribe={onSubscribe}
+            />
+          ))}
+        </Flex>
+        <Flex
+          align="center"
+          justifyContent="center"
+          fontSize="sm"
+          color={colors.textSeptenary}
+          gap={1}
+          mt="5"
+          onClick={() => loadMore()}
+          display={pageCurrent < pageTotal ? 'flex' : 'none'}
+        >
+          <Text cursor={'pointer'}>{t('portfolio.load_more')}</Text>
+          <ChevronDoubleDownIcon cursor={'pointer'} width={16} height={16} color={colors.textSeptenary} />
         </Flex>
       </GridItem>
     </Grid>

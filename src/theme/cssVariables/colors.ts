@@ -116,6 +116,7 @@ export const darkColors: Record<keyof typeof colors, string> = {
   warnButtonBg: '#FED33A33',
   warnButtonLightBg: '#FED33A1A',
   buttonBg01: '#ABC4FF1F',
+  lightPurple: '#BFD2FF',
   /** it's designer's variable name in Figma */
   brandGradient: 'linear-gradient(244deg, #7748FC 8.17%, #39D0D8 101.65%)',
   dividerDashGradient: 'repeating-linear-gradient(to right, currentColor 0 5px, transparent 5px 10px)',
@@ -245,6 +246,7 @@ export const lightColors: Partial<typeof darkColors> = {
   warnButtonBg: '#FED33A33',
   warnButtonLightBg: '#FED33A1A',
   buttonBg01: '#ABC4FF1F',
+  lightPurple: '#BFD2FF',
   /** it's designer's variable name in Figma */
   brandGradient: 'linear-gradient(244deg, #7748FC 8.17%, #39D0D8 101.65%)',
   dividerDashGradient: 'repeating-linear-gradient(to right, currentColor 0 5px, transparent 5px 10px)',
@@ -377,6 +379,7 @@ export const colors = {
   warnButtonBg: 'var(--warn-button-bg)',
   warnButtonLightBg: 'var(--warn-button-light-bg)',
   buttonBg01: 'var(--button-bg-01)',
+  lightPurple: 'var(--divider-bg-light-purple)',
   /** it's designer's variable name in Figma */
   brandGradient: 'var(--brand-gradient)',
   dividerDashGradient: 'var(--divider-dash-gradient)',

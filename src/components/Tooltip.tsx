@@ -90,7 +90,7 @@ export default forwardRef(function Tooltip(
   }
 
   return (
-    <Popover isOpen={isTooltipOpen} placement="top" defaultIsOpen={defaultIsOpen} {...restPopoverProps}>
+    <Popover isOpen={isTooltipOpen} placement="top" defaultIsOpen={defaultIsOpen} {...restPopoverProps} isLazy={isLazy}>
       <PopoverTrigger>
         <Box
           ref={tooltipTriggerRef}
@@ -118,7 +118,7 @@ export default forwardRef(function Tooltip(
               bg={colors.tooltipBg}
               {...contentBoxProps}
             >
-              {(isLazy && isTooltipOpen) || !isLazy ? renderLabel() : null}
+              {renderLabel()}
             </Box>
           </Box>
         </PopoverContent>

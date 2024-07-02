@@ -181,7 +181,7 @@ export default function LiquidityChartRangeInput({
   const isUninitialized = !formattedData.length && !isLoading
 
   return (
-    <AutoColumn gap="md" style={{ ...containerStyle, minHeight: '200px' }}>
+    <AutoColumn gap="md" style={{ ...containerStyle, minHeight: interactive ? '200px' : '120px' }}>
       {isUninitialized ? (
         <InfoBox message={t('error.pool_liquidity_appear')} icon={<Inbox size={56} stroke={theme.deprecated_text1} />} />
       ) : isLoading ? (
@@ -194,8 +194,8 @@ export default function LiquidityChartRangeInput({
         <ChartWrapper ref={chartBoxRef}>
           <Chart
             data={{ series: formattedData, current: price, poolId, priceMin: timePriceMin, priceMax: timePriceMax, baseIn }}
-            dimensions={{ width: width ?? 400, height: height ?? 200 }}
-            margins={{ top: 10, right: 2, bottom: 30, left: 0 }}
+            dimensions={{ width: width ?? 400, height: height ?? interactive ? 200 : 120 }}
+            margins={{ top: 10, right: 2, bottom: interactive ? 30 : 0, left: 0 }}
             styles={{
               area: {
                 selection: outOfRange ? theme.selectedAreaOutOfRange : theme.selectedArea,

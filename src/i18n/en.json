@@ -460,7 +460,9 @@
     "acceleraytor_banner_desc": "You have unclaimed funds in AcceleRaytor. Check details at the bottom of this page and claim funds with one click.",
     "acceleraytor_tx_title": "AccelerRaytor Claim",
     "acceleraytor_tx_desc": "Claim <sub>{{amountA}} {{symbolA}}</sub>",
-    "acceleraytor_tx_1_desc": "Claim <sub>{{amountA}} {{symbolA}}</sub> and <sub>{{amountB}} {{symbolB}}</sub>"
+    "acceleraytor_tx_1_desc": "Claim <sub>{{amountA}} {{symbolA}}</sub> and <sub>{{amountB}} {{symbolB}}</sub>",
+    "load_more": "Load More",
+    "id": "ID"
   },
   "amm": {
     "staked": "Staked",

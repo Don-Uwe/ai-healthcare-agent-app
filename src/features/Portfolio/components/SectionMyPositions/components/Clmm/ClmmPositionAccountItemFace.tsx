@@ -4,6 +4,8 @@ import { FormattedPoolInfoConcentratedItem } from '@/hooks/pool/type'
 import useClmmBalance, { ClmmPosition } from '@/hooks/portfolio/clmm/useClmmBalance'
 import Close from '@/icons/misc/Close'
 import FullExpandIcon from '@/icons/misc/FullExpandIcon'
+import ChevronDownIcon from '@/icons/misc/ChevronDownIcon'
+import ChevronUpIcon from '@/icons/misc/ChevronUpIcon'
 import MinusIcon from '@/icons/misc/MinusIcon'
 import PlusIcon from '@/icons/misc/PlusIcon'
 import { useAppStore } from '@/store'
@@ -13,13 +15,14 @@ import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatte
 import { TokenPrice } from '@/hooks/token/useTokenPrice'
 import { AprKey } from '@/hooks/pool/type'
 import { getPositionAprCore } from '@/features/Clmm/utils/calApr'
-import { Badge, Button, Flex, Grid, GridItem, HStack, SimpleGrid, Text, Tooltip, useDisclosure } from '@chakra-ui/react'
+import { Badge, Button, Divider, Flex, Grid, GridItem, HStack, Text, Tooltip, useDisclosure } from '@chakra-ui/react'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'react-i18next'
 import BN from 'bn.js'
 import { useEvent } from '@/hooks/useEvent'
 
 export default function ClmmPositionAccountItemFace({
+  isViewOpen,
   poolInfo,
   poolLiquidity,
   tokenPrices,
@@ -30,6 +33,7 @@ export default function ClmmPositionAccountItemFace({
   onClickPlusButton,
   onClickViewTrigger
 }: {
+  isViewOpen: boolean
   poolInfo: FormattedPoolInfoConcentratedItem
   poolLiquidity?: BN
   tokenPrices: Record<string, TokenPrice>
@@ -58,18 +62,17 @@ export default function ClmmPositionAccountItemFace({
     .mul(tokenPrices[poolInfo.mintA.address]?.value || 0)
     .add(amountB.mul(tokenPrices[poolInfo.mintB.address]?.value || 0))
 
-  const decimals = Math.max(poolInfo.mintA.decimals, poolInfo.mintB.decimals)
   const inRange = priceLower.price.lt(poolInfo.price) && priceUpper.price.gt(poolInfo.price)
   const rangeValue = baseIn
     ? `${formatCurrency(priceLower.price, {
-        decimalPlaces: decimals
+        decimalPlaces: 6
       })} - ${formatCurrency(priceUpper.price, {
-        decimalPlaces: decimals
+        decimalPlaces: 6
       })}`
     : `${formatCurrency(new Decimal(1).div(priceUpper.price), {
-        decimalPlaces: decimals
+        decimalPlaces: 6
       })} - ${formatCurrency(new Decimal(1).div(priceLower.price), {
-        decimalPlaces: decimals
+        decimalPlaces: 6
       })}`
 
   const rangeValueUnit = t(isMobile ? 'common.per_unit_2' : 'common.per_unit', {
@@ -92,80 +95,80 @@ export default function ClmmPositionAccountItemFace({
         <Flex
           bg={colors.backgroundDark}
           borderRadius="xl"
-          flexWrap="wrap"
+          borderBottomRadius={isViewOpen ? 'none' : 'xl'}
           justifyContent="space-between"
           py={[2, 3]}
           px={[3, 6]}
-          gap={[2, 4]}
+          gap={[2, 4, 8]}
+          cursor="pointer"
+          onClick={onClickViewTrigger}
+          border="1px solid transparent"
+          _hover={{
+            border: `1px solid ${colors.infoButtonBg}`
+          }}
+          direction={['column', 'column', 'row']}
         >
-          <Grid
-            width={'full'}
-            gridAutoFlow={['column', 'row']}
-            gridTemplate={[
-              `
-              "title  title" auto 
-              "info   btns " auto / 4fr 3fr
-            `,
-              `
-              "title  title" auto 
-              "info   btns " auto / 4fr 3fr
-            `,
-              `
-              "title  info  btns" auto / minmax(0, 6fr) 5fr 4fr
-            `
-            ]}
-            alignItems={'center'}
-            gap={3}
-          >
-            <GridItem gridArea={'title'}>
-              <HStack flexBasis="500px">
-                <Text fontWeight="500" whiteSpace={'nowrap'}>
-                  {rangeValue}
-                </Text>
-                <Text color={colors.textTertiary} whiteSpace={'nowrap'}>
-                  {rangeValueUnit}
-                </Text>
-                <Badge mr={['auto', 'unset']} variant={inRange ? 'ok' : 'error'}>
-                  {inRange ? t('clmm.in_range') : t('clmm.out_of_range')}
-                </Badge>
-              </HStack>
-            </GridItem>
-
-            <GridItem gridArea={'info'}>
-              <SimpleGrid templateColumns={'minmax(0, 1fr) minmax(0, 1fr)'} gap={'3vw'}>
-                <HStack>
-                  <Text whiteSpace={'nowrap'} color={colors.textSecondary}>
-                    {t('clmm.position')}
-                  </Text>
-                  <Text whiteSpace={'nowrap'} color={colors.textPrimary}>
-                    {formatCurrency(totalVolume.toString(), { symbol: '$', decimalPlaces: 2 })}
-                  </Text>
-                </HStack>
-
-                <HStack>
-                  <Text whiteSpace={'nowrap'} color={colors.textSecondary}>
-                    {t('field.apr')}
-                  </Text>
-                  <Text whiteSpace={'nowrap'} color={colors.textPrimary}>
-                    {formatToRawLocaleStr(toPercentString(apr.apr))}
-                  </Text>
-                  <AprMDSwitchWidget color={colors.textSecondary} />
-                </HStack>
-              </SimpleGrid>
-            </GridItem>
-
-            <GridItem gridArea={'btns'} justifySelf={'end'}>
-              <HStack>
-                <ViewButton onClick={onClickViewTrigger} />
-                {position.liquidity.isZero() ? (
-                  <CloseButton isLoading={isLoading} onClick={handleClickClose} />
-                ) : (
-                  <MinusButton isLoading={false} onClick={onClickMinusButton} />
-                )}
-                <PlusButton isLoading={false} onClick={onClickPlusButton} />
-              </HStack>
-            </GridItem>
-          </Grid>
+          <Flex align="center" flex="1.5" gap={3}>
+            <Text fontWeight="medium" whiteSpace={'nowrap'}>
+              {rangeValue}
+            </Text>
+            <Text color={colors.lightPurple} whiteSpace={'nowrap'}>
+              {rangeValueUnit}
+            </Text>
+            <Badge mr={['auto', 'unset']} variant={inRange ? 'ok' : 'error'}>
+              {inRange ? t('clmm.in_range') : t('clmm.out_of_range')}
+            </Badge>
+          </Flex>
+          <Divider
+            display={['none', 'none', 'block']}
+            borderWidth="1px"
+            h={6}
+            borderColor={colors.lightPurple}
+            opacity="0.5"
+            orientation="vertical"
+          />
+          <Flex flex="1" align="center" justify="space-between">
+            <HStack>
+              <Text whiteSpace={'nowrap'} color={colors.lightPurple}>
+                {t('clmm.position')}
+              </Text>
+              <Text whiteSpace={'nowrap'} color={colors.textPrimary}>
+                {formatCurrency(totalVolume.toString(), { symbol: '$', decimalPlaces: 2 })}
+              </Text>
+            </HStack>
+          </Flex>
+          <Divider
+            display={['none', 'none', 'block']}
+            borderWidth="1px"
+            h={6}
+            borderColor={colors.lightPurple}
+            opacity="0.5"
+            orientation="vertical"
+          />
+          <Flex flex="1" align="center" justify="space-between">
+            <HStack gap={2}>
+              <Text whiteSpace={'nowrap'} color={colors.lightPurple}>
+                {t('field.apr')}
+              </Text>
+              <Text whiteSpace={'nowrap'} color={colors.textPrimary}>
+                {formatToRawLocaleStr(toPercentString(apr.apr))}
+              </Text>
+              <AprMDSwitchWidget color={colors.textSecondary} />
+            </HStack>
+            <HStack>
+              {position.liquidity.isZero() ? (
+                <CloseButton isLoading={isLoading} onClick={handleClickClose} />
+              ) : (
+                <MinusButton isLoading={false} onClick={onClickMinusButton} />
+              )}
+              <PlusButton isLoading={false} onClick={onClickPlusButton} />
+              {isViewOpen ? (
+                <ChevronUpIcon className="up" width={24} height={24} color={colors.textSecondary} />
+              ) : (
+                <ChevronDownIcon className="down" width={24} height={24} color={colors.textSecondary} />
+              )}
+            </HStack>
+          </Flex>
         </Flex>
       </Desktop>
       <Mobile>
@@ -183,7 +186,7 @@ export default function ClmmPositionAccountItemFace({
                 <Text fontSize="sm" fontWeight="500" whiteSpace={'nowrap'}>
                   {rangeValue}
                 </Text>
-                <Text fontSize="sm" color={colors.textTertiary} whiteSpace={'nowrap'}>
+                <Text fontSize="sm" color={colors.lightPurple} whiteSpace={'nowrap'}>
                   {rangeValueUnit}
                 </Text>
                 <Badge variant={inRange ? 'ok' : 'error'}>{inRange ? t('clmm.in_range') : t('clmm.out_of_range')}</Badge>

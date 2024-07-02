@@ -301,6 +301,14 @@ const roundedSwitchStyle = definePartsStyle(() => {
   }
 })
 
+const xsSizeStyle = definePartsStyle({
+  tab: {
+    px: '4px',
+    py: '2px',
+    fontSize: 'xs'
+  }
+})
+
 const smSizeStyle = definePartsStyle({
   tab: {
     px: '4px',
@@ -334,7 +342,7 @@ const xlSizeStyle = definePartsStyle({
 
 export const Tabs = defineMultiStyleConfig({
   baseStyle,
-  sizes: { sm: smSizeStyle, md: mdSizeStyle, lg: lgSizeStyle, xl: xlSizeStyle },
+  sizes: { xs: xsSizeStyle, sm: smSizeStyle, md: mdSizeStyle, lg: lgSizeStyle, xl: xlSizeStyle },
   defaultProps: { variant: 'line', size: 'sm' },
   variants: {
     line: lineStyle,

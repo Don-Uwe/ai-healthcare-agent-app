@@ -151,7 +151,6 @@ export function Chart({
         <g transform={`translate(${margins.left},${margins.top})`}>
           <g clipPath={`url(#${id}-chart-clip)`}>
             <Area curveAfter={baseIn} series={series} xScale={xScale} yScale={yScale} xValue={xAccessor} yValue={yAccessor} />
-
             {interactive && brushDomain && (
               // duplicate area chart with mask for selected area
               <g mask={`url(#${id}-chart-area-mask)`}>
@@ -167,8 +166,7 @@ export function Chart({
                 />
               </g>
             )}
-
-            <AxisBottom xScale={xScale} innerHeight={innerHeight} />
+            {interactive && <AxisBottom xScale={xScale} innerHeight={innerHeight} />}
           </g>
 
           <ZoomOverlay cursor={interactive ? undefined : 'crosshair'} width={innerWidth} height={height} ref={zoomRef} />

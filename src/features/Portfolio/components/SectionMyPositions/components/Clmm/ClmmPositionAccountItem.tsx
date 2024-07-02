@@ -1,7 +1,6 @@
 import { Box, useDisclosure } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
 import { AprKey, timeBasisOptions } from '@/hooks/pool/type'
-import FaceContentCollapse from '@/components/FaceContentCollapse'
 import AddLiquidityModal from '@/features/Clmm/LiquidityEditModal/AddLiquidityModal'
 import RemoveLiquidityModal from '@/features/Clmm/LiquidityEditModal/RemoveLiquidityModal'
 import useFetchClmmRewardInfo from '@/hooks/pool/clmm/useFetchClmmRewardInfo'
@@ -150,63 +149,52 @@ export default function ClmmPositionAccountItem({
 
   return position.tickLower !== undefined && position.tickUpper !== undefined ? (
     <Box>
-      <FaceContentCollapse
+      <ClmmPositionAccountItemFace
         isViewOpen={isOpen}
-        thumbnail={
-          <ClmmPositionAccountItemFace
+        poolInfo={poolInfo}
+        poolLiquidity={initRpcPoolData?.poolInfo.liquidity}
+        tokenPrices={tokenPrices}
+        position={position}
+        baseIn={baseIn}
+        onClickCloseButton={handleClosePosition}
+        onClickMinusButton={handleRemoveOpen}
+        onClickPlusButton={handleAddOpen}
+        onClickViewTrigger={onToggle}
+      />
+      {isMobile ? (
+        isOpen ? (
+          <ClmmPositionAccountItemDetailMobileDrawer
+            hasReward={!isEmptyReward}
+            onHarvest={handleHarvest}
             poolInfo={poolInfo}
-            poolLiquidity={initRpcPoolData?.poolInfo.liquidity}
-            tokenPrices={tokenPrices}
             position={position}
+            aprData={aprData}
+            timeBasis={timeBasis}
+            onTimeBasisChange={setTimeBasis}
+            nftMint={position.nftMint.toString()}
+            rewardInfos={allRewardInfos}
             baseIn={baseIn}
             onClickCloseButton={handleClosePosition}
             onClickMinusButton={handleRemoveOpen}
             onClickPlusButton={handleAddOpen}
             onClickViewTrigger={onToggle}
           />
-        }
-        detail={
-          isOpen ? (
-            isMobile ? (
-              <ClmmPositionAccountItemDetailMobileDrawer
-                hasReward={!isEmptyReward}
-                onHarvest={handleHarvest}
-                poolInfo={poolInfo}
-                position={position}
-                aprData={aprData}
-                timeBasis={timeBasis}
-                onTimeBasisChange={setTimeBasis}
-                nftMint={position.nftMint.toString()}
-                totalPendingYield={totalPendingYield.toString()}
-                rewardInfos={allRewardInfos}
-                baseIn={baseIn}
-                onClickCloseButton={handleClosePosition}
-                onClickMinusButton={handleRemoveOpen}
-                onClickPlusButton={handleAddOpen}
-                onClickViewTrigger={onToggle}
-              />
-            ) : (
-              <ClmmPositionAccountItemDetail
-                hasReward={!isEmptyReward}
-                onHarvest={handleHarvest}
-                poolInfo={poolInfo}
-                aprData={aprData}
-                timeBasis={timeBasis}
-                onTimeBasisChange={setTimeBasis}
-                position={position}
-                nftMint={position.nftMint.toString()}
-                totalPendingYield={totalPendingYield.toString()}
-                baseIn={baseIn}
-                rewardInfos={allRewardInfos}
-                onClickCloseButton={handleClosePosition}
-                onClickMinusButton={handleRemoveOpen}
-                onClickPlusButton={handleAddOpen}
-                onClickViewTrigger={onToggle}
-              />
-            )
-          ) : null
-        }
-      />
+        ) : null
+      ) : (
+        <ClmmPositionAccountItemDetail
+          isViewOpen={isOpen}
+          hasReward={!isEmptyReward}
+          onHarvest={handleHarvest}
+          poolInfo={poolInfo}
+          aprData={aprData}
+          timeBasis={timeBasis}
+          onTimeBasisChange={setTimeBasis}
+          position={position}
+          nftMint={position.nftMint.toString()}
+          baseIn={baseIn}
+          rewardInfos={allRewardInfos}
+        />
+      )}
       <RemoveLiquidityModal
         isOpen={isRemoveOpen}
         onClose={onRemoveClose}
