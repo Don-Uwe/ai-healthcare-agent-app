@@ -411,7 +411,7 @@ function TokenInput(props: TokenInputProps) {
           <InputGroup sx={{ width }}>
             <Input
               variant="number"
-              inputMode="numeric"
+              inputMode="decimal"
               sx={{ '& input[inputmode=decimal]': { opacity: 1 } }}
               onChange={(e) => {
                 onChange?.(handleParseVal(e?.currentTarget?.value || ''))
