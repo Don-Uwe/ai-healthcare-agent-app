@@ -106,7 +106,7 @@ export default function ClmmPositionAccountItemFace({
           _hover={{
             border: `1px solid ${colors.infoButtonBg}`
           }}
-          direction={['column', 'column', 'row']}
+          direction={['column', 'row']}
         >
           <Flex align="center" flex="1.5" gap={3}>
             <Text fontWeight="medium" whiteSpace={'nowrap'}>

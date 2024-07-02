@@ -235,7 +235,7 @@ export default function ClmmPositionAccountItemDetail({
             </Flex>
           </VStack>
           <Divider borderWidth="1px" borderColor={colors.lightPurple} opacity="0.5" orientation="vertical" />
-          <Flex direction="column" flex={1} gap={4} py={3} w="full">
+          <Flex direction="column" flex={1} gap={4} py={3} w="full" overflow="hidden">
             <EstimatedApr
               isMobile={isMobile}
               timeAprData={poolInfo.allApr}
