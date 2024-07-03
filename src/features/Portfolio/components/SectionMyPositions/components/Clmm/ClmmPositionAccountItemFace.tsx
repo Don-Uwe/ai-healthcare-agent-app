@@ -259,7 +259,18 @@ function ViewButton(props: { onClick: () => void }) {
 
 function MinusButton(props: { onClick: () => void; isLoading: boolean }) {
   return (
-    <Button onClick={props.onClick} isLoading={props.isLoading} variant="outline" size="xs" width={9} h="26px" px={0}>
+    <Button
+      onClick={(e) => {
+        e.stopPropagation()
+        props.onClick()
+      }}
+      isLoading={props.isLoading}
+      variant="outline"
+      size="xs"
+      width={9}
+      h="26px"
+      px={0}
+    >
       <MinusIcon color={colors.secondary} />
     </Button>
   )
@@ -267,7 +278,17 @@ function MinusButton(props: { onClick: () => void; isLoading: boolean }) {
 
 function PlusButton(props: { onClick: () => void; isLoading: boolean }) {
   return (
-    <Button onClick={props.onClick} isLoading={props.isLoading} size="xs" w={9} h="26px" px={0}>
+    <Button
+      onClick={(e) => {
+        e.stopPropagation()
+        props.onClick()
+      }}
+      isLoading={props.isLoading}
+      size="xs"
+      w={9}
+      h="26px"
+      px={0}
+    >
       <PlusIcon color={colors.buttonSolidText} />
     </Button>
   )
@@ -277,7 +298,18 @@ function CloseButton(props: { onClick: () => void; isLoading: boolean }) {
   const { t } = useTranslation()
   return (
     <Tooltip label={t('clmm.close_position')}>
-      <Button onClick={props.onClick} isLoading={props.isLoading} variant="outline" size="xs" width={9} h="26px" px={0}>
+      <Button
+        onClick={(e) => {
+          e.stopPropagation()
+          props.onClick()
+        }}
+        isLoading={props.isLoading}
+        variant="outline"
+        size="xs"
+        width={9}
+        h="26px"
+        px={0}
+      >
         <Close width={10} height={10} color={colors.secondary} />
       </Button>
     </Tooltip>

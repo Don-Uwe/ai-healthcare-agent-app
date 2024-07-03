@@ -172,7 +172,7 @@ export default function ClmmPositionAccountItemDetail({
               </VStack>
             </Flex>
           </Box>
-          <Divider borderWidth="1px" borderColor={colors.lightPurple} opacity="0.5" orientation="vertical" />
+          <Divider borderWidth="1px" borderColor={colors.lightPurple} opacity="0.2" orientation="vertical" />
           {/* info detail */}
           <VStack fontSize="sm" flex={1} spacing={3} py={3}>
             <Flex flexDirection="column" flex={1} w="full" gap={4} justifyContent="space-between">
@@ -214,7 +214,7 @@ export default function ClmmPositionAccountItemDetail({
                 />
               </Flex>
             </Flex>
-            <Divider borderWidth="1px" borderColor={colors.lightPurple} opacity="0.5" />
+            <Divider borderWidth="1px" borderColor={colors.lightPurple} opacity="0.2" />
             <Flex flex={1} flexDirection="column" w="full" justifyContent="space-between">
               <Flex justifyContent="space-between">
                 <Text color={colors.textSecondary}> {t('liquidity.pool_liquidity')}</Text>
@@ -234,7 +234,7 @@ export default function ClmmPositionAccountItemDetail({
               </Flex>
             </Flex>
           </VStack>
-          <Divider borderWidth="1px" borderColor={colors.lightPurple} opacity="0.5" orientation="vertical" />
+          <Divider borderWidth="1px" borderColor={colors.lightPurple} opacity="0.2" orientation="vertical" />
           <Flex direction="column" flex={1} gap={4} py={3} w="full" overflow="hidden">
             <EstimatedApr
               isMobile={isMobile}

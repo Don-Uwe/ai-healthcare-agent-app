@@ -19,12 +19,12 @@ type EstimatedAprProps = {
   poolId: string
 }
 
-export default function EstimatedApr({ aprData, isMobile, onTimeBasisChange, poolId }: EstimatedAprProps) {
+export default function EstimatedApr({ aprData, isMobile, timeBasis, onTimeBasisChange, poolId }: EstimatedAprProps) {
   const { t } = useTranslation()
 
   const tradeFee = aprData.fee
-  const rewards = aprData.rewards
-  const haveApr = tradeFee.apr > 0 || rewards.some((apr) => apr.percentInTotal !== 0)
+  const rewards = [{ ...tradeFee, mint: undefined as ApiV3Token | undefined }, ...aprData.rewards]
+
   return (
     <HStack
       flex={1}
@@ -35,31 +35,29 @@ export default function EstimatedApr({ aprData, isMobile, onTimeBasisChange, poo
       fontSize="sm"
     >
       <Flex flexDirection="column" gap={[1, 3]} width="160px" justifyContent="space-between">
-        {haveApr
-          ? [{ ...tradeFee, mint: undefined as ApiV3Token | undefined }, ...rewards].map(({ percentInTotal: percent, mint }, idx) => (
-              <Flex key={mint ? mint.address : 'tradefee' + poolId} justifyContent="space-between">
-                <Flex alignItems="center">
-                  <Box
-                    key={idx}
-                    style={{
-                      width: '7px',
-                      height: '7px',
-                      left: '0px',
-                      top: '6px',
-                      background: aprColors[idx],
-                      borderRadius: '10px'
-                    }}
-                  />
-                  <Text ml={1.5} color={colors.lightPurple}>
-                    {mint ? mint.symbol : t('field.trade_fees')}
-                  </Text>
-                </Flex>
-                <Text color={colors.textPrimary}>{formatToRawLocaleStr(toPercentString(percent))}</Text>
-              </Flex>
-            ))
-          : null}
+        {rewards.map(({ percentInTotal: percent, mint }, idx) => (
+          <Flex key={mint ? mint.address : 'tradefee' + poolId} justifyContent="space-between">
+            <Flex alignItems="center">
+              <Box
+                key={idx}
+                style={{
+                  width: '7px',
+                  height: '7px',
+                  left: '0px',
+                  top: '6px',
+                  background: aprColors[idx],
+                  borderRadius: '10px'
+                }}
+              />
+              <Text ml={1.5} color={colors.lightPurple}>
+                {mint ? mint.symbol : t('field.trade_fees')}
+              </Text>
+            </Flex>
+            <Text color={colors.textPrimary}>{formatToRawLocaleStr(toPercentString(percent))}</Text>
+          </Flex>
+        ))}
       </Flex>
-      {haveApr && <Tabs items={timeBasisOptions} onChange={onTimeBasisChange} size="xs" variant="roundedLight" />}
+      {<Tabs value={timeBasis} items={timeBasisOptions} onChange={onTimeBasisChange} size="xs" variant="roundedLight" />}
     </HStack>
   )
 }

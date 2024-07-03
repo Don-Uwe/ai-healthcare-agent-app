@@ -279,21 +279,34 @@ export default function RemoveLiquidityModal({
                 <Flex alignItems="center" gap="2">
                   <Text fontSize={['sm', 'md']}>{t('portfolio.section_positions_clmm_account_pending_yield')}</Text>
                   <Flex>
-                    {allRewardInfos.map((r, idx) => (
-                      <TokenAvatar key={r.mint.address} mr="-1" size={['smi', 'md']} token={r.mint} ml={idx ? '-2px' : '0'} />
-                    ))}
+                    {allRewardInfos
+                      .filter((r) => {
+                        return Number(r.amount) != 0
+                      })
+                      .map((r, idx) => (
+                        <TokenAvatar key={r.mint.address} mr="-1" size={['smi', 'md']} token={r.mint} ml={idx ? '-2px' : '0'} />
+                      ))}
                   </Flex>
                 </Flex>
-                <Flex fontSize="sm" gap="1">
-                  {allRewardInfos.map((r, idx) => {
-                    return (
-                      <HStack key={`reward-${r.mint.address}`} fontSize={['xs', 'sm']} gap="1">
-                        {idx > 0 ? <Text>+</Text> : null}
-                        <Text>{formatCurrency(r.amount, { decimalPlaces: getFirstNonZeroDecimal(r.amount) + 1 })}</Text>
-                        <Text color={colors.textTertiary}>{getMintSymbol({ mint: r.mint, transformSol: true })}</Text>
-                      </HStack>
-                    )
-                  })}
+                <Flex fontSize="sm" gap="1" justifyContent="end">
+                  {allRewardInfos
+                    .filter((r) => {
+                      return Number(r.amount) != 0
+                    })
+                    .map((r, idx) => {
+                      return (
+                        <HStack key={`reward-${r.mint.address}`} fontSize={['xs', 'sm']} gap="1">
+                          {idx > 0 ? <Text>+</Text> : null}
+                          <Text>
+                            {formatCurrency(r.amount, {
+                              decimalPlaces: getFirstNonZeroDecimal(r.amount) + 1,
+                              maximumDecimalTrailingZeroes: 2
+                            })}
+                          </Text>
+                          <Text color={colors.textTertiary}>{getMintSymbol({ mint: r.mint, transformSol: true })}</Text>
+                        </HStack>
+                      )
+                    })}
                 </Flex>
               </Flex>
             </Flex>

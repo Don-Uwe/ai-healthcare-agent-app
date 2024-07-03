@@ -115,3 +115,7 @@ export function getMintPriority(mint: string): number {
   }
   return DEFAULT_MINT_PRIORITY
 }
+
+export function shortenAddress(address: string, chars = 4): string {
+  return `${address.slice(0, chars)}...${address.slice(-chars)}`
+}
