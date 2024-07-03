@@ -80,7 +80,7 @@ export function ClmmPositionItemsCard({
       alignItems={'center'}
     >
       <GridItem area="face" justifySelf={['stretch', 'left']}>
-        <HStack justify="space-between">
+        <Flex flexDirection={['column', 'row']} gap={2} justify="space-between" alignItems="center">
           <HStack>
             <TokenAvatarPair size={['smi', 'md']} token1={poolInfo.mintA} token2={poolInfo.mintB} />
             <Text fontSize={['md', '20px']} fontWeight="500">
@@ -93,11 +93,11 @@ export function ClmmPositionItemsCard({
           <Text ml={6} color={colors.textTertiary}>
             {t('portfolio.id')}: {shortenAddress(poolInfo.id, 8).toLocaleLowerCase()}
           </Text>
-        </HStack>
+        </Flex>
       </GridItem>
 
       <GridItem area="price" justifySelf={['stretch', 'left']}>
-        <HStack justify="space-between">
+        <Flex flexDirection={['column', 'row']} gap={2} justify="space-between" alignItems="center">
           <Text color={colors.textTertiary}>
             {t('field.current_price')}:{' '}
             <Text as="span" color={colors.textPrimary}>
@@ -137,7 +137,7 @@ export function ClmmPositionItemsCard({
               </Box>
             </Tooltip>
           </Box>
-        </HStack>
+        </Flex>
       </GridItem>
 
       <GridItem area={'action'} justifySelf={['center', 'right']}>

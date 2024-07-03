@@ -183,7 +183,7 @@ export default function ClmmPositionAccountItemFace({
             alignItems={'center'}
           >
             <GridItem gridArea={'title'}>
-              <HStack flexBasis="500px" flexWrap={['wrap', 'nowrap']} bg={colors.backgroundTransparent07} py={2} px={3}>
+              <HStack flexBasis="500px" flexWrap={['wrap', 'nowrap']} bg={colors.backgroundTransparent07} py={2} px={3} justify="center">
                 <Text fontSize="sm" fontWeight="500" whiteSpace={'nowrap'}>
                   {rangeValue}
                 </Text>
@@ -197,7 +197,7 @@ export default function ClmmPositionAccountItemFace({
             <GridItem gridArea={'body'}>
               <Grid
                 gridTemplate={`
-                  "info .   " auto 
+                  "info btns  " auto
                   "apr  btns" auto 
                   "vbtn vbtn" auto / 1fr`}
                 bg={colors.backgroundDark}
