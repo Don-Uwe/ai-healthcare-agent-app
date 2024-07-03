@@ -105,7 +105,8 @@ export default function LiquidityChartRangeInput({
   autoZoom,
   outOfRange,
   containerStyle = {},
-  zoomBlockStyle
+  zoomBlockStyle,
+  chartHeight
 }: {
   poolId: string
   feeAmount?: FeeAmount
@@ -123,9 +124,11 @@ export default function LiquidityChartRangeInput({
   outOfRange?: boolean
   containerStyle?: CSSProperties
   zoomBlockStyle?: SystemCSSProperties
+  chartHeight?: number
 }) {
   const { t } = useTranslation()
   const chartBoxRef = useRef<HTMLDivElement>(null)
+  const chartParentRef = useRef<HTMLDivElement>(null)
   const { width, height } = useElementSizeRectDetector(chartBoxRef)
   const { isLoading, error, formattedData } = useDensityChartData({ poolId, baseIn })
 
@@ -179,9 +182,10 @@ export default function LiquidityChartRangeInput({
   // }
 
   const isUninitialized = !formattedData.length && !isLoading
+  const chartParentWidth = chartParentRef.current?.getBoundingClientRect().width
 
   return (
-    <AutoColumn gap="md" style={{ ...containerStyle, minHeight: interactive ? '200px' : '120px' }}>
+    <AutoColumn ref={chartParentRef} gap="md" style={{ ...containerStyle, minHeight: chartHeight ? chartHeight : '200px' }}>
       {isUninitialized ? (
         <InfoBox message={t('error.pool_liquidity_appear')} icon={<Inbox size={56} stroke={theme.deprecated_text1} />} />
       ) : isLoading ? (
@@ -194,7 +198,10 @@ export default function LiquidityChartRangeInput({
         <ChartWrapper ref={chartBoxRef}>
           <Chart
             data={{ series: formattedData, current: price, poolId, priceMin: timePriceMin, priceMax: timePriceMax, baseIn }}
-            dimensions={{ width: width ?? 400, height: interactive ? height ?? 200 : 120 }}
+            dimensions={{
+              width: interactive ? width ?? 400 : chartParentWidth ?? 400,
+              height: chartHeight ? chartHeight : height ?? 200
+            }}
             margins={{ top: 10, right: 2, bottom: interactive ? 30 : 0, left: 0 }}
             styles={{
               area: {

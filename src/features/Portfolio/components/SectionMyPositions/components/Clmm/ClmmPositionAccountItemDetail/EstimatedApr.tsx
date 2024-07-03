@@ -6,7 +6,7 @@ import { colors } from '@/theme/cssVariables'
 import toPercentString from '@/utils/numberish/toPercentString'
 import { formatToRawLocaleStr } from '@/utils/numberish/formatter'
 import { AprData } from '@/features/Clmm/utils/calApr'
-import { Box, Flex, HStack, Text } from '@chakra-ui/react'
+import { Box, Flex, HStack, Text, useBreakpointValue } from '@chakra-ui/react'
 import { useTranslation } from 'react-i18next'
 
 type EstimatedAprProps = {
@@ -24,16 +24,10 @@ export default function EstimatedApr({ aprData, isMobile, timeBasis, onTimeBasis
 
   const tradeFee = aprData.fee
   const rewards = [{ ...tradeFee, mint: undefined as ApiV3Token | undefined }, ...aprData.rewards]
+  const orientation = useBreakpointValue({ base: 'vertical', md: 'horizontal' }) as 'vertical' | 'horizontal' | undefined
 
   return (
-    <HStack
-      flex={1}
-      mb={isMobile ? 3 : 0}
-      flexDirection={isMobile ? 'column' : 'row'}
-      alignItems="start"
-      justify="space-between"
-      fontSize="sm"
-    >
+    <HStack flex={1} flexDirection={isMobile ? 'column' : 'row'} alignItems="start" justify="space-between" fontSize="sm">
       <Flex flexDirection="column" gap={[1, 2]} width="160px" justifyContent="space-between">
         {rewards.map(({ percentInTotal: percent, mint }, idx) => (
           <Flex key={mint ? mint.address : 'tradefee' + poolId} justifyContent="space-between">
@@ -49,7 +43,7 @@ export default function EstimatedApr({ aprData, isMobile, timeBasis, onTimeBasis
                   borderRadius: '10px'
                 }}
               />
-              <Text ml={1.5} color={colors.lightPurple}>
+              <Text ml={1.5} color={colors.lightPurple} whiteSpace="nowrap">
                 {mint ? mint.symbol : t('field.trade_fees')}
               </Text>
             </Flex>
@@ -57,7 +51,16 @@ export default function EstimatedApr({ aprData, isMobile, timeBasis, onTimeBasis
           </Flex>
         ))}
       </Flex>
-      {<Tabs value={timeBasis} items={timeBasisOptions} onChange={onTimeBasisChange} size="xs" variant="roundedLight" />}
+      {
+        <Tabs
+          value={timeBasis}
+          items={timeBasisOptions}
+          onChange={onTimeBasisChange}
+          size="xs"
+          variant="roundedLight"
+          orientation={orientation}
+        />
+      }
     </HStack>
   )
 }

@@ -21,7 +21,9 @@ export default function PendingYield({ isLoading, hasReward, rewardInfos, onHarv
   return (
     <Flex flex={1} bg={colors.backgroundDark} justify="space-around" w="full" fontSize="sm" flexDirection="column" gap={3}>
       <HStack justifyContent="space-between">
-        <Text color={colors.textSecondary}>{t('portfolio.section_positions_clmm_account_pending_yield')}</Text>
+        <Text color={colors.textSecondary} whiteSpace="nowrap">
+          {t('portfolio.section_positions_clmm_account_pending_yield')}
+        </Text>
         <Button isLoading={isLoading} isDisabled={!hasReward} onClick={onHarvest} size="sm" fontSize="md" variant="outline">
           {t('portfolio.section_positions_clmm_account_pending_yield_button')}
         </Button>
