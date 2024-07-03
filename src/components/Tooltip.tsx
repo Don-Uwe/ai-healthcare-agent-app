@@ -90,7 +90,7 @@ export default forwardRef(function Tooltip(
   }
 
   return (
-    <Popover isOpen={isTooltipOpen} placement="top" defaultIsOpen={defaultIsOpen} {...restPopoverProps} isLazy={isLazy}>
+    <Popover isOpen={isTooltipOpen} placement="top" defaultIsOpen={defaultIsOpen} isLazy={isLazy} {...restPopoverProps}>
       <PopoverTrigger>
         <Box
           ref={tooltipTriggerRef}
@@ -117,6 +117,9 @@ export default forwardRef(function Tooltip(
               rounded={restPopoverProps.variant == 'card' ? 'xl' : 'lg'}
               bg={colors.tooltipBg}
               {...contentBoxProps}
+              onClick={(e) => {
+                e.stopPropagation()
+              }}
             >
               {renderLabel()}
             </Box>

@@ -117,7 +117,7 @@ export default function ClmmPositionAccountItemDetail({
           px={[3]}
         >
           {/* chart */}
-          <Box flex={1.5} py={3}>
+          <Box flex={[1, 1.5]} py={3}>
             <LiquidityChartRangeInput
               key={chartTag}
               poolId={poolInfo.id}
@@ -131,11 +131,11 @@ export default function ClmmPositionAccountItemDetail({
               interactive={false}
               baseIn={baseIn}
               autoZoom={true}
+              chartHeight={120}
               containerStyle={{
                 paddingLeft: '1.25rem'
               }}
             />
-
             {/* info head */}
             <Flex fontSize="xs" justifyContent={'center'} mt={3}>
               <VStack align="start" gap={1}>
@@ -175,7 +175,7 @@ export default function ClmmPositionAccountItemDetail({
           </Box>
           <Divider borderWidth="1px" borderColor={colors.lightPurple} opacity="0.2" orientation="vertical" />
           {/* info detail */}
-          <VStack fontSize="sm" flex={1} spacing={3} py={3}>
+          <VStack fontSize="sm" flex={[1, 1]} spacing={3} py={[0, 0, 3]}>
             <Flex flexDirection="column" flex={1} w="full" gap={3} justifyContent="space-between">
               <Flex justifyContent="space-between">
                 <HStack>
@@ -237,9 +237,8 @@ export default function ClmmPositionAccountItemDetail({
             </Flex>
           </VStack>
           <Divider borderWidth="1px" borderColor={colors.lightPurple} opacity="0.2" orientation="vertical" />
-          <Flex direction="column" flex={1} gap={4} py={3} w="full" overflow="hidden">
+          <Flex direction="column" flex={[1, 1]} gap={[0, 0, 4]} py={[0, 0, 3]} w="full" overflow="hidden">
             <EstimatedApr
-              isMobile={isMobile}
               timeAprData={poolInfo.allApr}
               aprData={aprData}
               timeBasis={timeBasis}

@@ -15,25 +15,17 @@ type EstimatedAprProps = {
   onTimeBasisChange?: (val: AprKey) => void
   timeAprData: TimeAprData
   defaultTimeBasis?: TimeBasisOptionType['value']
-  isMobile?: boolean
   poolId: string
 }
 
-export default function EstimatedApr({ aprData, isMobile, timeBasis, onTimeBasisChange, poolId }: EstimatedAprProps) {
+export default function EstimatedApr({ aprData, timeBasis, onTimeBasisChange, poolId }: EstimatedAprProps) {
   const { t } = useTranslation()
 
   const tradeFee = aprData.fee
   const rewards = [{ ...tradeFee, mint: undefined as ApiV3Token | undefined }, ...aprData.rewards]
 
   return (
-    <HStack
-      flex={1}
-      mb={isMobile ? 3 : 0}
-      flexDirection={isMobile ? 'column' : 'row'}
-      alignItems="start"
-      justify="space-between"
-      fontSize="sm"
-    >
+    <HStack flex={1} flexDirection={['row', 'column', 'row']} alignItems="stretch" justify="space-between" fontSize="sm">
       <Flex flexDirection="column" gap={[1, 2]} width="160px" justifyContent="space-between">
         {rewards.map(({ percentInTotal: percent, mint }, idx) => (
           <Flex key={mint ? mint.address : 'tradefee' + poolId} justifyContent="space-between">
@@ -49,7 +41,7 @@ export default function EstimatedApr({ aprData, isMobile, timeBasis, onTimeBasis
                   borderRadius: '10px'
                 }}
               />
-              <Text ml={1.5} color={colors.lightPurple}>
+              <Text ml={1.5} color={colors.lightPurple} whiteSpace="nowrap">
                 {mint ? mint.symbol : t('field.trade_fees')}
               </Text>
             </Flex>
@@ -57,7 +49,9 @@ export default function EstimatedApr({ aprData, isMobile, timeBasis, onTimeBasis
           </Flex>
         ))}
       </Flex>
-      {<Tabs value={timeBasis} items={timeBasisOptions} onChange={onTimeBasisChange} size="xs" variant="roundedLight" />}
+      <Flex alignItems={['center', 'start']} justifyContent={['center', 'start']}>
+        {<Tabs value={timeBasis} items={timeBasisOptions} onChange={onTimeBasisChange} size="xs" variant="roundedLight" />}
+      </Flex>
     </HStack>
   )
 }

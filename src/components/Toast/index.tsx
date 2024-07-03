@@ -80,7 +80,7 @@ export function Toast({ state, onClose }: ToasterProps) {
       border={`1px solid ${customTheme.mainColor}`}
       py={5}
       px={6}
-      maxW={384}
+      maxW={[340, 384]}
       overflow="hidden"
       position="relative"
       onMouseEnter={() => {
