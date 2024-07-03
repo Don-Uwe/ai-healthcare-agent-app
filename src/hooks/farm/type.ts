@@ -84,6 +84,7 @@ export type ConditionalFarmType<T> = T extends FormatFarmInfoOutV6
 
 export type FarmBalanceInfo = {
   deposited: string
+  hasDeposited: boolean
   id: string
   rpcInfoData?: FarmDecodeData
   rewardDebts: string[]
@@ -95,4 +96,5 @@ export type FarmBalanceInfo = {
   mutate: () => void
   isValidating: boolean
   lpMint?: ApiV3Token
+  vault: string
 }

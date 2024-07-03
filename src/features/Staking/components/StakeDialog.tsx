@@ -13,9 +13,10 @@ interface Props {
   isOpen: boolean
   onClose(): void
   pool?: ApiStakePool
+  userAuxiliaryLedgers?: string[]
 }
 
-function StakeDialog({ isOpen, onClose, pool }: Props) {
+function StakeDialog({ isOpen, onClose, pool, userAuxiliaryLedgers }: Props) {
   const { t } = useTranslation()
   const featureDisabled = useAppStore((s) => s.featureDisabled.addFarm)
   const getTokenBalanceUiAmount = useTokenAccountStore((s) => s.getTokenBalanceUiAmount)
@@ -44,6 +45,7 @@ function StakeDialog({ isOpen, onClose, pool }: Props) {
     depositFarmAct({
       farmInfo: pool,
       amount: value,
+      userAuxiliaryLedgers,
       onFinally: () => {
         setValue('')
         handleClose()

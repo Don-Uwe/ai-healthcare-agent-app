@@ -217,7 +217,7 @@ export default function SectionMyPositions() {
             refreshTag={refreshTag}
           />
         ) : isFocusStake ? (
-          <MyPositionTabStaked allFarmBalances={allFarmBalances} refreshTag={refreshTag} />
+          <MyPositionTabStaked allFarmBalances={allFarmBalances} farmLpBasedData={farmLpBasedData} refreshTag={refreshTag} />
         ) : null
       ) : (
         <SimpleGrid {...panelCard} placeItems={'center'} bg={colors.backgroundLight} borderRadius="12px" py={12}>

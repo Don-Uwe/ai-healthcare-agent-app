@@ -13,11 +13,12 @@ import { useTranslation } from 'react-i18next'
 interface Props {
   isOpen: boolean
   depositedAmount: string
+  userAuxiliaryLedgers?: string[]
   onClose(): void
   pool?: ApiStakePool
 }
 
-export default function UnstakeDialog({ isOpen, onClose, depositedAmount, pool }: Props) {
+export default function UnstakeDialog({ isOpen, onClose, depositedAmount, userAuxiliaryLedgers, pool }: Props) {
   const { t } = useTranslation()
   const featureDisabled = useAppStore((s) => s.featureDisabled.removeFarm)
   const withdrawFarmAct = useFarmStore((s) => s.withdrawFarmAct)
@@ -43,6 +44,7 @@ export default function UnstakeDialog({ isOpen, onClose, depositedAmount, pool }
     withdrawFarmAct({
       farmInfo: pool,
       amount: value,
+      userAuxiliaryLedgers,
       onFinally: () => {
         setValue('')
         setPercent(0)

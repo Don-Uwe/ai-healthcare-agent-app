@@ -107,10 +107,12 @@ export default function useFetchMultipleFarmBalance(props: {
               rpcInfoData: undefined,
               id: farmInfoList[idx].id,
               deposited: '0',
+              hasDeposited: false,
               rewardDebts: [],
               voteLockedBalance: '0',
               pendingRewards: [],
               lpMint: farmInfoList[idx].lpMint.address,
+              vault: ledgerList[idx].toBase58(),
               isLoading: isLedgerLoading,
               error,
               isEmptyResult,
@@ -148,10 +150,12 @@ export default function useFetchMultipleFarmBalance(props: {
             rpcInfoData,
             id: decodeData.id.toString(),
             deposited: new Decimal(decodeData.deposited.toString() || 0).div(10 ** farmInfo!.lpMint.decimals).toString(),
+            hasDeposited: new Decimal(decodeData.deposited.toString() || 0).gt(0),
             rewardDebts: decodeData.rewardDebts.map((r) => r.toString()),
             voteLockedBalance: decodeData.voteLockedBalance?.toString() || '0',
             pendingRewards,
             lpMint: farmInfo!.lpMint,
+            vault: ledgerList[idx].toBase58(),
             isLoading: isLedgerLoading,
             error,
             isEmptyResult,
@@ -166,7 +170,7 @@ export default function useFetchMultipleFarmBalance(props: {
   return {
     isLoading,
     rpcInfoDataList: [],
-    allFarmBalances: [],
+    allFarmBalances: [] as FarmBalanceInfo[],
     mutate: handleMutate
   }
 }

@@ -29,6 +29,7 @@ export default function useFetchFarmBalance(props: {
     lpMint: ApiV3Token
     rewardInfos: { mint: ApiV3Token }[]
   }
+  ledgerKey?: PublicKey
   prefetchedFarmData?: FarmDecodeData
   refreshInterval?: number
 }) {
@@ -36,6 +37,7 @@ export default function useFetchFarmBalance(props: {
     shouldFetch = true,
     shouldFetchPendingRewards = true,
     farmInfo,
+    ledgerKey,
     prefetchedFarmData,
     refreshInterval = MINUTE_MILLISECONDS * 2
   } = props || {}
@@ -50,7 +52,8 @@ export default function useFetchFarmBalance(props: {
 
   // check fetch
   const ledger = fetch
-    ? getAssociatedLedgerAccount({
+    ? ledgerKey ||
+      getAssociatedLedgerAccount({
         programId: ToPublicKey(farmInfo.programId),
         poolId: ToPublicKey(farmInfo.id),
         owner: publicKey,
@@ -111,9 +114,11 @@ export default function useFetchFarmBalance(props: {
     return {
       id: decodeData.id.toString(),
       deposited: new Decimal(decodeData.deposited.toString() || 0).div(10 ** farmInfo!.lpMint.decimals).toString(),
+      hasDeposited: new Decimal(decodeData.deposited.toString() || 0).gt(0),
       rewardDebts: decodeData.rewardDebts.map((r) => r.toString()),
       voteLockedBalance: decodeData.voteLockedBalance?.toString() || '0',
       pendingRewards,
+      vault: ledger!.toBase58(),
       isLoading,
       error,
       isEmptyResult,
@@ -124,10 +129,12 @@ export default function useFetchFarmBalance(props: {
 
   return {
     deposited: '0',
+    hasDeposited: false,
     farmLedgerId: '',
     rewardDebts: [],
     pendingRewards: [] as string[],
     voteLockedBalance: '0',
+    vault: '',
     isLoading,
     error,
     isEmptyResult,
