@@ -49,6 +49,7 @@ export default function ClmmPositionAccountItemFace({
   const { isOpen: isLoading, onOpen: onSend, onClose: onFinally } = useDisclosure()
   const isMobile = useAppStore((s) => s.isMobile)
   const chainTimeOffset = useAppStore((s) => s.chainTimeOffset)
+  const aprMode = useAppStore((s) => s.aprMode)
 
   const handleClickClose = useEvent(() => {
     onClickCloseButton({
@@ -86,7 +87,7 @@ export default function ClmmPositionAccountItemFace({
     poolLiquidity: poolLiquidity || new BN(0),
     tokenPrices,
     timeBasis: AprKey.Day,
-    planType: 'D',
+    planType: aprMode,
     chainTimeOffsetMs: chainTimeOffset
   })
   return (
