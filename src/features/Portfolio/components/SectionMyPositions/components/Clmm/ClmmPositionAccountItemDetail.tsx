@@ -229,7 +229,7 @@ export default function ClmmPositionAccountItemDetail({
                 </Text>
               </Flex>
               <Flex justifyContent="space-between">
-                <Text color={colors.textSecondary}>{t('common.24h_volume')}</Text>
+                <Text color={colors.textSecondary}>{t('common.24h_pool_fee')}</Text>
                 <Text color={colors.textPrimary}>
                   {formatCurrency(poolInfo.day.volumeFee, { symbol: '$', abbreviated: true, decimalPlaces: 2 })}
                 </Text>
