@@ -34,7 +34,7 @@ export default function EstimatedApr({ aprData, isMobile, timeBasis, onTimeBasis
       justify="space-between"
       fontSize="sm"
     >
-      <Flex flexDirection="column" gap={[1, 3]} width="160px" justifyContent="space-between">
+      <Flex flexDirection="column" gap={[1, 2]} width="160px" justifyContent="space-between">
         {rewards.map(({ percentInTotal: percent, mint }, idx) => (
           <Flex key={mint ? mint.address : 'tradefee' + poolId} justifyContent="space-between">
             <Flex alignItems="center">

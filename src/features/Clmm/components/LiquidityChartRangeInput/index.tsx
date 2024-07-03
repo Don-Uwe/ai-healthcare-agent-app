@@ -194,7 +194,7 @@ export default function LiquidityChartRangeInput({
         <ChartWrapper ref={chartBoxRef}>
           <Chart
             data={{ series: formattedData, current: price, poolId, priceMin: timePriceMin, priceMax: timePriceMax, baseIn }}
-            dimensions={{ width: width ?? 400, height: height ?? interactive ? 200 : 120 }}
+            dimensions={{ width: width ?? 400, height: interactive ? height ?? 200 : 120 }}
             margins={{ top: 10, right: 2, bottom: interactive ? 30 : 0, left: 0 }}
             styles={{
               area: {
