@@ -41,7 +41,7 @@ export default function PendingYield({ isLoading, hasReward, rewardInfos, onHarv
                 })}
               </Text>
               <Text color={colors.textSecondary}>{getMintSymbol({ mint: r.mint, transformSol: true })}</Text>
-              <Text color={colors.textPrimary}>({formatCurrency(r.amountUSD, { symbol: '$', decimalPlaces: 2 })})</Text>
+              <Text color={colors.textPrimary}>({formatCurrency(r.amountUSD, { symbol: '$' })})</Text>
             </Flex>
           ))}
       </Flex>

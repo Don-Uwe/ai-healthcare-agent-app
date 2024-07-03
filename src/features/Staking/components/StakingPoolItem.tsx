@@ -24,8 +24,10 @@ import StakeDialog from './StakeDialog'
 import UnstakeDialog from './UnstakeDialog'
 import shallow from 'zustand/shallow'
 import { useEvent } from '@/hooks/useEvent'
+import { FarmPositionInfo } from '@/hooks/portfolio/farm/useFarmPositions'
+import { PublicKey } from '@solana/web3.js'
 
-export default function StakingPoolItem({ pool }: { pool: ApiStakePool }) {
+export default function StakingPoolItem({ pool, apiVaultData }: { pool: ApiStakePool; apiVaultData?: FarmPositionInfo }) {
   const { t } = useTranslation()
   const query = useRouteQuery<StakingPageQuery>()
   const { isOpen: isHarvesting, onOpen: onHarvesting, onClose: offHarvesting } = useDisclosure()
@@ -34,15 +36,6 @@ export default function StakingPoolItem({ pool }: { pool: ApiStakePool }) {
   const getTokenBalanceUiAmount = useTokenAccountStore((s) => s.getTokenBalanceUiAmount)
   const { data: tokenPrices } = useTokenPrice({
     mintList: [token.address]
-  })
-
-  const handleHarvest = useEvent(() => {
-    onHarvesting()
-    withdrawFarmAct({
-      farmInfo: pool,
-      amount: '0',
-      onFinally: offHarvesting
-    })
   })
 
   const isRouteCurrentPool = query.open === pool.id
@@ -60,12 +53,33 @@ export default function StakingPoolItem({ pool }: { pool: ApiStakePool }) {
   const { isOpen: collapsed, onToggle: onCollapse } = useDisclosure()
 
   const balance = getTokenBalanceUiAmount({ mint: token.address, decimals: token.decimals }).text
-  const res = useFetchFarmBalance({
+  const ataBalance = useFetchFarmBalance({
     farmInfo: pool
   })
 
+  const v1Vault = apiVaultData?.data.find((d) => d.version === 'V1' && !new Decimal(d.lpAmount).isZero())
+  const v1Balance = useFetchFarmBalance({
+    shouldFetch: !!(v1Vault && new Decimal(v1Vault.lpAmount).gt(0)),
+    farmInfo: pool,
+    ledgerKey: v1Vault ? new PublicKey(v1Vault.userVault) : undefined
+  })
+
+  const res = ataBalance.hasDeposited || !v1Balance.deposited ? ataBalance : v1Balance
+
   const pendingAmount = res.pendingRewards?.[0] ?? 0
   const pendingAmountInUSD = new Decimal(pendingAmount).mul(tokenPrices[token.address]?.value || 0).toString()
+
+  const userAuxiliaryLedgers = v1Balance.hasDeposited ? [v1Balance.vault] : undefined
+  const handleHarvest = useEvent(() => {
+    onHarvesting()
+    withdrawFarmAct({
+      farmInfo: pool,
+      amount: '0',
+      userAuxiliaryLedgers,
+      onConfirmed: v1Balance.hasDeposited ? v1Balance.mutate : undefined,
+      onFinally: offHarvesting
+    })
+  })
 
   return (
     <PanelCard rounded="xl" overflow="hidden">
@@ -193,8 +207,14 @@ export default function StakingPoolItem({ pool }: { pool: ApiStakePool }) {
           </Mobile>
         </HStack>
       </Collapse>
-      <StakeDialog isOpen={isStakeDialogOpen} onClose={closeStakeDialog} pool={pool} />
-      <UnstakeDialog isOpen={isUnStakeDialogOpen} onClose={closeUnStakeDialog} pool={pool} depositedAmount={res.deposited || '0'} />
+      <StakeDialog isOpen={isStakeDialogOpen} onClose={closeStakeDialog} pool={pool} userAuxiliaryLedgers={userAuxiliaryLedgers} />
+      <UnstakeDialog
+        isOpen={isUnStakeDialogOpen}
+        onClose={closeUnStakeDialog}
+        pool={pool}
+        depositedAmount={res.deposited || '0'}
+        userAuxiliaryLedgers={userAuxiliaryLedgers}
+      />
     </PanelCard>
   )
 }

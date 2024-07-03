@@ -9,21 +9,47 @@ import { colors } from '@/theme/cssVariables/colors'
 import { panelCard } from '@/theme/cssBlocks'
 
 import { FarmBalanceInfo } from '@/hooks/farm/type'
+import { FarmPositionInfo } from '@/hooks/portfolio/farm/useFarmPositions'
+import useFetchFarmBalance from '@/hooks/farm/useFetchFarmBalance'
+import { PublicKey } from '@solana/web3.js'
 
-export default function MyPositionTabStaked({ allFarmBalances, refreshTag }: { allFarmBalances: FarmBalanceInfo[]; refreshTag: number }) {
+export default function MyPositionTabStaked({
+  allFarmBalances,
+  farmLpBasedData,
+  refreshTag
+}: {
+  allFarmBalances: FarmBalanceInfo[]
+  farmLpBasedData: Map<string, FarmPositionInfo>
+  refreshTag: number
+}) {
   const { t } = useTranslation()
   const { activeStakePools, isLoading } = useFetchStakePools({ refreshTag })
 
   const pool = activeStakePools[0]
-  const res = allFarmBalances.find((f) => f.id === pool?.id)
+  const ataBalance = allFarmBalances.find((f) => f.id === pool?.id)
+
+  const v1Vault = farmLpBasedData.get(pool?.lpMint.address || '')?.data.find((d) => d.version === 'V1' && !new Decimal(d.lpAmount).isZero())
+  const v1Balance = useFetchFarmBalance({
+    shouldFetch: !!(v1Vault && new Decimal(v1Vault.lpAmount).gt(0)),
+    farmInfo: pool,
+    ledgerKey: v1Vault ? new PublicKey(v1Vault.userVault) : undefined
+  })
+
+  const res = ataBalance?.hasDeposited || !v1Balance.hasDeposited ? ataBalance : v1Balance
 
   return (
     <Flex direction="column" gap={4}>
-      {pool && res && new Decimal(res.deposited).gt(0) ? (
+      {pool && res && res.hasDeposited ? (
         <StakingPositionRawItem
           key={`user-position-staked-pool-${pool.id}-row`}
           pool={pool}
-          staked={{ token: pool.lpMint, amount: res.deposited, pendingReward: res.pendingRewards[0] || '0' }}
+          staked={{
+            token: pool.lpMint,
+            amount: res.deposited,
+            pendingReward: res.pendingRewards[0] || '0',
+            v1Vault: v1Balance.hasDeposited ? v1Balance.vault : undefined
+          }}
+          onConfirmed={v1Balance.hasDeposited ? v1Balance.mutate : undefined}
           apr={toApr({ val: pool.apr || 0 })}
         />
       ) : (

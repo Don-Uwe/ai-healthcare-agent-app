@@ -23,7 +23,7 @@ export type GetAprPositionParameters = {
   positionAccount: ClmmPosition
   tokenPrices: Record<string, TokenPrice>
   timeBasis: AprKey
-  planType: 'D' | 'C'
+  planType: 'D' | 'M'
   chainTimeOffsetMs?: number
 }
 

@@ -16,6 +16,7 @@ import { panelCard } from '@/theme/cssBlocks'
 import ClmmPositionAccountItem from './ClmmPositionAccountItem'
 import toPercentString from '@/utils/numberish/toPercentString'
 import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
+import { shortenAddress } from '@/utils/token'
 import React, { useCallback, useState, useEffect } from 'react'
 
 const LIST_THRESHOLD = 10
@@ -90,7 +91,7 @@ export function ClmmPositionItemsCard({
             </Tag>
           </HStack>
           <Text ml={6} color={colors.textTertiary}>
-            {t('portfolio.id')}: {poolInfo.id.slice(0, 17).toLocaleLowerCase()}
+            {t('portfolio.id')}: {shortenAddress(poolInfo.id, 8).toLocaleLowerCase()}
           </Text>
         </HStack>
       </GridItem>

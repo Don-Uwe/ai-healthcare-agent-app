@@ -25,11 +25,13 @@ type PoolProps = {
     token: ApiV3Token | undefined
     amount: string
     pendingReward: string
+    v1Vault?: string
   }
   apr: string
+  onConfirmed?: () => void
 }
 
-export default function StakingPositionRawItem({ pool, staked, apr }: PoolProps) {
+export default function StakingPositionRawItem({ pool, staked, apr, onConfirmed }: PoolProps) {
   const { isOpen: isLoading, onOpen: onLoading, onClose: offLoading } = useDisclosure()
   const { data: tokenPrices } = useTokenPrice({
     mintList: [staked.token?.address]
@@ -37,7 +39,13 @@ export default function StakingPositionRawItem({ pool, staked, apr }: PoolProps)
   const withdrawFarmAct = useFarmStore((s) => s.withdrawFarmAct)
   const handleHarvest = useEvent(() => {
     onLoading()
-    withdrawFarmAct({ farmInfo: pool, amount: '0', onFinally: offLoading })
+    withdrawFarmAct({
+      farmInfo: pool,
+      amount: '0',
+      userAuxiliaryLedgers: staked.v1Vault ? [staked.v1Vault] : undefined,
+      onConfirmed,
+      onFinally: offLoading
+    })
   })
 
   const positionUsd = new Decimal(staked.amount).mul(pool.lpPrice || 0).toString()
