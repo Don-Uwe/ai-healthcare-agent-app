@@ -63,10 +63,10 @@ export default function UnStakeLiquidity({
 
   const [feeA, feeB] = [
     epochInfo
-      ? getTransferAmountFeeV2(new BN(withdrawAmountA.toFixed(0)), poolInfo?.mintA.extensions.feeConfig, epochInfo, true).fee ?? BN_ZERO
+      ? getTransferAmountFeeV2(new BN(withdrawAmountA.toFixed(0)), poolInfo?.mintA.extensions.feeConfig, epochInfo, false).fee ?? BN_ZERO
       : BN_ZERO,
     epochInfo
-      ? getTransferAmountFeeV2(new BN(withdrawAmountB.toFixed(0)), poolInfo?.mintB.extensions.feeConfig, epochInfo, true).fee ?? BN_ZERO
+      ? getTransferAmountFeeV2(new BN(withdrawAmountB.toFixed(0)), poolInfo?.mintB.extensions.feeConfig, epochInfo, false).fee ?? BN_ZERO
       : BN_ZERO
   ]
 
