@@ -1,5 +1,4 @@
-import { Box, SimpleGrid } from '@chakra-ui/react'
-
+import { Flex, useBreakpointValue } from '@chakra-ui/react'
 import Button from '@/components/Button'
 import FullExpandIcon from '@/icons/misc/FullExpandIcon'
 import MinusIcon from '@/icons/misc/MinusIcon'
@@ -32,6 +31,8 @@ export default function ActionButtons({
   onMigrateOpen
 }: ActionButtonsProps) {
   const { t } = useTranslation()
+  const device = useBreakpointValue({ base: 'isMobile', sm: 'isTablet', md: 'isDesktop' })
+  const isMobile = device === 'isMobile'
   const onUnstaking = () => {
     routeToPage('decrease-liquidity', {
       queryProps: {
@@ -69,61 +70,50 @@ export default function ActionButtons({
   }
 
   return (
-    <SimpleGrid
-      mt={[2, 'unset']}
-      templateColumns={variant === 'drawer-face' ? '1fr 1fr' : '1fr auto auto auto'}
-      gridAutoFlow={variant === 'drawer-face' ? undefined : 'column'}
-      gap={[variant === 'drawer-face' ? 4 : 2, 3]}
-    >
-      {variant !== 'drawer-face' &&
-        (canViewMore ? (
-          <Button mr={'auto'} leftIcon={<FullExpandIcon />} variant="ghost" size="sm" onClick={onClickViewMore}>
-            {t('common.view_more')}
-          </Button>
-        ) : (
-          <Box></Box>
-        ))}
-      <Button
-        gridColumn={variant === 'drawer-face' ? 'span 1' : undefined}
-        variant="outline"
-        size={variant === 'drawer-face' ? 'md' : 'xs'}
-        w={variant === 'drawer-face' ? undefined : 9}
-        h={variant === 'drawer-face' ? undefined : '30px'}
-        px={0}
-        onClick={hasFarmLp ? onUnstaking : onRemoveLiquidity}
-      >
-        <MinusIcon color={colors.secondary} />
-      </Button>
-      <Button
-        gridColumn={variant === 'drawer-face' ? 'span 1' : undefined}
-        variant="solid"
-        size={variant === 'drawer-face' ? 'md' : 'xs'}
-        w={variant === 'drawer-face' ? undefined : 9}
-        h={variant === 'drawer-face' ? undefined : '30px'}
-        px={0}
-      >
-        <PlusIcon color={colors.buttonSolidText} onClick={onAddLiquidity} />
-      </Button>
-      {canMigrate ? (
-        <>
-          <Button
-            gridColumn={variant === 'drawer-face' ? 'span 2' : undefined}
-            size={variant === 'drawer-face' ? 'md' : 'sm'}
-            onClick={onMigrateOpen}
-          >
-            {t('portfolio.stake_item_migrate_button')}
-          </Button>
-        </>
-      ) : (
+    <Flex mt={[2, 0]} direction={variant === 'drawer-face' ? 'column' : 'row'} wrap="wrap" gap={[variant === 'drawer-face' ? 4 : 2, 3]}>
+      {variant !== 'drawer-face' && canViewMore && (
         <Button
-          gridColumn={variant === 'drawer-face' ? 'span 2' : undefined}
-          size={variant === 'drawer-face' ? 'md' : 'sm'}
-          isDisabled={!canStake}
-          onClick={onStake}
+          mr={'auto'}
+          leftIcon={<FullExpandIcon />}
+          variant="ghost"
+          size="sm"
+          flex={isMobile ? undefined : '1 1 auto'}
+          onClick={onClickViewMore}
         >
-          {t('portfolio.stake_item_stake_button')}
+          {t('common.view_more')}
         </Button>
       )}
-    </SimpleGrid>
+      <Flex gap={[variant === 'drawer-face' ? 4 : 2, 3]} flex={1} justifyContent="flex-end">
+        <Button
+          variant="outline"
+          size={variant === 'drawer-face' ? 'md' : 'xs'}
+          w={variant === 'drawer-face' ? undefined : 9}
+          h={variant === 'drawer-face' ? undefined : '30px'}
+          px={0}
+          onClick={hasFarmLp ? onUnstaking : onRemoveLiquidity}
+        >
+          <MinusIcon color={colors.secondary} />
+        </Button>
+        <Button
+          variant="solid"
+          size={variant === 'drawer-face' ? 'md' : 'xs'}
+          w={variant === 'drawer-face' ? undefined : 9}
+          h={variant === 'drawer-face' ? undefined : '30px'}
+          px={0}
+          onClick={onAddLiquidity}
+        >
+          <PlusIcon color={colors.buttonSolidText} />
+        </Button>
+        {canMigrate ? (
+          <Button size={variant === 'drawer-face' ? 'md' : 'sm'} onClick={onMigrateOpen}>
+            {t('portfolio.stake_item_migrate_button')}
+          </Button>
+        ) : (
+          <Button size={variant === 'drawer-face' ? 'md' : 'sm'} isDisabled={!canStake} onClick={onStake}>
+            {t('portfolio.stake_item_stake_button')}
+          </Button>
+        )}
+      </Flex>
+    </Flex>
   )
 }

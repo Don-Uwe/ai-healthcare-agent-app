@@ -40,6 +40,7 @@ export default function PendingYield({ isLoading, hasReward, rewardInfos, onHarv
               <TokenAvatar key={`pool-reward-${r.mint.address}`} size={'sm'} token={r.mint} />
               <Text color={colors.textPrimary}>
                 {formatCurrency(r.amount, {
+                  abbreviated: true,
                   decimalPlaces: isTablet ? 2 : 4,
                   maximumDecimalTrailingZeroes: 2
                 })}
@@ -48,7 +49,14 @@ export default function PendingYield({ isLoading, hasReward, rewardInfos, onHarv
                 {getMintSymbol({ mint: r.mint, transformSol: true })}
               </Text>
               <Text color={colors.textPrimary}>
-                ({formatCurrency(r.amountUSD, { symbol: '$', decimalPlaces: isMobile ? 4 : 2, maximumDecimalTrailingZeroes: 2 })})
+                (
+                {formatCurrency(r.amountUSD, {
+                  symbol: '$',
+                  abbreviated: true,
+                  decimalPlaces: isMobile ? 4 : 2,
+                  maximumDecimalTrailingZeroes: 2
+                })}
+                )
               </Text>
             </Flex>
           ))}

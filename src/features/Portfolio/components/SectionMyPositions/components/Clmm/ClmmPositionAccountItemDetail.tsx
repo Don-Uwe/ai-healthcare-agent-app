@@ -138,7 +138,7 @@ export default function ClmmPositionAccountItemDetail({
             />
             {/* info head */}
             <Flex fontSize="xs" justifyContent={'center'} mt={3}>
-              <VStack align="start" gap={1}>
+              <VStack align="start" gap={1} flex={1} pl="1.25rem">
                 <HStack width="100%" justifyContent="space-between">
                   <HStack>
                     <Divider borderColor={colors.backgroundApp} opacity="1" width="6px" borderBottomWidth="2px" />
@@ -161,9 +161,12 @@ export default function ClmmPositionAccountItemDetail({
                   </Text>
                 </HStack>
 
-                <HStack>
-                  <Divider borderColor={colors.textPurple} opacity="1" width="6px" borderBottomWidth="2px" />
-                  <Text color={colors.textSecondary}>{t('clmm.time_price_range', { time: '24h' })}: </Text>
+                <HStack width="100%" justifyContent="space-between">
+                  <HStack>
+                    {' '}
+                    <Divider borderColor={colors.textPurple} opacity="1" width="6px" borderBottomWidth="2px" />
+                    <Text color={colors.textSecondary}>{t('clmm.time_price_range', { time: '24h' })}: </Text>
+                  </HStack>
                   <Text color={colors.textPrimary} fontWeight="medium">
                     {`[${formatCurrency(timePriceMin, {
                       decimalPlaces: poolInfo.poolDecimals
