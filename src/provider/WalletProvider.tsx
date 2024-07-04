@@ -24,6 +24,8 @@ import {
   BitgetWalletAdapter
 } from '@solana/wallet-adapter-wallets'
 import { useAppStore, defaultNetWork, defaultEndpoint } from '../store/useAppStore'
+import { registerMoonGateWallet } from '@moongate/moongate-adapter'
+// import { TipLinkWalletAdapter } from '@tiplink/wallet-adapter'
 
 initialize()
 
@@ -33,6 +35,31 @@ const App: FC<PropsWithChildren<any>> = ({ children }) => {
   const wsNodeUrl = useAppStore((s) => s.wsNodeUrl)
   // const [endpoint] = useState<string>(defaultEndpoint)
   const [endpoint, setEndpoint] = useState<string>(rpcNodeUrl || defaultEndpoint)
+
+  registerMoonGateWallet({
+    authMode: 'Ethereum',
+    position: 'top-right'
+    // logoDataUri: 'OPTIONAL ADD IN-WALLET LOGO URL HERE',
+    // buttonLogoUri: 'ADD OPTIONAL LOGO FOR WIDGET BUTTON HERE'
+  })
+  registerMoonGateWallet({
+    authMode: 'Google',
+    position: 'top-right'
+    // logoDataUri: 'OPTIONAL ADD IN-WALLET LOGO URL HERE',
+    // buttonLogoUri: 'ADD OPTIONAL LOGO FOR WIDGET BUTTON HERE'
+  })
+  // registerMoonGateWallet({
+  //   authMode: 'Twitter',
+  //   position: 'top-right'
+  //   // logoDataUri: 'OPTIONAL ADD IN-WALLET LOGO URL HERE',
+  //   // buttonLogoUri: 'ADD OPTIONAL LOGO FOR WIDGET BUTTON HERE'
+  // })
+  registerMoonGateWallet({
+    authMode: 'Apple',
+    position: 'top-right'
+    // logoDataUri: 'OPTIONAL ADD IN-WALLET LOGO URL HERE',
+    // buttonLogoUri: 'ADD OPTIONAL LOGO FOR WIDGET BUTTON HERE'
+  })
 
   const wallets = useMemo(
     () => [
@@ -64,6 +91,11 @@ const App: FC<PropsWithChildren<any>> = ({ children }) => {
       new BitpieWalletAdapter({ endpoint }),
       new BitgetWalletAdapter({ endpoint }),
       new ExodusWalletAdapter({ endpoint })
+      // new TipLinkWalletAdapter({
+      //   clientId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PJ_ID ?? '',
+      //   title: 'Raydium',
+      //   theme: 'system'
+      // })
     ],
     [network, endpoint]
   )
