@@ -1,6 +1,5 @@
-import { Flex, HStack, Text } from '@chakra-ui/react'
+import { useBreakpointValue, Flex, HStack, Text } from '@chakra-ui/react'
 import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
-
 import Button from '@/components/Button'
 import TokenAvatar from '@/components/TokenAvatar'
 import { colors } from '@/theme/cssVariables'
@@ -17,9 +16,11 @@ type PendingYieldProps = {
 
 export default function PendingYield({ isLoading, hasReward, rewardInfos, onHarvest }: PendingYieldProps) {
   const { t } = useTranslation()
-
+  const device = useBreakpointValue({ base: 'isMobile', sm: 'isTablet', md: 'isDesktop' })
+  const isTablet = device === 'isTablet'
+  const isMobile = device === 'isMobile'
   return (
-    <Flex flex={1} bg={colors.backgroundDark} justify="space-around" w="full" fontSize="sm" flexDirection="column" gap={3} p={[4, 0]}>
+    <Flex flex={1} justify="space-around" w="full" fontSize="sm" flexDirection="column" gap={3} p={[4, 0]}>
       <HStack justifyContent="space-between">
         <Text color={colors.textSecondary} whiteSpace="nowrap">
           {t('portfolio.section_positions_clmm_account_pending_yield')}
@@ -29,21 +30,26 @@ export default function PendingYield({ isLoading, hasReward, rewardInfos, onHarv
         </Button>
       </HStack>
 
-      <Flex justify="space-between" flexDirection="column" gap={2}>
+      <Flex display="grid" gridTemplateColumns="repeat(2, 1fr)" gap={2}>
         {rewardInfos
           .filter((r) => {
             return Number(r.amount) != 0
           })
-          .map((r) => (
-            <Flex key={r.mint.address} alignItems="center" gap="1">
+          .map((r, index) => (
+            <Flex key={r.mint.address} alignItems="center" gap="1" justifyContent={index % 2 === 0 ? 'start' : 'end'}>
               <TokenAvatar key={`pool-reward-${r.mint.address}`} size={'sm'} token={r.mint} />
               <Text color={colors.textPrimary}>
                 {formatCurrency(r.amount, {
-                  maximumDecimalTrailingZeroes: 5
+                  decimalPlaces: isTablet ? 2 : 4,
+                  maximumDecimalTrailingZeroes: 2
                 })}
               </Text>
-              <Text color={colors.textSecondary}>{getMintSymbol({ mint: r.mint, transformSol: true })}</Text>
-              <Text color={colors.textPrimary}>({formatCurrency(r.amountUSD, { symbol: '$' })})</Text>
+              <Text color={colors.textSecondary} display={['block', 'none', 'block']}>
+                {getMintSymbol({ mint: r.mint, transformSol: true })}
+              </Text>
+              <Text color={colors.textPrimary}>
+                ({formatCurrency(r.amountUSD, { symbol: '$', decimalPlaces: isMobile ? 4 : 2, maximumDecimalTrailingZeroes: 2 })})
+              </Text>
             </Flex>
           ))}
       </Flex>

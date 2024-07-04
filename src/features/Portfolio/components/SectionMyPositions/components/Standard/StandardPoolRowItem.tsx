@@ -197,7 +197,7 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
           "d     d   d    acts" auto / 3fr 1.8fr 1.8fr 5fr
         `,
           `
-          "name  i1  i2  d acts" auto / 3fr 1.8fr 1.8fr 9fr 5fr
+          "name  i1  i2  d acts" auto / 3fr 1.8fr 1.8fr 9fr minmax(200px, 5fr)
         `
         ]}
         columnGap={8}

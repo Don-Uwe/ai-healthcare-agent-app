@@ -94,18 +94,21 @@ export default function ClmmPositionAccountItemFace({
     <>
       <Desktop>
         <Flex
-          bg={colors.backgroundDark}
+          bg={isViewOpen ? colors.background01 : colors.backgroundDark}
           borderRadius="xl"
           borderBottomRadius={isViewOpen ? 'none' : 'xl'}
           justifyContent="space-between"
           py={[2, 3]}
           px={[3, 6]}
-          gap={[2, 4, 8]}
+          gap={[2, 4]}
           cursor="pointer"
           onClick={onClickViewTrigger}
-          border="1px solid transparent"
+          border={isViewOpen ? `1px solid ${colors.cardBorder01}` : '1px solid transparent'}
+          borderBottomColor="transparent"
           _hover={{
-            border: `1px solid ${colors.infoButtonBg}`
+            border: `1px solid ${colors.cardBorder01}`,
+            bg: colors.background01,
+            borderBottomColor: isViewOpen ? 'transparent' : colors.cardBorder01
           }}
           direction={['column', 'row']}
         >

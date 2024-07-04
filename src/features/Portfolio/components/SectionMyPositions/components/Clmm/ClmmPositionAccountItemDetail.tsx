@@ -100,7 +100,7 @@ export default function ClmmPositionAccountItemDetail({
       <Flex
         p={2}
         bg={colors.modalContainerBg}
-        border={`1px solid ${colors.selectInactive}`}
+        border={`1px solid ${colors.cardBorder01}`}
         borderTop="none"
         borderRadius="xl"
         borderTopRadius="none"
@@ -109,15 +109,15 @@ export default function ClmmPositionAccountItemDetail({
         <Flex
           flexDirection={['column', 'row']}
           w="full"
-          gap={[2, 4, 8]}
-          bg={colors.backgroundDark}
+          gap={[2, 4]}
+          bg={colors.textQuinary}
           borderRadius="xl"
           justify="center"
           py={[3]}
           px={[3]}
         >
           {/* chart */}
-          <Box flex={[1, 1.5]} py={3}>
+          <Box flex={[1, 1, 1.5]} py={3}>
             <LiquidityChartRangeInput
               key={chartTag}
               poolId={poolInfo.id}
@@ -139,9 +139,11 @@ export default function ClmmPositionAccountItemDetail({
             {/* info head */}
             <Flex fontSize="xs" justifyContent={'center'} mt={3}>
               <VStack align="start" gap={1}>
-                <HStack>
-                  <Divider borderColor={colors.backgroundApp} opacity="1" width="6px" borderBottomWidth="2px" />
-                  <Text color={colors.textSecondary}>{t('field.current_price')}: </Text>
+                <HStack width="100%" justifyContent="space-between">
+                  <HStack>
+                    <Divider borderColor={colors.backgroundApp} opacity="1" width="6px" borderBottomWidth="2px" />
+                    <Text color={colors.textSecondary}>{t('field.current_price')}: </Text>
+                  </HStack>
                   <Text color={colors.lightPurple} fontWeight="medium">
                     <Text as="span" color={colors.textPrimary}>
                       {baseIn
@@ -175,7 +177,7 @@ export default function ClmmPositionAccountItemDetail({
           </Box>
           <Divider borderWidth="1px" borderColor={colors.lightPurple} opacity="0.2" orientation="vertical" />
           {/* info detail */}
-          <VStack fontSize="sm" flex={[1, 1]} spacing={3} py={[0, 0, 3]}>
+          <VStack fontSize="sm" flex={[1, 1, 1]} spacing={3} py={[0, 0, 3]}>
             <Flex flexDirection="column" flex={1} w="full" gap={3} justifyContent="space-between">
               <Flex justifyContent="space-between">
                 <HStack>
@@ -237,7 +239,7 @@ export default function ClmmPositionAccountItemDetail({
             </Flex>
           </VStack>
           <Divider borderWidth="1px" borderColor={colors.lightPurple} opacity="0.2" orientation="vertical" />
-          <Flex direction="column" flex={[1, 1]} gap={[0, 0, 4]} py={[0, 0, 3]} w="full" overflow="hidden">
+          <Flex direction="column" flex={[1, 1, 1]} gap={[0, 0, 4]} py={[0, 0, 3]} w="full" overflow="hidden">
             <EstimatedApr
               timeAprData={poolInfo.allApr}
               aprData={aprData}

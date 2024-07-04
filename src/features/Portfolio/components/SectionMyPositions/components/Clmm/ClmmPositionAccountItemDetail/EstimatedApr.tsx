@@ -26,7 +26,7 @@ export default function EstimatedApr({ aprData, timeBasis, onTimeBasisChange, po
 
   return (
     <HStack flex={1} flexDirection={['row', 'column', 'row']} alignItems="stretch" justify="space-between" fontSize="sm">
-      <Flex flexDirection="column" gap={[1, 2]} width="160px" justifyContent="space-between">
+      <Flex flexDirection="column" gap={[1, 2]} width="160px">
         {rewards.map(({ percentInTotal: percent, mint }, idx) => (
           <Flex key={mint ? mint.address : 'tradefee' + poolId} justifyContent="space-between">
             <Flex alignItems="center">
