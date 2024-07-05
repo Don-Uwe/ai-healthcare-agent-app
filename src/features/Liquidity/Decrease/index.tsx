@@ -1,5 +1,5 @@
 import { Box, Grid, GridItem, HStack, Text, VStack } from '@chakra-ui/react'
-import { ApiV3PoolInfoStandardItem } from '@raydium-io/raydium-sdk-v2'
+import { ApiV3PoolInfoStandardItem, CREATE_CPMM_POOL_PROGRAM } from '@raydium-io/raydium-sdk-v2'
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import Tabs from '@/components/Tabs'
@@ -10,11 +10,11 @@ import { useTokenAccountStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
 import { routeBack, setUrlQuery, useRouteQuery } from '@/utils/routeTools'
 import useFetchRpcPoolData from '@/hooks/pool/amm/useFetchRpcPoolData'
+import useFetchCpmmRpcPoolData from '@/hooks/pool/amm/useFetchCpmmRpcPoolData'
 import { LiquidityActionModeType, tabValueModeMapping } from '../utils'
 import BalanceInfo from './components/BalanceInfo'
 import RemoveLiquidity from './components/RemoveLiquidity'
 import UnStakeLiquidity from './components/UnStakeLiquidity'
-import { MINUTE_MILLISECONDS } from '@/utils/date'
 
 export type DecreaseTabOptionType = {
   value: 'Unstake Liquidity' | 'Remove Liquidity'
@@ -48,7 +48,29 @@ export default function Decrease() {
     idList: [poolId]
   })
   const poolInfo = formattedData?.[0]
-  const { data: rpcPoolData, mutate: rpcMutate } = useFetchRpcPoolData({ poolId: poolInfo?.id, refreshInterval: 2 * MINUTE_MILLISECONDS })
+  const isCpmm = poolInfo && poolInfo.programId === CREATE_CPMM_POOL_PROGRAM.toBase58()
+  const { data: rpcAmmPoolData, mutate: rpcAmmMutate } = useFetchRpcPoolData({
+    shouldFetch: !isCpmm,
+    poolId: poolInfo?.id,
+    refreshInterval: 30 * 1000
+  })
+  const { data: rpcCpmmPoolData, mutate: rpcCpmmMutate } = useFetchCpmmRpcPoolData({
+    shouldFetch: isCpmm,
+    poolId: poolInfo?.id,
+    refreshInterval: 30 * 1000
+  })
+  const rpcMutate = isCpmm ? rpcCpmmMutate : rpcAmmMutate
+  const rpcPoolData =
+    rpcAmmPoolData || rpcCpmmPoolData
+      ? {
+          baseReserve: isCpmm ? rpcCpmmPoolData!.baseReserve : rpcAmmPoolData!.baseReserve,
+          quoteReserve: isCpmm ? rpcCpmmPoolData!.quoteReserve : rpcAmmPoolData!.quoteReserve,
+          baseDecimals: isCpmm ? rpcCpmmPoolData!.mintDecimalA : rpcAmmPoolData!.baseDecimals,
+          quoteDecimals: isCpmm ? rpcCpmmPoolData!.mintDecimalB : rpcAmmPoolData!.quoteDecimals,
+          lpSupply: isCpmm ? rpcCpmmPoolData!.lpAmount : rpcAmmPoolData!.lpSupply,
+          lpDecimals: isCpmm ? rpcCpmmPoolData!.lpDecimals : rpcAmmPoolData!.lpDecimals
+        }
+      : undefined
 
   const handleStakedChange = useCallback((val: string) => setStakedLiquidity(val), [])
 

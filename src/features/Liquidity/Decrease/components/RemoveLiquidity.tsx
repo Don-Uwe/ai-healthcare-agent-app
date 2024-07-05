@@ -1,5 +1,5 @@
 import { Box, Flex, SimpleGrid, Text } from '@chakra-ui/react'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import Button from '@/components/Button'
@@ -11,10 +11,9 @@ import IntervalCircle, { IntervalCircleHandler } from '@/components/IntervalCirc
 import { SlippageAdjuster } from '@/components/SlippageAdjuster'
 import { formatCurrency } from '@/utils/numberish/formatter'
 import { useLiquidityStore } from '@/store/useLiquidityStore'
-
+import useTokenPrice from '@/hooks/token/useTokenPrice'
 import { colors } from '@/theme/cssVariables'
 import Decimal from 'decimal.js'
-import { RpcAmmPool } from '@/hooks/pool/amm/useFetchRpcPoolData'
 import { useEvent } from '@/hooks/useEvent'
 import useRefreshEpochInfo from '@/hooks/useRefreshEpochInfo'
 import { getTransferAmountFeeV2 } from '@raydium-io/raydium-sdk-v2'
@@ -28,7 +27,14 @@ export default function UnStakeLiquidity({
   onRefresh
 }: {
   poolInfo?: FormattedPoolInfoStandardItem | FormattedPoolInfoStandardItemCpmm
-  rpcPoolData?: RpcAmmPool
+  rpcPoolData?: {
+    baseReserve: BN
+    quoteReserve: BN
+    baseDecimals: number
+    quoteDecimals: number
+    lpSupply: BN
+    lpDecimals: number
+  }
   onRefresh: () => void
 }) {
   const { t } = useTranslation()
@@ -36,6 +42,7 @@ export default function UnStakeLiquidity({
   const epochInfo = useRefreshEpochInfo()
   const removeLiquidityAct = useLiquidityStore((s) => s.removeLiquidityAct)
   const removeCpmmLiquidityAct = useLiquidityStore((s) => s.removeCpmmLiquidityAct)
+  const { data: tokenPrice } = useTokenPrice({ mintList: [poolInfo?.mintA.address, poolInfo?.mintB.address] })
   const [removePercent, setRemovePercent] = useState(0)
   const getTokenBalanceUiAmount = useTokenAccountStore((s) => s.getTokenBalanceUiAmount)
   const liquidity = getTokenBalanceUiAmount({ mint: poolInfo?.lpMint.address || '', decimals: poolInfo?.lpMint.decimals }).amount
@@ -114,6 +121,9 @@ export default function UnStakeLiquidity({
     circleRef.current?.restart()
     onRefresh()
   })
+  const removeValue = new Decimal(withdrawAmountAFee)
+    .mul(tokenPrice[poolInfo?.mintA.address || '']?.value || 0)
+    .add(new Decimal(withdrawAmountBFee).mul(tokenPrice[poolInfo?.mintB.address || '']?.value || 0))
 
   return (
     <Flex borderRadius="24px" direction="column" w="full" px="24px" py="32px" bg={colors.backgroundLight}>
@@ -125,9 +135,7 @@ export default function UnStakeLiquidity({
           </Text>
         </Flex>
         <Box textAlign="right">
-          <Text fontSize="28px">
-            {formatCurrency(removeAmount.mul(poolInfo?.lpPrice || '0').toString(), { symbol: '$', decimalPlaces: 2 })}
-          </Text>
+          <Text fontSize="28px">{formatCurrency(removeValue.toString(), { symbol: '$', maximumDecimalTrailingZeroes: 2 })}</Text>
           <Text variant="label">{formatCurrency(removeAmount.toString(), { decimalPlaces: poolInfo?.lpMint.decimals })} LP</Text>
         </Box>
       </Flex>
