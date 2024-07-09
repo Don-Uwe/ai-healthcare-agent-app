@@ -25,7 +25,7 @@ import {
 } from '@solana/wallet-adapter-wallets'
 import { useAppStore, defaultNetWork, defaultEndpoint } from '../store/useAppStore'
 import { registerMoonGateWallet } from '@moongate/moongate-adapter'
-// import { TipLinkWalletAdapter } from '@tiplink/wallet-adapter'
+import { TipLinkWalletAdapter } from '@tiplink/wallet-adapter'
 
 initialize()
 
@@ -90,12 +90,12 @@ const App: FC<PropsWithChildren<any>> = ({ children }) => {
       new SafePalWalletAdapter({ endpoint }),
       new BitpieWalletAdapter({ endpoint }),
       new BitgetWalletAdapter({ endpoint }),
-      new ExodusWalletAdapter({ endpoint })
-      // new TipLinkWalletAdapter({
-      //   clientId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PJ_ID ?? '',
-      //   title: 'Raydium',
-      //   theme: 'system'
-      // })
+      new ExodusWalletAdapter({ endpoint }),
+      new TipLinkWalletAdapter({
+        clientId: process.env.NEXT_PUBLIC_WALLET_TIP_WALLET_KEY ?? '',
+        title: 'Raydium',
+        theme: 'system'
+      })
     ],
     [network, endpoint]
   )

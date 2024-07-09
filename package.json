@@ -58,6 +58,7 @@
     "@solana/wallet-adapter-wallets": "^0.19.32",
     "@solana/web3.js": "^1.75.0",
     "@solflare-wallet/wallet-adapter": "^1.0.3",
+    "@tiplink/wallet-adapter": "^2.1.18",
     "@types/big.js": "^6.1.6",
     "@types/bn.js": "^5.1.1",
     "@types/d3": "^7.4.0",
