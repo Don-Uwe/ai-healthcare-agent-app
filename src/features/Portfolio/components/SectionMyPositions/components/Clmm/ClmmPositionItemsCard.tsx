@@ -84,15 +84,6 @@ export function ClmmPositionItemsCard({
     >
       <GridItem area="face" justifySelf={['stretch', 'left']}>
         <Flex flexDirection={['column', 'row']} gap={2} justify="space-between" alignItems="center">
-          <HStack>
-            <TokenAvatarPair size={['smi', 'md']} token1={poolInfo.mintA} token2={poolInfo.mintB} />
-            <Text fontSize={['md', '20px']} fontWeight="500">
-              {poolInfo.poolName.replace(' - ', '/')}
-            </Text>
-            <Tag size={['sm', 'md']} variant="rounded">
-              {formatToRawLocaleStr(toPercentString(poolInfo.feeRate * 100))}
-            </Tag>
-          </HStack>
           <Tooltip
             label={
               <Box py={0.5}>
@@ -110,9 +101,15 @@ export function ClmmPositionItemsCard({
               </Box>
             }
           >
-            <Text ml={6} color={colors.textTertiary}>
-              {t('portfolio.id')}: {shortenAddress(poolInfo.id, 6).toLocaleLowerCase()}
-            </Text>
+            <HStack>
+              <TokenAvatarPair size={['smi', 'md']} token1={poolInfo.mintA} token2={poolInfo.mintB} />
+              <Text fontSize={['md', '20px']} fontWeight="500">
+                {poolInfo.poolName.replace(' - ', '/')}
+              </Text>
+              <Tag size={['sm', 'md']} variant="rounded">
+                {formatToRawLocaleStr(toPercentString(poolInfo.feeRate * 100))}
+              </Tag>
+            </HStack>
           </Tooltip>
         </Flex>
       </GridItem>
