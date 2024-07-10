@@ -208,20 +208,31 @@ export default function WalletRecentTransactionBoard({ wallet, address, isOpen =
         <DrawerCloseButton />
         {/* hidden transaction */}
         <DrawerHeader display="none">{t('recent_transaction.recent_transactions')}</DrawerHeader>
-        <DrawerBody display="flex" flexDirection="column" justifyContent="space-between">
-          {isRecentTransactionDetailView ? recentTransactionDetailView : normalDrawerBody}
-          <Flex justifyContent="center" alignItems="center" color={colors.lightPurple}>
-            <Text fontSize="xs">{t('wallet_connect_panel.buy_crypto_with_fiat')}</Text>
-            <Moonpay>
-              <HStack gap={0}>
-                <MoonPayFullWhite />
-                <ChevronRightIcon width={'16px'} height={'16px'} />
-              </HStack>
-            </Moonpay>
-          </Flex>
-        </DrawerBody>
-        <DrawerFooter onClick={handleDisConnect} cursor="pointer">
-          {t('wallet_connect_panel.disconnect')}
+        <DrawerBody>{isRecentTransactionDetailView ? recentTransactionDetailView : normalDrawerBody}</DrawerBody>
+        <DrawerFooter bg="transparent" p={[0, 0]}>
+          <VStack w="full" gap={4}>
+            <Flex justifyContent="center" alignItems="center" color={colors.lightPurple}>
+              <Text fontSize="xs">{t('wallet_connect_panel.buy_crypto_with_fiat')}</Text>
+              <Moonpay>
+                <HStack gap={0}>
+                  <MoonPayFullWhite />
+                  <ChevronRightIcon width={'16px'} height={'16px'} />
+                </HStack>
+              </Moonpay>
+            </Flex>
+            <Text
+              w="full"
+              textAlign="center"
+              bg={colors.backgroundTransparent12}
+              py={['8px', '12px']}
+              px={['16px', '20px']}
+              borderBottomRadius={['0px', '12px']}
+              onClick={handleDisConnect}
+              cursor="pointer"
+            >
+              {t('wallet_connect_panel.disconnect')}
+            </Text>
+          </VStack>
         </DrawerFooter>
       </DrawerContent>
     </Drawer>
