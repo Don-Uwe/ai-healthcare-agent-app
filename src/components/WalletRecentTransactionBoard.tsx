@@ -20,10 +20,12 @@ import {
   useDisclosure
 } from '@chakra-ui/react'
 import { Wallet } from '@solana/wallet-adapter-react'
+import dayjs from 'dayjs'
 
 import CircleSuccess from '@/icons/misc/CircleSuccess'
 import CircleWarning from '@/icons/misc/CircleWarning'
 import CircleError from '@/icons/misc/CircleError'
+import MoonPayFullWhite from '@/icons/misc/MoonPayFullWhite'
 import { colors } from '@/theme/cssVariables'
 import { toUTC } from '@/utils/date'
 import SolanaNetworkIcon from '@/icons/networks/SolanaNetworkIcon'
@@ -34,13 +36,12 @@ import ChevronLeftIcon from '@/icons/misc/ChevronLeftIcon'
 import ChevronRightIcon from '@/icons/misc/ChevronRightIcon'
 import ExternalLinkLargeIcon from '@/icons/misc/ExternalLinkLargeIcon'
 import { useAppStore } from '@/store'
-
 import ChevronUpDownArrow from './ChevronUpDownArrow'
 import AddressChip from './AddressChip'
 import TokenAvatar from './TokenAvatar'
 import { ToastStatus } from '@/types/tx'
 import { getTxAllRecord } from '@/utils/tx/historyTxStatus'
-import dayjs from 'dayjs'
+import Moonpay from '@/components/Moonpay'
 
 interface WalletMenuProps {
   wallet: Wallet | null
@@ -207,7 +208,18 @@ export default function WalletRecentTransactionBoard({ wallet, address, isOpen =
         <DrawerCloseButton />
         {/* hidden transaction */}
         <DrawerHeader display="none">{t('recent_transaction.recent_transactions')}</DrawerHeader>
-        <DrawerBody>{isRecentTransactionDetailView ? recentTransactionDetailView : normalDrawerBody}</DrawerBody>
+        <DrawerBody display="flex" flexDirection="column" justifyContent="space-between">
+          {isRecentTransactionDetailView ? recentTransactionDetailView : normalDrawerBody}
+          <Flex justifyContent="center" alignItems="center" color={colors.lightPurple}>
+            <Text fontSize="xs">{t('wallet_connect_panel.buy_crypto_with_fiat')}</Text>
+            <Moonpay>
+              <HStack gap={0}>
+                <MoonPayFullWhite />
+                <ChevronRightIcon width={'16px'} height={'16px'} />
+              </HStack>
+            </Moonpay>
+          </Flex>
+        </DrawerBody>
         <DrawerFooter onClick={handleDisConnect} cursor="pointer">
           {t('wallet_connect_panel.disconnect')}
         </DrawerFooter>

@@ -10,6 +10,7 @@ import SwapChatEmptyIcon from '@/icons/misc/SwapChatEmptyIcon'
 import SwapChatIcon from '@/icons/misc/SwapChatIcon'
 import SwapExchangeIcon from '@/icons/misc/SwapExchangeIcon'
 import LinkIcon from '@/icons/misc/LinkIcon'
+import DollarIcon from '@/icons/misc/DollarIcon'
 import { useAppStore, useTokenStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
 import { getVHExpression } from '../../theme/cssValue/getViewportExpression'
@@ -22,6 +23,7 @@ import { TimeType } from '@/hooks/pool/useFetchPoolKLine'
 import { SlippageAdjuster } from '@/components/SlippageAdjuster'
 import { getMintPriority } from '@/utils/token'
 import Tooltip from '@/components/Tooltip'
+import Moonpay from '@/components/Moonpay'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
 
 export default function Swap() {
@@ -131,6 +133,10 @@ export default function Swap() {
             <LinkIcon />
           </Box>
         </Tooltip>
+        <Moonpay>
+          <DollarIcon />
+        </Moonpay>
+
         {!isMobile && isPCChartShown && (
           <Box
             cursor="pointer"
