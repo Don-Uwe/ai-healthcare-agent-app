@@ -41,7 +41,7 @@ import AddressChip from './AddressChip'
 import TokenAvatar from './TokenAvatar'
 import { ToastStatus } from '@/types/tx'
 import { getTxAllRecord } from '@/utils/tx/historyTxStatus'
-import Moonpay from '@/components/Moonpay'
+import { MoonpaySell } from '@/components/Moonpay'
 
 interface WalletMenuProps {
   wallet: Wallet | null
@@ -212,13 +212,13 @@ export default function WalletRecentTransactionBoard({ wallet, address, isOpen =
         <DrawerFooter bg="transparent" p={[0, 0]}>
           <VStack w="full" gap={4}>
             <Flex justifyContent="center" alignItems="center" color={colors.lightPurple}>
-              <Text fontSize="xs">{t('wallet_connect_panel.buy_crypto_with_fiat')}</Text>
-              <Moonpay>
+              <Text fontSize="xs">{t('wallet_connect_panel.sell_crypto')}</Text>
+              <MoonpaySell>
                 <HStack gap={0}>
                   <MoonPayFullWhite />
                   <ChevronRightIcon width={'16px'} height={'16px'} />
                 </HStack>
-              </Moonpay>
+              </MoonpaySell>
             </Flex>
             <Text
               w="full"

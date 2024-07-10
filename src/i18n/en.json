@@ -169,6 +169,7 @@
     "install_refresh_page": "Install at link above then refresh this page",
     "wallet_installed_refresh_page": "I’ve already Installed, Refresh page",
     "goback": "Go back",
+    "sell_crypto": "Off ramp to fiat with ",
     "buy_crypto_with_fiat": "Buy Crypto with fiat"
   },
   "token_selector": {

@@ -11,7 +11,7 @@ import MobileIcon from '@/icons/misc/MobileIcon'
 import DesktopIcon from '@/icons/misc/DesktopIcon'
 import MoonPayFullWhite from '@/icons/misc/MoonPayFullWhite'
 import { QuestionToolTip } from '@/components/QuestionToolTip'
-import Moonpay from '@/components/Moonpay'
+import { MoonpayBuy } from '@/components/Moonpay'
 import ExternalLink from '@/icons/misc/ExternalLink'
 import { colors } from '@/theme/cssVariables'
 import {
@@ -252,12 +252,12 @@ export default function SelectWalletModal({ wallets, isOpen, onSelectWallet, onC
               </Flex>
               <Flex justifyContent="center" alignItems="center" color={colors.lightPurple} pt={4}>
                 <Text fontSize="xs">{t('wallet_connect_panel.buy_crypto_with_fiat')}</Text>
-                <Moonpay>
+                <MoonpayBuy>
                   <HStack gap={0}>
                     <MoonPayFullWhite />
                     <ChevronRightIcon width={'16px'} height={'16px'} />
                   </HStack>
-                </Moonpay>
+                </MoonpayBuy>
               </Flex>
             </Box>
           </ModalBody>
