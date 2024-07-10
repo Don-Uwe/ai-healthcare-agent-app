@@ -27,6 +27,7 @@ type DetailProps = {
   aprData: AprData
   position: ClmmPosition
   nftMint: string
+  totalPendingYield: string
   baseIn: boolean
   hasReward: boolean
   rewardInfos: { mint: ApiV3Token; amount: string; amountUSD: string }[]
@@ -42,6 +43,7 @@ export default function ClmmPositionAccountItemDetail({
   timeBasis,
   aprData,
   nftMint,
+  totalPendingYield,
   baseIn,
   hasReward,
   rewardInfos,
@@ -163,7 +165,6 @@ export default function ClmmPositionAccountItemDetail({
 
                 <HStack width="100%" justifyContent="space-between">
                   <HStack>
-                    {' '}
                     <Divider borderColor={colors.textPurple} opacity="1" width="6px" borderBottomWidth="2px" />
                     <Text color={colors.textSecondary}>{t('clmm.time_price_range', { time: '24h' })}: </Text>
                   </HStack>
@@ -250,7 +251,13 @@ export default function ClmmPositionAccountItemDetail({
               onTimeBasisChange={onTimeBasisChange}
               poolId={poolInfo.id}
             />
-            <PendingYield isLoading={isLoading} hasReward={hasReward} rewardInfos={rewardInfos} onHarvest={handleHarvest} />
+            <PendingYield
+              isLoading={isLoading}
+              hasReward={hasReward}
+              pendingYield={formatCurrency(totalPendingYield, { symbol: '$', decimalPlaces: 2 })}
+              rewardInfos={rewardInfos}
+              onHarvest={handleHarvest}
+            />
           </Flex>
         </Flex>
       </Flex>

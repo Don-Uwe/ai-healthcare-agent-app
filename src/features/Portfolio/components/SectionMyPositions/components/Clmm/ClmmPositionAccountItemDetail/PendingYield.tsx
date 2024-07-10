@@ -8,13 +8,14 @@ import { formatCurrency } from '@/utils/numberish/formatter'
 import { getMintSymbol } from '@/utils/token'
 
 type PendingYieldProps = {
+  pendingYield?: string
   isLoading?: boolean
   hasReward?: boolean
   rewardInfos: { mint: ApiV3Token; amount: string; amountUSD: string }[]
   onHarvest: () => void
 }
 
-export default function PendingYield({ isLoading, hasReward, rewardInfos, onHarvest }: PendingYieldProps) {
+export default function PendingYield({ isLoading, hasReward, pendingYield, rewardInfos, onHarvest }: PendingYieldProps) {
   const { t } = useTranslation()
   const device = useBreakpointValue({ base: 'isMobile', sm: 'isTablet', md: 'isDesktop' })
   const isTablet = device === 'isTablet'
@@ -22,9 +23,14 @@ export default function PendingYield({ isLoading, hasReward, rewardInfos, onHarv
   return (
     <Flex flex={1} justify="space-around" w="full" fontSize="sm" flexDirection="column" gap={3} p={[4, 0]}>
       <HStack justifyContent="space-between">
-        <Text color={colors.textSecondary} whiteSpace="nowrap">
-          {t('portfolio.section_positions_clmm_account_pending_yield')}
-        </Text>
+        <HStack>
+          <Text color={colors.textSecondary} whiteSpace="nowrap">
+            {t('portfolio.section_positions_clmm_account_pending_yield')}
+          </Text>
+          <Text color={colors.textPrimary} whiteSpace="nowrap">
+            ({pendingYield ?? '$0'})
+          </Text>
+        </HStack>
         <Button isLoading={isLoading} isDisabled={!hasReward} onClick={onHarvest} size="sm" fontSize="md" variant="outline">
           {t('portfolio.section_positions_clmm_account_pending_yield_button')}
         </Button>
