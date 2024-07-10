@@ -1,9 +1,8 @@
 import { numberRegExp, extractNumberOnly } from '@/utils/numberish/regex'
-import { formatToRawLocaleStr, isIntlNumberFormatSupported } from '@/utils/numberish/formatter'
+import { formatToRawLocaleStr, detectedSeparator } from '@/utils/numberish/formatter'
 import { Flex, InputGroup, NumberInput, NumberInputField, SystemStyleObject, Text } from '@chakra-ui/react'
 import React, { MouseEvent, KeyboardEvent, ReactNode, useCallback, useEffect, useMemo, useRef } from 'react'
 import Decimal from 'decimal.js'
-import { useTranslation } from 'react-i18next'
 
 interface Props {
   id?: string
@@ -70,13 +69,6 @@ function DecimalInput(props: Props) {
   const valRef = useRef(value)
   valRef.current = value
 
-  const { i18n } = useTranslation()
-  const currentLocale = i18n.language
-
-  const decimalSeparator = isIntlNumberFormatSupported
-    ? new Intl.NumberFormat(currentLocale).formatToParts(0.1).find((part) => part.type === 'decimal')?.value || '.'
-    : '.'
-
   const clampValueOnBlur = min !== undefined || max !== undefined
   const handleValidate = useCallback((value: string) => {
     return numberRegExp.test(value)
@@ -96,14 +88,14 @@ function DecimalInput(props: Props) {
 
   const handleParseVal = useCallback(
     (propVal: string) => {
-      const val = propVal.match(new RegExp(`[0-9${decimalSeparator}]`, 'gi'))?.join('') || ''
+      const val = propVal.match(new RegExp(`[0-9${detectedSeparator}]`, 'gi'))?.join('') || ''
       if (!val) return ''
-      const splitArr = val.split(decimalSeparator)
+      const splitArr = val.split(detectedSeparator)
       if (splitArr.length > 2) return [splitArr[0], splitArr[1]].join('.')
       if (typeof decimals === 'number' && decimals > -1 && splitArr[1] && splitArr[1].length > decimals) {
         return [splitArr[0], splitArr[1].substring(0, decimals)].join('.')
       }
-      return val === decimalSeparator ? '0.' : val.replace(decimalSeparator, '.')
+      return val === detectedSeparator ? '0.' : val.replace(detectedSeparator, '.')
       // const splitArr = (val || '').split('.')
       // if (splitArr.length > 2) return [splitArr[0], splitArr[1]].join('.')
       // if (typeof decimals === 'number' && decimals > -1 && splitArr[1] && splitArr[1].length > decimals) {
@@ -112,7 +104,7 @@ function DecimalInput(props: Props) {
       // }
       // return val === '.' ? '0.' : val
     },
-    [decimals, currentLocale]
+    [decimals]
   )
 
   const handleFocus = useCallback(() => {

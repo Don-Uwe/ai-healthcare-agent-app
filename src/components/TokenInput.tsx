@@ -23,7 +23,7 @@ import BalanceWalletIcon from '@/icons/misc/BalanceWalletIcon'
 import ChevronDownIcon from '@/icons/misc/ChevronDownIcon'
 import { useAppStore, useTokenAccountStore, useTokenStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
-import { trimTrailZero, formatCurrency, formatToRawLocaleStr, isIntlNumberFormatSupported } from '@/utils/numberish/formatter'
+import { trimTrailZero, formatCurrency, formatToRawLocaleStr, detectedSeparator } from '@/utils/numberish/formatter'
 
 import { t } from 'i18next'
 import Button from './Button'
@@ -31,7 +31,6 @@ import TokenAvatar from './TokenAvatar'
 import TokenSelectDialog, { TokenSelectDialogProps } from './TokenSelectDialog'
 import TokenUnknownAddDialog from './TokenSelectDialog/components/TokenUnknownAddDialog'
 import TokenFreezeDialog from './TokenSelectDialog/components/TokenFreezeDialog'
-import { useTranslation } from 'react-i18next'
 
 export const DEFAULT_SOL_RESERVER = 0.01
 export interface TokenInputProps extends Pick<TokenSelectDialogProps, 'filterFn'> {
@@ -139,12 +138,6 @@ function TokenInput(props: TokenInputProps) {
   const { isOpen, onOpen, onClose } = useDisclosure()
   const { isOpen: isOpenUnknownTokenConfirm, onOpen: onOpenUnknownTokenConfirm, onClose: onCloseUnknownTokenConfirm } = useDisclosure()
   const { isOpen: isOpenFreezeTokenConfirm, onOpen: onOpenFreezeTokenConfirm, onClose: onCloseFreezeTokenConfirm } = useDisclosure()
-
-  const { i18n } = useTranslation()
-  const currentLocale = i18n.language
-  const decimalSeparator = isIntlNumberFormatSupported
-    ? new Intl.NumberFormat(currentLocale).formatToParts(0.1).find((part) => part.type === 'decimal')?.value || '.'
-    : '.'
 
   const size = inputSize ?? isMobile ? 'sm' : 'md'
   const sizes = {
@@ -290,14 +283,14 @@ function TokenInput(props: TokenInputProps) {
   })
 
   const handleParseVal = useEvent((propVal: string) => {
-    const val = propVal.match(new RegExp(`[0-9${decimalSeparator}]`, 'gi'))?.join('') || ''
+    const val = propVal.match(new RegExp(`[0-9${detectedSeparator}]`, 'gi'))?.join('') || ''
     if (!val) return ''
-    const splitArr = val.split(decimalSeparator)
+    const splitArr = val.split(detectedSeparator)
     if (splitArr.length > 2) return [splitArr[0], splitArr[1]].join('.')
     if (token && splitArr[1] && splitArr[1].length > token.decimals) {
       return [splitArr[0], splitArr[1].substring(0, token.decimals)].join('.')
     }
-    return val === decimalSeparator ? '0.' : val.replace(decimalSeparator, '.')
+    return val === detectedSeparator ? '0.' : val.replace(detectedSeparator, '.')
     // const val = propVal.match(/[0-9.]/gi)?.join('') || ''
     // if (!val) return ''
     // const splitArr = val.split('.')
