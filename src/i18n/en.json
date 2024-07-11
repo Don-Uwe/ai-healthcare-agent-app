@@ -406,7 +406,11 @@
     "close_mint_position": "Close {{mint}} position.",
     "full_range": "Full Range",
     "custom": "Custom",
-    "start_now": "Start Now"
+    "start_now": "Start Now",
+    "price_away_from_market": "Pool price is {{percent}} away from market",
+    "price_away_from_market_tooltip": "The pool price is imbalanced for this pair. Adding a small amount of liquidity in a wide range can bring the price closer to the current market price.",
+    "low_liquidity": "Low Liquidity: ",
+    "low_liquidity_desc": "Your deposit is large relative to current liquidity in the pool, which may lead to arbitrage on your position. If the quoted price is far from market price, this risk may be magnified."
   },
   "migrate_clmm": {
     "title": "Migrate to Concentrated Liquidity pool",

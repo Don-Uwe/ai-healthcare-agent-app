@@ -119,6 +119,7 @@ export const darkColors: Record<keyof typeof colors, string> = {
   lightPurple: '#BFD2FF',
   background01: '#090D1D',
   cardBorder01: '#8C6EEF80',
+  text01: '#D6CC56',
   /** it's designer's variable name in Figma */
   brandGradient: 'linear-gradient(244deg, #7748FC 8.17%, #39D0D8 101.65%)',
   dividerDashGradient: 'repeating-linear-gradient(to right, currentColor 0 5px, transparent 5px 10px)',
@@ -251,6 +252,7 @@ export const lightColors: Partial<typeof darkColors> = {
   lightPurple: '#BFD2FF',
   background01: '#090D1D',
   cardBorder01: '#8C6EEF80',
+  text01: '#D6CC56',
   /** it's designer's variable name in Figma */
   brandGradient: 'linear-gradient(244deg, #7748FC 8.17%, #39D0D8 101.65%)',
   dividerDashGradient: 'repeating-linear-gradient(to right, currentColor 0 5px, transparent 5px 10px)',
@@ -386,6 +388,7 @@ export const colors = {
   lightPurple: 'var(--divider-bg-light-purple)',
   background01: 'var(--background-01)',
   cardBorder01: 'var(--card-border-01)',
+  text01: 'var(--text-01)',
   /** it's designer's variable name in Figma */
   brandGradient: 'var(--brand-gradient)',
   dividerDashGradient: 'var(--divider-dash-gradient)',
