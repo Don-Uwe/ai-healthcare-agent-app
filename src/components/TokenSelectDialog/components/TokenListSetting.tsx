@@ -20,7 +20,7 @@ export default function TokenListSetting({ onClick }: { onClick: () => void }) {
   const jupiterTokenListTokenCount = mintGroup.jup.size
   const userAddedTokenListTokenCount = useTokenStore.getState().extraLoadedTokenList.length
 
-  const jupiterTokenListTypes = [JupTokenType.ALL, JupTokenType.Strict]
+  const jupiterTokenListTypes = [JupTokenType.Strict]
   const renderItem = useEvent((v: string) => t(`token_selector.jupiter_types_${v.toLocaleLowerCase()}`))
   const currentJupiterTokenListType = useAppStore((s) => s.jupTokenType)
 
