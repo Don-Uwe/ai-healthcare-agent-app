@@ -1,7 +1,8 @@
 import Button from '@/components/Button'
 import DecimalInput from '@/components/DecimalInput'
 import { useEvent } from '@/hooks/useEvent'
-import { useAppStore, SLIPPAGE_KEY } from '@/store'
+import { useAppStore, useLiquidityStore, LIQUIDITY_SLIPPAGE_KEY } from '@/store'
+import { useSwapStore, SWAP_SLIPPAGE_KEY } from '@/features/Swap/useSwapStore'
 import { colors } from '@/theme/cssVariables'
 import toPercentString from '@/utils/numberish/toPercentString'
 import { formatToRawLocaleStr } from '@/utils/numberish/formatter'
@@ -13,9 +14,13 @@ import { setStorageItem } from '@/utils/localStorage'
 import { KeyboardEvent, useCallback, useState } from 'react'
 import Decimal from 'decimal.js'
 
-export function SlippageToleranceSettingField() {
+export function SlippageToleranceSettingField({ variant = 'swap' }: { variant?: 'swap' | 'liquidity' }) {
   const { t } = useTranslation()
-  const slippage = useAppStore((s) => s.slippage)
+  const isSwap = variant === 'swap'
+  const SLIPPAGE_KEY = isSwap ? SWAP_SLIPPAGE_KEY : LIQUIDITY_SLIPPAGE_KEY
+  const swapSlippage = useSwapStore((s) => s.slippage)
+  const liquiditySlippage = useLiquidityStore((s) => s.slippage)
+  const slippage = isSwap ? swapSlippage : liquiditySlippage
   const isMobile = useAppStore((s) => s.isMobile)
   const [currentSlippage, setCurrentSlippage] = useState(String(slippage * 100))
   const [isFirstFocused, setIsFirstFocused] = useState(false)
@@ -26,7 +31,11 @@ export function SlippageToleranceSettingField() {
   const handleUpdateSlippage = useEvent((val: string | number) => {
     const setVal = Number(val ?? 0) / 100
     setStorageItem(SLIPPAGE_KEY, setVal)
-    useAppStore.setState({ slippage: setVal }, false, { type: 'SlippageToleranceSettingField' })
+    if (isSwap) {
+      useSwapStore.setState({ slippage: setVal }, false, { type: 'SlippageToleranceSettingField' })
+    } else {
+      useLiquidityStore.setState({ slippage: setVal }, false, { type: 'SlippageToleranceSettingField' })
+    }
   })
   const handleBlur = useEvent(() => {
     setIsFirstFocused(false)
@@ -44,9 +53,9 @@ export function SlippageToleranceSettingField() {
 
   return (
     <SettingField
-      fieldName={t('setting_board.slippage_tolerance')}
+      fieldName={isSwap ? t('setting_board.slippage_tolerance_swap') : t('setting_board.slippage_tolerance_liquidity')}
       isCollapseDefaultOpen
-      tooltip={t('setting_board.slippage_tolerance_tooltip')}
+      tooltip={isSwap ? t('setting_board.slippage_tolerance_tooltip_swap') : t('setting_board.slippage_tolerance_tooltip_liquidity')}
       renderToggleButton={
         isMobile ? (isOpen) => <SettingFieldToggleButton isOpen={isOpen} renderContent={(slippage * 100).toString() + '%'} /> : null
       }
@@ -54,11 +63,11 @@ export function SlippageToleranceSettingField() {
         <>
           <Flex rowGap={2} flexWrap={['wrap', 'unset']} justifyContent="space-between">
             <Flex gap="2">
-              {[0.1, 0.5, 1].map((v) => (
+              {(isSwap ? [0.1, 0.5, 1] : [1, 2.5, 3.5]).map((v) => (
                 <Button
                   key={v}
                   size={'sm'}
-                  isActive={slippage * 100 == v}
+                  isActive={new Decimal(slippage).mul(100).eq(v)}
                   variant="capsule-radio"
                   onClick={() => {
                     handleChange(v)
@@ -90,7 +99,7 @@ export function SlippageToleranceSettingField() {
               </Text>
             </Flex>
           </Flex>
-          {new Decimal(currentSlippage || 0).gt('0.5') ? (
+          {isSwap && new Decimal(currentSlippage || 0).gt('0.5') ? (
             <Text mt="2" fontSize="sm" color={colors.textPink}>
               {t('setting_board.slippage_tolerance_forerun')}
             </Text>

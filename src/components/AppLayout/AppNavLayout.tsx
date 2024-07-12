@@ -6,7 +6,6 @@ import Gear from '@/icons/misc/Gear'
 import { useAppStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
 import { appLayoutPaddingX } from '@/theme/detailConfig'
-import { toUTC } from '@/utils/date'
 import {
   Box,
   Flex,
@@ -19,9 +18,7 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
-  Text,
-  useBreakpointValue,
-  useColorMode
+  Text
 } from '@chakra-ui/react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -55,8 +52,6 @@ function AppNavLayout({
   /** use screen height */
   overflowHidden?: boolean
 }) {
-  const { colorMode } = useColorMode()
-  const isDark = colorMode === 'dark'
   const { t } = useTranslation()
   const { pathname } = useRouter()
 
@@ -295,6 +290,8 @@ function SettingsMenuModalContent(props: { isOpen: boolean; triggerRef: React.Re
         <ModalCloseButton />
         <ModalBody>
           <SlippageToleranceSettingField />
+          <Divider />
+          <SlippageToleranceSettingField variant="liquidity" />
           <Divider />
           <VersionedTransactionSettingField />
           <Divider />

@@ -592,7 +592,7 @@ export default function CreatePosition() {
           <Flex alignItems="center" justifyContent="space-between" mb="3">
             <Flex>{t('clmm.add_deposit_amount')}</Flex>
             <Flex align="center" gap={3}>
-              <SlippageAdjuster />
+              <SlippageAdjuster variant="liquidity" />
               <IntervalCircle
                 componentRef={refreshCircleRef}
                 duration={60 * 1000}

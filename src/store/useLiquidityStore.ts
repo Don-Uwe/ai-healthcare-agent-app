@@ -29,9 +29,12 @@ import BN from 'bn.js'
 import Decimal from 'decimal.js'
 import { getComputeBudgetConfig } from '@/utils/tx/computeBudget'
 
+export const LIQUIDITY_SLIPPAGE_KEY = '_r_lqd_slippage_'
+
 interface LiquidityStore {
   newCreatedPool?: CreateCpmmPoolAddress
   createPoolFee: string
+  slippage: number
   addLiquidityAct: (
     params: {
       poolInfo: ApiV3PoolInfoStandardItem
@@ -117,7 +120,8 @@ interface LiquidityStore {
 }
 
 const initLiquiditySate = {
-  createPoolFee: ''
+  createPoolFee: '',
+  slippage: 0.025
 }
 
 export const useLiquidityStore = createStore<LiquidityStore>(
@@ -125,12 +129,12 @@ export const useLiquidityStore = createStore<LiquidityStore>(
     ...initLiquiditySate,
 
     addCpmmLiquidityAct: async ({ onSent, onError, onFinally, ...params }) => {
-      const { raydium, txVersion, slippage, getEpochInfo } = useAppStore.getState()
+      const { raydium, txVersion, getEpochInfo } = useAppStore.getState()
       if (!raydium) return ''
       const baseIn = params.baseIn
       const computeBudgetConfig = await getComputeBudgetConfig()
 
-      const percentSlippage = new Percent(slippage * 10000, 10000)
+      const percentSlippage = new Percent(get().slippage * 10000, 10000)
       const rpcData = await raydium.cpmm.getRpcPoolInfo(params.poolInfo.id)
 
       const computeResult = raydium.cpmm.computePairAmount({
@@ -283,7 +287,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
     },
 
     removeCpmmLiquidityAct: async ({ onSent, onError, onFinally, ...params }) => {
-      const { raydium, txVersion, slippage } = useAppStore.getState()
+      const { raydium, txVersion } = useAppStore.getState()
 
       if (!raydium) return ''
       const { poolInfo, lpAmount, amountA, amountB } = params
@@ -291,7 +295,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
       const { execute } = await raydium.cpmm.withdrawLiquidity({
         poolInfo,
         lpAmount: new BN(lpAmount),
-        slippage: new Percent(slippage * 10000, 10000),
+        slippage: new Percent(get().slippage * 10000, 10000),
         txVersion,
         computeBudgetConfig
       })
@@ -444,7 +448,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
     },
 
     computePairAmount: async ({ pool, amount, baseIn, baseReserve, quoteReserve }) => {
-      const { raydium, slippage, programIdConfig, getEpochInfo } = useAppStore.getState()
+      const { raydium, programIdConfig, getEpochInfo } = useAppStore.getState()
       if (!raydium)
         return {
           output: '0',
@@ -457,7 +461,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
         poolInfo: pool,
         amount,
         baseIn,
-        slippage: new Percent(slippage * 10000, 10000)
+        slippage: new Percent(get().slippage * 10000, 10000)
       }
 
       const r = isCpmm

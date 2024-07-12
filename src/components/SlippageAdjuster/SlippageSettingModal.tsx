@@ -16,16 +16,22 @@ import Decimal from 'decimal.js'
 import { useTranslation } from 'react-i18next'
 import DecimalInput from '@/components/DecimalInput'
 import { colors } from '@/theme/cssVariables'
-import { useAppStore, SLIPPAGE_KEY } from '@/store/useAppStore'
+import { useLiquidityStore, LIQUIDITY_SLIPPAGE_KEY } from '@/store'
+import { useSwapStore, SWAP_SLIPPAGE_KEY } from '@/features/Swap/useSwapStore'
 import { formatToRawLocaleStr } from '@/utils/numberish/formatter'
 import toPercentString from '@/utils/numberish/toPercentString'
 import { useEvent } from '@/hooks/useEvent'
 import { setStorageItem } from '@/utils/localStorage'
 import WarningIcon from '@/icons/misc/WarningIcon'
+import { QuestionToolTip } from '@/components/QuestionToolTip'
 
-export function SlippageSettingModal(props: { isOpen: boolean; onClose: () => void }) {
+export function SlippageSettingModal(props: { variant: 'swap' | 'liquidity'; isOpen: boolean; onClose: () => void }) {
   const { t } = useTranslation()
-  const slippage = useAppStore((s) => s.slippage)
+  const isSwap = props.variant === 'swap'
+  const SLIPPAGE_KEY = isSwap ? SWAP_SLIPPAGE_KEY : LIQUIDITY_SLIPPAGE_KEY
+  const swapSlippage = useSwapStore((s) => s.slippage)
+  const liquiditySlippage = useLiquidityStore((s) => s.slippage)
+  const slippage = isSwap ? swapSlippage : liquiditySlippage
   const [currentSlippage, setCurrentSlippage] = useState<string>(String(slippage * 100))
   const [isFirstFocused, setIsFirstFocused] = useState(false)
   const handleChange = useEvent((val: string | number) => {
@@ -35,7 +41,11 @@ export function SlippageSettingModal(props: { isOpen: boolean; onClose: () => vo
   const handleUpdateSlippage = useEvent((val: string | number) => {
     const setVal = Number(val ?? 0) / 100
     setStorageItem(SLIPPAGE_KEY, setVal)
-    useAppStore.setState({ slippage: setVal }, false, { type: 'SlippageToleranceSettingField' })
+    if (isSwap) {
+      useSwapStore.setState({ slippage: setVal }, false, { type: 'SlippageToleranceSettingField' })
+    } else {
+      useLiquidityStore.setState({ slippage: setVal }, false, { type: 'SlippageToleranceSettingField' })
+    }
   })
   const handleBlur = useEvent(() => {
     setIsFirstFocused(false)
@@ -60,9 +70,9 @@ export function SlippageSettingModal(props: { isOpen: boolean; onClose: () => vo
   }, [slippage, props.isOpen])
 
   const slippageDecimal = new Decimal(currentSlippage || 0)
-  const isForerun = slippageDecimal.gt('0.5')
-  const isFailrun = slippageDecimal.lt('0.1')
-  const isWarn = isForerun || isFailrun
+  const isForerun = slippageDecimal.gt('3')
+  const isFailrun = slippageDecimal.lt('0.5')
+  const isWarn = isSwap && (isForerun || isFailrun)
   const warnText = isForerun ? t('setting_board.slippage_tolerance_forerun') : isFailrun ? t('setting_board.slippage_tolerance_fail') : ''
 
   return (
@@ -77,7 +87,11 @@ export function SlippageSettingModal(props: { isOpen: boolean; onClose: () => vo
       >
         <ModalHeader marginTop={0} marginBottom={'48px'}>
           <HStack spacing="6px">
-            <Text>{t('setting_board.slippage_tolerance')}</Text>
+            <Text>{isSwap ? t('setting_board.slippage_tolerance_swap') : t('setting_board.slippage_tolerance_liquidity')}</Text>
+            <QuestionToolTip
+              label={isSwap ? t('setting_board.slippage_tolerance_tooltip_swap') : t('setting_board.slippage_tolerance_tooltip_liquidity')}
+              iconProps={{ color: colors.textSecondary }}
+            />
           </HStack>
         </ModalHeader>
         <ModalCloseButton />
@@ -85,7 +99,7 @@ export function SlippageSettingModal(props: { isOpen: boolean; onClose: () => vo
           <VStack gap={4} alignItems="flex-start">
             <Flex rowGap={2} flexWrap={['wrap', 'unset']} justifyContent="space-between" w="full">
               <Flex gap="2">
-                {[0.1, 0.5, 1].map((v) => (
+                {(isSwap ? [0.1, 0.5, 1] : [1, 2.5, 3.5]).map((v) => (
                   <Button
                     key={v}
                     size={'sm'}

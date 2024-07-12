@@ -113,7 +113,7 @@ export default function Stake({ poolInfo, disabled, onRefresh }: Props) {
           {t('liquidity.select_farm')}
         </Text>
         <Flex align="center" gap={3}>
-          <SlippageAdjuster />
+          <SlippageAdjuster variant="liquidity" />
           <IntervalCircle
             componentRef={circleRef}
             svgWidth={18}

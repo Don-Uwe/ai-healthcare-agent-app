@@ -141,7 +141,7 @@ export default function UnStakeLiquidity({
       </Flex>
       <AmountSlider isDisabled={featureDisabled || liquidity.isZero()} percent={removePercent} onChange={setRemovePercent} mt={4} />
       <Flex align="center" gap={3} justifyContent="flex-end" mb="2">
-        <SlippageAdjuster />
+        <SlippageAdjuster variant="liquidity" />
         <IntervalCircle
           componentRef={circleRef}
           svgWidth={18}

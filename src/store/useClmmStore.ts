@@ -22,7 +22,7 @@ import {
 } from '@raydium-io/raydium-sdk-v2'
 import { PublicKey } from '@solana/web3.js'
 import createStore from '@/store/createStore'
-import { useAppStore, useTokenAccountStore } from '@/store'
+import { useAppStore, useTokenAccountStore, useLiquidityStore } from '@/store'
 import { isSolWSol } from '@/utils/token'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
 import { txStatusSubject } from '@/hooks/toast/useTxStatus'
@@ -175,7 +175,8 @@ const clmmInitState = {
   positionLoading: false,
   currentPoolLoading: true,
   clmmFeeConfigs: {},
-  rewardWhiteListMints: []
+  rewardWhiteListMints: [],
+  slippage: 0.005
 }
 
 export const useClmmStore = createStore<ClmmState>(
@@ -408,7 +409,8 @@ export const useClmmStore = createStore<ClmmState>(
       onFinally,
       onConfirmed
     }) => {
-      const { raydium, txVersion, slippage, getEpochInfo } = useAppStore.getState()
+      const { raydium, txVersion, getEpochInfo } = useAppStore.getState()
+      const slippage = useLiquidityStore.getState().slippage
       if (!raydium) return ''
 
       const [_amountMinA, _amountMinB] = [
@@ -525,7 +527,8 @@ export const useClmmStore = createStore<ClmmState>(
     },
 
     increaseLiquidityAct: async ({ poolInfo, position, liquidity, amountMaxA, amountMaxB, ...txProps }) => {
-      const { raydium, txVersion, slippage } = useAppStore.getState()
+      const { raydium, txVersion } = useAppStore.getState()
+      const slippage = useLiquidityStore.getState().slippage
       if (!raydium) return ''
       try {
         const computeBudgetConfig = await getComputeBudgetConfig()
@@ -825,11 +828,8 @@ export const useClmmStore = createStore<ClmmState>(
       }
     },
     computePairAmount: async ({ pool, inputA, tickLower, tickUpper, amount }) => {
-      const [connection, getEpochInfo, slippage] = [
-        useAppStore.getState().connection,
-        useAppStore.getState().getEpochInfo,
-        useAppStore.getState().slippage
-      ]
+      const [connection, getEpochInfo] = [useAppStore.getState().connection, useAppStore.getState().getEpochInfo]
+      const slippage = useLiquidityStore.getState().slippage
       const poolInfo = pool
       const epochInfo = await getEpochInfo()
       if (!poolInfo || !connection || tickLower === undefined || tickLower === undefined || !epochInfo) {
