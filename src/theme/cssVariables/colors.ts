@@ -250,7 +250,7 @@ export const lightColors: Partial<typeof darkColors> = {
   warnButtonLightBg: '#FED33A1A',
   buttonBg01: '#ABC4FF1F',
   lightPurple: '#BFD2FF',
-  background01: '#090D1D',
+  background01: '#EDEDFF',
   cardBorder01: '#8C6EEF80',
   text01: '#D6CC56',
   /** it's designer's variable name in Figma */
