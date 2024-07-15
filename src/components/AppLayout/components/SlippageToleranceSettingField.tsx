@@ -22,7 +22,7 @@ export function SlippageToleranceSettingField({ variant = 'swap' }: { variant?: 
   const liquiditySlippage = useLiquidityStore((s) => s.slippage)
   const slippage = isSwap ? swapSlippage : liquiditySlippage
   const isMobile = useAppStore((s) => s.isMobile)
-  const [currentSlippage, setCurrentSlippage] = useState(String(slippage * 100))
+  const [currentSlippage, setCurrentSlippage] = useState(new Decimal(slippage).mul(100).toFixed())
   const [isFirstFocused, setIsFirstFocused] = useState(false)
   const handleChange = useEvent((val: string | number) => {
     setIsFirstFocused(false)
@@ -57,7 +57,9 @@ export function SlippageToleranceSettingField({ variant = 'swap' }: { variant?: 
       isCollapseDefaultOpen
       tooltip={isSwap ? t('setting_board.slippage_tolerance_tooltip_swap') : t('setting_board.slippage_tolerance_tooltip_liquidity')}
       renderToggleButton={
-        isMobile ? (isOpen) => <SettingFieldToggleButton isOpen={isOpen} renderContent={(slippage * 100).toString() + '%'} /> : null
+        isMobile
+          ? (isOpen) => <SettingFieldToggleButton isOpen={isOpen} renderContent={new Decimal(slippage).mul(100).toFixed() + '%'} />
+          : null
       }
       renderWidgetContent={
         <>

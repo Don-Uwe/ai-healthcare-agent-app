@@ -32,7 +32,7 @@ export function SlippageSettingModal(props: { variant: 'swap' | 'liquidity'; isO
   const swapSlippage = useSwapStore((s) => s.slippage)
   const liquiditySlippage = useLiquidityStore((s) => s.slippage)
   const slippage = isSwap ? swapSlippage : liquiditySlippage
-  const [currentSlippage, setCurrentSlippage] = useState<string>(String(slippage * 100))
+  const [currentSlippage, setCurrentSlippage] = useState<string>(new Decimal(slippage).mul(100).toFixed())
   const [isFirstFocused, setIsFirstFocused] = useState(false)
   const handleChange = useEvent((val: string | number) => {
     setIsFirstFocused(false)
@@ -66,7 +66,7 @@ export function SlippageSettingModal(props: { variant: 'swap' | 'liquidity'; isO
   })
 
   useEffect(() => {
-    setCurrentSlippage(String(slippage * 100))
+    setCurrentSlippage(new Decimal(slippage).mul(100).toFixed())
   }, [slippage, props.isOpen])
 
   const slippageDecimal = new Decimal(currentSlippage || 0)

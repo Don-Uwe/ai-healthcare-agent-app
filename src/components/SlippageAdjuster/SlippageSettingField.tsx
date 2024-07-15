@@ -21,7 +21,7 @@ export function SlippageSettingField({ variant = 'liquidity', onClose }: { varia
   const swapSlippage = useSwapStore((s) => s.slippage)
   const liquiditySlippage = useLiquidityStore((s) => s.slippage)
   const slippage = isSwap ? swapSlippage : liquiditySlippage
-  const [currentSlippage, setCurrentSlippage] = useState(String(slippage * 100))
+  const [currentSlippage, setCurrentSlippage] = useState(new Decimal(slippage).mul(100).toFixed())
   const [isFirstFocused, setIsFirstFocused] = useState(false)
   const slippageDecimal = new Decimal(currentSlippage || 0)
   const isForerun = slippageDecimal.gt('3')

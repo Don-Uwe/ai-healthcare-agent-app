@@ -51,7 +51,7 @@ export default function SectionOverview() {
       <Heading id="overview" fontSize={['lg', 'xl']} fontWeight="500" mb={[2, 4]} mt={[3, 6]} color={colors.textPrimary}>
         {t('portfolio.section_overview')}
       </Heading>
-      <SimpleGrid templateColumns={['', '1fr 1fr']} gap={[3, 8]} overflow={['scroll']} mx={[-5, 0]} px={[5, 0]} scrollSnapType={'x'}>
+      <SimpleGrid templateColumns={['1fr 1fr']} gap={[3, 8]} overflow={['scroll']} mx={[-5, 0]} px={[5, 0]} scrollSnapType={'x'}>
         <PortfolioInfo poolAssets={[...standardPoolList, ...clmmPoolAssets]} tokenAssets={tokenAssetsNew} />
         <PortfolioIdle idleBalance={idleBalance.toString()} productiveBalance={productiveBalance} idleList={idleList} />
       </SimpleGrid>
