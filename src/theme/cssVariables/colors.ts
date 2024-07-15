@@ -249,7 +249,7 @@ export const lightColors: Partial<typeof darkColors> = {
   warnButtonBg: '#FED33A33',
   warnButtonLightBg: '#FED33A1A',
   buttonBg01: '#ABC4FF1F',
-  lightPurple: '#BFD2FF',
+  lightPurple: '#474ABB',
   background01: '#EDEDFF',
   cardBorder01: '#8C6EEF80',
   text01: '#D6CC56',

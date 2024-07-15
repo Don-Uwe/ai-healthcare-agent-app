@@ -116,7 +116,7 @@ export function ClmmPositionItemsCard({
 
       <GridItem area="price" justifySelf={['stretch', 'left']}>
         <Flex flexDirection={['column', 'row']} gap={2} justify="space-between" alignItems="center">
-          <Text color={colors.textTertiary}>
+          <Text color={colors.lightPurple}>
             {t('field.current_price')}:{' '}
             <Text as="span" color={colors.textPrimary}>
               {baseIn
