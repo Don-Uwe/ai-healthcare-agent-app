@@ -84,7 +84,9 @@ export default function MoonpayPage() {
                 })}
           >
             <Box flex="1" {...(isMobile ? { display: 'flex', gap: '12px' } : {})}>
-              <Phantom width="24px" height="24px" color="#898eff" />
+              <Box width="24px" height="24px">
+                <Phantom width="24px" height="24px" color="#898eff" />
+              </Box>
               <Box>
                 <Text
                   fontSize={{ base: 'sm', md: 'md' }}
@@ -99,7 +101,9 @@ export default function MoonpayPage() {
               </Box>
             </Box>
             <Box flex="1" {...(isMobile ? { display: 'flex', gap: '12px' } : {})}>
-              <SolGrey width="24px" height="24px" color="#898eff" />
+              <Box width="24px" height="24px">
+                <SolGrey width="24px" height="24px" color="#898eff" />
+              </Box>
               <Box>
                 <Text
                   fontSize={{ base: 'sm', md: 'md' }}
@@ -114,7 +118,9 @@ export default function MoonpayPage() {
               </Box>
             </Box>
             <Box flex="1" {...(isMobile ? { display: 'flex', gap: '12px' } : {})}>
-              <Cart width="24px" height="24px" color="#898eff" />
+              <Box width="24px" height="24px">
+                <Cart width="24px" height="24px" color="#898eff" />
+              </Box>
               <Box>
                 <Text
                   fontSize={{ base: 'sm', md: 'md' }}
