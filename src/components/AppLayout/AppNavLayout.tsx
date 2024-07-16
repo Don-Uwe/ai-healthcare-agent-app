@@ -6,7 +6,6 @@ import Gear from '@/icons/misc/Gear'
 import { useAppStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
 import { appLayoutPaddingX } from '@/theme/detailConfig'
-import { toUTC } from '@/utils/date'
 import {
   Box,
   Flex,
@@ -19,9 +18,7 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
-  Text,
-  useBreakpointValue,
-  useColorMode
+  Text
 } from '@chakra-ui/react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -40,6 +37,7 @@ import { SlippageToleranceSettingField } from './components/SlippageToleranceSet
 import { VersionedTransactionSettingField } from './components/VersionedTransactionSettingField'
 // import { TransactionFeeSetting } from './components/TransactionFeeSetting'
 import { PriorityButton } from './components/PriorityButton'
+import DisclaimerModal from './components/DisclaimerModal'
 import { keyframes } from '@emotion/react'
 import AppVersion from './AppVersion'
 
@@ -55,8 +53,6 @@ function AppNavLayout({
   /** use screen height */
   overflowHidden?: boolean
 }) {
-  const { colorMode } = useColorMode()
-  const isDark = colorMode === 'dark'
   const { t } = useTranslation()
   const { pathname } = useRouter()
 
@@ -198,7 +194,7 @@ function AppNavLayout({
       >
         {children}
       </Box>
-
+      <DisclaimerModal />
       <Mobile>
         <Box flex="none">
           <MobileBottomNavbar />
@@ -295,6 +291,8 @@ function SettingsMenuModalContent(props: { isOpen: boolean; triggerRef: React.Re
         <ModalCloseButton />
         <ModalBody>
           <SlippageToleranceSettingField />
+          <Divider />
+          <SlippageToleranceSettingField variant="liquidity" />
           <Divider />
           <VersionedTransactionSettingField />
           <Divider />

@@ -1,14 +1,18 @@
+import React, { useCallback, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, Flex, Grid, GridItem, HStack, Tag, Text, Tooltip, Skeleton, useDisclosure } from '@chakra-ui/react'
+import { Box, Flex, Grid, GridItem, HStack, Tag, Text, Skeleton, useDisclosure } from '@chakra-ui/react'
 import Link from 'next/link'
 import { PublicKey } from '@solana/web3.js'
+import Decimal from 'decimal.js'
 import Button from '@/components/Button'
+import TokenAvatar from '@/components/TokenAvatar'
 import TokenAvatarPair from '@/components/TokenAvatarPair'
+import AddressChip from '@/components/AddressChip'
+import Tooltip from '@/components/Tooltip'
 import { colors } from '@/theme/cssVariables'
 import { PositionWithUpdateFn } from '@/hooks/portfolio/useAllPositionInfo'
 import { FormattedPoolInfoConcentratedItem } from '@/hooks/pool/type'
 import useSubscribeClmmInfo, { RpcPoolData } from '@/hooks/pool/clmm/useSubscribeClmmInfo'
-import Decimal from 'decimal.js'
 import SwapHorizontalIcon from '@/icons/misc/SwapHorizontalIcon'
 import ChevronDoubleDownIcon from '@/icons/misc/ChevronDoubleDownIcon'
 import { Desktop, Mobile } from '@/components/MobileDesktop'
@@ -17,7 +21,6 @@ import ClmmPositionAccountItem from './ClmmPositionAccountItem'
 import toPercentString from '@/utils/numberish/toPercentString'
 import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
 import { shortenAddress } from '@/utils/token'
-import React, { useCallback, useState, useEffect } from 'react'
 
 const LIST_THRESHOLD = 10
 
@@ -81,24 +84,39 @@ export function ClmmPositionItemsCard({
     >
       <GridItem area="face" justifySelf={['stretch', 'left']}>
         <Flex flexDirection={['column', 'row']} gap={2} justify="space-between" alignItems="center">
-          <HStack>
-            <TokenAvatarPair size={['smi', 'md']} token1={poolInfo.mintA} token2={poolInfo.mintB} />
-            <Text fontSize={['md', '20px']} fontWeight="500">
-              {poolInfo.poolName.replace(' - ', '/')}
-            </Text>
-            <Tag size={['sm', 'md']} variant="rounded">
-              {formatToRawLocaleStr(toPercentString(poolInfo.feeRate * 100))}
-            </Tag>
-          </HStack>
-          <Text ml={6} color={colors.textTertiary}>
-            {t('portfolio.id')}: {shortenAddress(poolInfo.id, 8).toLocaleLowerCase()}
-          </Text>
+          <Tooltip
+            label={
+              <Box py={0.5}>
+                <AddressChip address={poolInfo.id} renderLabel={`${t('common.pool_id')}:`} mb="2" textProps={{ fontSize: 'xs' }} />
+                <AddressChip
+                  address={poolInfo.mintA.address}
+                  renderLabel={<TokenAvatar token={poolInfo.mintA} size="xs" />}
+                  textProps={{ fontSize: 'xs' }}
+                />
+                <AddressChip
+                  address={poolInfo.mintB.address}
+                  renderLabel={<TokenAvatar token={poolInfo.mintB} size="xs" />}
+                  textProps={{ fontSize: 'xs' }}
+                />
+              </Box>
+            }
+          >
+            <HStack>
+              <TokenAvatarPair size={['smi', 'md']} token1={poolInfo.mintA} token2={poolInfo.mintB} />
+              <Text fontSize={['md', '20px']} fontWeight="500">
+                {poolInfo.poolName.replace(' - ', '/')}
+              </Text>
+              <Tag size={['sm', 'md']} variant="rounded">
+                {formatToRawLocaleStr(toPercentString(poolInfo.feeRate * 100))}
+              </Tag>
+            </HStack>
+          </Tooltip>
         </Flex>
       </GridItem>
 
       <GridItem area="price" justifySelf={['stretch', 'left']}>
         <Flex flexDirection={['column', 'row']} gap={2} justify="space-between" alignItems="center">
-          <Text color={colors.textTertiary}>
+          <Text color={colors.lightPurple}>
             {t('field.current_price')}:{' '}
             <Text as="span" color={colors.textPrimary}>
               {baseIn

@@ -17,6 +17,7 @@ export function RPCConnectionSettingField() {
   const [customUrl, setCustomUrl] = useState(isCurrentCustom ? rpcNodeUrl || 'https://' : 'https://')
   const { isOpen: isCustom, onOpen: onCustom, onClose: offCustom } = useDisclosure()
   const { isOpen: isLoading, onOpen: onLoading, onClose: offLoading } = useDisclosure()
+  const defaultRpc = rpcs.find((rpc) => rpc.url === rpcNodeUrl)
 
   const handleSwitchCustomRpc = useEvent(async () => {
     if (!isValidUrl(customUrl)) return
@@ -36,7 +37,9 @@ export function RPCConnectionSettingField() {
     <SettingField
       fieldName={t('setting_board.rpc_connection')}
       tooltip={t('setting_board.rpc_connection_tooltip')}
-      renderToggleButton={isMobile ? (isOpen) => <SettingFieldToggleButton isOpen={isOpen} renderContent={rpcNodeUrl} /> : null}
+      renderToggleButton={
+        isMobile ? (isOpen) => <SettingFieldToggleButton isOpen={isOpen} renderContent={defaultRpc ? defaultRpc.name : rpcNodeUrl} /> : null
+      }
       renderWidgetContent={
         <>
           <Flex flexWrap="wrap" gap={4}>

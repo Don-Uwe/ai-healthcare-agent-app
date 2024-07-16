@@ -233,7 +233,7 @@ export default function RemoveLiquidityModal({
                 </HStack>
               )}
               <Flex align="center" justify="flex-end" gap={3}>
-                <SlippageAdjuster onClick={onToggleSlippage} />
+                <SlippageAdjuster variant="liquidity" onClick={onToggleSlippage} />
                 <IntervalCircle
                   componentRef={circleRef}
                   svgWidth={18}

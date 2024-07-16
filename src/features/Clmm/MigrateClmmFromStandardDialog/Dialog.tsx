@@ -28,8 +28,7 @@ import {
   FormatFarmInfoOutV6,
   PoolFetchType,
   TickUtils,
-  getLiquidityFromAmounts,
-  FARM_PROGRAM_TO_VERSION
+  getLiquidityFromAmounts
 } from '@raydium-io/raydium-sdk-v2'
 import { useEffect, useRef, useState } from 'react'
 
@@ -161,7 +160,7 @@ export default function MigrateFromStandardDialog({
 
   const calculateAmount = useEvent(({ priceLowerTick, priceUpperTick }: { priceLowerTick: number; priceUpperTick: number }) => {
     if (!clmmPoolInfo) return
-    const slippage = useAppStore.getState().slippage
+    const slippage = useLiquidityStore.getState().slippage
 
     const data = getLiquidityFromAmounts({
       poolInfo: clmmPoolInfo,

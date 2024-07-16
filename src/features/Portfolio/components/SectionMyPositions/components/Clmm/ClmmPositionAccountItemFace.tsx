@@ -99,7 +99,7 @@ export default function ClmmPositionAccountItemFace({
           borderBottomRadius={isViewOpen ? 'none' : 'xl'}
           justifyContent="space-between"
           py={[2, 3]}
-          px={[3, 6]}
+          px={[3, 5]}
           gap={[2, 4]}
           cursor="pointer"
           onClick={onClickViewTrigger}

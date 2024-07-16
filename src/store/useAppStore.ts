@@ -64,7 +64,6 @@ const RPC_URL_PROD_KEY = '_r_rpc_pro_'
 export const FEE_KEY = '_r_fee_'
 export const PRIORITY_LEVEL_KEY = '_r_fee_level_'
 export const PRIORITY_MODE_KEY = '_r_fee_mode_'
-export const SLIPPAGE_KEY = '_r_slippage_'
 export const USER_ADDED_KEY = '_r_u_added_'
 export enum PriorityLevel {
   Fast,
@@ -115,7 +114,6 @@ interface AppState {
 
   featureDisabled: Partial<AvailabilityCheckAPI3>
 
-  slippage: number
   epochInfo?: EpochInfo
   txVersion: TxVersion
   tokenAccLoaded: boolean
@@ -166,7 +164,6 @@ const appInitState = {
     userAdded: true
   },
   featureDisabled: {},
-  slippage: 0.005,
   txVersion: TxVersion.V0,
   appVersion: 'V3.0.2',
   needRefresh: false,

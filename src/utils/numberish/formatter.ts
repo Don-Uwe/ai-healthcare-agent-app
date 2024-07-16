@@ -1,5 +1,4 @@
 import Decimal from 'decimal.js'
-import i18n from '@/i18n'
 
 export function formatLocaleStr(num?: string | number | Decimal, decimalPlace?: number) {
   if (num === null || num === undefined) return '-'
@@ -66,7 +65,18 @@ export function trimTailingZero(s: string) {
   return cleanedDecimalPart ? `${sign}${int}.${cleanedDecimalPart}` : `${sign}${int}` || '0'
 }
 
-export const isIntlNumberFormatSupported = typeof Intl == 'object' && Intl && typeof Intl.NumberFormat == 'function'
+const userLocale =
+  typeof window !== 'undefined'
+    ? navigator.languages && navigator.languages.length
+      ? navigator.languages[0]
+      : navigator.language
+    : 'en-US'
+
+export const detectedSeparator = new Intl.NumberFormat(userLocale, {
+  style: 'decimal'
+})
+  .format(1.1)
+  .substring(1, 2)
 
 /**
  *
@@ -75,14 +85,10 @@ export const isIntlNumberFormatSupported = typeof Intl == 'object' && Intl && ty
  * formatToRawLocaleStr(1.2%) // locale en:1.2%, locale es:1,2%
  */
 export function formatToRawLocaleStr(val: string | number | undefined): string | number {
-  const locale = i18n.language
   if (!val) {
     return ''
   }
-  const decimalSeparator = isIntlNumberFormatSupported
-    ? new Intl.NumberFormat(locale).formatToParts(0.1).find((part) => part.type === 'decimal')?.value || '.'
-    : '.'
-  return decimalSeparator !== '.' ? val.toString().replace('.', decimalSeparator) : val
+  return detectedSeparator !== '.' ? val.toString().replace('.', detectedSeparator) : val
 }
 
 export interface FormatCurrencyParams {
@@ -139,27 +145,14 @@ function formatCurrencyOverride(formattedCurrency: string, maximumDecimalTrailin
   return formattedCurrency
 }
 
-function generateFallbackFormatter(
-  symbol: string | undefined,
-  abbreviated: boolean,
-  numDecimals: number
-): { format: (value: number) => string } {
-  return {
-    format: (value: number): string => {
-      const formattedValue = abbreviated ? formatWithAbbreviation(value, numDecimals) : formatLocaleStr(value, numDecimals)
-      return symbol ? `${symbol}${formattedValue}` : `${formattedValue}`
-    }
-  }
-}
-
-function generateIntlNumberFormatter(locale: string, symbol: string | undefined, abbreviated: boolean, numDecimals: number) {
+function generateIntlNumberFormatter(symbol: string | undefined, abbreviated: boolean, numDecimals = 2) {
   const params: Intl.NumberFormatOptions = {
     style: 'decimal',
     useGrouping: true,
     minimumFractionDigits: 0,
     maximumFractionDigits: numDecimals
   }
-  const formatter = new Intl.NumberFormat(locale, params)
+  const formatter = new Intl.NumberFormat(userLocale, params)
 
   return {
     format: (value: number) => {
@@ -174,12 +167,6 @@ function generateIntlNumberFormatter(locale: string, symbol: string | undefined,
       return symbol ? `${symbol}${formattedValue}` : formattedValue
     }
   }
-}
-
-function generateFormatter(locale: string, symbol: string | undefined, abbreviated: boolean, numDecimals = 2) {
-  return isIntlNumberFormatSupported
-    ? generateIntlNumberFormatter(locale, symbol, abbreviated, numDecimals)
-    : generateFallbackFormatter(symbol, abbreviated, numDecimals)
 }
 
 /**
@@ -198,7 +185,6 @@ function generateFormatter(locale: string, symbol: string | undefined, abbreviat
  * formatCurrency(6553.83766, { symbol: '$',abbreviated:true, decimalPlaces: 3 }) // locale:'es' result is $6.554k
  */
 export function formatCurrency(amount?: string | number | Decimal, params: FormatCurrencyParams = {}): string {
-  const locale = i18n.language
   const { noDecimal = false, symbol, abbreviated = false, decimalPlaces, maximumDecimalTrailingZeroes } = params
   if (!amount) {
     return symbol ? `${symbol}0` : '0'
@@ -206,13 +192,13 @@ export function formatCurrency(amount?: string | number | Decimal, params: Forma
   const amountDecimal = amount instanceof Decimal ? amount : new Decimal(String(amount).replace(/,/gi, ''))
   const amountNumber = amountDecimal.toNumber()
   const amountString = amountDecimal.toFixed()
-  const currencyFormatterNoDecimal: { format: (value: number) => string } = generateFormatter(locale, symbol, abbreviated, 0)
+  const currencyFormatterNoDecimal: { format: (value: number) => string } = generateIntlNumberFormatter(symbol, abbreviated, 0)
 
   if (noDecimal === true && amountNumber > 1) {
     return formatCurrencyOverride(currencyFormatterNoDecimal.format(amountNumber))
   }
   if (Object.prototype.hasOwnProperty.call(params, 'decimalPlaces')) {
-    const currencyFormatterCustom = generateFormatter(locale, symbol, abbreviated, decimalPlaces)
+    const currencyFormatterCustom = generateIntlNumberFormatter(symbol, abbreviated, decimalPlaces)
     return formatCurrencyOverride(currencyFormatterCustom.format(amountNumber), maximumDecimalTrailingZeroes)
   }
 
@@ -223,15 +209,15 @@ export function formatCurrency(amount?: string | number | Decimal, params: Forma
     return formatCurrencyOverride(currencyFormatterNoDecimal.format(amountNumber))
   } else if (amountNumber >= 50 && amountNumber < 1000) {
     // Medium, show 3 fraction digits
-    const currencyFormatterMedium: { format: (value: number) => string } = generateFormatter(locale, symbol, abbreviated, 3)
+    const currencyFormatterMedium: { format: (value: number) => string } = generateIntlNumberFormatter(symbol, abbreviated, 3)
     return formatCurrencyOverride(currencyFormatterMedium.format(amountNumber), maximumDecimalTrailingZeroes)
   } else if (amountNumber >= 0.000001 && amountNumber < 50) {
     // show 6 fraction digits
-    const currencyFormatterSmall: { format: (value: number) => string } = generateFormatter(locale, symbol, abbreviated, 6)
+    const currencyFormatterSmall: { format: (value: number) => string } = generateIntlNumberFormatter(symbol, abbreviated, 6)
     return formatCurrencyOverride(currencyFormatterSmall.format(amountNumber), maximumDecimalTrailingZeroes)
   } else if (amountNumber >= 10 ** -9 && amountNumber < 10 ** -6) {
     // show 12 fraction digits
-    const currencyFormatterVeryVerySmall: { format: (value: number) => string } = generateFormatter(locale, symbol, abbreviated, 12)
+    const currencyFormatterVeryVerySmall: { format: (value: number) => string } = generateIntlNumberFormatter(symbol, abbreviated, 12)
     return formatCurrencyOverride(
       currencyFormatterVeryVerySmall.format(formatSmallNumberWithFixed(amountNumber, 3)),
       maximumDecimalTrailingZeroes
@@ -239,8 +225,7 @@ export function formatCurrency(amount?: string | number | Decimal, params: Forma
   } else {
     // too small show all fraction digits
     const digitsAfterPoint = amountString.length - 2
-    const currencyFormatterTooSmall: { format: (value: number) => string } = generateFormatter(
-      locale,
+    const currencyFormatterTooSmall: { format: (value: number) => string } = generateIntlNumberFormatter(
       symbol,
       abbreviated,
       digitsAfterPoint

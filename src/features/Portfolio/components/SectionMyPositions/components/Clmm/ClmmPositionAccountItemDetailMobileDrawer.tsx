@@ -48,6 +48,7 @@ type DetailProps = {
   timeBasis: AprKey
   onTimeBasisChange?: (val: AprKey) => void
   nftMint: string
+  totalPendingYield: string
   baseIn: boolean
   hasReward?: boolean
   rewardInfos: { mint: ApiV3Token; amount: string; amountUSD: string }[]
@@ -65,6 +66,7 @@ export default function ClmmPositionAccountItemDetailMobileDrawer({
   position,
   nftMint,
   aprData,
+  totalPendingYield,
   baseIn,
   timeBasis,
   onTimeBasisChange,
@@ -258,7 +260,13 @@ export default function ClmmPositionAccountItemDetailMobileDrawer({
               timeAprData={poolInfo.allApr}
               poolId={poolInfo.id}
             />
-            <PendingYield isLoading={isLoading} hasReward={hasReward} rewardInfos={rewardInfos} onHarvest={handleHarvest} />
+            <PendingYield
+              isLoading={isLoading}
+              hasReward={hasReward}
+              rewardInfos={rewardInfos}
+              pendingYield={formatCurrency(totalPendingYield.toString(), { symbol: '$', decimalPlaces: 2 })}
+              onHarvest={handleHarvest}
+            />
             <HStack w="full" spacing={4}>
               {position.liquidity.isZero() ? (
                 <CloseButton isLoading={isCloseLoading} onClick={handleClose} />

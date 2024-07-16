@@ -279,7 +279,7 @@ export default function AddLiquidityModal({
               {t('liquidity.add_liquidity')}
             </Text>
             <Flex align="center" gap={3}>
-              <SlippageAdjuster onClick={onToggleSlippage} />
+              <SlippageAdjuster variant="liquidity" onClick={onToggleSlippage} />
               <IntervalCircle
                 componentRef={circleRef}
                 svgWidth={18}

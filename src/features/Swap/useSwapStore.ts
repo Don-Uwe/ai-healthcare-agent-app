@@ -40,6 +40,7 @@ const getSwapComputePrice = async () => {
 }
 
 interface SwapStore {
+  slippage: number
   swapTokenAct: (
     props: { swapResponse: ApiSwapV1OutSuccess; wrapSol?: boolean; unwrapSol?: boolean; onCloseToast?: () => void } & TxCallbackProps
   ) => Promise<string | string[] | undefined>
@@ -53,7 +54,10 @@ export interface ComputeParams {
   amount: string
 }
 
-const initSwapState = {}
+export const SWAP_SLIPPAGE_KEY = '_r_swap_slippage_'
+const initSwapState = {
+  slippage: 0.005
+}
 
 export const useSwapStore = createStore<SwapStore>(
   () => ({

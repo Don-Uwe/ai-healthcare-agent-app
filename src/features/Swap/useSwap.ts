@@ -1,6 +1,7 @@
 import { TxVersion, solToWSol } from '@raydium-io/raydium-sdk-v2'
 import axios from '@/api/axios'
 import { useAppStore } from '@/store'
+import { useSwapStore } from './useSwapStore'
 import useSWR from 'swr'
 import shallow from 'zustand/shallow'
 import { useCallback, useEffect, useState } from 'react'
@@ -37,7 +38,8 @@ export default function useSwap(props: {
     propOutputMint ? solToWSol(propOutputMint).toBase58() : propOutputMint
   ]
 
-  const [txVersion, slippage, urlConfigs] = useAppStore((s) => [s.txVersion, s.slippage, s.urlConfigs], shallow)
+  const [txVersion, urlConfigs] = useAppStore((s) => [s.txVersion, s.urlConfigs], shallow)
+  const slippage = useSwapStore((s) => s.slippage)
   const slippageBps = new Decimal(propsSlippage || slippage * 10000).toFixed(0)
 
   const apiTrail = swapType === 'BaseOut' ? 'swap-base-out' : 'swap-base-in'

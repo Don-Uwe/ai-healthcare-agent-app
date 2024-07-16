@@ -1615,6 +1615,11 @@
   resolved "https://registry.yarnpkg.com/@humanwhocodes/object-schema/-/object-schema-1.2.1.tgz#b520529ec21d8e5945a1851dfd1c32e94e39ff45"
   integrity sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==
 
+"@interactjs/types@1.10.27":
+  version "1.10.27"
+  resolved "https://registry.yarnpkg.com/@interactjs/types/-/types-1.10.27.tgz#10afd71cef2498e2b5192cf0d46f937d8ceb767f"
+  integrity sha512-BUdv0cvs4H5ODuwft2Xp4eL8Vmi3LcihK42z0Ft/FbVJZoRioBsxH+LlsBdK4tAie7PqlKGy+1oyOncu1nQ6eA==
+
 "@jnwng/walletconnect-solana@^0.2.0":
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/@jnwng/walletconnect-solana/-/walletconnect-solana-0.2.0.tgz#aebea64beaa47273b9b9a71c62d88d543900ab96"
@@ -2429,10 +2434,10 @@
   resolved "https://registry.yarnpkg.com/@protobufjs/utf8/-/utf8-1.1.0.tgz#a777360b5b39a1a2e5106f8e858f2fd2d060c570"
   integrity sha512-Vvn3zZrhQZkkBE8LSuW3em98c0FwgO4nxzv6OdSxPKJIEKY2bGbHn+mhGIPerzI4twdxaP8/0+06HBpwf345Lw==
 
-"@raydium-io/raydium-sdk-v2@0.1.35-alpha":
-  version "0.1.35-alpha"
-  resolved "https://registry.yarnpkg.com/@raydium-io/raydium-sdk-v2/-/raydium-sdk-v2-0.1.35-alpha.tgz#ac5d0c595b8a6cc5266b49fd7f6e16c738592268"
-  integrity sha512-MCM33RDUIBGYeH2jxAf1wHyC0ByqVjyvcZtrZRZ5Tcrj0tWtYCEjhGUlw//AYsZjWq0lmVqLd3nuA6dEaayK9g==
+"@raydium-io/raydium-sdk-v2@0.1.38-alpha":
+  version "0.1.38-alpha"
+  resolved "https://registry.yarnpkg.com/@raydium-io/raydium-sdk-v2/-/raydium-sdk-v2-0.1.38-alpha.tgz#8da240d834b3c01c0461ee7cd4e8a974f007e344"
+  integrity sha512-biJtvGTfzPkCVXnPM6gKYmqZidBe2LcknScnEVU+S+gM8WswgtifM+iWqa/s+rxIiqQE3QQ0OMq3WgVKFaREug==
   dependencies:
     "@project-serum/serum" "^0.13.65"
     "@solana/buffer-layout" "^4.0.1"
@@ -2545,6 +2550,11 @@
   dependencies:
     "@noble/hashes" "~1.4.0"
     "@scure/base" "~1.1.6"
+
+"@sentry/types@^7.46.0":
+  version "7.118.0"
+  resolved "https://registry.yarnpkg.com/@sentry/types/-/types-7.118.0.tgz#ca3ab06912f60bc2a7ccf2d2e5ccf43985851aef"
+  integrity sha512-2drqrD2+6kgeg+W/ycmiti3G4lJrV3hGjY9PpJ3bJeXrh6T2+LxKPzlgSEnKFaeQWkXdZ4eaUbtTXVebMjb5JA==
 
 "@sinclair/typebox@^0.31.28":
   version "0.31.28"
@@ -3043,6 +3053,20 @@
     "@wallet-standard/features" "^1.0.3"
     "@wallet-standard/wallet" "^1.0.1"
 
+"@solana/wallet-standard-wallet-adapter-base@^1.1.2":
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@solana/wallet-standard-wallet-adapter-base/-/wallet-standard-wallet-adapter-base-1.1.2.tgz#f030f412cd16b06e95c6da5548a03113319d3620"
+  integrity sha512-DqhzYbgh3disHMgcz6Du7fmpG29BYVapNEEiL+JoVMa+bU9d4P1wfwXUNyJyRpGGNXtwhyZjIk2umWbe5ZBNaQ==
+  dependencies:
+    "@solana/wallet-adapter-base" "^0.9.23"
+    "@solana/wallet-standard-chains" "^1.1.0"
+    "@solana/wallet-standard-features" "^1.2.0"
+    "@solana/wallet-standard-util" "^1.1.1"
+    "@wallet-standard/app" "^1.0.1"
+    "@wallet-standard/base" "^1.0.1"
+    "@wallet-standard/features" "^1.0.3"
+    "@wallet-standard/wallet" "^1.0.1"
+
 "@solana/wallet-standard-wallet-adapter-react@^1.1.0":
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/@solana/wallet-standard-wallet-adapter-react/-/wallet-standard-wallet-adapter-react-1.1.1.tgz#d6106e436b8846a7627114667cd9c0afb5508c96"
@@ -3273,6 +3297,25 @@
   integrity sha512-SjY/p4MmECVVEWspzSRpQEM3sjR17sP8PbGxELWrT+YZMBfiUyt1MRUNjMV23zohwlG2HYtCQOsCwsTHguXkyg==
   dependencies:
     tslib "^2.4.0"
+
+"@tiplink/wallet-adapter@^2.1.18":
+  version "2.1.18"
+  resolved "https://registry.yarnpkg.com/@tiplink/wallet-adapter/-/wallet-adapter-2.1.18.tgz#bb57ca8577edd52f91b6a6006df794ab96b7ea5d"
+  integrity sha512-G/ukP10KOKYtGhYbvN7IyvD+rvatYH19hD8MJP/03g+ZYht7VJZfDuLj5g8UW0FEyt4MFIIiCIT+dmXmX/+fcg==
+  dependencies:
+    "@sentry/types" "^7.46.0"
+    "@solana/wallet-adapter-base" "^0.9.23"
+    "@solana/wallet-standard-util" "^1.1.0"
+    "@solana/wallet-standard-wallet-adapter-base" "^1.1.2"
+    assert "^2.0.0"
+    bs58 "^4.0.1"
+    crypto-browserify "^3.12.0"
+    fast-deep-equal "^3.1.3"
+    interactjs "^1.10.27"
+    process "^0.11.10"
+    pump "^3.0.0"
+    stream-browserify "^3.0.0"
+    uuid "^9.0.1"
 
 "@toruslabs/base-controllers@^2.8.0":
   version "2.9.0"
@@ -7372,6 +7415,13 @@ int64-buffer@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/int64-buffer/-/int64-buffer-1.0.1.tgz#c78d841b444cadf036cd04f8683696c740f15dca"
   integrity sha512-+3azY4pXrjAupJHU1V9uGERWlhoqNswJNji6aD/02xac7oxol508AsMC5lxKhEqyZeDFy3enq5OGWXF4u75hiw==
+
+interactjs@^1.10.27:
+  version "1.10.27"
+  resolved "https://registry.yarnpkg.com/interactjs/-/interactjs-1.10.27.tgz#16499aba4987a5ccfdaddca7d1ba7bb1118e14d0"
+  integrity sha512-y/8RcCftGAF24gSp76X2JS3XpHiUvDQyhF8i7ujemBz77hwiHDuJzftHx7thY8cxGogwGiPJ+o97kWB6eAXnsA==
+  dependencies:
+    "@interactjs/types" "1.10.27"
 
 internal-slot@^1.0.3:
   version "1.0.3"

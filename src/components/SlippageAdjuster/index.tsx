@@ -1,25 +1,28 @@
 import React, { useState, useEffect } from 'react'
 import { Flex, Button } from '@chakra-ui/react'
 import { colors } from '@/theme/cssVariables'
-import { useAppStore } from '@/store/useAppStore'
+import { useLiquidityStore } from '@/store'
+import { useSwapStore } from '@/features/Swap/useSwapStore'
 import { useDisclosure } from '@/hooks/useDelayDisclosure'
 import MoreListControllers from '@/icons/misc/MoreListControllers'
 import { SlippageSettingModal } from './SlippageSettingModal'
 import Decimal from 'decimal.js'
 
-export function SlippageAdjuster({ onClick }: { onClick?: () => void }) {
+export function SlippageAdjuster({ variant = 'swap', onClick }: { variant?: 'swap' | 'liquidity'; onClick?: () => void }) {
   const { isOpen, onClose, onToggle } = useDisclosure()
-  const slippage = useAppStore((s) => s.slippage)
+  const swapSlippage = useSwapStore((s) => s.slippage)
+  const liquiditySlippage = useLiquidityStore((s) => s.slippage)
+  const isSwap = variant === 'swap'
+  const slippage = isSwap ? swapSlippage : liquiditySlippage
   const [currentSlippage, setCurrentSlippage] = useState<string | undefined>()
   const [isWarn, setIsWarn] = useState(false)
 
   useEffect(() => {
-    const newSlippage = String(slippage * 100)
-    setCurrentSlippage(newSlippage)
-    const slippageDecimal = new Decimal(newSlippage)
-    const warn = slippageDecimal.gt('0.5') || slippageDecimal.lt('0.1')
+    const slippageDecimal = new Decimal(slippage * 100)
+    setCurrentSlippage(slippageDecimal.toDecimalPlaces(2).toString())
+    const warn = isSwap && (slippageDecimal.gt('0.5') || slippageDecimal.lt('0.1'))
     setIsWarn(warn)
-  }, [slippage])
+  }, [slippage, isSwap])
   const handleOnClick = () => {
     onToggle()
   }
@@ -60,7 +63,7 @@ export function SlippageAdjuster({ onClick }: { onClick?: () => void }) {
           {currentSlippage}%
         </Button>
       </Flex>
-      <SlippageSettingModal isOpen={isOpen} onClose={onClose} />
+      <SlippageSettingModal variant={variant} isOpen={isOpen} onClose={onClose} />
     </>
   )
 }

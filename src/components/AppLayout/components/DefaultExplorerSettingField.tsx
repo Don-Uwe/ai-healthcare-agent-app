@@ -16,6 +16,9 @@ export function DefaultExplorerSettingField() {
     setStorageItem(EXPLORER_KEY, val)
   })
 
+  const defaultExplorer = supportedExplorers.find((e) => e.host === explorerUrl)
+  const defaultExplorerName = defaultExplorer?.name
+
   return (
     <SettingField
       fieldName={t('setting_board.default_explorer')}
@@ -27,9 +30,9 @@ export function DefaultExplorerSettingField() {
                 isOpen={isOpen}
                 renderContent={
                   <HStack spacing={1.5}>
-                    <Image src={supportedExplorers.find((e) => e.host === explorerUrl)?.icon} boxSize="18px" alt={explorerUrl} />
+                    <Image src={defaultExplorer?.icon} boxSize="18px" alt={defaultExplorerName} />
                     <Text fontWeight={500} lineHeight={0}>
-                      {explorerUrl}
+                      {defaultExplorerName}
                     </Text>
                   </HStack>
                 }

@@ -293,7 +293,7 @@ export default function AddLiquidity({
           <HorizontalSwitchSmallIcon cursor="pointer" onClick={onToggleReverse} />
         </HStack>
         <HStack fontSize="xl" color={colors.textPrimary} fontWeight="medium" spacing={3}>
-          <SlippageAdjuster />
+          <SlippageAdjuster variant="liquidity" />
           <IntervalCircle
             componentRef={circleRef}
             svgWidth={18}

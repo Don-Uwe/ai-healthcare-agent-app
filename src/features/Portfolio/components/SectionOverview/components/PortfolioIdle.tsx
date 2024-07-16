@@ -35,10 +35,10 @@ export default function PortfolioIdle({ idleBalance, productiveBalance, idleList
     return new Decimal(idleBalance).div(new Decimal(productiveBalance).add(idleBalance)).mul(100).toDecimalPlaces(2).toNumber()
   }, [idleBalance, productiveBalance])
 
-  return isMobile ? null : (
+  return (
     <Flex
       {...panelCard}
-      display={isMobile ? 'none' : 'flex'}
+      display="flex"
       direction="column"
       overflow="hidden"
       boxShadow="none"

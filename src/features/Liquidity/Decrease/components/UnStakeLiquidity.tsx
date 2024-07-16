@@ -147,7 +147,7 @@ export default function UnStakeLiquidity({
         mt={4}
       />
       <Flex align="center" justify="flex-end" mb={2} gap={3}>
-        <SlippageAdjuster />
+        <SlippageAdjuster variant="liquidity" />
         <IntervalCircle
           componentRef={circleRef}
           svgWidth={18}

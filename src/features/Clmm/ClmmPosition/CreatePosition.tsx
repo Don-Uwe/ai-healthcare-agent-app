@@ -23,16 +23,18 @@ import PriceSwitchButton from '../components/PriceSwitchButton'
 import RangeInput, { Side } from '../components/RangeInput'
 import RangePercentTabs from '../components/RangePercentTabs'
 import CLMMTokenInputGroup, { InputSide } from '../components/TokenInputGroup'
+import { QuestionToolTip } from '@/components/QuestionToolTip'
 import { getPriceBoundary } from '../utils/tick'
 import DepositedNFTModal from './DepositedNFTModal'
 import useValidate from './useValidate'
 
 import { Desktop } from '@/components/MobileDesktop'
 import ChevronLeftIcon from '@/icons/misc/ChevronLeftIcon'
+import WarningIcon from '@/icons/misc/WarningIcon'
+import CircleWarning from '@/icons/misc/CircleWarning'
 import { debounce } from '@/utils/functionMethods'
 import { routeBack, useRouteQuery } from '@/utils/routeTools'
 import { wSolToSol } from '@/utils/token'
-import useSubscribeClmmInfo from '@/hooks/pool/clmm/useSubscribeClmmInfo'
 import { calRatio } from '../utils/math'
 import BN from 'bn.js'
 import Decimal from 'decimal.js'
@@ -40,6 +42,8 @@ import { trimTrailZero } from '@/utils/numberish/formatter'
 import useClmmApr from '@/features/Clmm/useClmmApr'
 import { useEvent } from '@/hooks/useEvent'
 import { SlippageAdjuster } from '@/components/SlippageAdjuster'
+import useBirdeyeTokenPrice from '@/hooks/token/useBirdeyeTokenPrice'
+import useFetchRpcClmmInfo from '@/hooks/pool/clmm/useFetchRpcClmmInfo'
 
 type FormatParams = Parameters<typeof formatToMaxDigit>[0]
 
@@ -66,7 +70,6 @@ export default function CreatePosition() {
   const [rangePercent, setRangePercent] = useState(0.5)
   const [aprTab, setAprTab] = useState(AprKey.Day)
   const [tokens, setTokens] = useState<{ mintA?: ApiV3Token; mintB?: ApiV3Token }>({})
-  const rpcRefreshTag = useRef(Date.now())
   const refreshCircleRef = useRef<IntervalCircleHandler>(null)
   const fetchPoolId = urlPoolId || '2QdhepnKRTLjjSqPL1PtKNwqrUkoLee5Gqs8bvZhRdMv'
 
@@ -84,15 +87,29 @@ export default function CreatePosition() {
     refreshInterval: 3 * 60 * 1000
   })
   const clmmData = formattedData?.[0]
-  const rpcData = useSubscribeClmmInfo({
-    keepFetch: true,
-    poolInfo: clmmData,
-    throttle: 10 * 1000,
-    refreshTag: rpcRefreshTag.current
+  const { data: rpcData, mutate: mutateRpcData } = useFetchRpcClmmInfo({
+    id: fetchPoolId,
+    refreshInterval: 30 * 1000
   })
 
-  if (clmmData && rpcData?.currentPrice) clmmData.price = rpcData.currentPrice!
+  if (clmmData && rpcData?.currentPrice) clmmData.price = rpcData.currentPrice.toNumber()
   const currentPool = clmmData
+
+  const { data: birdeyePrice } = useBirdeyeTokenPrice({
+    mintList: [currentPool?.mintA.address, currentPool?.mintB.address]
+  })
+
+  const hasBirdPrice = !!(
+    birdeyePrice &&
+    birdeyePrice[currentPool?.mintA?.address || ''] &&
+    birdeyePrice[currentPool?.mintB?.address || '']
+  )
+
+  const birdeyePoolPrice = hasBirdPrice
+    ? new Decimal(birdeyePrice[currentPool!.mintA.address || '']?.value ?? 0).div(
+        birdeyePrice[currentPool!.mintB.address || '']?.value ?? 1
+      )
+    : new Decimal(0)
 
   const tickPriceRef = useRef<{ tickLower?: number; tickUpper?: number; priceLower?: string; priceUpper?: string; liquidity?: BN }>({})
   const tokenAmountRef = useRef<[string, string]>(['', ''])
@@ -104,6 +121,12 @@ export default function CreatePosition() {
   const prePoolId = usePrevious(`${poolId}-${baseIn}`)
   const poolMintAStr = currentPool?.mintA?.address
   const decimals = Math.max(currentPool?.mintA?.decimals || 0, currentPool?.mintB?.decimals || 0, 6)
+  const isLowLiquidity = clmmData && clmmData.tvl < 10000
+  const poolPriceDiff =
+    hasBirdPrice && rpcData
+      ? rpcData.currentPrice.sub(birdeyePoolPrice).abs().div(birdeyePoolPrice).mul(100).clamp(0, 99).toDecimalPlaces(2).toNumber()
+      : 0
+  const priceWarn = poolPriceDiff > 1
 
   const currentPriceStr = baseIn
     ? currentPool?.price.toFixed(decimals) || ''
@@ -112,7 +135,6 @@ export default function CreatePosition() {
   const disabledInput = currentPool
     ? [new Decimal(currentPriceStr || 0).gt(priceRange[1] || 0), new Decimal(currentPriceStr || 0).lt(priceRange[0] || 0)]
     : [false, false]
-  // if (!baseIn) disabledInput.reverse()
 
   const totalMintAValue = new Decimal(tokenAmount[0] || '0').mul(tokens.mintA ? tokenPrices[tokens.mintA.address]?.value || 0 : 0)
   const totalMintBValue = new Decimal(tokenAmount[1] || '0').mul(tokens.mintB ? tokenPrices[tokens.mintB.address]?.value || 0 : 0)
@@ -126,7 +148,7 @@ export default function CreatePosition() {
 
   const aprData = useClmmApr({
     poolInfo: currentPool,
-    poolLiquidity: rpcData.poolInfo?.liquidity || new BN(0),
+    poolLiquidity: rpcData?.liquidity || new BN(0),
     positionInfo: tickPriceRef.current,
     timeBasis: aprTab
   })
@@ -350,7 +372,7 @@ export default function CreatePosition() {
     refreshCircleRef.current?.restart()
     fetchTokenAccountAct({})
     mutate()
-    rpcData?.mutateRpcData()
+    mutateRpcData()
   })
 
   const createPosition = () => {
@@ -570,7 +592,7 @@ export default function CreatePosition() {
           <Flex alignItems="center" justifyContent="space-between" mb="3">
             <Flex>{t('clmm.add_deposit_amount')}</Flex>
             <Flex align="center" gap={3}>
-              <SlippageAdjuster />
+              <SlippageAdjuster variant="liquidity" />
               <IntervalCircle
                 componentRef={refreshCircleRef}
                 duration={60 * 1000}
@@ -628,7 +650,43 @@ export default function CreatePosition() {
                 <TokenAvatarPair size="sm" token1={currentPool?.mintA} token2={currentPool?.mintB} />
               </Flex>
             </HStack>
+            {priceWarn ? (
+              <HStack fontSize="xs" color={poolPriceDiff > 5 ? colors.textPink : colors.text01} gap={1} mt={2}>
+                <Text pb={0.5}>
+                  <WarningIcon stroke={poolPriceDiff > 5 ? colors.textPink : colors.text01} />
+                </Text>
+                <Text>
+                  {t('clmm.price_away_from_market', {
+                    percent: `${poolPriceDiff}%`
+                  })}
+                </Text>
+                <QuestionToolTip
+                  label={<Text>{t('clmm.price_away_from_market_tooltip')}</Text>}
+                  iconProps={{ color: poolPriceDiff > 5 ? colors.textPink : colors.text01 }}
+                />
+              </HStack>
+            ) : null}
           </Box>
+          {isLowLiquidity ? (
+            <Flex
+              color={colors.text01}
+              border={`1px solid ${colors.backgroundTransparent07}`}
+              bg={colors.warnButtonLightBg}
+              p="4"
+              mt="4"
+              borderRadius="xl"
+            >
+              <Text pt={0.5}>
+                <CircleWarning width={16} height={16} color={colors.semanticWarning} />
+              </Text>
+              <Text fontWeight="bold" fontSize="xs" pl={1.5} textOverflow="ellipsis" whiteSpace="pre-wrap" overflow="hidden">
+                {t('clmm.low_liquidity')}
+                <Text fontWeight="normal" as="span">
+                  {t('clmm.low_liquidity_desc')}
+                </Text>
+              </Text>
+            </Flex>
+          ) : null}
           <ConnectedButton
             w="100%"
             my="4"
