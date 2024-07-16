@@ -170,7 +170,9 @@
     "on_desktop": "On desktop:",
     "install_refresh_page": "Install at link above then refresh this page",
     "wallet_installed_refresh_page": "I’ve already Installed, Refresh page",
-    "goback": "Go back"
+    "goback": "Go back",
+    "sell_crypto": "Off ramp to fiat with ",
+    "buy_crypto_with_fiat": "Buy Crypto with fiat"
   },
   "token_selector": {
     "search_placeholder": "Search by token or paste address",
@@ -752,5 +754,16 @@
     "title": "Create Market",
     "desc": "Create <sub>{{pair}}</sub> Market",
     "create": "Create"
+  },
+  "moonpay": {
+    "title": "MoonPay",
+    "phantom_wallet_not_installed": "Install Phantom and connect your wallet to log in.",
+    "deposit_using": "Deposit using ",
+    "step1": "step 1",
+    "step2": "step 2",
+    "step3": "step 3",
+    "step_text1": "Sign-up or login with Phantom.",
+    "step_text2": "Buy Solana with MoonPay to top up your trading account.",
+    "step_text3": "Buy & sell any token with one-click on Raydium."
   }
 }

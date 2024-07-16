@@ -1990,6 +1990,11 @@
     react-apple-signin-auth "^1.1.0"
     viem "^2.4.0"
 
+"@moonpay/moonpay-js@^0.6.1":
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/@moonpay/moonpay-js/-/moonpay-js-0.6.1.tgz#d227c12f8f1211b04f193cce012e696d40679976"
+  integrity sha512-medkQ1jzEF8gD97WzqtVhGn30JC6QYc67dCGK8WgMY/NCw2CIlkBSM2LhBFTikOFk0cpGUMknl0EAlgaL9iOlw==
+
 "@motionone/animation@^10.15.1", "@motionone/animation@^10.18.0":
   version "10.18.0"
   resolved "https://registry.yarnpkg.com/@motionone/animation/-/animation-10.18.0.tgz#868d00b447191816d5d5cf24b1cafa144017922b"

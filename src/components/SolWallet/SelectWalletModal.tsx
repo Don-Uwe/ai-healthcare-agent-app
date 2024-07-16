@@ -9,7 +9,9 @@ import WalletSelectWalletIcon from '@/icons/misc/WalletSelectWalletIcon'
 // import SolanaNetworkIcon from '@/icons/networks/SolanaNetworkIcon'
 import MobileIcon from '@/icons/misc/MobileIcon'
 import DesktopIcon from '@/icons/misc/DesktopIcon'
+import MoonPayFullWhite from '@/icons/misc/MoonPayFullWhite'
 import { QuestionToolTip } from '@/components/QuestionToolTip'
+import { MoonpayBuy } from '@/components/Moonpay'
 import ExternalLink from '@/icons/misc/ExternalLink'
 import { colors } from '@/theme/cssVariables'
 import {
@@ -156,7 +158,6 @@ export default function SelectWalletModal({ wallets, isOpen, onSelectWallet, onC
                   {t('wallet_connect_panel.desc_link')}
                 </Link>
               </Box>
-
               {/* <Box mb={6}>
               <Text fontSize={['sm', 'md']} color={colors.textPrimary} fontWeight={500} mb={4}>
                 {t('wallet_connect_panel.choose_network')}
@@ -175,7 +176,6 @@ export default function SelectWalletModal({ wallets, isOpen, onSelectWallet, onC
                 ))}
               </HStack>
             </Box> */}
-
               <Box mb={6} flex={'1'} overflowY={'scroll'}>
                 <Text fontSize={['sm', 'md']} color={colors.textPrimary} fontWeight={500} mb={4}>
                   {t('wallet_connect_panel.choose_wallet')}
@@ -212,7 +212,6 @@ export default function SelectWalletModal({ wallets, isOpen, onSelectWallet, onC
                   </SimpleGrid>
                 </Collapse>
               </Box>
-
               <Flex
                 bg={colors.backgroundTransparent07}
                 color={colors.textSecondary}
@@ -230,7 +229,6 @@ export default function SelectWalletModal({ wallets, isOpen, onSelectWallet, onC
                 </HStack>
                 <Switch checked={canShowUninstalledWallets} onChange={() => setCanShowUninstalledWallets((b) => !b)} />
               </Flex>
-
               <Flex
                 bg={colors.backgroundTransparent07}
                 color={colors.textSecondary}
@@ -251,6 +249,15 @@ export default function SelectWalletModal({ wallets, isOpen, onSelectWallet, onC
                     <ChevronRightIcon width={'14px'} height={'14px'} />
                   </HStack>
                 </Link>
+              </Flex>
+              <Flex justifyContent="center" alignItems="center" color={colors.lightPurple} pt={4}>
+                <Text fontSize="xs">{t('wallet_connect_panel.buy_crypto_with_fiat')}</Text>
+                <MoonpayBuy>
+                  <HStack gap={0}>
+                    <MoonPayFullWhite />
+                    <ChevronRightIcon width={'16px'} height={'16px'} />
+                  </HStack>
+                </MoonpayBuy>
               </Flex>
             </Box>
           </ModalBody>
