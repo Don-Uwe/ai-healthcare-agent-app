@@ -15,7 +15,7 @@ import {
 } from '@chakra-ui/react'
 import { ApiV3Token, TokenInfo, SOL_INFO } from '@raydium-io/raydium-sdk-v2'
 import Decimal from 'decimal.js'
-import React, { ReactNode, useEffect, useState } from 'react'
+import React, { ReactNode, useEffect, useState, useRef } from 'react'
 import useTokenPrice from '@/hooks/token/useTokenPrice'
 import { useEvent } from '@/hooks/useEvent'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
@@ -31,6 +31,7 @@ import TokenAvatar from './TokenAvatar'
 import TokenSelectDialog, { TokenSelectDialogProps } from './TokenSelectDialog'
 import TokenUnknownAddDialog from './TokenSelectDialog/components/TokenUnknownAddDialog'
 import TokenFreezeDialog from './TokenSelectDialog/components/TokenFreezeDialog'
+import { TokenListHandles } from './TokenSelectDialog/components/TokenList'
 
 export const DEFAULT_SOL_RESERVER = 0.01
 export interface TokenInputProps extends Pick<TokenSelectDialogProps, 'filterFn'> {
@@ -281,6 +282,13 @@ function TokenInput(props: TokenInputProps) {
     onCloseFreezeTokenConfirm()
     onClose()
   })
+  const tokenListRef = useRef<TokenListHandles>(null)
+  const handleFreezeTokenCancel = useEvent(() => {
+    onCloseFreezeTokenConfirm()
+    if (tokenListRef.current) {
+      tokenListRef.current.resetSearch()
+    }
+  })
 
   const handleParseVal = useEvent((propVal: string) => {
     const val = propVal.match(new RegExp(`[0-9${detectedSeparator}]`, 'gi'))?.join('') || ''
@@ -434,7 +442,7 @@ function TokenInput(props: TokenInputProps) {
           <Text textAlign="right">~{formatCurrency(totalPrice, { symbol: '$', maximumDecimalTrailingZeroes: 5 })}</Text>
         </GridItem>
       </Grid>
-      <TokenSelectDialog isOpen={isOpen} onClose={onClose} onSelectValue={handleSelectToken} filterFn={filterFn} />
+      <TokenSelectDialog isOpen={isOpen} onClose={onClose} onSelectValue={handleSelectToken} filterFn={filterFn} ref={tokenListRef} />
       {unknownToken !== undefined && (
         <TokenUnknownAddDialog
           isOpen={isOpenUnknownTokenConfirm}
@@ -446,7 +454,7 @@ function TokenInput(props: TokenInputProps) {
       {freezeToken !== undefined && (
         <TokenFreezeDialog
           isOpen={isOpenFreezeTokenConfirm}
-          onClose={onCloseFreezeTokenConfirm}
+          onClose={handleFreezeTokenCancel}
           token={freezeToken}
           onConfirm={handleFreezeTokenConfirm}
         />

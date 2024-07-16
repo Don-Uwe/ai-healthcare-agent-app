@@ -1,4 +1,4 @@
-import { ChangeEvent, useCallback, useEffect, useMemo, useState, useRef } from 'react'
+import { ChangeEvent, useCallback, useEffect, useMemo, useState, useRef, forwardRef, useImperativeHandle } from 'react'
 import { TokenInfo, WSOLMint } from '@raydium-io/raydium-sdk-v2'
 import { useTranslation } from 'react-i18next'
 import { PublicKey } from '@solana/web3.js'
@@ -29,17 +29,19 @@ const SOLMint = PublicKey.default.toString()
 const RAYMint = '4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R'
 const USDTMint = 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB'
 
-export default function TokenList({
-  onOpenTokenList,
-  isDialogOpen: isOpen,
-  onChooseToken,
-  filterFn
-}: {
-  onOpenTokenList: () => void
-  isDialogOpen: boolean
-  onChooseToken: (token: TokenInfo) => void
-  filterFn?: (token: TokenInfo) => boolean
-}) {
+export interface TokenListHandles {
+  resetSearch: () => void
+}
+
+export default forwardRef<
+  TokenListHandles,
+  {
+    onOpenTokenList: () => void
+    isDialogOpen: boolean
+    onChooseToken: (token: TokenInfo) => void
+    filterFn?: (token: TokenInfo) => boolean
+  }
+>(function TokenList({ onOpenTokenList, isDialogOpen: isOpen, onChooseToken, filterFn }, ref) {
   const { t } = useTranslation()
   const orgTokenList = useTokenStore((s) => s.displayTokenList)
   const orgTokenMap = useTokenStore((s) => s.tokenMap)
@@ -166,6 +168,11 @@ export default function TokenList({
     ),
     [getBalance]
   )
+  useImperativeHandle(ref, () => ({
+    resetSearch: () => {
+      setSearch('')
+    }
+  }))
   return (
     <Flex direction="column" height="100%" mx="8px">
       <InputGroup bg={colors.backgroundDark} color={colors.textSecondary} rounded="8px">
@@ -177,6 +184,7 @@ export default function TokenList({
             color: colors.textTertiary
           }}
           placeholder={t('token_selector.search_placeholder') ?? undefined}
+          value={search}
           onChange={handleSearchChange}
         />
         <InputRightAddon bg="transparent">
@@ -282,7 +290,7 @@ export default function TokenList({
       </Button>
     </Flex>
   )
-}
+})
 
 function TokenRowItem({
   token,

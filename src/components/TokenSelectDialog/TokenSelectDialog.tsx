@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, forwardRef } from 'react'
 import { TokenInfo } from '@raydium-io/raydium-sdk-v2'
 import { useTranslation } from 'react-i18next'
 import { useEvent } from '@/hooks/useEvent'
@@ -6,7 +6,7 @@ import ChevronLeftIcon from '@/icons/misc/ChevronLeftIcon'
 import { colors } from '@/theme/cssVariables'
 import { Box, Grid, GridItem, Heading, Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay } from '@chakra-ui/react'
 import TokenListSetting from './components/TokenListSetting'
-import TokenList from './components/TokenList'
+import TokenList, { TokenListHandles } from './components/TokenList'
 import TokenListUnknown from './components/TokenListUnknown'
 
 export interface TokenSelectDialogProps {
@@ -22,7 +22,10 @@ enum PageType {
   TokenListUnknown
 }
 
-export default function TokenSelectDialog({ onSelectValue, isOpen, filterFn, onClose }: TokenSelectDialogProps) {
+export default forwardRef<TokenListHandles, TokenSelectDialogProps>(function TokenSelectDialog(
+  { onSelectValue, isOpen, filterFn, onClose },
+  ref
+) {
   const { t } = useTranslation()
   const [currentPage, setCurrentPage] = useState<PageType>(PageType.TokenList)
 
@@ -50,6 +53,7 @@ export default function TokenSelectDialog({ onSelectValue, isOpen, filterFn, onC
       <ModalBody display={'flex'} flexDirection={'column'} overflowX="hidden">
         <Box height={['auto', '60vh']} flex={['1', 'unset']}>
           <TokenList
+            ref={ref}
             onOpenTokenList={() => setCurrentPage(PageType.TokenListSetting)}
             onChooseToken={(token) => {
               onSelectValue(token)
@@ -120,4 +124,4 @@ export default function TokenSelectDialog({ onSelectValue, isOpen, filterFn, onC
       <ModalContent>{renderModalContent()}</ModalContent>
     </Modal>
   )
-}
+})
