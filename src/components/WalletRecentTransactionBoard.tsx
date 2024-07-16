@@ -202,7 +202,7 @@ export default function WalletRecentTransactionBoard({ wallet, address, isOpen =
   )
 
   return (
-    <Drawer variant="flatScreenEdgePanel" size="sm" isOpen={isOpen} onClose={onClose}>
+    <Drawer variant="flatScreenEdgePanel" size="sm" isOpen={isOpen} onClose={onClose} trapFocus={false}>
       <DrawerOverlay />
       <DrawerContent>
         <DrawerCloseButton />
