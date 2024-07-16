@@ -14,7 +14,7 @@ export function MoonpayBuy(props: { children: ReactNode }) {
       }
       const moonPaySdk = data({
         flow: 'buy',
-        environment: 'sandbox',
+        environment: 'production',
         variant: 'overlay',
         params: {
           apiKey: process.env.NEXT_PUBLIC_MOON_PAY_KEY ?? '',
@@ -47,7 +47,7 @@ export function MoonpaySell(props: { children: ReactNode }) {
       }
       const moonPaySdk = data({
         flow: 'sell',
-        environment: 'sandbox',
+        environment: 'production',
         variant: 'overlay',
         params: {
           apiKey: process.env.NEXT_PUBLIC_MOON_PAY_KEY ?? '',
