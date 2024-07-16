@@ -461,6 +461,8 @@ This project is licensed under the [MIT License](./LICENSE).
 
   <td align="center"><a href="https://github.com/ananyag309"><img src="https://avatars.githubusercontent.com/u/145869907?v=4" width="120px;" alt=""/><br/><sub><b>Ananya Gupta</b></sub></a>
         </td> 
+   <td align="center"><a href="https://github.com/akshathere"><img src="https://avatars.githubusercontent.com/u/106247875?v=4" width="120px;" alt=""/><br/><sub><b>akshathere</b></sub></a>
+        </td> 
  </tr>
  
    </p>
