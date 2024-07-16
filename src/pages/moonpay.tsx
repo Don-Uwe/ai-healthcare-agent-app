@@ -18,32 +18,8 @@ export default function MoonpayPage() {
   const isPhantomInstalled = phantomWallet.readyState !== WalletReadyState.NotDetected
 
   return (
-    <Flex
-      w="100%"
-      h="100%"
-      background="url(/images/moonpay-gradient.png) no-repeat"
-      backgroundColor="#0f1018"
-      backgroundPosition="top center"
-      _before={{
-        content: `""`,
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        opacity: 0.4,
-        bgImage: 'linear-gradient(153deg, rgba(118, 120, 136, 0.48) 3.89%, rgba(118, 120, 136, 0) 66.42%)'
-      }}
-    >
-      <Flex
-        w="100%"
-        minHeight="100vh"
-        background="linear-gradient(165deg, rgba(118, 120, 136, 0.19) 3.89%, rgba(118, 120, 136, 0) 66.42%)"
-        backgroundSize="100% 890px"
-        backgroundRepeat=" no-repeat"
-        alignItems="center"
-        justifyContent="center"
-      >
+    <Flex w="100%" h="100%">
+      <Flex w="100%" alignItems="center" justifyContent="center">
         <Box textAlign="center" {...(isMobile ? { display: 'flex', flexDirection: 'column', px: '6' } : {})}>
           <Flex alignItems="center" justifyContent="center" gap={4} flexDirection="row">
             <Flex
