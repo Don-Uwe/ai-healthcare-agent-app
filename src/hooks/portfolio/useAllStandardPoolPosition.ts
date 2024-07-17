@@ -63,26 +63,24 @@ export default function useAllStandardPoolPosition<T>({ type }: { type?: T }) {
         const totalLp = new Decimal(data.staked).add(data.unStaked).div(10 ** pool.lpMint.decimals)
         const baseAmount = new Decimal(pool.mintAmountA).div(pool.lpAmount || 1).mul(totalLp)
         const quoteAmount = new Decimal(pool.mintAmountB).div(pool.lpAmount || 1).mul(totalLp)
+        const baseUsdValue = baseAmount.mul(tokenPriceRecord.get(pool.mintA.address)?.data?.value || 0)
+        const quoteUsdValue = quoteAmount.mul(tokenPriceRecord.get(pool.mintB.address)?.data?.value || 0)
 
         dataByMint[pool.mintA.address] = {
           mint: pool.mintA,
           amount: new Decimal(dataByMint[pool.mintA.address]?.amount || 0).add(baseAmount).toString(),
-          usd: new Decimal(dataByMint[pool.mintA.address]?.usd || 0)
-            .add(baseAmount.mul(tokenPriceRecord.get(pool.mintA.address)?.data?.value || 0))
-            .toString()
+          usd: new Decimal(dataByMint[pool.mintA.address]?.usd || 0).add(baseUsdValue).toString()
         }
 
         dataByMint[pool.mintB.address] = {
           mint: pool.mintB,
           amount: new Decimal(dataByMint[pool.mintB.address]?.amount || 0).add(quoteAmount).toString(),
-          usd: new Decimal(dataByMint[pool.mintB.address]?.usd || 0)
-            .add(quoteAmount.mul(tokenPriceRecord.get(pool.mintB.address)?.data?.value || 0))
-            .toString()
+          usd: new Decimal(dataByMint[pool.mintB.address]?.usd || 0).add(quoteUsdValue).toString()
         }
 
         return {
           key: pool.poolName.replace(' - ', '/'),
-          value: totalLp.mul(pool.lpPrice).toDecimalPlaces(4).toString(),
+          value: baseUsdValue.add(quoteUsdValue).toDecimalPlaces(4).toString(),
           type,
           percentage: 0
         }
