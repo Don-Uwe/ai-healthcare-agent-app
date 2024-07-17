@@ -3298,10 +3298,10 @@
   dependencies:
     tslib "^2.4.0"
 
-"@tiplink/wallet-adapter@^2.1.18":
-  version "2.1.18"
-  resolved "https://registry.yarnpkg.com/@tiplink/wallet-adapter/-/wallet-adapter-2.1.18.tgz#bb57ca8577edd52f91b6a6006df794ab96b7ea5d"
-  integrity sha512-G/ukP10KOKYtGhYbvN7IyvD+rvatYH19hD8MJP/03g+ZYht7VJZfDuLj5g8UW0FEyt4MFIIiCIT+dmXmX/+fcg==
+"@tiplink/wallet-adapter@^2.1.19":
+  version "2.1.19"
+  resolved "https://registry.yarnpkg.com/@tiplink/wallet-adapter/-/wallet-adapter-2.1.19.tgz#c7251d0a2627b68a996811f73b6b8a3fdda8ccb8"
+  integrity sha512-6eOjRa1xQmJLyLddYyzDQnI/tUvPLV77TB7CPFnyLvSLtHeQL/ggVo/LceYTNAKVX3dKDpW0K59gYABHT065WA==
   dependencies:
     "@sentry/types" "^7.46.0"
     "@solana/wallet-adapter-base" "^0.9.23"
