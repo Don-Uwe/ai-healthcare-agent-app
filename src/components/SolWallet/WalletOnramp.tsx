@@ -28,6 +28,7 @@ export default function WalletOnramp() {
         <MoonpayBuy>
           <Box className="p-mp__submit" maxW="320px" w="100%" m="auto">
             <Button
+              width="full"
               variant="solid"
               size="md"
               height="52px"

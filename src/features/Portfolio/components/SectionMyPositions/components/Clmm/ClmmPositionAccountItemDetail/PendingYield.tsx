@@ -1,4 +1,4 @@
-import { useBreakpointValue, Flex, HStack, Text } from '@chakra-ui/react'
+import { Flex, HStack, Text } from '@chakra-ui/react'
 import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 import Button from '@/components/Button'
 import TokenAvatar from '@/components/TokenAvatar'
@@ -6,6 +6,7 @@ import { colors } from '@/theme/cssVariables'
 import { useTranslation } from 'react-i18next'
 import { formatCurrency } from '@/utils/numberish/formatter'
 import { getMintSymbol } from '@/utils/token'
+import useResponsive from '@/hooks/useResponsive'
 
 type PendingYieldProps = {
   pendingYield?: string
@@ -17,9 +18,7 @@ type PendingYieldProps = {
 
 export default function PendingYield({ isLoading, hasReward, pendingYield, rewardInfos, onHarvest }: PendingYieldProps) {
   const { t } = useTranslation()
-  const device = useBreakpointValue({ base: 'isMobile', sm: 'isTablet', md: 'isDesktop' })
-  const isTablet = device === 'isTablet'
-  const isMobile = device === 'isMobile'
+  const { isMobile, isTablet } = useResponsive()
   return (
     <Flex flex={1} justify="space-around" w="full" fontSize="sm" flexDirection="column" gap={3} p={[4, 0]}>
       <HStack justifyContent="space-between">

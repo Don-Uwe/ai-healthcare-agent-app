@@ -1,4 +1,4 @@
-import { Box, Flex, Image, Text, VStack } from '@chakra-ui/react'
+import { Box, Flex, Image, Text } from '@chakra-ui/react'
 import { useTranslation } from 'react-i18next'
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-wallets'
 import { WalletReadyState } from '@solana/wallet-adapter-base'
@@ -9,12 +9,12 @@ import Phantom from '@/icons/misc/Phantom'
 import SolGrey from '@/icons/misc/SolGrey'
 import Cart from '@/icons/misc/Cart'
 import WalletOnramp from '@/components/SolWallet/WalletOnramp'
-import { useAppStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
+import useResponsive from '@/hooks/useResponsive'
 
 export default function MoonpayPage() {
   const { t } = useTranslation()
-  const isMobile = useAppStore((s) => s.isMobile)
+  const { isMobile } = useResponsive()
   const phantomWallet = new PhantomWalletAdapter()
   const isPhantomInstalled = phantomWallet.readyState !== WalletReadyState.NotDetected
 

@@ -1,4 +1,4 @@
-import { Flex, useBreakpointValue } from '@chakra-ui/react'
+import { Flex } from '@chakra-ui/react'
 import Button from '@/components/Button'
 import FullExpandIcon from '@/icons/misc/FullExpandIcon'
 import MinusIcon from '@/icons/misc/MinusIcon'
@@ -6,6 +6,7 @@ import PlusIcon from '@/icons/misc/PlusIcon'
 import { colors } from '@/theme/cssVariables'
 import { routeToPage } from '@/utils/routeTools'
 import { useTranslation } from 'react-i18next'
+import useResponsive from '@/hooks/useResponsive'
 
 type ActionButtonsProps = {
   variant?: 'drawer-face'
@@ -31,8 +32,7 @@ export default function ActionButtons({
   onMigrateOpen
 }: ActionButtonsProps) {
   const { t } = useTranslation()
-  const device = useBreakpointValue({ base: 'isMobile', sm: 'isTablet', md: 'isDesktop' })
-  const isMobile = device === 'isMobile'
+  const { isMobile } = useResponsive()
   const onUnstaking = () => {
     routeToPage('decrease-liquidity', {
       queryProps: {
