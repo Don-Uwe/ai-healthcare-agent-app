@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-wallets'
 import { WalletReadyState } from '@solana/wallet-adapter-base'
 import RaydiumLogo from '@/icons/RaydiumLogo'
-import MoonPay from '@/icons/misc/MoonPay'
+import MoonPayIcon from '@/icons/misc/MoonPayIcon'
 import Plus from '@/icons/misc/Plus'
 import Phantom from '@/icons/misc/Phantom'
 import SolGrey from '@/icons/misc/SolGrey'
@@ -46,7 +46,7 @@ export default function MoonpayPage() {
               alignItems="center"
               justifyContent="center"
             >
-              <MoonPay width="100%" height="100%" color="#7715f5" />
+              <MoonPayIcon width="100%" height="100%" color="#7715f5" />
             </Flex>
           </Flex>
           <Text as="h1" fontSize={{ base: '24px', md: '40px' }} color={colors.text02} mt={6} mb={8}>

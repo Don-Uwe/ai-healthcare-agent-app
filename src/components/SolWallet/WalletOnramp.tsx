@@ -7,7 +7,7 @@ import SelectWalletModal from './SelectWalletModal'
 import { colors } from '@/theme/cssVariables'
 import { useTranslation } from 'react-i18next'
 import { MoonpayBuy } from '@/components/Moonpay'
-import MoonPay from '@/icons/misc/MoonPay'
+import MoonPayIcon from '@/icons/misc/MoonPayIcon'
 
 export default function WalletOnramp() {
   const { wallets, select, connected, connecting } = useWallet()
@@ -36,7 +36,7 @@ export default function WalletOnramp() {
               borderRadius="50em"
               border="2px solid transparent"
               color={colors.text02}
-              leftIcon={<MoonPay width="16px" height="16px" color={colors.text02} />}
+              leftIcon={<MoonPayIcon width="16px" height="16px" color={colors.text02} />}
             >
               {t('button.deposit')}
             </Button>

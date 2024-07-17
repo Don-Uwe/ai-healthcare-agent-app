@@ -9,7 +9,7 @@ import WalletSelectWalletIcon from '@/icons/misc/WalletSelectWalletIcon'
 // import SolanaNetworkIcon from '@/icons/networks/SolanaNetworkIcon'
 import MobileIcon from '@/icons/misc/MobileIcon'
 import DesktopIcon from '@/icons/misc/DesktopIcon'
-import MoonPayFullWhite from '@/icons/misc/MoonPayFullWhite'
+import MoonPayIconWithText from '@/icons/misc/MoonPayIconWithText'
 import { QuestionToolTip } from '@/components/QuestionToolTip'
 import { MoonpayBuy } from '@/components/Moonpay'
 import ExternalLink from '@/icons/misc/ExternalLink'
@@ -254,7 +254,7 @@ export default function SelectWalletModal({ wallets, isOpen, onSelectWallet, onC
                 <Text fontSize="xs">{t('wallet_connect_panel.buy_crypto_with_fiat')}</Text>
                 <MoonpayBuy>
                   <HStack gap={0}>
-                    <MoonPayFullWhite />
+                    <MoonPayIconWithText />
                     <ChevronRightIcon width={'16px'} height={'16px'} />
                   </HStack>
                 </MoonpayBuy>

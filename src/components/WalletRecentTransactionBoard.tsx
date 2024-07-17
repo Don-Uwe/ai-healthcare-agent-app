@@ -25,7 +25,7 @@ import dayjs from 'dayjs'
 import CircleSuccess from '@/icons/misc/CircleSuccess'
 import CircleWarning from '@/icons/misc/CircleWarning'
 import CircleError from '@/icons/misc/CircleError'
-import MoonPayFullWhite from '@/icons/misc/MoonPayFullWhite'
+import MoonPayIconWithText from '@/icons/misc/MoonPayIconWithText'
 import { colors } from '@/theme/cssVariables'
 import { toUTC } from '@/utils/date'
 import SolanaNetworkIcon from '@/icons/networks/SolanaNetworkIcon'
@@ -215,7 +215,7 @@ export default function WalletRecentTransactionBoard({ wallet, address, isOpen =
               <Text fontSize="xs">{t('wallet_connect_panel.sell_crypto')}</Text>
               <MoonpaySell>
                 <HStack gap={0}>
-                  <MoonPayFullWhite />
+                  <MoonPayIconWithText />
                   <ChevronRightIcon width={'16px'} height={'16px'} />
                 </HStack>
               </MoonpaySell>

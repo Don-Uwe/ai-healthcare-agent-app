@@ -1,6 +1,6 @@
 import { SvgIcon } from '../type'
 
-export default function MoonPay(props: SvgIcon) {
+export default function MoonPayIcon(props: SvgIcon) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="65" height="64" viewBox="0 0 65 64" fill="none" className="chakra-icon" {...props}>
       <g clipPath="url(#clip0_27172_100139)">
