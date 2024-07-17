@@ -49,7 +49,7 @@ export default function MoonpayPage() {
               <MoonPayIcon width="100%" height="100%" color="#7715f5" />
             </Flex>
           </Flex>
-          <Text as="h1" fontSize={{ base: '24px', md: '40px' }} color={colors.text02} mt={6} mb={8}>
+          <Text as="h1" fontFamily="chillax" fontSize={['24px', '40px', '40px']} color={colors.text02} mt={6} mb={8}>
             {t('moonpay.deposit_using')}
             <Text as="span" fontWeight="semibold">
               {t('moonpay.title')}
@@ -60,8 +60,8 @@ export default function MoonpayPage() {
           </Box>
           <Flex
             maxW="728px"
-            margin="0 auto"
-            borderTop="1px solid rgba(255, 255, 255, 0.1)"
+            m="0 auto"
+            borderTop={`1px solid ${colors.dividerBg}`}
             pt={6}
             position="absolute"
             left="50%"
@@ -83,57 +83,28 @@ export default function MoonpayPage() {
                   direction: 'column'
                 })}
           >
-            <Box flex="1" {...(isMobile ? { display: 'flex', gap: '12px' } : {})}>
-              <Box width="24px" height="24px">
-                <Phantom width="24px" height="24px" color="#898eff" />
+            {['step1', 'step2', 'step3'].map((step, index) => (
+              <Box key={index} flex="1" {...(isMobile ? { display: 'flex', gap: '12px' } : {})}>
+                <Box width="24px" height="24px">
+                  {index === 0 && <Phantom width="24" height="24" color="#898eff" />}
+                  {index === 1 && <SolGrey width="24" height="24" color="#898eff" />}
+                  {index === 2 && <Cart width="24" height="24" color="#898eff" />}
+                </Box>
+                <Box>
+                  <Text
+                    fontSize={{ base: 'sm', md: 'md' }}
+                    color={colors.text02}
+                    fontFamily="chillax"
+                    fontWeight="semibold"
+                    textTransform="uppercase"
+                    {...(!isMobile ? { mt: '8px', mb: '4px' } : {})}
+                  >
+                    {t(`moonpay.${step}`)}
+                  </Text>
+                  <Text fontSize="sm">{t(`moonpay.${step}_text`)}</Text>
+                </Box>
               </Box>
-              <Box>
-                <Text
-                  fontSize={{ base: 'sm', md: 'md' }}
-                  color={colors.text02}
-                  fontWeight="semibold"
-                  textTransform="uppercase"
-                  {...(!isMobile ? { mt: '8px', mb: '4px' } : {})}
-                >
-                  {t('moonpay.step1')}
-                </Text>
-                <Text fontSize="sm">{t('moonpay.step_text1')}</Text>
-              </Box>
-            </Box>
-            <Box flex="1" {...(isMobile ? { display: 'flex', gap: '12px' } : {})}>
-              <Box width="24px" height="24px">
-                <SolGrey width="24px" height="24px" color="#898eff" />
-              </Box>
-              <Box>
-                <Text
-                  fontSize={{ base: 'sm', md: 'md' }}
-                  color={colors.text02}
-                  fontWeight="semibold"
-                  textTransform="uppercase"
-                  {...(!isMobile ? { mt: '8px', mb: '4px' } : {})}
-                >
-                  {t('moonpay.step2')}
-                </Text>
-                <Text fontSize="sm">{t('moonpay.step_text2')}</Text>
-              </Box>
-            </Box>
-            <Box flex="1" {...(isMobile ? { display: 'flex', gap: '12px' } : {})}>
-              <Box width="24px" height="24px">
-                <Cart width="24px" height="24px" color="#898eff" />
-              </Box>
-              <Box>
-                <Text
-                  fontSize={{ base: 'sm', md: 'md' }}
-                  color={colors.text02}
-                  fontWeight="semibold"
-                  textTransform="uppercase"
-                  {...(!isMobile ? { mt: '8px', mb: '4px' } : {})}
-                >
-                  {t('moonpay.step3')}
-                </Text>
-                <Text fontSize="sm">{t('moonpay.step_text3')}</Text>
-              </Box>
-            </Box>
+            ))}
           </Flex>
           <Flex
             width="100%"
@@ -141,13 +112,11 @@ export default function MoonpayPage() {
             alignItems="center"
             gap="3"
             mt={8}
-            {...(!isMobile ? { margin: '0', position: 'absolute', bottom: '56px', left: '0' } : {})}
+            {...(!isMobile ? { m: '0', position: 'absolute', bottom: '56px', left: '0' } : {})}
           >
-            <Image src="/images/payments/apple.webp" width="50px" />
-            <Image src="/images/payments/google.webp" width="50px" />
-            <Image src="/images/payments/mastercard.webp" width="50px" />
-            <Image src="/images/payments/visa.webp" width="50px" />
-            <Image src="/images/payments/paypal.webp" width="50px" />
+            {['apple', 'google', 'mastercard', 'visa', 'paypal'].map((name, index) => (
+              <Image key={index} src={`/images/payments/${name}.webp`} width="50px" />
+            ))}
           </Flex>
         </Box>
       </Flex>

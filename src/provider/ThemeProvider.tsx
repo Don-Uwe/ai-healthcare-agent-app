@@ -95,6 +95,37 @@ const ThemeProvider: FC<{ children: ReactNode }> = ({ children }) => {
           src: url('/SpaceGrotesk[wght].woff2') format('woff2');
           font-weight: 700;
         }
+        @font-face {
+            font-family: chillax;
+            src: url(/Chillax-Regular.woff2) format("woff2"),
+            font-weight: 400;
+            font-display: swap;
+            font-style: normal
+        }
+
+        @font-face {
+            font-family: chillax;
+            src: url(/Chillax-Regular.woff2) format("woff2")
+            font-weight: 500;
+            font-display: swap;
+            font-style: normal
+        }
+
+        @font-face {
+            font-family: chillax;
+            src: url(/assets/Chillax-Semibold.woff2) format("woff2")
+            font-weight: 600;
+            font-display: swap;
+            font-style: normal
+        }
+
+        @font-face {
+            font-family: chillax;
+            src: url(/assets/Chillax-Semibold.woff2) format("woff2")
+            font-weight: 700;
+            font-display: swap;
+            font-style: normal
+        }
         `}
       />
       {children}

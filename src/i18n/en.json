@@ -762,9 +762,9 @@
     "step1": "step 1",
     "step2": "step 2",
     "step3": "step 3",
-    "step_text1": "Sign-up or login with Phantom.",
-    "step_text2": "Buy Solana with MoonPay to top up your trading account.",
-    "step_text3": "Buy & sell any token with one-click on Raydium."
+    "step1_text": "Sign-up or login with Phantom.",
+    "step2_text": "Buy Solana with MoonPay to top up your trading account.",
+    "step3_text": "Buy & sell any token with one-click on Raydium."
   },
   "disclaimer": {
     "title": "Disclaimer",
