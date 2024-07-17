@@ -64,7 +64,7 @@ export function PriorityButton() {
           <Button
             size="sm"
             border={feeWarn ? `1px solid ${colors.semanticWarning}` : '1px solid transparent'}
-            bg={feeWarn ? { md: colors.warnButtonBg } : { md: colors.backgroundApp }}
+            bg={feeWarn ? { md: colors.warnButtonBg } : { md: 'transparent' }}
             _hover={{ borderColor: colors.textLink, bg: colors.infoButtonBg }}
             {...(isOpen && {
               zIndex: 1401,
