@@ -198,7 +198,7 @@ function AppNavLayout({
       </Box>
       <DisclaimerModal />
       <Mobile>
-        <Box flex="none">
+        <Box className="mobile_bottom_navbar" flex="none">
           <MobileBottomNavbar />
         </Box>
       </Mobile>
