@@ -77,6 +77,7 @@ function AppNavLayout({
   return (
     <Flex direction="column" id="app-layout" height="full" overflow={overflowHidden ? 'hidden' : 'auto'}>
       <Box
+        className="beta_tooltip"
         ref={betaTooltipRef}
         display={isOpen ? 'flex' : 'none'}
         animation={`${fadeIn} 0.5s`}
@@ -105,6 +106,7 @@ function AppNavLayout({
         </Box>
       </Box>
       <HStack
+        className="navbar"
         flex="none"
         height={['64px', '80px']}
         px={['20px', '38px']}

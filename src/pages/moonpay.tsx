@@ -1,4 +1,5 @@
-import { Box, Flex, Image, Text, useColorMode } from '@chakra-ui/react'
+import React, { useMemo } from 'react'
+import { Box, Flex, Image, Text, useColorMode, useMediaQuery } from '@chakra-ui/react'
 import { useTranslation } from 'react-i18next'
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-wallets'
 import { WalletReadyState } from '@solana/wallet-adapter-base'
@@ -19,18 +20,23 @@ export default function MoonpayPage() {
   const isDark = colorMode === 'dark'
   const { isMobile } = useResponsive()
   const phantomWallet = new PhantomWalletAdapter()
-  const isPhantomInstalled = phantomWallet.readyState !== WalletReadyState.NotDetected
+  const isPhantomInstalled = useMemo(() => phantomWallet.readyState !== WalletReadyState.NotDetected, [phantomWallet.readyState])
+
+  const [isNotTooTall] = useMediaQuery('(max-height: 1100px)')
 
   return (
     <Flex
       width="100%"
       height="100%"
-      minHeight="700px"
       alignItems="center"
       justifyContent="center"
       background="url(/images/moonpay-dots.svg)"
       backgroundPosition="center bottom 125px"
       backgroundRepeat="no-repeat"
+      position="absolute"
+      top="0"
+      left="0"
+      {...(isMobile ? {} : { minHeight: '700px' })}
     >
       {isDark && (
         <Global
@@ -58,7 +64,24 @@ export default function MoonpayPage() {
           })}
         />
       )}
-      <Box textAlign="center" {...(isMobile ? { display: 'flex', flexDirection: 'column', px: '6' } : { mb: '6rem' })}>
+      <Global
+        styles={css({
+          body: {
+            overflow: 'auto'
+          },
+          '.beta_tooltip': {
+            zIndex: 1
+          },
+          '.navbar': {
+            zIndex: 1
+          }
+        })}
+      />
+      <Box
+        textAlign="center"
+        {...(isMobile ? { display: 'flex', flexDirection: 'column', px: '6' } : {})}
+        mb={isNotTooTall && !isMobile ? '50vh' : '0'}
+      >
         <Flex alignItems="center" justifyContent="center" gap={4} flexDirection="row">
           <Flex
             w={{ base: '64px', md: '104px' }}
@@ -100,16 +123,13 @@ export default function MoonpayPage() {
           m="0 auto"
           borderTop={`1px solid ${colors.dividerBg}`}
           pt={6}
-          position="absolute"
           left="50%"
           bottom="10vh"
           mb="88px"
-          transform="translateX(-50%)"
           color={colors.text03}
           textAlign="left"
-          {...(!isMobile
-            ? { justifyContent: 'space-between', gap: '80px', direction: 'row' }
-            : {
+          {...(isMobile
+            ? {
                 position: 'static',
                 width: '100%',
                 marginBottom: '0',
@@ -118,7 +138,8 @@ export default function MoonpayPage() {
                 marginTop: '3vh',
                 gap: '4',
                 direction: 'column'
-              })}
+              }
+            : { justifyContent: 'space-between', gap: '80px', direction: 'row', position: 'absolute', transform: 'translateX(-50%)' })}
         >
           {['step1', 'step2', 'step3'].map((step, index) => (
             <Box key={index} flex="1" {...(isMobile ? { display: 'flex', gap: '12px' } : {})}>
@@ -134,7 +155,7 @@ export default function MoonpayPage() {
                   fontFamily="chillax"
                   fontWeight="semibold"
                   textTransform="uppercase"
-                  {...(!isMobile ? { mt: '8px', mb: '4px' } : {})}
+                  {...(isMobile ? {} : { mt: '8px', mb: '4px' })}
                 >
                   {t(`moonpay.${step}`)}
                 </Text>
@@ -149,7 +170,7 @@ export default function MoonpayPage() {
           alignItems="center"
           gap="3"
           mt={8}
-          {...(!isMobile ? { m: '0', position: 'absolute', bottom: '56px', left: '0' } : {})}
+          {...(isMobile ? {} : { m: '0', position: 'absolute', bottom: '56px', left: '0' })}
         >
           {['apple', 'google', 'mastercard', 'visa', 'paypal'].map((name, index) => (
             <Image key={index} src={`/images/payments/${name}.webp`} width="50px" />
@@ -158,4 +179,10 @@ export default function MoonpayPage() {
       </Box>
     </Flex>
   )
+}
+
+export async function getStaticProps() {
+  return {
+    props: { title: 'Moonpay' }
+  }
 }

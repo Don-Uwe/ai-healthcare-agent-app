@@ -118,7 +118,7 @@ export const darkColors: Record<keyof typeof colors, string> = {
   buttonBg01: '#ABC4FF1F',
   lightPurple: '#BFD2FF',
   background01: '#090D1D',
-  background02: 'rgba(0, 0, 0, 0.32)',
+  background02: 'rgba(22, 22, 22, 0.5)',
   cardBorder01: '#8C6EEF80',
   text01: '#D6CC56',
   text02: '#fff',
