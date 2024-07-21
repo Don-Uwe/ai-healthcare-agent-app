@@ -47,6 +47,7 @@
     "@emotion/styled": "^11",
     "@moongate/moongate-adapter": "^0.5.8",
     "@moonpay/moonpay-js": "^0.6.1",
+    "@next/third-parties": "^14.2.5",
     "@project-serum/serum": "^0.13.65",
     "@raydium-io/raydium-sdk-v2": "0.1.38-alpha",
     "@solana/spl-token": "^0.3.7",

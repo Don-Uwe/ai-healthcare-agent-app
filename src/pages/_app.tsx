@@ -14,6 +14,7 @@ import '@/components/Toast/toast.css'
 import '@/components/LandingPage/components/tvl.css'
 import '@/components/LandingPage/liquidity.css'
 import 'react-day-picker/dist/style.css'
+import { GoogleAnalytics } from '@next/third-parties/google'
 
 const DynamicProviders = dynamic(() => import('@/provider').then((mod) => mod.Providers))
 const DynamicContent = dynamic(() => import('@/components/Content'))
@@ -39,6 +40,7 @@ const MyApp = ({ Component, pageProps, lng, ...props }: AppProps & { lng: string
 
   return (
     <>
+      <GoogleAnalytics gaId="G-DR3V6FTKE3" />
       <Head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
         <meta name="twitter:image" content="https://img-v1.raydium.io/share/7be7ee6c-56b2-451e-a010-6c21e0db2ee5.png" />
