@@ -365,7 +365,7 @@ export default function Pools() {
         <Box marginX={revertAppLayoutPaddingX} mb={[0, 3]}>
           <Grid
             columnGap={3}
-            rowGap={[1, 2]}
+            rowGap={[1, 0]}
             py={2}
             gridTemplate={[
               `
