@@ -5,7 +5,6 @@ import { Subject } from 'rxjs'
 
 import { Toast } from '@/components/Toast'
 import { v4 as uuid } from 'uuid'
-import { useAppStore } from '@/store'
 
 export interface RenderProps extends UseToastOptions {
   /**
@@ -26,24 +25,23 @@ export const toastSubject = new Subject<
   }
 >()
 
+const toastConfig = {
+  duration: 8000,
+  isClosable: true,
+  position: 'bottom-right' as ToastPosition,
+  containerStyle: {
+    maxWidth: '300px',
+    '& .chakra-alert__desc': {
+      wordBreak: 'break-word'
+    }
+  }
+}
+
 const userClosedToastIds = new Map<string | number, string>()
 
 function useGlobalToast() {
   const toast = useToast()
   const { t } = useTranslation()
-  const isMobile = useAppStore((s) => s.isMobile)
-
-  const toastConfig = {
-    duration: 8000,
-    isClosable: true,
-    position: (isMobile ? 'bottom' : 'bottom-right') as ToastPosition,
-    containerStyle: {
-      maxWidth: '300px',
-      '& .chakra-alert__desc': {
-        wordBreak: 'break-word'
-      }
-    }
-  }
 
   useEffect(() => {
     const sub = toastSubject.asObservable().subscribe(({ id, update, close, txError, noRpc, ...data }) => {
@@ -141,7 +139,7 @@ function useGlobalToast() {
     })
 
     return () => sub.unsubscribe()
-  }, [toast, toastConfig])
+  }, [toast])
 }
 
 export default useGlobalToast
