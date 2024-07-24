@@ -209,7 +209,7 @@ export default function CreateFarm() {
           "back  " auto
           "step  " auto
           "panel " auto
-          ".     " minmax(80px, 1fr) / 1fr 
+          "note  " minmax(80px, 1fr) / 1fr
         `,
         `
           "back word " auto
@@ -273,18 +273,11 @@ export default function CreateFarm() {
       </GridItem>
 
       <GridItem area="note">
-        <Box
-          position={['absolute', 'unset']}
-          left={'20px'}
-          right={'20px'}
-          bottom={'calc(20px + 54px)' /* 54px is mobile bottom nav's height */}
-          zIndex={100}
-        >
+        <Box>
           <SubPageNote
-            canInteract={isMobile}
             title={t('create_farm.please_note')}
             description={
-              <Text fontSize="sm" color={colors.textTertiary}>
+              <Text fontSize="sm" color={isMobile ? colors.textSecondary : colors.textTertiary}>
                 <Trans i18nKey="create_farm.note_des">
                   <Link href="https://docs.raydium.io/raydium/pool-creation/creating-a-clmm-pool-and-farm" isExternal>
                     CLMM

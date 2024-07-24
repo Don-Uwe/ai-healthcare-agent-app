@@ -20,7 +20,7 @@ export default function CreatePool() {
         `
             "back  " auto
             "panel " auto
-            ".     " minmax(80px, 1fr) / 1fr  
+            "note  " minmax(80px, 1fr) / 1fr
           `,
         `
             "back word " auto
@@ -56,19 +56,11 @@ export default function CreatePool() {
       </GridItem>
 
       <GridItem area="note">
-        <Box
-          w={['unset', 'clamp(300px, 100%, 500px)']}
-          position={['absolute', 'unset']}
-          left={'20px'}
-          right={'20px'}
-          bottom={'calc(20px + 54px)' /* 54px is mobile bottom nav's height */}
-          zIndex={100}
-        >
+        <Box w={['unset', 'clamp(300px, 100%, 500px)']}>
           <SubPageNote
-            canInteract={isMobile}
             title={t('create_standard_pool.please_note')}
             description={
-              <Text fontSize="sm" color={colors.textTertiary}>
+              <Text fontSize="sm" color={isMobile ? colors.textSecondary : colors.textTertiary}>
                 <Trans i18nKey="create_standard_pool.please_note_des">
                   <Link href="https://docs.raydium.io/raydium/pool-creation/creating-a-clmm-pool-and-farm" isExternal>
                     CLMM

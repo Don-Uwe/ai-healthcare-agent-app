@@ -204,7 +204,8 @@ export default function FarmEdit() {
             "word          " auto
             "pool          " auto
             "rewards       " auto
-            "action-buttons" auto /  1fr  
+            "action-buttons" auto
+            "note" auto /  1fr
           `,
         `
             "back    word           " auto
@@ -233,16 +234,8 @@ export default function FarmEdit() {
       </GridItem>
 
       <GridItem area="note">
-        <Box
-          w={['unset', 'clamp(300px, 100%, 500px)']}
-          position={['absolute', 'unset']}
-          left={'20px'}
-          right={'20px'}
-          bottom={'calc(20px + 54px)' /* 54px is mobile bottom nav's height */}
-          zIndex={100}
-        >
+        <Box w={['unset', 'clamp(300px, 100%, 500px)']}>
           <SubPageNote
-            canInteract={isMobile}
             title={t('edit_farm.tour_note_title')}
             description={
               <VStack gap={2}>
