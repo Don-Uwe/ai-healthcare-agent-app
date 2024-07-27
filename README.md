@@ -99,6 +99,17 @@ From the beginner's perspective, the project consists of three main modules: Art
 * Backend Development
 
 Users can also listen to articles (audio features) if they prefer. The Chat Section features a guide bot that helps users solve health-related problems.:sparkles:
+
+## Feature Left For Phase I
+
+ *  MultiLanguage Feature
+ *  PodCast
+ *  Profile API Integration 
+ *  Article API Integration 
+ *  Search & Filter Feature 
+ *  User Insights
+ *  Article Post via file upload
+
   </details>
 
    <!--------------------------------------------------------- PROJECT REQUIREMENTS-------------------------------------------------------------------------------->
