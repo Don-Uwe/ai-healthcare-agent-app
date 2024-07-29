@@ -493,6 +493,8 @@ This project is licensed under the [MIT License](./LICENSE).
  <tr>
    <td align="center"><a href="https://github.com/Parth20GitHub"><img src="https://avatars.githubusercontent.com/u/142086512?v=4" width="120px;" alt=""/><br/><sub><b>Parth Shah</b></sub></a>
         </td>  
+  <td align="center"><a href="https://github.com/sreevidya-16"><img src="https://avatars.githubusercontent.com/u/115856774?v=4" width="120px;" alt=""/><br/><sub><b>Sree Vidya</b></sub></a>
+        </td> 
  </tr>
    </p>
  </table>
