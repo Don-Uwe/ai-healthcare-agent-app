@@ -9,8 +9,9 @@
 
 # Small Note:
 
-We are almost near to achieving our goal of collecting articles. I want to express my gratitude to all the contributors who have dedicated their valuable time and made significant contributions in this field. So far, we have collected 13 different articles, and 2 are currently in progress.
-At this point, I have decided to stop accepting new article submissions. However, you can still work on the existing issues, and if you'd like, you can also try translating those articles into various languages. Please note that the issue level will be decreased to level 2 for translation tasks.
+## After 30th July, no contributions will be accepted for this repository under GSSOC. It is important to note that this is immutable and cannot be changed.
+
+
 
 
 <table align="center">
