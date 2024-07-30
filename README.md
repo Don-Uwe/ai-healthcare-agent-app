@@ -9,7 +9,7 @@
 
 # Small Note:
 
-## After 30th July, no contributions will be accepted for this repository under GSSOC. It is important to note that this is immutable and cannot be changed.
+## After 9th August, 2024 no contributions will be accepted for this repository under GSSOC. It is important to note that this is immutable and cannot be changed.
 
 
 
