@@ -1,9 +1,6 @@
-<h1 align="center">Analysis: Diabetes mellitus vs Diabetes !!</h1>
-<h3 align="center"></h3>    
-<!----------------------------------------------------- Contents ------------------------------------------------>
- <details>
-   <summary><h2>Table of Contents</h2></summary>
-    
+# Analysis: Diabetes mellitus vs Diabetes !!
+----------------------------------------------------- Contents ------------------------------------------------
+## Table of Contents
 1. [Abstract](#abstract)
 2. [Diabetes mellitus vs Diabetes insipidus](#diabetes-mellitus-vs-diabetes-insipidus)
    - [Origin](#origin)
@@ -24,8 +21,6 @@
    - [Prognosis of diabetes insipidus](#prognosis-of-diabetes-insipidus)
 10. [Conclusion](#conclusion)
 11. [References](#references)
-
-</details>
 
 ---
 
@@ -55,19 +50,21 @@ Diabetes is a disease that occurs when your blood glucose, also called blood sug
   The image illustrates defference between Diabetes mellitus and diabetes insipidus.
 </p>
 
-<hr>
-
 ### Origin
 
-| **Diabetes mellitus**     |  **Diabetes insipidus** |
-|:----------------------|:--------------|
+|:-------------------------------|:--------------------------------|
+
 | The term "diabetes" was first coined by Araetus of Cappodocia (81-133AD). Later, the word mellitus (honey sweet) was added by Thomas Willis (Britain) in 1675 after rediscovering the sweetness of urine and blood of patients (first noticed by the ancient Indians).The reason of this diabetes is defficiency of Pancreatic beta cells (Type 1) or insulin resistance (Type 2). | Diabetes insipidus is an ancient disease considered under the rubric of diabetes, the Greek descriptive term for polyuria, which was unrecognized even after the sweetness of urine was reported as a characteristic of diabetes mellitus in the 17th century. It would be another century before diabetes insipidus was identified from the insipid rather than saccharine taste of urine in cases of polyuria. After its increased recognition, pathologic observations and experimental studies connected diabetes insipidus to the pituitary gland  to be vasoconstrictive (vasopressin) and antidiuretic (antidiuretic hormone).|
 
 ### How diabetes is Formed
-
-| **Diabetes mellitus**     |  **Diabetes insipidus** |
 |:--------------------------------|:---------------------------------|
-|**Diabetes mellitus** occurs when your immune system, the body’s system for fighting infection, attacks and destroys the insulin-producing beta cells of the pancreas. Scientists think type 1 diabetes is caused by genes and environmental factors, such as viruses, that might trigger the disease. Also most common form of diabetes—is caused by several factors, including lifestyle factors and genes. Overweight, obesity, and physical inactivity You are more likely to develop diabetes if you are not physically active and are overweight or have obesity. Extra weight sometimes causes insulin resistance and is common in people with type 2 diabetes. The location of body fat also makes a difference. Extra belly fat is linked to insulin resistance, heart and blood vessel disease. Diabetes usually begins with insulin resistance, a condition in which muscle, liver, and fat cells do not use insulin well. As a result, your body needs more insulin to help glucose enter cells. At first, the pancreas makes more insulin to keep up with the added demand. Over time, the pancreas can’t make enough insulin, and blood glucose levels rise. |**Diabetes insipidus** is caused by problems with a chemical called arginine vasopressin (AVP), which is also known as antidiuretic hormone (ADH).AVP is produced by the hypothalamus and stored in the pituitary gland until needed. The hypothalamus is an area of the brain that controls mood and appetite. The pituitary gland is located below your brain, behind the bridge of your nose. AVP regulates the level of water in your body by controlling the amount of urine your kidneys produce. When the level of water in your body decreases, your pituitary gland releases AVP to conserve water and stop the production of urine. In diabetes insipidus, AVP fails to properly regulate your body's level of water, and allows too much urine to be produced and passed from your body.   |
+|**Diabetes mellitus** occurs when your immune system, the body’s system for fighting infection, attacks and destroys the insulin-producing beta cells of the pancreas. Scientists think type 1 diabetes is caused by genes and environmental factors, such as viruses, that might trigger the disease. Also most common form of diabetes—is caused by several factors, including lifestyle factors and genes.
+Overweight, obesity, and physical inactivity
+You are more likely to develop diabetes if you are not physically active and are overweight or have obesity. Extra weight sometimes causes insulin resistance and is common in people with type 2 diabetes. The location of body fat also makes a difference. Extra belly fat is linked to insulin resistance, heart and blood vessel disease. 
+Diabetes usually begins with insulin resistance, a condition in which muscle, liver, and fat cells do not use insulin well. As a result, your body needs more insulin to help glucose enter cells. At first, the pancreas makes more insulin to keep up with the added demand. Over time, the pancreas can’t make enough insulin, and blood glucose levels rise. |**Diabetes insipidus** is caused by problems with a chemical called arginine vasopressin (AVP), which is also known as antidiuretic hormone (ADH).AVP is produced by the hypothalamus and stored in the pituitary gland until needed.
+The hypothalamus is an area of the brain that controls mood and appetite. The pituitary gland is located below your brain, behind the bridge of your nose.
+AVP regulates the level of water in your body by controlling the amount of urine your kidneys produce. When the level of water in your body decreases, your pituitary gland releases AVP to conserve water and stop the production of urine.
+In diabetes insipidus, AVP fails to properly regulate your body's level of water, and allows too much urine to be produced and passed from your body.   |
 
 ---
 
@@ -228,6 +225,10 @@ and other organs to decrease its effect.
 | Type 1 Diabetes mellitus: Lack of insulin leads to decreased glucose uptake by cells, resulting in hyperglycemia. <br> - Type 2 Diabetes mellitus: Insulin resistance means glucose is not effectively taken up by cells, leading to elevated blood glucose levels. Over time, beta-cell dysfunction progresses, further exacerbating hyperglycemia. | Central Diabetes insipidus: Reduced or absent ADH leads to decreased reabsorption of water in the kidneys' collecting ducts, causing excessive urine output and dehydration. <br> - Nephrogenic Diabetes insipidus: Even with normal ADH levels, kidneys fail to reabsorb water, resulting in polyuria and dehydration. |
 |Organ that get affected is Pancreas (specifically beta cells)| Tn Diabetes insipidus Pituitary gland (Central DI) or kidneys (Nephrogenic DI) get affected|
 
+
+<p align="center">
+  <img src="Assetss\Symptoms _of_Diabetes _Mellitus.png" alt="Symptoms of Diabetes Mellitus" style="width: 40%; border: 2px solid white;">
+</p>
 
 --- 
 
