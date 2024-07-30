@@ -57,7 +57,7 @@ const MyApp = ({ Component, pageProps, lng, ...props }: AppProps & { lng: string
         <meta property="og:locale" content="en" />
         <meta property="og:site_name" content="Raydium" />
         <meta property="og:title" content="Swap | Raydium" />
-        <title>{pageProps.title ? `${pageProps.title} Raydium` : 'Raydium'}</title>
+        <title>{pageProps?.title ? `${pageProps.title} Raydium` : 'Raydium'}</title>
       </Head>
       <DynamicProviders>
         <DynamicContent {...props}>
