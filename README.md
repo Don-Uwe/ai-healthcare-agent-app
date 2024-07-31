@@ -215,158 +215,168 @@ Please note that the exact path to the Android SDK directory may vary depending 
   
 <!-------------------------------------------------------------------GETTING STARTED------------------------------------------------------------------------------->
 
-  <details>
-   <summary><h3>Getting Started :zap:</h3></summary>
+ <details>
+   <summary><h3>Getting Started ⚡️</h3></summary>
 
-   * [Initial Setup](#follow-these-steps-to-get-started-with-ultimatehealth)
+   * [Initial Setup](#follow-these-steps-to-get-started-with-ultimatehealth) 🛠️
    
-   * For development:<br>
-     - [Frontend](#for-frontend)<br>
-     - [Backend](#for-backend)
+   * Development Guides:<br>
+     - [Frontend](#for-frontend) 🌐<br>
+     - [Backend](#for-backend) 🖥️
 
-   * [Testing Frontend with Localhost Backend Server](#testing-frontend-with-localhost-backend-server)
+   * [Testing Frontend with Localhost Backend Server](#testing-frontend-with-localhost-backend-server) 🧪
 
-     
+---
+
 ### Follow these steps to get started with UltimateHealth:
 
+1. **Clone the Repository:**
+
+   ```bash
+   git clone https://github.com/SB2318/UltimateHealth.git
+   ```
    
-**Clone the repository:**
+2. **Change to the Project Directory:**
 
-```
-https://github.com/SB2318/UltimateHealth.git
-```
-**Change the directory**
+   ```bash
+   cd UltimateHealth
+   ```
 
-```
-cd  UltimateHealth
-```
+3. **Checkout the Development Branch:**
 
-**Checkout the develop branch and select your preferences (backend or frontend)**.
+   ```bash
+   git checkout develop
+   ```
 
-```
- git checkout develop
-```
+   If the 'develop' branch is not available in your forked repository, refer to the detailed instructions in [CONTRIBUTING.md](./CONTRIBUTING.md).
 
+## For Frontend: 🌐
 
-### If you couldn't find the 'develop' branch in your own forked repository, please go to [CONTRIBUTING.md](./CONTRIBUTING.md) and follow the instructions written in detail.
+1. **Install Dependencies:**
 
+   ```bash
+   npm install --legacy-peer-deps
+   ```
 
-## For Frontend:
+2. **Configure the Application:**
 
+   Update configuration files as needed, ensuring Ethereum wallet connection details are set.
 
-**Install dependencies:**
+3. **Run the Frontend Server:**
 
-```
-npm install --legacy-peer-deps
-```
+   - For Android:
 
-**Configure the application: (For IOS and Backend)**
+     ```bash
+     npm run android
+     ```
 
-Update the configuration files if necessary. Ensure the Ethereum wallet connection details are set.
+   - For iOS:
 
+     ```bash
+     npm run ios
+     ```
 
-**Run the applications**.
+## For Backend: 🖥️
 
-To run the frontend server use:
- 
-For android:
-`npm run android`
+### MongoDB Installation:
 
-For ios: 
-`npm run ios`
+1. **Install MongoDB:**
 
-## For Backend:
+   - Download the MongoDB package for your OS from [MongoDB's official website](https://www.mongodb.com/try/download).
+   - Follow the installation instructions for your platform.
 
-## MongoDB Installation
+2. **Set up MongoDB Database:**
 
-1. **Install MongoDB**
-   - Download the appropriate MongoDB installation package for your operating system from the official MongoDB website: https://www.mongodb.com/try/download
-   - Follow the installation instructions for your specific platform.
+   - Start the MongoDB server with the `mongod` command.
+   - Use `mongo` shell or a GUI client like MongoDB Compass to interact with your databases.
 
-2. **Set up a MongoDB database**
-   - After installation, start the MongoDB server by running the `mongod` command.
-   - MongoDB will create a default data directory to store your databases.
-   - Use the `mongo` shell or a GUI client like MongoDB Compass to interact with your databases.
+3. **Initialize the Backend Server:**
 
-3. **Follow the Steps to Initialize the backend server**
+### Setting up the Backend Server:
 
-## Setting up a Backend Server
+1. **Navigate to Backend Directory:**
 
-Follow the steps to set backend in your system
+   ```bash
+   cd backend
+   ```
 
-```
- cd backend
-```
-Create .env file if not present and add the following variables in the file
+2. **Create and Configure the `.env` File:**
 
-```
-PORT=
-MONGODB_URL=""
-JWT_SECRET=""
-```
+   Add the following variables:
 
-**Install necessary dependency from package.json**
+   ```env
+   PORT=
+   MONGODB_URL=""
+   JWT_SECRET=""
+   ```
 
-`npm install -s`
+3. **Install Dependencies:**
 
-**Once dependencies are installed, run the server using the following command**
+   ```bash
+   npm install -s
+   ```
 
-`npm run dev`
+4. **Run the Backend Server:**
 
-Alternate Command to run the server once
+   - For development:
 
-`node server.js`
+     ```bash
+     npm run dev
+     ```
 
-**Backend API URL**
-```
- http://localhost:{PORT}/api/
-```
-**Make Sure to replace the proper PORT value for Backend API**
+   - To run the server once:
 
-**Access the application:**
-Open your web browser and navigate to (LOCAL_HOST_URL).
-If you would like to contribute to the project, please follow the contribution guidelines.
+     ```bash
+     node server.js
+     ```
 
-## Testing Frontend with Localhost Backend Server
+5. **Backend API URL:**
 
-When working with a backend server running on localhost, frontend developers can follow these guidelines to test their application:
+   ```url
+   http://localhost:{PORT}/api/
+   ```
 
-### Since our server is currently hosted locally, it is advisable to utilize an emulator instead of a real device for API testing. 
+   Replace `{PORT}` with the appropriate port number.
 
-1. **Start the backend server**
-   - Before testing the frontend application, ensure that the backend server is running on localhost.
-   - Navigate to the backend project directory and start the server (e.g., `node server.js` for a Node.js server).
-   - The server should be listening on a specific port (e.g., `http://localhost:{PORT}`).
+## Testing Frontend with Localhost Backend Server: 🧪
 
-2. **Configure the frontend application**
-   - In the frontend application, locate the configuration file or the section where the API base URL is defined.
-   - Set the API base URL to point to the local backend server.
+### Guidelines for Frontend Developers:
 
-3. **Use appropriate HTTP clients**
-   - During development, frontend developers can use browser tools like the Network tab in the developer tools or dedicated HTTP clients like Postman or Insomnia to test the backend API endpoints.
-   - Send HTTP requests to the local backend server and observe the responses.
+1. **Start the Backend Server:**
 
-4. **Handle CORS (Cross-Origin Resource Sharing)**
-   - If the frontend application is running on a different port or domain than the backend server, the browser may block the requests due to CORS restrictions.
-   - To handle CORS, the backend server should be configured to allow cross-origin requests from the frontend application's origin.
-   - CORS is handled in the current backend server
+   Ensure the backend server is running on localhost. Start the server from the backend project directory (e.g., `node server.js`).
 
-5. **Proxy requests (optional)**
-   - Some frontend frameworks (e.g., Create React App, Vue CLI) provide a built-in proxy feature that forwards requests from the frontend application to the backend server.
-   - Configure the proxy in the frontend application's development settings to automatically forward API requests to the local backend server.
+2. **Configure the Frontend Application:**
 
-6. **Use environment variables**
-   - Avoid hardcoding the backend server URL in the frontend application.
-   - Instead, use environment variables to store the backend server URL and read it during runtime.
+   Set the API base URL in the frontend configuration to point to the local backend server.
 
-7. **Test different scenarios**
-   - Test various user flows and interactions with the backend API, such as creating, reading, updating, and deleting data.
-   - Simulate different scenarios, including error cases and edge cases, to ensure the frontend application and backend server handle them correctly.
+3. **Use HTTP Clients:**
 
-**Access the application:**
-Open your web browser and navigate to (LOCAL_HOST_URL).
-If you would like to contribute to the project, please follow the contribution guidelines. 
-  </details>
+   Test backend API endpoints using browser tools or dedicated HTTP clients like Postman or Insomnia.
+
+4. **Handle CORS:**
+
+   Configure the backend server to allow cross-origin requests if the frontend runs on a different port/domain.
+
+5. **Proxy Requests (Optional):**
+
+   Use built-in proxy features of frontend frameworks to forward API requests to the backend server.
+
+6. **Use Environment Variables:**
+
+   Store the backend server URL in environment variables instead of hardcoding.
+
+7. **Test Different Scenarios:**
+
+   Simulate various user flows, including error and edge cases, to ensure proper handling.
+
+**Access the Application:**
+
+Open your web browser and navigate to `LOCAL_HOST_URL`. Follow contribution guidelines if you'd like to contribute to the project.
+
+---
+
+</details>
 
 </details>
 
@@ -533,8 +543,4 @@ This project is licensed under the [MIT License](./LICENSE).
 </div> <br>
 
 <a href="#top" style="position: fixed; bottom: 20px; right: 20px; background-color: black ; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; border-radius: 5px; font-family: Arial; font-size: 16px;">Go to Top</a>
-
-
-
-
 
