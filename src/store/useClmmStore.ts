@@ -18,9 +18,10 @@ import {
   toToken,
   solToWSolToken,
   TxVersion,
-  getTransferAmountFeeV2
+  getTransferAmountFeeV2,
+  getRecentBlockHash
 } from '@raydium-io/raydium-sdk-v2'
-import { PublicKey } from '@solana/web3.js'
+import { PublicKey, VersionedTransaction } from '@solana/web3.js'
 import createStore from '@/store/createStore'
 import { useAppStore, useTokenAccountStore, useLiquidityStore } from '@/store'
 import { isSolWSol } from '@/utils/token'
@@ -321,7 +322,10 @@ export const useClmmStore = createStore<ClmmState>(
           const { execute, transactions } =
             txVersion === TxVersion.LEGACY
               ? await createPoolBuildData.builder.buildMultiTx({ extraPreBuildData: [buildData as TxBuildData<Record<string, any>>] })
-              : await createPoolBuildData.builder.buildV0MultiTx({ extraPreBuildData: [buildData as TxV0BuildData<Record<string, any>>] })
+              : await createPoolBuildData.builder.buildV0MultiTx({
+                  extraPreBuildData: [buildData as TxV0BuildData<Record<string, any>>],
+                  buildProps: { recentBlockhash: (buildData.transaction as VersionedTransaction).message.recentBlockhash }
+                })
 
           const txLength = transactions.length
           const { toastId, processedId, handler } = getDefaultToastData({

@@ -138,10 +138,6 @@ interface AppState {
   setAprModeAct: (mode: 'M' | 'D') => void
   checkAppVersionAct: () => Promise<void>
   fetchPriorityFeeAct: () => Promise<void>
-
-  buildMultipleTx: (props: {
-    txBuildDataList: (TxBuildData | TxV0BuildData)[]
-  }) => Promise<MultiTxBuildData | MultiTxV0BuildData | undefined>
 }
 
 const appInitState = {
@@ -395,53 +391,6 @@ export const useAppStore = createStore<AppState>(
       return String(Math.min(Number(transactionFee), feeConfig[priorityLevel]!))
     },
 
-    buildMultipleTx: async ({ txBuildDataList }) => {
-      if (!txBuildDataList.length) return
-
-      const { connection, publicKey: owner, signAllTransactions } = get()
-      if (!connection) {
-        toastSubject.next({
-          title: 'No connection',
-          description: 'please check rpc connection',
-          status: 'error'
-        })
-        return
-      }
-      if (!owner) {
-        toastSubject.next({
-          title: 'No Wallet',
-          description: 'please connect wallet',
-          status: 'error'
-        })
-        return
-      }
-
-      const currentBuildData = [...txBuildDataList]
-      const txBuilder = new TxBuilder({
-        connection,
-        feePayer: owner,
-        cluster: 'mainnet',
-        owner: new Owner(owner),
-        signAllTransactions
-      })
-
-      const firstBuildData = currentBuildData.shift()!
-      if (firstBuildData.transaction instanceof VersionedTransaction) {
-        txBuilder.addInstruction({
-          instructions: TransactionMessage.decompile(firstBuildData.transaction.message).instructions,
-          ...firstBuildData
-        })
-        return txBuilder.buildV0MultiTx({
-          buildProps: (firstBuildData as TxV0BuildData).buildProps,
-          extraPreBuildData: currentBuildData as TxV0BuildData[]
-        })
-      }
-      txBuilder.addInstruction({
-        instructions: firstBuildData.transaction.instructions,
-        ...firstBuildData
-      })
-      return txBuilder.buildMultiTx({ extraPreBuildData: currentBuildData as TxBuildData[] })
-    },
     getEpochInfo: async () => {
       const [connection, epochInfo] = [get().connection, get().epochInfo]
       if (!connection) return undefined
