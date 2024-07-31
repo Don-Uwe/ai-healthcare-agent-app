@@ -1,3 +1,4 @@
+
 <a id="top"></a>
 <h1 align="center">UltimateHealth (HealthGuide)</h1>
 <h3 align="center">    
@@ -61,7 +62,7 @@
 </table>
 <hr>
 <!--ABOUT US--->
-:zap: ABOUT Us:
+:zap: About Us:
 UltimateHealth is an innovative open-source project that aims to provide a comprehensive online library and article management application focused on health. The project is designed to cater to users looking for reliable and trustworthy information on various health-related topics.
 
 <hr>
@@ -84,17 +85,19 @@ UltimateHealth is an innovative open-source project that aims to provide a compr
   <img src="https://github.com/Vi1234sh12/Face-X/blob/master/.github/Assests/isometric.png" height="290px" align="right"/>
   <summary><h2>:pushpin:Contents: </h2></summary>
 
-- [Features](https://github.com/SB2318/UltimateHealth#features)
-- [Technology Stack](https://github.com/SB2318/UltimateHealth#technology-stack)
-- [Project Requirements](https://github.com/SB2318/UltimateHealth#project-requirements)<br>
-      - [Install JDK](https://github.com/SB2318/UltimateHealth#install-jdk)<br>
-      - [Set Up Android Development Environment](https://github.com/SB2318/UltimateHealth#setting-android_home-environment-variable)
-- [Getting Started](https://github.com/SB2318/UltimateHealth#getting-started)<br>
-      - [Frontend](https://github.com/SB2318/UltimateHealth#for-frontend)<br>
-      - [Backend](https://github.com/SB2318/UltimateHealth#for-backend)
-- [Testing Frontend with Localhost Backend Server](https://github.com/SB2318/UltimateHealth#testing-frontend-with-localhost-backend-server)
-- [Contribution Guidelines](https://github.com/SB2318/UltimateHealth#contribution-guidelines)
-- [Our Contributors](https://github.com/SB2318/UltimateHealth#our-contributors-%EF%B8%8F)
+- [Features](#features-crystal_ball)🔮
+- [Project Requirements](#project-requirements-mailbox_with_mail)📬
+- [Getting Started](#getting-started-zap)⚡<br>
+- ✨[Contribution Guidelines:](#sparklescontribution-guidelines)
+- ⚡[Our Vision:](#zapour-vision)
+- ✍️ [Feedback and Support:](#%EF%B8%8F-feedback-and-support)
+- 🤝[Code of Conduct:](#-code-of-conduct)
+- 📃[License:](#-license)
+- [Contact Us:](#contact-us)
+- [Our Contributors](#our-contributors-%EF%B8%8F)❤️
+- 🙏🏻[Support](#-support-)
+
+ 
  <!---------------------------------------------------------------------- FEATURES--------------------------------------------------------------->
  <details>
    <summary><h3>Features :crystal_ball:</h3></summary>
@@ -125,11 +128,16 @@ Users can also listen to articles (audio features) if they prefer. The Chat Sect
   <details>
    <summary><h3>Project Requirements :mailbox_with_mail:</h3></summary>
    
-   
    * Java installed on your machine. (**Java version:**  17)
+     - [Install JDK](#install-jdk)
    * Android Studio installed on your machine.
+     - [Set Up Android Development Environment](#setting-android_home-environment-variable) 
    
-###  Install JDK:
+ 
+
+
+
+### Install JDK: 
 
 To ensure that your project runs smoothly, make sure you have Java 17 installed on your system. You can follow these steps to set up Java 17:
 
@@ -164,7 +172,6 @@ To ensure that your project runs smoothly, make sure you have Java 17 installed 
 * Run the downloaded installer and follow the installation instructions.
 * After the installation is complete, you can verify the installation by opening a Command Prompt window and running the command java -version. It should display the installed JDK version.
 
-
 ### Setting JAVA_HOME on Windows:
 
 * Right-click on the Windows Start button and select "System".
@@ -192,6 +199,7 @@ To set the **ANDROID_HOME** variable for both Windows and macOS, you can follow 
 * Enter the path to the Android SDK directory as the variable value. (Default Path: ` C:\Users\User_Name\AppData\Local\Android\Sdk `)
 * Click "OK" to save the changes.
 
+
 ### macOS:
 
 * Open a terminal window.
@@ -204,13 +212,24 @@ To set the **ANDROID_HOME** variable for both Windows and macOS, you can follow 
 
 Please note that the exact path to the Android SDK directory may vary depending on how you installed it. Make sure to replace **/path/to/android/sdk** with the correct path on your system.
   </details>
+  
 <!-------------------------------------------------------------------GETTING STARTED------------------------------------------------------------------------------->
 
   <details>
    <summary><h3>Getting Started :zap:</h3></summary>
+
+   * [Initial Setup](#follow-these-steps-to-get-started-with-ultimatehealth)
    
+   * For development:<br>
+     - [Frontend](#for-frontend)<br>
+     - [Backend](#for-backend)
+
+   * [Testing Frontend with Localhost Backend Server](#testing-frontend-with-localhost-backend-server)
+
+     
 ### Follow these steps to get started with UltimateHealth:
 
+   
 **Clone the repository:**
 
 ```
@@ -227,7 +246,10 @@ cd  UltimateHealth
 ```
  git checkout develop
 ```
+
+
 ### If you couldn't find the 'develop' branch in your own forked repository, please go to [CONTRIBUTING.md](./CONTRIBUTING.md) and follow the instructions written in detail.
+
 
 ## For Frontend:
 
@@ -511,6 +533,8 @@ This project is licensed under the [MIT License](./LICENSE).
 </div> <br>
 
 <a href="#top" style="position: fixed; bottom: 20px; right: 20px; background-color: black ; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; border-radius: 5px; font-family: Arial; font-size: 16px;">Go to Top</a>
+
+
 
 
 

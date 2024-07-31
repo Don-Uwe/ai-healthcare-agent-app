@@ -11,27 +11,27 @@ Backend Development
 Users can also listen to articles(audio features) if they prefer. The Chat Section features a guider bot that helps users solve their health-related problems.
 
 ## Table of Contents: 
-1. Overview
-2. Frontend
-   - What is javascript
-   - How javascript uses for mobile development
-   - React-native Framework
-   - React Native CLI and React Native Expo
-   - Getting started with React Native CLI application
-   - Pros and Cons
+1. [Overview](#1-overview)
+2. [Frontend](#2-frontend)
+   - [What is Javascript](#what-is-javascript)
+   - [Javascript in mobile application development](#how-is-javascript-used-in-mobile-application-development)
+   - [What is React-native Framework](#what-is-react-native-framework)
+   - [React Native CLI and React Native Expo](#react-native-cli-and-react-native-expo)
+   - [Getting started with React Native CLI application](#getting-started-with-react-native-cli-application)
+   - [Pros and Cons](#pros-and-cons)
 
-3. Backend
-   - Brief about node js
-   - nvm,npm guide a little bit
-   - Express js framework
-   - Setting a local server with express js.
-   - How can you run a local server to test your application (as you need to run the backend server also when working on the front end part, when there is data in your database, and your server is not live).  Main part.
-   - Swagger
+3. [Backend](#3-backend)
+   - [Breif about Node js](#brief-about-node-js)
+   - [Guide to npm, nvm](#brief-guide-to-nvm--npm)
+   - [Express js framework](#brief-about-express-js)
+   - [Setting a local server with Express js](#setting-a-local-server-with-express-js)
+   - [Running a local server to test the application](#how-can-you-run-local-server-to-test-your-application-frontend) (as you need to run the backend server also when working on the front end part, when there is data in your database, and your server is not live).  Main part.
+   - [Swagger](#swagger)
   
-4. Database
-   - MongoDB(Not only sql database)
-   - Setup
-   - Pros and Cons
+4. [Database](#4-database)
+   - [MongoDB](#mongodb)(Not only sql database)
+   - [Setup](#setup)
+   - [Pros and Cons of MongoDB](#pros-and-cons-of-mongodb)
   
 
   ## 1. Overview
@@ -46,7 +46,7 @@ Users can also listen to articles(audio features) if they prefer. The Chat Secti
 
    UltimateHealth represents a significant step forward in providing accessible, reliable, and comprehensive health information. By leveraging the power of open-source collaboration and focusing on user needs, it aims to become a go-to resource for anyone seeking trustworthy health-related information.
   ## 2. Frontend
-  ###  What is javascript
+  ###  What is Javascript
   JavaScript is a high-level, interpreted programming language that is primarily used for creating and controlling dynamic website content. It is a core technology of the World Wide Web, alongside HTML and CSS. Here are some key points about JavaScript:
   - Client-Side Scripting
   - Event-Driven
@@ -56,7 +56,7 @@ Users can also listen to articles(audio features) if they prefer. The Chat Secti
   - Frameworks and Libraries
   - Server-Side Usage
   - Dynamic Typing
- ### How is javascript used in mobile application development
+ ### How is Javascript used in mobile application development
  JavaScript is widely used in mobile development through various frameworks and tools that allow developers to build mobile applications for both iOS and Android platforms. Here are some key ways JavaScript is used in mobile development:
  
  - Cross-Platform Mobile Apps
@@ -101,7 +101,7 @@ Navigate into the directory of your newly created project:
   ios:  `npx react-native run-ios`
   android: `npx react-native run-android`
      
-### Pros ans Cons 
+### Pros and Cons 
   Pros:
   - Cross-platform development with a single codebase.
   - Faster development and iteration.
@@ -115,7 +115,7 @@ Navigate into the directory of your newly created project:
   - Potential for dependency on third-party libraries.
 
 ## 3. Backend
-### Brief about node js
+### Brief about Node js
    Node.js is a powerful JavaScript runtime built on Chrome's V8 engine, allowing developers to use JavaScript for server-side scripting. It features a non-blocking, event-driven architecture, making it highly efficient for handling concurrent connections and ideal for building scalable, real-time applications like chat apps and live streaming services. Node.js leverages npm (Node Package Manager), the largest software registry, offering a vast array of libraries and tools to streamline development. While its single-threaded nature simplifies coding, it requires careful handling of asynchronous operations to maintain performance. Node.js's versatility and efficiency have made it a popular choice for modern web development.
    
 ### Brief guide to nvm , npm
@@ -125,10 +125,10 @@ nvm allows developers to manage and switch between multiple Node.js versions on 
 npm (Node Package Manager):
 npm is a powerful tool included with Node.js for managing project dependencies. It simplifies the installation, updating, and management of libraries and tools needed for development. With the world's largest software registry, npm provides access to a vast ecosystem of open-source packages, fostering rapid development and easy sharing of code. It supports scripts for automation and streamlines the overall development workflow.
 
-### Brief about express js
+### Brief about Express js
    Express.js is a minimalist web framework for Node.js, designed to build robust web and mobile applications. It provides a straightforward interface for handling HTTP requests, routing, middleware, and dynamic content. Express.js supports various templating engines, enabling efficient server-side rendering. Its flexibility and simplicity make it a popular choice for both small projects and large-scale applications. Additionally, the extensive ecosystem of plugins and middleware available for Express.js helps developers quickly add functionality and enhance their applications.
 
-### Setting a local server with express js
+### Setting a local server with Express js
    To set up a local server with Express.js, follow these steps:
    1. Install Node.js and npm: Download and install Node.js, which includes npm.
    2. Create a project directory:
@@ -203,7 +203,7 @@ Here's a brief overview of setting up MongoDB:
 
 The official MongoDB documentation provides detailed instructions and examples for each of these steps, as well as additional information on security, replication, sharding, and other advanced topics. It's a comprehensive resource for setting up and managing MongoDB deployments.
 
-### Pros and cons: 
+### Pros and cons of MongoDB: 
 Pros of MongoDB:
 - Flexible Schema: MongoDB's document-oriented data model allows for flexible and dynamic schemas, making it easier to adapt to changing application requirements.
 - Scalability: MongoDB is designed to be highly scalable, both vertically (by adding more resources to a single server) and horizontally (by adding more servers to a cluster).
