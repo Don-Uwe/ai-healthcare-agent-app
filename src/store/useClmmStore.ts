@@ -697,7 +697,7 @@ export const useClmmStore = createStore<ClmmState>(
           programId: programIdConfig.CLMM_PROGRAM_ID,
           mint1: { ...token1, address: token1.address },
           mint2: { ...token2, address: token2.address },
-          ammConfig: { ...config, id: new PublicKey(config.id), fundOwner: '' },
+          ammConfig: { ...config, id: new PublicKey(config.id), fundOwner: '', description: '' },
           initialPrice: new Decimal(price),
           startTime: new BN(startTime || Math.floor((Date.now() + chainTimeOffset) / 1000)),
           computeBudgetConfig,

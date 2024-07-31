@@ -2,7 +2,7 @@ import Decimal from 'decimal.js'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import * as yup from 'yup'
-import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
+import { ApiCpmmConfigInfo, ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 import { wSolToSol } from '@/utils/token'
 import { useTokenAccountStore } from '@/store/useTokenAccountStore'
 import { TFunction } from 'i18next'
@@ -15,9 +15,10 @@ interface Props {
   tokenAmount?: { base: string; quote: string }
   quoteToken?: ApiV3Token
   baseToken?: ApiV3Token
+  feeConfig?: ApiCpmmConfigInfo
 }
 
-export default function useInitPoolSchema({ startTime, baseToken, quoteToken, tokenAmount }: Props) {
+export default function useInitPoolSchema({ startTime, baseToken, quoteToken, tokenAmount, feeConfig }: Props) {
   // prepare for i18n usage
   const { t } = useTranslation()
 
@@ -29,6 +30,7 @@ export default function useInitPoolSchema({ startTime, baseToken, quoteToken, to
 
   const schema = (t: TFunction<'translation', undefined, 'translation'>) =>
     yup.object().shape({
+      feeConfig: yup.mixed().required(t('common.select') + t('field.fee_tier') ?? ''),
       startTime: yup.mixed().test('is-date-valid', t('error.start time should later than now') ?? '', function (val: Date) {
         return !val || val.valueOf() > Date.now()
       }),
@@ -57,13 +59,14 @@ export default function useInitPoolSchema({ startTime, baseToken, quoteToken, to
         quoteAmount: tokenAmount?.quote,
         startTime,
         baseBalance,
-        quoteBalance
+        quoteBalance,
+        feeConfig
       })
       setError(undefined)
     } catch (e: any) {
       setError(e.message)
     }
-  }, [baseToken, quoteToken, tokenAmount, startTime, baseBalance, quoteBalance])
+  }, [baseToken, quoteToken, tokenAmount, startTime, baseBalance, quoteBalance, feeConfig])
 
   return error
 }

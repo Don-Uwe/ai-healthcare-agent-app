@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { Minus, Plus } from 'react-feather'
 import { ApiV3PoolInfoConcentratedItem, ApiV3Token, solToWSol } from '@raydium-io/raydium-sdk-v2'
-import { Box, Text, Flex, HStack, VStack, SimpleGrid } from '@chakra-ui/react'
+import { Box, Text, Flex, HStack, VStack, SimpleGrid, Skeleton } from '@chakra-ui/react'
 import shallow from 'zustand/shallow'
 import DecimalInput from '@/components/DecimalInput'
 import PanelCard from '@/components/PanelCard'
@@ -26,7 +26,6 @@ import { usePopper } from 'react-popper'
 import FocusTrap from 'focus-trap-react'
 import { Side } from '@/features/Clmm/components/RangeInput'
 import { Desktop, Mobile } from '@/components/MobileDesktop'
-import { TokenPrice } from '@/hooks/token/useTokenPrice'
 import { useEvent } from '@/hooks/useEvent'
 import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
 import { extractNumberOnly } from '@/utils/numberish/regex'
@@ -58,7 +57,8 @@ interface Props {
   }
   token1: ApiV3Token
   token2: ApiV3Token
-  tokenPrices: Record<string, TokenPrice>
+  tokenPrices: Record<string, { value: number }>
+  isPriceLoading: boolean
   tempCreatedPool?: ApiV3PoolInfoConcentratedItem
   baseIn: boolean
   completed: boolean
@@ -72,6 +72,7 @@ export default function SetPriceAndRange({
   completed,
   initState,
   tokenPrices,
+  isPriceLoading,
   token1,
   token2,
   tempCreatedPool,
@@ -127,7 +128,7 @@ export default function SetPriceAndRange({
   ]
 
   const onlinePrice =
-    tokenBase && tokenQuote && priceBase.value && priceQuote.value
+    tokenBase && tokenQuote && priceBase?.value && priceQuote?.value
       ? new Decimal((priceReverse ? priceBase.value : priceQuote.value) || 0)
           .div((priceReverse ? priceQuote.value : priceBase.value) || 1)
           .toDecimalPlaces((priceReverse ? tokenQuote.decimals : tokenBase.decimals) || 6)
@@ -390,8 +391,8 @@ export default function SetPriceAndRange({
           {t('field.current_price')}:
         </Text>
         <QuestionToolTip iconType="question" label={t('create_standard_pool.current_price_tooltip')} />
-        <Text color={colors.textSecondary} fontSize="sm">
-          {formatToRawLocaleStr(onlinePrice)}{' '}
+        <Text color={colors.textSecondary} fontSize="sm" display="flex" alignItems="center" gap="1">
+          {isPriceLoading ? <Skeleton width={16} height={4} /> : formatToRawLocaleStr(onlinePrice)}
           {t('common.per_unit', {
             subA: wSolToSolString(priceReverse ? tokenQuote.symbol : tokenBase.symbol),
             subB: wSolToSolString(priceReverse ? tokenBase.symbol : tokenQuote.symbol)

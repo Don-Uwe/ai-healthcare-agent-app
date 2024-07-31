@@ -3,24 +3,20 @@ import TokenAvatar from '@/components/TokenAvatar'
 import TokenAvatarPair from '@/components/TokenAvatarPair'
 import TokenSelectDialog from '@/components/TokenSelectDialog'
 import useFetchPoolByMint from '@/hooks/pool/useFetchPoolByMint'
-import CircleCheck from '@/icons/misc/CircleCheck'
+import SubtractIcon from '@/icons/misc/SubtractIcon'
 import EditIcon from '@/icons/misc/EditIcon'
-import Exotic from '@/icons/pool/Exotic'
-import MostPair from '@/icons/pool/MostPair'
-import Stable from '@/icons/pool/Stable'
-import VeryStable from '@/icons/pool/VeryStable'
 import { useClmmStore } from '@/store/useClmmStore'
 import { colors } from '@/theme/cssVariables/colors'
 import ConnectedButton from '@/components/ConnectedButton'
+import { Select } from '@/components/Select'
 import useTokenPrice from '@/hooks/token/useTokenPrice'
 import { useTokenStore } from '@/store'
-import { toastSubject } from '@/hooks/toast/useGlobalToast'
-import { Box, Flex, Spacer, SystemStyleObject, Tag, Text, useDisclosure } from '@chakra-ui/react'
+import { Box, Flex, HStack, SystemStyleObject, Tag, Text, useDisclosure } from '@chakra-ui/react'
 import { ApiClmmConfigInfo, ApiV3Token, PoolFetchType, TokenInfo, solToWSol } from '@raydium-io/raydium-sdk-v2'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ChevronDown } from 'react-feather'
+import { ChevronDown, ChevronUp } from 'react-feather'
 import { useTranslation } from 'react-i18next'
-import { formatToRawLocaleStr } from '@/utils/numberish/formatter'
+import { percentFormatter } from '@/utils/numberish/formatter'
 
 type Side = 'token1' | 'token2'
 
@@ -38,41 +34,11 @@ const SelectBoxSx: SystemStyleObject = {
   px: '4'
 }
 
-const FeeConfigMap = new Map([
-  [
-    100,
-    {
-      key: 'clmm.best_for_very_stable',
-      Icon: VeryStable
-    }
-  ],
-  [
-    500,
-    {
-      key: 'clmm.best_for_stable',
-      Icon: Stable
-    }
-  ],
-  [
-    2500,
-    {
-      key: 'clmm.best_for_most_pair',
-      Icon: MostPair
-    }
-  ],
-  [
-    10000,
-    {
-      key: 'clmm.best_for_exotic_pair',
-      Icon: Exotic
-    }
-  ]
-])
-
 export default function SelectPoolTokenAndFee({ completed, isLoading, onConfirm, onEdit }: Props) {
   const { t } = useTranslation()
   const { isOpen, onOpen, onClose } = useDisclosure()
   const clmmFeeConfigs = useClmmStore((s) => s.clmmFeeConfigs)
+  const clmmFeeOptions = Object.values(clmmFeeConfigs)
   const [tokens, setTokens] = useState<{
     token1?: ApiV3Token
     token2?: ApiV3Token
@@ -171,7 +137,7 @@ export default function SelectPoolTokenAndFee({ completed, isLoading, onConfirm,
               {tokens.token1?.symbol} / {tokens.token2?.symbol}
             </Text>
             <Tag size="sm" variant="rounded">
-              {t('field.fee')} {formatToRawLocaleStr((currentConfig?.tradeFeeRate || 0) / 10000)}%
+              {t('field.fee')} {percentFormatter.format((currentConfig?.tradeFeeRate || 0) / 1000000)}
             </Tag>
           </Flex>
           <EditIcon cursor="pointer" onClick={() => onEdit(0)} />
@@ -231,70 +197,63 @@ export default function SelectPoolTokenAndFee({ completed, isLoading, onConfirm,
       <Text variant="title" mb="4">
         {t('field.fee_tier')}
       </Text>
-      <Flex flexWrap="wrap" justifyContent="space-evenly" gap="2">
-        {Object.values(clmmFeeConfigs).map((config) => {
-          const existed = new Set(existingPools.values()).has(config.id)
-          const Icon = FeeConfigMap.get(config.tradeFeeRate)?.Icon
-          const selected = currentConfig?.id === config.id
-          return (
-            <Flex key={config.id} position="relative" flexDirection="column" w="48%" _hover={{ '.poolExistedTip': { display: 'flex' } }}>
-              <Flex
-                flexDirection="column"
-                gap="1"
-                bg={colors.backgroundDark}
-                rounded="xl"
-                p="10px"
-                borderRadius="10px"
-                textAlign="center"
-                fontSize="sm"
-                position="relative"
-                boxSizing="border-box"
-                onClick={existed ? undefined : () => setCurrentConfig(config)}
-                sx={{
-                  opacity: existed ? '0.5' : '1',
-                  cursor: existed ? 'default' : 'pointer',
-                  border: `1px solid ${selected ? colors.secondary : 'transparent'}`
-                }}
-              >
-                {selected ? <CircleCheck style={{ color: colors.secondary, position: 'absolute', top: '10px', right: '10px' }} /> : null}
-                <Text fontWeight="500">{formatToRawLocaleStr(config.tradeFeeRate / 10000)}%</Text>
-                <Text color={colors.textSecondary}>{config.description}</Text>
-                <Spacer />
-                {Icon ? <Icon width="100%" /> : null}
-              </Flex>
-              {existed ? (
-                <Box
-                  width="35%"
-                  height="35%"
-                  bg={colors.tooltipBg}
-                  borderRadius={10}
-                  className="poolExistedTip"
-                  display="none"
-                  alignSelf={'center'}
-                  justifyContent="center"
-                  alignItems="center"
-                  position="absolute"
-                  top={-2.5}
-                  _after={{
-                    content: `""`,
-                    position: 'absolute',
-                    top: '100%',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    borderWidth: '0.75rem',
-                    borderStyle: 'solid',
-                    borderColor: `${colors.tooltipBg} transparent transparent transparent`
+      <Flex w="full" gap="2">
+        <Select
+          variant="filledDark"
+          items={clmmFeeOptions}
+          value={currentConfig}
+          renderItem={(v, idx) => {
+            if (v) {
+              const existed = new Set(existingPools.values()).has(v.id)
+              const selected = currentConfig?.id === v.id
+              const isLastItem = idx === clmmFeeOptions.length - 1
+              return (
+                <HStack
+                  color={colors.textPrimary}
+                  opacity={existed ? 0.5 : 1}
+                  cursor={existed ? 'not-allowed' : 'pointer'}
+                  justifyContent="space-between"
+                  mx={4}
+                  py={2.5}
+                  fontSize="sm"
+                  borderBottom={isLastItem ? 'none' : `1px solid ${colors.buttonBg01}`}
+                  _hover={{
+                    borderBottom: '1px solid transparent'
                   }}
                 >
-                  <Text fontSize="xs" fontWeight="normal" color={colors.textSecondary}>
-                    {t('create_pool.pool_existed')}
-                  </Text>
-                </Box>
-              ) : null}
-            </Flex>
-          )
-        })}
-        {Object.values(clmmFeeConfigs).length % 2 ? <Flex w="48%" /> : null}
+                  <Text>{percentFormatter.format(v.tradeFeeRate / 1000000)}</Text>
+                  {selected && <SubtractIcon />}
+                </HStack>
+              )
+            }
+            return null
+          }}
+          renderTriggerItem={(v) => (v ? <Text fontSize="sm">{percentFormatter.format(v.tradeFeeRate / 1000000)}</Text> : null)}
+          onChange={(val) => {
+            const existed = new Set(existingPools.values()).has(val.id)
+            const selected = currentConfig?.id === val.id
+            !existed && !selected && setCurrentConfig(val)
+          }}
+          sx={{
+            w: 'full',
+            height: '42px'
+          }}
+          popoverContentSx={{
+            border: `1px solid ${colors.selectInactive}`,
+            py: 0
+          }}
+          popoverItemSx={{
+            p: 0,
+            lineHeight: '18px',
+            _hover: {
+              bg: colors.modalContainerBg
+            }
+          }}
+          icons={{
+            open: <ChevronUp color={colors.textSecondary} opacity="0.5" />,
+            close: <ChevronDown color={colors.textSecondary} opacity="0.5" />
+          }}
+        />
       </Flex>
       <ConnectedButton mt="8" isDisabled={!!error || !currentConfig} isLoading={isLoading || isExistingLoading} onClick={handleConfirm}>
         {error ? `${t('common.select')} ${t(error)}` : t('button.continue')}

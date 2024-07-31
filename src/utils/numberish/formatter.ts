@@ -78,6 +78,17 @@ export const detectedSeparator = new Intl.NumberFormat(userLocale, {
   .format(1.1)
   .substring(1, 2)
 
+export const percentFormatter = new Intl.NumberFormat(userLocale, {
+  style: 'percent',
+  maximumFractionDigits: 2
+})
+
+export const percentWithSignFormatter = new Intl.NumberFormat(userLocale, {
+  style: 'percent',
+  maximumFractionDigits: 2,
+  signDisplay: 'exceptZero'
+})
+
 /**
  *
  * @example

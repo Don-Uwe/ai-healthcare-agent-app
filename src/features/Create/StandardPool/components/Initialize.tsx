@@ -1,26 +1,41 @@
-import { useEffect, useCallback, useState, useRef } from 'react'
-import { Box, Flex, HStack, Text, VStack, useDisclosure } from '@chakra-ui/react'
+import { useEffect, useCallback, useState, useRef, useMemo } from 'react'
+import { Box, Flex, HStack, Text, VStack, useDisclosure, Skeleton } from '@chakra-ui/react'
 import shallow from 'zustand/shallow'
 import FocusTrap from 'focus-trap-react'
 import { usePopper } from 'react-popper'
 import { useTranslation } from 'react-i18next'
 import { PublicKey } from '@solana/web3.js'
-import { ApiV3Token, RAYMint, TokenInfo, solToWSolToken } from '@raydium-io/raydium-sdk-v2'
+import {
+  ApiV3Token,
+  RAYMint,
+  TokenInfo,
+  solToWSolToken,
+  ApiCpmmConfigInfo,
+  PoolFetchType,
+  solToWSol,
+  CREATE_CPMM_POOL_PROGRAM,
+  ApiV3PoolInfoStandardItemCpmm
+} from '@raydium-io/raydium-sdk-v2'
 import { DatePick, HourPick, MinutePick } from '@/components/DateTimePicker'
 import DecimalInput from '@/components/DecimalInput'
 import Button from '@/components/Button'
 import TokenInput from '@/components/TokenInput'
 import Tabs from '@/components/Tabs'
 import { QuestionToolTip } from '@/components/QuestionToolTip'
+import { Select } from '@/components/Select'
 import HorizontalSwitchSmallIcon from '@/icons/misc/HorizontalSwitchSmallIcon'
 import AddLiquidityPlus from '@/icons/misc/AddLiquidityPlus'
+import SubtractIcon from '@/icons/misc/SubtractIcon'
 import { useLiquidityStore, useTokenStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
 import { wSolToSolString, wsolToSolToken } from '@/utils/token'
 import { TxErrorModal } from '@/components/Modal/TxErrorModal'
-
+import { ChevronDown, ChevronUp } from 'react-feather'
+import { percentFormatter } from '@/utils/numberish/formatter'
+import useFetchPoolByMint from '@/hooks/pool/useFetchPoolByMint'
 import CreateSuccessModal from './CreateSuccessModal'
 import useInitPoolSchema from '../hooks/useInitPoolSchema'
+import useBirdeyeTokenPrice from '@/hooks/token/useBirdeyeTokenPrice'
 
 import Decimal from 'decimal.js'
 import dayjs from 'dayjs'
@@ -48,10 +63,55 @@ export default function Initialize() {
   const [tokenAmount, setTokenAmount] = useState<{ base: string; quote: string }>({ base: '', quote: '' })
   const [baseSymbol, quoteSymbol] = [wSolToSolString(baseToken?.symbol), wSolToSolString(quoteToken?.symbol)]
 
+  // TODO: fee configs
+  const cpmmFeeConfigs = useLiquidityStore((s) => s.cpmmFeeConfigs)
+  const clmmFeeOptions = Object.values(cpmmFeeConfigs)
+  const poolKey = `${baseSymbol}-${quoteSymbol}`
+  const [currentConfig, setCurrentConfig] = useState<ApiCpmmConfigInfo | undefined>()
+
+  const { data: tokenPrices = {}, isLoading: isPriceLoading } = useBirdeyeTokenPrice({
+    mintList: [inputMint, outputMint]
+  })
+
+  const { data } = useFetchPoolByMint({
+    shouldFetch: !!inputMint && !!outputMint,
+    mint1: inputMint ? solToWSol(inputMint).toString() : '',
+    mint2: outputMint ? solToWSol(outputMint || '').toString() : '',
+    type: PoolFetchType.Standard
+  })
+
+  const existingPools: Map<string, string> = useMemo(
+    () =>
+      (data || [])
+        .filter((pool) => {
+          const [token1Mint, token2Mint] = [
+            inputMint ? solToWSol(inputMint).toString() : '',
+            outputMint ? solToWSol(outputMint || '').toString() : ''
+          ]
+          return (
+            pool.programId === CREATE_CPMM_POOL_PROGRAM.toBase58() &&
+            ((pool.mintA?.address === token1Mint && pool.mintB?.address === token2Mint) ||
+              (pool.mintA?.address === token2Mint && pool.mintB?.address === token1Mint))
+          )
+        })
+        .reduce((acc, cur) => acc.set(cur.id, (cur as unknown as ApiV3PoolInfoStandardItemCpmm).config.id), new Map()),
+    [inputMint, outputMint, data]
+  )
+
+  const isSelectedExisted = !!currentConfig && new Set(existingPools.values()).has(currentConfig.id)
+  useEffect(() => () => setCurrentConfig(undefined), [poolKey, isSelectedExisted])
+  useEffect(() => {
+    const defaultConfig = Object.values(cpmmFeeConfigs || {}).find((c) => c.tradeFeeRate === 2500)
+    if (!new Set(existingPools.values()).has(defaultConfig?.id || '')) {
+      if (defaultConfig) setCurrentConfig(defaultConfig)
+      return
+    }
+  }, [poolKey, existingPools, cpmmFeeConfigs])
+
   const [startDateMode, setStartDateMode] = useState<'now' | 'custom'>('now')
   const isStartNow = startDateMode === 'now'
 
-  const currentPrice =
+  const initialPrice =
     new Decimal(tokenAmount.base || 0).lte(0) || new Decimal(tokenAmount.quote || 0).lte(0)
       ? ''
       : new Decimal(tokenAmount[baseIn ? 'quote' : 'base'] || 0)
@@ -59,7 +119,15 @@ export default function Initialize() {
           .toDecimalPlaces(baseToken?.decimals ?? 6)
           .toString()
 
-  const error = useInitPoolSchema({ baseToken, quoteToken, tokenAmount, startTime: startDate })
+  const currentPrice =
+    !tokenPrices[inputMint] || !tokenPrices[outputMint]
+      ? ''
+      : new Decimal(tokenPrices[baseIn ? inputMint : outputMint].value || 0)
+          .div(tokenPrices[baseIn ? outputMint : inputMint].value || 1)
+          .toDecimalPlaces(baseToken?.decimals ?? 6)
+          .toString()
+
+  const error = useInitPoolSchema({ baseToken, quoteToken, tokenAmount, startTime: startDate, feeConfig: currentConfig })
 
   useEffect(() => () => useLiquidityStore.setState({ newCreatedPool: undefined }), [])
 
@@ -82,7 +150,8 @@ export default function Initialize() {
     createPoolAct({
       pool: {
         mintA: solToWSolToken(baseToken!),
-        mintB: solToWSolToken(quoteToken!)
+        mintB: solToWSolToken(quoteToken!),
+        feeConfig: currentConfig!
       },
       baseAmount: new Decimal(tokenAmount.base).mul(10 ** baseToken!.decimals).toFixed(0),
       quoteAmount: new Decimal(tokenAmount.quote).mul(10 ** quoteToken!.decimals).toFixed(0),
@@ -133,7 +202,7 @@ export default function Initialize() {
           postFixInField
           variant="filledDark"
           readonly
-          value={currentPrice}
+          value={initialPrice}
           inputSx={{ pl: '4px', fontWeight: 500, fontSize: ['md', 'xl'] }}
           ctrSx={{ bg: colors.backgroundDark, borderRadius: 'xl', pr: '14px', py: '6px' }}
           inputGroupSx={{ w: '100%', bg: colors.backgroundDark, alignItems: 'center', borderRadius: 'xl' }}
@@ -147,8 +216,9 @@ export default function Initialize() {
           <Text fontWeight="400" fontSize="sm" color={colors.textTertiary}>
             {t('create_standard_pool.current_price')}:
           </Text>
-          <Text pl={1} fontSize="sm" color={colors.textSecondary} fontWeight="medium">
-            1 {baseIn ? baseSymbol : quoteSymbol} ≈ {currentPrice || '-'} {baseIn ? quoteSymbol : baseSymbol}
+          <Text pl={1} fontSize="sm" color={colors.textSecondary} fontWeight="medium" display="flex" alignItems={'center'} gap={1}>
+            1 {baseIn ? baseSymbol : quoteSymbol} ≈ {isPriceLoading ? <Skeleton width={14} height={4} /> : currentPrice || '-'}{' '}
+            {baseIn ? quoteSymbol : baseSymbol}
           </Text>
           <Box
             padding="1px"
@@ -162,7 +232,70 @@ export default function Initialize() {
           </Box>
         </HStack>
       </Flex>
-
+      <Flex direction="column" w="full" align={'flex-start'} gap={3}>
+        <Text fontWeight="medium" fontSize="sm">
+          {t('field.fee_tier')}
+        </Text>
+        <Flex w="full" gap="2">
+          <Select
+            variant="filledDark"
+            items={clmmFeeOptions}
+            value={currentConfig}
+            renderItem={(v, idx) => {
+              if (v) {
+                const existed = new Set(existingPools.values()).has(v.id)
+                const selected = currentConfig?.id === v.id
+                const isLastItem = idx === clmmFeeOptions.length - 1
+                return (
+                  <HStack
+                    color={colors.textPrimary}
+                    opacity={existed ? 0.5 : 1}
+                    cursor={existed ? 'not-allowed' : 'pointer'}
+                    justifyContent="space-between"
+                    mx={4}
+                    py={2.5}
+                    fontSize="sm"
+                    borderBottom={isLastItem ? 'none' : `1px solid ${colors.buttonBg01}`}
+                    _hover={{
+                      borderBottom: '1px solid transparent'
+                    }}
+                  >
+                    <Text>{percentFormatter.format(v.tradeFeeRate / 1000000)}</Text>
+                    {selected && <SubtractIcon />}
+                  </HStack>
+                )
+              }
+              return null
+            }}
+            renderTriggerItem={(v) => (v ? <Text fontSize="sm">{percentFormatter.format(v.tradeFeeRate / 1000000)}</Text> : null)}
+            onChange={(val) => {
+              setCurrentConfig(val)
+              const existed = new Set(existingPools.values()).has(val.id)
+              const selected = currentConfig?.id === val.id
+              !existed && !selected && setCurrentConfig(val)
+            }}
+            sx={{
+              w: 'full',
+              height: '42px'
+            }}
+            popoverContentSx={{
+              border: `1px solid ${colors.selectInactive}`,
+              py: 0
+            }}
+            popoverItemSx={{
+              p: 0,
+              lineHeight: '18px',
+              _hover: {
+                bg: colors.modalContainerBg
+              }
+            }}
+            icons={{
+              open: <ChevronUp color={colors.textSecondary} opacity="0.5" />,
+              close: <ChevronDown color={colors.textSecondary} opacity="0.5" />
+            }}
+          />
+        </Flex>
+      </Flex>
       {/* start time */}
       <Flex direction="column" w="full" gap={3}>
         <Text fontWeight="medium" textAlign="left" fontSize="sm">

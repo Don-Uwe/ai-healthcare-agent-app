@@ -17,12 +17,12 @@ import { routeBack, routeToPage } from '@/utils/routeTools'
 import { solToWSolToken } from '@/utils/token'
 import BN from 'bn.js'
 import Decimal from 'decimal.js'
-import useTokenPrice from '@/hooks/token/useTokenPrice'
 import SelectPoolToken from './components/SelectPoolTokenAndFee'
 import SetPriceAndRange from './components/SetPriceAndRange'
 import Stepper from './components/Stepper'
 import TokenAmountPairInputs from './components/TokenAmountInput'
 import { useEvent } from '@/hooks/useEvent'
+import useBirdeyeTokenPrice from '@/hooks/token/useBirdeyeTokenPrice'
 
 export default function CreateClmmPool() {
   const isMobile = useAppStore((s) => s.isMobile)
@@ -36,7 +36,7 @@ export default function CreateClmmPool() {
   const [isTxSending, setIsTxSending] = useState(false)
   const debounceSetBuildData = debounce((data: CreatePoolBuildData) => setCreatePoolData(data), 150)
 
-  const { data: tokenPrices } = useTokenPrice({
+  const { data: tokenPrices, isLoading: isPriceLoading } = useBirdeyeTokenPrice({
     mintList: [createPoolData?.extInfo.mockPoolInfo.mintA.address, createPoolData?.extInfo.mockPoolInfo.mintB.address]
   })
 
@@ -270,7 +270,8 @@ export default function CreateClmmPool() {
                 completed={step > 1}
                 token1={currentCreateInfo.current.token1!}
                 token2={currentCreateInfo.current.token2!}
-                tokenPrices={tokenPrices}
+                tokenPrices={tokenPrices || {}}
+                isPriceLoading={isPriceLoading}
                 tempCreatedPool={createPoolData?.extInfo.mockPoolInfo}
                 baseIn={baseIn}
                 onPriceChange={handlePriceChange}
@@ -298,7 +299,7 @@ export default function CreateClmmPool() {
       </Grid>
       {createPoolData && isOpen ? (
         <PreviewDepositModal
-          tokenPrices={tokenPrices}
+          tokenPrices={tokenPrices || {}}
           isOpen={isOpen}
           isSending={isTxSending}
           isCreatePool

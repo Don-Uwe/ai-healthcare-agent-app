@@ -49,7 +49,7 @@
     "@moonpay/moonpay-js": "^0.6.1",
     "@next/third-parties": "^14.2.5",
     "@project-serum/serum": "^0.13.65",
-    "@raydium-io/raydium-sdk-v2": "0.1.38-alpha",
+    "@raydium-io/raydium-sdk-v2": "0.1.48-alpha",
     "@solana/spl-token": "^0.3.7",
     "@solana/wallet-adapter-base": "^0.9.23",
     "@solana/wallet-adapter-exodus": "^0.1.18",

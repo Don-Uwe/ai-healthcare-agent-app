@@ -23,7 +23,6 @@ import { colors } from '@/theme/cssVariables/colors'
 import { panelCard } from '@/theme/cssBlocks'
 import Decimal from 'decimal.js'
 import toPercentString from '@/utils/numberish/toPercentString'
-import { TokenPrice } from '@/hooks/token/useTokenPrice'
 import { getFirstNonZeroDecimal } from '@/utils/numberish/formatter'
 import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
 
@@ -36,7 +35,7 @@ interface Props {
   pool: ApiV3PoolInfoConcentratedItem
   tokenAmount: [string, string]
   priceRange: [string, string]
-  tokenPrices: Record<string, TokenPrice>
+  tokenPrices: Record<string, { value: number }>
   isCreatePool?: boolean
 }
 

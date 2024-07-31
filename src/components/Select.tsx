@@ -14,6 +14,7 @@ import { ReactNode, useRef } from 'react'
 
 import { useOutsideClick } from '@/hooks/useOutsideClick'
 import ChevronDownIcon from '@/icons/misc/ChevronDownIcon'
+import ChevronUpIcon from '@/icons/misc/ChevronUpIcon'
 import { colors } from '@/theme/cssVariables'
 import { isObject } from '@/utils/judges/judgeType'
 import { MayFn, shrinkToValue } from '@/utils/shrinkToValue'
@@ -30,6 +31,23 @@ export type SelectorItem<T = any> = SelectorItemObj<T> | T
 function isSelectorItemObj<T>(item: SelectorItem<T>): item is SelectorItemObj<T> {
   return isObject(item) && 'value' in item
 }
+
+function getIcon(
+  name: string,
+  icons?: {
+    open?: ReactNode
+    close?: ReactNode
+  }
+) {
+  switch (name) {
+    case 'open':
+      return icons && icons.open ? icons.open : <ChevronUpIcon width={16} height={16} />
+    case 'close':
+      return icons && icons.close ? icons.close : <ChevronDownIcon width={16} height={16} />
+    default:
+      return null
+  }
+}
 /**
  * chakra <Select> use HTML <select>, which only can include text as option.
  * So use chakra <Popover> instead
@@ -42,6 +60,7 @@ export function Select<T>({
   defaultValue,
   sx,
   popoverContentSx,
+  popoverItemSx,
   triggerSX,
   disabled,
   onChange,
@@ -49,7 +68,7 @@ export function Select<T>({
   renderTriggerItem = renderItem,
   hasDivider = false,
   hasBorder = false,
-  hasDownIcon = true,
+  icons,
   placement = 'bottom-start'
 }: {
   variant?: 'filled' | 'filledFlowDark' | 'filledDark' | 'roundedFilledFlowDark' | 'roundedFilledDark'
@@ -59,6 +78,7 @@ export function Select<T>({
   defaultValue?: T
   sx?: MayFn<SystemStyleObject, [{ isPanelOpen: boolean }]>
   popoverContentSx?: MayFn<SystemStyleObject, [{ isPanelOpen: boolean }]>
+  popoverItemSx?: MayFn<SystemStyleObject>
   triggerSX?: MayFn<SystemStyleObject, [{ isPanelOpen: boolean }]>
   disabled?: boolean
   onChange?(item: T): void
@@ -68,7 +88,10 @@ export function Select<T>({
   placeholder?: ReactNode
   hasDivider?: boolean
   hasBorder?: boolean
-  hasDownIcon?: boolean
+  icons?: {
+    open?: ReactNode
+    close?: ReactNode
+  }
   placement?: PlacementWithLogical
 }) {
   const { isOpen, onOpen, onClose } = useDisclosure()
@@ -124,7 +147,7 @@ export function Select<T>({
     >
       {facePrefix && <Box>{shrinkToValue(facePrefix, [{ open, itemValue: value }])}</Box>}
       <Box flexGrow="1">{triggerItem}</Box>
-      {hasDownIcon && <ChevronDownIcon width={16} height={16} />}
+      {isOpen ? getIcon('open', icons) : getIcon('close', icons)}
     </HStack>
   )
 
@@ -173,6 +196,7 @@ export function Select<T>({
                 py={1}
                 px="8px"
                 color={isFaceLight ? colors.textTertiary : colors.textSecondary}
+                sx={shrinkToValue(popoverItemSx)}
               >
                 {renderItem ? renderItem(itemValue, idx) : itemLabel}
               </Box>
