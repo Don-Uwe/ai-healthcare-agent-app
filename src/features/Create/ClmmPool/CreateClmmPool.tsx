@@ -147,7 +147,8 @@ export default function CreateClmmPool() {
         token2: token2!,
         price,
         startTime,
-        forerunCreate: true
+        forerunCreate: true,
+        getObserveState: true
       })
 
       if (!buildData) return

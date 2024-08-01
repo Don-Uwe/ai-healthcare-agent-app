@@ -115,6 +115,7 @@ interface ClmmState {
     startTime?: number
     execute?: boolean
     forerunCreate?: boolean
+    getObserveState?: boolean
   }) => Promise<{
     txId: string
     buildData?:
@@ -689,7 +690,7 @@ export const useClmmStore = createStore<ClmmState>(
         .finally(txProps.onFinally)
     },
 
-    createClmmPool: async ({ token1, token2, config, price, startTime, execute, forerunCreate }) => {
+    createClmmPool: async ({ token1, token2, config, price, startTime, execute, forerunCreate, getObserveState }) => {
       const { raydium, publicKey, txVersion, chainTimeOffset, programIdConfig } = useAppStore.getState()
       if (!raydium || !publicKey) {
         toastSubject.next({ noRpc: true })
@@ -706,6 +707,7 @@ export const useClmmStore = createStore<ClmmState>(
           startTime: new BN(startTime || Math.floor((Date.now() + chainTimeOffset) / 1000)),
           computeBudgetConfig,
           forerunCreate,
+          getObserveState,
           txVersion
         })
         const { execute: executeTx } = buildData
