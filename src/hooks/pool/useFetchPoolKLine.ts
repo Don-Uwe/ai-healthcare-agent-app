@@ -1,5 +1,5 @@
 import axios from '@/api/axios'
-import { birdeyeAuthorizeKey, birdeyeKlineApiAddress } from '@/utils/config/birdeyeAPI'
+import { birdeyeKlineApiAddress } from '@/utils/config/birdeyeAPI'
 import { MINUTE_MILLISECONDS } from '@/utils/date'
 import { throttle } from '@/utils/functionMethods'
 import { solToWSol } from '@raydium-io/raydium-sdk-v2'
@@ -36,10 +36,6 @@ type RawKLineDataItem = {
 const fetcher = (url: string) => {
   return axios.get<{ items: RawKLineDataItem[] }>(url, {
     skipError: true,
-    headers: {
-      'x-chain': 'solana',
-      'X-API-KEY': birdeyeAuthorizeKey
-    }
   })
 }
 
@@ -87,12 +83,12 @@ export default function useFetchPoolKLine({
     (index) =>
       shouldFetch
         ? birdeyeKlineApiAddress({
-            baseMint: solToWSol(base || '').toString(),
-            quoteMint: solToWSol(quote || '').toString(),
-            timeType,
-            timeFrom: untilDate - getOffset(timeType, index + 1),
-            timeTo: untilDate - getOffset(timeType, index)
-          })
+          baseMint: solToWSol(base || '').toString(),
+          quoteMint: solToWSol(quote || '').toString(),
+          timeType,
+          timeFrom: untilDate - getOffset(timeType, index + 1),
+          timeTo: untilDate - getOffset(timeType, index)
+        })
         : null,
     fetcher,
     {

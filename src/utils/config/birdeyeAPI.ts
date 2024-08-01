@@ -1,6 +1,5 @@
 // birdeye api key
-export const birdeyeAuthorizeKey = '34ef0d5d3041451c8e4ef50114856785'
-export const birdeyHost = 'https://public-api.birdeye.so'
+export const birdeyHost = 'https://birdeye-proxy.raydium.io'
 
 export const birdeyeKlineApiAddress = ({
   baseMint,

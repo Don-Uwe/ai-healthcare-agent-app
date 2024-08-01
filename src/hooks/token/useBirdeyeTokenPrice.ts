@@ -1,11 +1,11 @@
 import axios from '@/api/axios'
-import { isValidPublicKey } from '@/utils/publicKey'
+import { birdeyePriceUrl } from '@/utils/config/birdeyeAPI'
 import { MINUTE_MILLISECONDS } from '@/utils/date'
+import { isValidPublicKey } from '@/utils/publicKey'
 import { solToWSol, WSOLMint } from '@raydium-io/raydium-sdk-v2'
 import { PublicKey } from '@solana/web3.js'
 import { useMemo } from 'react'
 import useSWR from 'swr'
-import { birdeyeAuthorizeKey, birdeyePriceUrl } from '@/utils/config/birdeyeAPI'
 
 export interface BirdEyeTokenPrice {
   value: number
@@ -24,10 +24,6 @@ const fetcher = ([url, mintList]: [string, string]) => {
     },
     {
       skipError: true,
-      headers: {
-        'x-chain': 'solana',
-        'X-API-KEY': birdeyeAuthorizeKey
-      }
     }
   )
 }

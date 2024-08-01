@@ -1,5 +1,5 @@
 import axios from '@/api/axios'
-import { birdeyeAuthorizeKey, birdeyePairVolumeApiAddress, birdeyePairPriceApiAddress } from '@/utils/config/birdeyeAPI'
+import { birdeyePairPriceApiAddress, birdeyePairVolumeApiAddress } from '@/utils/config/birdeyeAPI'
 import { MINUTE_MILLISECONDS } from '@/utils/date'
 import { throttle } from '@/utils/functionMethods'
 import { CandlestickData } from 'lightweight-charts'
@@ -31,20 +31,12 @@ type PriceData = { address: string; unixTime: number; value: number }
 const fetcher = (url: string) => {
   return axios.get<{ items: RawVolumeDataItem[] }>(url, {
     skipError: true,
-    headers: {
-      'x-chain': 'solana',
-      'X-API-KEY': birdeyeAuthorizeKey
-    }
   })
 }
 
 const priceFetcher = (url: string) => {
   return axios.get<{ items: PriceData[] }>(url, {
     skipError: true,
-    headers: {
-      'x-chain': 'solana',
-      'X-API-KEY': birdeyeAuthorizeKey
-    }
   })
 }
 
@@ -98,11 +90,11 @@ export default function useFetchPoolChartVolume({
     (index) =>
       shouldFetch && !disable
         ? birdeyePairVolumeApiAddress({
-            poolAddress: poolAddress ?? '',
-            timeType,
-            timeFrom: untilDate - getOffset(timeType, index + 1),
-            timeTo: untilDate - getOffset(timeType, index)
-          })
+          poolAddress: poolAddress ?? '',
+          timeType,
+          timeFrom: untilDate - getOffset(timeType, index + 1),
+          timeTo: untilDate - getOffset(timeType, index)
+        })
         : null,
     fetcher,
     {
@@ -122,11 +114,11 @@ export default function useFetchPoolChartVolume({
     (index) =>
       baseMint && !disable
         ? birdeyePairPriceApiAddress({
-            baseMint,
-            timeType,
-            timeFrom: untilDate - getOffset(timeType, index + 1),
-            timeTo: untilDate - getOffset(timeType, index)
-          })
+          baseMint,
+          timeType,
+          timeFrom: untilDate - getOffset(timeType, index + 1),
+          timeTo: untilDate - getOffset(timeType, index)
+        })
         : null,
     priceFetcher,
     {
@@ -160,14 +152,14 @@ export default function useFetchPoolChartVolume({
     () =>
       allPoints.map(
         (p, idx) =>
-          ({
-            open: p.o,
-            high: p.h,
-            low: p.l,
-            close: p.c,
-            time: p.unixTime,
-            value: allPricePoints[idx] ? p.v * allPricePoints[idx].value : p.v
-          } as CandlestickData & { value: number })
+        ({
+          open: p.o,
+          high: p.h,
+          low: p.l,
+          close: p.c,
+          time: p.unixTime,
+          value: allPricePoints[idx] ? p.v * allPricePoints[idx].value : p.v
+        } as CandlestickData & { value: number })
       ),
     [allPoints, allPricePoints]
   )
