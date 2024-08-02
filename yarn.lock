@@ -2441,10 +2441,10 @@
   resolved "https://registry.yarnpkg.com/@protobufjs/utf8/-/utf8-1.1.0.tgz#a777360b5b39a1a2e5106f8e858f2fd2d060c570"
   integrity sha512-Vvn3zZrhQZkkBE8LSuW3em98c0FwgO4nxzv6OdSxPKJIEKY2bGbHn+mhGIPerzI4twdxaP8/0+06HBpwf345Lw==
 
-"@raydium-io/raydium-sdk-v2@0.1.53-alpha":
-  version "0.1.53-alpha"
-  resolved "https://registry.yarnpkg.com/@raydium-io/raydium-sdk-v2/-/raydium-sdk-v2-0.1.53-alpha.tgz#ec9931638db1e9af2e92901790507c3bcf0e7399"
-  integrity sha512-cprga0Py3tR3yNkx9d1N5VhBJKgO7fLN8t18OkLGsWyaTWXycj0o5m20+Fb1UxsF9eHsCadNrjTtBU7nxf5agg==
+"@raydium-io/raydium-sdk-v2@0.1.54-alpha":
+  version "0.1.54-alpha"
+  resolved "https://registry.yarnpkg.com/@raydium-io/raydium-sdk-v2/-/raydium-sdk-v2-0.1.54-alpha.tgz#5b725f632d38285d0d2dab02c859b30a2effbf1d"
+  integrity sha512-fdOQlZToPnSCp/3XXgwADK30eMnZLA4VRr/X+iVbJLNFhBDyqffNc04gkqCE4BzCpBB+yf0cxlusywh4BQ3V7g==
   dependencies:
     "@project-serum/serum" "^0.13.65"
     "@solana/buffer-layout" "^4.0.1"
