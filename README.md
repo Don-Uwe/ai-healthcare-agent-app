@@ -527,6 +527,15 @@ This project is licensed under the [MIT License](./LICENSE).
         </td>  
   <td align="center"><a href="https://github.com/sreevidya-16"><img src="https://avatars.githubusercontent.com/u/115856774?v=4" width="120px;" alt=""/><br/><sub><b>Sree Vidya</b></sub></a>
         </td> 
+  <td align="center"><a href="https://github.com/AsmitaMishra24"><img src="https://avatars.githubusercontent.com/u/146121869?v=4" width="120px;" alt=""/><br/><sub><b>Asmita Mishra</b></sub></a>
+        </td> 
+    
+   <td align="center"><a href="https://github.com/iamkanhaiyakumar"><img src="https://avatars.githubusercontent.com/u/120328606?v=4" width="120px;" alt=""/><br/><sub><b>Kanhaiya Kumar</b></sub></a>
+        </td> 
+     <td align="center"><a href="https://github.com/revanth1718"><img src="https://avatars.githubusercontent.com/u/109272714?v=4" width="120px;" alt=""/><br/><sub><b>Revanth</b></sub></a>
+        </td> 
+   <td align="center"><a href="https://github.com/arunimaChintu"><img src="https://avatars.githubusercontent.com/u/99474881?v=4" width="120px;" alt=""/><br/><sub><b>Arunima Dutta</b></sub></a>
+        </td> 
  </tr>
    </p>
  </table>
