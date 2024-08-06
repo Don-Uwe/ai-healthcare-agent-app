@@ -537,6 +537,10 @@ This project is licensed under the [MIT License](./LICENSE).
    <td align="center"><a href="https://github.com/arunimaChintu"><img src="https://avatars.githubusercontent.com/u/99474881?v=4" width="120px;" alt=""/><br/><sub><b>Arunima Dutta</b></sub></a>
         </td> 
  </tr>
+ <tr>
+   <td align="center"><a href="https://github.com/Maana-Ajmera"><img src="https://avatars.githubusercontent.com/u/162733812?v=4" width="120px;" alt=""/><br/><sub><b>Maana Ajmera</b></sub></a>
+        </td>  
+ </tr>
    </p>
  </table>
 </div>
