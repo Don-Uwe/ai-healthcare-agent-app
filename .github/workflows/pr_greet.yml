@@ -1,16 +1,21 @@
-name: Comment on PR Creation
+name: Auto Comment on PR
+
 on:
   pull_request_target:
-    types:
-      - opened
+    types: [opened]
+
+permissions:
+  issues: write
+  pull-requests: write
 
 jobs:
   comment:
-   runs-on: ubuntu-latest
-   steps:
-   - name: Add Comment to Pull Request
-     run: |
-       COMMENT=$(cat <<EOF
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Add Comment to Pull Request
+      run: |
+        COMMENT=$(cat <<EOF
         {
           "body": "Thank you @${commentAuthor}, for creating the PR and contributing to our UltimateHealth project 💗. \n Our team will review the PR and will reach out to you soon! 😇 \n Make sure that you have marked all the tasks that you are done with ✅. \n Thank you for your patience! 😀"
         }
@@ -27,5 +32,5 @@ jobs:
           echo "Failed to add comment"
           exit 1
         fi
-       env:
-         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
