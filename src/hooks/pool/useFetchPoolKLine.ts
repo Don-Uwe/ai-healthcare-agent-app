@@ -33,9 +33,14 @@ type RawKLineDataItem = {
   type: TimeType
 }
 
-const fetcher = (url: string) => {
-  return axios.get<{ items: RawKLineDataItem[] }>(url, {
-    skipError: true,
+const fetcher = (
+  url: string
+): Promise<{
+  success: boolean
+  data: { items: RawKLineDataItem[] }
+}> => {
+  return axios.get(url, {
+    skipError: true
   })
 }
 
@@ -83,12 +88,12 @@ export default function useFetchPoolKLine({
     (index) =>
       shouldFetch
         ? birdeyeKlineApiAddress({
-          baseMint: solToWSol(base || '').toString(),
-          quoteMint: solToWSol(quote || '').toString(),
-          timeType,
-          timeFrom: untilDate - getOffset(timeType, index + 1),
-          timeTo: untilDate - getOffset(timeType, index)
-        })
+            baseMint: solToWSol(base || '').toString(),
+            quoteMint: solToWSol(quote || '').toString(),
+            timeType,
+            timeFrom: untilDate - getOffset(timeType, index + 1),
+            timeTo: untilDate - getOffset(timeType, index)
+          })
         : null,
     fetcher,
     {
@@ -100,8 +105,12 @@ export default function useFetchPoolKLine({
     }
   )
 
-  const isLoadEnded = !isLoading && !swrProps.isValidating ? (data ? data[data?.length - 1 || 0].data.items.length < 1 : false) : false
-  const allPoints = useMemo(() => (data || []).reduce((acc, cur) => cur.data.items.concat(acc), [] as RawKLineDataItem[]), [data])
+  const isLoadEnded =
+    !isLoading && !swrProps.isValidating ? (data && data[0].success ? data[data?.length - 1 || 0].data.items.length < 1 : false) : false
+  const allPoints = useMemo(
+    () => (data || []).filter((data) => data.success).reduce((acc, cur) => cur.data.items.concat(acc), [] as RawKLineDataItem[]),
+    [data]
+  )
   const isEmptyResult = !isLoading && !(data && !error)
 
   const loadMore = useEvent(

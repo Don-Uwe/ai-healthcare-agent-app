@@ -28,15 +28,15 @@ type RawVolumeDataItem = {
 
 type PriceData = { address: string; unixTime: number; value: number }
 
-const fetcher = (url: string) => {
-  return axios.get<{ items: RawVolumeDataItem[] }>(url, {
-    skipError: true,
+const fetcher = (url: string): Promise<{ success: boolean; data: { items: RawVolumeDataItem[] } }> => {
+  return axios.get(url, {
+    skipError: true
   })
 }
 
-const priceFetcher = (url: string) => {
-  return axios.get<{ items: PriceData[] }>(url, {
-    skipError: true,
+const priceFetcher = (url: string): Promise<{ success: boolean; data: { items: PriceData[] } }> => {
+  return axios.get(url, {
+    skipError: true
   })
 }
 
@@ -90,11 +90,11 @@ export default function useFetchPoolChartVolume({
     (index) =>
       shouldFetch && !disable
         ? birdeyePairVolumeApiAddress({
-          poolAddress: poolAddress ?? '',
-          timeType,
-          timeFrom: untilDate - getOffset(timeType, index + 1),
-          timeTo: untilDate - getOffset(timeType, index)
-        })
+            poolAddress: poolAddress ?? '',
+            timeType,
+            timeFrom: untilDate - getOffset(timeType, index + 1),
+            timeTo: untilDate - getOffset(timeType, index)
+          })
         : null,
     fetcher,
     {
@@ -114,11 +114,11 @@ export default function useFetchPoolChartVolume({
     (index) =>
       baseMint && !disable
         ? birdeyePairPriceApiAddress({
-          baseMint,
-          timeType,
-          timeFrom: untilDate - getOffset(timeType, index + 1),
-          timeTo: untilDate - getOffset(timeType, index)
-        })
+            baseMint,
+            timeType,
+            timeFrom: untilDate - getOffset(timeType, index + 1),
+            timeTo: untilDate - getOffset(timeType, index)
+          })
         : null,
     priceFetcher,
     {
@@ -133,10 +133,20 @@ export default function useFetchPoolChartVolume({
   const error = volError || priceError
 
   const isLoadEnded =
-    !isLoading && !volSwrProps.isValidating ? (volData ? volData[volData?.length - 1 || 0].data.items.length < 1 : false) : false
+    !isLoading && !volSwrProps.isValidating
+      ? volData && volData[0].success
+        ? volData[volData?.length - 1 || 0].data.items.length < 1
+        : false
+      : false
 
-  const allPoints = useMemo(() => (volData || []).reduce((acc, cur) => cur.data.items.concat(acc), [] as RawVolumeDataItem[]), [volData])
-  const allPricePoints = useMemo(() => (priceData || []).reduce((acc, cur) => cur.data.items.concat(acc), [] as PriceData[]), [priceData])
+  const allPoints = useMemo(
+    () => (volData || []).filter((data) => data.success).reduce((acc, cur) => cur.data.items.concat(acc), [] as RawVolumeDataItem[]),
+    [volData]
+  )
+  const allPricePoints = useMemo(
+    () => (priceData || []).filter((data) => data.success).reduce((acc, cur) => cur.data.items.concat(acc), [] as PriceData[]),
+    [priceData]
+  )
 
   const isEmptyResult = !isLoading && !(volData && !error)
 
@@ -152,14 +162,14 @@ export default function useFetchPoolChartVolume({
     () =>
       allPoints.map(
         (p, idx) =>
-        ({
-          open: p.o,
-          high: p.h,
-          low: p.l,
-          close: p.c,
-          time: p.unixTime,
-          value: allPricePoints[idx] ? p.v * allPricePoints[idx].value : p.v
-        } as CandlestickData & { value: number })
+          ({
+            open: p.o,
+            high: p.h,
+            low: p.l,
+            close: p.c,
+            time: p.unixTime,
+            value: allPricePoints[idx] ? p.v * allPricePoints[idx].value : p.v
+          } as CandlestickData & { value: number })
       ),
     [allPoints, allPricePoints]
   )

@@ -14,16 +14,17 @@ export interface BirdEyeTokenPrice {
   priceChange24h: number
 }
 
-const fetcher = ([url, mintList]: [string, string]) => {
-  return axios.post<{
-    [key: string]: BirdEyeTokenPrice
-  }>(
+const fetcher = ([url, mintList]: [string, string]): Promise<{
+  success: boolean
+  data: { [key: string]: BirdEyeTokenPrice }
+}> => {
+  return axios.post(
     url,
     {
       list_address: mintList
     },
     {
-      skipError: true,
+      skipError: true
     }
   )
 }
@@ -49,12 +50,12 @@ export default function useBirdeyeTokenPrice(props: {
   })
   const isEmptyResult = !isLoading && !(data && !error)
 
-  if (data?.data) {
+  if (data?.data && data?.success) {
     data.data[PublicKey.default.toBase58()] = data.data[WSOLMint.toBase58()]
   }
 
   return {
-    data: data?.data,
+    data: data?.success ? data?.data : {},
     isLoading,
     error,
     isEmptyResult,
