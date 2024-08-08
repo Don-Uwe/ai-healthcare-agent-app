@@ -5,6 +5,7 @@ import en from './en.json'
 import zhTW from './zh-TW.json'
 import zhCN from './zh-CN.json'
 import jp from './jp.json'
+import ko from './ko.json'
 import es from './es.json'
 import fr from './fr.json'
 import ru from './ru.json'
@@ -24,6 +25,7 @@ const i18nConfig = {
     'zh-TW': { translation: zhTW },
     'zh-CN': { translation: zhCN },
     jp: { translation: jp },
+    ko: { translation: ko },
     es: { translation: es },
     fr: { translation: fr },
     ru: { translation: ru },
