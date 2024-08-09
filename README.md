@@ -13,8 +13,6 @@
 ## After 9th August, 2024 no contributions will be accepted for this repository under GSSOC. It is important to note that this is immutable and cannot be changed.
 
 
-
-
 <table align="center">
     <thead align="center">
         <tr border: 1px;>
@@ -551,6 +549,14 @@ This project is licensed under the [MIT License](./LICENSE).
         </td> 
    <td align="center"><a href="https://github.com/Maana-Ajmera"><img src="https://avatars.githubusercontent.com/u/162733812?v=4" width="120px;" alt=""/><br/><sub><b>Maana Ajmera</b></sub></a>
         </td>  
+     <td align="center"><a href="https://github.com/ANKeshri"><img src="https://avatars.githubusercontent.com/u/159682348?v=4" width="120px;" alt=""/><br/><sub><b>Aditya Narayan</b></sub></a>
+        </td>  
+     
+  <td align="center"><a href="https://github.com/Utsavladia"><img src="https://avatars.githubusercontent.com/u/124615886?v=4" width="120px;" alt=""/><br/><sub><b>Utsav Ladia</b></sub></a>
+        </td>
+   
+   <td align="center"><a href="https://github.com/Nayanika1402"><img src="https://avatars.githubusercontent.com/u/132455412?v=4" width="120px;" alt=""/><br/><sub><b>Nayanika Mukherjee</b></sub></a>
+        </td>
   
  </tr>
    </p>
