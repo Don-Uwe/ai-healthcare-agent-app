@@ -1,13 +1,4 @@
-import {
-  Connection,
-  PublicKey,
-  Transaction,
-  VersionedTransaction,
-  TransactionMessage,
-  EpochInfo,
-  clusterApiUrl,
-  Commitment
-} from '@solana/web3.js'
+import { Connection, PublicKey, Transaction, VersionedTransaction, EpochInfo, clusterApiUrl, Commitment } from '@solana/web3.js'
 import {
   Raydium,
   RaydiumLoadParams,
@@ -16,12 +7,6 @@ import {
   ProgramIdConfig,
   ALL_PROGRAM_ID,
   JupTokenType,
-  TxBuilder,
-  TxBuildData,
-  TxV0BuildData,
-  MultiTxBuildData,
-  MultiTxV0BuildData,
-  Owner,
   AvailabilityCheckAPI3,
   TxVersion,
   TokenInfo
@@ -29,7 +14,7 @@ import {
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base'
 import { Wallet } from '@solana/wallet-adapter-react'
 import createStore from './createStore'
-import { useTokenStore } from './useTokenStore'
+import { blackJupMintSet, useTokenStore } from './useTokenStore'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
 import axios from '@/api/axios'
 import { isValidUrl } from '@/utils/url'
@@ -210,14 +195,24 @@ export const useAppStore = createStore<AppState>(
         }
       })
       const tokenMap = new Map(Array.from(raydium.token.tokenMap))
-      const tokenList = (JSON.parse(JSON.stringify(raydium.token.tokenList)) as TokenInfo[]).map((t) => {
-        if (t.type === 'jupiter') {
-          const newInfo = { ...t, logoURI: t.logoURI ? `https://wsrv.nl/?w=48&h=48&url=${t.logoURI}` : t.logoURI }
-          tokenMap.set(t.address, newInfo)
-          return newInfo
-        }
-        return t
-      })
+      const tokenList = (JSON.parse(JSON.stringify(raydium.token.tokenList)) as TokenInfo[])
+        .filter((t) => {
+          if (blackJupMintSet.has(t.address)) {
+            tokenMap.delete(t.address)
+            raydium.token.tokenMap.delete(t.address)
+            raydium.token.mintGroup.jup.delete(t.address)
+            return false
+          }
+          return true
+        })
+        .map((t) => {
+          if (t.type === 'jupiter') {
+            const newInfo = { ...t, logoURI: t.logoURI ? `https://wsrv.nl/?w=48&h=48&url=${t.logoURI}` : t.logoURI }
+            tokenMap.set(t.address, newInfo)
+            return newInfo
+          }
+          return t
+        })
       useTokenStore.setState(
         {
           tokenList,

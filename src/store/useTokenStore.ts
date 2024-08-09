@@ -56,6 +56,8 @@ const createMarketWhiteList = [
   { mint: 'HzwqbKZw8HxMN6bF2yFZNrht3c2iXXzpKcFu7uBEDKtr', decimals: 6, is2022Token: false }
 ]
 
+export const blackJupMintSet = new Set(['GinNabffZL4fUj9Vactxha74GDAW8kDPGaHqMtMzps2f'])
+
 export const setTokenToStorage = (token: TokenInfo) => {
   const storageTokenList: (TokenInfo & { time?: number })[] = JSON.parse(getStorageItem(EXTRA_TOKEN_KEY) || '[]')
   if (storageTokenList.some((t) => t.address === token.address)) return
@@ -105,14 +107,24 @@ export const useTokenStore = createStore<TokenStore>(
           }
         })
         const tokenMap = new Map(Array.from(raydium.token.tokenMap))
-        const tokenList = (JSON.parse(JSON.stringify(raydium.token.tokenList)) as TokenInfo[]).map((t) => {
-          if (t.type === 'jupiter') {
-            const newInfo = { ...t, logoURI: t.logoURI ? `https://wsrv.nl/?w=48&h=48&url=${t.logoURI}` : t.logoURI }
-            tokenMap.set(t.address, newInfo)
-            return newInfo
-          }
-          return t
-        })
+        const tokenList = (JSON.parse(JSON.stringify(raydium.token.tokenList)) as TokenInfo[])
+          .filter((t) => {
+            if (blackJupMintSet.has(t.address)) {
+              tokenMap.delete(t.address)
+              raydium.token.tokenMap.delete(t.address)
+              raydium.token.mintGroup.jup.delete(t.address)
+              return false
+            }
+            return true
+          })
+          .map((t) => {
+            if (t.type === 'jupiter') {
+              const newInfo = { ...t, logoURI: t.logoURI ? `https://wsrv.nl/?w=48&h=48&url=${t.logoURI}` : t.logoURI }
+              tokenMap.set(t.address, newInfo)
+              return newInfo
+            }
+            return t
+          })
         set(
           {
             tokenList,
