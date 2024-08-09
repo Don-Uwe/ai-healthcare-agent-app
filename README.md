@@ -8,11 +8,6 @@
 
 <br/>
 
-# Small Note:
-
-## After 9th August, 2024 no contributions will be accepted for this repository under GSSOC. It is important to note that this is immutable and cannot be changed.
-
-
 <table align="center">
     <thead align="center">
         <tr border: 1px;>
