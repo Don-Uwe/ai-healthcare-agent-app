@@ -8,6 +8,10 @@
 
 <br/>
 
+No new issues will be assigned today. However, contributions from all existing assignees before August 10th will be counted. 📝 Make sure you create and merge your PR before 7 PM IST. ⏰
+Again, it has been an incredible journey with all of you since May 10th to August 10th! 🚀
+Thanks for selecting the repository.
+
 <table align="center">
     <thead align="center">
         <tr border: 1px;>
