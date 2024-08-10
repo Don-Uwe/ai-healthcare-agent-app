@@ -12,6 +12,8 @@ No new issues will be assigned today. However, contributions from all existing a
 Again, it has been an incredible journey with all of you since May 10th to August 10th! 🚀
 Thanks for selecting the repository.
 
+### In the meantime, I kindly request all contributors to review your pull requests (PRs) and confirm whether the appropriate levels have been added and if your assignments are included
+
 <table align="center">
     <thead align="center">
         <tr border: 1px;>
@@ -556,6 +558,14 @@ This project is licensed under the [MIT License](./LICENSE).
    
    <td align="center"><a href="https://github.com/Nayanika1402"><img src="https://avatars.githubusercontent.com/u/132455412?v=4" width="120px;" alt=""/><br/><sub><b>Nayanika Mukherjee</b></sub></a>
         </td>
+  
+ </tr>
+  <tr>
+   
+   <td align="center"><a href="https://github.com/Maheshwari-Love"><img src="https://avatars.githubusercontent.com/u/142833275?v=4" width="120px;" alt=""/><br/><sub><b>Maheshwari Love</b></sub></a>
+        </td> 
+  <td align="center"><a href="https://github.com/Pujan-sarkar"><img src="https://avatars.githubusercontent.com/u/144250917?v=4" width="120px;" alt=""/><br/><sub><b>Pujan Sarkar</b></sub></a>
+        </td> 
   
  </tr>
    </p>
