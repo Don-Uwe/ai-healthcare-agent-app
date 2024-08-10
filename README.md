@@ -8,11 +8,10 @@
 
 <br/>
 
-No new issues will be assigned today. However, contributions from all existing assignees before August 10th will be counted. 📝 Make sure you create and merge your PR before 7 PM IST. ⏰
-Again, it has been an incredible journey with all of you since May 10th to August 10th! 🚀
-Thanks for selecting the repository.
+App will publish soon! 🎉 A huge thank you to all my junior brothers and sisters for their honest efforts. 🙏💪
+This repository is for GSSOC only, so the real repository will be made public after the Play Store release. 🚀
 
-### In the meantime, I kindly request all contributors to review your pull requests (PRs) and confirm whether the appropriate levels have been added and if your assignments are included or not.
+### I kindly request all contributors to review your pull requests (PRs) and confirm whether the appropriate levels have been added and if your assignments are included or not.
 
 <table align="center">
     <thead align="center">
