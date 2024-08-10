@@ -12,7 +12,7 @@ No new issues will be assigned today. However, contributions from all existing a
 Again, it has been an incredible journey with all of you since May 10th to August 10th! 🚀
 Thanks for selecting the repository.
 
-### In the meantime, I kindly request all contributors to review your pull requests (PRs) and confirm whether the appropriate levels have been added and if your assignments are included
+### In the meantime, I kindly request all contributors to review your pull requests (PRs) and confirm whether the appropriate levels have been added and if your assignments are included or not.
 
 <table align="center">
     <thead align="center">
