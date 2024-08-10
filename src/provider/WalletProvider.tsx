@@ -13,7 +13,6 @@ import {
   TorusWalletAdapter,
   TrustWalletAdapter,
   LedgerWalletAdapter,
-  WalletConnectWalletAdapter,
   MathWalletAdapter,
   TokenPocketWalletAdapter,
   CoinbaseWalletAdapter,
@@ -26,6 +25,8 @@ import {
 import { useAppStore, defaultNetWork, defaultEndpoint } from '../store/useAppStore'
 import { registerMoonGateWallet } from '@moongate/moongate-adapter'
 import { TipLinkWalletAdapter } from '@tiplink/wallet-adapter'
+
+import { WalletConnectWalletAdapter } from '@walletconnect/solana-adapter'
 
 initialize()
 
@@ -61,13 +62,9 @@ const App: FC<PropsWithChildren<any>> = ({ children }) => {
     // buttonLogoUri: 'ADD OPTIONAL LOGO FOR WIDGET BUTTON HERE'
   })
 
-  const wallets = useMemo(
-    () => [
-      new PhantomWalletAdapter(),
-      new SolflareWalletAdapter(),
-      new SlopeWalletAdapter({ endpoint }),
-      new TorusWalletAdapter(),
-      new LedgerWalletAdapter(),
+  const _walletConnect: WalletConnectWalletAdapter[] = []
+  try {
+    _walletConnect.push(
       new WalletConnectWalletAdapter({
         network: network as WalletAdapterNetwork.Mainnet,
         options: {
@@ -79,7 +76,20 @@ const App: FC<PropsWithChildren<any>> = ({ children }) => {
             icons: ['https://raydium.io/logo/logo-only-icon.svg']
           }
         }
-      }),
+      })
+    )
+  } catch (e) {
+    console.error('WalletConnect error', e)
+  }
+
+  const wallets = useMemo(
+    () => [
+      new PhantomWalletAdapter(),
+      new SolflareWalletAdapter(),
+      new SlopeWalletAdapter({ endpoint }),
+      new TorusWalletAdapter(),
+      new LedgerWalletAdapter(),
+      ..._walletConnect,
       new GlowWalletAdapter(),
       new TrustWalletAdapter(),
       new MathWalletAdapter({ endpoint }),
