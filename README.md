@@ -11,6 +11,9 @@
 App will publish soon! 🎉 A huge thank you to all my junior brothers and sisters for their honest efforts. 🙏💪
 This repository is for GSSOC only, so the real repository will be made public after the Play Store release. 🚀
 
+I am excited to design a vibrant page within the app that will celebrate and highlight all our esteemed contributors, showcasing their invaluable contributions for our app.
+
+
 ### I kindly request all contributors to review your pull requests (PRs) and confirm whether the appropriate levels have been added and if your assignments are included or not.
 
 <table align="center">
