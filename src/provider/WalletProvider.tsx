@@ -79,7 +79,7 @@ const App: FC<PropsWithChildren<any>> = ({ children }) => {
       })
     )
   } catch (e) {
-    console.error('WalletConnect error', e)
+    // console.error('WalletConnect error', e)
   }
 
   const wallets = useMemo(

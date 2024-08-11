@@ -546,6 +546,7 @@ export default function CreatePosition() {
                   })} - ${formatCurrency(priceMax < 0 ? currentPriceStr : priceMax, {
                     decimalPlaces: currentPool?.poolDecimals
                   })}`}
+                  timeBase={aprTab}
                 />
               </GridItem>
             </Grid>
