@@ -119,10 +119,14 @@ const App: FC<PropsWithChildren<any>> = ({ children }) => {
 
   const onWalletError = useEvent((error: WalletError, adapter?: Adapter) => {
     if (!adapter) return
+    console.log(123123222, {
+      ...error
+    })
     sendWalletEvent({
       type: 'connectWallet',
       walletName: adapter.name,
-      connectStatus: 'failure'
+      connectStatus: 'failure',
+      errorMsg: error.message || error.stack
     })
   })
 

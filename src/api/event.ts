@@ -1,15 +1,15 @@
 import { parseUserAgent } from 'react-device-detect'
 import axios from './axios'
-import { debounce } from '@/utils/functionMethods'
 
 interface EventTypeConnectWallet {
   walletName: string
   connectStatus: 'success' | 'userUnlink' | 'failure'
   type: 'connectWallet'
   // deviceType: 'pc' | 'mobile' | 'tablet'
+  errorMsg?: string
 }
 
-export const sendWalletEvent = debounce(async (props: EventTypeConnectWallet) => {
+export const sendWalletEvent = async (props: EventTypeConnectWallet) => {
   try {
     const deviceInfo = parseUserAgent(window.navigator.userAgent)
     const deviceType = deviceInfo.device.type || 'pc'
@@ -20,4 +20,4 @@ export const sendWalletEvent = debounce(async (props: EventTypeConnectWallet) =>
   } catch {
     console.log('send event error')
   }
-})
+}
