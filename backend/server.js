@@ -1,16 +1,43 @@
 const express = require('express');
-const mongoose = require('mongoose');
-const routes = require('./routes/index');
+const dbConnect = require("./config/database");
+const cors = require("cors");
+const userRoutes = require("./routes/usersRoutes");
+const specializationRoutes = require("./routes/SpecializationsRoutes");
+const articleRoutes = require("./routes/articleRoutes");
+const PORT = process.env.PORT || 4000;
+const cookieParser = require("cookie-parser");
 
 const app = express();
 
-mongoose.connect(
-    'mongodb://localhost:27017'
-) // DB URI
+// Use the cookie-parser middleware
+app.use(cookieParser());
 
-app.listen(3025,()=>{
-    console.log('Server in Running on port 3025');
+// Connect to the Database
+dbConnect();
+
+// Middleware to parse JSON
+app.use(express.json());
+
+// Enable CORS
+app.use(cors({ origin: "*" }));
+
+
+app.get("/hello", (req, res) => {
+    console.log("Hello World");
 });
 
-routes(app);
+
+
+// Use the userRoutes
+app.use("/api", userRoutes);
+app.use("/api", specializationRoutes);
+app.use("/api",articleRoutes );
+
+
+// Start the server
+app.listen(PORT, () => {
+    console.log('Server is running on port 4000',PORT);
+});
+
+// Export the app for testing or other purposes
 module.exports = app;
