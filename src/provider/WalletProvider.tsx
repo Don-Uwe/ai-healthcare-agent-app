@@ -25,8 +25,11 @@ import {
 import { useAppStore, defaultNetWork, defaultEndpoint } from '../store/useAppStore'
 import { registerMoonGateWallet } from '@moongate/moongate-adapter'
 import { TipLinkWalletAdapter } from '@tiplink/wallet-adapter'
-
 import { WalletConnectWalletAdapter } from '@walletconnect/solana-adapter'
+
+import { type Adapter, type WalletError } from '@solana/wallet-adapter-base'
+import { sendWalletEvent } from '@/api/event'
+import { useEvent } from '@/hooks/useEvent'
 
 initialize()
 
@@ -114,9 +117,18 @@ const App: FC<PropsWithChildren<any>> = ({ children }) => {
     if (rpcNodeUrl) setEndpoint(rpcNodeUrl)
   }, [rpcNodeUrl])
 
+  const onWalletError = useEvent((error: WalletError, adapter?: Adapter) => {
+    if (!adapter) return
+    sendWalletEvent({
+      type: 'connectWallet',
+      walletName: adapter.name,
+      connectStatus: 'failure'
+    })
+  })
+
   return (
     <ConnectionProvider endpoint={endpoint} config={{ disableRetryOnRateLimit: true, wsEndpoint: wsNodeUrl }}>
-      <WalletProvider wallets={wallets} autoConnect>
+      <WalletProvider wallets={wallets} onError={onWalletError} autoConnect>
         <WalletModalProvider>{children}</WalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>

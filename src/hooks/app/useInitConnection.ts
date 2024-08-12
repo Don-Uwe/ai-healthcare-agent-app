@@ -10,12 +10,13 @@ import { getDevOnlyStorage } from '@/utils/localStorage'
 import { SSRData } from '../../type'
 import { toastSubject } from '../toast/useGlobalToast'
 import { cancelAllRetry } from '@/utils/common'
+import { sendWalletEvent } from '@/api/event'
 
 const localFakePubKey = '_r_f_wallet_'
 
 function useInitConnection(props: SSRData) {
   const { connection } = useConnection()
-  const { publicKey: _publicKey, signAllTransactions, wallet } = useWallet()
+  const { publicKey: _publicKey, signAllTransactions, wallet, connected } = useWallet()
 
   const publicKey = useMemo(() => {
     const localPub = getDevOnlyStorage(localFakePubKey)
@@ -132,6 +133,16 @@ function useInitConnection(props: SSRData) {
     if (wallet.adapter.name === 'SafePal') useAppStore.setState({ txVersion: TxVersion.LEGACY })
     return () => useAppStore.setState({ txVersion: TxVersion.V0 })
   }, [wallet?.adapter.name])
+
+  useEffect(() => {
+    if (connected && publicKey) {
+      sendWalletEvent({
+        type: 'connectWallet',
+        connectStatus: 'success',
+        walletName: wallet?.adapter.name || 'unknown'
+      })
+    }
+  }, [publicKey, connected, wallet?.adapter.name])
 }
 
 export default useInitConnection

@@ -1,4 +1,4 @@
-import { ReactNode, useCallback } from 'react'
+import { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Box,
@@ -42,6 +42,8 @@ import TokenAvatar from './TokenAvatar'
 import { ToastStatus } from '@/types/tx'
 import { getTxAllRecord } from '@/utils/tx/historyTxStatus'
 import { MoonpaySell } from '@/components/Moonpay'
+import { sendWalletEvent } from '@/api/event'
+import { useEvent } from '@/hooks/useEvent'
 
 interface WalletMenuProps {
   wallet: Wallet | null
@@ -91,10 +93,15 @@ export default function WalletRecentTransactionBoard({ wallet, address, isOpen =
   const { t } = useTranslation()
   const allRecords = getTxAllRecord()
 
-  const handleDisConnect = useCallback(() => {
+  const handleDisConnect = useEvent(() => {
     onDisconnect()
     onClose()
-  }, [onClose, onDisconnect])
+    sendWalletEvent({
+      type: 'connectWallet',
+      connectStatus: 'userUnlink',
+      walletName: wallet?.adapter.name || 'unknown'
+    })
+  })
 
   const { isOpen: isRecentTransactionDetailView, onOpen: turnOn, onClose: turnOff } = useDisclosure()
 
