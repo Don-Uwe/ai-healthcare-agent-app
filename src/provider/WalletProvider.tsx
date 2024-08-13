@@ -12,7 +12,7 @@ import {
   PhantomWalletAdapter,
   TorusWalletAdapter,
   TrustWalletAdapter,
-  LedgerWalletAdapter,
+  // LedgerWalletAdapter,
   MathWalletAdapter,
   TokenPocketWalletAdapter,
   CoinbaseWalletAdapter,
@@ -30,6 +30,7 @@ import { WalletConnectWalletAdapter } from '@walletconnect/solana-adapter'
 import { type Adapter, type WalletError } from '@solana/wallet-adapter-base'
 import { sendWalletEvent } from '@/api/event'
 import { useEvent } from '@/hooks/useEvent'
+import { LedgerWalletAdapter } from './Ledger/LedgerWalletAdapter'
 
 initialize()
 
@@ -119,9 +120,6 @@ const App: FC<PropsWithChildren<any>> = ({ children }) => {
 
   const onWalletError = useEvent((error: WalletError, adapter?: Adapter) => {
     if (!adapter) return
-    console.log(123123222, {
-      ...error
-    })
     sendWalletEvent({
       type: 'connectWallet',
       walletName: adapter.name,
