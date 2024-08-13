@@ -746,7 +746,7 @@
     "modal_title": "APR Calculation Method",
     "desc": "Two methods for calculating estimated APR are available, based on historical trade fees and emissions. Only positions in range earn yield. Past performance is not indicative of future results.",
     "warning_note": "Calculations are an estimate and only for reference.",
-    "mode_D_title": "Detail Method",
+    "mode_D_title": "Delta Method",
     "mode_D_desc": "This method uses the implied change (delta) in pool liquidity, as determined by the user’s price range and position size, to calculate estimated APR.",
     "mode_D_desc_brief": "Estimated APR is calculated by the Delta Method. Click the ‘D’ icon to switch to the Multiplier Method or",
     "mode_M_title": "Multiplier Method",
