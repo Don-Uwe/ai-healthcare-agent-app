@@ -66,25 +66,28 @@ const App: FC<PropsWithChildren<any>> = ({ children }) => {
     // buttonLogoUri: 'ADD OPTIONAL LOGO FOR WIDGET BUTTON HERE'
   })
 
-  const _walletConnect: WalletConnectWalletAdapter[] = []
-  try {
-    _walletConnect.push(
-      new WalletConnectWalletAdapter({
-        network: network as WalletAdapterNetwork.Mainnet,
-        options: {
-          projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PJ_ID,
-          metadata: {
-            name: 'Raydium',
-            description: 'Raydium',
-            url: 'https://raydium.io/',
-            icons: ['https://raydium.io/logo/logo-only-icon.svg']
+  const _walletConnect = useMemo(() => {
+    const connectWallet: WalletConnectWalletAdapter[] = []
+    try {
+      connectWallet.push(
+        new WalletConnectWalletAdapter({
+          network: network as WalletAdapterNetwork.Mainnet,
+          options: {
+            projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PJ_ID,
+            metadata: {
+              name: 'Raydium',
+              description: 'Raydium',
+              url: 'https://raydium.io/',
+              icons: ['https://raydium.io/logo/logo-only-icon.svg']
+            }
           }
-        }
-      })
-    )
-  } catch (e) {
-    // console.error('WalletConnect error', e)
-  }
+        })
+      )
+    } catch (e) {
+      // console.error('WalletConnect error', e)
+    }
+    return connectWallet
+  }, [network])
 
   const wallets = useMemo(
     () => [

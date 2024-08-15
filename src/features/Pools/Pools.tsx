@@ -165,7 +165,6 @@ export default function Pools() {
     (query) => {
       if (!query) return
       if (!tokenMap.size) return
-      console.log(123123111)
       const tokenMints = query.split(',')
       const searchTokens: ApiV3Token[] = []
       let searchMints = ''

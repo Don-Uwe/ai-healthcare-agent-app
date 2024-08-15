@@ -2,7 +2,7 @@
 // The config you add here will be used whenever a users loads a page in their browser.
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
-import * as Sentry from "@sentry/nextjs";
+import * as Sentry from '@sentry/nextjs'
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
@@ -23,7 +23,31 @@ Sentry.init({
     Sentry.replayIntegration({
       // Additional Replay configuration goes in here, for example:
       maskAllText: true,
-      blockAllMedia: true,
-    }),
-  ],
-});
+      blockAllMedia: true
+    })
+  ]
+  // beforeSend(event: Sentry.ErrorEvent, hint: Sentry.EventHint) {
+  //   let sampleRate = 1
+  //   // if (event && event?.level === 'fatal') {
+  //   //   sampleRate = 1
+  //   // }
+
+  //   if (hint && hint.originalException) {
+  //     const error = hint.originalException as any
+  //     if (
+  //       error &&
+  //       ((error.message || '').toLocaleLowerCase().includes('timeout') || (error.message || '').toLocaleLowerCase()).includes(
+  //         'no internet connection detected'
+  //       )
+  //     ) {
+  //       sampleRate = 0.1
+  //     }
+  //   }
+
+  //   if (Math.random() <= sampleRate) {
+  //     return event
+  //   } else {
+  //     return null
+  //   }
+  // }
+})
