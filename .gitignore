@@ -39,3 +39,6 @@ tsconfig.tsbuildinfo
 
 # Sentry
 .sentry.properties
+
+# Sentry Config File
+.env.sentry-build-plugin
