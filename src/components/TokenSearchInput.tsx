@@ -104,6 +104,11 @@ export default function TokenSearchInput({
     if (hideAutoComplete) setOpen(false)
   }, [hideAutoComplete])
 
+  useEffect(() => {
+    if (!selectedList.length || !value) return
+    if (selectedList.some((t) => t.address === value)) onChange('')
+  }, [value, selectedList, onChange])
+
   const _filteredList = useMemo(() => {
     if (!searchValue) return []
     const selectedSet = new Set(selectedList.map((token) => token.address))

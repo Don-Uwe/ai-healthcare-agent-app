@@ -154,6 +154,7 @@ export default function Pools() {
   // -------- search --------
   const tokenMap = useTokenStore((s) => s.tokenMap)
   const [searchTokens, setSearchTokens] = useState<ApiV3Token[]>([])
+  const skipSyncQuery = useRef(false)
 
   const { order, sortKey, onChangeSortData, setOrder } = useSort({
     defaultKey: 'default'
@@ -163,12 +164,22 @@ export default function Pools() {
     'token',
     (query) => {
       if (!query) return
-      if (!tokenMap) return
+      if (!tokenMap.size) return
+      console.log(123123111)
       const tokenMints = query.split(',')
-      const tokens = shakeUndefindedItem(tokenMints.map((mint) => tokenMap.get(urlToMint(mint)!)))
-      if (tokens.length) {
-        setSearchTokens(tokens)
+      const searchTokens: ApiV3Token[] = []
+      let searchMints = ''
+      tokenMints.forEach((mint) => {
+        const token = tokenMap.get(urlToMint(mint)!)
+        if (token) searchTokens.push(token)
+        if (!searchMints && isValidPublicKey(mint)) searchMints = mint
+      })
+
+      if (searchTokens.length) {
+        skipSyncQuery.current = true
+        setSearchTokens(searchTokens)
       }
+      if (searchMints) setSearchText((searchText) => searchText || searchMints)
     },
     [tokenMap]
   )
@@ -202,6 +213,10 @@ export default function Pools() {
   })
 
   useUpdateEffect(() => {
+    if (skipSyncQuery.current) {
+      skipSyncQuery.current = false
+      return
+    }
     setUrlQuery({
       ...currentQuery.current,
       token: searchTokens.length ? searchTokens.map((t) => mintToUrl(t.address)).join(',') : undefined
