@@ -16,6 +16,7 @@ import {
 import router from 'next/router'
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import dayjs from 'dayjs'
 import { wSolToSol } from '@/utils/token'
 import AddressChip from '@/components/AddressChip'
 import Button from '@/components/Button'
@@ -76,6 +77,10 @@ export default function PoolListItem({
   const { isOpen: isPoolDetailOpen, onOpen: onPoolDetailOpen, onClose: onPoolDetailClose } = useDisclosure()
 
   const timeData = useMemo(() => pool[field], [pool, field])
+
+  const validWeeklyRewards = pool.weeklyRewards.filter(
+    (reward) => Number(reward.amount) !== 0 && (!reward.endTime || reward.endTime * 1000 > dayjs().subtract(10, 'day').valueOf())
+  )
 
   const onFavoriteClick = () => {
     setIsFavoriteState((v) => !v)
@@ -256,8 +261,7 @@ export default function PoolListItem({
               <Desktop>
                 {/* Reward stack */}
                 <Flex>
-                  {pool.weeklyRewards.map((reward, idx) => {
-                    if (reward.amount === '0') return null
+                  {validWeeklyRewards.map((reward, idx) => {
                     return (
                       <TokenAvatar
                         size={['sm', 'smi', 'md']}
@@ -453,7 +457,7 @@ export default function PoolListItem({
                     <Text fontSize="sm" color={colors.textSecondary}>
                       {t(`common.rewards`)}
                     </Text>
-                    <PoolListItemRewardStack rewards={pool.weeklyRewards} />
+                    <PoolListItemRewardStack rewards={validWeeklyRewards} />
                   </HStack>
                 </VStack>
 
@@ -515,7 +519,7 @@ export default function PoolListItem({
                       {formatToRawLocaleStr(toAPRPercent(timeData.apr))}
                     </Text>
                     <HStack ml={1} spacing={'-7%'}>
-                      {pool.weeklyRewards.map((reward, idx) => (
+                      {validWeeklyRewards.map((reward, idx) => (
                         <TokenAvatar key={`pool-list-item-reward-${idx}`} token={reward.token} size="xs" />
                       ))}
                     </HStack>
@@ -575,7 +579,7 @@ export default function PoolListItem({
           fees={formatCurrency(timeData.volumeFee, { decimalPlaces: 0 })}
           tvl={formatCurrency(pool.tvl, { decimalPlaces: 0 })}
           aprData={aprData}
-          weeklyRewards={pool.weeklyRewards}
+          weeklyRewards={validWeeklyRewards}
           isEcosystem={pool.rewardDefaultPoolInfos === 'Ecosystem'}
         />
       </Mobile>

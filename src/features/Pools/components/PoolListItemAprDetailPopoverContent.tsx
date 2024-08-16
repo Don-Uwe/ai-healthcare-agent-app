@@ -27,8 +27,11 @@ export default function PoolListItemAprDetailPopoverContent({
     mintList: weeklyRewards.map((r) => r.token.address)
   })
 
-  const haveWeeklyRewards = weeklyRewards.length > 0 && weeklyRewards.some((reward) => Number(reward.amount) !== 0)
-
+  const haveWeeklyRewards =
+    weeklyRewards.length > 0 &&
+    weeklyRewards.some(
+      (reward) => Number(reward.amount) !== 0 && (!reward.endTime || reward.endTime * 1000 > dayjs().subtract(10, 'day').valueOf())
+    )
   return (
     <Flex flexDir="column" p={2} gap={4}>
       <Box>
