@@ -207,7 +207,7 @@ export default function SelectWalletModal({ wallets, isOpen, onSelectWallet, onC
 
                   <SimpleGrid opacity={0.5} gridTemplateColumns="1fr 1fr" rowGap={3} columnGap={4}>
                     {notInstalledWallets.map((wallet) => (
-                      <WalletItem selectable={false} key={wallet.adapter.name} wallet={wallet} onClick={onSelectWallet} />
+                      <WalletItem selectable={false} key={wallet.adapter.name} wallet={wallet} />
                     ))}
                   </SimpleGrid>
                 </Collapse>
@@ -274,7 +274,7 @@ function WalletItem({
 }: {
   selectable?: boolean
   wallet: Wallet
-  onClick: (wallet: Wallet) => void
+  onClick?: (wallet: Wallet) => void
   isCurrent?: boolean
 }) {
   const { t } = useTranslation()
@@ -284,7 +284,7 @@ function WalletItem({
     <Flex
       gap={2}
       align="center"
-      cursor={selectable ? 'pointer' : undefined}
+      cursor={selectable ? 'pointer' : 'not-allowed'}
       rounded="md"
       _hover={
         selectable ? { bg: isLight ? '#8C6EEF' : '#524c92', color: isLight ? colors.textRevertPrimary : colors.textPrimary } : undefined
@@ -293,7 +293,7 @@ function WalletItem({
       py={3}
       px={3}
       pl={[9, 3]}
-      onClick={() => onClick(wallet)}
+      onClick={() => onClick?.(wallet)}
     >
       <Image src={wallet.adapter.icon} w={8} h={8} ml={1} />
       <Text fontWeight={700}>{wallet.adapter.name}</Text>
