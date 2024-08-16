@@ -318,7 +318,7 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
           pooledAmountA={pooledAmountA}
           pooledAmountB={pooledAmountB}
           currentRewardInfo={currentRewardInfo}
-          userAuxiliaryLedgers={position.vault ? [position.vault] : undefined}
+          userAuxiliaryLedgers={position.hasV1Data ? [position.data.find((p) => p.version === 'V1')!.userVault] : undefined}
           onClose={onMigrateClose}
           onRefresh={mutate}
         />
