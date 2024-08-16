@@ -268,7 +268,7 @@ export default function PoolListItem({
                         key={String(reward.token.address)}
                         token={reward.token}
                         ml={idx > 0 ? -3 : 0}
-                        opacity={pool.formattedRewardInfos[idx].ended === true ? 0.3 : 1}
+                        opacity={!reward.endTime || reward.endTime * 1000 > Date.now() ? 1 : 0.3}
                       />
                     )
                   })}
