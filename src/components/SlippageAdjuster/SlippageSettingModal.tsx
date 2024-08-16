@@ -155,7 +155,7 @@ export function SlippageSettingModal(props: { variant: 'swap' | 'liquidity'; isO
               w="full"
               rounded="lg"
               background={colors.solidButtonBg}
-              isDisabled={Number(currentSlippage) <= 0}
+              isDisabled={Number(currentSlippage) < 0}
               onClick={handleSaveFee}
             >
               <Text fontSize="md" fontWeight="medium" bgClip="text" color={colors.buttonSolidText}>
