@@ -140,7 +140,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
       const baseIn = params.baseIn
       const computeBudgetConfig = await getComputeBudgetConfig()
 
-      const percentSlippage = new Percent(get().slippage * 10000, 10000)
+      const percentSlippage = new Percent((get().slippage * 10000).toFixed(0), 10000)
       const rpcData = await raydium.cpmm.getRpcPoolInfo(params.poolInfo.id)
 
       const computeResult = raydium.cpmm.computePairAmount({
@@ -301,7 +301,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
       const { execute } = await raydium.cpmm.withdrawLiquidity({
         poolInfo,
         lpAmount: new BN(lpAmount),
-        slippage: new Percent(get().slippage * 10000, 10000),
+        slippage: new Percent((get().slippage * 10000).toFixed(0), 10000),
         txVersion,
         computeBudgetConfig
       })
@@ -468,7 +468,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
         poolInfo: pool,
         amount,
         baseIn,
-        slippage: new Percent(get().slippage * 10000, 10000)
+        slippage: new Percent((get().slippage * 10000).toFixed(0), 10000)
       }
 
       const r = isCpmm
