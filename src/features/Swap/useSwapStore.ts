@@ -1,5 +1,5 @@
 import { PublicKey, VersionedTransaction, Transaction } from '@solana/web3.js'
-import { TxVersion, printSimulate, SOL_INFO } from '@raydium-io/raydium-sdk-v2'
+import { TxVersion, txToBase64, SOL_INFO } from '@raydium-io/raydium-sdk-v2'
 import { createStore, useAppStore, useTokenStore } from '@/store'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
 import { txStatusSubject, TOAST_DURATION } from '@/hooks/toast/useTxStatus'
@@ -133,8 +133,10 @@ export const useSwapStore = createStore<SwapStore>(
         const swapTransactions = data || []
         const allTxBuf = swapTransactions.map((tx) => Buffer.from(tx.transaction, 'base64'))
         const allTx = allTxBuf.map((txBuf) => (isV0Tx ? VersionedTransaction.deserialize(txBuf) : Transaction.from(txBuf)))
-        printSimulate(allTx as any)
+
         const signedTxs = await signAllTransactions(allTx)
+
+        console.log('simulate tx string:', signedTxs.map(txToBase64))
 
         const txLength = signedTxs.length
         const { toastId, handler } = getDefaultToastData({
@@ -168,8 +170,8 @@ export const useSwapStore = createStore<SwapStore>(
           return idx === 0
             ? 'transaction_history.set_up'
             : idx === processedId.length - 1 && processedId.length > 2
-              ? 'transaction_history.clean_up'
-              : 'transaction_history.name_swap'
+            ? 'transaction_history.clean_up'
+            : 'transaction_history.name_swap'
         }
 
         let i = 0

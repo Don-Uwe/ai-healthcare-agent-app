@@ -387,8 +387,8 @@ export const useLiquidityStore = createStore<LiquidityStore>(
     },
 
     migrateToClmmAct: async ({ onSent, onError, onFinally, onConfirmed, ...params }) => {
-      const { raydium, txVersion, wallet, connection, signAllTransactions } = useAppStore.getState()
-      if (!raydium || !connection || !signAllTransactions) return ''
+      const { raydium, txVersion, wallet, connection } = useAppStore.getState()
+      if (!raydium || !connection) return ''
 
       const computeBudgetConfig = await getComputeBudgetConfig()
       const { execute, transactions } = await raydium.liquidity.removeAllLpAndCreateClmmPosition({
