@@ -1,5 +1,5 @@
 const express = require('express');
-const dbConnect = require("./config/database");
+const db = require("./config/database");
 const cors = require("cors");
 const userRoutes = require("./routes/usersRoutes");
 const specializationRoutes = require("./routes/SpecializationsRoutes");
@@ -13,7 +13,8 @@ const app = express();
 app.use(cookieParser());
 
 // Connect to the Database
-dbConnect();
+db.dbConnect();
+//db.dbDrop();
 
 // Middleware to parse JSON
 app.use(express.json());
@@ -34,9 +35,11 @@ app.use("/api", specializationRoutes);
 app.use("/api",articleRoutes );
 
 
+
 // Start the server
 app.listen(PORT, () => {
     console.log('Server is running on port 4000',PORT);
+   // db.dbDrop()
 });
 
 // Export the app for testing or other purposes

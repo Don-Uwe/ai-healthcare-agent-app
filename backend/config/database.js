@@ -11,5 +11,18 @@ const dbConnect = () => {
         process.exit(1); 
     });
 }
+const dbDrop = () => {
+    mongoose.connection.dropDatabase()
+      .then(() => {
+        console.log("DATABASE DROPPED SUCCESSFULLY");
+        mongoose.connection.close();
+      })
+      .catch((error) => {
+        console.log('ISSUE IN DROPPING DATABASE');
+        console.error(error.message);
+      });
+  };
+  
+  module.exports = { dbConnect, dbDrop };
 
-module.exports = dbConnect;
+

@@ -1,5 +1,5 @@
 /* eslint-disable no-alert */
-import React, {useState, useEffect} from 'react';
+import React, {useState} from 'react';
 import {
   StyleSheet,
   Text,
@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ScrollView,
   SafeAreaView,
+  Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {Dropdown} from 'react-native-element-dropdown';
@@ -15,9 +16,11 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import {hp} from '../../helper/Metric';
 import AntIcon from 'react-native-vector-icons/AntDesign';
 import {PRIMARY_COLOR} from '../../helper/Theme';
-import {UserModel} from '../../models/User';
-import {AuthApiService} from '../../services/AuthApiService';
 import {SignUpScreenFirstProp} from '../../type';
+import {useMutation} from '@tanstack/react-query';
+import axios from 'axios';
+import {REGISTRATION_API, VERIFICATION_MAIL_API} from '../../helper/APIUtils';
+import EmailVerifiedModal from '../../components/VerifiedModal';
 var validator = require('email-validator');
 
 const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
@@ -26,14 +29,129 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('');
-
+  const [verifyBtntext, setVerifyBtntxt] = useState('Request Verification');
+  const [verifiedModalVisible, setVerifiedModalVisible] = useState(false);
+  const [token, setToken] = useState('');
   const [isFocus, setIsFocus] = useState(false);
   const [isSecureEntry, setIsSecureEntry] = useState(true);
 
-  const routes = navigation.getState().routeNames;
+  const userRegisterMutation = useMutation({
+    mutationKey: ['general-user-registration'],
+    mutationFn: async () => {
+      const res = await axios.post(REGISTRATION_API, {
+        user_name: name,
+        user_handle: username,
+        email: email,
+        password: password,
+        isDoctor: false,
+      });
+      return res.data.token as string;
+    },
+    onSuccess: data => {
+      setToken(data);
+      setVerifiedModalVisible(true);
+    },
 
-  console.log('Routes Signup: ', routes);
+    onError: err => {
+      if (axios.isAxiosError(err)) {
+        const statusCode = err.status;
+        switch (statusCode) {
+          case 400:
+            const errorData = err.message;
+            console.log('Error message', errorData);
+            Alert.alert('Registration failed', 'Please try again');
+            break;
+          case 409:
+            Alert.alert(
+              'Registration failed',
+              'Email or user handle already exists',
+            );
+            break;
+          case 500:
+            Alert.alert(
+              'Registration failed',
+              'Internal server error. Please try again later.',
+            );
+            break;
+          default:
+            Alert.alert(
+              'Registration failed',
+              'Something went wrong. Please try again later.',
+            );
+        }
+      } else {
+        console.log('General User Registration Error', err);
+        Alert.alert('Registration failed', 'Please try again');
+      }
+    },
+  });
 
+  const verifyMail = useMutation({
+    mutationKey: ['send-verification-mail'],
+    mutationFn: async () => {
+      const res = await axios.post(VERIFICATION_MAIL_API, {
+        email: email,
+        token: token,
+      });
+
+      return res.data.message as string;
+    },
+
+    onSuccess: data => {
+      setVerifyBtntxt(data);
+      Alert.alert('Verification Email Sent');
+      navigation.navigate('LoginScreen');
+    },
+    onError: error => {
+      console.log('Email Verification error', error);
+
+      if (axios.isAxiosError(error)) {
+        const statusCode = error.status;
+        switch (statusCode) {
+          case 400:
+            if (error.message === 'Email and token are required') {
+              Alert.alert('Error', 'Email and token are required');
+            } else if (error.message === 'User not found or already verified') {
+              Alert.alert('Error', 'User not found or already verified');
+            } else {
+              Alert.alert('Error', 'Please provide all required fields');
+            }
+            break;
+          case 429:
+            Alert.alert(
+              'Error',
+              'Verification email already sent. Please try again after 1 hour.',
+            );
+            break;
+          case 500:
+            Alert.alert(
+              'Error',
+              'Internal server error. Please try again later.',
+            );
+            break;
+          default:
+            Alert.alert(
+              'Error',
+              'Something went wrong. Please try again later.',
+            );
+        }
+      } else {
+        console.log('Email Verification error', error);
+        Alert.alert('Error', 'Please try again');
+      }
+    },
+  });
+
+  const handleVerifyModalCallback = () => {
+    if (token.length > 0) {
+      verifyMail.mutate();
+    } else {
+      Alert.alert(
+        'Failed to authenticate, Token not found',
+        'Please try again',
+      );
+    }
+  };
   const handleSubmit = () => {
     console.log('Name:', name);
     console.log('Username:', username);
@@ -51,49 +169,20 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
       return;
     }
 
-    let user = new UserModel();
-    user.user_name = name;
-    user.user_handle = username;
-    user.email = email;
-    user.password = password;
-    user.isDoctor = false;
-
     if (role === 'general') {
-      registerAsGeneralUser(user);
+      userRegisterMutation.mutate();
     } else {
-      user.isDoctor = true;
-      navigation.navigate('SignUpScreenSecond', {
-        user: UserModel,
-      });
+      //user.isDoctor = true;
+      //navigation.navigate('SignUpScreenSecond', {
+      //  user: UserModel,
+      //});
     }
   };
 
-  // ISSUE 115:
-
-  const registerAsGeneralUser = (user: UserModel) => {
-    let api = new AuthApiService();
-    /*
-    api.register(user).then((response:any)=>{
-
-        // Process the response
-
-    },er=>{
-
-    })
-    */
-  };
   const data = [
     {label: 'General User', value: 'general'},
     {label: 'Doctor', value: 'doctor'},
   ];
-
-  useEffect(() => {
-    return () => {
-      const routes = navigation.getState().routeNames;
-      console.log('Routes Names Sign Sec', routes);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -196,6 +285,17 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
               </Text>
             </TouchableOpacity>
           </View>
+
+          <EmailVerifiedModal
+            visible={verifiedModalVisible}
+            onClick={handleVerifyModalCallback}
+            onClose={() => {
+              if (verifyBtntext !== 'Request Verification') {
+                setVerifiedModalVisible(false);
+              }
+            }}
+            message={verifyBtntext}
+          />
         </ScrollView>
       </View>
     </SafeAreaView>

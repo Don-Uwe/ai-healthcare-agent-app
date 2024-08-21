@@ -26,12 +26,11 @@ const EmailVerifiedModal: React.FC<Props> = ({
       visible={visible}
       transparent={true}
       onRequestClose={onClose}
-      animationType="fade"
-    >
+      animationType="fade">
       <View style={styles.modalBackground}>
         <View style={styles.container}>
           <Image
-            source={{ uri: 'https://imgur.com/I5lDXoI.png' }}
+            source={{uri: 'https://imgur.com/I5lDXoI.png'}}
             style={styles.logo}
           />
           <Text style={styles.title}>Welcome </Text>
@@ -63,13 +62,13 @@ const styles = StyleSheet.create({
   logo: {
     width: 100,
     height: 100,
-    alignSelf:'center'
+    alignSelf: 'center',
   },
   title: {
     fontSize: 24,
     color: '#007BFF',
     marginBottom: 10,
-    alignSelf:'center',
+    alignSelf: 'center',
   },
   message: {
     fontSize: 16,
