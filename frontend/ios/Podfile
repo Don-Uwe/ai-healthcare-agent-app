@@ -16,14 +16,14 @@ if linkage != nil
 end
 
 target 'UltimateHealth' do
-  use_expo_modules!
-  post_integrate do |installer|
-    begin
-      expo_patch_react_imports!(installer)
-    rescue => e
-      Pod::UI.warn e
-    end
-  end
+ # use_expo_modules!
+ # post_integrate do |installer|
+ #   begin
+ #     expo_patch_react_imports!(installer)
+ #   rescue => e
+ #     Pod::UI.warn e
+ #   end
+ # end
   config = use_native_modules!
 
   use_react_native!(
