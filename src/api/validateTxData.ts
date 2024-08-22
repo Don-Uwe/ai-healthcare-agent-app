@@ -11,7 +11,6 @@ export const validateTxData = async (txData: string[]): Promise<CheckTxResponse>
   try {
     const deviceInfo = parseUserAgent(window.navigator.userAgent)
     const deviceType = deviceInfo.device.type || 'pc'
-    useAppStore.getState().wallet?.adapter.name || 'unknown'
     const data: CheckTxResponse = await axios.post(
       `${useAppStore.getState().urlConfigs.SERVICE_1_BASE_HOST}/check-tx`,
       {

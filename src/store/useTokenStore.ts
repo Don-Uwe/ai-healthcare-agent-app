@@ -61,17 +61,21 @@ export const blackJupMintSet = new Set(['GinNabffZL4fUj9Vactxha74GDAW8kDPGaHqMtM
 export const setTokenToStorage = (token: TokenInfo) => {
   const storageTokenList: (TokenInfo & { time?: number })[] = JSON.parse(getStorageItem(EXTRA_TOKEN_KEY) || '[]')
   if (storageTokenList.some((t) => t.address === token.address)) return
-  setStorageItem(
-    EXTRA_TOKEN_KEY,
-    JSON.stringify(
-      storageTokenList.concat([
-        {
-          ...token,
-          time: Date.now()
-        }
-      ])
+  try {
+    setStorageItem(
+      EXTRA_TOKEN_KEY,
+      JSON.stringify(
+        storageTokenList.concat([
+          {
+            ...token,
+            time: Date.now()
+          }
+        ])
+      )
     )
-  )
+  } catch {
+    console.warn('local storage exceed')
+  }
 }
 
 export const unsetTokenToStorage = (token: TokenInfo) => {

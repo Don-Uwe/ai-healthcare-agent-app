@@ -34,13 +34,17 @@ Sentry.init({
 
     if (hint && hint.originalException) {
       const error = hint.originalException as any
-      if (
-        error &&
-        ((error.message || '').toLocaleLowerCase().includes('timeout') || (error.message || '').toLocaleLowerCase()).includes(
-          'no internet connection detected'
+      const errMsg = (error.message || '').toLocaleLowerCase()
+      if (error) {
+        if (
+          errMsg.includes('timeout') ||
+          errMsg.includes('network error') ||
+          errMsg.includes('no internet connection detected') ||
+          errMsg.includes('cancel rendering route')
         )
-      ) {
-        sampleRate = 0.1
+          sampleRate = 0.1
+        else if (errMsg.includes('java bridge method invocation error') || errMsg.includes('the quota has been exceeded')) sampleRate = 0.2
+        // else if (errMsg.includes('loading moonpaywebsdk script timed out')) sampleRate = 0.5
       }
     }
 
