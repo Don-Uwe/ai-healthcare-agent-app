@@ -126,6 +126,7 @@ export const Brush = ({
       .handleSize(30)
       .filter(() => interactive)
       .on('brush end', brushed)
+      .touchable(() => interactive)
 
     brushBehavior.current(select(brushRef.current))
 
