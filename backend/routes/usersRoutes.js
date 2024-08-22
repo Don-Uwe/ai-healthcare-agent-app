@@ -12,7 +12,7 @@ const {
     collectMonthlyRecordsForWriting
 } = require("../controllers/usersControllers");
 
-const { verifyEmail, sendVerificationEmail, Sendverifymail } = require('../controllers/emailservice');
+const { verifyEmail, sendVerificationEmail, Sendverifymail,resendVerificationEmail } = require('../controllers/emailservice');
 const authenticateToken = require('../middleware/authentcatetoken');
 
 router.get("/hello", (req, res) => {
@@ -43,6 +43,7 @@ router.post('/admin/deleteUser', deleteByAdmin);
 
 router.get('/user/verifyEmail',verifyEmail );
 router.post('/user/verifyEmail',Sendverifymail);
+router.post('/user/resend-verification-mail',resendVerificationEmail);
 
 // Update read articles
 router.post('/user/update-read-articles', updateReadArticles);

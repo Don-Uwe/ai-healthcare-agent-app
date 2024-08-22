@@ -1,7 +1,7 @@
 import {Alert, BackHandler} from 'react-native';
-//import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
 import {Article, CategoryType, Podcast} from '../type';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const checkInternetConnection = (
   callback: (isConnected: boolean) => void,
@@ -248,7 +248,7 @@ export const handleBackButton = () => {
 
 /** Async Storage for get Item */
 export const retrieveItem = async key => {
-  /*
+  
   try {
     const value = await AsyncStorage.getItem(key);
     return value;
@@ -256,18 +256,18 @@ export const retrieveItem = async key => {
     console.error('Error retrieving item:', error);
     return null;
   }
-    */
+    
 };
 
 /** Async Storage Store Item */
 const storeItem = async (key, value) => {
-  /*
+  
   try {
     await AsyncStorage.setItem(key, value);
   } catch (error) {
     console.error('Error storing item:', error);
   }
-    */
+    
 };
 
 export const demo: string = `<h1 id="alzheimer-s-disease-understanding-symptoms-and-care">Alzheimer&#39;s Disease: Understanding Symptoms and Care</h1>

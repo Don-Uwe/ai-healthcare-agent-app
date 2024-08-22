@@ -4,7 +4,8 @@ const { verifyToken, verifyUser } = require("../auth/authMiddleware");
 const jwt = require('jsonwebtoken');
 const UnverifiedUser = require("../models/UnverifiedUserModel");
 const User = require("../models/UserModel");
-
+const cache = require('memory-cache');
+const cooldownTime = 3600; 
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -33,31 +34,67 @@ const sendVerificationEmail = (email, token) => {
     });
 };
 
-const Sendverifymail= async (req, res) => {
+const Sendverifymail = async (req, res) => {
     const { email, token } = req.body;
 
-    if (!email) {
+    if (!email || !token) {
         return res.status(400).json({ message: 'Email and token are required' });
     }
+/*
+    try {
+        const decodedEmail = await verifyUser(token);
+        if (decodedEmail !== email) {
+            return res.status(401).json({ error: 'Invalid token' });
+        }
+    } catch (err) {
+        return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+*/
+    const unverifiedUser = await UnverifiedUser.findOne({ email: email });
 
-    const unverifiedUser = await UnverifiedUser.findOne({email: email});
+    const cooldownKey = `verification-email:${email}`;
 
-    if(!unverifiedUser){
-        return res.status(400).json({ message: 'User not found' });
+    if (cache.get(cooldownKey)) {
+        return res.status(429).json({ message: 'Verification email already sent' });
     }
 
-    if(!token){
+    cache.put(cooldownKey, 'true', cooldownTime * 1000); // store for 1 hour
 
-        const verificationToken =  jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        sendVerificationEmail(email, verificationToken);
+    if (!unverifiedUser) {
+        return res.status(400).json({ message: 'User not found or already verified' });
+    } else {
+        sendVerificationEmail(email, token);
     }
-    else{
-      
-     sendVerificationEmail(email, token);
-    }
-    
+
     res.status(200).json({ message: 'Verification email sent' });
-}
+};
+
+const resendVerificationEmail = async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ message: 'Email is required' });
+    }
+
+    const unverifiedUser = await UnverifiedUser.findOne({ email: email });
+
+    if (!unverifiedUser) {
+        return res.status(400).json({ message: 'User not found or already verified' });
+    }
+
+    const verificationToken = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    sendVerificationEmail(email, verificationToken);
+
+    const cooldownKey = `resend-verification-email:${email}`;
+
+    if (cache.get(cooldownKey)) {
+        return res.status(429).json({ message: 'Verification email already sent' });
+    }
+
+    cache.put(cooldownKey, 'true', cooldownTime * 1000); // store for 1 hour
+
+    res.status(200).json({ message: 'Verification email sent' });
+};
 
 //verify email functionality
 const verifyEmail=async (req, res) => {
@@ -72,8 +109,9 @@ const verifyEmail=async (req, res) => {
         const unverifiedUser = await UnverifiedUser.findOne({ email: decoded.email});
 
         if (!unverifiedUser) {
-            return res.status(400).json({ error: 'Invalid or expired token' });
+            return res.status(201).json({ message: 'Either email already verified or register yourself first' });
         }
+
 
         // Move user from UnverifiedUser to User collection
         const newUser = new User({
@@ -179,4 +217,4 @@ const verifyEmail=async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 };
-module.exports = { sendVerificationEmail,verifyEmail,Sendverifymail };
+module.exports = { sendVerificationEmail,verifyEmail,Sendverifymail, resendVerificationEmail };

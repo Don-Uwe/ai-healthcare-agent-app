@@ -23,8 +23,9 @@ import {UserModel, LoginUser} from '../../models/User';
 import {AuthApiService} from '../../services/AuthApiService';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {LoginScreenProp} from '../../type';
-
-// Import User Model and AUTH API SERVICE HERE, Details will be provided when work start
+import {useMutation} from '@tanstack/react-query';
+import axios from 'axios';
+import {RESEND_VERIFICATION} from '../../helper/APIUtils';
 
 const LoginScreen = ({navigation}: LoginScreenProp) => {
   const inset = useSafeAreaInsets();
@@ -40,25 +41,11 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
 
   const routes = navigation.getState().routeNames;
 
-  // ISSUE: 85  Step 2 , Create Reference and useState variable for DOM / View input elements
-  /**
-   * const emailRef= useRef(null) -> will point email input
-   * const [email, setEmail] = useState('') -> useState variable for storing input value
-   * passwordRef-> will point password input field
-   * password -> useState variable for storing input value
-   */
-
-  // ISSUE : 77 Step 1:
-  // Create an useState variable which will handle secureTextEntry of password field
   const [secureTextEntry, setSecureTextEntry] = useState(true);
 
-  // ISSUE : 77 Step 2:
-  // Handle Eye Icon action, assume there are already an eye icon in the password field and you have to handle it's action
   const handleSecureEntryClickEvent = () => {
     setSecureTextEntry(!secureTextEntry);
   };
-
-  //////////////////////////////////////////////////////////////////////
 
   useEffect(
     () =>
@@ -92,51 +79,15 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
 
     /** Complete the function */
     if (validate()) {
-      //console.log("Hello");
-
-      //remove error message
       setPasswordMessage(false);
       setEmailMessage(false);
-
-      /** Create a new object of service */
-      let service = new AuthApiService();
-      /** Create a new object of params */
-
-      //assign user data to params
-      //params will contain user data
       let params = new LoginUser();
       params.email = email;
       params.password = password;
-
-      // call login method with the help of service object
-      service
-        .login(params)
-        .then((response: any) => {
-          // Store User data after stringify
-          // Navigate to home
-          console.log('Response', response);
-          if (
-            response.error &&
-            response.error === 'Email not Verified, Please check your email'
-          ) {
-          }
-          storeDataAndNavigateHome(userData);
-        })
-        .catch(error => {
-          console.log(error);
-        });
-
-      //Access Stored Data
-      //let test = await AsyncStorage.getItem("User");
-      //console.log("Stored: " + test)
     } else {
-      console.log('Verify');
-
-      //set output back to true and remove error message
       setOutput(true);
       setPasswordMessage(false);
       setEmailMessage(false);
-      //Logic to Output Message to User
       if (output && !passwordVerify) {
         setPasswordMessage(true);
       }
@@ -151,10 +102,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
     navigation.navigate('TabNavigation');
   }
 
-  /** ISSUE 85: Complete the function */
   const validate = () => {
-    /** Validate email data */
-    /** Validate Password data */
     if (emailVerify && passwordVerify) {
       return true;
     } else {
@@ -166,17 +114,16 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
     setPassword(pass);
     setPasswordVerify(false);
 
-    //Validation
     if (/(?=.*[a-z]).{6,}/.test(pass)) {
       setPassword(pass);
       setPasswordVerify(true);
     }
   };
+
   const handleEmail = e => {
     let email = e.nativeEvent.text;
     setEmail(email);
     setEmailVerify(false);
-    //Validation
     if (/^[\w.%+-]+@[\w.-]+\.[a-zA-Z]{2,}$/.test(email)) {
       setEmail(email);
       setEmailVerify(true);
@@ -184,22 +131,64 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
   };
 
   const handleForgotPassword = () => {
-    /** Forgot Password Modal visibility */
     setEmailInputVisible(true);
   };
 
   const handleEmailInputBack = () => {
-    /** Handle Email InputDialogBackButton */
     setEmailInputVisible(false);
   };
 
   const navigateToOtpScreen = () => {
-    /** Here you need to navigate into otp screen,
-     * make sure you have add the screen inside StackNavigation Component
-     * */
     setEmailInputVisible(false);
     navigation.navigate('OtpScreen');
   };
+
+  const requestVerification = useMutation({
+    mutationKey: ['resend-verification-mail'],
+    mutationFn: async () => {
+      const res = await axios.post(RESEND_VERIFICATION, {
+        email: email,
+      });
+
+      return res.data.message as string;
+    },
+
+    onSuccess: () => {
+      /** Check Status */
+      Alert.alert('Verification Email Sent');
+    },
+    onError: error => {
+      console.log('Email Verification error', error);
+
+      if (axios.isAxiosError(error)) {
+        const statusCode = error.status;
+        switch (statusCode) {
+          case 400:
+            Alert.alert('Error', 'User not found or already verified');
+            break;
+          case 429:
+            Alert.alert(
+              'Error',
+              'Verification email already sent. Please try again after 1 hour.',
+            );
+            break;
+          case 500:
+            Alert.alert(
+              'Error',
+              'Internal server error. Please try again later.',
+            );
+            break;
+          default:
+            Alert.alert(
+              'Error',
+              'Something went wrong. Please try again later.',
+            );
+        }
+      } else {
+        console.log('Email Verification error', error);
+      }
+    },
+  });
 
   return (
     <View style={styles.container}>
@@ -216,9 +205,8 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
             style={styles.logo}
           />
           {/* brand text container */}
-          <View style={{marginLeft: wp(4)}}>
-            <Text style={styles.brandText}>Ultimate</Text>
-            <Text style={styles.brandText}>Health</Text>
+          <View style={{marginTop: wp(2)}}>
+            <Text style={styles.brandText}>Ultimate Health</Text>
           </View>
         </View>
         {/* login form */}
@@ -232,13 +220,14 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
             {/** ISSUE : 85, STEP:3, set email ref here for TextInput
                <TextInput ref={emailRef} style={styles.inputLabel}></TextInput>
               */}
+
             <TextInput
               onChange={e => handleEmail(e)}
               autoCapitalize="none"
               autoCorrect={false}
               clearButtonMode="while-editing"
               keyboardType="email-address"
-              placeholder="Email id or username"
+              placeholder="Enter your mail id"
               placeholderTextColor="#948585"
               style={[
                 styles.inputControl,
@@ -251,13 +240,10 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
             {emailMessage ? (
               <Text style={{color: 'red'}}>Please Enter a Valid Email</Text>
             ) : (
-              <Text style={{color: 'red'}}></Text>
+              <Text style={{color: 'red'}} />
             )}
           </View>
           {/* password input */}
-
-          {/** Issue 77: Step 3: Here you have to modify the container, first create another container which will wrap the two field
-             TextInput and eye icon */}
 
           <View style={styles.input}>
             <View style={styles.passwordContainer}>
@@ -278,7 +264,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
                 ]}
                 onChange={e => handlePassword(e)}
                 value={password}
-                underlineColorAndroid="transparent" // Add this line to remove underline
+                underlineColorAndroid="transparent"
               />
 
               <TouchableOpacity
@@ -304,7 +290,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
                 Password must be 6 Characters Longs
               </Text>
             ) : (
-              <Text style={{color: 'red'}}></Text>
+              <Text style={{color: 'red'}} />
             )}
           </View>
           {/* forgot password */}
@@ -322,10 +308,6 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
             <TouchableOpacity
               style={styles.loginButton}
               onPress={() => {
-                {
-                  /** ISSUE 85: Step 5 Handle Login Button Action, Complete the method */
-                }
-                //storeItem('user', 'ok');
                 validateAndSubmit();
               }}>
               <Text style={styles.loginText}>Login</Text>
@@ -339,7 +321,6 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
             onDismiss={() => setEmailInputVisible(false)}
           />
 
-          {/* creat account button */}
           <View style={styles.createAccountContainer}>
             <TouchableOpacity>
               <Text
@@ -350,11 +331,25 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
                   },
                 ]}
                 onPress={() => {
-                  // storeItem('user', 'ok');
                   navigation.navigate('SignUpScreenFirst');
                 }}>
                 Create new account
               </Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.loginButtonContainer}>
+            <TouchableOpacity
+              style={{...styles.loginButton, backgroundColor: '#DE3163'}}
+              onPress={() => {
+                //validateAndSubmit();
+                if (email === '') {
+                  Alert.alert('Please enter your mail id');
+                  return;
+                }
+                requestVerification.mutate();
+              }}>
+              <Text style={styles.loginText}>Request Verification</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -374,22 +369,25 @@ const styles = StyleSheet.create({
     backgroundColor: PRIMARY_COLOR,
   },
   logoContainer: {
-    marginBottom: hp(5),
-    marginTop: hp(2),
-    flexDirection: 'row',
-    marginHorizontal: 18,
+    flex: 0,
+    width: '100%',
+    justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: wp(5),
+    marginBottom: hp(3),
+    marginTop: hp(2),
+    flexDirection: 'column',
+    marginHorizontal: 18,
+    marginLeft: wp(2),
   },
   logo: {
-    height: hp(12),
-    width: wp(25),
+    height: hp(10),
+    width: wp(20),
     borderRadius: 100,
     resizeMode: 'cover',
   },
   brandText: {
     color: 'white',
-    fontSize: fp(10),
+    fontSize: fp(6),
     fontFamily: 'Lobster-Regular',
   },
   formContainer: {
@@ -416,18 +414,18 @@ const styles = StyleSheet.create({
     paddingRight: 40,
     fontSize: fp(4),
     fontWeight: '500',
-    height: hp(6),
+    height: hp(5),
   },
   forgotPasswordContainer: {
     alignItems: 'flex-end',
-    marginVertical: 10,
+    marginVertical: 2,
   },
   forgotPasswordText: {color: 'black', fontWeight: '600'},
-  loginButtonContainer: {marginVertical: hp(4), alignItems: 'center'},
+  loginButtonContainer: {marginVertical: hp(2), alignItems: 'center'},
   loginButton: {
     backgroundColor: PRIMARY_COLOR,
-    paddingVertical: hp(1.5),
-    paddingHorizontal: wp(16),
+    paddingVertical: hp(1),
+    paddingHorizontal: wp(10),
     borderRadius: 50,
   },
   loginText: {
@@ -435,10 +433,10 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#fff',
   },
-  createAccountContainer: {marginVertical: hp(2), alignItems: 'center'},
+  createAccountContainer: {marginVertical: hp(1), alignItems: 'center'},
   createAccountText: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 16,
+    fontWeight: '500',
   },
   passwordContainer: {
     flexDirection: 'row',
@@ -450,5 +448,3 @@ const styles = StyleSheet.create({
     padding: 10,
   },
 });
-
-//    emailRef.current.style.borderColor = 'red';
