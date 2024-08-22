@@ -202,7 +202,6 @@ export function formatCurrency(amount?: string | number | Decimal, params: Forma
   }
   const amountDecimal = amount instanceof Decimal ? amount : new Decimal(String(amount).replace(/,/gi, ''))
   const amountNumber = amountDecimal.toNumber()
-  const amountString = amountDecimal.toFixed()
   const currencyFormatterNoDecimal: { format: (value: number) => string } = generateIntlNumberFormatter(symbol, abbreviated, 0)
 
   if (noDecimal === true && amountNumber > 1) {
@@ -226,24 +225,13 @@ export function formatCurrency(amount?: string | number | Decimal, params: Forma
     // show 6 fraction digits
     const currencyFormatterSmall: { format: (value: number) => string } = generateIntlNumberFormatter(symbol, abbreviated, 6)
     return formatCurrencyOverride(currencyFormatterSmall.format(amountNumber), maximumDecimalTrailingZeroes)
-  } else if (amountNumber >= 10 ** -9 && amountNumber < 10 ** -6) {
+  } else if (amountNumber < 10 ** -6) {
     // show 12 fraction digits
     const currencyFormatterVeryVerySmall: { format: (value: number) => string } = generateIntlNumberFormatter(symbol, abbreviated, 12)
     return formatCurrencyOverride(
       currencyFormatterVeryVerySmall.format(formatSmallNumberWithFixed(amountNumber, 3)),
       maximumDecimalTrailingZeroes
     )
-  } else {
-    // too small show all fraction digits
-    const digitsAfterPoint = amountString.length - 2
-    const currencyFormatterTooSmall: { format: (value: number) => string } = generateIntlNumberFormatter(
-      symbol,
-      abbreviated,
-      digitsAfterPoint
-    )
-    return formatCurrencyOverride(
-      currencyFormatterTooSmall.format(formatSmallNumberWithFixed(amountNumber, 3)),
-      maximumDecimalTrailingZeroes
-    )
   }
+  return formatCurrencyOverride(currencyFormatterNoDecimal.format(amountNumber))
 }
