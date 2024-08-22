@@ -25,29 +25,29 @@ Sentry.init({
       maskAllText: true,
       blockAllMedia: true
     })
-  ]
-  // beforeSend(event: Sentry.ErrorEvent, hint: Sentry.EventHint) {
-  //   let sampleRate = 1
-  //   // if (event && event?.level === 'fatal') {
-  //   //   sampleRate = 1
-  //   // }
+  ],
+  beforeSend(event: Sentry.ErrorEvent, hint: Sentry.EventHint) {
+    let sampleRate = 1
+    // if (event && event?.level === 'fatal') {
+    //   sampleRate = 1
+    // }
 
-  //   if (hint && hint.originalException) {
-  //     const error = hint.originalException as any
-  //     if (
-  //       error &&
-  //       ((error.message || '').toLocaleLowerCase().includes('timeout') || (error.message || '').toLocaleLowerCase()).includes(
-  //         'no internet connection detected'
-  //       )
-  //     ) {
-  //       sampleRate = 0.1
-  //     }
-  //   }
+    if (hint && hint.originalException) {
+      const error = hint.originalException as any
+      if (
+        error &&
+        ((error.message || '').toLocaleLowerCase().includes('timeout') || (error.message || '').toLocaleLowerCase()).includes(
+          'no internet connection detected'
+        )
+      ) {
+        sampleRate = 0.1
+      }
+    }
 
-  //   if (Math.random() <= sampleRate) {
-  //     return event
-  //   } else {
-  //     return null
-  //   }
-  // }
+    if (Math.random() <= sampleRate) {
+      return event
+    } else {
+      return null
+    }
+  }
 })
