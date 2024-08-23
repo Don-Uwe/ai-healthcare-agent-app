@@ -56,7 +56,7 @@ const createMarketWhiteList = [
   { mint: 'HzwqbKZw8HxMN6bF2yFZNrht3c2iXXzpKcFu7uBEDKtr', decimals: 6, is2022Token: false }
 ]
 
-export const blackJupMintSet = new Set(['GinNabffZL4fUj9Vactxha74GDAW8kDPGaHqMtMzps2f'])
+export const blackJupMintSet = new Set<string>([])
 
 export const setTokenToStorage = (token: TokenInfo) => {
   const storageTokenList: (TokenInfo & { time?: number })[] = JSON.parse(getStorageItem(EXTRA_TOKEN_KEY) || '[]')
