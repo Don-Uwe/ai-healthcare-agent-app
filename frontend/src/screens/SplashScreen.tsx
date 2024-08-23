@@ -1,18 +1,18 @@
 import React, {useEffect} from 'react';
 import {View, Text, StyleSheet, Image} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 // import {handleBackButton} from '../helper/Utils';
 import {SplashScreenProp} from '../type';
+import {KEYS, retrieveItem} from '../helper/Utils';
 
 const SplashScreen = ({navigation}: SplashScreenProp) => {
   const checkLoginStatus = async () => {
     try {
-      const user = await AsyncStorage.getItem('user');
-      if (user) {
-        navigation.navigate('TabNavigation'); // Navigate to HomePage if user is logged in
+      const user = await retrieveItem(KEYS.LOGIN_STATE);
+      if (!user) {
+        navigation.navigate('TabNavigation');
       } else {
-        navigation.navigate('LoginScreen'); // Navigate to LoginPage if user is not logged in
+        navigation.navigate('LoginScreen');
       }
     } catch (error) {
       console.error('Error retrieving user data from storage', error);

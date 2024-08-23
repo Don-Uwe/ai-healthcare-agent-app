@@ -218,7 +218,8 @@ module.exports.login = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '1d' }
     );
-
+    
+    user.verificationToken = token;
     res.cookie('token', token, { httpOnly: true, maxAge: 86400000 });
     res.status(200).json({ user, token, message: "Login Successful" });
   } catch (error) {

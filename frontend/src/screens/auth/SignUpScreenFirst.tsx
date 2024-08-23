@@ -16,7 +16,7 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import {hp} from '../../helper/Metric';
 import AntIcon from 'react-native-vector-icons/AntDesign';
 import {PRIMARY_COLOR} from '../../helper/Theme';
-import {SignUpScreenFirstProp} from '../../type';
+import {SignUpScreenFirstProp, UserDetail} from '../../type';
 import {useMutation} from '@tanstack/react-query';
 import axios from 'axios';
 import {REGISTRATION_API, VERIFICATION_MAIL_API} from '../../helper/APIUtils';
@@ -153,29 +153,30 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
     }
   };
   const handleSubmit = () => {
-    console.log('Name:', name);
-    console.log('Username:', username);
-    console.log('Email:', email);
-    console.log('Password:', password);
-    console.log('Role:', role);
     if (!name || !username || !email || !password || !role) {
-      alert('Please fill in all fields');
+      Alert.alert('Please fill in all fields');
       return;
     } else if (validator.validate(email) === false) {
-      alert('Email id is not valid');
+      Alert.alert('Email id is not valid');
       return;
     } else if (password.length < 6) {
-      alert('Password must be at least of 6 length');
+      Alert.alert('Password must be at least of 6 length');
       return;
     }
 
     if (role === 'general') {
       userRegisterMutation.mutate();
     } else {
-      //user.isDoctor = true;
-      //navigation.navigate('SignUpScreenSecond', {
-      //  user: UserModel,
-      //});
+
+      const detail: UserDetail = {
+        user_name: name,
+        user_handle: username,
+        email: email,
+        password: password,
+      };
+      navigation.navigate('SignUpScreenSecond', {
+        user: detail
+      });
     }
   };
 

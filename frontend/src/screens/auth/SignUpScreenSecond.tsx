@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {
   StyleSheet,
   Text,
@@ -6,35 +6,154 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
+  Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {hp} from '../../helper/Metric';
 import {PRIMARY_COLOR} from '../../helper/Theme';
 import AntIcon from 'react-native-vector-icons/AntDesign';
-import {ContactDetail, UserModel} from '../../models/User';
-import {AuthApiService} from '../../services/AuthApiService';
-import {SignUpScreenSecondProp} from '../../type';
+import {Contactdetail, SignUpScreenSecondProp} from '../../type';
+import {useMutation} from '@tanstack/react-query';
+import axios from 'axios';
+import {REGISTRATION_API, VERIFICATION_MAIL_API} from '../../helper/APIUtils';
+import EmailVerifiedModal from '../../components/VerifiedModal';
+var validator = require('email-validator');
 
 const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
-  const user: UserModel = route.params;
+  const {user} = route.params;
 
   const [specialization, setSpecialization] = useState('');
   const [education, setEducation] = useState('');
   const [experience, setExperience] = useState('');
   const [businessEmail, setBusinessEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [token, setToken] = useState('');
+  const [verifyBtntext, setVerifyBtntxt] = useState('Request Verification');
+  const [verifiedModalVisible, setVerifiedModalVisible] = useState(false);
 
-  const routes = navigation.getState().routeNames;
-  console.log('Routes Names Sign Sec', routes);
+  const doctorRegisterMutation = useMutation({
+    mutationKey: ['doctor-user-registration'],
+    mutationFn: async ({contactDetail}: {contactDetail: Contactdetail}) => {
+      const res = await axios.post(REGISTRATION_API, {
+        user_name: user.user_name,
+        user_handle: user.user_handle,
+        email: user.email,
+        password: user.password,
+        isDoctor: true,
+        specialization: specialization,
+        qualification: education,
+        Years_of_experience: experience,
+        contact_detail: contactDetail,
+      });
+      return res.data.token as string;
+    },
+    onSuccess: data => {
+      setToken(data);
+      setVerifiedModalVisible(true);
+    },
+
+    onError: err => {
+      if (axios.isAxiosError(err)) {
+        const statusCode = err.status;
+        switch (statusCode) {
+          case 400:
+            const errorData = err.message;
+            console.log('Error message', errorData);
+            Alert.alert('Registration failed', 'Please try again');
+            break;
+          case 409:
+            Alert.alert(
+              'Registration failed',
+              'Email or user handle already exists',
+            );
+            break;
+          case 500:
+            Alert.alert(
+              'Registration failed',
+              'Internal server error. Please try again later.',
+            );
+            break;
+          default:
+            Alert.alert(
+              'Registration failed',
+              'Something went wrong. Please try again later.',
+            );
+        }
+      } else {
+        console.log('General User Registration Error', err);
+        Alert.alert('Registration failed', 'Please try again');
+      }
+    },
+  });
+
+  const verifyMail = useMutation({
+    mutationKey: ['send-verification-mail'],
+    mutationFn: async () => {
+      const res = await axios.post(VERIFICATION_MAIL_API, {
+        email: user.email,
+        token: token,
+      });
+
+      return res.data.message as string;
+    },
+
+    onSuccess: data => {
+      setVerifyBtntxt(data);
+      Alert.alert('Verification Email Sent');
+      navigation.navigate('LoginScreen');
+    },
+    onError: error => {
+      console.log('Email Verification error', error);
+
+      if (axios.isAxiosError(error)) {
+        const statusCode = error.status;
+        switch (statusCode) {
+          case 400:
+            if (error.message === 'Email and token are required') {
+              Alert.alert('Error', 'Email and token are required');
+            } else if (error.message === 'User not found or already verified') {
+              Alert.alert('Error', 'User not found or already verified');
+            } else {
+              Alert.alert('Error', 'Please provide all required fields');
+            }
+            break;
+          case 429:
+            Alert.alert(
+              'Error',
+              'Verification email already sent. Please try again after 1 hour.',
+            );
+            break;
+          case 500:
+            Alert.alert(
+              'Error',
+              'Internal server error. Please try again later.',
+            );
+            break;
+          default:
+            Alert.alert(
+              'Error',
+              'Something went wrong. Please try again later.',
+            );
+        }
+      } else {
+        console.log('Email Verification error', error);
+        Alert.alert('Error', 'Please try again');
+      }
+    },
+  });
+
+  const handleVerifyModalCallback = () => {
+    if (token.length > 0) {
+      verifyMail.mutate();
+    } else {
+      Alert.alert(
+        'Failed to authenticate, Token not found',
+        'Please try again',
+      );
+    }
+  };
 
   const handleSubmit = () => {
-    // Handle signup logic here
-    console.log('Specialization:', specialization);
-    console.log('Education:', education);
-    console.log('Experience:', experience);
-    console.log('Business Email:', businessEmail);
-    console.log('Phone Number:', phone);
-
     if (
       !specialization ||
       !education ||
@@ -42,49 +161,30 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
       !businessEmail ||
       !phone
     ) {
-      alert('Please fill in all fields');
+      Alert.alert('Please fill in all fields');
+      return;
+    } else if (validator.validate(businessEmail) === false) {
+      Alert.alert('Please enter a valid mail id');
+      return;
+    } else if (phone.length < 10 || !validPhoneNumber()) {
+      Alert.alert('Please enter a valid phone number');
       return;
     } else {
-      // ISSUE 115:
-      // Add Extra all details
-      user.specialization = specialization;
-      let contactDetails = new ContactDetail();
-      contactDetails.phone_no = phone;
-      /**
-       *
-       *  add education, experience, businessEmail, phoneNumber in contactDetails
-       *
-       *
-       */
-
-      registerAsDoctor(user);
+      let contactDetail: Contactdetail = {
+        email_id:
+          businessEmail && businessEmail !== '' ? businessEmail : user.email,
+        phone_no: phone,
+      };
+      doctorRegisterMutation.mutate({
+        contactDetail: contactDetail,
+      });
     }
-    // navigation.navigate('LoginScreen');
   };
 
-  // ISSUE 115:
-
-  const registerAsDoctor = (user: UserModel) => {
-    let api = new AuthApiService();
-    /*
-    api.register(user).then((response:any)=>{
-
-        // Process the response
-        if(success)
-              navigation.navigate('LoginScreen');
-
-    },er=>{
-
-    })
-    */
+  const validPhoneNumber = () => {
+    const phoneNumberRegex: RegExp = /^\+\d{1,3} \d{7,10}$/;
+    return phoneNumberRegex.test(phone);
   };
-
-  useEffect(() => {
-    return () => {
-      const routes = navigation.getState().routeNames;
-      console.log('Routes Names Sign Sec', routes);
-    };
-  }, []);
 
   return (
     <ScrollView style={styles.container}>
@@ -136,6 +236,8 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
               placeholder="Years of Experience"
               onChangeText={setExperience}
               value={experience}
+              keyboardType="numeric"
+              maxLength={3}
             />
             <View style={styles.inputIcon}>
               <Icon name="numbers" size={20} color="#000" />
@@ -157,9 +259,11 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
           <View style={styles.field}>
             <TextInput
               style={styles.input}
-              placeholder="Phone Number"
+              placeholder="phone number with country code"
               onChangeText={setPhone}
               value={phone}
+              keyboardType="phone-pad"
+              maxLength={14}
             />
             <View style={styles.inputIcon}>
               <Icon name="phone" size={20} color="#000" />
@@ -170,6 +274,17 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
             <Text style={styles.buttonText}>Register</Text>
           </TouchableOpacity>
         </View>
+
+        <EmailVerifiedModal
+          visible={verifiedModalVisible}
+          onClick={handleVerifyModalCallback}
+          onClose={() => {
+            if (verifyBtntext !== 'Request Verification') {
+              setVerifiedModalVisible(false);
+            }
+          }}
+          message={verifyBtntext}
+        />
       </View>
     </ScrollView>
   );

@@ -237,18 +237,10 @@ export const podcast: Podcast[] = [
   },
 ];
 
-/** BackButton Handler */
-export const handleBackButton = () => {
-  Alert.alert('Exit App', 'Are you sure you want to exit?', [
-    {text: 'Cancel', style: 'cancel'},
-    {text: 'OK', onPress: () => BackHandler.exitApp()},
-  ]);
-  return true;
-};
 
-/** Async Storage for get Item */
+
+// Async Storage for get Item 
 export const retrieveItem = async key => {
-  
   try {
     const value = await AsyncStorage.getItem(key);
     return value;
@@ -256,18 +248,25 @@ export const retrieveItem = async key => {
     console.error('Error retrieving item:', error);
     return null;
   }
-    
 };
 
-/** Async Storage Store Item */
-const storeItem = async (key, value) => {
-  
+// Async Storage Store Item 
+export const storeItem = async (key: string, value: any) => {
   try {
-    await AsyncStorage.setItem(key, value);
+    await AsyncStorage.setItem(key, JSON.stringify(value));
   } catch (error) {
     console.error('Error storing item:', error);
   }
-    
+};
+
+// Async storage remove item
+
+export const removeItem = async key => {
+  try {
+    await AsyncStorage.removeItem(key);
+  } catch (error) {
+    console.error('Error removing item:', error);
+  }
 };
 
 export const demo: string = `<h1 id="alzheimer-s-disease-understanding-symptoms-and-care">Alzheimer&#39;s Disease: Understanding Symptoms and Care</h1>
@@ -514,3 +513,7 @@ Advanced Stage: Total dependence of the person on the caregiver for all personal
 <hr>
 <p> Contributed By <a href="https://github.com/nishant0708"> Nishant Kaushal</a></p>
 `;
+
+export const KEYS = {
+  LOGIN_STATE:'AUTH_STATE',
+}

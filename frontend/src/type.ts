@@ -3,14 +3,13 @@ import type {BottomTabScreenProps} from '@react-navigation/bottom-tabs';
 import type {StackScreenProps} from '@react-navigation/stack';
 import {RefObject} from 'react';
 import {BottomSheetModal} from '@gorhom/bottom-sheet'; // Adjust this import based on your actual BottomSheetModal component
-import {UserModel} from './models/User';
 
 export type RootStackParamList = {
   SplashScreen: undefined;
   TabNavigation: undefined;
   LoginScreen: undefined;
   SignUpScreenFirst: undefined;
-  SignUpScreenSecond: {user: UserModel};
+  SignUpScreenSecond: {user: UserDetail};
   OtpScreen: undefined;
   NewPasswordScreen: undefined;
   EditorScreen: undefined;
@@ -20,6 +19,12 @@ export type RootStackParamList = {
   ProfileEditScreen: undefined;
 };
 
+export type UserDetail = {
+  user_name: string;
+  user_handle: string;
+  email: string;
+  password: string;
+};
 export type TabParamList = {
   Home: undefined;
   Podcasts: undefined;
@@ -197,14 +202,14 @@ export type User = {
   qualification: null;
   readArticles: any[];
   savedArticles: any[];
-  specialization: null;
+  specialization: string | null;
   user_handle: string;
   user_id: string;
   user_name: string;
   verificationToken: null;
 };
 
-interface Contactdetail {
+export type Contactdetail = {
   email_id: string;
   phone_no: string;
 }
@@ -215,4 +220,9 @@ export type Podcast = {
   imageUri: string;
   likes: number;
   duration: string;
+};
+
+export type AuthData = {
+  userId: string;
+  token: string | null;
 };

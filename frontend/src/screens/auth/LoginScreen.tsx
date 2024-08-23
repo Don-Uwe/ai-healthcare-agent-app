@@ -16,16 +16,13 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {fp, hp, wp} from '../../helper/Metric';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 // import {useNavigation} from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {retrieveItem} from '../../helper/Utils';
+import {KEYS, storeItem} from '../../helper/Utils';
 import EmailInputModal from '../../components/EmailInputModal';
-import {UserModel, LoginUser} from '../../models/User';
-import {AuthApiService} from '../../services/AuthApiService';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {LoginScreenProp} from '../../type';
+import {AuthData, LoginScreenProp, User} from '../../type';
 import {useMutation} from '@tanstack/react-query';
 import axios from 'axios';
-import {RESEND_VERIFICATION} from '../../helper/APIUtils';
+import {LOGIN_API, RESEND_VERIFICATION} from '../../helper/APIUtils';
 
 const LoginScreen = ({navigation}: LoginScreenProp) => {
   const inset = useSafeAreaInsets();
@@ -38,8 +35,6 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
   const [output, setOutput] = useState(true);
   const [passwordMessage, setPasswordMessage] = useState(false);
   const [emailMessage, setEmailMessage] = useState(false);
-
-  const routes = navigation.getState().routeNames;
 
   const [secureTextEntry, setSecureTextEntry] = useState(true);
 
@@ -64,26 +59,11 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
     [],
   );
 
-  const storeItem = async (key, value) => {
-    try {
-      await AsyncStorage.setItem(key, value);
-      navigation.navigate('TabNavigation');
-    } catch (error) {
-      console.error('Error storing item:', error);
-    }
-  };
-
-  /** ISSUE 85 : Complete the function */
   const validateAndSubmit = async () => {
-    let userData;
-
-    /** Complete the function */
     if (validate()) {
       setPasswordMessage(false);
       setEmailMessage(false);
-      let params = new LoginUser();
-      params.email = email;
-      params.password = password;
+      loginMutation.mutate();
     } else {
       setOutput(true);
       setPasswordMessage(false);
@@ -96,11 +76,6 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
       }
     }
   };
-
-  async function storeDataAndNavigateHome(userData: any) {
-    await AsyncStorage.setItem('User', userData);
-    navigation.navigate('TabNavigation');
-  }
 
   const validate = () => {
     if (emailVerify && passwordVerify) {
@@ -130,6 +105,60 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
     }
   };
 
+  const loginMutation = useMutation({
+    mutationKey: ['login'],
+    mutationFn: async () => {
+      const res = await axios.post(LOGIN_API, {
+        email: email,
+        password: password,
+      });
+
+      return res.data.user as User;
+    },
+
+    onSuccess: data => {
+      const auth: AuthData = {
+        userId: data.user_id,
+        token: data?.verificationToken,
+      };
+      storeItem(KEYS.LOGIN_STATE, auth)
+        .then(() => {
+          navigation.navigate('TabNavigation');
+        })
+        .catch(err => {
+          Alert.alert("Can't able to store your authentication state");
+          console.log('Error', err);
+        });
+    },
+
+    onError: error => {
+      if (axios.isAxiosError(error)) {
+        const errorCode = error.status;
+        switch (errorCode) {
+          case 400:
+            Alert.alert('Error', 'Please provide email and password');
+            break;
+          case 401:
+            Alert.alert('Error', 'Invalid password');
+            break;
+          case 403:
+            Alert.alert(
+              'Error',
+              'Email not verified. Please check your email.',
+            );
+            break;
+          case 404:
+            Alert.alert('Error', 'User not found');
+            break;
+          default:
+            Alert.alert('Error', 'Internal server error');
+        }
+      } else {
+        Alert.alert('Error', 'Network error. Please try again.');
+      }
+    },
+  });
+
   const handleForgotPassword = () => {
     setEmailInputVisible(true);
   };
@@ -156,6 +185,8 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
     onSuccess: () => {
       /** Check Status */
       Alert.alert('Verification Email Sent');
+      setEmail('');
+      setPassword('');
     },
     onError: error => {
       console.log('Email Verification error', error);
@@ -197,7 +228,6 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
         backgroundColor={PRIMARY_COLOR}
       />
       <View style={[styles.innercontainer, {paddingTop: inset.top}]}>
-        {/* logo image and brand container */}
         <View style={styles.logoContainer}>
           {/* image */}
           <Image
@@ -217,10 +247,6 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
           ]}>
           {/* email input */}
           <View style={styles.input}>
-            {/** ISSUE : 85, STEP:3, set email ref here for TextInput
-               <TextInput ref={emailRef} style={styles.inputLabel}></TextInput>
-              */}
-
             <TextInput
               onChange={e => handleEmail(e)}
               autoCapitalize="none"
@@ -243,8 +269,6 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
               <Text style={{color: 'red'}} />
             )}
           </View>
-          {/* password input */}
-
           <View style={styles.input}>
             <View style={styles.passwordContainer}>
               <TextInput
@@ -293,7 +317,6 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
               <Text style={{color: 'red'}} />
             )}
           </View>
-          {/* forgot password */}
           <TouchableOpacity
             style={styles.forgotPasswordContainer}
             onPress={() => {
@@ -303,7 +326,6 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
             <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
           </TouchableOpacity>
 
-          {/* login  button */}
           <View style={styles.loginButtonContainer}>
             <TouchableOpacity
               style={styles.loginButton}
