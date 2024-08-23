@@ -14,7 +14,7 @@ import {PRIMARY_COLOR} from '../../helper/Theme';
 import AntIcon from 'react-native-vector-icons/AntDesign';
 import {Contactdetail, SignUpScreenSecondProp} from '../../type';
 import {useMutation} from '@tanstack/react-query';
-import axios from 'axios';
+import axios, {AxiosError} from 'axios';
 import {REGISTRATION_API, VERIFICATION_MAIL_API} from '../../helper/APIUtils';
 import EmailVerifiedModal from '../../components/VerifiedModal';
 var validator = require('email-validator');
@@ -52,9 +52,9 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
       setVerifiedModalVisible(true);
     },
 
-    onError: err => {
-      if (axios.isAxiosError(err)) {
-        const statusCode = err.status;
+    onError: (err: AxiosError) => {
+      if (err.response) {
+        const statusCode = err.response.status;
         switch (statusCode) {
           case 400:
             const errorData = err.message;
@@ -102,11 +102,9 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
       Alert.alert('Verification Email Sent');
       navigation.navigate('LoginScreen');
     },
-    onError: error => {
-      console.log('Email Verification error', error);
-
-      if (axios.isAxiosError(error)) {
-        const statusCode = error.status;
+    onError: (error: AxiosError) => {
+      if (error.response) {
+        const statusCode = error.response.status;
         switch (statusCode) {
           case 400:
             if (error.message === 'Email and token are required') {

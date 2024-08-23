@@ -21,8 +21,8 @@ import EmailInputModal from '../../components/EmailInputModal';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {AuthData, LoginScreenProp, User} from '../../type';
 import {useMutation} from '@tanstack/react-query';
-import axios from 'axios';
-import {LOGIN_API, RESEND_VERIFICATION} from '../../helper/APIUtils';
+import axios, {AxiosError, isAxiosError} from 'axios';
+import {LOGIN_API, RESEND_VERIFICATION, SEND_OTP} from '../../helper/APIUtils';
 
 const LoginScreen = ({navigation}: LoginScreenProp) => {
   const inset = useSafeAreaInsets();
@@ -131,9 +131,9 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
         });
     },
 
-    onError: error => {
-      if (axios.isAxiosError(error)) {
-        const errorCode = error.status;
+    onError: (error: AxiosError) => {
+      if (error.response) {
+        const errorCode = error.response.status;
         switch (errorCode) {
           case 400:
             Alert.alert('Error', 'Please provide email and password');
@@ -167,9 +167,43 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
     setEmailInputVisible(false);
   };
 
-  const navigateToOtpScreen = () => {
+  const sendOtpMutation = useMutation({
+    mutationKey: ['forgot-password-otp'],
+    mutationFn: async ({email}: {email: string}) => {
+      const res = await axios.post(SEND_OTP, {
+        email: email,
+      });
+      return res.data.otp as string;
+    },
+
+    onSuccess: () => {
+      Alert.alert('OTP has sent to your mail');
+      navigateToOtpScreen(email);
+    },
+    onError: error => {
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          if (error.response.status === 400) {
+            Alert.alert('Error', 'User with this email does not exist.');
+          } else if (error.response.status === 500) {
+            Alert.alert('Error', 'Error sending email.');
+          } else {
+            Alert.alert('Error', 'Something went wrong.');
+          }
+        } else {
+          Alert.alert('Error', 'Network error.');
+        }
+      } else {
+        Alert.alert('Error', 'Network error.');
+      }
+    },
+  });
+
+  const navigateToOtpScreen = (email: string) => {
     setEmailInputVisible(false);
-    navigation.navigate('OtpScreen');
+    navigation.navigate('OtpScreen', {
+      email: email,
+    });
   };
 
   const requestVerification = useMutation({
@@ -188,11 +222,11 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
       setEmail('');
       setPassword('');
     },
-    onError: error => {
+    onError: (error: AxiosError) => {
       console.log('Email Verification error', error);
 
-      if (axios.isAxiosError(error)) {
-        const statusCode = error.status;
+      if (error.response) {
+        const statusCode = error.response.status;
         switch (statusCode) {
           case 400:
             Alert.alert('Error', 'User not found or already verified');
@@ -337,7 +371,12 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
           </View>
 
           <EmailInputModal
-            callback={navigateToOtpScreen}
+            // eslint-disable-next-line @typescript-eslint/no-shadow
+            callback={(email: string) =>
+              sendOtpMutation.mutate({
+                email: email,
+              })
+            }
             visible={emailInputVisible}
             backButtonClick={handleEmailInputBack}
             onDismiss={() => setEmailInputVisible(false)}

@@ -10,7 +10,7 @@ export type RootStackParamList = {
   LoginScreen: undefined;
   SignUpScreenFirst: undefined;
   SignUpScreenSecond: {user: UserDetail};
-  OtpScreen: undefined;
+  OtpScreen: {email: string};
   NewPasswordScreen: undefined;
   EditorScreen: undefined;
   ArticleDescriptionScreen: undefined;
@@ -150,7 +150,7 @@ export type AddIconProp = {
 
 export type EmailInputModalProp = {
   visible: boolean;
-  callback: () => void;
+  callback: (email: string) => void;
   backButtonClick: () => void;
   onDismiss: () => void;
 };
@@ -212,7 +212,7 @@ export type User = {
 export type Contactdetail = {
   email_id: string;
   phone_no: string;
-}
+};
 
 export type Podcast = {
   title: string;

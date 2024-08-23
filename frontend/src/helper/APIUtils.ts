@@ -5,3 +5,5 @@ export const ARTICLE_TAGS_API = '/articles/tags';
 export const GET_PROFILE_API = '/user/getprofile';
 export const VERIFICATION_MAIL_API = `${BASE_URL}/user/verifyEmail`;
 export const RESEND_VERIFICATION = `${BASE_URL}/user/resend-verification-mail`;
+export const SEND_OTP = `${BASE_URL}/user/forgotpassword`;
+export const CHECK_OTP = `${BASE_URL}/user/verifyOtp`;

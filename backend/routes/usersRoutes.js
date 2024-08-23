@@ -9,7 +9,8 @@ const {
     unfollow,
     updateReadArticles,
     collectMonthlyRecordsForReading,
-    collectMonthlyRecordsForWriting
+    collectMonthlyRecordsForWriting,
+    checkOtp
 } = require("../controllers/usersControllers");
 
 const { verifyEmail, sendVerificationEmail, Sendverifymail,resendVerificationEmail } = require('../controllers/emailservice');
@@ -34,7 +35,7 @@ router.post('/user/unfollow', authenticateToken , unfollow);
 
 // Forget password
 router.post("/user/forgotpassword", sendOTPForForgotPassword);
-
+router.post("/user/verifyOtp",checkOtp);
 // verify password
 router.post("/user/verifypassword", verifyOtpForForgotPassword);
 

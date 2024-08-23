@@ -1,4 +1,3 @@
-/* eslint-disable no-alert */
 import React, {useState} from 'react';
 import {
   StyleSheet,
@@ -18,7 +17,7 @@ import AntIcon from 'react-native-vector-icons/AntDesign';
 import {PRIMARY_COLOR} from '../../helper/Theme';
 import {SignUpScreenFirstProp, UserDetail} from '../../type';
 import {useMutation} from '@tanstack/react-query';
-import axios from 'axios';
+import axios, {AxiosError} from 'axios';
 import {REGISTRATION_API, VERIFICATION_MAIL_API} from '../../helper/APIUtils';
 import EmailVerifiedModal from '../../components/VerifiedModal';
 var validator = require('email-validator');
@@ -52,9 +51,9 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
       setVerifiedModalVisible(true);
     },
 
-    onError: err => {
-      if (axios.isAxiosError(err)) {
-        const statusCode = err.status;
+    onError: (err: AxiosError) => {
+      if (err.response) {
+        const statusCode = err.response.status;
         switch (statusCode) {
           case 400:
             const errorData = err.message;
@@ -102,11 +101,11 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
       Alert.alert('Verification Email Sent');
       navigation.navigate('LoginScreen');
     },
-    onError: error => {
+    onError: (error: AxiosError) => {
       console.log('Email Verification error', error);
 
-      if (axios.isAxiosError(error)) {
-        const statusCode = error.status;
+      if (error.response) {
+        const statusCode = error.response.status;
         switch (statusCode) {
           case 400:
             if (error.message === 'Email and token are required') {
@@ -167,7 +166,6 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
     if (role === 'general') {
       userRegisterMutation.mutate();
     } else {
-
       const detail: UserDetail = {
         user_name: name,
         user_handle: username,
@@ -175,7 +173,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
         password: password,
       };
       navigation.navigate('SignUpScreenSecond', {
-        user: detail
+        user: detail,
       });
     }
   };

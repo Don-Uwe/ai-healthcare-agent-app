@@ -135,7 +135,7 @@ module.exports.sendOTPForForgotPassword = async (req, res) => {
     }
   
     const otp = generateOTP();
-    const otpExpires = Date.now() + 3600000; // 1 hour
+    const otpExpires = Date.now() + 10*60*60; // 10 minutes
   
     user.otp = otp;
     user.otpExpires = otpExpires;
@@ -179,7 +179,16 @@ module.exports.verifyOtpForForgotPassword = async (req, res) => {
     res.status(200).json({ message: 'Password reset successful.' });
   };
 
-
+  module.exports.checkOtp = async (req, res) => {
+    const { email, otp } = req.body;
+    const user = await User.findOne({ email });
+  
+    if (!user || user.otp !== otp || user.otpExpires < Date.now()) {
+      return res.status(400).json({ message: 'Invalid or expired OTP.' });
+    }
+  
+    res.status(200).json({ message: 'OTP is valid.' });
+  };
 
 module.exports.login = async (req, res) => {
   try {

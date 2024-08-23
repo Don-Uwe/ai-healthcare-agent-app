@@ -34,7 +34,7 @@ export default function EmailInputModal({
       setModelTitle(false);
       //return;
     } else {
-      callback();
+      callback(email);
       setModelTitle(true);
       setEmail('');
     }

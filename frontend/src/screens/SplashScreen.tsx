@@ -9,7 +9,7 @@ const SplashScreen = ({navigation}: SplashScreenProp) => {
   const checkLoginStatus = async () => {
     try {
       const user = await retrieveItem(KEYS.LOGIN_STATE);
-      if (!user) {
+      if (user) {
         navigation.navigate('TabNavigation');
       } else {
         navigation.navigate('LoginScreen');
