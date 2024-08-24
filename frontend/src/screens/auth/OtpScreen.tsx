@@ -7,6 +7,7 @@ import {
   StyleSheet,
   SafeAreaView,
   KeyboardAvoidingView,
+  Alert,
 } from 'react-native';
 import {PRIMARY_COLOR} from '../../helper/Theme';
 import {hp} from '../../helper/Metric';
@@ -14,9 +15,13 @@ import Icon from 'react-native-vector-icons/Entypo';
 import AntIcon from 'react-native-vector-icons/AntDesign';
 import {OtpScreenProp} from '../../type';
 import {OTPInput, OTPInputConfig} from '../../components/OTPInput';
+import {useMutation} from '@tanstack/react-query';
+import axios, {AxiosError} from 'axios';
+import {CHECK_OTP, SEND_OTP} from '../../helper/APIUtils';
 
-export default function OtpScreen({navigation}: OtpScreenProp) {
+export default function OtpScreen({navigation, route}: OtpScreenProp) {
   const [codes, setCodes] = useState<string[] | undefined>(Array(4).fill(''));
+  const {email} = route.params;
   const refs: RefObject<TextInput>[] = [
     useRef<TextInput>(null),
     useRef<TextInput>(null),
@@ -35,7 +40,72 @@ export default function OtpScreen({navigation}: OtpScreenProp) {
 
   const handleSubmit = () => {
     //navigation.navigate('NewPasswordScreen');
+    const fullCode = codes!.join('');
+    if (!fullCode || fullCode.length === 0) {
+      setErrorMessages(['Please provide otp inputs']);
+      return;
+    } else {
+      setErrorMessages(undefined);
+      verifyOtpMutation.mutate({
+        otp: fullCode,
+      });
+    }
   };
+
+  const sendOtpMutation = useMutation({
+    mutationKey: ['forgot-password-otp'],
+    mutationFn: async () => {
+      const res = await axios.post(SEND_OTP, {
+        email: email,
+      });
+      return res.data.otp as string;
+    },
+
+    onSuccess: () => {
+      Alert.alert('OTP has sent to your mail');
+      setCodes(Array(4).fill(''));
+      setErrorMessages(undefined);
+    },
+    onError: error => {
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          if (error.response.status === 400) {
+            Alert.alert('Error', 'User with this email does not exist.');
+          } else if (error.response.status === 500) {
+            Alert.alert('Error', 'Error sending email.');
+          } else {
+            Alert.alert('Error', 'Something went wrong.');
+          }
+        } else {
+          Alert.alert('Error', 'Network error.');
+        }
+      } else {
+        Alert.alert('Error', 'Network error.');
+      }
+    },
+  });
+
+  const verifyOtpMutation = useMutation({
+    mutationKey: ['verify-otp'],
+    mutationFn: async ({otp}: {otp: string}) => {
+      const res = await axios.post(CHECK_OTP, {
+        email: email,
+        otp: otp,
+      });
+      return res.data.message as string;
+    },
+
+    onSuccess: () => {
+      navigation.navigate('NewPasswordScreen', {
+        email: email,
+      });
+    },
+    onError: (error: AxiosError) => {
+      console.log('OTP ERROR', error);
+      setErrorMessages(['Invalid or expired otp']);
+      Alert.alert('Invalid or expired otp');
+    },
+  });
 
   const onChangeCode = (text: string, index: number) => {
     if (text.length > 1) {
@@ -53,10 +123,6 @@ export default function OtpScreen({navigation}: OtpScreenProp) {
       refs[index + 1]!.current?.focus();
     }
   };
-
-  async function verifyPhoneNumberAndProgress() {
-    const fullCode = codes!.join('');
-  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -87,7 +153,11 @@ export default function OtpScreen({navigation}: OtpScreenProp) {
             refs={refs}
             config={config}
           />
-          <TouchableOpacity style={styles.resendContainer}>
+          <TouchableOpacity
+            onPress={() => {
+              sendOtpMutation.mutate();
+            }}
+            style={styles.resendContainer}>
             <Text style={styles.resendText}>Resend OTP?</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.button} onPress={handleSubmit}>

@@ -158,15 +158,16 @@ module.exports.sendOTPForForgotPassword = async (req, res) => {
   };
   
 module.exports.verifyOtpForForgotPassword = async (req, res) => {
-    const { email, otp, newPassword } = req.body;
+    const { email, newPassword } = req.body;
     const user = await User.findOne({ email });
   
-    if (!user || user.otp !== otp || user.otpExpires < Date.now()) {
-      return res.status(400).json({ message: 'Invalid or expired OTP.' });
+    if (!user) {
+      return res.status(400).json({ message: 'User not found' });
     }
+
     const isPasswordSame = await bcrypt.compare(newPassword, user.password);
     if(isPasswordSame){
-      return res.status(400).json({ message: 'New password should not be same as old password.' });
+      return res.status(402).json({ message: 'New password should not be same as old password.' });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -182,7 +183,9 @@ module.exports.verifyOtpForForgotPassword = async (req, res) => {
   module.exports.checkOtp = async (req, res) => {
     const { email, otp } = req.body;
     const user = await User.findOne({ email });
-  
+    if(!user){
+      return res.status(401).json({ message: 'User not found' });
+    }
     if (!user || user.otp !== otp || user.otpExpires < Date.now()) {
       return res.status(400).json({ message: 'Invalid or expired OTP.' });
     }

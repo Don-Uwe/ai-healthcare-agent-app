@@ -6,36 +6,113 @@ import {
   TouchableOpacity,
   StyleSheet,
   SafeAreaView,
+  Alert,
 } from 'react-native';
 import {PRIMARY_COLOR} from '../../helper/Theme';
 import feather from 'react-native-vector-icons/Feather';
 import {hp} from '../../helper/Metric';
 import AntIcon from 'react-native-vector-icons/AntDesign';
 import {NewPasswordScreenProp} from '../../type';
+import {useMutation} from '@tanstack/react-query';
+import axios, {AxiosError} from 'axios';
+import {CHANGE_PASSWORD_API} from '../../helper/APIUtils';
 
-export default function NewPasswordScreen({navigation}: NewPasswordScreenProp) {
+export default function NewPasswordScreen({
+  navigation,
+  route,
+}: NewPasswordScreenProp) {
+  const {email} = route.params;
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordVerify, setPasswordVerify] = useState(false);
   const [showPassword, setShowPassword] = useState({
-    new: true,
+    new: false,
     confirm: false,
   });
-  const [error, setError] = useState(false);
-  const [errorText, setErrorText] = useState('');
+  const [error, setError] = useState({
+    new: false,
+    confirm: false,
+  });
+  const [errorText, setErrorText] = useState({
+    new: '',
+    confirm: '',
+  });
 
   const handlePasswordSubmit = () => {
-    if (!password || !confirmPassword) {
-      setError(true);
-      setErrorText('Please fill all fields');
+    if (!password || password.length === 0) {
+      setError({...error, new: true});
+      setErrorText({...errorText, new: 'Please give a password'});
       return;
-    }
-    if (password !== confirmPassword) {
-      setError(true);
-      setErrorText('Password does not match');
+    } else if (!passwordVerify) {
+      setError({...error, new: true});
+      setErrorText({
+        ...errorText,
+        new: 'Please enter a valid password',
+      });
       return;
+    } else if (!confirmPassword || confirmPassword.length === 0) {
+      setError({...error, confirm: true});
+      setErrorText({...errorText, confirm: 'Please confirm your password'});
+      return;
+    } else if (password !== confirmPassword) {
+      setError({...error, confirm: true});
+      setErrorText({
+        ...errorText,
+        confirm: 'confirmation password does not match the new password',
+      });
+      return;
+    } else {
+      //navigation.navigate('LoginScreen');
+      changePasswordMutation.mutate();
     }
-    navigation.navigate('LoginScreen');
   };
+
+  const handlePassword = e => {
+    let pass = e;
+    setPassword(pass);
+    setPasswordVerify(false);
+
+    if (/(?=.*[a-z]).{6,}/.test(pass)) {
+      setPassword(pass);
+      setPasswordVerify(true);
+    }
+  };
+
+  const changePasswordMutation = useMutation({
+    mutationKey: ['generate-new-password'],
+    mutationFn: async () => {
+      const res = await axios.post(CHANGE_PASSWORD_API, {
+        email: email,
+        newPassword: password,
+      });
+      return res.data as any;
+    },
+    onSuccess: () => {
+      Alert.alert('Password reset successfully');
+      navigation.navigate('LoginScreen');
+    },
+
+    onError: (error: AxiosError) => {
+      if (error.response) {
+        const statusCode = error.response.status;
+        switch (statusCode) {
+          case 400:
+            Alert.alert('Error', 'User not found');
+            break;
+          case 402:
+            Alert.alert(
+              'Error',
+              'New password should not be same as old password',
+            );
+            break;
+          default:
+            Alert.alert('Error', 'Something went wrong. Please try again.');
+        }
+      } else {
+        Alert.alert('Error', 'Something went wrong. Please try again.');
+      }
+    },
+  });
 
   return (
     <SafeAreaView style={styles.container}>
@@ -49,17 +126,22 @@ export default function NewPasswordScreen({navigation}: NewPasswordScreenProp) {
 
       <View style={styles.innerContainer}>
         {/* <Text style={styles.title}>New Password</Text> */}
+
         <View style={styles.inputContainer}>
           <Text style={styles.text}>Enter new password</Text>
-          {error && <Text style={styles.error}>{errorText}</Text>}
-          <View style={[styles.passwordContainer, error && styles.inputError]}>
+          {error.new && <Text style={styles.error}>{errorText.new}</Text>}
+          <View
+            style={[styles.passwordContainer, error.new && styles.inputError]}>
             <TextInput
               autoCapitalize="none"
               autoCorrect={false}
               secureTextEntry={!showPassword.new}
-              placeholder="at least 10 digits"
+              placeholder="at least 6 length"
               value={password}
-              onChangeText={setPassword}
+              onChangeText={e => {
+                handlePassword(e);
+                setError({...error, new: false});
+              }}
               style={styles.input}
             />
             <feather.Button
@@ -75,15 +157,24 @@ export default function NewPasswordScreen({navigation}: NewPasswordScreenProp) {
         </View>
         <View style={styles.inputContainer}>
           <Text style={styles.text}>Confirm password</Text>
-          {error && <Text style={styles.error}>{errorText}</Text>}
-          <View style={[styles.passwordContainer, error && styles.inputError]}>
+          {error.confirm && (
+            <Text style={styles.error}>{errorText.confirm}</Text>
+          )}
+          <View
+            style={[
+              styles.passwordContainer,
+              error.confirm && styles.inputError,
+            ]}>
             <TextInput
               autoCapitalize="none"
               autoCorrect={false}
               secureTextEntry={!showPassword.confirm}
-              placeholder="*******"
+              placeholder="at least 6 length"
               value={confirmPassword}
-              onChangeText={setConfirmPassword}
+              onChangeText={text => {
+                setConfirmPassword(text);
+                setError({...error, confirm: false});
+              }}
               style={styles.input}
             />
             <feather.Button
@@ -138,8 +229,8 @@ const styles = StyleSheet.create({
   error: {
     color: 'red',
     marginBottom: 10,
-    fontWeight: 'bold',
-    fontSize: 18,
+    fontWeight: '400',
+    fontSize: 16,
     marginHorizontal: 5,
     width: '80%',
   },

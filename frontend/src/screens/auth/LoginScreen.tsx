@@ -31,6 +31,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
   const [password, setPassword] = useState('');
   const [passwordVerify, setPasswordVerify] = useState(false);
   const [email, setEmail] = useState('');
+  const [otpMail, setOtpMail] = useState('');
   const [emailVerify, setEmailVerify] = useState(false);
   const [output, setOutput] = useState(true);
   const [passwordMessage, setPasswordMessage] = useState(false);
@@ -159,10 +160,6 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
     },
   });
 
-  const handleForgotPassword = () => {
-    setEmailInputVisible(true);
-  };
-
   const handleEmailInputBack = () => {
     setEmailInputVisible(false);
   };
@@ -178,7 +175,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
 
     onSuccess: () => {
       Alert.alert('OTP has sent to your mail');
-      navigateToOtpScreen(email);
+      navigateToOtpScreen();
     },
     onError: error => {
       if (axios.isAxiosError(error)) {
@@ -199,10 +196,10 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
     },
   });
 
-  const navigateToOtpScreen = (email: string) => {
+  const navigateToOtpScreen = () => {
     setEmailInputVisible(false);
     navigation.navigate('OtpScreen', {
-      email: email,
+      email: otpMail,
     });
   };
 
@@ -256,7 +253,6 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
   });
 
   return (
-    
     <View style={styles.container}>
       <StatusBar
         barStyle={isDarkMode ? 'dark-content' : 'light-content'}
@@ -373,11 +369,12 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
 
           <EmailInputModal
             // eslint-disable-next-line @typescript-eslint/no-shadow
-            callback={(email: string) =>
+            callback={(email: string) => {
+              setOtpMail(email);
               sendOtpMutation.mutate({
                 email: email,
-              })
-            }
+              });
+            }}
             visible={emailInputVisible}
             backButtonClick={handleEmailInputBack}
             onDismiss={() => setEmailInputVisible(false)}
