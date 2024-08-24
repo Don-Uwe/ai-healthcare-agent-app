@@ -21,7 +21,7 @@ import EmailInputModal from '../../components/EmailInputModal';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {AuthData, LoginScreenProp, User} from '../../type';
 import {useMutation} from '@tanstack/react-query';
-import axios, {AxiosError, isAxiosError} from 'axios';
+import axios, {AxiosError} from 'axios';
 import {LOGIN_API, RESEND_VERIFICATION, SEND_OTP} from '../../helper/APIUtils';
 
 const LoginScreen = ({navigation}: LoginScreenProp) => {
@@ -256,6 +256,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
   });
 
   return (
+    
     <View style={styles.container}>
       <StatusBar
         barStyle={isDarkMode ? 'dark-content' : 'light-content'}

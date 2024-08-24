@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {RefObject, useRef, useState} from 'react';
 import {
   View,
   Text,
@@ -6,83 +6,95 @@ import {
   TouchableOpacity,
   StyleSheet,
   SafeAreaView,
+  KeyboardAvoidingView,
 } from 'react-native';
 import {PRIMARY_COLOR} from '../../helper/Theme';
 import {hp} from '../../helper/Metric';
 import Icon from 'react-native-vector-icons/Entypo';
 import AntIcon from 'react-native-vector-icons/AntDesign';
 import {OtpScreenProp} from '../../type';
+import {OTPInput, OTPInputConfig} from '../../components/OTPInput';
 
 export default function OtpScreen({navigation}: OtpScreenProp) {
-  const [otp, setOtp] = useState('');
-  const [error, setError] = useState(false);
-  const [secureText, setSecureText] = useState(true);
+  const [codes, setCodes] = useState<string[] | undefined>(Array(4).fill(''));
+  const refs: RefObject<TextInput>[] = [
+    useRef<TextInput>(null),
+    useRef<TextInput>(null),
+    useRef<TextInput>(null),
+    useRef<TextInput>(null),
+  ];
+
+  const config: OTPInputConfig = {
+    backgroundColor: '#ffffff',
+    textColor: '#000000',
+    borderColor: '#36454f',
+    errorColor: 'red',
+    focusColor: PRIMARY_COLOR,
+  };
+  const [errorMessages, setErrorMessages] = useState<string[]>();
 
   const handleSubmit = () => {
-    if (otp.length < 4) {
-      setError(true);
+    //navigation.navigate('NewPasswordScreen');
+  };
+
+  const onChangeCode = (text: string, index: number) => {
+    if (text.length > 1) {
+      setErrorMessages(undefined);
+      const newCodes = text.split('');
+      setCodes(newCodes);
+      refs[3]!.current?.focus();
       return;
     }
-    navigation.navigate('NewPasswordScreen');
+    setErrorMessages(undefined);
+    const newCodes = [...codes!];
+    newCodes[index] = text;
+    setCodes(newCodes);
+    if (text !== '' && index < 3) {
+      refs[index + 1]!.current?.focus();
+    }
   };
+
+  async function verifyPhoneNumberAndProgress() {
+    const fullCode = codes!.join('');
+  }
 
   return (
     <SafeAreaView style={styles.container}>
-      <TouchableOpacity
-        style={{marginHorizontal: 16, marginTop: 6}}
-        onPress={() => {
-          navigation.goBack();
-        }}>
-        <AntIcon name="arrowleft" size={35} color="white" />
-      </TouchableOpacity>
+      <KeyboardAvoidingView>
+        <TouchableOpacity
+          style={{marginHorizontal: 16, marginTop: 6}}
+          onPress={() => {
+            navigation.goBack();
+          }}>
+          <AntIcon name="arrowleft" size={35} color="white" />
+        </TouchableOpacity>
 
-      <View style={styles.innerContainer}>
-        <Icon
-          name="mail"
-          size={105}
-          color={PRIMARY_COLOR}
-          style={styles.logo}
-        />
-        <Text style={styles.title}>
-          We have sent you OTP to your email address for verification
-        </Text>
-        <View style={styles.otpContainer}>
-          {error && <Text style={styles.error}>Invalid OTP</Text>}
+        <View style={styles.innerContainer}>
+          <Icon
+            name="mail"
+            size={75}
+            color={PRIMARY_COLOR}
+            style={styles.logo}
+          />
+          <Text style={styles.title}>
+            We have sent you OTP to your email address for verification
+          </Text>
 
-          <View style={[styles.inPutContainer, error && styles.inputError]}>
-            <TextInput
-              style={[styles.input, error && styles.inputError]}
-              maxLength={10}
-              keyboardType="numeric"
-              secureTextEntry={secureText}
-              placeholder={secureText ? '***********' : 'Enter OTP here'}
-              onChangeText={text => {
-                setError(false);
-                setOtp(text);
-              }}
-              value={otp}
-            />
-
-            <TouchableOpacity
-              style={{alignSelf: 'center', marginHorizontal: 7}}
-              onPress={() => {
-                setSecureText(!secureText);
-              }}>
-              {secureText ? (
-                <AntIcon name="eye" size={22} color={PRIMARY_COLOR} />
-              ) : (
-                <AntIcon name="eyeo" size={22} color={PRIMARY_COLOR} />
-              )}
-            </TouchableOpacity>
-          </View>
+          <OTPInput
+            codes={codes!}
+            errorMessages={errorMessages}
+            onChangeCode={onChangeCode}
+            refs={refs}
+            config={config}
+          />
+          <TouchableOpacity style={styles.resendContainer}>
+            <Text style={styles.resendText}>Resend OTP?</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+            <Text style={styles.buttonText}>Submit</Text>
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.resendContainer}>
-          <Text style={styles.resendText}>Resend OTP?</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-          <Text style={styles.buttonText}>Submit</Text>
-        </TouchableOpacity>
-      </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -96,7 +108,7 @@ const styles = StyleSheet.create({
   innerContainer: {
     alignItems: 'center',
     borderColor: 'white',
-    paddingTop: hp(4),
+    paddingTop: hp(14),
     marginTop: hp(10),
     borderTopLeftRadius: 18,
     borderTopRightRadius: 18,
@@ -108,10 +120,9 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   logo: {
-    height: 105,
-    width: 152,
     marginBottom: 10,
     backgroundColor: 'white',
+    alignSelf: 'center',
   },
   error: {
     color: 'red',
@@ -128,7 +139,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '400',
     textAlign: 'center',
     marginBottom: 20,
     color: PRIMARY_COLOR,
@@ -171,7 +182,7 @@ const styles = StyleSheet.create({
   },
   resendText: {
     color: PRIMARY_COLOR,
-    fontWeight: '500',
+    fontWeight: '400',
     fontSize: 14,
   },
   button: {
