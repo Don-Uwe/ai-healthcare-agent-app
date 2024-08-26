@@ -21,7 +21,7 @@ import shallow from 'zustand/shallow'
 import { FormattedPoolInfoConcentratedItem } from '@/hooks/pool/type'
 import TokenAvatarPair from '@/components/TokenAvatarPair'
 import { debounce } from '@/utils/functionMethods'
-import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
+import { formatCurrency } from '@/utils/numberish/formatter'
 import useClmmBalance, { ClmmPosition } from '@/hooks/portfolio/clmm/useClmmBalance'
 import { useAppStore, useClmmStore, useTokenAccountStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
@@ -252,20 +252,20 @@ export default function AddLiquidityModal({
                 <HStack fontSize={['md', 'xl']} fontWeight="500">
                   <Desktop>
                     <TokenAvatar token={poolInfo.mintA} size="sm" />
-                    <Text>{formatToRawLocaleStr(toPercentString(ratioA, { decimalMode: 'trim' }))}</Text>
+                    <Text>{toPercentString(ratioA)}</Text>
                     <Text>/</Text>
                     <TokenAvatar token={poolInfo.mintB} size="sm" />
-                    <Text>{formatToRawLocaleStr(toPercentString(ratioB, { decimalMode: 'trim' }))}</Text>
+                    <Text>{toPercentString(ratioB)}</Text>
                   </Desktop>
                   <Mobile>
                     <Box>
                       <HStack>
                         <TokenAvatar token={poolInfo.mintA} size="sm" />
-                        <Text>{formatToRawLocaleStr(toPercentString(ratioA, { decimalMode: 'trim' }))}</Text>
+                        <Text>{toPercentString(ratioA)}</Text>
                       </HStack>
                       <HStack>
                         <TokenAvatar token={poolInfo.mintB} size="sm" />
-                        <Text>{formatToRawLocaleStr(toPercentString(ratioB, { decimalMode: 'trim' }))}</Text>
+                        <Text>{toPercentString(ratioB)}</Text>
                       </HStack>
                     </Box>
                   </Mobile>

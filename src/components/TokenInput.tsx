@@ -23,7 +23,7 @@ import BalanceWalletIcon from '@/icons/misc/BalanceWalletIcon'
 import ChevronDownIcon from '@/icons/misc/ChevronDownIcon'
 import { useAppStore, useTokenAccountStore, useTokenStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
-import { trimTrailZero, formatCurrency, formatToRawLocaleStr, detectedSeparator } from '@/utils/numberish/formatter'
+import { trimTrailZero, formatCurrency, formatNumber, detectedSeparator } from '@/utils/numberish/formatter'
 
 import { t } from 'i18next'
 import Button from './Button'
@@ -419,7 +419,7 @@ function TokenInput(props: TokenInputProps) {
               }}
               onFocus={handleFocus}
               isDisabled={readonly || loading}
-              value={formatToRawLocaleStr(value)}
+              value={formatNumber.format(Number(value))}
               min={0}
               width={width || '100%'}
               opacity={loading ? 0.2 : 1}
