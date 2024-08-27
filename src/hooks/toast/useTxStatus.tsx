@@ -214,7 +214,7 @@ function useTxStatus() {
           )
 
           subscribeMap.set(txId, subId)
-          connection.getSignatureStatus(txId)
+          connection.getSignatureStatuses([txId])
 
           if (signedTx) retryTx({ id: txId, tx: signedTx })
 
@@ -463,7 +463,7 @@ function useTxStatus() {
                 'confirmed'
               )
               subscribeMap.set(txId, subId)
-              connection.getSignatureStatus(txId)
+              connection.getSignatureStatuses([txId])
               if (signedTx) retryTx({ tx: signedTx, id: txId })
             })
         }

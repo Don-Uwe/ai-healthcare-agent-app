@@ -104,10 +104,6 @@ export default forwardRef<
       ]
     })
     const filteredList = search ? filterTokenFn(sortedTokenList, { searchStr: search }) : sortedTokenList
-    console.log(
-      123123,
-      filteredList.find((s) => s.address === 'GinNabffZL4fUj9Vactxha74GDAW8kDPGaHqMtMzps2f')
-    )
     setDisplayList(filteredList.slice(0, perPage))
     setFilteredList(filteredList)
   }, [search, tokenList, tokenAccountMap, orgTokenMap, tokenPrice])

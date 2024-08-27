@@ -223,7 +223,7 @@ export const useSwapStore = createStore<SwapStore>(
             },
             'processed'
           )
-          connection.getSignatureStatus(txId)
+          connection.getSignatureStatuses([txId])
           handleMultiTxRetry(processedId)
           handleMultiTxToast({
             toastId,
