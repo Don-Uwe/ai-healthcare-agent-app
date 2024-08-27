@@ -23,6 +23,7 @@ import {AuthData, LoginScreenProp, User} from '../../type';
 import {useMutation} from '@tanstack/react-query';
 import axios, {AxiosError} from 'axios';
 import {LOGIN_API, RESEND_VERIFICATION, SEND_OTP} from '../../helper/APIUtils';
+import Loader from '../../components/Loader';
 
 const LoginScreen = ({navigation}: LoginScreenProp) => {
   const inset = useSafeAreaInsets();
@@ -252,6 +253,13 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
     },
   });
 
+  if (
+    loginMutation.isPending ||
+    sendOtpMutation.isPending ||
+    requestVerification.isPending
+  ) {
+    return <Loader />;
+  }
   return (
     <View style={styles.container}>
       <StatusBar

@@ -18,6 +18,7 @@ import {OTPInput, OTPInputConfig} from '../../components/OTPInput';
 import {useMutation} from '@tanstack/react-query';
 import axios, {AxiosError} from 'axios';
 import {CHECK_OTP, SEND_OTP} from '../../helper/APIUtils';
+import Loader from '../../components/Loader';
 
 export default function OtpScreen({navigation, route}: OtpScreenProp) {
   const [codes, setCodes] = useState<string[] | undefined>(Array(4).fill(''));
@@ -124,6 +125,9 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
     }
   };
 
+  if (sendOtpMutation.isPending || verifyOtpMutation.isPending) {
+    return <Loader />;
+  }
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView>

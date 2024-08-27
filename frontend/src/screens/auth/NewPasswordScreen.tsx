@@ -16,6 +16,7 @@ import {NewPasswordScreenProp} from '../../type';
 import {useMutation} from '@tanstack/react-query';
 import axios, {AxiosError} from 'axios';
 import {CHANGE_PASSWORD_API} from '../../helper/APIUtils';
+import Loader from '../../components/Loader';
 
 export default function NewPasswordScreen({
   navigation,
@@ -114,6 +115,9 @@ export default function NewPasswordScreen({
     },
   });
 
+  if (changePasswordMutation.isPending) {
+    return <Loader />;
+  }
   return (
     <SafeAreaView style={styles.container}>
       <TouchableOpacity

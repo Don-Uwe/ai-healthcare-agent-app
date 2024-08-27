@@ -20,6 +20,7 @@ import {useMutation} from '@tanstack/react-query';
 import axios, {AxiosError} from 'axios';
 import {REGISTRATION_API, VERIFICATION_MAIL_API} from '../../helper/APIUtils';
 import EmailVerifiedModal from '../../components/VerifiedModal';
+import Loader from '../../components/Loader';
 var validator = require('email-validator');
 
 const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
@@ -182,6 +183,10 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
     {label: 'General User', value: 'general'},
     {label: 'Doctor', value: 'doctor'},
   ];
+
+  if (userRegisterMutation.isPending || verifyMail.isPending) {
+    return <Loader />;
+  }
 
   return (
     <SafeAreaView style={styles.container}>

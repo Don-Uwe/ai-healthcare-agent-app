@@ -17,6 +17,7 @@ import {useMutation} from '@tanstack/react-query';
 import axios, {AxiosError} from 'axios';
 import {REGISTRATION_API, VERIFICATION_MAIL_API} from '../../helper/APIUtils';
 import EmailVerifiedModal from '../../components/VerifiedModal';
+import Loader from '../../components/Loader';
 var validator = require('email-validator');
 
 const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
@@ -184,6 +185,9 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
     return phoneNumberRegex.test(phone);
   };
 
+  if (doctorRegisterMutation.isPending || verifyMail.isPending) {
+    return <Loader />;
+  }
   return (
     <ScrollView style={styles.container}>
       <TouchableOpacity
