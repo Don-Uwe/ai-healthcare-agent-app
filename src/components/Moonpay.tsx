@@ -8,24 +8,28 @@ export function MoonpayBuy(props: { children: ReactNode }) {
     if (moonPaySdk) {
       return
     }
-    loadMoonPay().then((data) => {
-      if (!data) {
-        return null
-      }
-      const moonPaySdk = data({
-        flow: 'buy',
-        environment: 'production',
-        variant: 'overlay',
-        params: {
-          apiKey: process.env.NEXT_PUBLIC_MOON_PAY_KEY ?? '',
-          theme: 'dark',
-          baseCurrencyCode: 'usd',
-          baseCurrencyAmount: '100',
-          defaultCurrencyCode: 'sol'
+    loadMoonPay()
+      .then((data) => {
+        if (!data) {
+          return null
         }
+        const moonPaySdk = data({
+          flow: 'buy',
+          environment: 'production',
+          variant: 'overlay',
+          params: {
+            apiKey: process.env.NEXT_PUBLIC_MOON_PAY_KEY ?? '',
+            theme: 'dark',
+            baseCurrencyCode: 'usd',
+            baseCurrencyAmount: '100',
+            defaultCurrencyCode: 'sol'
+          }
+        })
+        setMoonPaySdk(moonPaySdk)
       })
-      setMoonPaySdk(moonPaySdk)
-    })
+      .catch((error) => {
+        console.log('Error loading MoonPay SDK:', error)
+      })
   }, [moonPaySdk])
 
   return (
@@ -41,24 +45,28 @@ export function MoonpaySell(props: { children: ReactNode }) {
     if (moonPaySdk) {
       return
     }
-    loadMoonPay().then((data) => {
-      if (!data) {
-        return null
-      }
-      const moonPaySdk = data({
-        flow: 'sell',
-        environment: 'production',
-        variant: 'overlay',
-        params: {
-          apiKey: process.env.NEXT_PUBLIC_MOON_PAY_KEY ?? '',
-          theme: 'dark',
-          quoteCurrencyCode: 'usd',
-          baseCurrencyAmount: '1',
-          defaultBaseCurrencyCode: 'sol'
+    loadMoonPay()
+      .then((data) => {
+        if (!data) {
+          return null
         }
+        const moonPaySdk = data({
+          flow: 'sell',
+          environment: 'production',
+          variant: 'overlay',
+          params: {
+            apiKey: process.env.NEXT_PUBLIC_MOON_PAY_KEY ?? '',
+            theme: 'dark',
+            quoteCurrencyCode: 'usd',
+            baseCurrencyAmount: '1',
+            defaultBaseCurrencyCode: 'sol'
+          }
+        })
+        setMoonPaySdk(moonPaySdk)
       })
-      setMoonPaySdk(moonPaySdk)
-    })
+      .catch((error) => {
+        console.log('Error loading MoonPay SDK:', error)
+      })
   }, [moonPaySdk])
 
   return (
