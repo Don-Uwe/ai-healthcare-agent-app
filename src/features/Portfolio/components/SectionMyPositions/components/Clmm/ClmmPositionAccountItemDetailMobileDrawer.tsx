@@ -35,7 +35,7 @@ import AddressChip from '@/components/AddressChip'
 import TokenAvatar from '@/components/TokenAvatar'
 import LiquidityChartRangeInput from '@/features/Clmm/components/LiquidityChartRangeInput'
 import useTokenPrice from '@/hooks/token/useTokenPrice'
-import { formatCurrency } from '@/utils/numberish/formatter'
+import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
 import { getTimeBasis } from '@/utils/time'
 import { toAPRPercent } from '@/features/Pools/util'
 import { debounce } from '@/utils/functionMethods'
@@ -213,7 +213,7 @@ export default function ClmmPositionAccountItemDetailMobileDrawer({
                     <Flex textAlign="right" justifyContent="space-between" gap="1.5" minW="79px">
                       {formatCurrency(volumeA, { symbol: '$', decimalPlaces: 2 })}
                       <Box as="span" color={colors.textSecondary}>
-                        {toAPRPercent(percentA)}
+                        {formatToRawLocaleStr(toAPRPercent(percentA, { decimalMode: 'trim' }))}
                       </Box>
                     </Flex>
                   </Flex>
@@ -226,7 +226,7 @@ export default function ClmmPositionAccountItemDetailMobileDrawer({
                     <Flex textAlign="right" justifyContent="space-between" gap="1.5" minW="79px">
                       {formatCurrency(volumeB, { symbol: '$', decimalPlaces: 2 })}
                       <Box as="span" color={colors.textSecondary}>
-                        {toAPRPercent(percentB)}
+                        {formatToRawLocaleStr(toAPRPercent(percentB, { decimalMode: 'trim' }))}
                       </Box>
                     </Flex>
                   </Flex>

@@ -1,4 +1,4 @@
-import { formatNumber } from './formatter'
+import formatNumber from './formatNumber'
 
 export type ToPercentStringOptions = {
   /** by default, it will output <0.01% if it is too small   */
@@ -11,6 +11,7 @@ export type ToPercentStringOptions = {
   alreadyPercented?: boolean
   /** usually used in price */
   alwaysSigned?: boolean
+  decimalMode?: 'trim' | 'fixed'
   // TODO:
   maxBoundary?: number
   // TODO:
@@ -31,8 +32,8 @@ export default function toPercentString(n: string | number | undefined, options?
     if ((n === 0 || n === '0') && !options?.notShowZero) return '0%'
     if (!options?.exact && stringPart === (0).toFixed(options?.decimals ?? 2)) return options?.alwaysSigned ? '<+0.01%' : '<0.01%'
     return options?.alwaysSigned
-      ? `${getSign(stringPart)}${formatNumber.format(Number(getUnsignNumber(stringPart)))}%`
-      : `${formatNumber.format(Number(stringPart), options?.decimals)}%`
+      ? `${getSign(stringPart)}${formatNumber(getUnsignNumber(stringPart))}%`
+      : `${formatNumber(stringPart, { maxDecimalCount: options?.decimals, decimalMode: options?.decimalMode || 'trim' })}%`
   } catch (err) {
     return '0%'
   }

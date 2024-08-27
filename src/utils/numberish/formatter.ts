@@ -89,22 +89,6 @@ export const percentWithSignFormatter = new Intl.NumberFormat(userLocale, {
   signDisplay: 'exceptZero'
 })
 
-export const numberFormatter = new Intl.NumberFormat(userLocale, {
-  style: 'decimal',
-  useGrouping: false,
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 12
-})
-
-export const formatNumber = {
-  format: (val?: number, decimalPlaces?: number) => {
-    if (!val) {
-      return '0'
-    }
-    return numberFormatter.format(decimalPlaces !== undefined ? +val.toFixed(decimalPlaces) : val)
-  }
-}
-
 /**
  *
  * @example
