@@ -97,11 +97,11 @@ export default function AddLiquidity({
       quoteReserve: rpcData?.quoteReserve || new BN(new Decimal(pool.mintAmountB).mul(10 ** pool.mintB.decimals).toString()),
       baseIn: isBase
     }).then((r) => {
-      computeAmountRef.current[updateSide] = r.maxOutput
+      computeAmountRef.current[updateSide] = new Decimal(r.maxOutput).toFixed()
       computedLpRef.current = new Decimal(r.liquidity.toString())
       setPairAmount((prev) => ({
         ...prev,
-        [updateSide]: r.output
+        [updateSide]: new Decimal(r.output).toFixed()
       }))
     })
   })

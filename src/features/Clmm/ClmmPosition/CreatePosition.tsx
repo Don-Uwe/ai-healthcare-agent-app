@@ -252,6 +252,7 @@ export default function CreatePosition() {
     [isIdPoolLoading]
   )
   const handleLeftRangeBlur = useEvent((val: string) => {
+    if (val === '') return
     const decimal = new Decimal(val).decimalPlaces()
     if (new Decimal(tickPriceRef.current.priceLower || 0).toFixed(decimal, Decimal.ROUND_DOWN) === val) return
     const r = getPriceAndTick({ pool: currentPool, price: val, baseIn })
@@ -267,6 +268,7 @@ export default function CreatePosition() {
   })
 
   const handleRightRangeBlur = useEvent((val: string) => {
+    if (val === '') return
     if (new Decimal(tickPriceRef.current.priceUpper || 0).toDecimalPlaces(new Decimal(val).decimalPlaces()).eq(val)) return
     const r = getPriceAndTick({ pool: currentPool, price: val, baseIn })
     if (!r) return

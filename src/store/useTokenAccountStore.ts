@@ -16,8 +16,7 @@ import {
   createCloseAccountInstruction,
   createTransferInstruction
 } from '@solana/spl-token'
-import { formatLocaleStr } from '@/utils/numberish/formatter'
-import { trimTailingZero } from '@/utils/numberish/formatNumber'
+import { formatLocaleStr, trimTailingZero } from '@/utils/numberish/formatter'
 import createStore from './createStore'
 import { useAppStore } from './useAppStore'
 import { useTokenStore } from './useTokenStore'

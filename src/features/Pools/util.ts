@@ -32,7 +32,7 @@ export const setFavoritePoolCache = (values: string | string[]) => {
 export const getPoolName = (pool: ApiV3PoolInfoItem) => transformSymbol([pool.mintA, pool.mintB])
 
 export const toAPRPercent = (apr: number, options?: ToPercentStringOptions) =>
-  apr > 999.99 ? '>999.99%' : toPercentString(apr, { decimalMode: 'fixed', decimals: 2, ...options })
+  apr > 999.99 ? '>999.99%' : toPercentString(apr, { decimals: 2, ...options })
 
 export type TimeBase = '24h' | '7d' | '30d'
 
