@@ -35,18 +35,18 @@ export default function PendingYield({ isLoading, hasReward, pendingYield, rewar
         </Button>
       </HStack>
 
-      <Flex display="grid" gridTemplateColumns="repeat(2, 1fr)" gap={2}>
+      <Flex display="grid" gridTemplateColumns="repeat(2, 1fr)" columnGap={0} rowGap={2}>
         {rewardInfos
           .filter((r) => {
             return Number(r.amount) != 0
           })
           .map((r, index) => (
-            <Flex key={r.mint.address} alignItems="center" gap="1" justifyContent={index % 2 === 0 ? 'start' : 'end'}>
+            <Flex key={r.mint.address} alignItems="center" gap={1} justifyContent={index % 2 === 0 ? 'start' : 'end'}>
               <TokenAvatar key={`pool-reward-${r.mint.address}`} size={'sm'} token={r.mint} />
               <Text color={colors.textPrimary}>
                 {formatCurrency(r.amount, {
                   abbreviated: true,
-                  decimalPlaces: isTablet ? 2 : 4,
+                  decimalPlaces: isTablet ? 2 : 3,
                   maximumDecimalTrailingZeroes: 2
                 })}
               </Text>
@@ -58,7 +58,7 @@ export default function PendingYield({ isLoading, hasReward, pendingYield, rewar
                 {formatCurrency(r.amountUSD, {
                   symbol: '$',
                   abbreviated: true,
-                  decimalPlaces: isMobile ? 4 : 2,
+                  decimalPlaces: isMobile ? 3 : 2,
                   maximumDecimalTrailingZeroes: 2
                 })}
                 )

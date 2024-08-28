@@ -301,7 +301,11 @@ export const useAppStore = createStore<AppState>(
           const success = await setRpcUrlAct(rpcs[i].url, true, i !== rpcs.length - 1)
           if (!success) {
             i++
-            checkAndSetRpcNode()
+            if (i < rpcs.length) {
+              checkAndSetRpcNode()
+            } else {
+              console.error('All RPCs failed.')
+            }
           }
         }
 

@@ -335,7 +335,7 @@ export default function Initialize() {
               inputGroupSx={{ w: 'fit-content', bg: colors.backgroundDark, alignItems: 'center', borderRadius: 'xl' }}
               inputSx={{ pl: '4px', fontWeight: 500, fontSize: ['md', 'xl'] }}
               postfix={
-                <Text variant="label" size="sm" whiteSpace="nowrap" fontSize="xl" fontWeight="normal" color={colors.textSecondary}>
+                <Text variant="label" size="sm" whiteSpace="nowrap" fontSize="xl" color={colors.textSecondary}>
                   {startDate ? dayjs(startDate).utc().format('HH:mm (UTC)') : ''}
                 </Text>
               }

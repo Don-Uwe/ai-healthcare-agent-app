@@ -502,7 +502,7 @@ export default function SetPriceAndRange({
             inputGroupSx={{ w: 'fit-content', bg: colors.backgroundDark, alignItems: 'center', borderRadius: 'xl' }}
             inputSx={{ pl: '4px', fontWeight: 500, fontSize: ['md', 'xl'] }}
             postfix={
-              <Text variant="label" size="sm" whiteSpace="nowrap">
+              <Text variant="label" size="sm" whiteSpace="nowrap" fontSize="xl" color={colors.textSecondary}>
                 {dayjs(startDate).utc().format('HH:mm (UTC)')}
               </Text>
             }
