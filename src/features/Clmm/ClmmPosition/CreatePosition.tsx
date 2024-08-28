@@ -92,6 +92,9 @@ export default function CreatePosition() {
     refreshInterval: 30 * 1000
   })
 
+  const preHasRpcData = usePrevious(!!rpcData)
+  const hasRpcData = !!rpcData
+
   if (clmmData && rpcData?.currentPrice) clmmData.price = rpcData.currentPrice.toNumber()
   const currentPool = clmmData
 
@@ -208,7 +211,7 @@ export default function CreatePosition() {
       !isIdPoolLoading && setTokenAmount(['', ''])
       return
     }
-    if (prePoolId === `${poolId}-${baseIn}`) return
+    if (prePoolId === `${poolId}-${baseIn}` && hasRpcData === preHasRpcData) return
     const res = getPriceBoundary({
       poolInfo: currentPool,
       baseIn
@@ -226,7 +229,7 @@ export default function CreatePosition() {
         priceUpper: res.priceUpper.toString()
       }
     }
-  }, [currentPool, isIdPoolLoading, prePoolId, poolId, baseIn, formatDecimalToDigit])
+  }, [currentPool, isIdPoolLoading, prePoolId, poolId, baseIn, formatDecimalToDigit, preHasRpcData, hasRpcData])
 
   useEffect(() => {
     if (!poolId) return
@@ -534,6 +537,7 @@ export default function CreatePosition() {
                   outOfRange={disabledInput[0] || disabledInput[1]}
                   containerStyle={{ flex: 2.5 }}
                   zoomBlockStyle={{ position: 'absolute', right: isMobile ? '10px' : '16px', top: isMobile ? '10px' : '16px' }}
+                  defaultRange={currentPool?.config.defaultRange}
                 />
               </GridItem>
               <GridItem gridArea="info" placeSelf={'center'}>

@@ -68,4 +68,5 @@ export interface LiquidityChartRangeInputProps {
   zoomLevels: ZoomLevels
   autoZoom?: boolean
   zoomBlockStyle?: SystemCSSProperties
+  defaultRange?: number
 }

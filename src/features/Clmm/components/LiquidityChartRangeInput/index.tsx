@@ -106,7 +106,8 @@ export default function LiquidityChartRangeInput({
   outOfRange,
   containerStyle = {},
   zoomBlockStyle,
-  chartHeight
+  chartHeight,
+  defaultRange
 }: {
   poolId: string
   feeAmount?: FeeAmount
@@ -125,6 +126,7 @@ export default function LiquidityChartRangeInput({
   containerStyle?: CSSProperties
   zoomBlockStyle?: SystemCSSProperties
   chartHeight?: number
+  defaultRange?: number
 }) {
   const { t } = useTranslation()
   const chartBoxRef = useRef<HTMLDivElement>(null)
@@ -180,9 +182,22 @@ export default function LiquidityChartRangeInput({
   // if (error) {
   //   sendEvent('exception', { description: error.toString(), fatal: false })
   // }
-
   const isUninitialized = !formattedData.length && !isLoading
   const chartParentWidth = chartParentRef.current?.getBoundingClientRect().width
+
+  const zoomLevels = useMemo(() => {
+    const defaultZoomConfig = ZOOM_LEVELS[feeAmount ?? FeeAmount.MEDIUM] || ZOOM_LEVELS[FeeAmount.MEDIUM]
+    if (defaultRange) {
+      const isLowFee = feeAmount && feeAmount <= FeeAmount.LOWEST
+      const zoomRate = isLowFee ? 1.5 : 2
+      return {
+        ...defaultZoomConfig,
+        initialMin: 1 - defaultRange * zoomRate,
+        initialMax: 1 + defaultRange * zoomRate
+      }
+    }
+    return defaultZoomConfig
+  }, [feeAmount, defaultRange])
 
   return (
     <AutoColumn ref={chartParentRef} gap="md" style={{ ...containerStyle, minHeight: chartHeight ? chartHeight : '200px' }}>
@@ -220,7 +235,7 @@ export default function LiquidityChartRangeInput({
             brushDomain={brushDomain}
             onBrushDomainChange={onBrushDomainChangeEnded}
             feeAmount={feeAmount}
-            zoomLevels={ZOOM_LEVELS[feeAmount ?? FeeAmount.MEDIUM] || ZOOM_LEVELS[FeeAmount.MEDIUM]}
+            zoomLevels={zoomLevels}
             ticksAtLimit={ticksAtLimit}
             autoZoom={autoZoom}
             zoomBlockStyle={zoomBlockStyle}
