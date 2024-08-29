@@ -3,6 +3,7 @@
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from '@sentry/nextjs'
+import { beforeSend, beforeSendSpan } from './sentryUtils'
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
@@ -26,32 +27,6 @@ Sentry.init({
       blockAllMedia: true
     })
   ],
-  beforeSend(event: Sentry.ErrorEvent, hint: Sentry.EventHint) {
-    let sampleRate = 1
-    // if (event && event?.level === 'fatal') {
-    //   sampleRate = 1
-    // }
-
-    if (hint && hint.originalException) {
-      const error = hint.originalException as any
-      const errMsg = (error.message || '').toLocaleLowerCase()
-      if (error) {
-        if (
-          errMsg.includes('timeout') ||
-          errMsg.includes('network error') ||
-          errMsg.includes('no internet connection detected') ||
-          errMsg.includes('cancel rendering route')
-        )
-          sampleRate = 0.1
-        else if (errMsg.includes('java bridge method invocation error') || errMsg.includes('the quota has been exceeded')) sampleRate = 0.2
-        // else if (errMsg.includes('loading moonpaywebsdk script timed out')) sampleRate = 0.5
-      }
-    }
-
-    if (Math.random() <= sampleRate) {
-      return event
-    } else {
-      return null
-    }
-  }
+  beforeSendSpan,
+  beforeSend
 })

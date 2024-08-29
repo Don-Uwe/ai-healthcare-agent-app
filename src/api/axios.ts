@@ -17,16 +17,20 @@ axiosInstance.interceptors.response.use(
     const { url } = config
 
     if (!isSkipLogs(url)) {
-      updateReqHistory({
-        status,
-        url: url || '',
-        params: config.params,
-        data: {
-          id: data.id,
-          success: data.success
-        },
-        logCount
-      })
+      try {
+        updateReqHistory({
+          status,
+          url: url || '',
+          params: config.params,
+          data: {
+            id: data.id,
+            success: data.success
+          },
+          logCount
+        })
+      } catch {
+        //empty
+      }
     }
 
     return data
@@ -38,16 +42,20 @@ axiosInstance.interceptors.response.use(
     const { status } = response
     const { url } = config
     if (!isSkipLogs(url)) {
-      updateReqHistory({
-        status,
-        url,
-        params: config.params,
-        data: {
-          id: response.data?.id,
-          success: error.message
-        },
-        logCount
-      })
+      try {
+        updateReqHistory({
+          status,
+          url,
+          params: config.params,
+          data: {
+            id: response.data?.id,
+            success: error.message
+          },
+          logCount
+        })
+      } catch {
+        //empty
+      }
     }
 
     if (!config.skipError)
