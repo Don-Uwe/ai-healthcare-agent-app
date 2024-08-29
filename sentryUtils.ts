@@ -8,11 +8,11 @@ export function beforeSend(event: ErrorEvent, hint: EventHint) {
     const errMsg = (error.stack || '').toLocaleLowerCase()
     if (error) {
       if (
-        error.includes('ethereum') || // wallet connect
-        error.includes('minified react error') || // no meaning minified ssr hint
-        error.includes('please call connect() before request()') || // wallet connect
+        errMsg.includes('ethereum') || // wallet connect
+        errMsg.includes('minified react error') || // no meaning minified ssr hint
+        errMsg.includes('please call connect() before request()') || // wallet connect
         errMsg.includes('database') || // wallet connect
-        error.includes('IDBDatabase') || // wallet connect
+        errMsg.includes('idbdatabase') || // wallet connect
         errMsg.includes('walletconnect') || // wallet connect
         errMsg.includes('Attempting to use a disconnected port object') // extension
       )
@@ -43,7 +43,7 @@ export function beforeSend(event: ErrorEvent, hint: EventHint) {
 export function beforeSendSpan(span: any) {
   let sampleRate = 1
   // Do not sample health checks ever
-  if (!span.description || span.description.indexOf('tplink') > -1 || span.description.indexOf('walletconnect') > -1) {
+  if (!span.description || span.description.indexOf('tiplink') > -1 || span.description.indexOf('walletconnect') > -1) {
     sampleRate = 0.01
   }
 
