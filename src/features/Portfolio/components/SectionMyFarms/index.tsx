@@ -80,9 +80,13 @@ export default function SectionMyCreatedFarms() {
       </Grid>
 
       <Flex direction="column" gap={4} mt={4}>
-        {filteredData.map((farm) => (
-          <FarmItem key={`farm-${farm.id}`} {...farm} standardFarm={farmDataMap[farm.id]} clmmData={formattedDataMap[farm.id]} />
-        ))}
+        {filteredData
+          .filter((farm) => {
+            return farm.type !== FarmCategory.Clmm || formattedDataMap[farm.id].formattedRewardInfos.length != 0
+          })
+          .map((farm) => (
+            <FarmItem key={`farm-${farm.id}`} {...farm} standardFarm={farmDataMap[farm.id]} clmmData={formattedDataMap[farm.id]} />
+          ))}
       </Flex>
     </Box>
   )
