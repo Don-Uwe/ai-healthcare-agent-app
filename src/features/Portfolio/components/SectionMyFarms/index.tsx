@@ -21,7 +21,6 @@ export default function SectionMyCreatedFarms() {
   })
   const publicKey = useAppStore((s) => s.publicKey)
   const { formattedData } = useCreatedFarmInfo({ owner: publicKey })
-  const hasCreatedFarm = Boolean(formattedData?.length)
 
   const filteredData = useMemo(
     () => (filterType === FarmCategory.All ? formattedData : formattedData.filter((f) => f.type === filterType)),
@@ -35,7 +34,13 @@ export default function SectionMyCreatedFarms() {
   })
   const { isOpen: isCreatePoolDialogOpen, onOpen: openCreatePoolDialog, onClose: closeCreatePoolDialog } = useDisclosure()
 
-  if (!hasCreatedFarm) return null
+  const validFilteredData = filteredData.filter((farm) => {
+    return farm.type !== FarmCategory.Clmm || formattedDataMap[farm.id]?.formattedRewardInfos.length != 0
+  })
+
+  const hasValidFarm = Boolean(validFilteredData?.length)
+
+  if (!hasValidFarm) return null
   return (
     <Box pt="20px">
       <Grid
@@ -80,13 +85,9 @@ export default function SectionMyCreatedFarms() {
       </Grid>
 
       <Flex direction="column" gap={4} mt={4}>
-        {filteredData
-          .filter((farm) => {
-            return farm.type !== FarmCategory.Clmm || formattedDataMap[farm.id]?.formattedRewardInfos.length != 0
-          })
-          .map((farm) => (
-            <FarmItem key={`farm-${farm.id}`} {...farm} standardFarm={farmDataMap[farm.id]} clmmData={formattedDataMap[farm.id]} />
-          ))}
+        {validFilteredData.map((farm) => (
+          <FarmItem key={`farm-${farm.id}`} {...farm} standardFarm={farmDataMap[farm.id]} clmmData={formattedDataMap[farm.id]} />
+        ))}
       </Flex>
     </Box>
   )
