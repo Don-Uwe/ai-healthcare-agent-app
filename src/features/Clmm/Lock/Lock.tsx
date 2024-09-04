@@ -1,4 +1,4 @@
-import { Box, Button, Flex, Grid, GridItem, HStack, Text, useDisclosure } from '@chakra-ui/react'
+import { Button, Flex, Grid, GridItem, HStack, Text, useDisclosure } from '@chakra-ui/react'
 import { useState, useCallback, useMemo, useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import ChevronLeftIcon from '@/icons/misc/ChevronLeftIcon'
@@ -9,6 +9,7 @@ import LiquidityLockModal from './components/LiquidityLockModal'
 import useAllPositionInfo from '@/hooks/portfolio/useAllPositionInfo'
 import { ClmmPosition } from '@/hooks/portfolio/clmm/useClmmBalance'
 import useTokenPrice from '@/hooks/token/useTokenPrice'
+import { BN } from 'bn.js'
 
 export default function Lock() {
   const { t } = useTranslation()
@@ -38,7 +39,7 @@ export default function Lock() {
         return a.tickLower - b.tickLower
       })
     })
-    return positionsByPool.flat()
+    return positionsByPool.flat().filter((p) => p.liquidity.gt(new BN(0)))
   }, [clmmBalanceInfo, formattedClmmDataMap])
 
   useEffect(() => {
