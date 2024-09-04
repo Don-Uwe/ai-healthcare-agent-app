@@ -351,7 +351,7 @@
     "pool_position_nft": " position NFT:",
     "lock_agree_text": "By confirming below, I agree to permanently lock liquidity. I understand access to the underlying assets will be lost forever.",
     "lock_to_confirm": "To confirm, type the following:",
-    "lock_confirm_text": "I confirm,permanently lock my liquidity forever",
+    "lock_confirm_text": "I confirm, permanently lock my liquidity forever",
     "confirm_lock_liquidity_permanently": "Confirm, Lock Liquidity Permanently"
   },
   "create_pool": {
