@@ -11,6 +11,7 @@ import { PublicKey, Connection } from '@solana/web3.js'
 import Decimal from 'decimal.js'
 import BN from 'bn.js'
 import useSWR from 'swr'
+import axios from '@/api/axios'
 
 import useRefreshEpochInfo from '@/hooks/app/useRefreshEpochInfo'
 import { useAppStore, useTokenAccountStore, initTokenAccountSate } from '@/store'
@@ -57,6 +58,15 @@ const fetcher = async ([connection, publicKeyList]: [Connection, string[]]) => {
   return res.flat()
 }
 
+export interface ClmmLockInfo {
+  [poolId: string]: { [nftMint: string]: { lockId: string; nftAccount: string; positionId: string } }
+}
+
+const lockFetcher = (url: string) =>
+  axios.get<ClmmLockInfo>(url, {
+    skipError: true
+  })
+
 export default function useClmmBalance({
   programId,
   refreshInterval = 1000 * 60 * 5
@@ -64,8 +74,15 @@ export default function useClmmBalance({
   programId?: string | PublicKey
   refreshInterval?: number
 }) {
-  const [connection, CLMM_PROGRAM_ID, tokenAccLoaded, owner] = useAppStore(
-    (s) => [s.connection, s.programIdConfig.CLMM_PROGRAM_ID, s.tokenAccLoaded, s.publicKey],
+  const [connection, CLMM_PROGRAM_ID, tokenAccLoaded, owner, OWNER_HOST, OWNER_LOCK_POSITION_URL] = useAppStore(
+    (s) => [
+      s.connection,
+      s.programIdConfig.CLMM_PROGRAM_ID,
+      s.tokenAccLoaded,
+      s.publicKey,
+      s.urlConfigs.OWNER_BASE_HOST,
+      s.urlConfigs.OWNER_LOCK_POSITION
+    ],
     shallow
   )
   const clmmProgramId = programId || CLMM_PROGRAM_ID
@@ -74,6 +91,27 @@ export default function useClmmBalance({
     shallow
   )
   useRefreshEpochInfo()
+
+  const url = !owner ? null : OWNER_HOST + OWNER_LOCK_POSITION_URL.replace('{owner}', owner!.toString())
+  const {
+    data: lockData,
+    // isLoading: isLockLoading,
+    // error: lockError,
+    mutate: mutateLockInfo
+  } = useSWR(url, lockFetcher, {
+    dedupingInterval: refreshInterval,
+    focusThrottleInterval: refreshInterval,
+    refreshInterval
+  })
+
+  const lockInfo = lockData?.data
+  const lockNftMints = useMemo(() => {
+    return lockInfo
+      ? Object.keys(lockInfo)
+          .map((key) => Object.keys(lockInfo[key]))
+          .flat()
+      : []
+  }, [lockInfo])
 
   const balanceMints = useMemo(() => tokenAccountRawInfos.filter((acc) => acc.accountInfo.amount.eq(new BN(1))), [tokenAccountRawInfos])
   const getPriceAndAmount = useEvent(({ poolInfo, position }: { poolInfo: ApiV3PoolInfoConcentratedItem; position: ClmmPosition }) => {
@@ -121,8 +159,13 @@ export default function useClmmBalance({
   })
 
   const allPositionKey = useMemo(
-    () => balanceMints.map((acc) => getPdaPersonalPositionAddress(new PublicKey(clmmProgramId), acc.accountInfo.mint).publicKey.toBase58()),
-    [balanceMints]
+    () =>
+      balanceMints
+        .map((acc) => getPdaPersonalPositionAddress(new PublicKey(clmmProgramId), acc.accountInfo.mint).publicKey.toBase58())
+        .concat(
+          lockNftMints.map((mint) => getPdaPersonalPositionAddress(new PublicKey(clmmProgramId), new PublicKey(mint)).publicKey.toBase58())
+        ),
+    [balanceMints, lockNftMints]
   )
 
   const needFetch = tokenAccLoaded && clmmProgramId && connection && tokenAccountRawInfos.length > 0 && allPositionKey.length > 0
@@ -164,16 +207,24 @@ export default function useClmmBalance({
     if (lastRefreshTag === refreshClmmPositionTag) return
     lastRefreshTag = refreshClmmPositionTag
     mutate()
-  }, [refreshClmmPositionTag, mutate])
+    mutateLockInfo()
+  }, [refreshClmmPositionTag, mutate, mutateLockInfo])
 
   useEffect(() => {
     localStorage.removeItem('_r_nft_b_')
   }, [])
 
+  const reFetchBalance = useEvent(() => {
+    mutate()
+    mutateLockInfo()
+  })
+
   return {
+    clmmLockInfo: lockInfo || {},
     clmmBalanceInfo: balanceData,
-    reFetchBalance: mutate,
+    reFetchBalance,
     getPriceAndAmount,
+    mutateLockInfo,
     isLoading,
     isValidating,
     slot: data?.[0]?.context.slot ?? 0,

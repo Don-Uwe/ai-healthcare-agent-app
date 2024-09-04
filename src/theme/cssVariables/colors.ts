@@ -119,6 +119,7 @@ export const darkColors: Record<keyof typeof colors, string> = {
   lightPurple: '#BFD2FF',
   background01: '#090D1D',
   background02: 'rgba(22, 22, 22, 0.5)',
+  background03: '#FF4EA31A',
   cardBorder01: '#8C6EEF80',
   text01: '#D6CC56',
   text02: '#fff',
@@ -185,7 +186,7 @@ export const lightColors: Partial<typeof darkColors> = {
   // select
   selectActive: '#8C6EEF',
   selectActiveSecondary: '#8C6EEF',
-  selectInactive: '#abc4ff1a',
+  selectInactive: '#abc4ffef',
 
   // chart
   chart01: '#abc4ff',
@@ -255,6 +256,7 @@ export const lightColors: Partial<typeof darkColors> = {
   lightPurple: '#474ABB',
   background01: '#EDEDFF',
   background02: '#ABC4FF33',
+  background03: '#FF4EA31A',
   cardBorder01: '#8C6EEF80',
   text01: '#D6CC56',
   text02: '#000',
@@ -394,6 +396,7 @@ export const colors = {
   lightPurple: 'var(--divider-bg-light-purple)',
   background01: 'var(--background-01)',
   background02: 'var(--background-02)',
+  background03: 'var(--background-03)',
   cardBorder01: 'var(--card-border-01)',
   text01: 'var(--text-01)',
   text02: 'var(--text-02)',

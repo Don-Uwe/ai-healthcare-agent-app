@@ -119,6 +119,13 @@ const CLMM_TX_MSG = {
     txHistoryTitle: 'transaction_history.harvest_rewards',
     txHistoryDesc: 'transaction_history.harvest_rewards_desc',
     components: { sub: <Text as="span" color={colors.textSecondary} fontWeight="700" /> }
+  },
+  lockPosition: {
+    title: 'transaction_history.lock_position',
+    desc: 'transaction_history.position_locked',
+    txHistoryTitle: 'transaction_history.lock_position',
+    txHistoryDesc: 'transaction_history.position_locked',
+    components: { sub: <Text as="span" color={colors.textSecondary} fontWeight="700" /> }
   }
 }
 

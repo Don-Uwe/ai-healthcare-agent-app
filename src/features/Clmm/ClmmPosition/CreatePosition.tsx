@@ -30,6 +30,7 @@ import useValidate from './useValidate'
 
 import { Desktop } from '@/components/MobileDesktop'
 import ChevronLeftIcon from '@/icons/misc/ChevronLeftIcon'
+import LockIcon from '@/icons/misc/LockIcon'
 import WarningIcon from '@/icons/misc/WarningIcon'
 import CircleWarning from '@/icons/misc/CircleWarning'
 import { debounce } from '@/utils/functionMethods'
@@ -408,6 +409,8 @@ export default function CreatePosition() {
     })
   }
 
+  const hasLockedLiquidity = currentPool && currentPool?.burnPercent > 0
+
   return (
     <Grid
       gridTemplate={[
@@ -452,6 +455,16 @@ export default function CreatePosition() {
               <Tag size="sm" variant="rounded">
                 {formatToRawLocaleStr(toPercentString((currentPool?.feeRate || 0) * 100))}
               </Tag>
+              {hasLockedLiquidity && (
+                <Flex alignItems="center" gap={1}>
+                  <LockIcon />
+                  <Text opacity={0.6} fontSize="xs" color={colors.lightPurple}>
+                    {t('liquidity.locked_percent', {
+                      percent: formatToRawLocaleStr(toPercentString(currentPool.burnPercent || 0, { alreadyPercented: true }))
+                    })}
+                  </Text>
+                </Flex>
+              )}
             </Flex>
 
             <Desktop>

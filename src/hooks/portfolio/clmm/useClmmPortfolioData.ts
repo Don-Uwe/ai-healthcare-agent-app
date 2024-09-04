@@ -9,7 +9,7 @@ import Decimal from 'decimal.js'
 export type { ClmmDataMap, ClmmPosition }
 
 export default function useClmmPortfolioData<T>({ type }: { type: T }) {
-  const { clmmBalanceInfo, getPriceAndAmount, reFetchBalance, isLoading, slot } = useClmmBalance({})
+  const { clmmBalanceInfo, clmmLockInfo, getPriceAndAmount, reFetchBalance, mutateLockInfo, isLoading, slot } = useClmmBalance({})
   const owner = useAppStore((s) => s.publicKey)
   const allClmmBalanceData = useMemo(() => Array.from(clmmBalanceInfo.entries()), [clmmBalanceInfo])
   const allPositions = useMemo(() => allClmmBalanceData.map((d) => d[1]).flat(), [allClmmBalanceData])
@@ -91,11 +91,13 @@ export default function useClmmPortfolioData<T>({ type }: { type: T }) {
 
   return {
     isLoading,
+    clmmLockInfo,
     clmmBalanceInfo,
     totalUSD: clmmAll,
     clmmBalanceByMint: clmmPoolAssetsByMint,
     data: clmmPoolAssets,
     mutate: reFetchBalance,
+    mutateLockInfo,
     slot
   }
 }

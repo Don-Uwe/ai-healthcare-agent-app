@@ -18,10 +18,9 @@ import {
   toToken,
   solToWSolToken,
   TxVersion,
-  getTransferAmountFeeV2,
-  getRecentBlockHash
+  getTransferAmountFeeV2
 } from '@raydium-io/raydium-sdk-v2'
-import { PublicKey, VersionedTransaction } from '@solana/web3.js'
+import { PublicKey, VersionedTransaction, Transaction } from '@solana/web3.js'
 import createStore from '@/store/createStore'
 import { useAppStore, useTokenAccountStore, useLiquidityStore } from '@/store'
 import { isSolWSol } from '@/utils/token'
@@ -35,6 +34,8 @@ import { CLMM_FEE_CONFIGS, getTxMeta } from './configs/clmm'
 import { TxCallbackProps } from '../types/tx'
 import { getComputeBudgetConfig } from '@/utils/tx/computeBudget'
 import { handleMultiTxRetry } from '@/hooks/toast/retryTx'
+import { shortenAddress } from '@/utils/token'
+import { ClmmLockInfo } from '@/hooks/portfolio/clmm/useClmmLockPosition'
 
 import BN from 'bn.js'
 import Decimal from 'decimal.js'
@@ -55,6 +56,7 @@ interface ClmmState {
     props: {
       allPoolInfo: Record<string, ApiV3PoolInfoConcentratedItem>
       allPositions: Record<string, ClmmPositionLayout[]>
+      lockInfo: ClmmLockInfo
       programId?: string
       execute?: boolean
     } & TxCallbackProps
@@ -103,6 +105,21 @@ interface ClmmState {
       liquidity: BN
       amountMaxA: number | string | BN
       amountMaxB: number | string | BN
+      onCloseToast?: () => void
+    } & TxCallbackProps
+  ) => Promise<string>
+  lockPositionAct: (
+    props: {
+      poolInfo: ApiV3PoolInfoConcentratedItem
+      position: ClmmPositionLayout
+      onCloseToast?: () => void
+    } & TxCallbackProps
+  ) => Promise<string>
+  harvestLockPositionAct: (
+    props: {
+      poolInfo: ApiV3PoolInfoConcentratedItem
+      position: ClmmPositionLayout
+      needRefresh?: boolean
       onCloseToast?: () => void
     } & TxCallbackProps
   ) => Promise<string>
@@ -184,22 +201,25 @@ const clmmInitState = {
 export const useClmmStore = createStore<ClmmState>(
   (set, get) => ({
     ...clmmInitState,
-    harvestAllAct: async ({ allPoolInfo, allPositions, programId, execute, ...txProps }) => {
+    harvestAllAct: async ({ allPoolInfo, allPositions, lockInfo, programId, execute, ...txProps }) => {
       const { raydium, txVersion } = useAppStore.getState()
       if (!raydium) {
         toastSubject.next({ noRpc: true })
         return { txId: '' }
       }
+
       const buildData = await raydium.clmm.harvestAllRewards({
         allPoolInfo,
         allPositions,
         ownerInfo: {
           useSOLBalance: true
         },
+        lockInfo,
         programId: programId ? new PublicKey(programId) : undefined,
         txVersion,
         computeBudgetConfig: execute ? await getComputeBudgetConfig() : undefined
       })
+
       if (execute) {
         const meta = getTxMeta({
           action: 'harvest',
@@ -596,6 +616,92 @@ export const useClmmStore = createStore<ClmmState>(
         txProps.onFinally?.()
         return ''
       }
+    },
+
+    lockPositionAct: async ({ poolInfo, position, ...txProps }) => {
+      const { raydium, txVersion } = useAppStore.getState()
+      if (!raydium) return ''
+      const computeBudgetConfig = await getComputeBudgetConfig()
+      const { execute } = await raydium.clmm.lockPosition({
+        ownerPosition: position,
+        txVersion,
+        computeBudgetConfig
+      })
+
+      const meta = getTxMeta({
+        action: 'lockPosition',
+        values: {
+          position: shortenAddress(position.nftMint.toBase58())
+        }
+      })
+
+      return execute()
+        .then(({ txId, signedTx }) => {
+          txStatusSubject.next({
+            txId,
+            ...meta,
+            signedTx,
+            mintInfo: [poolInfo.mintA, poolInfo.mintB],
+            onSent: txProps.onSent,
+            onClose: txProps.onCloseToast,
+            onConfirmed: () => {
+              txProps.onConfirmed?.()
+              setTimeout(() => {
+                useTokenAccountStore.setState({ refreshClmmPositionTag: Date.now() })
+              }, 500)
+            }
+          })
+          return txId
+        })
+        .catch((e) => {
+          txProps.onError?.()
+          toastSubject.next({ txError: e, ...meta })
+          return ''
+        })
+        .finally(txProps.onFinally)
+    },
+
+    harvestLockPositionAct: async ({ poolInfo, position, needRefresh, onConfirmed, ...txProps }) => {
+      const { raydium, txVersion } = useAppStore.getState()
+      if (!raydium) return ''
+      const computeBudgetConfig = await getComputeBudgetConfig()
+      const { execute } = await raydium.clmm.harvestLockPosition({
+        // programId: useAppStore.getState().programIdConfig.CLMM_LOCK_PROGRAM_ID,
+        // authProgramId: useAppStore.getState().programIdConfig.CLMM_LOCK_AUTH_ID,
+        ownerPosition: position,
+        txVersion,
+        computeBudgetConfig
+      })
+
+      const meta = getTxMeta({
+        action: 'harvest',
+        values: {
+          symbolA: getMintSymbol({ mint: poolInfo.mintA, transformSol: true }),
+          symbolB: getMintSymbol({ mint: poolInfo.mintB, transformSol: true })
+        }
+      })
+
+      return execute()
+        .then(({ txId, signedTx }) => {
+          txStatusSubject.next({
+            txId,
+            ...meta,
+            mintInfo: [poolInfo.mintA, poolInfo.mintB],
+            signedTx,
+            ...txProps,
+            onConfirmed: () => {
+              onConfirmed?.()
+              if (needRefresh) setTimeout(() => useTokenAccountStore.setState({ refreshClmmPositionTag: Date.now() }), 500)
+            }
+          })
+          return txId
+        })
+        .catch((e) => {
+          txProps.onError?.()
+          toastSubject.next({ txError: e, ...meta })
+          return ''
+        })
+        .finally(txProps.onFinally)
     },
 
     setRewardsAct: async ({ poolInfo, rewardInfos, newRewardInfos, onConfirmed, ...txProps }) => {

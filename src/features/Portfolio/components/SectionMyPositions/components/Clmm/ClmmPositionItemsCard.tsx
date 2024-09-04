@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from 'react'
+import React, { useCallback, useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Box, Flex, Grid, GridItem, HStack, Tag, Text, Skeleton, useDisclosure } from '@chakra-ui/react'
 import Link from 'next/link'
@@ -20,7 +20,8 @@ import { panelCard } from '@/theme/cssBlocks'
 import ClmmPositionAccountItem from './ClmmPositionAccountItem'
 import toPercentString from '@/utils/numberish/toPercentString'
 import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
-import { shortenAddress } from '@/utils/token'
+import { QuestionToolTip } from '@/components/QuestionToolTip'
+import { ClmmLockInfo } from '@/hooks/portfolio/clmm/useClmmLockPosition'
 
 const LIST_THRESHOLD = 10
 
@@ -28,12 +29,14 @@ export function ClmmPositionItemsCard({
   poolInfo,
   isLoading,
   initRpcPoolData,
+  lockInfo,
   setNoRewardClmmPos,
   ...props
 }: {
   poolId: string | PublicKey
   isLoading: boolean
   positions: PositionWithUpdateFn[]
+  lockInfo?: ClmmLockInfo['']
   poolInfo?: FormattedPoolInfoConcentratedItem
   initRpcPoolData?: RpcPoolData
   setNoRewardClmmPos: (val: string, isDelete?: boolean) => void
@@ -56,9 +59,11 @@ export function ClmmPositionItemsCard({
   }, [totalPositions, pageCurrent])
 
   const loadMore = useCallback(() => setPageCurrent((s) => (s < pageTotal ? s + 1 : s)), [])
-
   if (poolInfo && rpcData.currentPrice) poolInfo.price = rpcData.currentPrice
   if (!poolInfo) return isLoading ? <Skeleton w="full" height="140px" rounded="lg" /> : null
+
+  const hasLockedLiquidity = !!lockInfo
+  const lockedPositions = hasLockedLiquidity ? positions.filter((p) => !!lockInfo[p.nftMint.toBase58()]) : []
 
   return (
     <Grid
@@ -168,18 +173,54 @@ export function ClmmPositionItemsCard({
 
       <GridItem area={'items'}>
         <Flex flexDir="column" mt={[1, 0]} gap={3}>
-          {positions.map((position) => (
-            <ClmmPositionAccountItem
-              key={position.nftMint.toBase58()}
-              poolInfo={poolInfo!}
-              position={position}
-              baseIn={baseIn}
-              initRpcPoolData={initRpcPoolData}
-              setNoRewardClmmPos={setNoRewardClmmPos}
-              onSubscribe={onSubscribe}
-            />
-          ))}
+          {positions.map((position) =>
+            hasLockedLiquidity && lockInfo[position.nftMint.toBase58()] ? null : (
+              <ClmmPositionAccountItem
+                key={position.nftMint.toBase58()}
+                poolInfo={poolInfo!}
+                position={position}
+                baseIn={baseIn}
+                initRpcPoolData={initRpcPoolData}
+                setNoRewardClmmPos={setNoRewardClmmPos}
+                onSubscribe={onSubscribe}
+              />
+            )
+          )}
         </Flex>
+        {hasLockedLiquidity && (
+          <Flex flexDir="column" mt={3} gap={3}>
+            <HStack gap={1}>
+              <Text fontWeight="medium" color={colors.lightPurple} pl={1}>
+                {t('liquidity.locked_positions')}
+              </Text>
+              <QuestionToolTip
+                label={
+                  <Text as="span" fontSize="sm">
+                    {t('liquidity.locked_positions_tip_info')}
+                  </Text>
+                }
+                iconType="info"
+                iconProps={{
+                  width: 14,
+                  height: 14,
+                  fill: colors.lightPurple
+                }}
+              />
+            </HStack>
+            {lockedPositions.map((position) => (
+              <ClmmPositionAccountItem
+                key={position.nftMint.toBase58()}
+                poolInfo={poolInfo!}
+                position={position}
+                baseIn={baseIn}
+                initRpcPoolData={initRpcPoolData}
+                setNoRewardClmmPos={setNoRewardClmmPos}
+                isLock={true}
+                onSubscribe={onSubscribe}
+              />
+            ))}
+          </Flex>
+        )}
         <Flex
           align="center"
           justifyContent="center"

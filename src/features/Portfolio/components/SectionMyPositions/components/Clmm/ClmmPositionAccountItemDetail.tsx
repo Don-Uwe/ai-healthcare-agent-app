@@ -10,7 +10,6 @@ import EstimatedApr from './ClmmPositionAccountItemDetail/EstimatedApr'
 import PendingYield from './ClmmPositionAccountItemDetail/PendingYield'
 import { useEvent } from '@/hooks/useEvent'
 import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
-import useWindowDimensions from '@/hooks/useWindowDimensions'
 import { colors } from '@/theme/cssVariables'
 import AddressChip from '@/components/AddressChip'
 import TokenAvatar from '@/components/TokenAvatar'
@@ -51,7 +50,6 @@ export default function ClmmPositionAccountItemDetail({
   onHarvest
 }: DetailProps) {
   const { isOpen: isLoading, onOpen: onSend, onClose: onFinally } = useDisclosure()
-  const { isMobile } = useWindowDimensions(1152)
   const { t } = useTranslation()
   const [chartTag, setChartTag] = useState(Date.now())
 

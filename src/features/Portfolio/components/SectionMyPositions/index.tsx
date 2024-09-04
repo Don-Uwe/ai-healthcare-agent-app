@@ -84,6 +84,7 @@ export default function SectionMyPositions() {
     stakedFarmMap,
     allFarmBalances,
     clmmBalanceInfo,
+    clmmLockInfo,
     isClmmLoading,
     isFarmLoading,
     rewardState,
@@ -205,6 +206,7 @@ export default function SectionMyPositions() {
           <ClmmMyPositionTabContent
             isLoading={isClmmLoading}
             clmmBalanceInfo={clmmBalanceInfo}
+            lockInfo={clmmLockInfo}
             setNoRewardClmmPos={setNoRewardClmmPos}
             refreshTag={refreshTag}
           />

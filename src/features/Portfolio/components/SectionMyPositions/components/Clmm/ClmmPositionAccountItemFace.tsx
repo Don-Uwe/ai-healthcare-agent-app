@@ -20,25 +20,32 @@ import Decimal from 'decimal.js'
 import { useTranslation } from 'react-i18next'
 import BN from 'bn.js'
 import { useEvent } from '@/hooks/useEvent'
+import LockIcon from '@/icons/misc/LockIcon'
 
 export default function ClmmPositionAccountItemFace({
   isViewOpen,
+  isLock,
   poolInfo,
   poolLiquidity,
   tokenPrices,
   position,
   baseIn,
+  hasReward,
+  onHarvest,
   onClickCloseButton,
   onClickMinusButton,
   onClickPlusButton,
   onClickViewTrigger
 }: {
   isViewOpen: boolean
+  isLock: boolean
   poolInfo: FormattedPoolInfoConcentratedItem
   poolLiquidity?: BN
   tokenPrices: Record<string, TokenPrice>
   position: ClmmPosition
   baseIn: boolean
+  hasReward: boolean
+  onHarvest: (props: { onSend?: () => void; onFinally?: () => void }) => void
   onClickCloseButton: (props: { onSend?: () => void; onFinally?: () => void }) => void
   onClickMinusButton: () => void
   onClickPlusButton: () => void
@@ -64,7 +71,14 @@ export default function ClmmPositionAccountItemFace({
     .add(amountB.mul(tokenPrices[poolInfo.mintB.address]?.value || 0))
 
   const inRange = priceLower.price.lt(poolInfo.price) && priceUpper.price.gt(poolInfo.price)
-  const rangeValue = baseIn
+
+  const isFullRange =
+    position.tickLower === parseInt((-443636 / poolInfo.config.tickSpacing).toString()) * poolInfo.config.tickSpacing &&
+    position.tickUpper === parseInt((443636 / poolInfo.config.tickSpacing).toString()) * poolInfo.config.tickSpacing
+
+  const rangeValue = isFullRange
+    ? t('clmm.full_range')
+    : baseIn
     ? `${formatCurrency(priceLower.price, {
         decimalPlaces: 6
       })} - ${formatCurrency(priceUpper.price, {
@@ -116,9 +130,11 @@ export default function ClmmPositionAccountItemFace({
             <Text fontWeight="medium" whiteSpace={'nowrap'}>
               {rangeValue}
             </Text>
-            <Text color={colors.lightPurple} whiteSpace={'nowrap'}>
-              {rangeValueUnit}
-            </Text>
+            {isFullRange ? null : (
+              <Text color={colors.lightPurple} whiteSpace={'nowrap'}>
+                {rangeValueUnit}
+              </Text>
+            )}
             <Badge mr={['auto', 'unset']} variant={inRange ? 'ok' : 'error'}>
               {inRange ? t('clmm.in_range') : t('clmm.out_of_range')}
             </Badge>
@@ -136,8 +152,9 @@ export default function ClmmPositionAccountItemFace({
               <Text whiteSpace={'nowrap'} color={colors.lightPurple}>
                 {t('clmm.position')}
               </Text>
-              <Text whiteSpace={'nowrap'} color={colors.textPrimary}>
+              <Text whiteSpace={'nowrap'} display={'flex'} gap="1" alignItems={'center'} color={colors.textPrimary}>
                 {formatCurrency(totalVolume.toString(), { symbol: '$', decimalPlaces: 2 })}
+                {isLock ? <LockIcon /> : null}
               </Text>
             </HStack>
           </Flex>
@@ -160,12 +177,31 @@ export default function ClmmPositionAccountItemFace({
               <AprMDSwitchWidget color={colors.textSecondary} />
             </HStack>
             <HStack>
-              {position.liquidity.isZero() ? (
-                <CloseButton isLoading={isLoading} onClick={handleClickClose} />
+              {isLock ? (
+                <Button
+                  isLoading={isLoading}
+                  isDisabled={!hasReward}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onHarvest({})
+                  }}
+                  size="sm"
+                  fontSize="md"
+                  variant="outline"
+                >
+                  {t('portfolio.section_positions_clmm_account_pending_yield_button')}
+                </Button>
               ) : (
-                <MinusButton isLoading={false} onClick={onClickMinusButton} />
+                <>
+                  {position.liquidity.isZero() ? (
+                    <CloseButton isLoading={isLoading} onClick={handleClickClose} />
+                  ) : (
+                    <MinusButton isLoading={false} onClick={onClickMinusButton} />
+                  )}
+                  <PlusButton isLoading={false} onClick={onClickPlusButton} />
+                </>
               )}
-              <PlusButton isLoading={false} onClick={onClickPlusButton} />
+
               {isViewOpen ? (
                 <ChevronUpIcon className="up" width={24} height={24} color={colors.textSecondary} />
               ) : (
@@ -233,10 +269,26 @@ export default function ClmmPositionAccountItemFace({
                 </GridItem>
 
                 <GridItem gridArea={'btns'} justifySelf="flex-end">
-                  <HStack>
-                    <MinusButton isLoading={false} onClick={onClickMinusButton} />
-                    <PlusButton isLoading={false} onClick={onClickPlusButton} />
-                  </HStack>
+                  {isLock ? (
+                    <Button
+                      isLoading={isLoading}
+                      isDisabled={!hasReward}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onHarvest({})
+                      }}
+                      size="sm"
+                      fontSize="md"
+                      variant="outline"
+                    >
+                      {t('portfolio.section_positions_clmm_account_pending_yield_button')}
+                    </Button>
+                  ) : (
+                    <HStack>
+                      <MinusButton isLoading={false} onClick={onClickMinusButton} />
+                      <PlusButton isLoading={false} onClick={onClickPlusButton} />
+                    </HStack>
+                  )}
                 </GridItem>
 
                 <GridItem gridArea={'vbtn'} justifySelf="center">

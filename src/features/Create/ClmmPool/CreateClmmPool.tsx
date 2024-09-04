@@ -13,7 +13,7 @@ import { CreatePoolBuildData, useAppStore, useClmmStore } from '@/store'
 import { colors } from '@/theme/cssVariables/colors'
 import { genCSS2GridTemplateColumns, genCSS3GridTemplateColumns } from '@/theme/detailConfig'
 import { debounce, exhaustCall } from '@/utils/functionMethods'
-import { routeBack, routeToPage } from '@/utils/routeTools'
+import { routeBack } from '@/utils/routeTools'
 import { solToWSolToken } from '@/utils/token'
 import BN from 'bn.js'
 import Decimal from 'decimal.js'
@@ -21,6 +21,8 @@ import SelectPoolToken from './components/SelectPoolTokenAndFee'
 import SetPriceAndRange from './components/SetPriceAndRange'
 import Stepper from './components/Stepper'
 import TokenAmountPairInputs from './components/TokenAmountInput'
+import CreateSuccessModal from './components/CreateSuccessModal'
+import CreateSuccessWithLockModal from './components/CreateSuccessWithLockModal'
 import { useEvent } from '@/hooks/useEvent'
 import useBirdeyeTokenPrice from '@/hooks/token/useBirdeyeTokenPrice'
 
@@ -30,6 +32,7 @@ export default function CreateClmmPool() {
   const [createClmmPool, openPositionAct] = useClmmStore((s) => [s.createClmmPool, s.openPositionAct], shallow)
   const { isOpen, onOpen, onClose } = useDisclosure()
   const { isOpen: isLoading, onOpen: onLoading, onClose: offLoading } = useDisclosure()
+  const { isOpen: isSuccessModalOpen, onOpen: onOpenSuccessModal, onClose: onCloseSuccessModal } = useDisclosure()
   const [step, setStep] = useState(0)
   const [baseIn, setBaseIn] = useState(true)
   const [createPoolData, setCreatePoolData] = useState<CreatePoolBuildData | undefined>()
@@ -54,6 +57,7 @@ export default function CreateClmmPool() {
     amount2?: string
     liquidity?: BN
     inputA: boolean
+    isFullRange?: boolean
   }>({
     inputA: true,
     price: ''
@@ -103,7 +107,15 @@ export default function CreateClmmPool() {
   )
 
   const handleStep2Confirm = useEvent(
-    (props: { price: string; tickLower: number; tickUpper: number; priceLower: string; priceUpper: string; startTime?: number }) => {
+    (props: {
+      price: string
+      tickLower: number
+      tickUpper: number
+      priceLower: string
+      priceUpper: string
+      startTime?: number
+      isFullRange?: boolean
+    }) => {
       stepsRef.current?.goToNext()
       currentCreateInfo.current = {
         ...currentCreateInfo.current,
@@ -166,7 +178,9 @@ export default function CreateClmmPool() {
         baseAmount: currentCreateInfo.current.inputA ? mintAAmount : mintBAmount,
         otherAmountMax: currentCreateInfo.current.inputA ? mintBAmount : mintAAmount,
         createPoolBuildData: buildData,
-        onConfirmed: () => routeToPage('pools'),
+        onConfirmed: () => {
+          onOpenSuccessModal()
+        },
         onFinally: () => setIsTxSending(false)
       })
     })
@@ -312,6 +326,11 @@ export default function CreateClmmPool() {
           priceRange={[currentCreateInfo.current.priceLower || '2', currentCreateInfo.current.priceUpper || '3']}
         />
       ) : null}
+      {currentCreateInfo.current.isFullRange ? (
+        <CreateSuccessWithLockModal isOpen={isSuccessModalOpen} onClose={onCloseSuccessModal} />
+      ) : (
+        <CreateSuccessModal isOpen={isSuccessModalOpen} onClose={onCloseSuccessModal} />
+      )}
     </>
   )
 }

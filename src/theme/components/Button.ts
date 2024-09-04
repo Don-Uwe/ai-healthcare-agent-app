@@ -137,6 +137,23 @@ export const Button = {
       '&:disabled:disabled': {
         opacity: '0.5'
       }
+    },
+    danger: {
+      background: colors.textPink,
+      color: colors.buttonSolidText,
+      _hover: {
+        opacity: '0.9',
+        background: colors.textPink
+      },
+      _active: {
+        filter: 'brightness(0.7)',
+        opacity: '0.9',
+        background: colors.textPink
+      },
+      '&:disabled:disabled': {
+        opacity: '0.5',
+        background: colors.textPink
+      }
     }
   }
 }

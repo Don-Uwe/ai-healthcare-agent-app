@@ -10,17 +10,20 @@ import { Box, Flex, Text } from '@chakra-ui/react'
 import { ClmmPositionItemsCard } from './components/Clmm/ClmmPositionItemsCard'
 import { openCache } from './components/Clmm/ClmmPositionAccountItem'
 import { ApiV3PoolInfoConcentratedItem } from '@raydium-io/raydium-sdk-v2'
+import { ClmmLockInfo } from '@/hooks/portfolio/clmm/useClmmLockPosition'
 
 const ClmmMyPositionTabContent = memo(
   ({
     isLoading,
     clmmBalanceInfo,
+    lockInfo,
     refreshTag,
     setNoRewardClmmPos
   }: {
     isLoading: boolean
     refreshTag: number
     clmmBalanceInfo: ClmmDataWithUpdateFn
+    lockInfo: ClmmLockInfo
     setNoRewardClmmPos: (val: string, isDelete?: boolean) => void
   }) => {
     const { t } = useTranslation()
@@ -59,6 +62,7 @@ const ClmmMyPositionTabContent = memo(
               poolId={data[0]}
               positions={data[1]}
               poolInfo={formattedDataMap[data[0]]}
+              lockInfo={lockInfo[data[0]]}
               initRpcPoolData={
                 dataMap[data[0]]
                   ? {

@@ -72,7 +72,9 @@
     "app_version_available": "New version available",
     "refresh_update": "Refresh the page to update and use the app.",
     "refresh": "Refresh",
-    "update_later": "Update later"
+    "update_later": "Update later",
+    "note": "Note:",
+    "got_it": "Got it"
   },
   "button": {
     "deposit": "Deposit",
@@ -336,24 +338,43 @@
     "yield_asc": "Yield (asc)",
     "default": "default",
     "keep_my_position_open": "Keep my position open",
-    "keep_my_position_open_tip": "You can remove all your tokens and still keep your position open in order to  add position seamless next time."
+    "keep_my_position_open_tip": "You can remove all your tokens and still keep your position open in order to  add position seamless next time.",
+    "lock_liquidity": "Lock Liquidity",
+    "lock_my_liquidity": "Lock my liquidity",
+    "locked_percent": "{{percent}} permanently locked",
+    "locked_positions": "Locked positions",
+    "locked_positions_tip_info": "You previously permanently locked the NFT for this position, however trading fees earned are still fully claimable.",
+    "lock_title": "Burn/Lock Liquidity for CLMM position",
+    "lock_desc": "Are you sure you want to <0>permanently</0> lock/burn liquidity? You will be unable to access or withdraw underlying position assets, only <1>trading fees earned will remain claimable</1>.",
+    "nft_mint": "NFT Mint:",
+    "lock_liquidity_permanently": "Lock Liquidity Permanently?",
+    "pool_position_nft": " position NFT:",
+    "lock_agree_text": "By confirming below, I agree to permanently lock liquidity. I understand access to the underlying assets will be lost forever.",
+    "lock_to_confirm": "To confirm, type the following:",
+    "lock_confirm_text": "I confirm,permanently lock my liquidity forever",
+    "confirm_lock_liquidity_permanently": "Confirm, Lock Liquidity Permanently"
   },
   "create_pool": {
-    "modal_title": "I want to start from...",
-    "modal_tab_label": "Pool type",
+    "modal_title": "I want to...",
     "modal_tab_standard_amm": "Standard AMM",
     "modal_tab_concentrated": "Concentrated Liquidity",
-    "modal_section_header_pool": "Creating a pool",
-    "modal_section_header_pool_desc": "Create a liquidity pool for any token pair. For detailed instructions, read the guide for <0>CLMM</0> or <1>Standard</1> pools.",
+    "modal_section_header_pool": "Create pool",
+    "modal_section_header_pool_desc": "Select pool type to create a pool for any token pair. Read the guide for <0>CLMM</0> or <1>Standard</1> pools.",
     "modal_section_header_pool_desc_link": "detailed guide",
     "modal_section_header_farm": "Creating a farm",
-    "modal_section_header_farm_desc": "A farm can be created for any pool that is already live. For detailed instructions, read the guide for <0>CLMM</0> or <1>Standard</1> farms.",
+    "modal_section_header_farm_desc": "Create a farm for any live pool. Read the instructions for <0>CLMM</0> or <1>Standard</1> farms.",
+    "modal_section_header_lock": "Burn & Earn (CLMM)",
+    "modal_section_header_lock_desc": "Permanently burn/lock liquidity for an existing position. Trading fees remain claimable. <0>Learn more</0>",
     "clmm_please_note": "Please Note",
     "clmm_please_note_des": "This tool is for advanced users. For detailed instructions, read the guide for <0>CLMM</0> or <1>Standard</1> pools.",
     "clmm_create_pool_note_step1": "First, select tokens & fee tier",
     "clmm_create_pool_note_step2": "Next, set initial token price & position price range",
     "clmm_create_pool_note_step3": "Last, please enter token deposit amount",
-    "pool_existed": "Pool existed"
+    "pool_existed": "Pool existed",
+    "clmm_create_pool_success_title": "Pool created & position added successfully!",
+    "clmm_create_pool_success_content": "Your pool may take a few minutes before appearing in the pool list. Please kindly wait and refresh the page, and then search the pool list for your pool before attempting to create a farm.",
+    "clmm_create_pool_fullrange_success_title": "Pool and position created successfully",
+    "clmm_create_pool_fullrange_success_content": "Token creators can now burn/lock liquidity permanently while trading fees earned remain fully claimable."
   },
   "farm": {
     "create": "Create Farm",
@@ -417,7 +438,8 @@
     "low_liquidity_desc": "Your deposit is large relative to current liquidity in the pool, which may lead to arbitrage on your position. If the quoted price is far from market price, this risk may be magnified.",
     "timebasis_day_label": "24 hour ",
     "timebasis_week_label": "7 day ",
-    "timebasis_month_label": "1 month "
+    "timebasis_month_label": "1 month ",
+    "type_confirm_text": "Type confirmation text here"
   },
   "migrate_clmm": {
     "title": "Migrate to Concentrated Liquidity pool",
@@ -655,7 +677,9 @@
     "create_farm": "Create new farm",
     "create_clmm_farm_desc": "ID: {{poolId}}",
     "harvest_rewards": "Harvested Rewards",
-    "harvest_rewards_desc": "Harvested: <sub>{{symbol}}</sub>"
+    "harvest_rewards_desc": "Harvested: <sub>{{symbol}}</sub>",
+    "lock_position": "Lock Position",
+    "position_locked": "Position <sub>{{position}}</sub> locked"
   },
   "create_standard_pool": {
     "step_1": "Step 1",

@@ -30,7 +30,7 @@ import { useRouter } from 'next/router'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 
-type CreateTarget = 'standard-amm' | 'concentrated-liquidity' | 'standard-farm'
+type CreateTarget = 'standard-amm' | 'concentrated-liquidity' | 'standard-farm' | 'lock'
 
 export function CreatePoolEntryDialog({
   isOpen,
@@ -45,9 +45,23 @@ export function CreatePoolEntryDialog({
   const [type, setType] = useState<CreateTarget>(defaultType)
 
   const onConfirm = useCallback(() => {
-    const isStandardAmm = type === 'standard-amm'
-    const isStandardFarm = type === 'standard-farm'
-    const to = isStandardAmm ? '/liquidity/create-pool' : isStandardFarm ? '/liquidity/create-farm' : '/clmm/create-pool'
+    let to = ''
+    switch (type) {
+      case 'standard-amm':
+        to = '/liquidity/create-pool'
+        break
+      case 'concentrated-liquidity':
+        to = '/clmm/create-pool'
+        break
+      case 'standard-farm':
+        to = '/liquidity/create-farm'
+        break
+      case 'lock':
+        to = '/clmm/lock'
+        break
+      default:
+        break
+    }
     router.push({
       pathname: to,
       query: {
@@ -147,14 +161,16 @@ export function CreatePoolEntryDialogBody({ type, onChange }: { type: CreateTarg
       <CreateBlock
         title={t('create_pool.modal_section_header_pool')}
         description={
-          <Trans i18nKey="create_pool.modal_section_header_pool_desc">
-            <Link href="https://docs.raydium.io/raydium/pool-creation/creating-a-clmm-pool-and-farm" isExternal>
-              CLMM
-            </Link>
-            <Link href="https://docs.raydium.io/raydium/pool-creation/creating-a-standard-amm-pool" isExternal>
-              Standard
-            </Link>
-          </Trans>
+          type === 'concentrated-liquidity' || type === 'standard-amm' ? (
+            <Trans i18nKey="create_pool.modal_section_header_pool_desc">
+              <Link href="https://docs.raydium.io/raydium/pool-creation/creating-a-clmm-pool-and-farm" isExternal>
+                CLMM
+              </Link>
+              <Link href="https://docs.raydium.io/raydium/pool-creation/creating-a-standard-amm-pool" isExternal>
+                Standard
+              </Link>
+            </Trans>
+          ) : null
         }
         selected={type === 'concentrated-liquidity' || type === 'standard-amm'}
         renderPoolType={
@@ -179,19 +195,35 @@ export function CreatePoolEntryDialogBody({ type, onChange }: { type: CreateTarg
         onClick={() => onChange('concentrated-liquidity')}
       />
       <CreateBlock
-        title={t('create_pool.modal_section_header_farm')}
+        title={t('farm.create')}
         description={
-          <Trans i18nKey="create_pool.modal_section_header_farm_desc">
-            <Link href="https://docs.raydium.io/raydium/pool-creation/creating-a-clmm-pool-and-farm" isExternal>
-              CLMM
-            </Link>
-            <Link href="https://docs.raydium.io/raydium/pool-creation/creating-a-standard-amm-pool/creating-an-ecosystem-farm" isExternal>
-              Standard
-            </Link>
-          </Trans>
+          type === 'standard-farm' ? (
+            <Trans i18nKey="create_pool.modal_section_header_farm_desc">
+              <Link href="https://docs.raydium.io/raydium/pool-creation/creating-a-clmm-pool-and-farm" isExternal>
+                CLMM
+              </Link>
+              <Link href="https://docs.raydium.io/raydium/pool-creation/creating-a-standard-amm-pool/creating-an-ecosystem-farm" isExternal>
+                Standard
+              </Link>
+            </Trans>
+          ) : null
         }
         selected={type === 'standard-farm'}
         onClick={() => onChange('standard-farm')}
+      />
+      <CreateBlock
+        title={t('create_pool.modal_section_header_lock')}
+        description={
+          type === 'lock' ? (
+            <Trans i18nKey="create_pool.modal_section_header_lock_desc">
+              <Link href="https://docs.raydium.io/raydium/pool-creation/creating-a-clmm-pool-and-farm/burn-&-earn" isExternal>
+                Learn more
+              </Link>
+            </Trans>
+          ) : null
+        }
+        selected={type === 'lock'}
+        onClick={() => onChange('lock')}
       />
     </Flex>
   )
@@ -225,14 +257,7 @@ function CreateBlock(props: {
         {props.description}
       </Box>
 
-      {props.renderPoolType && (
-        <Box mt={2}>
-          <Text fontSize={'sm'} mb={2}>
-            {t('create_pool.modal_tab_label')}:
-          </Text>
-          {props.renderPoolType()}
-        </Box>
-      )}
+      {props.renderPoolType && <Box mt={4}>{props.renderPoolType()}</Box>}
     </Box>
   )
 }

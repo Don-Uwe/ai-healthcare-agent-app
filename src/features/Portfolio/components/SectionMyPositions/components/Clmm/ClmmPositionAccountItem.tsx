@@ -24,6 +24,7 @@ type ClmmPositionAccountItemProps = {
   position: PositionWithUpdateFn
   baseIn: boolean
   initRpcPoolData?: RpcPoolData
+  isLock?: boolean
   setNoRewardClmmPos: (val: string, isDelete?: boolean) => void
   onSubscribe: () => void
 }
@@ -35,6 +36,7 @@ const realTimeRefresh = 15 * 1000
 export default function ClmmPositionAccountItem({
   poolInfo,
   position,
+  isLock,
   baseIn,
   initRpcPoolData,
   setNoRewardClmmPos,
@@ -42,6 +44,7 @@ export default function ClmmPositionAccountItem({
 }: ClmmPositionAccountItemProps) {
   const isMobile = useAppStore((s) => s.isMobile)
   const removeLiquidityAct = useClmmStore((s) => s.removeLiquidityAct)
+  const harvestLockPositionAct = useClmmStore((s) => s.harvestLockPositionAct)
   const closePositionAct = useClmmStore((s) => s.closePositionAct)
 
   const { isOpen, onToggle } = useDisclosure({ defaultIsOpen: !!openCache.get(position.nftMint.toBase58()) })
@@ -96,6 +99,16 @@ export default function ClmmPositionAccountItem({
   })
   const handleHarvest = useEvent(({ onSend, onFinally }: { onSend?: () => void; onFinally?: () => void }) => {
     onSend?.()
+    if (isLock) {
+      harvestLockPositionAct({
+        poolInfo,
+        position,
+        needRefresh: true,
+        onFinally
+      })
+      return
+    }
+
     removeLiquidityAct({
       poolInfo,
       position,
@@ -151,11 +164,14 @@ export default function ClmmPositionAccountItem({
     <Box>
       <ClmmPositionAccountItemFace
         isViewOpen={isOpen}
+        isLock={!!isLock}
         poolInfo={poolInfo}
         poolLiquidity={initRpcPoolData?.poolInfo.liquidity}
         tokenPrices={tokenPrices}
         position={position}
         baseIn={baseIn}
+        hasReward={!isEmptyReward}
+        onHarvest={handleHarvest}
         onClickCloseButton={handleClosePosition}
         onClickMinusButton={handleRemoveOpen}
         onClickPlusButton={handleAddOpen}

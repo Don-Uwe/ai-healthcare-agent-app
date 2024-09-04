@@ -54,6 +54,9 @@ export type PageRouteConfigs = {
   'create-farm': {
     queryProps?: MayFunction<Record<string, never>, [{ currentPageQuery: ParsedUrlQuery }]>
   }
+  lock: {
+    queryProps?: MayFunction<PoolPageQuery, [{ currentPageQuery: ParsedUrlQuery }]>
+  }
 }
 
 const pageRoutePathnames: Record<keyof PageRouteConfigs, string> = {
@@ -65,7 +68,8 @@ const pageRoutePathnames: Record<keyof PageRouteConfigs, string> = {
   pools: '/liquidity-pools',
   'increase-liquidity': '/liquidity/increase',
   'decrease-liquidity': '/liquidity/decrease',
-  'create-farm': '/liquidity/create-farm'
+  'create-farm': '/liquidity/create-farm',
+  lock: '/clmm/lock'
 }
 
 export type PageRouteName = keyof PageRouteConfigs

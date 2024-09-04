@@ -60,12 +60,15 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
 
   const {
     data: clmmPoolAssets,
+    clmmLockInfo,
     clmmBalanceInfo,
     isLoading: isClmmBalanceLoading,
-    slot: clmmPositionSlot
+    slot: clmmPositionSlot,
+    mutateLockInfo
   } = useClmmPortfolioData({ type: '' })
   const {
     data: clmmData = [],
+    formattedDataMap: formattedClmmDataMap,
     dataMap: clmmDataMap,
     isLoading: isPoolLoading,
     mutate: mutatePoolInfo
@@ -83,15 +86,15 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
 
   const readyList = clmmData.length
     ? Array.from(clmmBalanceInfo.entries()).map(([poolId, positions]) => {
-      return positions.map((position) => {
-        const pool = clmmDataMap[poolId]
-        if (!pool) return null
-        return [
-          getTickArrayAddress({ pool, tickNumber: position.tickLower }),
-          getTickArrayAddress({ pool, tickNumber: position.tickUpper })
-        ]
+        return positions.map((position) => {
+          const pool = clmmDataMap[poolId]
+          if (!pool) return null
+          return [
+            getTickArrayAddress({ pool, tickNumber: position.tickLower }),
+            getTickArrayAddress({ pool, tickNumber: position.tickUpper })
+          ]
+        })
       })
-    })
     : []
   const {
     dataWithId: clmmTickAddressData,
@@ -99,7 +102,10 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
     slot: tickSlot
   } = useFetchMultipleAccountInfo({
     name: 'get clmm position tick',
-    publicKeyList: readyList.flat().flat().filter(i => i !== null) as PublicKey[],
+    publicKeyList: readyList
+      .flat()
+      .flat()
+      .filter((i) => i !== null) as PublicKey[],
     refreshInterval: 60 * 1000 * 10
   })
 
@@ -146,16 +152,16 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
     refreshInterval: 60 * 1000,
     farmInfoList: stakedFarmList.length
       ? Array.from(farmBasedData.values())
-        .filter((f) => f.hasAmount && f.data.length > 0 && !!stakedFarmList.find((s) => f.data.find((d) => d.farmId === s.id)))
-        .map((f) => {
-          const data = stakedFarmList.find((s) => f.data.find((d) => d.farmId === s.id))!
-          return {
-            id: data.id,
-            programId: data.programId,
-            lpMint: data.lpMint,
-            rewardInfos: data.rewardInfos
-          }
-        })
+          .filter((f) => f.hasAmount && f.data.length > 0 && !!stakedFarmList.find((s) => f.data.find((d) => d.farmId === s.id)))
+          .map((f) => {
+            const data = stakedFarmList.find((s) => f.data.find((d) => d.farmId === s.id))!
+            return {
+              id: data.id,
+              programId: data.programId,
+              lpMint: data.lpMint,
+              rewardInfos: data.rewardInfos
+            }
+          })
       : []
   })
   const { data: tokenPrices } = useTokenPrice({
@@ -329,13 +335,14 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
           (acc, cur) =>
             cur?.id
               ? {
-                ...acc,
-                [cur.id]: cur
-              }
+                  ...acc,
+                  [cur.id]: cur
+                }
               : acc,
           {}
         ),
         allPositions: noneZeroPos,
+        lockInfo: clmmLockInfo,
         execute: true,
         onConfirmed: handleRefreshClmm
       })
@@ -407,14 +414,17 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
       (acc, cur) =>
         cur?.id
           ? {
-            ...acc,
-            [cur.id]: cur
-          }
+              ...acc,
+              [cur.id]: cur
+            }
           : acc,
       {}
     ),
     clmmTickAddressData,
+    formattedClmmDataMap,
     updateClmmPendingYield,
+    clmmLockInfo,
+    mutateClmmLockInfo: mutateLockInfo,
 
     totalPendingYield: allClmmPending.add(allFarmPendingReward),
     allClmmPending,

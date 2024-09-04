@@ -63,7 +63,7 @@ interface Props {
   baseIn: boolean
   completed: boolean
   onPriceChange: (props: { price: string }) => void
-  onConfirm: (props: { price: string; startTime?: number } & Required<TickData>) => void
+  onConfirm: (props: { price: string; startTime?: number; isFullRange?: boolean } & Required<TickData>) => void
   onEdit: (step: number) => void
   onSwitchBase: (baseIn: boolean) => void
 }
@@ -572,7 +572,8 @@ export default function SetPriceAndRange({
             priceUpper: dataSource.priceUpper!,
             tickLower: dataSource.tickLower!,
             tickUpper: dataSource.tickUpper!,
-            startTime: startDate ? dayjs(startDate).valueOf() / 1000 : undefined
+            startTime: startDate ? dayjs(startDate).valueOf() / 1000 : undefined,
+            isFullRange: isFullRange
           })
         }}
       >
