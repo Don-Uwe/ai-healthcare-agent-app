@@ -178,10 +178,9 @@ export const useSwapStore = createStore<SwapStore>(
         const checkSendTx = async (): Promise<void> => {
           if (!signedTxs[i]) return
           const tx = signedTxs[i]
-          const txId =
-            tx instanceof Transaction
-              ? await connection.sendRawTransaction(tx.serialize(), { skipPreflight: true, maxRetries: 0 })
-              : await connection.sendTransaction(tx, { skipPreflight: true, maxRetries: 0 })
+          const txId = !isV0Tx
+            ? await connection.sendRawTransaction(tx.serialize(), { skipPreflight: true, maxRetries: 0 })
+            : await connection.sendTransaction(tx as VersionedTransaction, { skipPreflight: true, maxRetries: 0 })
           processedId.push({ txId, signedTx: tx, status: 'sent' })
 
           if (signedTxs.length === 1) {
