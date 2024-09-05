@@ -51,6 +51,7 @@ type DetailProps = {
   totalPendingYield: string
   baseIn: boolean
   hasReward?: boolean
+  isLock?: boolean
   rewardInfos: { mint: ApiV3Token; amount: string; amountUSD: string }[]
   onHarvest: (props: { onSend?: () => void; onFinally?: () => void }) => void
   onClickCloseButton: (props: { onSend?: () => void; onFinally?: () => void }) => void
@@ -72,6 +73,7 @@ export default function ClmmPositionAccountItemDetailMobileDrawer({
   onTimeBasisChange,
   hasReward,
   rewardInfos,
+  isLock,
   onHarvest,
   onClickCloseButton,
   onClickMinusButton,
@@ -267,26 +269,28 @@ export default function ClmmPositionAccountItemDetailMobileDrawer({
               pendingYield={formatCurrency(totalPendingYield.toString(), { symbol: '$', decimalPlaces: 2 })}
               onHarvest={handleHarvest}
             />
-            <HStack w="full" spacing={4}>
-              {position.liquidity.isZero() ? (
-                <CloseButton isLoading={isCloseLoading} onClick={handleClose} />
-              ) : (
-                <MinusButton
+            {isLock ? null : (
+              <HStack w="full" spacing={4}>
+                {position.liquidity.isZero() ? (
+                  <CloseButton isLoading={isCloseLoading} onClick={handleClose} />
+                ) : (
+                  <MinusButton
+                    isLoading={false}
+                    onClick={() => {
+                      onClickViewTrigger()
+                      onClickMinusButton()
+                    }}
+                  />
+                )}
+                <PlusButton
                   isLoading={false}
                   onClick={() => {
                     onClickViewTrigger()
-                    onClickMinusButton()
+                    onClickPlusButton()
                   }}
                 />
-              )}
-              <PlusButton
-                isLoading={false}
-                onClick={() => {
-                  onClickViewTrigger()
-                  onClickPlusButton()
-                }}
-              />
-            </HStack>
+              </HStack>
+            )}
           </VStack>
         </DrawerBody>
         <DrawerFooter>

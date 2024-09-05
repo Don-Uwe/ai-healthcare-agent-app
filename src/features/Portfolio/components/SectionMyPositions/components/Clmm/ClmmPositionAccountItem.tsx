@@ -181,6 +181,7 @@ export default function ClmmPositionAccountItem({
         isOpen ? (
           <ClmmPositionAccountItemDetailMobileDrawer
             hasReward={!isEmptyReward}
+            isLock={!!isLock}
             onHarvest={handleHarvest}
             poolInfo={poolInfo}
             position={position}
