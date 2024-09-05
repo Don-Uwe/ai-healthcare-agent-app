@@ -73,7 +73,7 @@ function LiquidityLockModal({
         <ModalCloseButton />
         <ModalBody mt={6}>
           <Text color={colors.lightPurple} lineHeight="20px">
-            <Trans i18nKey="liquidity.lock_desc">
+            <Trans i18nKey="liquidity.lock_desc4">
               <Text as="span" fontWeight="bold"></Text>
               <Text as="span" fontWeight="bold"></Text>
             </Trans>

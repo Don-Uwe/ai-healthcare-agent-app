@@ -1,4 +1,4 @@
-import { Button, Flex, Grid, GridItem, HStack, Skeleton, Text, useDisclosure } from '@chakra-ui/react'
+import { Box, Button, Flex, Grid, GridItem, HStack, Skeleton, Text, useDisclosure } from '@chakra-ui/react'
 import { useState, useCallback, useMemo, useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import ChevronLeftIcon from '@/icons/misc/ChevronLeftIcon'
@@ -94,12 +94,15 @@ export default function Lock() {
             <Text fontSize="xl" fontWeight="medium" lineHeight="26px" mb={3}>
               {t('liquidity.lock_title')}
             </Text>
-            <Text color={colors.lightPurple} fontSize="md" lineHeight="20px" mb={7}>
-              <Trans i18nKey="liquidity.lock_desc">
-                <Text as="span" fontWeight="bold"></Text>
-                <Text as="span" fontWeight="bold"></Text>
-              </Trans>
-            </Text>
+            <Box color={colors.lightPurple} fontSize="md" lineHeight="20px" mb={7}>
+              <Text mb={7}>{t('liquidity.lock_desc1')}</Text>
+              <Text mb={7}>
+                <Trans i18nKey="liquidity.lock_desc2">
+                  <Text as="span" fontWeight="bold"></Text>
+                </Trans>
+              </Text>
+              <Text>{t('liquidity.lock_desc3')}</Text>
+            </Box>
             <Flex flexDirection="column" gap={3} mb={9}>
               {isLoading ? (
                 <Flex direction={['column']} gap={3}>
