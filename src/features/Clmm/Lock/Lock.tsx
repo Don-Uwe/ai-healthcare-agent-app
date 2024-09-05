@@ -1,4 +1,4 @@
-import { Button, Flex, Grid, GridItem, HStack, Text, useDisclosure } from '@chakra-ui/react'
+import { Button, Flex, Grid, GridItem, HStack, Skeleton, Text, useDisclosure } from '@chakra-ui/react'
 import { useState, useCallback, useMemo, useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import ChevronLeftIcon from '@/icons/misc/ChevronLeftIcon'
@@ -15,7 +15,7 @@ export default function Lock() {
   const { t } = useTranslation()
   const { isOpen, onOpen, onClose } = useDisclosure()
 
-  const { clmmBalanceInfo, formattedClmmDataMap, clmmLockInfo, mutateClmmLockInfo } = useAllPositionInfo({ shouldFetch: false })
+  const { clmmBalanceInfo, formattedClmmDataMap, clmmLockInfo, mutateClmmLockInfo, isLoading } = useAllPositionInfo({ shouldFetch: false })
   const { data: tokenPrices } = useTokenPrice({
     mintList: Object.values(formattedClmmDataMap)
       .map((pool) => [pool.mintA.address, pool.mintB.address])
@@ -101,22 +101,31 @@ export default function Lock() {
               </Trans>
             </Text>
             <Flex flexDirection="column" gap={3} mb={9}>
-              {allPosition.map((position) => {
-                const positionNft = position.nftMint.toBase58()
-                const poolId = position.poolId.toBase58()
-                const poolInfo = formattedClmmDataMap[poolId]
-                if (!poolInfo || clmmLockInfo[poolId]?.[positionNft]) return null
-                return (
-                  <LiquidityItem
-                    key={positionNft}
-                    position={position}
-                    poolInfo={poolInfo}
-                    tokenPrices={tokenPrices}
-                    isSelected={selectedPosition?.nftMint.toBase58() === positionNft}
-                    onClick={() => handleSelectPosition(position)}
-                  />
-                )
-              })}
+              {isLoading ? (
+                <Flex direction={['column']} gap={3}>
+                  <Skeleton borderRadius="8px" height={['150px', '70px']} />
+                  <Skeleton borderRadius="8px" height={['150px', '70px']} />
+                  <Skeleton borderRadius="8px" height={['150px', '70px']} />
+                  <Skeleton borderRadius="8px" height={['150px', '70px']} />
+                </Flex>
+              ) : (
+                allPosition.map((position) => {
+                  const positionNft = position.nftMint.toBase58()
+                  const poolId = position.poolId.toBase58()
+                  const poolInfo = formattedClmmDataMap[poolId]
+                  if (!poolInfo || clmmLockInfo[poolId]?.[positionNft]) return null
+                  return (
+                    <LiquidityItem
+                      key={positionNft}
+                      position={position}
+                      poolInfo={poolInfo}
+                      tokenPrices={tokenPrices}
+                      isSelected={selectedPosition?.nftMint.toBase58() === positionNft}
+                      onClick={() => handleSelectPosition(position)}
+                    />
+                  )
+                })
+              )}
             </Flex>
             <Button isDisabled={selectedPosition === null} width="100%" onClick={onOpen}>
               {t('liquidity.lock_liquidity')}

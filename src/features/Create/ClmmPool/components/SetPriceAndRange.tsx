@@ -162,6 +162,7 @@ export default function SetPriceAndRange({
   )
 
   const handleLeftRangeBlur = useEvent((val: string) => {
+    if (val === '') return
     if (
       !tempCreatedPool?.id ||
       new Decimal(tickPriceRef.current.priceLower || 0).toDecimalPlaces(Math.max(decimals, 8), Decimal.ROUND_FLOOR).eq(val)
@@ -177,6 +178,7 @@ export default function SetPriceAndRange({
     }
   })
   const handleRightRangeBlur = useEvent((val: string) => {
+    if (val === '') return
     if (
       !tempCreatedPool?.id ||
       new Decimal(tickPriceRef.current.priceUpper || 0).toDecimalPlaces(Math.max(decimals, 8), Decimal.ROUND_FLOOR).eq(val)
