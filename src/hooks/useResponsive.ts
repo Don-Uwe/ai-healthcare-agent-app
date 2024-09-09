@@ -25,7 +25,7 @@ const useResponsive = (): BreakpointChecks => {
     setIsClient(typeof window !== 'undefined')
   }, [])
 
-  if (!isClient) {
+  if (!isClient && breakPoints) {
     return breakPoints
   }
 
