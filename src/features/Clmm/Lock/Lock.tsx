@@ -103,7 +103,7 @@ export default function Lock() {
               </Text>
               <Text>{t('liquidity.lock_desc3')}</Text>
             </Box>
-            <Flex flexDirection="column" gap={3} mb={9}>
+            <Flex flexDirection="column" gap={3} mb={7}>
               {isLoading ? (
                 <Flex direction={['column']} gap={3}>
                   <Skeleton borderRadius="8px" height={['150px', '70px']} />
@@ -111,6 +111,10 @@ export default function Lock() {
                   <Skeleton borderRadius="8px" height={['150px', '70px']} />
                   <Skeleton borderRadius="8px" height={['150px', '70px']} />
                 </Flex>
+              ) : allPosition.length === 0 ? (
+                <Box textAlign="center" fontSize="sm" color={colors.lightPurple} bg={colors.backgroundDark} rounded="md" py={7}>
+                  {t('liquidity.lock_clmm_positions_empty')}
+                </Box>
               ) : (
                 allPosition.map((position) => {
                   const positionNft = position.nftMint.toBase58()

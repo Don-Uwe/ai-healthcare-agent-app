@@ -1,6 +1,8 @@
 import {
   Box,
   Center,
+  CircularProgress,
+  CircularProgressLabel,
   Flex,
   Grid,
   GridItem,
@@ -30,6 +32,7 @@ import ChartInfoIcon from '@/icons/misc/ChartInfoIcon'
 import SwapPoolItemIcon from '@/icons/misc/SwapPoolItemIcon'
 import OpenBookIcon from '@/icons/misc/OpenBookIcon'
 import PulseIcon from '@/icons/misc/PulseIcon'
+import LiquidityLockIcon from '@/icons/misc/LiquidityLockIcon'
 import QuestionCircleIcon from '@/icons/misc/QuestionCircleIcon'
 import StarIcon from '@/icons/misc/StarIcon'
 import { useAppStore } from '@/store'
@@ -226,9 +229,33 @@ export default function PoolListItem({
           </Flex>
 
           <Desktop>
-            <Text as={'span'} fontSize={['sm', 'lg']} textAlign={'right'}>
-              {formatCurrency(pool.tvl, { symbol: '$', decimalPlaces: 0 })}
-            </Text>
+            <HStack justify={'flex-end'}>
+              <Text fontSize={['sm', 'lg']} textAlign={'right'}>
+                {formatCurrency(pool.tvl, { symbol: '$', decimalPlaces: 0 })}
+              </Text>
+              <Box minWidth="30px">
+                {pool.type === 'Concentrated' && pool.burnPercent > 0 && (
+                  <Tooltip
+                    label={t('liquidity.total_locked_position', {
+                      percent: formatToRawLocaleStr(toPercentString(pool.burnPercent, { alreadyPercented: true }))
+                    })}
+                  >
+                    <CircularProgress
+                      size="22px"
+                      thickness="8px"
+                      value={pool.burnPercent}
+                      trackColor="rgba(191, 210, 255, 0.3)"
+                      color={colors.lightPurple}
+                      ml={2}
+                    >
+                      <CircularProgressLabel display="flex" justifyContent="center">
+                        <LiquidityLockIcon />
+                      </CircularProgressLabel>
+                    </CircularProgress>
+                  </Tooltip>
+                )}
+              </Box>
+            </HStack>
           </Desktop>
 
           <Text as={'span'} fontSize={['sm', 'lg']} textAlign={'right'}>

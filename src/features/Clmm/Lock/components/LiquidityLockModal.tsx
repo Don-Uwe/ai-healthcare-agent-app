@@ -25,6 +25,7 @@ import { FormattedPoolInfoConcentratedItem } from '@/hooks/pool/type'
 import useClmmBalance, { ClmmPosition } from '@/hooks/portfolio/clmm/useClmmBalance'
 import { TokenPrice } from '@/hooks/token/useTokenPrice'
 import { useClmmStore } from '@/store'
+import { routeToPage } from '@/utils/routeTools'
 
 function LiquidityLockModal({
   isOpen,
@@ -172,6 +173,7 @@ function LiquidityLockModal({
               color={colors.lightPurple}
               fontSize="md"
               fontWeight="medium"
+              textAlign="center"
               sx={{
                 _placeholder: {
                   textAlign: 'center'
@@ -194,7 +196,8 @@ function LiquidityLockModal({
                 position,
                 onConfirmed: () => {
                   handleCloseModal()
-                  setTimeout(() => onRefresh(), 1000)
+                  routeToPage('portfolio', { queryProps: { section: 'my-positions', position_tab: 'concentrated' } })
+                  // setTimeout(() => onRefresh(), 1000)
                 }
               })
             }}
