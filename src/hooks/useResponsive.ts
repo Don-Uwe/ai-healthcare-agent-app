@@ -1,14 +1,21 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, createContext, useContext } from 'react'
 import { useBreakpointValue } from '@chakra-ui/react'
 
-interface ResponsiveState {
+export const MatchBreakpointsContext = createContext<BreakpointChecks>({
+  isMobile: false,
+  isTablet: false,
+  isDesktop: false
+})
+
+export type BreakpointChecks = {
   isMobile: boolean
   isTablet: boolean
   isDesktop: boolean
 }
 
-const useResponsive = (): ResponsiveState => {
+const useResponsive = (): BreakpointChecks => {
   const [isClient, setIsClient] = useState(false)
+  const breakPoints = useContext(MatchBreakpointsContext)
 
   const isMobile = useBreakpointValue({ base: true, sm: false }) || false
   const isTablet = useBreakpointValue({ sm: true, md: false }) || false
@@ -19,7 +26,7 @@ const useResponsive = (): ResponsiveState => {
   }, [])
 
   if (!isClient) {
-    return { isMobile: false, isTablet: false, isDesktop: false }
+    return breakPoints
   }
 
   return { isMobile, isTablet, isDesktop }

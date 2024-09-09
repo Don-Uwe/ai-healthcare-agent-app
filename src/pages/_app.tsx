@@ -6,6 +6,8 @@ import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import { useMemo } from 'react'
 import Decimal from 'decimal.js'
+import { getSelectorsByUserAgent } from 'react-device-detect'
+import { BreakpointChecks, MatchBreakpointsContext } from '@/hooks/useResponsive'
 import { isLocal } from '../utils/common'
 
 import i18n from '../i18n'
@@ -25,7 +27,7 @@ const OVERFLOW_HIDDEN_PATH = ['/liquidity-pools']
 
 Decimal.set({ precision: 1e3 })
 
-const MyApp = ({ Component, pageProps, lng, ...props }: AppProps & { lng: string }) => {
+const MyApp = ({ Component, pageProps, lng, breakPoints, ...props }: AppProps & { lng: string; breakPoints: BreakpointChecks }) => {
   const { pathname } = useRouter()
 
   const [onlyContent, overflowHidden] = useMemo(
@@ -60,15 +62,18 @@ const MyApp = ({ Component, pageProps, lng, ...props }: AppProps & { lng: string
         <title>{pageProps?.title ? `${pageProps.title} Raydium` : 'Raydium'}</title>
       </Head>
       <DynamicProviders>
-        <DynamicContent {...props}>
-          {onlyContent ? (
-            <Component {...pageProps} />
-          ) : (
-            <DynamicAppNavLayout overflowHidden={overflowHidden}>
+        <MatchBreakpointsContext.Provider value={breakPoints}>
+          <DynamicContent {...props}>
+            {onlyContent ? (
               <Component {...pageProps} />
-            </DynamicAppNavLayout>
-          )}
-        </DynamicContent>
+            ) : (
+              <DynamicAppNavLayout overflowHidden={overflowHidden}>
+                <Component {...pageProps} />
+              </DynamicAppNavLayout>
+            )}
+          </DynamicContent>
+        </MatchBreakpointsContext.Provider>
+        ;
       </DynamicProviders>
     </>
   )
@@ -78,11 +83,20 @@ MyApp.getInitialProps = async (appContext: AppContext) => {
   if (isClient()) return {}
   try {
     const ctx = await App.getInitialProps(appContext)
+    const userAgent = appContext.ctx.req?.headers['user-agent'] || ''
+    let breakPoints = {
+      isMobile: false,
+      isTablet: false,
+      isDesktop: false
+    }
+    if (typeof userAgent === 'string' && userAgent.length > 0) {
+      breakPoints = getSelectorsByUserAgent(userAgent)
+    }
     let lng = getCookie('i18nextLng', { req: appContext.ctx.req, res: appContext.ctx.res }) as string
     lng = lng || 'en'
     i18n.changeLanguage(lng)
 
-    return ctx
+    return { ...ctx, breakPoints }
   } catch (err) {
     return {}
   }

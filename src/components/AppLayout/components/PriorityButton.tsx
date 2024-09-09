@@ -4,6 +4,7 @@ import { Flex, Button, Text } from '@chakra-ui/react'
 import { colors } from '@/theme/cssVariables'
 import { useAppStore, FEE_KEY, PriorityLevel, PriorityMode } from '@/store/useAppStore'
 import { useEvent } from '@/hooks/useEvent'
+import useResponsive from '@/hooks/useResponsive'
 import { setStorageItem } from '@/utils/localStorage'
 import { PriorityModalContent } from './PriorityModalContent'
 import PriorityFastIcon from '@/icons/misc/PriorityFastIcon'
@@ -13,7 +14,7 @@ import PriorityFixIcon from '@/icons/misc/PriorityFixIcon'
 
 export function PriorityButton() {
   const { isOpen, onClose, onOpen } = useDisclosure()
-  const isMobile = useAppStore((s) => s.isMobile)
+  const { isMobile } = useResponsive()
   const transactionFee = useAppStore((s) => s.transactionFee)
   const feeConfig = useAppStore((s) => s.feeConfig)
   const priorityLevel = useAppStore((s) => s.priorityLevel)

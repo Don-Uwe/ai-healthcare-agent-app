@@ -25,6 +25,7 @@ import { getMintPriority } from '@/utils/token'
 import Tooltip from '@/components/Tooltip'
 import { MoonpayBuy } from '@/components/Moonpay'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
+import useResponsive from '@/hooks/useResponsive'
 
 export default function Swap() {
   // const { inputMint: cacheInput, outputMint: cacheOutput } = getSwapPairCache()
@@ -33,7 +34,7 @@ export default function Swap() {
   const [isPCChartShown, setIsPCChartShown] = useState<boolean>(true)
   const [isMobileChartShown, setIsMobileChartShown] = useState<boolean>(false)
   const [isChartLeft, setIsChartLeft] = useState<boolean>(true)
-  const isMobile = useAppStore((s) => s.isMobile)
+  const { isMobile } = useResponsive()
   const publicKey = useAppStore((s) => s.publicKey)
   const connected = useAppStore((s) => s.connected)
   const [directionReverse, setDirectionReverse] = useState<boolean>(false)
