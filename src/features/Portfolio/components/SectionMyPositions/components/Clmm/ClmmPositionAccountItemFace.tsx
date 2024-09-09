@@ -10,7 +10,7 @@ import MinusIcon from '@/icons/misc/MinusIcon'
 import PlusIcon from '@/icons/misc/PlusIcon'
 import { useAppStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
-import toPercentString from '@/utils/numberish/toPercentString'
+import { toAPRPercent } from '@/features/Pools/util'
 import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
 import { TokenPrice } from '@/hooks/token/useTokenPrice'
 import { AprKey } from '@/hooks/pool/type'
@@ -172,7 +172,7 @@ export default function ClmmPositionAccountItemFace({
                 {t('field.apr')}
               </Text>
               <Text whiteSpace={'nowrap'} color={colors.textPrimary}>
-                {formatToRawLocaleStr(toPercentString(apr.apr))}
+                {formatToRawLocaleStr(toAPRPercent(apr.apr))}
               </Text>
               <AprMDSwitchWidget color={colors.textSecondary} />
             </HStack>
@@ -262,7 +262,7 @@ export default function ClmmPositionAccountItemFace({
                       {t('field.apr')}
                     </Text>
                     <Text fontSize="sm" color={colors.textPrimary}>
-                      {formatToRawLocaleStr(toPercentString(apr.apr))}
+                      {formatToRawLocaleStr(toAPRPercent(apr.apr))}
                     </Text>
                     <AprMDSwitchWidget color={colors.textSecondary} />
                   </HStack>
