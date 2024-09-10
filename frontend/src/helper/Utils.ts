@@ -1,4 +1,3 @@
-import {Alert, BackHandler} from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import {Article, CategoryType, Podcast} from '../type';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -516,4 +515,105 @@ Advanced Stage: Total dependence of the person on the caregiver for all personal
 
 export const KEYS = {
   LOGIN_STATE:'AUTH_STATE',
+}
+
+export const createHTMLStructure = (
+  title: string, 
+  body:string, 
+  tags:string[], 
+  social_link: string,
+  author:string
+)=>{
+  return (
+`<!DOCTYPE html>
+<html>
+<head>
+<title>${title}</title>
+<style>
+/**
+ * Copyright 2024,UltimateHealth. All rights reserved.
+ */
+body {
+  font-family: Arial, sans-serif;
+}
+
+h1 {
+  color: #00698f;
+}
+
+h2 {
+  color: #008000;
+}
+
+h3 {
+  color: #660066;
+}
+
+h4 {
+  color: #0099CC;
+}
+
+h5 {
+  color: #FF9900;
+}
+
+h6 {
+  color: #663300;
+}
+
+ul {
+  list-style-type: disc;
+}
+
+li {
+  margin-bottom: 10px;
+}
+
+article {
+  width: 80%;
+  margin: 40px auto;
+}
+table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+
+  th {
+    background-color: #f0f0f0;
+  }
+.tag-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.tag-list li {
+  margin-right: 10px;
+}
+
+.tag {
+  color: blue;
+  text-decoration: none;
+}
+</style>
+</head>
+<body>
+${body}
+<hr>
+<ul class="tag-list">
+  ${tags.map((tag) => `<li><a class="tag" href="#">#${tag}</a></li>`).join('')}
+</ul>
+<h3>Author</h3>
+<h4><a href=${social_link}>${author}</a></h4>
+</body>
+`
+  )
 }
