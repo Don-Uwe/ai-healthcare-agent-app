@@ -229,11 +229,11 @@ export default function PoolListItem({
           </Flex>
 
           <Desktop>
-            <HStack justify={'flex-end'}>
+            <HStack justify={'flex-end'} gap={2}>
               <Text fontSize={['sm', 'lg']} textAlign={'right'}>
                 {formatCurrency(pool.tvl, { symbol: '$', decimalPlaces: 0 })}
               </Text>
-              <Box minWidth="30px">
+              <Box minWidth="22px">
                 {pool.type === 'Concentrated' && pool.burnPercent > 0 && (
                   <Tooltip
                     label={t('liquidity.total_locked_position', {
@@ -246,7 +246,6 @@ export default function PoolListItem({
                       value={pool.burnPercent}
                       trackColor="rgba(191, 210, 255, 0.3)"
                       color={colors.lightPurple}
-                      ml={2}
                     >
                       <CircularProgressLabel display="flex" justifyContent="center">
                         <LiquidityLockIcon />

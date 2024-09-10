@@ -44,6 +44,7 @@ export function PoolListHeader({
           cursor="pointer"
           onClick={() => handleClickSort('liquidity')}
           justify="flex-start"
+          pr="30px"
         >
           {t('liquidity.title')}
           {sortKey === POOL_SORT_KEY.liquidity ? <SortUpDownArrow width="12px" height="12px" isDown={Boolean(order)} /> : null}
