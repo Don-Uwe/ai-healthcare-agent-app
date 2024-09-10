@@ -234,7 +234,7 @@ export default function PoolListItem({
                 {formatCurrency(pool.tvl, { symbol: '$', decimalPlaces: 0 })}
               </Text>
               <Box minWidth="22px">
-                {pool.type === 'Concentrated' && pool.burnPercent > 0 && (
+                {pool.type === 'Concentrated' && pool.burnPercent > 5 && (
                   <Tooltip
                     label={t('liquidity.total_locked_position', {
                       percent: formatToRawLocaleStr(toPercentString(pool.burnPercent, { alreadyPercented: true }))
