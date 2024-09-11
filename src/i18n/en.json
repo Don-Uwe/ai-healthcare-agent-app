@@ -806,5 +806,8 @@
     "text4": "By using or accessing this Interface, the Raydium Protocol, or related smart contracts, you represent that you are not located in, incorporated or established in, or a citizen or resident of the Prohibited Jurisdictions. You also represent that you are not subject to sanctions or otherwise designated on any list of prohibited or restricted parties or excluded or denied persons, including but not limited to the lists maintained by the United States' Department of Treasury's Office of Foreign Assets Control, the United Nations Security Council, the European Union or its Member States, or any other government authority.",
     "agree_terms": "Agree to terms",
     "enter_raydium": "Enter Raydium"
+  },
+  "bridge": {
+    "title": "Bridge"
   }
 }

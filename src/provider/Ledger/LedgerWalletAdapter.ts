@@ -75,6 +75,8 @@ export class LedgerWalletAdapter extends BaseSignerWalletAdapter {
 
       let transport: Transport
       try {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         transport = await TransportWebHIDClass.create()
       } catch (error: any) {
         throw new WalletConnectionError(error?.message, error)

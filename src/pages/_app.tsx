@@ -8,7 +8,6 @@ import { useMemo } from 'react'
 import Decimal from 'decimal.js'
 import { getSelectorsByUserAgent } from 'react-device-detect'
 import { BreakpointChecks, MatchBreakpointsContext } from '@/hooks/useResponsive'
-import { isLocal } from '../utils/common'
 
 import i18n from '../i18n'
 import { isClient } from '../utils/common'

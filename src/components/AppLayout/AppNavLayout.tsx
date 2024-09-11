@@ -136,6 +136,8 @@ function AppNavLayout({
                 ? t('common.playground')
                 : pathname === '/staking'
                 ? t('staking.title')
+                : pathname === '/bridge'
+                ? t('bridge.title')
                 : ''}
             </Text>
           </HStack>
@@ -158,8 +160,12 @@ function AppNavLayout({
             </RouteLink> */}
             <Menu size="lg">
               <MenuButton fontSize={'lg'} px={4} py={2}>
-                <Flex align="center" gap={0.5} color={pathname === '/staking' ? colors.textSecondary : colors.textTertiary}>
-                  {pathname === '/staking' ? t('staking.title') : t('common.more')}
+                <Flex
+                  align="center"
+                  gap={0.5}
+                  color={pathname === '/staking' || pathname === '/bridge' ? colors.textSecondary : colors.textTertiary}
+                >
+                  {pathname === '/staking' ? t('staking.title') : pathname === '/bridge' ? t('bridge.title') : t('common.more')}
                   <ChevronDownIcon width={16} height={16} />
                 </Flex>
               </MenuButton>

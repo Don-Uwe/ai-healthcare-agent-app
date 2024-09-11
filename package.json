@@ -75,6 +75,7 @@
     "@types/uuid": "^9.0.6",
     "@typescript-eslint/eslint-plugin": "^5.36.2",
     "@walletconnect/solana-adapter": "^0.0.5",
+    "@wormhole-foundation/wormhole-connect": "^0.3.21",
     "axios": "^1.2.6",
     "bn.js": "^5.2.1",
     "bs58": "^5.0.0",
