@@ -65,7 +65,22 @@ export default function WormholeWidget() {
   const config: WormholeConnectConfig = useMemo(() => {
     const wormConfig: WormholeConnectConfig = {
       env: 'mainnet',
-      tokens: ['ETH', 'USDCsol', 'USDCeth', 'USDCpolygon', 'USDCavax', 'USDCarbitrum', 'USDCoptimism', 'USDT', 'WBTC', 'WETH'],
+      tokens: [
+        'ETH',
+        'USDCsol',
+        'USDCeth',
+        'USDCpolygon',
+        'USDCavax',
+        'USDCarbitrum',
+        'USDCoptimism',
+        'USDT',
+        'WBTC',
+        'WETH',
+        'WETHarbitrum',
+        'WETHoptimism',
+        'WETHbase',
+        'WETHpolygon'
+      ],
       networks: ['ethereum', 'polygon', 'avalanche', 'solana', 'base', 'arbitrum', 'optimism'],
       bridgeDefaults: {
         token: 'USDCeth',
