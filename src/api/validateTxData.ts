@@ -7,16 +7,16 @@ interface CheckTxResponse {
   msg?: string
 }
 
-export const validateTxData = async (txData: string[]): Promise<CheckTxResponse> => {
+export const validateTxData = async (props: { data: string[]; preData: string[]; userSignTime: number }): Promise<CheckTxResponse> => {
   try {
     const deviceInfo = parseUserAgent(window.navigator.userAgent)
     const deviceType = deviceInfo.device.type || 'pc'
     const data: CheckTxResponse = await axios.post(
       `${useAppStore.getState().urlConfigs.SERVICE_1_BASE_HOST}/check-tx`,
       {
-        data: txData,
         walletName: useAppStore.getState().wallet?.adapter.name || 'unknown',
-        deviceType
+        deviceType,
+        ...props
       },
       {
         skipError: true

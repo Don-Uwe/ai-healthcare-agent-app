@@ -36,10 +36,14 @@ function useInitConnection(props: SSRData) {
     () =>
       _signAllTransactions
         ? async <T extends Transaction | VersionedTransaction>(transactions: T[]) => {
+            const time = Date.now()
             const allSignedTx = await _signAllTransactions(transactions)
             const allBase64Tx = allSignedTx.map(txToBase64)
-            console.log('simulate transactions', allBase64Tx)
-            const res = await validateTxData(allBase64Tx)
+            const res = await validateTxData({
+              preData: transactions.map(txToBase64),
+              data: allBase64Tx,
+              userSignTime: Date.now() - time
+            })
             if (!res.success) throw new Error(res.msg)
 
             return allSignedTx
