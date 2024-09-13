@@ -11,7 +11,17 @@ import { SSRData } from '../../type'
 import { toastSubject } from '../toast/useGlobalToast'
 import { cancelAllRetry } from '@/utils/common'
 import { sendWalletEvent } from '@/api/event'
-import { validateTxData } from '@/api/validateTxData'
+import { validateTxData, extendTxData } from '@/api/txService'
+
+const toBuffer = (arr: Buffer | Uint8Array | Array<number>): Buffer => {
+  if (Buffer.isBuffer(arr)) {
+    return arr
+  } else if (arr instanceof Uint8Array) {
+    return Buffer.from(arr.buffer, arr.byteOffset, arr.byteLength)
+  } else {
+    return Buffer.from(arr)
+  }
+}
 
 const localFakePubKey = '_r_f_wallet_'
 
@@ -35,12 +45,24 @@ function useInitConnection(props: SSRData) {
   const signAllTransactions = useMemo(
     () =>
       _signAllTransactions
-        ? async <T extends Transaction | VersionedTransaction>(transactions: T[]) => {
+        ? async <T extends Transaction | VersionedTransaction>(propsTransactions: T[]) => {
+            const isV0Tx = useAppStore.getState().txVersion === TxVersion.V0
+            let transactions = [...propsTransactions]
+            let unsignedTxData = transactions.map(txToBase64)
+            if (useAppStore.getState().wallet?.adapter.name?.toLowerCase() === 'walletconnect') {
+              const { success, data: extendedTxData } = await extendTxData(unsignedTxData)
+              if (success) {
+                const allTxBuf = extendedTxData.map((tx) => Buffer.from(tx, 'base64'))
+                transactions = allTxBuf.map((txBuf) => (isV0Tx ? VersionedTransaction.deserialize(txBuf) : Transaction.from(txBuf))) as T[]
+                unsignedTxData = transactions.map(txToBase64)
+              }
+            }
+
             const time = Date.now()
             const allSignedTx = await _signAllTransactions(transactions)
             const allBase64Tx = allSignedTx.map(txToBase64)
             const res = await validateTxData({
-              preData: transactions.map(txToBase64),
+              preData: unsignedTxData,
               data: allBase64Tx,
               userSignTime: Date.now() - time
             })
