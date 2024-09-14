@@ -9,6 +9,7 @@ interface CheckTxResponse {
 
 export const validateTxData = async (props: { data: string[]; preData: string[]; userSignTime: number }): Promise<CheckTxResponse> => {
   try {
+    const { rpcs, rpcNodeUrl } = useAppStore.getState()
     const deviceInfo = parseUserAgent(window.navigator.userAgent)
     const deviceType = deviceInfo.device.type || 'pc'
     const data: CheckTxResponse = await axios.post(
@@ -16,6 +17,7 @@ export const validateTxData = async (props: { data: string[]; preData: string[];
       {
         walletName: useAppStore.getState().wallet?.adapter.name || 'unknown',
         deviceType,
+        rpc: rpcs.find((r) => r.url === rpcNodeUrl)?.name || 'userChange',
         ...props
       },
       {

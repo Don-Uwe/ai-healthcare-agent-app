@@ -13,16 +13,6 @@ import { cancelAllRetry } from '@/utils/common'
 import { sendWalletEvent } from '@/api/event'
 import { validateTxData, extendTxData } from '@/api/txService'
 
-const toBuffer = (arr: Buffer | Uint8Array | Array<number>): Buffer => {
-  if (Buffer.isBuffer(arr)) {
-    return arr
-  } else if (arr instanceof Uint8Array) {
-    return Buffer.from(arr.buffer, arr.byteOffset, arr.byteLength)
-  } else {
-    return Buffer.from(arr)
-  }
-}
-
 const localFakePubKey = '_r_f_wallet_'
 
 function useInitConnection(props: SSRData) {
