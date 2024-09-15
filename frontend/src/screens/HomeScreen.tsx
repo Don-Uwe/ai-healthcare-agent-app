@@ -20,7 +20,7 @@ import axios from 'axios';
 import {ARTICLE_TAGS_API, BASE_URL} from '../helper/APIUtils';
 import FilterModal from '../components/FilterModal';
 import {BottomSheetModal} from '@gorhom/bottom-sheet';
-import { useQuery } from '@tanstack/react-query';
+import {useQuery} from '@tanstack/react-query';
 import Loader from '../components/Loader';
 
 const HomeScreen = ({navigation}: HomeScreenProps) => {
@@ -50,9 +50,21 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
    * categories in the state while also selecting the first category as the default.
    */
   const getAllCategories = async () => {
+    const token = await retrieveItem(KEYS.USER_TOKEN);
+    if (token == null) {
+      Alert.alert('No token found');
+      return;
+    }
     const {data: categoryData} = await axios.get(
       `${BASE_URL + ARTICLE_TAGS_API}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
     );
+
+    console.log('Category Data', categoryData);
     setArticleCategories(categoryData);
     setSelectedCategory(categoryData[0]?.name);
   };
@@ -107,7 +119,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   // handle filter apply function
   const handleFilterApply = () => {};
 
-  
   const {
     data: articleData,
     isLoading,
@@ -137,7 +148,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   if (isLoading) {
     return <Loader />;
   }
-  
+
   return (
     <SafeAreaView style={styles.container}>
       <HomeScreenHeader handlePresentModalPress={handlePresentModalPress} />
