@@ -10,7 +10,8 @@ const {
     updateReadArticles,
     collectMonthlyRecordsForReading,
     collectMonthlyRecordsForWriting,
-    checkOtp
+    checkOtp,
+    refreshToken
 } = require("../controllers/usersControllers");
 
 const { verifyEmail, sendVerificationEmail, Sendverifymail,resendVerificationEmail } = require('../controllers/emailservice');
@@ -26,6 +27,9 @@ router.post("/user/register", register);
 
 // Login User Route
 router.post("/user/login", login);
+
+// Refresh Token
+router.post("/user/refreshToken", refreshToken);
 
 // Get profile
 router.get('/user/getprofile',getprofile)

@@ -9,7 +9,6 @@ import {
   BackHandler,
   Alert,
   useColorScheme,
-  Modal,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {PRIMARY_COLOR} from '../../helper/Theme';
@@ -17,7 +16,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {fp, hp, wp} from '../../helper/Metric';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 // import {useNavigation} from '@react-navigation/native';
-import {Categories, KEYS, storeItem} from '../../helper/Utils';
+import {KEYS, storeItem} from '../../helper/Utils';
 import EmailInputModal from '../../components/EmailInputModal';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {AuthData, LoginScreenProp, User} from '../../type';
@@ -119,19 +118,24 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
       return res.data.user as User;
     },
 
-    onSuccess: data => {
+    onSuccess: async data => {
       const auth: AuthData = {
         userId: data.user_id,
-        token: data?.verificationToken,
+        token: data?.refreshToken,
       };
-      storeItem(KEYS.LOGIN_STATE, auth)
-        .then(() => {
-          navigation.navigate('TabNavigation');
-        })
-        .catch(err => {
-          Alert.alert("Can't able to store your authentication state");
-          console.log('Error', err);
-        });
+      try {
+        await storeItem(KEYS.USER_ID, auth.userId.toString());
+        if (auth.token) {
+          await storeItem(KEYS.USER_TOKEN, auth.token.toString());
+          await storeItem(
+            KEYS.USER_TOKEN_EXPIRY_DATE,
+            new Date().toISOString(),
+          );
+        }
+        navigation.navigate('TabNavigation');
+      } catch (e) {
+        console.log('Async Storage ERROR', e);
+      }
     },
 
     onError: (error: AxiosError) => {

@@ -207,6 +207,7 @@ export type User = {
   user_id: string;
   user_name: string;
   verificationToken: null;
+  refreshToken: null;
 };
 
 export type Contactdetail = {

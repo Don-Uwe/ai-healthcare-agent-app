@@ -14,12 +14,14 @@ import {PRIMARY_COLOR} from '../helper/Theme';
 import AddIcon from '../components/AddIcon';
 import ArticleCard from '../components/ArticleCard';
 import HomeScreenHeader from '../components/HomeScreenHeader';
-import {articles, Categories} from '../helper/Utils';
+import {articles, Categories, KEYS, retrieveItem} from '../helper/Utils';
 import {Article, Category, CategoryType, HomeScreenProps} from '../type';
 import axios from 'axios';
 import {ARTICLE_TAGS_API, BASE_URL} from '../helper/APIUtils';
 import FilterModal from '../components/FilterModal';
 import {BottomSheetModal} from '@gorhom/bottom-sheet';
+import { useQuery } from '@tanstack/react-query';
+import Loader from '../components/Loader';
 
 const HomeScreen = ({navigation}: HomeScreenProps) => {
   const [articleCategories, setArticleCategories] = useState<Category[]>([]);
@@ -104,6 +106,38 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   };
   // handle filter apply function
   const handleFilterApply = () => {};
+
+  
+  const {
+    data: articleData,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ['get-all-articles'],
+    queryFn: async () => {
+      try {
+        const token = await retrieveItem(KEYS.USER_TOKEN);
+        if (token == null) {
+          Alert.alert('No token found');
+          return;
+        }
+        const response = await axios.get(`${BASE_URL}/articles`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        console.log('Article Res', response.data);
+        return response.data.articles;
+      } catch (err) {
+        console.error('Error fetching articles:', err);
+      }
+    },
+  });
+
+  if (isLoading) {
+    return <Loader />;
+  }
+  
   return (
     <SafeAreaView style={styles.container}>
       <HomeScreenHeader handlePresentModalPress={handlePresentModalPress} />

@@ -193,64 +193,136 @@ module.exports.verifyOtpForForgotPassword = async (req, res) => {
     res.status(200).json({ message: 'OTP is valid.' });
   };
 
-module.exports.login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Please provide email and password' });
-    }
-
-    let user = await User.findOne({ email });
+  module.exports.login = async (req, res) => {
+    try {
+      const { email, password } = req.body;
   
+      if (!email || !password) {
+        return res.status(400).json({ error: 'Please provide email and password' });
+      }
+  
+      let user = await User.findOne({ email });
+      if (!user) {
+        user = await UnverifiedUser.findOne({ email });
+        if (!user) return res.status(404).json({ error: 'User not found' });
+        return res.status(403).json({ error: 'Email not verified. Please check your email.' });
+      }
+  
+      if (!user.isVerified) {
+        return res.status(403).json({ error: 'Email not verified. Please check your email.' });
+      }
+  
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+      if (!isPasswordValid) {
+        return res.status(401).json({ error: 'Invalid password' });
+      }
+  
+      // Generate JWT Access Token
+      const accessToken = jwt.sign(
+        { userId: user._id, email: user.email },
+        process.env.JWT_SECRET,
+        { expiresIn: '15m' } // Short-lived access token
+      );
+  
+      // Generate Refresh Token
+      const refreshToken = jwt.sign(
+        { userId: user._id, email: user.email },
+        process.env.JWT_SECRET,
+        { expiresIn: '7d' } // Longer-lived refresh token
+      );
+      console.log('Generated Token:', accessToken);
+      console.log('Generated Refresh Token', refreshToken)
+      // Store refresh token in the database
+      user.refreshToken = refreshToken;
+      await user.save();
+  
+      // Set cookies for tokens
+      res.cookie('accessToken', accessToken, { httpOnly: true, maxAge: 900000 }); // 15 minutes
+      res.cookie('refreshToken', refreshToken, { httpOnly: true, maxAge: 604800000 }); // 7 days
+  
+      res.status(200).json({ user, accessToken, refreshToken, message: 'Login Successful' });
+    } catch (error) {
+      console.log("Login Error", error);
 
-    if (!user) {
+      if (error.name === 'ValidationError') {
+        return res.status(400).json({ error: error.message }); // Validation errors
+      } else {
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+    }
+  };
 
-      user = UnverifiedUser.findOne({email});
-      if(!user)
-        return res.status(404).json({ error: 'User not found' });
-      else
-      return res.status(403).json({ error: 'Email not verified. Please check your email.' });
-     
+
+module.exports.logout = async (req, res) => {
+  const { refreshToken } = req.cookies;
+
+  if (!refreshToken) {
+    return res.status(400).json({ error: 'Refresh token required' });
+  }
+
+  try {
+    // Find the user and remove the refresh token
+    const user = await User.findOne({ refreshToken });
+    if (user) {
+      user.refreshToken = null;
+      await user.save();
     }
 
-    if (!user.isVerified) {
-      return res.status(403).json({ error: 'Email not verified. Please check your email.' });
-    }
-   
+    // Clear cookies
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-
-    if (!isPasswordValid) {
-      return res.status(401).json({ error: 'Invalid password' });
-    }
-
-    const token = jwt.sign(
-      { userId: user._id, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: '1d' }
-    );
-    
-    user.verificationToken = token;
-    res.cookie('token', token, { httpOnly: true, maxAge: 86400000 });
-    res.status(200).json({ user, token, message: "Login Successful" });
+    res.status(200).json({ message: 'Logout successful' });
   } catch (error) {
-    if (error.name === 'ValidationError') {
-      return res.status(400).json({ error: error.message }); // Validation errors
-    } else {
-      return res.status(500).json({ error: 'Internal server error' });
-    }
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-module.exports.logout = (req, res) => {
-    
-    // Clear the JWT token cookie
-    res.clearCookie('token');
-    res.json({ message: 'Logout successful' });
-  };
+module.exports.refreshToken = async (req, res) => {
+  const { refreshToken } = req.body;
 
-  module.exports.deleteByUser = async(req,res)=>{
+  if (!refreshToken) {
+    return res.status(401).json({ error: 'Refresh token required' });
+  }
+
+  try {
+    // Verify the refresh token
+    const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
+
+    // Check if the refresh token is valid and associated with the user
+    const user = await User.findOne({ _id: decoded.userId, refreshToken });
+    if (!user) {
+      return res.status(403).json({ error: 'Invalid refresh token' });
+    }
+
+    // Generate a new access token
+    const newAccessToken = jwt.sign(
+      { userId: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '15m' }
+    );
+
+    // Optionally, generate a new refresh token
+    const newRefreshToken = jwt.sign(
+      { userId: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    // Update the refresh token in the database
+    user.refreshToken = newRefreshToken;
+    await user.save();
+
+    res.cookie('accessToken', newAccessToken, { httpOnly: true, maxAge: 900000 }); // 15 minutes
+    res.cookie('refreshToken', newRefreshToken, { httpOnly: true, maxAge: 604800000 }); // 7 days
+
+    res.status(200).json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
+  } catch (error) {
+    res.status(403).json({ error: 'Invalid refresh token' });
+  }
+};
+
+module.exports.deleteByUser = async(req,res)=>{
     let token;
     if (req.cookies && req.cookies['token']) {
       token = req.cookies['token'];
@@ -285,7 +357,7 @@ module.exports.logout = (req, res) => {
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
-  }
+}
 
 
   module.exports.deleteByAdmin = async(req,res)=>{

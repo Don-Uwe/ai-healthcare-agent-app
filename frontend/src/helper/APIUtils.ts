@@ -8,3 +8,5 @@ export const RESEND_VERIFICATION = `${BASE_URL}/user/resend-verification-mail`;
 export const SEND_OTP = `${BASE_URL}/user/forgotpassword`;
 export const CHECK_OTP = `${BASE_URL}/user/verifyOtp`;
 export const CHANGE_PASSWORD_API = `${BASE_URL}/user/verifypassword`;
+
+export const REFRESH_TOKEN_API = `${BASE_URL}/user/refreshToken`;

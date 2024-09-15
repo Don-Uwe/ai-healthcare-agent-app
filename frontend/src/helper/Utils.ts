@@ -236,25 +236,25 @@ export const podcast: Podcast[] = [
   },
 ];
 
-
-
-// Async Storage for get Item 
-export const retrieveItem = async key => {
+// Async Storage for get Item
+export const retrieveItem = async (key: string) => {
   try {
     const value = await AsyncStorage.getItem(key);
     return value;
-  } catch (error) {
-    console.error('Error retrieving item:', error);
-    return null;
+  } catch (e) {
+    // error reading value
+    console.log('Error reading value', e);
   }
 };
 
-// Async Storage Store Item 
-export const storeItem = async (key: string, value: any) => {
+// Async Storage Store Item
+export const storeItem = async (key: string, value: string) => {
   try {
-    await AsyncStorage.setItem(key, JSON.stringify(value));
-  } catch (error) {
-    console.error('Error storing item:', error);
+    await AsyncStorage.setItem(key, value);
+    console.log(`Value saved for key : ${key}`, value);
+  } catch (e) {
+    // saving error
+    console.log('Async Storage Data error', e);
   }
 };
 
@@ -514,18 +514,19 @@ Advanced Stage: Total dependence of the person on the caregiver for all personal
 `;
 
 export const KEYS = {
-  LOGIN_STATE:'AUTH_STATE',
-}
+  USER_ID: 'USER_ID',
+  USER_TOKEN: 'USER_TOKEN',
+  USER_TOKEN_EXPIRY_DATE:'USER_TOKEN_EXPIRY_DATE'
+};
 
 export const createHTMLStructure = (
-  title: string, 
-  body:string, 
-  tags:string[], 
+  title: string,
+  body: string,
+  tags: string[],
   social_link: string,
-  author:string
-)=>{
-  return (
-`<!DOCTYPE html>
+  author: string,
+) => {
+  return `<!DOCTYPE html>
 <html>
 <head>
 <title>${title}</title>
@@ -609,11 +610,10 @@ table {
 ${body}
 <hr>
 <ul class="tag-list">
-  ${tags.map((tag) => `<li><a class="tag" href="#">#${tag}</a></li>`).join('')}
+  ${tags.map(tag => `<li><a class="tag" href="#">#${tag}</a></li>`).join('')}
 </ul>
 <h3>Author</h3>
 <h4><a href=${social_link}>${author}</a></h4>
 </body>
-`
-  )
-}
+`;
+};
