@@ -92,7 +92,7 @@ export default function useFarmPositions(props: { shouldFetch?: boolean; refresh
               data.version === 'V1'
                 ? new Decimal(prevFarmData?.totalV1LpAmount ?? 0).add(data.lpAmount || 0).toString()
                 : prevFarmData?.totalV1LpAmount ?? '0',
-            data: [...(prevData?.data || []), data]
+            data: [...(prevFarmData?.data || []), data]
           })
         })
       })
