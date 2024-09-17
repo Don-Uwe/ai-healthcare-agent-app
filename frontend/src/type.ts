@@ -88,7 +88,7 @@ export type HomeScreenHeaderProps = {
 };
 
 export type ArticleCardProps = {
-  item: Article;
+  item: ArticleData;
   navigation: HomeScreenProps['navigation'] | ProfileScreenProps['navigation'];
 };
 
@@ -171,6 +171,18 @@ export type Article = {
   author_name: string;
   lastUpdatedAt: string;
   imageUtils: string;
+};
+
+export type ArticleData = {
+  id: string;
+  title: string;
+  authorName: string;
+  authorId: string;
+  content: string;
+  summary: string;
+  tags: string[];
+  last_updated: string;
+  imageUtils: string[];
 };
 
 export type CategoryType = {

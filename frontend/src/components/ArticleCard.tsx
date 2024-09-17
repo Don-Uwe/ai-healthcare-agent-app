@@ -14,19 +14,19 @@ const ArticleCard = ({item, navigation}: ArticleCardProps) => {
       }}>
       <View style={styles.cardContainer}>
         {/* image */}
-        {<Image source={{uri: item?.imageUtils}} style={styles.image} />}
+        {<Image source={{uri: item?.imageUtils[0]}} style={styles.image} />}
 
         <View style={styles.textContainer}>
           {/* title */}
-          <Text style={styles.footerText}>{item?.category.join(' | ')}</Text>
+          <Text style={styles.footerText}>{item?.tags.join(' | ')}</Text>
           <Text style={styles.title}>{item?.title}</Text>
           {/* description */}
           {/**  <Text style={styles.description}>{item?.description}</Text> */}
           {/* displaying the categories, author name, and last updated date */}
 
           <Text style={styles.footerText}>
-            {item?.author_name} {''}
-            {item?.lastUpdatedAt}
+            {item?.authorName} {''}
+            {item?.last_updated}
           </Text>
         </View>
       </View>

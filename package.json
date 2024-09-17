@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "compression": "^1.7.4"
+  }
+}

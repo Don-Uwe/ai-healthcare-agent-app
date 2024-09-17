@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require("./config/database");
 const cors = require("cors");
+const compression = require('compression');
 const userRoutes = require("./routes/usersRoutes");
 const specializationRoutes = require("./routes/SpecializationsRoutes");
 const articleRoutes = require("./routes/articleRoutes");
@@ -11,6 +12,8 @@ const app = express();
 
 // Use the cookie-parser middleware
 app.use(cookieParser());
+
+app.use(compression());
 
 // Connect to the Database
 db.dbConnect();

@@ -15,7 +15,13 @@ import AddIcon from '../components/AddIcon';
 import ArticleCard from '../components/ArticleCard';
 import HomeScreenHeader from '../components/HomeScreenHeader';
 import {articles, Categories, KEYS, retrieveItem} from '../helper/Utils';
-import {Article, Category, CategoryType, HomeScreenProps} from '../type';
+import {
+  Article,
+  ArticleData,
+  Category,
+  CategoryType,
+  HomeScreenProps,
+} from '../type';
 import axios from 'axios';
 import {ARTICLE_TAGS_API, BASE_URL} from '../helper/APIUtils';
 import FilterModal from '../components/FilterModal';
@@ -106,7 +112,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     }
   };
 
-  const renderItem = useCallback(({item}: {item: Article}) => {
+  const renderItem = useCallback(({item}: {item: ArticleData}) => {
     return <ArticleCard item={item} navigation={navigation} />;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -138,7 +144,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           },
         });
         console.log('Article Res', response.data);
-        return response.data.articles;
+        return response.data.articles as ArticleData[];
       } catch (err) {
         console.error('Error fetching articles:', err);
       }
@@ -191,12 +197,14 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         </ScrollView>
       </View>
       <View style={styles.articleContainer}>
-        <FlatList
-          data={filterdArticles}
-          renderItem={renderItem}
-          keyExtractor={item => item.id.toString()}
-          contentContainerStyle={styles.flatListContentContainer}
-        />
+        {articleData && (
+          <FlatList
+            data={articleData}
+            renderItem={renderItem}
+            keyExtractor={item => item.id.toString()}
+            contentContainerStyle={styles.flatListContentContainer}
+          />
+        )}
       </View>
       <View style={styles.homePlusIconview}>
         <AddIcon callback={handleNoteIconClick} />
@@ -219,12 +227,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
   },
   button: {
-    height: 40,
-    width: 100,
+    flex:0,
     borderRadius: 14,
-    marginHorizontal: 4,
+    marginHorizontal: 6,
     marginVertical: 4,
-    padding: 6,
+    padding: 8,
     borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',
