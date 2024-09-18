@@ -5,7 +5,7 @@ const User = require("../models/UserModel");
 // Create a new article
 module.exports.createArticle = async (req, res) => {
   try {
-    const user = await User.findById(req.body.authorId);
+    const user = await User.findOne({ user_id: req.body.authorId })
     const newArticle = new Article(req.body);
     console.log("user:", req.body.authorId);
     if (!user) {

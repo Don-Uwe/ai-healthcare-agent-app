@@ -201,7 +201,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           <FlatList
             data={articleData}
             renderItem={renderItem}
-            keyExtractor={item => item.id.toString()}
+            keyExtractor={item => item._id.toString()}
             contentContainerStyle={styles.flatListContentContainer}
           />
         )}

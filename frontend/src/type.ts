@@ -174,7 +174,7 @@ export type Article = {
 };
 
 export type ArticleData = {
-  id: string;
+  _id: string;
   title: string;
   authorName: string;
   authorId: string;

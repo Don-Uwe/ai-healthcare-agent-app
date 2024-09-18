@@ -9,12 +9,19 @@ const ArticleCard = ({item, navigation}: ArticleCardProps) => {
       onPress={() => {
         // handle onPress
         navigation.navigate('ArticleScreen', {
-          id: item.id,
+          id: item._id,
         });
       }}>
       <View style={styles.cardContainer}>
         {/* image */}
-        {<Image source={{uri: item?.imageUtils[0]}} style={styles.image} />}
+        {item?.imageUtils[0] && item?.imageUtils[0].length == 0 ? (
+          <Image source={{uri: item?.imageUtils[0]}} style={styles.image} />
+        ) : (
+          <Image
+            source={require('../assets/article_default.jpg')}
+            style={styles.image}
+          />
+        )}
 
         <View style={styles.textContainer}>
           {/* title */}
@@ -56,8 +63,9 @@ export default ArticleCard;
 
 const styles = StyleSheet.create({
   cardContainer: {
-    flex: 1,
+    flex: 0,
     width: '100%',
+    maxHeight: 200,
     backgroundColor: '#E6E6E6',
     flexDirection: 'row',
     marginVertical: 14,
@@ -67,7 +75,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   image: {
-    flex: 0.5,
+    flex: 0.6,
     resizeMode: 'cover',
   },
   textContainer: {

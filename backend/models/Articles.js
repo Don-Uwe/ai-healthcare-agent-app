@@ -25,7 +25,7 @@ const articleSchema = new Schema({
   },
   summary: {
     type: String,
-    required: true,
+    required: false,
   },
   published_date: {
     type: Date,
@@ -42,14 +42,10 @@ const articleSchema = new Schema({
   },
   status: {
     type: String,
-    required: true,
+    required: false,
     enum: ['Draft', 'Published', 'Archived'],
   },
-  imageUtils: {
-    type: [String],
-    required: true,
-  },
-  relatedBodyPart: {
+ imageUtils : {
     type: [String],
     required: true,
   },

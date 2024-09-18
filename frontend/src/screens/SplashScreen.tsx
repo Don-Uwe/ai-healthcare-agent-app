@@ -25,6 +25,8 @@ const SplashScreen = ({navigation}: SplashScreenProp) => {
 
   const checkLoginStatus = async () => {
     try {
+      const userId = await retrieveItem(KEYS.USER_ID);
+      console.log('User Id', userId);
       const user = await retrieveItem(KEYS.USER_TOKEN);
       const expiryDate = await retrieveItem(KEYS.USER_TOKEN_EXPIRY_DATE);
 
