@@ -6,7 +6,6 @@ import {
   BottomSheetBackdrop,
 } from '@gorhom/bottom-sheet';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import {PRIMARY_COLOR} from '../helper/Theme';
 import {HomeScreenCategoriesFlatlistProps} from '../type.ts';
 // Main component for the categories modal
 const CategoriesFlatlistModal = ({
@@ -38,7 +37,7 @@ const CategoriesFlatlistModal = ({
           styles.item,
           {
             backgroundColor: selectCategoryList.includes(item?.name)
-              ? PRIMARY_COLOR
+              ? 'green'
               : 'white',
           },
         ]}
@@ -75,7 +74,7 @@ const CategoriesFlatlistModal = ({
       snapPoints={snapPoints}
       index={1}
       backdropComponent={renderBackdrop}
-      enablePanDownToClose={false}>
+      enablePanDownToClose={true}>
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <TouchableOpacity
@@ -131,15 +130,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   contentContainer: {
-    paddingTop: 10,
+    paddingTop: 8,
     backgroundColor: 'white',
-    paddingBottom: 100,
+    paddingBottom: 10,
     paddingHorizontal: 16,
   },
   item: {
     borderWidth: 0.5,
     borderRadius: 15,
-    paddingVertical: 20,
+    paddingVertical: 16,
     paddingHorizontal: 15,
     marginBottom: 10,
     borderColor: '#C5C6CC',

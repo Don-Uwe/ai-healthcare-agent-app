@@ -14,28 +14,44 @@ import {PRIMARY_COLOR} from '../helper/Theme';
 import AddIcon from '../components/AddIcon';
 import ArticleCard from '../components/ArticleCard';
 import HomeScreenHeader from '../components/HomeScreenHeader';
-import {Categories, KEYS, retrieveItem} from '../helper/Utils';
+import {KEYS, retrieveItem} from '../helper/Utils';
 import {ArticleData, Category, CategoryType, HomeScreenProps} from '../type';
 import axios from 'axios';
 import {ARTICLE_TAGS_API, BASE_URL} from '../helper/APIUtils';
 import FilterModal from '../components/FilterModal';
-import {BottomSheetModal} from '@gorhom/bottom-sheet';
+import {
+  BottomSheetModal,
+  createBottomSheetScrollableComponent,
+} from '@gorhom/bottom-sheet';
 import {useQuery} from '@tanstack/react-query';
+import {useSelector, useDispatch} from 'react-redux';
 import Loader from '../components/Loader';
+import {
+  setFilteredArticles,
+  setSearchedArticles,
+  setSearchMode,
+  setSelectedTags,
+  setSortType,
+} from '../store/articleSlice';
 
+// Here The purpose of using Redux is to maintain filter state throughout the app session. globally
 const HomeScreen = ({navigation}: HomeScreenProps) => {
+  const dispatch = useDispatch();
   const [articleCategories, setArticleCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [stateArticleData, setStateArticleData] = useState<ArticleData>([]);
-  const [filterApplied, setFilterApplied] = useState(true); // Redux Variable
   const [sortingType, setSortingType] = useState<string>(''); // Redux Variable
   const [selectCategoryList, setSelectCategoryList] = useState<
     CategoryType['name'][]
-  >([]); // Redux Variable
+  >([]);
+  const {
+    filteredArticles,
+    searchedArticles,
+    searchMode,
+    selectedTags,
+    sortType,
+  } = useSelector((state: any) => state.article);
 
   const handleCategorySelection = (category: CategoryType['name']) => {
-    console.log('Category clicked:', category);
-
     // Update Redux State
     setSelectCategoryList(prevList => {
       const updatedList = prevList.includes(category)
@@ -64,12 +80,25 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         },
       },
     );
+    if (
+      selectedTags === undefined ||
+      (selectedTags && selectedTags.length === 0)
+    ) {
+      console.log('Category Data', categoryData);
+      dispatch(
+        setSelectedTags({
+          selectedTags: categoryData.map(category => category.name),
+        }),
+      );
+      setSelectedCategory(categoryData[0]?.name);
+    } else {
+      setSelectedCategory(selectedTags[0]);
+    }
     setArticleCategories(categoryData);
-    setSelectedCategory(categoryData[0]?.name);
   };
+
   useEffect(() => {
     getAllCategories();
-    //setFilteredArticles(articles);
     const unsubscribe = navigation.addListener('beforeRemove', e => {
       e.preventDefault();
       Alert.alert(
@@ -83,14 +112,13 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       );
     });
     return unsubscribe;
-  }, [navigation]);
+  }, []);
 
   const handleNoteIconClick = () => {
     navigation.navigate('EditorScreen');
-    //navigation.navigate('ArticleDescriptionScreen');
   };
 
-  const handleCategoryClick = (category: CategoryType['name']) => {
+  const handleCategoryClick = (category: string) => {
     setSelectedCategory(category);
   };
 
@@ -100,15 +128,66 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   }, []);
 
   const handleFilterReset = () => {
-
     // Update Redux State Variables
     setSelectCategoryList([]);
-    setDate('');
+    setSortingType('');
+    dispatch(
+      setSelectedTags({
+        selectedTags: articleCategories.map(category => category.name),
+      }),
+    );
+    dispatch(setSortType({sortType: ''}));
+    dispatch(setFilteredArticles({filteredArticles: articleData}));
   };
 
   const handleFilterApply = () => {
-
     // Update Redux State Variables
+    if (selectCategoryList.length > 0) {
+      dispatch(setSelectedTags({selectedTags: selectCategoryList}));
+    } else {
+      dispatch(
+        setSelectedTags({
+          selectedTags: articleCategories.map(category => category.name),
+        }),
+      );
+    }
+
+    dispatch(setSortType({sortType: sortingType}));
+    updateArticles(articleData);
+  };
+
+  const updateArticles = (articleData?: ArticleData[]) => {
+    if (!articleData) {
+      return;
+    }
+
+    let filtered = articleData;
+    console.log('sort type', sortType);
+    console.log('Filtered before', filtered);
+    if (selectedTags.length > 0) {
+      filtered = filtered.filter(article =>
+        selectedTags.some(tag => article.tags.includes(tag)),
+      );
+    }
+    console.log('Filtered before sort', filtered);
+    if (sortType === 'recent' && filtered.length > 1) {
+      filtered = filtered.sort(
+        (a, b) =>
+          new Date(b.last_updated).getTime() -
+          new Date(a.last_updated).getTime(),
+      );
+    } else if (sortType === 'oldest' && filtered.length > 1) {
+      filtered.sort(
+        (a, b) =>
+          new Date(a.last_updated).getTime() -
+          new Date(b.last_updated).getTime(),
+      );
+    } else if (sortType === 'popular' && filtered.length > 1) {
+      filtered.sort((a, b) => b.viewCount - a.viewCount);
+    }
+    console.log('Filtered', filtered);
+    //console.log('Article Data', articleData);
+    dispatch(setFilteredArticles({filteredArticles: filtered}));
   };
 
   const {data: articleData, isLoading} = useQuery({
@@ -125,7 +204,8 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
             Authorization: `Bearer ${token}`,
           },
         });
-        console.log('Article Res', response.data);
+        let d = response.data.articles as ArticleData[];
+        updateArticles(d);
         return response.data.articles as ArticleData[];
       } catch (err) {
         console.error('Error fetching articles:', err);
@@ -133,13 +213,37 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     },
   });
 
+  const handleSearch = (textInput: string) => {
+    console.log('Search Input', textInput);
+    if (textInput === '' || articleData === undefined) {
+      dispatch(setSearchedArticles({searchedArticles: []}));
+      dispatch(setSearchMode({searchMode: false}));
+    } else {
+      dispatch(setSearchMode({searchMode: true}));
+      const matchesSearch = articleData.filter(article => {
+        const matchesTitle = article.title
+          .toLowerCase()
+          .includes(textInput.toLowerCase());
+        const matchesTags = article.tags.some(tag =>
+          tag.toLowerCase().includes(textInput.toLowerCase()),
+        ); 
+
+        return matchesTitle || matchesTags;
+      });
+      dispatch(setSearchedArticles({searchedArticles: matchesSearch}));
+    }
+  };
+
   if (isLoading) {
     return <Loader />;
   }
 
   return (
     <SafeAreaView style={styles.container}>
-      <HomeScreenHeader handlePresentModalPress={handlePresentModalPress} />
+      <HomeScreenHeader
+        handlePresentModalPress={handlePresentModalPress}
+        onTextInputChange={handleSearch}
+      />
       <FilterModal
         bottomSheetModalRef={bottomSheetModalRef}
         categories={articleCategories}
@@ -152,38 +256,43 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       />
       <View style={styles.buttonContainer}>
         <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-          {articleCategories?.map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              // eslint-disable-next-line react-native/no-inline-styles
-              style={{
-                ...styles.button,
-                backgroundColor:
-                  selectedCategory === item?.name ? 'white' : PRIMARY_COLOR,
-                borderColor:
-                  selectedCategory === item?.name ? PRIMARY_COLOR : 'white',
-              }}
-              onPress={() => {
-                handleCategoryClick(item?.name);
-              }}>
-              <Text
-                // eslint-disable-next-line react-native/no-inline-styles
+          {selectedTags &&
+            selectedTags.length > 0 &&
+            !searchMode &&
+            selectedTags.map((item, index) => (
+              <TouchableOpacity
+                key={index}
                 style={{
-                  ...styles.labelStyle,
-                  color: selectedCategory === item?.name ? 'black' : 'white',
+                  ...styles.button,
+                  backgroundColor:
+                    selectedCategory === item ? 'white' : PRIMARY_COLOR,
+                  borderColor:
+                    selectedCategory === item ? PRIMARY_COLOR : 'white',
+                }}
+                onPress={() => {
+                  handleCategoryClick(item);
                 }}>
-                {item.name}
-              </Text>
-            </TouchableOpacity>
-          ))}
+                <Text
+                  style={{
+                    ...styles.labelStyle,
+                    color: selectedCategory === item ? 'black' : 'white',
+                  }}>
+                  {item}
+                </Text>
+              </TouchableOpacity>
+            ))}
         </ScrollView>
       </View>
       <View style={styles.articleContainer}>
-        {articleData && (
+        {filteredArticles && filteredArticles.length > 0 && (
           <FlatList
-            data={articleData.filter(article =>
-              article.tags.includes(selectedCategory),
-            )}
+            data={
+              searchMode
+                ? searchedArticles
+                : filteredArticles.filter(article =>
+                    article.tags.includes(selectedCategory),
+                  )
+            }
             renderItem={renderItem}
             keyExtractor={item => item._id.toString()}
             contentContainerStyle={styles.flatListContentContainer}

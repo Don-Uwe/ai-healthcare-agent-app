@@ -2,8 +2,17 @@ import {StyleSheet, Text, View, Image, Pressable} from 'react-native';
 import React from 'react';
 import {fp} from '../helper/Metric';
 import {ArticleCardProps} from '../type';
+import moment from 'moment';
 
 const ArticleCard = ({item, navigation}: ArticleCardProps) => {
+  const formatDate = (date: string) => {
+    const dateObj = new Date(date);
+    const day = date.padStart(2, '0');
+    const month = (dateObj.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-based
+    const year = dateObj.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
   return (
     <Pressable
       onPress={() => {
@@ -33,7 +42,10 @@ const ArticleCard = ({item, navigation}: ArticleCardProps) => {
 
           <Text style={styles.footerText}>
             {item?.authorName} {''}
-            {item?.last_updated}
+          </Text>
+          <Text style={styles.footerText}>
+            Last updated: {''}
+            {moment(new Date(item?.last_updated)).format('DD/MM/YYYY')}
           </Text>
         </View>
       </View>
@@ -101,7 +113,7 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: fp(3.3),
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#121a26',
     marginBottom: 4,
   },

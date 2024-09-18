@@ -85,6 +85,7 @@ export type ProfileScreenProps = CompositeScreenProps<
 
 export type HomeScreenHeaderProps = {
   handlePresentModalPress: () => void;
+  onTextInputChange: (textInput: string) => void;
 };
 
 export type ArticleCardProps = {
@@ -183,6 +184,7 @@ export type ArticleData = {
   tags: string[];
   last_updated: string;
   imageUtils: string[];
+  viewCount: number;
 };
 
 export type CategoryType = {

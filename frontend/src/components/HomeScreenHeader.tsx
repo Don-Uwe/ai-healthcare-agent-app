@@ -7,12 +7,15 @@ import {
 } from 'react-native';
 import React from 'react';
 import FeatherIcon from 'react-native-vector-icons/Feather';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import Ionicon from 'react-native-vector-icons/Ionicons';
 import {fp, wp} from '../helper/Metric';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import {HomeScreenHeaderProps} from '../type';
 
-const HomeScreenHeader = ({handlePresentModalPress}: HomeScreenHeaderProps) => {
+const HomeScreenHeader = ({
+  handlePresentModalPress,
+  onTextInputChange,
+}: HomeScreenHeaderProps) => {
   return (
     <View style={[styles.header]}>
       <View>
@@ -33,12 +36,13 @@ const HomeScreenHeader = ({handlePresentModalPress}: HomeScreenHeaderProps) => {
             autoComplete="name"
             placeholder="Search articles..."
             placeholderTextColor="#778599"
+            onChangeText={onTextInputChange}
             style={styles.searchControl}
           />
           <TouchableOpacity
             style={styles.filterIcon}
             onPress={handlePresentModalPress}>
-            <MaterialIcons color="#808080" name="filter-alt" size={28} />
+            <Ionicon color="black" name="filter-sharp" size={28} />
           </TouchableOpacity>
         </View>
       </View>
@@ -99,7 +103,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     bottom: 0,
-    right: 0,
+    right: 2,
     width: wp(9),
     alignItems: 'center',
     justifyContent: 'center',
