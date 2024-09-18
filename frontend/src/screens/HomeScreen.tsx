@@ -14,14 +14,8 @@ import {PRIMARY_COLOR} from '../helper/Theme';
 import AddIcon from '../components/AddIcon';
 import ArticleCard from '../components/ArticleCard';
 import HomeScreenHeader from '../components/HomeScreenHeader';
-import {articles, Categories, KEYS, retrieveItem} from '../helper/Utils';
-import {
-  Article,
-  ArticleData,
-  Category,
-  CategoryType,
-  HomeScreenProps,
-} from '../type';
+import {Categories, KEYS, retrieveItem} from '../helper/Utils';
+import {ArticleData, Category, CategoryType, HomeScreenProps} from '../type';
 import axios from 'axios';
 import {ARTICLE_TAGS_API, BASE_URL} from '../helper/APIUtils';
 import FilterModal from '../components/FilterModal';
@@ -32,29 +26,30 @@ import Loader from '../components/Loader';
 const HomeScreen = ({navigation}: HomeScreenProps) => {
   const [articleCategories, setArticleCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [filterdArticles, setFilteredArticles] = useState<Article[]>([]);
-  const [date, setDate] = useState<string>('');
+  const [stateArticleData, setStateArticleData] = useState<ArticleData>([]);
+  const [filterApplied, setFilterApplied] = useState(true); // Redux Variable
+  const [sortingType, setSortingType] = useState<string>(''); // Redux Variable
   const [selectCategoryList, setSelectCategoryList] = useState<
     CategoryType['name'][]
-  >([]);
+  >([]); // Redux Variable
+
   const handleCategorySelection = (category: CategoryType['name']) => {
     console.log('Category clicked:', category);
+
+    // Update Redux State
     setSelectCategoryList(prevList => {
       const updatedList = prevList.includes(category)
         ? prevList.filter(item => item !== category)
         : [...prevList, category];
-      console.log('Updated Category List:', updatedList);
       return updatedList;
     });
   };
+
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const handlePresentModalPress = useCallback(() => {
     bottomSheetModalRef.current?.present();
   }, []);
-  /**
-   * The function `getAllCategories` fetches all categories from an API endpoint and sets the article
-   * categories in the state while also selecting the first category as the default.
-   */
+
   const getAllCategories = async () => {
     const token = await retrieveItem(KEYS.USER_TOKEN);
     if (token == null) {
@@ -69,14 +64,12 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         },
       },
     );
-
-    console.log('Category Data', categoryData);
     setArticleCategories(categoryData);
     setSelectedCategory(categoryData[0]?.name);
   };
   useEffect(() => {
     getAllCategories();
-    setFilteredArticles(articles);
+    //setFilteredArticles(articles);
     const unsubscribe = navigation.addListener('beforeRemove', e => {
       e.preventDefault();
       Alert.alert(
@@ -96,20 +89,9 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     navigation.navigate('EditorScreen');
     //navigation.navigate('ArticleDescriptionScreen');
   };
-  /**
-   * The function `handleCategoryClick` filters articles based on a selected category and updates the
-   * filtered articles state accordingly.
-   */
+
   const handleCategoryClick = (category: CategoryType['name']) => {
     setSelectedCategory(category);
-    const filtered = articles.filter(article =>
-      article.category.includes(category),
-    );
-    if (filtered) {
-      setFilteredArticles(filtered);
-    } else {
-      setFilteredArticles(articles);
-    }
   };
 
   const renderItem = useCallback(({item}: {item: ArticleData}) => {
@@ -117,19 +99,19 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // handle filter reset function
   const handleFilterReset = () => {
+
+    // Update Redux State Variables
     setSelectCategoryList([]);
     setDate('');
   };
-  // handle filter apply function
-  const handleFilterApply = () => {};
 
-  const {
-    data: articleData,
-    isLoading,
-    error,
-  } = useQuery({
+  const handleFilterApply = () => {
+
+    // Update Redux State Variables
+  };
+
+  const {data: articleData, isLoading} = useQuery({
     queryKey: ['get-all-articles'],
     queryFn: async () => {
       try {
@@ -160,13 +142,13 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       <HomeScreenHeader handlePresentModalPress={handlePresentModalPress} />
       <FilterModal
         bottomSheetModalRef={bottomSheetModalRef}
-        categories={Categories}
+        categories={articleCategories}
         handleCategorySelection={handleCategorySelection}
         selectCategoryList={selectCategoryList}
         handleFilterReset={handleFilterReset}
         handleFilterApply={handleFilterApply}
-        setDate={setDate}
-        date={date}
+        setSortingType={setSortingType}
+        sortingType={sortingType}
       />
       <View style={styles.buttonContainer}>
         <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
@@ -199,7 +181,9 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       <View style={styles.articleContainer}>
         {articleData && (
           <FlatList
-            data={articleData}
+            data={articleData.filter(article =>
+              article.tags.includes(selectedCategory),
+            )}
             renderItem={renderItem}
             keyExtractor={item => item._id.toString()}
             contentContainerStyle={styles.flatListContentContainer}
@@ -227,7 +211,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
   },
   button: {
-    flex:0,
+    flex: 0,
     borderRadius: 14,
     marginHorizontal: 6,
     marginVertical: 4,

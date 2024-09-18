@@ -114,8 +114,8 @@ export type HomeScreenFilterModalProps = {
   selectCategoryList: CategoryType['name'][];
   handleFilterReset: () => void;
   handleFilterApply: () => void; // Replace `any` with the actual filter type if available
-  setDate: (date: string) => void;
-  date: string | '';
+  setSortingType: (selectedType: string) => void;
+  sortingType: string | '';
 };
 
 export type HomeScreenCategoriesFlatlistProps = {

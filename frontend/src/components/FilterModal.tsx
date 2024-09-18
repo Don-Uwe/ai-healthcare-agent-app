@@ -1,5 +1,5 @@
 import React, {useCallback, useMemo, useRef, useState} from 'react';
-import {Text, StyleSheet, View, TextInput, FlatList} from 'react-native';
+import {Text, StyleSheet, View, FlatList, ScrollView} from 'react-native';
 import {
   BottomSheetModal,
   BottomSheetView,
@@ -8,7 +8,6 @@ import {
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import CategoriesFlatlistModal from './CategoriesFlatlistModal';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import {HomeScreenFilterModalProps} from '../type';
@@ -29,18 +28,19 @@ const FilterModal = ({
   selectCategoryList,
   handleFilterReset,
   handleFilterApply,
-  setDate,
-  date,
+  setSortingType,
 }: HomeScreenFilterModalProps) => {
   // Ref for second bottom sheet modal (category selection)
   const bottomSheetModalRef2 = useRef<BottomSheetModal>(null);
 
+  const sortBy = ['Recently uploaded', 'Popular', 'Oldest'];
+  const [selectedCategory, setSelectedCategory] = useState('');
   // Function to present the second bottom sheet modal
   const handlePresentModalPress = useCallback(() => {
     bottomSheetModalRef2.current?.present();
   }, []);
 
-  // State for date picker visibility
+  /*
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
   // Show date picker
@@ -53,12 +53,13 @@ const FilterModal = ({
     setDatePickerVisibility(false);
   };
 
+
   // Handle date selection from date picker
   const handleConfirm = (date: Date) => {
-    const formattedDate = formatDate(date);
-    setDate(formattedDate);
+    setSortingType(selectedCategory);
     hideDatePicker();
   };
+  */
 
   // Get safe area insets for top margin adjustment
   const insets = useSafeAreaInsets();
@@ -105,13 +106,15 @@ const FilterModal = ({
 
         <View style={styles.filterContainer}>
           <View style={styles.input}>
-            <Text style={styles.inputLabel}>Date</Text>
-            <DateTimePickerModal
+            <Text style={styles.inputLabel}>Sort By</Text>
+            {/**
+             *  <DateTimePickerModal
               isVisible={isDatePickerVisible}
               mode="date"
               onConfirm={handleConfirm}
               onCancel={hideDatePicker}
             />
+
             <TouchableOpacity
               onPress={showDatePicker}
               touchSoundDisabled={true}
@@ -133,6 +136,36 @@ const FilterModal = ({
                 </View>
               </View>
             </TouchableOpacity>
+             */}
+            <ScrollView
+              horizontal={true}
+              showsHorizontalScrollIndicator={false}>
+              {sortBy?.map((item, index) => (
+                <TouchableOpacity
+                  key={index}
+                  // eslint-disable-next-line react-native/no-inline-styles
+                  style={{
+                    ...styles.button,
+                    backgroundColor:
+                      selectedCategory === item ? 'red' : 'white',
+                    borderColor:
+                      selectedCategory === item ? 'white' : PRIMARY_COLOR,
+                  }}
+                  onPress={() => {
+                    setSelectedCategory(item);
+                    setSortingType(item);
+                  }}>
+                  <Text
+                    // eslint-disable-next-line react-native/no-inline-styles
+                    style={{
+                      ...styles.labelStyle,
+                      color: selectedCategory === item ? 'white' : 'black',
+                    }}>
+                    {item}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           </View>
 
           <View style={styles.input}>
@@ -329,5 +362,21 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 17,
     fontWeight: '700',
+  },
+
+  button: {
+    flex: 0,
+    borderRadius: 14,
+    marginHorizontal: 6,
+    marginVertical: 4,
+    padding: 8,
+    borderWidth: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  labelStyle: {
+    fontWeight: 'bold',
+    fontSize: 15,
+    textTransform: 'capitalize',
   },
 });
