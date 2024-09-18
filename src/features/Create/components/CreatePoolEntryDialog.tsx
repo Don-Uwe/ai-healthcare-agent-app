@@ -216,7 +216,7 @@ export function CreatePoolEntryDialogBody({ type, onChange }: { type: CreateTarg
         description={
           type === 'lock' ? (
             <Trans i18nKey="create_pool.modal_section_header_lock_desc">
-              <Link href="https://docs.raydium.io/raydium/pool-creation/creating-a-clmm-pool-and-farm/burn-&-earn" isExternal>
+              <Link href="https://docs.raydium.io/raydium/pool-creation/creating-a-clmm-pool-and-farm/burn-and-earn" isExternal>
                 Learn more
               </Link>
             </Trans>
