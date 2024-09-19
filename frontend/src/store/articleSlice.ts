@@ -7,6 +7,7 @@ export type ArticleState = {
   selectedTags: string[];
   sortType: 'recent' | 'popular' | 'oldest' | '';
   searchMode: boolean;
+  article: ArticleData
 }
 
 const initialState: ArticleState = {
@@ -15,6 +16,18 @@ const initialState: ArticleState = {
   selectedTags: [],
   sortType: '',
   searchMode: false,
+  article: {
+    _id: '',
+    title: '',
+    authorName: '',
+    authorId: '',
+    content: '',
+    summary: '',
+    tags: [],
+    last_updated: '',
+    imageUtils: [],
+    viewCount: 0
+  },
 };
 const articleSlice = createSlice({
   name: 'article',
@@ -38,6 +51,10 @@ const articleSlice = createSlice({
 
     setSearchMode(state, action){
       state.searchMode = action.payload.searchMode;
+    },
+
+    setArticle(state, action){
+      state.article = action.payload.article;
     }
   },
 });
@@ -48,6 +65,7 @@ export const {
   setSelectedTags,
   setSortType,
   setSearchMode,
+  setArticle
 } = articleSlice.actions;
 
 export default articleSlice.reducer;

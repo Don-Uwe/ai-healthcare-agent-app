@@ -19,10 +19,7 @@ import {ArticleData, Category, CategoryType, HomeScreenProps} from '../type';
 import axios from 'axios';
 import {ARTICLE_TAGS_API, BASE_URL} from '../helper/APIUtils';
 import FilterModal from '../components/FilterModal';
-import {
-  BottomSheetModal,
-  createBottomSheetScrollableComponent,
-} from '@gorhom/bottom-sheet';
+import {BottomSheetModal} from '@gorhom/bottom-sheet';
 import {useQuery} from '@tanstack/react-query';
 import {useSelector, useDispatch} from 'react-redux';
 import Loader from '../components/Loader';

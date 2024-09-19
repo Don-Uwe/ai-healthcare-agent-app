@@ -7,38 +7,22 @@ import {
   TouchableOpacity,
   View,
   ScrollView,
-  Alert,
 } from 'react-native';
 import React, {useState} from 'react';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {PRIMARY_COLOR} from '../../helper/Theme';
-import {articles, KEYS, retrieveItem} from '../../helper/Utils';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {ArticleScreenProp} from '../../type';
-import {useQuery} from '@tanstack/react-query';
-import {BASE_URL} from '../../helper/APIUtils';
-import Loader from '../../components/Loader';
-import axios from 'axios';
+import {useSelector} from 'react-redux';
 
-const ArticleScreen = ({route}: {route: ArticleScreenProp['route']}) => {
+const ArticleScreen = ({}: {route: ArticleScreenProp['route']}) => {
   const insets = useSafeAreaInsets();
-  const {id}: {id: string} = route.params;
-  const [sampleData] = useState(articles.find(value => value.id === id));
   const [isLiked, setisLiked] = useState(true);
+
+  const {article} = useSelector((state: any) => state.article);
+
   const handleLike = () => {
     setisLiked(!isLiked);
-  };
-
-  const getAuthToken = async () => {
-    const data = retrieveItem(KEYS.LOGIN_STATE);
-    if (data) {
-      const auth = JSON.parse(data);
-      console.log('Auth', auth.token);
-      return auth.token;
-    } else {
-      Alert.alert('Not authorized');
-      return null;
-    }
   };
 
   return (
@@ -47,7 +31,17 @@ const ArticleScreen = ({route}: {route: ArticleScreenProp['route']}) => {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.imageContainer}>
-          <Image source={{uri: sampleData?.imageUtils}} style={styles.image} />
+          {article?.imageUtils[0] && article?.imageUtils[0].length === 0 ? (
+            <Image
+              source={{uri: article?.imageUtils[0]}}
+              style={styles.image}
+            />
+          ) : (
+            <Image
+              source={require('../assets/article_default.jpg')}
+              style={styles.image}
+            />
+          )}
           <TouchableOpacity
             onPress={handleLike}
             style={[
@@ -63,9 +57,9 @@ const ArticleScreen = ({route}: {route: ArticleScreenProp['route']}) => {
         </View>
         <View style={styles.contentContainer}>
           <Text style={styles.categoryText}>
-            {sampleData?.category.join(' | ').toUpperCase()}
+            {article?.tags.join(' | ').toUpperCase()}
           </Text>
-          <Text style={styles.titleText}>{sampleData?.title}</Text>
+          <Text style={styles.titleText}>{article?.title}</Text>
           <View style={styles.avatarsContainer}>
             <View style={styles.avatar} />
             <View style={[styles.avatar, styles.avatarOverlap]} />
@@ -76,7 +70,7 @@ const ArticleScreen = ({route}: {route: ArticleScreenProp['route']}) => {
           </View>
           <View style={styles.descriptionContainer}>
             <Text style={styles.descriptionText}>
-              {sampleData?.description}
+              {/** Will Replace with WebView */}
             </Text>
           </View>
         </View>
@@ -97,7 +91,7 @@ const ArticleScreen = ({route}: {route: ArticleScreenProp['route']}) => {
             style={styles.authorImage}
           />
           <View>
-            <Text style={styles.authorName}>{sampleData?.author_name}</Text>
+            <Text style={styles.authorName}>{article?.authorName}</Text>
             <Text style={styles.authorFollowers}>99 Followers</Text>
           </View>
         </View>

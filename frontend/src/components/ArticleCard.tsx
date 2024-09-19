@@ -3,27 +3,23 @@ import React from 'react';
 import {fp} from '../helper/Metric';
 import {ArticleCardProps} from '../type';
 import moment from 'moment';
+import {useDispatch} from 'react-redux';
+import {setArticle} from '../store/articleSlice';
 
 const ArticleCard = ({item, navigation}: ArticleCardProps) => {
-  const formatDate = (date: string) => {
-    const dateObj = new Date(date);
-    const day = date.padStart(2, '0');
-    const month = (dateObj.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-based
-    const year = dateObj.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
+  
+  const dispatch = useDispatch();
 
   return (
     <Pressable
       onPress={() => {
         // handle onPress
-        navigation.navigate('ArticleScreen', {
-          id: item._id,
-        });
+        dispatch(setArticle({article: item}));
+        navigation.navigate('ArticleScreen');
       }}>
       <View style={styles.cardContainer}>
         {/* image */}
-        {item?.imageUtils[0] && item?.imageUtils[0].length == 0 ? (
+        {item?.imageUtils[0] && item?.imageUtils[0].length === 0 ? (
           <Image source={{uri: item?.imageUtils[0]}} style={styles.image} />
         ) : (
           <Image

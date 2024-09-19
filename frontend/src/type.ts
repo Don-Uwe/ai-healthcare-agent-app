@@ -15,7 +15,7 @@ export type RootStackParamList = {
   EditorScreen: undefined;
   ArticleDescriptionScreen: undefined;
   PreviewScreen: {article: string};
-  ArticleScreen: {id: string};
+  ArticleScreen: undefined;
   ProfileEditScreen: undefined;
 };
 
