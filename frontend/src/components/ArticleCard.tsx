@@ -7,9 +7,11 @@ import {useDispatch} from 'react-redux';
 import {setArticle} from '../store/articleSlice';
 
 const ArticleCard = ({item, navigation}: ArticleCardProps) => {
-  
   const dispatch = useDispatch();
 
+  /**
+   * viewCount api integration
+   */
   return (
     <Pressable
       onPress={() => {

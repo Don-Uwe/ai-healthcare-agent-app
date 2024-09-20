@@ -8,12 +8,14 @@ import {
   View,
   ScrollView,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useRef, useState} from 'react';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {PRIMARY_COLOR} from '../../helper/Theme';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {ArticleScreenProp} from '../../type';
 import {useSelector} from 'react-redux';
+import WebView from 'react-native-webview';
+import {hp} from '../../helper/Metric';
 
 const ArticleScreen = ({}: {route: ArticleScreenProp['route']}) => {
   const insets = useSafeAreaInsets();
@@ -21,8 +23,38 @@ const ArticleScreen = ({}: {route: ArticleScreenProp['route']}) => {
 
   const {article} = useSelector((state: any) => state.article);
 
+  /**
+   * 
+   * (i) get user by id
+   * (ii) like api integration
+   * (iii) follow api integration
+   */
+  const webViewRef = useRef<WebView>(null);
+
   const handleLike = () => {
     setisLiked(!isLiked);
+  };
+
+  const loadCss = (content: string) => {
+    if (content) {
+      let s = content.split('\\n').join(' ');
+      console.log('Content Modify', s);
+      return `<!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body {
+            font-size: 40px; 
+            line-height: 1.5; 
+            color: #333; 
+          }
+        </style>
+      </head>
+      <body>${s}</body>
+      </html>`;
+    } else {
+      return 'Content not found';
+    }
   };
 
   return (
@@ -38,7 +70,7 @@ const ArticleScreen = ({}: {route: ArticleScreenProp['route']}) => {
             />
           ) : (
             <Image
-              source={require('../assets/article_default.jpg')}
+              source={require('../../assets/article_default.jpg')}
               style={styles.image}
             />
           )}
@@ -69,12 +101,22 @@ const ArticleScreen = ({}: {route: ArticleScreenProp['route']}) => {
             </View>
           </View>
           <View style={styles.descriptionContainer}>
-            <Text style={styles.descriptionText}>
-              {/** Will Replace with WebView */}
-            </Text>
+            <WebView
+              style={{
+                padding: 10,
+                width: '99%',
+                height: hp(2000),
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+              ref={webViewRef}
+              originWhitelist={['*']}
+              source={{html: loadCss(article.content)}}
+            />
           </View>
         </View>
       </ScrollView>
+
       <View
         style={[
           styles.footer,
@@ -117,7 +159,8 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   scrollViewContent: {
-    paddingBottom: 10,
+    marginBottom: 10,
+    flexGrow: 0,
   },
   imageContainer: {
     position: 'relative',
@@ -181,8 +224,14 @@ const styles = StyleSheet.create({
   },
   descriptionContainer: {
     flex: 1,
-    position: 'relative',
     marginTop: 10,
+  },
+
+  webView: {
+    flex: 1,
+    width: '100%',
+    margin: 0,
+    padding: 0,
   },
   descriptionText: {
     fontWeight: '400',
