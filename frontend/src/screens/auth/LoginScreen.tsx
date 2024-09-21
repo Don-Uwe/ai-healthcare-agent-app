@@ -22,11 +22,14 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {AuthData, LoginScreenProp, User} from '../../type';
 import {useMutation} from '@tanstack/react-query';
 import axios, {AxiosError} from 'axios';
+import {useDispatch} from 'react-redux';
 import {LOGIN_API, RESEND_VERIFICATION, SEND_OTP} from '../../helper/APIUtils';
 import Loader from '../../components/Loader';
+import {setUserId, setUserToken} from '../../store/UserSlice';
 
 const LoginScreen = ({navigation}: LoginScreenProp) => {
   const inset = useSafeAreaInsets();
+  const dispatch = useDispatch();
   const isDarkMode = useColorScheme() === 'dark';
   const [emailInputVisible, setEmailInputVisible] = useState(false);
   const [password, setPassword] = useState('');
@@ -131,6 +134,8 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
             KEYS.USER_TOKEN_EXPIRY_DATE,
             new Date().toISOString(),
           );
+          dispatch(setUserId(data.user_id));
+          dispatch(setUserToken(auth.token));
         }
         navigation.navigate('TabNavigation');
       } catch (e) {

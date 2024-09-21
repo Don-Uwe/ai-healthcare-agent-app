@@ -268,6 +268,14 @@ export const removeItem = async key => {
   }
 };
 
+export const clearStorage = async () => {
+  try {
+    await AsyncStorage.clear();
+  } catch (error) {
+    console.error('Error removing item:', error);
+  }
+};
+
 export const demo: string = `<h1 id="alzheimer-s-disease-understanding-symptoms-and-care">Alzheimer&#39;s Disease: Understanding Symptoms and Care</h1>
 <h2 id="introduction">Introduction</h2>
 <p>Alzheimer&#39;s is one kind of progressive neurologic disorder which mainly contributes to problems in memory, thinking, and behavior. It accounts for 60-80% of all cases of dementia in elderly people, making it one of the most common kinds of dementia among the elderly. The disease is named after Dr. Alois Alzheimer, who first described it in 1906 following the post-mortem analysis of changes in the brain tissue of a woman who died from an unusual mental illness.</p>
@@ -516,7 +524,7 @@ Advanced Stage: Total dependence of the person on the caregiver for all personal
 export const KEYS = {
   USER_ID: 'USER_ID',
   USER_TOKEN: 'USER_TOKEN',
-  USER_TOKEN_EXPIRY_DATE:'USER_TOKEN_EXPIRY_DATE'
+  USER_TOKEN_EXPIRY_DATE: 'USER_TOKEN_EXPIRY_DATE',
 };
 
 export const createHTMLStructure = (

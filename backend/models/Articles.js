@@ -64,6 +64,11 @@ const articleSchema = new Schema({
     required: true,
     default: 'English',
   },
+  adminPost:{
+    type: Boolean,
+    required: true,
+    default: false
+  }
 });
 
 // Apply the autoIncrement plugin to the schema
