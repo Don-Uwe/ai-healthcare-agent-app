@@ -14,7 +14,6 @@ import {PRIMARY_COLOR} from '../helper/Theme';
 import AddIcon from '../components/AddIcon';
 import ArticleCard from '../components/ArticleCard';
 import HomeScreenHeader from '../components/HomeScreenHeader';
-import {KEYS, retrieveItem} from '../helper/Utils';
 import {ArticleData, Category, CategoryType, HomeScreenProps} from '../type';
 import axios from 'axios';
 import {ARTICLE_TAGS_API, BASE_URL} from '../helper/APIUtils';
@@ -47,6 +46,8 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     selectedTags,
     sortType,
   } = useSelector((state: any) => state.article);
+  const {user_token} = useSelector((state: any) => state.user);
+  const [refreshing, setRefreshing] = useState(false);
 
   const handleCategorySelection = (category: CategoryType['name']) => {
     // Update Redux State
@@ -64,8 +65,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   }, []);
 
   const getAllCategories = async () => {
-    const token = await retrieveItem(KEYS.USER_TOKEN);
-    if (token == null) {
+    if (user_token === '') {
       Alert.alert('No token found');
       return;
     }
@@ -73,7 +73,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       `${BASE_URL + ARTICLE_TAGS_API}`,
       {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${user_token}`,
         },
       },
     );
@@ -187,18 +187,20 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     dispatch(setFilteredArticles({filteredArticles: filtered}));
   };
 
-  const {data: articleData, isLoading} = useQuery({
+  const {
+    data: articleData,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ['get-all-articles'],
     queryFn: async () => {
       try {
-        const token = await retrieveItem(KEYS.USER_TOKEN);
-        if (token == null) {
-          Alert.alert('No token found');
-          return;
+        if (user_token === '') {
+          throw new Error('No token found');
         }
         const response = await axios.get(`${BASE_URL}/articles`, {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${user_token}`,
           },
         });
         let d = response.data.articles as ArticleData[];
@@ -210,6 +212,11 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     },
   });
 
+  const onRefresh = () => {
+    setRefreshing(true);
+    refetch();
+    setRefreshing(false);
+  };
   const handleSearch = (textInput: string) => {
     console.log('Search Input', textInput);
     if (textInput === '' || articleData === undefined) {
@@ -223,7 +230,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           .includes(textInput.toLowerCase());
         const matchesTags = article.tags.some(tag =>
           tag.toLowerCase().includes(textInput.toLowerCase()),
-        ); 
+        );
 
         return matchesTitle || matchesTags;
       });
@@ -293,6 +300,8 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
             renderItem={renderItem}
             keyExtractor={item => item._id.toString()}
             contentContainerStyle={styles.flatListContentContainer}
+            refreshing={refreshing}
+            onRefresh={onRefresh}
           />
         )}
       </View>

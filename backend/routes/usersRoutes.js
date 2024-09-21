@@ -6,7 +6,7 @@ const {
     sendOTPForForgotPassword, verifyOtpForForgotPassword,
     deleteByUser, deleteByAdmin,getprofile,
     follow,
-    unfollow,
+    getFollowers,
     updateReadArticles,
     collectMonthlyRecordsForReading,
     collectMonthlyRecordsForWriting,
@@ -35,7 +35,7 @@ router.post("/user/refreshToken", refreshToken);
 router.get('/user/getprofile',getprofile)
 // Follow and Unfollow Routes
 router.post('/user/follow',authenticateToken, follow);
-router.post('/user/unfollow', authenticateToken , unfollow);
+router.get('/user/:userId/followers', authenticateToken, getFollowers);
 
 // Forget password
 router.post("/user/forgotpassword", sendOTPForForgotPassword);

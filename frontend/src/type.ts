@@ -185,6 +185,7 @@ export type ArticleData = {
   last_updated: string;
   imageUtils: string[];
   viewCount: number;
+  likeCount: number;
 };
 
 export type CategoryType = {

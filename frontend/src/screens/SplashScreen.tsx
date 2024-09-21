@@ -1,11 +1,14 @@
 import React, {useEffect} from 'react';
 import {View, Text, StyleSheet, Image} from 'react-native';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
-// import {handleBackButton} from '../helper/Utils';
 import {SplashScreenProp} from '../type';
-import {KEYS, retrieveItem} from '../helper/Utils';
+import {clearStorage, KEYS, retrieveItem} from '../helper/Utils';
+import {useDispatch} from 'react-redux';
+import {setUserId, setUserToken} from '../store/UserSlice';
 
 const SplashScreen = ({navigation}: SplashScreenProp) => {
+  const dispatch = useDispatch();
+
   function isDateMoreThanSevenDaysOld(dateString: string) {
     const inputDate = new Date(dateString).getTime();
     const currentDate = new Date().getTime();
@@ -31,8 +34,12 @@ const SplashScreen = ({navigation}: SplashScreenProp) => {
       const expiryDate = await retrieveItem(KEYS.USER_TOKEN_EXPIRY_DATE);
 
       if (user && expiryDate && !isDateMoreThanSevenDaysOld(expiryDate)) {
+        dispatch(setUserId(userId));
+        dispatch(setUserToken(user));
+
         navigation.navigate('TabNavigation');
       } else {
+        await clearStorage();
         navigation.navigate('LoginScreen');
       }
     } catch (error) {

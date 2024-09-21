@@ -7,8 +7,11 @@ import {
   TouchableOpacity,
   View,
   ScrollView,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
+import {useQuery} from '@tanstack/react-query';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {PRIMARY_COLOR} from '../../helper/Theme';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -16,29 +19,121 @@ import {ArticleScreenProp} from '../../type';
 import {useSelector} from 'react-redux';
 import WebView from 'react-native-webview';
 import {hp} from '../../helper/Metric';
+import {useMutation} from '@tanstack/react-query';
+import {BASE_URL, FOLLOW_USER, LIKE_ARTICLE} from '../../helper/APIUtils';
+import axios from 'axios';
 
+/**
+ * 
+ *  Drawback : 
+ * (i) Try to handle like state as soon as page open
+ * (ii) Try to update like state as soon as it updated
+ * (iii) Save functionality 
+ * (iv) Test with different user
+ */
 const ArticleScreen = ({}: {route: ArticleScreenProp['route']}) => {
   const insets = useSafeAreaInsets();
-  const [isLiked, setisLiked] = useState(true);
-
+  const [isLiked, setisLiked] = useState<Boolean>(true);
   const {article} = useSelector((state: any) => state.article);
+  const {user_id, user_token} = useSelector((state: any) => state.user);
 
-  /**
-   * 
-   * (i) get user by id
-   * (ii) like api integration
-   * (iii) follow api integration
-   */
   const webViewRef = useRef<WebView>(null);
-
+  console.log('Article from screen', article.viewCount);
   const handleLike = () => {
-    setisLiked(!isLiked);
+    updateLikeMutation.mutate();
   };
+
+  const handleFollow = () => {
+    updateFollowMutation.mutate();
+  };
+
+  const updateFollowMutation = useMutation({
+    mutationKey: ['update-follow-status'],
+
+    mutationFn: async () => {
+      if (user_token === '') {
+        Alert.alert('No token found');
+        return;
+      }
+      const res = await axios.post(
+        FOLLOW_USER,
+        {
+          followUserId: user_id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user_token}`,
+          },
+        },
+      );
+      return res.data as any;
+    },
+
+    onSuccess: () => {
+      console.log('follow success');
+    },
+
+    onError: err => {
+      Alert.alert('Try Again!');
+      console.log('Follow Error', err);
+    },
+  });
+
+  const updateLikeMutation = useMutation({
+    mutationKey: ['update-like-status'],
+
+    mutationFn: async () => {
+      if (user_token === '') {
+        Alert.alert('No token found');
+        return;
+      }
+      const res = await axios.post(
+        LIKE_ARTICLE,
+        {
+          article_id: article._id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user_token}`,
+          },
+        },
+      );
+      return res.data.liked as Boolean;
+    },
+
+    onSuccess: data => {
+      if (data) {
+        setisLiked(data);
+        console.log('Like Done', data);
+      }
+    },
+
+    onError: err => {
+      Alert.alert('Try Again!');
+      console.log('Like Error', err);
+    },
+  });
+
+  const {data: authorFollowers} = useQuery({
+    queryKey: ['authorFollowers'],
+    queryFn: async () => {
+      const response = await axios.get(
+        `${BASE_URL}/user/${article.authorId}/followers`,
+        {
+          headers: {
+            Authorization: `Bearer ${user_token}`,
+          },
+        },
+      );
+
+      return response.data.followers as string[];
+    },
+  });
 
   const loadCss = (content: string) => {
     if (content) {
       let s = content.split('\\n').join(' ');
-      console.log('Content Modify', s);
+      //console.log('Content Modify', s);
       return `<!DOCTYPE html>
       <html>
       <head>
@@ -74,20 +169,31 @@ const ArticleScreen = ({}: {route: ArticleScreenProp['route']}) => {
               style={styles.image}
             />
           )}
-          <TouchableOpacity
-            onPress={handleLike}
-            style={[
-              styles.likeButton,
-              {backgroundColor: isLiked ? '#f5f5f5' : PRIMARY_COLOR},
-            ]}>
-            <FontAwesome
-              name="heart"
-              size={34}
-              color={isLiked ? PRIMARY_COLOR : 'white'}
-            />
-          </TouchableOpacity>
+          {updateLikeMutation.isPending ? (
+            <ActivityIndicator size={40} color={PRIMARY_COLOR} />
+          ) : (
+            <TouchableOpacity
+              onPress={handleLike}
+              style={[
+                styles.likeButton,
+                {backgroundColor: isLiked ? 'red' : PRIMARY_COLOR},
+              ]}>
+              <FontAwesome
+                name="heart"
+                size={34}
+                color={isLiked ? PRIMARY_COLOR : 'white'}
+              />
+            </TouchableOpacity>
+          )}
         </View>
         <View style={styles.contentContainer}>
+          <Text style={{...styles.viewText, marginBottom: 10}}>
+            {article?.viewCount
+              ? article?.viewCount > 1
+                ? `${article?.viewCount} views`
+                : `${article?.viewCount} view`
+              : '0 view'}
+          </Text>
           <Text style={styles.categoryText}>
             {article?.tags.join(' | ').toUpperCase()}
           </Text>
@@ -97,7 +203,7 @@ const ArticleScreen = ({}: {route: ArticleScreenProp['route']}) => {
             <View style={[styles.avatar, styles.avatarOverlap]} />
             <View style={[styles.avatar, styles.avatarDoubleOverlap]} />
             <View style={[styles.avatar, styles.avatarTripleOverlap]}>
-              <Text style={styles.moreText}>+3</Text>
+              <Text style={styles.moreText}>+{article.likeCount}</Text>
             </View>
           </View>
           <View style={styles.descriptionContainer}>
@@ -134,12 +240,25 @@ const ArticleScreen = ({}: {route: ArticleScreenProp['route']}) => {
           />
           <View>
             <Text style={styles.authorName}>{article?.authorName}</Text>
-            <Text style={styles.authorFollowers}>99 Followers</Text>
+            <Text style={styles.authorFollowers}>
+              {authorFollowers ? authorFollowers.length : 0} followers
+            </Text>
           </View>
         </View>
-        <TouchableOpacity style={styles.followButton}>
-          <Text style={styles.followButtonText}>Follow</Text>
-        </TouchableOpacity>
+        {user_id !== article.authorId &&
+          (updateFollowMutation.isPending ? (
+            <ActivityIndicator size={40} color={PRIMARY_COLOR} />
+          ) : (
+            <TouchableOpacity
+              style={styles.followButton}
+              onPress={handleFollow}>
+              <Text style={styles.followButtonText}>
+                {authorFollowers && authorFollowers.includes(user_id)
+                  ? 'Unfollow'
+                  : 'Follow'}
+              </Text>
+            </TouchableOpacity>
+          ))}
       </View>
     </View>
   );
@@ -186,6 +305,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6C6C6D',
     textTransform: 'uppercase',
+  },
+  viewText: {
+    fontWeight: '500',
+    fontSize: 14,
+    color: '#6C6C6D',
   },
   titleText: {
     fontSize: 25,

@@ -1,6 +1,6 @@
 const nodemailer = require('nodemailer');
 require('dotenv').config();
-const { verifyToken, verifyUser } = require("../auth/authMiddleware");
+const { verifyToken, verifyUser } = require("../middleware/authMiddleware");
 const jwt = require('jsonwebtoken');
 const UnverifiedUser = require("../models/UnverifiedUserModel");
 const User = require("../models/UserModel");
