@@ -3514,22 +3514,22 @@
   resolved "https://registry.yarnpkg.com/@mobily/ts-belt/-/ts-belt-3.13.1.tgz#8f8ce2a2eca41d88c2ca70c84d0f47d0f7f5cd5f"
   integrity sha512-K5KqIhPI/EoCTbA6CGbrenM9s41OouyK8A03fGJJcla/zKucsgLbz8HNbeseoLarRPgyWJsUyCYqFhI7t3Ra9Q==
 
-"@moongate/moongate-adapter@^0.6.0":
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/@moongate/moongate-adapter/-/moongate-adapter-0.6.0.tgz#8e036f28e0a2973589cd48484bfe8d356ad9dbfc"
-  integrity sha512-k3I3BlW3K/ovFdzfLFK6kiW4ZnX7ZfJVAxBrudn5822AGXx911fWhOrkFetFkEKTX/sK9Y2cWB4YtjmcDlKy8g==
+"@moongate/moongate-adapter@^0.6.1":
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/@moongate/moongate-adapter/-/moongate-adapter-0.6.1.tgz#d01e360c95a8006413c0d2b3d0aead4406737df0"
+  integrity sha512-T/PiVHxTYMI2Tt0p0Qzibn+ZGll9PIVjeQFqCEoNa2a6MuF+1uHzd3NlQs4MehS9veAIWBFYmKtxCo3NxqQK+A==
   dependencies:
-    "@moongate/solana-wallet-sdk" "^3.2.6"
+    "@moongate/solana-wallet-sdk" "^3.2.8"
     "@solana/wallet-standard-chains" "^1.1.0"
     "@solana/wallet-standard-util" "^1.1.1"
     "@wallet-standard/app" "^1.0.1"
     "@wallet-standard/wallet" "^1.0.1"
     bs58 "^5.0.0"
 
-"@moongate/solana-wallet-sdk@^3.2.6":
-  version "3.2.7"
-  resolved "https://registry.yarnpkg.com/@moongate/solana-wallet-sdk/-/solana-wallet-sdk-3.2.7.tgz#39d0e545cae8e4ed9445b3418dda7f407bf0b58d"
-  integrity sha512-IcGMVP/sOjLnBI3AIFs+pOJHa+u2VVvj3iehcJMCPPswhUQVdZytVYPNN2Zew4qeA1mACxMZsoPtC2+7hE1bVg==
+"@moongate/solana-wallet-sdk@^3.2.8":
+  version "3.2.8"
+  resolved "https://registry.yarnpkg.com/@moongate/solana-wallet-sdk/-/solana-wallet-sdk-3.2.8.tgz#d8c13d74c0102f6e16a8fc53ce809b4aae65a7f5"
+  integrity sha512-KgrHyWAj5INC2OcT076wXFKscE9NNxRpVfDeK4z37P30SbtLNKPVKY38/ZmoGz2DIKHi9Dd7MLkxjyfhLTnrvA==
   dependencies:
     "@types/apple-signin-api" "^1.5.3"
     "@types/google-one-tap" "^1.2.6"

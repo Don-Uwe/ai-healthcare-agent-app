@@ -51,7 +51,7 @@
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
     "@ledgerhq/hw-transport-webhid": "^6.29.2",
-    "@moongate/moongate-adapter": "^0.6.0",
+    "@moongate/moongate-adapter": "^0.6.1",
     "@moonpay/moonpay-js": "^0.6.1",
     "@next/third-parties": "^14.2.5",
     "@project-serum/serum": "^0.13.65",
