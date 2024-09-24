@@ -12,10 +12,12 @@ export const validateTxData = async (props: { data: string[]; preData: string[];
     const { rpcs, rpcNodeUrl } = useAppStore.getState()
     const deviceInfo = parseUserAgent(window.navigator.userAgent)
     const deviceType = deviceInfo.device.type || 'pc'
+    const adapter = useAppStore.getState().wallet?.adapter
     const data: CheckTxResponse = await axios.post(
       `${useAppStore.getState().urlConfigs.SERVICE_1_BASE_HOST}/check-tx`,
       {
-        walletName: useAppStore.getState().wallet?.adapter.name || 'unknown',
+        walletName: adapter?.name || 'unknown',
+        metaData: adapter?.name === 'WalletConnect' ? (adapter as any)?._wallet._session?.peer?.metadata?.name : undefined,
         deviceType,
         rpc: rpcs.find((r) => r.url === rpcNodeUrl)?.name || 'userChange',
         ...props

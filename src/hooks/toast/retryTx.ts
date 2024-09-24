@@ -1,4 +1,5 @@
 import { VersionedTransaction, Transaction } from '@solana/web3.js'
+import { parseUserAgent } from 'react-device-detect'
 import { retry, idToIntervalRecord, cancelRetry } from '@/utils/common'
 import { useAppStore } from '@/store'
 import axios from '@/api/axios'
@@ -14,13 +15,17 @@ const retryRecord = new Map<
 export default function retryTx({ tx, id }: { tx: Transaction | VersionedTransaction; id: string }) {
   const { connection, urlConfigs } = useAppStore.getState()
   if (retryRecord.has(id)) return
+
+  const deviceInfo = parseUserAgent(window.navigator.userAgent)
   const sendApi = () => {
     try {
       axios
         .post(
-          `${urlConfigs.SERVICE_BASE_HOST}${urlConfigs.SEND_TRANSACTION}`,
+          `${urlConfigs.SERVICE_1_BASE_HOST}/send-tx`,
           {
-            data: [txToBase64(tx)]
+            data: txToBase64(tx),
+            walletName: useAppStore.getState().wallet?.adapter.name || '',
+            deviceType: deviceInfo.device.type || 'pc'
           },
           { skipError: true }
         )
