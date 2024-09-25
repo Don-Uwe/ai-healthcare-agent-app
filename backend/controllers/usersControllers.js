@@ -8,6 +8,7 @@ const moment = require("moment");
 const Article = require("../models/Articles");
 const adminModel = require('../models/adminModel');
 require('dotenv').config();
+
 const { sendVerificationEmail } = require('./emailservice');
 
 module.exports.register = async (req, res) => {

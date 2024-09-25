@@ -10,8 +10,9 @@
 
 ## WORK IN PROGRESS
 
+### UltimateHealth is thrilled to participate in the upcoming hackathon! I am reaching out to active contributors who are interested in collaborating as team members. If you would like to join, please send me a message. Given our large group, I will prioritize selecting team members who have made meaningful contributions to both the frontend and backend development aspects of the project.
 
-
+### Please response before 25th September, 2024.
 
 <table align="center">
     <thead align="center">
