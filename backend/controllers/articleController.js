@@ -243,14 +243,17 @@ module.exports.likeArticle = async (req, res) => {
     
       // Unlike It
       const articleIndex = user.likedArticles.findIndex(id => id === article_id);
+      const userIndex = articleDb.likedUsers.findIndex(id=> id === req.user.userId);
      
       if(articleIndex != -1){
       user.likedArticles.splice(articleIndex, 1);
       await user.save();
       
       articleDb.likeCount = Math.max(articleDb.likeCount-1,0);
+      if(userIndex != -1)
+        articleDb.likedUsers.splice(userIndex, -1);
       await articleDb.save();
-      res.status(200).json({ message: 'Article remove from liked lists successfully', liked:false })
+      res.status(200).json({ message: 'Article remove from liked lists successfully', article:articleDb})
       }
       
     }else{
@@ -258,8 +261,9 @@ module.exports.likeArticle = async (req, res) => {
       user.likedArticles.push(article_id);
       await user.save();
       articleDb.likeCount++;
+      articleDb.likedUsers.push(req.user.userId);
       await articleDb.save();
-      res.status(200).json({ message: 'Article liked successfully', liked: true });
+      res.status(200).json({ message: 'Article liked successfully', article: articleDb });
     }
 
   } catch (error) {
@@ -289,7 +293,6 @@ module.exports.updateViewCount = async(req, res)=>{
  }
 
 }
-
 
 // Helper function to get the next id
 const getNextId = async () => {

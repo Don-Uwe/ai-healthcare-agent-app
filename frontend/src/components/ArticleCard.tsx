@@ -21,7 +21,7 @@ import {PRIMARY_COLOR} from '../helper/Theme';
 const ArticleCard = ({item, navigation}: ArticleCardProps) => {
   const dispatch = useDispatch();
   const {user_token} = useSelector((state: any) => state.user);
-  console.log('Article from card', item.viewCount);
+  //console.log('Article from card', item.viewCount);
   const updateViewCountMutation = useMutation({
     mutationKey: ['update-view-count'],
     mutationFn: async () => {

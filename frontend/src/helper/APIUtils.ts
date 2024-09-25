@@ -14,6 +14,7 @@ const UPDATE_VIEW_COUNT = `${BASE_URL}/articles/updateViewCount`;
 const SAVE_ARTICLE = `${BASE_URL}/articles/saveArticle`;
 const LIKE_ARTICLE = `${BASE_URL}/articles/likeArticle`;
 
+
 export {
   BASE_URL,
   LOGIN_API,
@@ -29,5 +30,5 @@ export {
   FOLLOW_USER,
   UPDATE_VIEW_COUNT,
   SAVE_ARTICLE,
-  LIKE_ARTICLE
+  LIKE_ARTICLE,
 };

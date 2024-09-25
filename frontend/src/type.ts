@@ -186,6 +186,7 @@ export type ArticleData = {
   imageUtils: string[];
   viewCount: number;
   likeCount: number;
+  likedUsers: string[];
 };
 
 export type CategoryType = {

@@ -10,35 +10,39 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import React, {useRef, useState} from 'react';
+import React, {useRef} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {PRIMARY_COLOR} from '../../helper/Theme';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {ArticleScreenProp} from '../../type';
-import {useSelector} from 'react-redux';
+import {ArticleData, ArticleScreenProp} from '../../type';
+import {useDispatch, useSelector} from 'react-redux';
 import WebView from 'react-native-webview';
 import {hp} from '../../helper/Metric';
 import {useMutation} from '@tanstack/react-query';
 import {BASE_URL, FOLLOW_USER, LIKE_ARTICLE} from '../../helper/APIUtils';
 import axios from 'axios';
+import {setArticle} from '../../store/articleSlice';
 
 /**
- * 
- *  Drawback : 
- * (i) Try to handle like state as soon as page open
- * (ii) Try to update like state as soon as it updated
- * (iii) Save functionality 
+ *
+ *  Drawback :
+ * (i) Try to handle like state as soon as page open (done)
+ * (ii) Try to update like state as soon as it updated (done)
+ * (iii) Save functionality
  * (iv) Test with different user
  */
 const ArticleScreen = ({}: {route: ArticleScreenProp['route']}) => {
   const insets = useSafeAreaInsets();
-  const [isLiked, setisLiked] = useState<Boolean>(true);
   const {article} = useSelector((state: any) => state.article);
   const {user_id, user_token} = useSelector((state: any) => state.user);
+  const dispatch = useDispatch();
+  console.log('liked articles user', article.likedUsers[0]);
+  console.log('User id', user_id);
 
+  console.log('User Id found', article.likedUsers.includes(user_id));
   const webViewRef = useRef<WebView>(null);
-  console.log('Article from screen', article.viewCount);
+  //console.log('Article from screen', article.viewCount);
   const handleLike = () => {
     updateLikeMutation.mutate();
   };
@@ -98,14 +102,11 @@ const ArticleScreen = ({}: {route: ArticleScreenProp['route']}) => {
           },
         },
       );
-      return res.data.liked as Boolean;
+      return res.data.article as ArticleData;
     },
 
     onSuccess: data => {
-      if (data) {
-        setisLiked(data);
-        console.log('Like Done', data);
-      }
+      dispatch(setArticle({article: data}));
     },
 
     onError: err => {
@@ -176,12 +177,18 @@ const ArticleScreen = ({}: {route: ArticleScreenProp['route']}) => {
               onPress={handleLike}
               style={[
                 styles.likeButton,
-                {backgroundColor: isLiked ? 'red' : PRIMARY_COLOR},
+                {
+                  backgroundColor: article.likedUsers.includes(user_id)
+                    ? 'red'
+                    : PRIMARY_COLOR,
+                },
               ]}>
               <FontAwesome
                 name="heart"
                 size={34}
-                color={isLiked ? PRIMARY_COLOR : 'white'}
+                color={
+                  article.likedUsers.includes(user_id) ? PRIMARY_COLOR : 'white'
+                }
               />
             </TouchableOpacity>
           )}

@@ -68,7 +68,11 @@ const articleSchema = new Schema({
     type: Boolean,
     required: true,
     default: false
-  }
+  },
+  likedUsers: {
+    type: Array,
+    default: []
+},
 });
 
 // Apply the autoIncrement plugin to the schema
