@@ -12,7 +12,7 @@ import { Select } from '@/components/Select'
 import useTokenPrice from '@/hooks/token/useTokenPrice'
 import { useTokenStore } from '@/store'
 import { Box, Flex, HStack, SystemStyleObject, Tag, Text, useDisclosure } from '@chakra-ui/react'
-import { ApiClmmConfigInfo, ApiV3Token, PoolFetchType, TokenInfo, solToWSol } from '@raydium-io/raydium-sdk-v2'
+import { ApiClmmConfigInfo, ApiV3Token, ClmmConfigInfo, PoolFetchType, TokenInfo, solToWSol } from '@raydium-io/raydium-sdk-v2'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronDown, ChevronUp } from 'react-feather'
 import { useTranslation } from 'react-i18next'
@@ -23,6 +23,12 @@ type Side = 'token1' | 'token2'
 interface Props {
   completed: boolean
   isLoading: boolean
+  show: boolean
+  initState?: {
+    token1?: ApiV3Token
+    token2?: ApiV3Token
+    config?: ApiClmmConfigInfo
+  }
   onConfirm: (props: { token1: ApiV3Token; token2: ApiV3Token; ammConfig: ApiClmmConfigInfo }) => void
   onEdit: (step: number) => void
 }
@@ -34,7 +40,7 @@ const SelectBoxSx: SystemStyleObject = {
   px: '4'
 }
 
-export default function SelectPoolTokenAndFee({ completed, isLoading, onConfirm, onEdit }: Props) {
+export default function SelectPoolTokenAndFee({ completed, initState, show, isLoading, onConfirm, onEdit }: Props) {
   const { t } = useTranslation()
   const { isOpen, onOpen, onClose } = useDisclosure()
   const clmmFeeConfigs = useClmmStore((s) => s.clmmFeeConfigs)
@@ -42,9 +48,9 @@ export default function SelectPoolTokenAndFee({ completed, isLoading, onConfirm,
   const [tokens, setTokens] = useState<{
     token1?: ApiV3Token
     token2?: ApiV3Token
-  }>({})
+  }>({ token1: initState?.token1, token2: initState?.token2 })
   const { token1, token2 } = tokens
-  const [currentConfig, setCurrentConfig] = useState<ApiClmmConfigInfo | undefined>()
+  const [currentConfig, setCurrentConfig] = useState<ApiClmmConfigInfo | undefined>(initState?.config)
   const poolKey = `${token1?.address}-${token2?.address}`
   const selectRef = useRef<Side>('token1')
 
@@ -85,7 +91,7 @@ export default function SelectPoolTokenAndFee({ completed, isLoading, onConfirm,
     if (isExistingLoading) return
     const defaultConfig = Object.values(clmmFeeConfigs || {}).find((c) => c.tradeFeeRate === 2500)
     if (!new Set(existingPools.values()).has(defaultConfig?.id || '')) {
-      if (defaultConfig) setCurrentConfig(defaultConfig)
+      if (defaultConfig) setCurrentConfig((preConfig) => preConfig || defaultConfig)
       return
     }
   }, [poolKey, existingPools, clmmFeeConfigs, isExistingLoading])
@@ -127,6 +133,7 @@ export default function SelectPoolTokenAndFee({ completed, isLoading, onConfirm,
   let error = tokens.token1 ? (tokens.token2 ? undefined : 'common.quote_token') : 'common.base_token'
   error = error || (currentConfig ? undefined : 'field.fee_tier')
 
+  if (!show) return null
   if (completed) {
     return (
       <PanelCard px={[3, 6]} py="3">
