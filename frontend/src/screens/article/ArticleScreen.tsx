@@ -24,25 +24,15 @@ import {BASE_URL, FOLLOW_USER, LIKE_ARTICLE} from '../../helper/APIUtils';
 import axios from 'axios';
 import {setArticle} from '../../store/articleSlice';
 
-/**
- *
- *  Drawback :
- * (i) Try to handle like state as soon as page open (done)
- * (ii) Try to update like state as soon as it updated (done)
- * (iii) Save functionality
- * (iv) Test with different user
- */
 const ArticleScreen = ({}: {route: ArticleScreenProp['route']}) => {
   const insets = useSafeAreaInsets();
   const {article} = useSelector((state: any) => state.article);
   const {user_id, user_token} = useSelector((state: any) => state.user);
   const dispatch = useDispatch();
-  console.log('liked articles user', article.likedUsers[0]);
-  console.log('User id', user_id);
 
   console.log('User Id found', article.likedUsers.includes(user_id));
   const webViewRef = useRef<WebView>(null);
-  //console.log('Article from screen', article.viewCount);
+
   const handleLike = () => {
     updateLikeMutation.mutate();
   };
