@@ -43,6 +43,7 @@ interface LiquidityStore {
       poolInfo: ApiV3PoolInfoStandardItem
       amountA: string
       amountB: string
+      otherAmountMin: string
       fixedSide: 'a' | 'b'
     } & TxCallbackProps
   ) => Promise<string>
@@ -58,7 +59,9 @@ interface LiquidityStore {
   removeLiquidityAct: (
     params: {
       poolInfo: ApiV3PoolInfoStandardItem
-      amount: string
+      lpAmount: string
+      amountA: string
+      amountB: string
       config?: {
         bypassAssociatedCheck?: boolean
       }
@@ -115,6 +118,7 @@ interface LiquidityStore {
   }) => Promise<{
     output: string
     maxOutput: string
+    minOutput: string
     liquidity: BN
   }>
 
@@ -207,6 +211,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
     addLiquidityAct: async ({ onSent, onError, onFinally, ...params }) => {
       const { raydium, txVersion } = useAppStore.getState()
       if (!raydium) return ''
+      const otherMint = params.fixedSide === 'a' ? 'mintB' : 'mintA'
       const { execute } = await raydium.liquidity.addLiquidity({
         ...params,
         amountInA: new TokenAmount(
@@ -216,6 +221,10 @@ export const useLiquidityStore = createStore<LiquidityStore>(
         amountInB: new TokenAmount(
           toToken(params.poolInfo.mintB),
           new Decimal(params.amountB).mul(10 ** params.poolInfo.mintB.decimals).toFixed(0)
+        ),
+        otherAmountMin: new TokenAmount(
+          toToken(params.poolInfo[otherMint]),
+          new Decimal(params.otherAmountMin).mul(10 ** params.poolInfo[otherMint].decimals).toFixed(0)
         ),
         txVersion,
         computeBudgetConfig: await getComputeBudgetConfig()
@@ -254,26 +263,28 @@ export const useLiquidityStore = createStore<LiquidityStore>(
 
     removeLiquidityAct: async ({ onSent, onError, onFinally, ...params }) => {
       const { raydium, txVersion } = useAppStore.getState()
+      const lpSlippage = get().slippage
 
       if (!raydium) return ''
       const computeBudgetConfig = await getComputeBudgetConfig()
-      const { poolInfo, amount, config } = params
+      const { poolInfo, lpAmount, amountA, amountB, config } = params
+
       const { execute } = await raydium.liquidity.removeLiquidity({
         poolInfo,
-        amountIn: new BN(amount),
+        lpAmount: new BN(lpAmount),
+        baseAmountMin: new BN(new Decimal(amountA).mul(1 - lpSlippage).toFixed(0)),
+        quoteAmountMin: new BN(new Decimal(amountB).mul(1 - lpSlippage).toFixed(0)),
         config,
         txVersion,
         computeBudgetConfig
       })
 
-      const percent = new Decimal(amount).div(10 ** poolInfo.lpMint.decimals).div(poolInfo?.lpAmount || 1)
-
       const meta = getTxMeta({
         action: 'removeLiquidity',
         values: {
-          amountA: formatLocaleStr(percent.mul(poolInfo?.mintAmountA || 0).toString(), params.poolInfo.mintA.decimals)!,
+          amountA: formatLocaleStr(new Decimal(amountA).div(10 ** poolInfo.mintA.decimals).toString(), params.poolInfo.mintA.decimals)!,
           symbolA: getMintSymbol({ mint: params.poolInfo.mintA, transformSol: true }),
-          amountB: formatLocaleStr(percent.mul(poolInfo?.mintAmountB || 0).toString(), params.poolInfo.mintB.decimals)!,
+          amountB: formatLocaleStr(new Decimal(amountB).div(10 ** poolInfo.mintB.decimals).toString(), params.poolInfo.mintB.decimals)!,
           symbolB: getMintSymbol({ mint: params.poolInfo.mintB, transformSol: true })
         }
       })
@@ -460,6 +471,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
         return {
           output: '0',
           maxOutput: '0',
+          minOutput: '0',
           liquidity: new BN(0)
         }
 
@@ -503,6 +515,13 @@ export const useLiquidityStore = createStore<LiquidityStore>(
           r.maxAnotherAmount instanceof TokenAmount
             ? r.maxAnotherAmount.toExact()
             : new Decimal(r.maxAnotherAmount.amount.toString())
+                .div(10 ** outputMint.decimals)
+                .toDecimalPlaces(outputMint.decimals)
+                .toString(),
+        minOutput:
+          r.minAnotherAmount instanceof TokenAmount
+            ? r.minAnotherAmount.toExact()
+            : new Decimal(r.minAnotherAmount.amount.toString())
                 .div(10 ** outputMint.decimals)
                 .toDecimalPlaces(outputMint.decimals)
                 .toString(),

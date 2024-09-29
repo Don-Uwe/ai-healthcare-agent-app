@@ -68,7 +68,7 @@ export default function AddLiquidity({
   const [isTxSending, setIsTxSending] = useState(false)
   // const [autoSwap, setAutoSwap] = useState(true)
   const [pairAmount, setPairAmount] = useState<{ base: string; quote: string }>({ base: '', quote: '' })
-  const computeAmountRef = useRef<{ base: string; quote: string }>({ base: '', quote: '' })
+  const computeAmountRef = useRef<{ base: string; quote: string; minAnother: string }>({ base: '', quote: '', minAnother: '' })
   const computedLpRef = useRef(new Decimal(0))
   const focusRef = useRef<'base' | 'quote'>('base')
 
@@ -80,7 +80,7 @@ export default function AddLiquidity({
     const updateSide = isBase ? 'quote' : 'base'
     if (computeAmountRef.current[focusRef.current] === '' || poolNotFound) {
       setPairAmount((prev) => {
-        computeAmountRef.current = { ...prev, [updateSide]: '' }
+        computeAmountRef.current = { ...prev, [updateSide]: '', minAnother: '' }
         return { ...prev, [updateSide]: '' }
       })
       return
@@ -98,6 +98,7 @@ export default function AddLiquidity({
       baseIn: isBase
     }).then((r) => {
       computeAmountRef.current[updateSide] = new Decimal(r.maxOutput).toFixed()
+      computeAmountRef.current.minAnother = new Decimal(r.minOutput).toFixed()
       computedLpRef.current = new Decimal(r.liquidity.toString())
       setPairAmount((prev) => ({
         ...prev,
@@ -173,7 +174,7 @@ export default function AddLiquidity({
     const callBacks = {
       onSent: () => {
         setPairAmount({ base: '', quote: '' })
-        computeAmountRef.current = { base: '', quote: '' }
+        computeAmountRef.current = { base: '', quote: '', minAnother: '' }
       },
       onConfirmed: () => {
         if (pool.farmOngoingCount > 0) onOpenStakeLp()
@@ -199,6 +200,7 @@ export default function AddLiquidity({
       poolInfo: pool as ApiV3PoolInfoStandardItem,
       amountA: computeAmountRef.current.base,
       amountB: computeAmountRef.current.quote,
+      otherAmountMin: computeAmountRef.current.minAnother,
       fixedSide: baseIn ? 'a' : 'b',
       ...callBacks
     })
