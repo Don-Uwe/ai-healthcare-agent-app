@@ -120,7 +120,9 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   };
 
   const renderItem = useCallback(({item}: {item: ArticleData}) => {
-    return <ArticleCard item={item} navigation={navigation} />;
+    return (
+      <ArticleCard item={item} navigation={navigation} success={onRefresh} />
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

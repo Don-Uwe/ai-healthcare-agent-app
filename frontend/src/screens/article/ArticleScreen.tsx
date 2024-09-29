@@ -30,7 +30,7 @@ const ArticleScreen = ({}: {route: ArticleScreenProp['route']}) => {
   const {user_id, user_token} = useSelector((state: any) => state.user);
   const dispatch = useDispatch();
 
-  console.log('User Id found', article.likedUsers.includes(user_id));
+  //console.log('User Id found', article.likedUsers.includes(user_id));
   const webViewRef = useRef<WebView>(null);
 
   const handleLike = () => {
@@ -52,7 +52,8 @@ const ArticleScreen = ({}: {route: ArticleScreenProp['route']}) => {
       const res = await axios.post(
         FOLLOW_USER,
         {
-          followUserId: user_id,
+          followUserId: article.authorId,
+          //user_id: user_id,
         },
         {
           headers: {
@@ -85,6 +86,7 @@ const ArticleScreen = ({}: {route: ArticleScreenProp['route']}) => {
         LIKE_ARTICLE,
         {
           article_id: article._id,
+          //user_id: user_id,
         },
         {
           headers: {

@@ -73,6 +73,10 @@ const articleSchema = new Schema({
     type: Array,
     default: []
 },
+savedUsers: {
+  type: Array,
+  default: []
+},
 });
 
 // Apply the autoIncrement plugin to the schema

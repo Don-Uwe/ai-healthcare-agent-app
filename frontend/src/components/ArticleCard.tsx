@@ -6,22 +6,29 @@ import {
   Pressable,
   Alert,
   ActivityIndicator,
+  TouchableOpacity
 } from 'react-native';
 import React from 'react';
-import {fp} from '../helper/Metric';
+import {fp, hp} from '../helper/Metric';
 import {ArticleCardProps, ArticleData} from '../type';
 import moment from 'moment';
 import {useDispatch, useSelector} from 'react-redux';
 import {setArticle} from '../store/articleSlice';
 import axios from 'axios';
+import AntDesign from 'react-native-vector-icons/AntDesign';
+import IonIcons from 'react-native-vector-icons/Ionicons';
 import {useMutation} from '@tanstack/react-query';
-import {UPDATE_VIEW_COUNT} from '../helper/APIUtils';
+import {
+  LIKE_ARTICLE,
+  SAVE_ARTICLE,
+  UPDATE_VIEW_COUNT,
+} from '../helper/APIUtils';
 import {PRIMARY_COLOR} from '../helper/Theme';
 
-const ArticleCard = ({item, navigation}: ArticleCardProps) => {
+const ArticleCard = ({item, navigation, success}: ArticleCardProps) => {
   const dispatch = useDispatch();
-  const {user_token} = useSelector((state: any) => state.user);
-  //console.log('Article from card', item.viewCount);
+  const {user_token, user_id} = useSelector((state: any) => state.user);
+
   const updateViewCountMutation = useMutation({
     mutationKey: ['update-view-count'],
     mutationFn: async () => {
@@ -54,6 +61,71 @@ const ArticleCard = ({item, navigation}: ArticleCardProps) => {
     },
   });
 
+  const updateSaveStatusMutation = useMutation({
+    mutationKey: ['update-view-count'],
+    mutationFn: async () => {
+      if (user_token === '') {
+        Alert.alert('No token found');
+        return;
+      }
+      const res = await axios.post(
+        SAVE_ARTICLE,
+        {
+          article_id: item._id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user_token}`,
+          },
+        },
+      );
+
+      return res.data as any;
+    },
+    onSuccess: async () => {
+      success();
+    },
+
+    onError: error => {
+      console.log('Update View Count Error', error);
+      Alert.alert('Internal server error, try again!');
+    },
+  });
+
+  const updateLikeMutation = useMutation({
+    mutationKey: ['update-like-status'],
+
+    mutationFn: async () => {
+      if (user_token === '') {
+        Alert.alert('No token found');
+        return;
+      }
+      const res = await axios.post(
+        LIKE_ARTICLE,
+        {
+          article_id: item._id,
+          //user_id: user_id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user_token}`,
+          },
+        },
+      );
+      return res.data.article as ArticleData;
+    },
+
+    onSuccess: data => {
+      // dispatch(setArticle({article: data}));
+      success();
+    },
+
+    onError: err => {
+      Alert.alert('Try Again!');
+      console.log('Like Error', err);
+    },
+  });
+
   return (
     <Pressable
       onPress={() => {
@@ -79,7 +151,7 @@ const ArticleCard = ({item, navigation}: ArticleCardProps) => {
           {/**  <Text style={styles.description}>{item?.description}</Text> */}
           {/* displaying the categories, author name, and last updated date */}
           {updateViewCountMutation.isPending && (
-            <ActivityIndicator size="large" color={PRIMARY_COLOR} />
+            <ActivityIndicator size="small" color={PRIMARY_COLOR} />
           )}
           <Text style={styles.footerText}>
             {item?.authorName} {''}
@@ -95,6 +167,43 @@ const ArticleCard = ({item, navigation}: ArticleCardProps) => {
             Last updated: {''}
             {moment(new Date(item?.last_updated)).format('DD/MM/YYYY')}
           </Text>
+
+          <View style={styles.likeSaveContainer}>
+            {updateLikeMutation.isPending ? (
+              <ActivityIndicator size="small" color={PRIMARY_COLOR} />
+            ) : (
+              <TouchableOpacity
+                onPress={() => {
+                  updateLikeMutation.mutate();
+                }}
+                style={styles.likeSaveChildContainer}>
+                {item.likedUsers.includes(user_id) ? (
+                  <AntDesign name="heart" size={26} color={PRIMARY_COLOR} />
+                ) : (
+                  <AntDesign name="hearto" size={26} color={'black'} />
+                )}
+                <Text style={{...styles.title, marginStart: 3}}>
+                  {item.likeCount}
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            {updateSaveStatusMutation.isPending ? (
+              <ActivityIndicator size="small" color={PRIMARY_COLOR} />
+            ) : (
+              <TouchableOpacity
+                onPress={() => {
+                  updateSaveStatusMutation.mutate();
+                }}
+                style={styles.likeSaveChildContainer}>
+                {item.savedUsers.includes(user_id) ? (
+                  <IonIcons name="bookmark" size={26} color={PRIMARY_COLOR} />
+                ) : (
+                  <IonIcons name="bookmark-outline" size={26} color={'black'} />
+                )}
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
       </View>
     </Pressable>
@@ -125,7 +234,7 @@ const styles = StyleSheet.create({
   cardContainer: {
     flex: 0,
     width: '100%',
-    maxHeight: 200,
+    maxHeight: 260,
     backgroundColor: '#E6E6E6',
     flexDirection: 'row',
     marginVertical: 14,
@@ -137,6 +246,19 @@ const styles = StyleSheet.create({
   image: {
     flex: 0.6,
     resizeMode: 'cover',
+  },
+
+  likeSaveContainer: {
+    flexDirection: 'row',
+    width: '100%',
+    justifyContent: 'space-between',
+  },
+
+  likeSaveChildContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    marginHorizontal: hp(0),
+    marginVertical: hp(1),
   },
   textContainer: {
     flex: 0.9,
@@ -163,7 +285,7 @@ const styles = StyleSheet.create({
     fontSize: fp(3.3),
     fontWeight: '600',
     color: '#121a26',
-    marginBottom: 4,
+    marginBottom: 3,
   },
 
   footerContainer: {
@@ -172,6 +294,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginTop: 4,
   },
   // future card styles
   //   card: {

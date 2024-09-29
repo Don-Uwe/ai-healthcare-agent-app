@@ -91,6 +91,7 @@ export type HomeScreenHeaderProps = {
 export type ArticleCardProps = {
   item: ArticleData;
   navigation: HomeScreenProps['navigation'] | ProfileScreenProps['navigation'];
+  success: () => void;
 };
 
 export type ProfileHeaderProps = {
@@ -187,6 +188,7 @@ export type ArticleData = {
   viewCount: number;
   likeCount: number;
   likedUsers: string[];
+  savedUsers: string[];
 };
 
 export type CategoryType = {

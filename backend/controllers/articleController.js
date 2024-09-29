@@ -195,28 +195,42 @@ module.exports.getArticlesByTags = async (req, res) => {
 module.exports.saveArticle = async (req, res) => {
   try {
     const { article_id } = req.body;
-    const user = await User.findById(req.user.userId);
 
-    if (!user || !article_id) {
-      return res.status(404).json({ error: 'User not found' });
+    if(!article_id){
+      return res.status(400).json({ message: "User ID and Article ID are required"});
+    }
+    const user = await User.findById(req.user.userId);
+    const  article = await Article.findById(article_id);
+
+    if (!user || !article) {
+      return res.status(404).json({ error: 'User or article not found' });
     }
 
     // Check if the article is already saved
     const isArticleSaved = user.savedArticles.some(id => id === article_id);
+
     if (isArticleSaved) {
       
        // unsave article
        const articleIndex = user.savedArticles.findIndex(id => id === article_id);
+       const userIndex =  article.savedUsers.findIndex(id => id === req.user.userId);
+
      
     if(articleIndex != -1){
        user.savedArticles.splice(articleIndex, 1);
        await user.save();
+       if(userIndex != -1){
+        article.savedUsers.splice(userIndex, 1);
+        await article.save();
+       }
        res.status(200).json({ message: 'Article unsaved'});
     }
   }
    else{
     user.savedArticles.push(article_id);
+    article.savedUsers.push(req.user.userId);
     await user.save();
+    await article.save();
     res.status(200).json({ message: 'Article saved successfully'});
    }
   } catch (error) {
@@ -228,6 +242,11 @@ module.exports.saveArticle = async (req, res) => {
 module.exports.likeArticle = async (req, res) => {
   try {
     const { article_id} = req.body;
+
+    if(!article_id){
+      return res.status(400).json({ message: "Article ID and User ID are required"});
+    }
+
     const user = await User.findById(req.user.userId);
     
     const articleDb = await Article.findById(article_id);
