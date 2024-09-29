@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
+import {hp} from '../../helper/Metric';
+import {PRIMARY_COLOR} from '../../helper/Theme';
 
 const ArticleDescriptionScreen = () => {
   const [title, setTitle] = useState('');
@@ -21,7 +23,7 @@ const ArticleDescriptionScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerText}>Write Content</Text>
+        <Text style={styles.headerText}>Start Writing</Text>
       </View>
 
       <View style={styles.inputContainer}>
@@ -45,12 +47,6 @@ const ArticleDescriptionScreen = () => {
           onChangeText={setBody}
         />
       </View>
-
-      {body.trim() === '' && (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Empty posts not allowed</Text>
-        </View>
-      )}
 
       <View style={styles.captionContainer}>
         <Text style={styles.captionText}>
@@ -124,17 +120,22 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   inputLabel: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 20,
+    
+    fontWeight: '500',
     color: '#000',
+    marginHorizontal: hp(1),
     marginBottom: 8,
   },
   input: {
+    fontSize: 17,
+    fontFamily: '600',
     borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 12,
+    borderColor: 'black',
+    padding: 8,
     textAlignVertical: 'top',
     borderRadius: 4,
+    marginHorizontal: hp(1),
     marginBottom: 10,
   },
   errorContainer: {
@@ -148,7 +149,8 @@ const styles = StyleSheet.create({
     color: '#c00',
   },
   captionContainer: {
-    padding: 16,
+    padding: 12,
+    marginHorizontal: hp(1),
     marginBottom: 16,
   },
   captionText: {
