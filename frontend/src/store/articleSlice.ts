@@ -1,5 +1,5 @@
 import {createSlice} from '@reduxjs/toolkit';
-import {ArticleData} from '../type';
+import {ArticleData, Category} from '../type';
 
 export type ArticleState = {
   filteredArticles: ArticleData[];
@@ -7,7 +7,8 @@ export type ArticleState = {
   selectedTags: string[];
   sortType: 'recent' | 'popular' | 'oldest' | '';
   searchMode: boolean;
-  article: ArticleData
+  article: ArticleData;
+  categories: Category[];
 }
 
 const initialState: ArticleState = {
@@ -28,6 +29,7 @@ const initialState: ArticleState = {
     imageUtils: [],
     viewCount: 0
   },
+  categories: [],
 };
 const articleSlice = createSlice({
   name: 'article',
@@ -55,6 +57,9 @@ const articleSlice = createSlice({
 
     setArticle(state, action){
       state.article = action.payload.article;
+    },
+    setTags(state, action){
+      state.categories = action.payload.tags;
     }
   },
 });
@@ -65,7 +70,8 @@ export const {
   setSelectedTags,
   setSortType,
   setSearchMode,
-  setArticle
+  setArticle,
+  setTags
 } = articleSlice.actions;
 
 export default articleSlice.reducer;

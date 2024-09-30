@@ -8,17 +8,25 @@ import {
   ScrollView,
 } from 'react-native';
 import {hp} from '../../helper/Metric';
-import {PRIMARY_COLOR} from '../../helper/Theme';
+import {useSelector} from 'react-redux';
+import {Category} from '../../type';
 
 const ArticleDescriptionScreen = () => {
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
-  const [selectedGenre, setSelectedGenre] = useState(null);
-  const [autoDesign, setAutoDesign] = useState(false);
+  const [selectedGenres, setSelectedGenres] = useState<Category[]>([]);
+  const {categories} = useSelector((state: any) => state.article);
 
-  const handleGenrePress = genre => {
-    setSelectedGenre(genre);
+  const handleGenrePress = (genre: Category) => {
+    if (isSelected(genre)) {
+      setSelectedGenres(selectedGenres.filter(item => item.id !== genre.id));
+    } else if (selectedGenres.length < 5) {
+      // Check if the length of selected genres is less than 5
+      setSelectedGenres([...selectedGenres, genre]); // Add the new genre to the selected genres array
+    }
   };
+
+  const isSelected = genre => selectedGenres.includes(genre);
 
   return (
     <View style={styles.container}>
@@ -54,33 +62,45 @@ const ArticleDescriptionScreen = () => {
         </Text>
       </View>
 
+      <View style={styles.selectedGenresContainer}>
+        {selectedGenres.map((genre, index) => (
+          <Text key={index} style={styles.selectedGenreText}>
+            #{genre.name}
+          </Text>
+        ))}
+      </View>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.genreContainer}>
-        {['Health', 'Diet', 'Stories', 'Dieases', 'Inspiration', 'Heart'].map(
-          genre => (
-            <TouchableOpacity
-              key={genre}
+        {categories.map((genre, index) => (
+          <TouchableOpacity
+            key={index}
+            style={[
+              styles.genreButton,
+              isSelected(genre) &&
+                styles.selectedGenreButton &&
+                styles.selectedGenreButton,
+            ]}
+            onPress={() => handleGenrePress(genre)}>
+            <Text
               style={[
-                styles.genreButton,
-                selectedGenre === genre && styles.selectedGenreButton,
-              ]}
-              onPress={() => handleGenrePress(genre)}>
-              <Text
-                style={[
-                  styles.genreButtonText,
-                  selectedGenre === genre && styles.selectedGenreButtonText,
-                ]}>
-                #{genre}
-              </Text>
-            </TouchableOpacity>
-          ),
-        )}
+                styles.genreButtonText,
+                isSelected(genre) && styles.selectedGenreButtonText,
+              ]}>
+              #{genre.name}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </ScrollView>
 
+      <View style={styles.inputContainer}>
+        <Text style={styles.inputLabel}>Related image</Text>
+        <TextInput style={styles.input} placeholder="Upload one image" />
+      </View>
+
       <TouchableOpacity style={styles.submitButton}>
-        <Text style={styles.submitButtonText}>Submit</Text>
+        <Text style={styles.submitButtonText}>Continue</Text>
       </TouchableOpacity>
     </View>
   );
@@ -121,7 +141,7 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: 20,
-    
+
     fontWeight: '500',
     color: '#000',
     marginHorizontal: hp(1),
@@ -187,10 +207,10 @@ const styles = StyleSheet.create({
   },
   genreButton: {
     backgroundColor: '#f0f0f0',
-    width: '20%',
+    flex: 0,
     padding: 8,
     margin: 4,
-    borderRadius: 4,
+    borderRadius: 8,
     alignItems: 'center',
   },
   genreButtonText: {
@@ -213,6 +233,21 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  selectedGenresContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    padding: 16,
+  },
+  selectedGenreItem: {
+    backgroundColor: '#007bff',
+    padding: 8,
+    margin: 4,
+    borderRadius: 4,
+  },
+  selectedGenreText: {
+    color: '#000',
+    marginHorizontal: hp(0.5),
   },
 });
 

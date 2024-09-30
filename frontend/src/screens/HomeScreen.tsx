@@ -28,6 +28,7 @@ import {
   setSearchMode,
   setSelectedTags,
   setSortType,
+  setTags,
 } from '../store/articleSlice';
 
 // Here The purpose of using Redux is to maintain filter state throughout the app session. globally
@@ -35,7 +36,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const dispatch = useDispatch();
   const [articleCategories, setArticleCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [sortingType, setSortingType] = useState<string>(''); // Redux Variable
+  const [sortingType, setSortingType] = useState<string>(''); 
   const [selectCategoryList, setSelectCategoryList] = useState<
     CategoryType['name'][]
   >([]);
@@ -92,6 +93,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       setSelectedCategory(selectedTags[0]);
     }
     setArticleCategories(categoryData);
+    dispatch(setTags({tags: categoryData}));
   };
 
   useEffect(() => {
