@@ -5,7 +5,6 @@ import {actions, RichEditor, RichToolbar} from 'react-native-pell-rich-editor';
 import Feather from 'react-native-vector-icons/Feather';
 import Entypo from 'react-native-vector-icons/Entypo';
 import IonIcon from 'react-native-vector-icons/Ionicons';
-// import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Fontisto from 'react-native-vector-icons/Fontisto';
 import {PRIMARY_COLOR} from '../../helper/Theme';
 import {TouchableOpacity} from 'react-native-gesture-handler';
@@ -13,8 +12,9 @@ import {EditorScreenProp} from '../../type';
 import * as ImagePicker from 'react-native-image-picker';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-const EditorScreen = ({navigation}: EditorScreenProp) => {
+const EditorScreen = ({navigation, route}: EditorScreenProp) => {
   const insets = useSafeAreaInsets();
+  const {title, description, selectedGenres, imageUtils} = route.params;
   const strikethrough = require('../../assets/stricketThrough.png'); //icon for strikethrough
   //const video = require('../../assets/play-button.png'); //icon for Addvideo
   const RichText = useRef(); //reference to the RichEditor component
@@ -30,6 +30,10 @@ const EditorScreen = ({navigation}: EditorScreenProp) => {
             //if (article.length > 20) {
             navigation.navigate('PreviewScreen', {
               article: article,
+              title: title,
+              description: description,
+              image: imageUtils,
+              selectedGenres: selectedGenres,
             });
             // }
           }}>

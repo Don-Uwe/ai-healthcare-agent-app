@@ -1,5 +1,5 @@
 import NetInfo from '@react-native-community/netinfo';
-import {Article, CategoryType, Podcast} from '../type';
+import {Article, Category, CategoryType, Podcast} from '../type';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const checkInternetConnection = (
@@ -530,7 +530,7 @@ export const KEYS = {
 export const createHTMLStructure = (
   title: string,
   body: string,
-  tags: string[],
+  tags: Category[],
   social_link: string,
   author: string,
 ) => {
@@ -618,10 +618,10 @@ table {
 ${body}
 <hr>
 <ul class="tag-list">
-  ${tags.map(tag => `<li><a class="tag" href="#">#${tag}</a></li>`).join('')}
+  ${tags.map(tag => `<li><a class="tag" href="#">#${tag.name}</a></li>`).join('')}
 </ul>
 <h3>Author</h3>
-<h4><a href=${social_link}>${author}</a></h4>
+<h4>${author}</a></h4>
 </body>
 `;
 };

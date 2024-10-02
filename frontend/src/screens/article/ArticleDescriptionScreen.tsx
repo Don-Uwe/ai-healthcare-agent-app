@@ -6,16 +6,20 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
+  Alert,
 } from 'react-native';
 import {hp} from '../../helper/Metric';
 import {useSelector} from 'react-redux';
 import {Category} from '../../type';
+import {PRIMARY_COLOR} from '../../helper/Theme';
+import Ionicon from 'react-native-vector-icons/Ionicons';
 
-const ArticleDescriptionScreen = () => {
+const ArticleDescriptionScreen = ({navigation}) => {
   const [title, setTitle] = useState('');
-  const [body, setBody] = useState('');
+  const [description, setDescription] = useState('');
   const [selectedGenres, setSelectedGenres] = useState<Category[]>([]);
   const {categories} = useSelector((state: any) => state.article);
+  const [imageUtils, setImageUtils] = useState('');
 
   const handleGenrePress = (genre: Category) => {
     if (isSelected(genre)) {
@@ -28,10 +32,40 @@ const ArticleDescriptionScreen = () => {
 
   const isSelected = genre => selectedGenres.includes(genre);
 
+  const handleCreatePost = () => {
+    if (title === '') {
+      Alert.alert('Title section is required');
+      return;
+    } else if (description === '') {
+      Alert.alert('Please give proper description');
+      return;
+    } else if (selectedGenres.length === 0) {
+      Alert.alert('Please select at least one suitable tags for your article.');
+      return;
+    }
+    /*
+    // Later purpose
+    else if (imageUtils.length === 0) {
+      Alert.alert('Please upload one  image for your article.');
+      return;
+    }
+      */
+    navigation.navigate('EditorScreen', {
+      title: title,
+      description: description,
+      selectedGenres: selectedGenres,
+      imageUtils: imageUtils,
+    });
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Ionicon name="chevron-back" size={26} color={PRIMARY_COLOR} />
+        </TouchableOpacity>
         <Text style={styles.headerText}>Start Writing</Text>
+        <Text style={styles.headerText}> </Text>
       </View>
 
       <View style={styles.inputContainer}>
@@ -51,8 +85,8 @@ const ArticleDescriptionScreen = () => {
           placeholder="Give a little description or overview"
           multiline
           numberOfLines={4}
-          value={body}
-          onChangeText={setBody}
+          value={description}
+          onChangeText={setDescription}
         />
       </View>
 
@@ -99,7 +133,7 @@ const ArticleDescriptionScreen = () => {
         <TextInput style={styles.input} placeholder="Upload one image" />
       </View>
 
-      <TouchableOpacity style={styles.submitButton}>
+      <TouchableOpacity style={styles.submitButton} onPress={handleCreatePost}>
         <Text style={styles.submitButtonText}>Continue</Text>
       </TouchableOpacity>
     </View>
@@ -114,7 +148,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     padding: 6,
   },
   backButton: {
@@ -125,9 +159,9 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   headerText: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
-    color: '#000',
+    color: PRIMARY_COLOR,
   },
   uploadButton: {
     padding: 8,
@@ -143,7 +177,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
 
     fontWeight: '500',
-    color: '#000',
+    color: PRIMARY_COLOR,
     marginHorizontal: hp(1),
     marginBottom: 8,
   },
@@ -174,7 +208,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   captionText: {
-    color: '#666',
+    color: PRIMARY_COLOR,
   },
   checkboxContainer: {
     flexDirection: 'row',

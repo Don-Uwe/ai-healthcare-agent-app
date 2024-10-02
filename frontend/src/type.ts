@@ -12,9 +12,20 @@ export type RootStackParamList = {
   SignUpScreenSecond: {user: UserDetail};
   OtpScreen: {email: string};
   NewPasswordScreen: {email: string};
-  EditorScreen: undefined;
+  EditorScreen: {
+    title: string;
+    description: string;
+    selectedGenres: Category[];
+    imageUtils: string;
+  };
   ArticleDescriptionScreen: undefined;
-  PreviewScreen: {article: string};
+  PreviewScreen: {
+    article: string,
+    title: string,
+    description: string,
+    image: string,
+    selectedGenres: Category[];
+  };
   ArticleScreen: undefined;
   ProfileEditScreen: undefined;
 };
