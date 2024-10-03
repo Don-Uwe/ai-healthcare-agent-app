@@ -118,7 +118,7 @@
     "slippage_tolerance_swap": "스왑 슬리피지 허용범위",
     "slippage_tolerance_liquidity": "유동성 슬리피지 허용범위",
     "slippage_tolerance_tooltip_swap": "스왑 거래에 대한 슬리피지 허용범위를 설정하세요.",
-    "slippage_tolerance_tooltip_liquidity": "기본/호가 토큰 예치 비율 변경에 대한 허용범위를 설정하세요. 이 매개변수는 유동성 위험을 증가시키지 않고 거래 성사율을 향상시킵니다.",
+    "slippage_tolerance_tooltip_liquidity": "기본/호가 토큰 예치 비율 변경에 대한 허용범위를 설정하세요.",
     "slippage_tolerance_forerun": "거래가 프론트러닝되어 불리한 거래 결과가 발생할 수 있습니다",
     "slippage_tolerance_fail": "거래가 실패할 수 있습니다",
     "language": "언어",
@@ -502,9 +502,9 @@
   },
   "wallet": {
     "connected_hint": {
-     "portfolio_info": "자산 분포를 보려면 지갑을 연결하세요.",
-     "portfolio_idle": "예치된 자산을 보려면 지갑을 연결하세요.",
-     "portfolio_position": "포지션을 보려면 지갑을 연결하세요."
+      "portfolio_info": "자산 분포를 보려면 지갑을 연결하세요.",
+      "portfolio_idle": "예치된 자산을 보려면 지갑을 연결하세요.",
+      "portfolio_position": "포지션을 보려면 지갑을 연결하세요."
     }
   },
   "error": {
@@ -676,7 +676,7 @@
     "quote_token_initial_liquidity": "호가 토큰 초기 유동성",
     "market_open_book_id": "오픈북 프로그램 ID",
     "market_create_orderbook": "아래에서 오픈북 마켓 ID를 생성하십시오:",
-    "market_tokens": "토큰", 
+    "market_tokens": "토큰",
     "market_min_order_size": "최소 주문 크기",
     "market_min_order_size_label": "최소 주문 크기",
     "market_min_order_size_tip": "이것은 허용되는 가장 작은 주문 크기입니다.",

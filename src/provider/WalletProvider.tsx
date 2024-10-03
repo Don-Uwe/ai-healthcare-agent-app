@@ -112,7 +112,7 @@ const App: FC<PropsWithChildren<any>> = ({ children }) => {
         clientId: process.env.NEXT_PUBLIC_WALLET_TIP_WALLET_KEY ?? '',
         title: 'Raydium',
         theme: 'system'
-      })
+      }) as unknown as Adapter
     ],
     [network, endpoint]
   )
