@@ -183,7 +183,7 @@ const ArticleCard = ({item, navigation, success}: ArticleCardProps) => {
                   <AntDesign name="hearto" size={26} color={'black'} />
                 )}
                 <Text style={{...styles.title, marginStart: 3}}>
-                  {item.likeCount}
+                  {item.likedUsers.length}
                 </Text>
               </TouchableOpacity>
             )}

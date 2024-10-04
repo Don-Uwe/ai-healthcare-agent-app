@@ -1,24 +1,27 @@
 /* eslint-disable react/no-unstable-nested-components */
 import React, {useRef, useState} from 'react';
-import {StyleSheet, Text, ScrollView} from 'react-native';
+import {StyleSheet, Text, ScrollView, Alert} from 'react-native';
 import {actions, RichEditor, RichToolbar} from 'react-native-pell-rich-editor';
 import Feather from 'react-native-vector-icons/Feather';
 import Entypo from 'react-native-vector-icons/Entypo';
 import IonIcon from 'react-native-vector-icons/Ionicons';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Fontisto from 'react-native-vector-icons/Fontisto';
 import {PRIMARY_COLOR} from '../../helper/Theme';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {EditorScreenProp} from '../../type';
 import * as ImagePicker from 'react-native-image-picker';
+import {launchImageLibrary} from 'react-native-image-picker';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import ImageResizer from '@bam.tech/react-native-image-resizer';
 
 const EditorScreen = ({navigation, route}: EditorScreenProp) => {
   const insets = useSafeAreaInsets();
   const {title, description, selectedGenres, imageUtils} = route.params;
-  const strikethrough = require('../../assets/stricketThrough.png'); //icon for strikethrough
   //const video = require('../../assets/play-button.png'); //icon for Addvideo
   const RichText = useRef(); //reference to the RichEditor component
   const [article, setArticle] = useState('');
+
   React.useEffect(() => {
     // Use `setOptions` to update the button that we previously specified
     // Now the button includes an `onPress` handler to update the count
@@ -27,22 +30,23 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
         <TouchableOpacity
           style={styles.preview_button}
           onPress={() => {
-            //if (article.length > 20) {
-            navigation.navigate('PreviewScreen', {
-              article: article,
-              title: title,
-              description: description,
-              image: imageUtils,
-              selectedGenres: selectedGenres,
-            });
-            // }
+            console.log('Preview button pressed');
+            if (article.length > 20) {
+              console.log('Preview Screen');
+              navigation.navigate('PreviewScreen', {
+                article: article,
+                title: title,
+                description: description,
+                image: imageUtils,
+                selectedGenres: selectedGenres,
+              });
+            }
           }}>
           <Fontisto name="preview" size={26} color="black" />
-          {/* <MaterialIcons name="preview" size={30} /> */}
         </TouchableOpacity>
       ),
     });
-  }, [navigation, article]);
+  }, [navigation, article, title, description, imageUtils, selectedGenres]);
   // this function will be called when the editor has been initialized
   function editorInitializedCallback() {
     RichText.current?.registerToolbar(function (_items) {
@@ -70,7 +74,17 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
       const type = result.assets[0].type;
       const base64String = result.assets[0].base64;
       const str = `data:${type};base64,${base64String}`;
-      await RichText.current?.insertImage(str);
+      // Define desired width and height
+      const width = 300; // Set your desired width
+      const height = 200; // Set your desired height
+
+      // Create the image HTML with defined width and height
+      const imageHTML = `<img src="${str}" style="width: ${width}px; height: ${height}px;" />`;
+
+      // Insert the image into the editor
+      await RichText.current?.insertHTML(imageHTML);
+      // Upload the image here and collect the url, then store it to the RichText
+      //await RichText.current?.insertImage(str);
     } else {
       console.log('No image selected');
     }
@@ -94,7 +108,43 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
   //     console.log('No video selected');
   //   }
   // }
+  /*
+  const onPressAddImage =  () => {
+    const options = {
+      mediaType: 'photo',
+      includeBase64: true,
+    };
 
+    launchImageLibrary(options, async response => {
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+      } else if (response.error) {
+        console.log('ImagePicker Error: ', response.error);
+      } else if (response.assets) {
+        const {uri, fileSize} = response.assets[0];
+
+        // Check file size (1 MB limit)
+        if (fileSize && fileSize > 1024 * 1024) {
+          Alert.alert('Error', 'File size exceeds 1 MB.');
+          return;
+        }
+
+        // Check dimensions
+        ImageResizer.createResizedImage(uri, 2000, 2000, 'JPEG', 100)
+          .then(async resizedImageUri => {
+            // If the image is resized successfully, upload it
+          })
+          .catch(err => {
+            console.log(err);
+            Alert.alert('Error', 'Could not resize the image.');
+          });
+
+        // setImageUtils(uri ? uri : '');
+        await RichText.current?.insertImage(uri ? uri : '');
+      }
+    });
+  };
+*/
   return (
     <ScrollView style={[styles.container, {paddingBottom: insets.bottom}]}>
       {/* <View style={styles.box}>
@@ -142,6 +192,9 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
         ]}
         // map icons for self made actions
         iconMap={{
+          [actions.setStrikethrough]: ({tintColor}) => (
+            <FontAwesome name="strikethrough" color={tintColor} size={26} />
+          ),
           [actions.alignLeft]: ({tintColor}) => (
             <Feather name="align-left" color={tintColor} size={35} />
           ),
@@ -188,7 +241,6 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
             <Text style={[styles.tib, {color: tintColor}]}>H6</Text>
           ),
 
-          [actions.setStrikethrough]: strikethrough,
           // ['insertVideo']: video,
           ['insertImage']: ({tintColor}) => (
             <Entypo name="image" color={tintColor} size={26} />
@@ -241,7 +293,6 @@ const styles = StyleSheet.create({
   editor: {
     // backgroundColor: 'black',
     borderColor: 'black',
-    borderWidth: 1,
     marginHorizontal: 10,
   },
   rich: {
@@ -282,5 +333,32 @@ const styles = StyleSheet.create({
     marginRight: 15,
     paddingHorizontal: 8,
     paddingVertical: 6,
+  },
+
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // semi-transparent background
+  },
+  modalContent: {
+    width: '80%',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 20,
+    marginBottom: 15,
+  },
+  fontOption: {
+    fontSize: 18,
+    paddingVertical: 10,
+  },
+  closeButton: {
+    marginTop: 15,
+    color: 'blue',
+    fontSize: 18,
   },
 });

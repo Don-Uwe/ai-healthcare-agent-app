@@ -123,7 +123,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
 
     onSuccess: async data => {
       const auth: AuthData = {
-        userId: data.user_id,
+        userId: data._id,
         token: data?.refreshToken,
       };
       try {
@@ -134,7 +134,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
             KEYS.USER_TOKEN_EXPIRY_DATE,
             new Date().toISOString(),
           );
-          dispatch(setUserId(data.user_id));
+          dispatch(setUserId(auth.userId));
           dispatch(setUserToken(auth.token));
         }
         navigation.navigate('TabNavigation');

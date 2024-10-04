@@ -537,6 +537,7 @@ export const createHTMLStructure = (
   return `<!DOCTYPE html>
 <html>
 <head>
+
 <title>${title}</title>
 <style>
 /**
@@ -544,6 +545,9 @@ export const createHTMLStructure = (
  */
 body {
   font-family: Arial, sans-serif;
+  font-size: 40px; 
+  line-height: 1.5; 
+  color: #333; 
 }
 
 h1 {
@@ -618,7 +622,9 @@ table {
 ${body}
 <hr>
 <ul class="tag-list">
-  ${tags.map(tag => `<li><a class="tag" href="#">#${tag.name}</a></li>`).join('')}
+  ${tags
+    .map(tag => `<li><a class="tag" href="#">#${tag.name}</a></li>`)
+    .join('')}
 </ul>
 <h3>Author</h3>
 <h4>${author}</a></h4>

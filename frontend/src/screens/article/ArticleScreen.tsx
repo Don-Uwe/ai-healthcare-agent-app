@@ -30,7 +30,9 @@ const ArticleScreen = ({}: {route: ArticleScreenProp['route']}) => {
   const {user_id, user_token} = useSelector((state: any) => state.user);
   const dispatch = useDispatch();
 
-  //console.log('User Id found', article.likedUsers.includes(user_id));
+  console.log('Article Liked Users', article.likedUsers);
+  console.log('My user Id', user_id)
+  console.log('User Id found', article.likedUsers.includes(user_id));
   const webViewRef = useRef<WebView>(null);
 
   const handleLike = () => {
@@ -170,16 +172,14 @@ const ArticleScreen = ({}: {route: ArticleScreenProp['route']}) => {
               style={[
                 styles.likeButton,
                 {
-                  backgroundColor: article.likedUsers.includes(user_id)
-                    ? 'red'
-                    : PRIMARY_COLOR,
+                  backgroundColor: 'white',
                 },
               ]}>
               <FontAwesome
                 name="heart"
                 size={34}
                 color={
-                  article.likedUsers.includes(user_id) ? PRIMARY_COLOR : 'white'
+                  article.likedUsers.includes(user_id) ? PRIMARY_COLOR : 'black'
                 }
               />
             </TouchableOpacity>
@@ -202,7 +202,7 @@ const ArticleScreen = ({}: {route: ArticleScreenProp['route']}) => {
             <View style={[styles.avatar, styles.avatarOverlap]} />
             <View style={[styles.avatar, styles.avatarDoubleOverlap]} />
             <View style={[styles.avatar, styles.avatarTripleOverlap]}>
-              <Text style={styles.moreText}>+{article.likeCount}</Text>
+              <Text style={styles.moreText}>+{article.likedUsers.length}</Text>
             </View>
           </View>
           <View style={styles.descriptionContainer}>

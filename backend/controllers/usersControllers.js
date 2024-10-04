@@ -100,19 +100,9 @@ module.exports.register = async (req, res) => {
   }
 
   module.exports.getprofile = async (req, res) => {
-    let token;
-    if (req.cookies && req.cookies['token']) {
-      token = req.cookies['token'];
-    } else {
-      token = req.headers.authorization?.split(' ')[1];
-    }
-  
-    if (!token) {
-      return res.status(401).json({ error: 'Authorization token missing' });
-    }
+    
     try {
-      const email = await verifyUser(token);
-      const user = await User.findOne({ email });
+      const user = await User.findOne({ _id: req.user.userId });
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -399,7 +389,9 @@ module.exports.follow = async (req, res) => {
       if (!followUser) return res.status(404).json({ message: "User to follow not found" });
 
       // Check if the user already follows the followUser
-      if (user.followings.includes(followUserId)) {  
+      const followingUserset = new Set(user.followings);
+
+      if (followingUserset.has(followUserId)) {  
         // Unfollow
       user.followings = user.followings.filter(id => id !== followUserId);
       user.followingCount = Math.max(0, user.followingCount - 1);

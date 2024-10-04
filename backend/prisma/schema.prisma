@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("MONGODB_URL")
+}
+
+type UsersContactDetail {
+  email_id String?
+  phone_no String?
+}
+
+model admins {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+}
+
+model articles {
+  id             Int      @id @map("_id")
+  v              Int      @map("__v")
+  adminPost      Boolean
+  authorId       String
+  authorName     String
+  content        String
+  imageUtils     String[]
+  language       String
+  last_updated   DateTime @db.Date
+  likeCount      Int
+  likedUsers     String[]
+  published_date DateTime @db.Date
+  savedUsers     String[]
+  tags           String[]
+  title          String
+  viewCount      Int
+
+  users          users? @relation(fields: [usersid], references: [id])
+  usersid        String?
+}
+
+model articletags {
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
+  v    Int    @map("__v")
+  id_  Int    @unique(map: "id_1") @map("id")
+  name String
+}
+
+model counters {
+  id              String @id @default(auto()) @map("_id") @db.ObjectId
+  id_             String @map("id")
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  reference_value Json?
+  seq             Int
+
+  @@unique([id, reference_value], map: "id_1_reference_value_1")
+}
+
+model specializations {
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
+  /// Field referred in an index, but found no data to define the type.
+  name Json?  @unique(map: "name_1")
+}
+
+model unverifiedusers {
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  /// Field referred in an index, but found no data to define the type.
+  email Json?  @unique(map: "email_1")
+}
+
+model users {
+  id                  String             @id @default(auto()) @map("_id") @db.ObjectId
+  Profile_image       String
+  Years_of_experience Int?
+  v                   Int                @map("__v")
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  about               Json?
+  articles            articles[]
+  contact_detail      UsersContactDetail
+  created_at          DateTime           @db.Date
+  email               String             @unique(map: "email_1")
+  followerCount       Int
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  followers           Json?
+  followingCount      Int
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  followings          Json?
+  isDoctor            Boolean
+  isVerified          Boolean
+  last_updated_at     DateTime           @db.Date
+  likedArticles       Int[]
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  otp                 Json?
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  otpExpires          Json?
+  password            String
+  qualification       String?
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  readArticles        Json?
+  refreshToken        String?
+  savedArticles       Int[]
+  specialization      String?
+  user_handle         String
+  user_id             String             @unique(map: "user_id_1") @db.ObjectId
+  user_name           String
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  verificationToken   String?
+}

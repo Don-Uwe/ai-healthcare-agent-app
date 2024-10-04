@@ -1,4 +1,6 @@
 const mongoose = require("mongoose");
+const User = require("../models/UserModel");
+const UnverifiedUser = require("../models/UnverifiedUserModel");
 
 const dbConnect = () => {
     mongoose.connect(process.env.MONGODB_URL)
@@ -23,6 +25,26 @@ const dbDrop = () => {
       });
   };
   
-  module.exports = { dbConnect, dbDrop };
+  const countUsersByEmail = async (email) => {
+    try {
+        const users = await User.find({ email: email });
+        const unverifiedUser = await UnverifiedUser.find({email:email});
+        const count = await User.countDocuments({ email: email });
+        console.log(`Number of users associated with ${email}: ${count}`);
+
+        
+        if (count > 0) {
+          console.log(`User IDs: ${users.map(user => user._id).join(', ')}`);
+          console.log(`Unverified User IDs: ${unverifiedUser.map(user => user._id).join(', ')}`);
+          
+      } else {
+          console.log(`No users found with the email: ${email}`);
+      }
+        return count;
+    } catch (error) {
+        console.error('Error counting users:', error.message);
+    }
+};
+  module.exports = { dbConnect, dbDrop, countUsersByEmail };
 
 

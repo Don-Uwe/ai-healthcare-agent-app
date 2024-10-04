@@ -6,13 +6,17 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
+  Image,
   Alert,
 } from 'react-native';
 import {hp} from '../../helper/Metric';
 import {useSelector} from 'react-redux';
 import {Category} from '../../type';
-import {PRIMARY_COLOR} from '../../helper/Theme';
 import Ionicon from 'react-native-vector-icons/Ionicons';
+import {PRIMARY_COLOR} from '../../helper/Theme';
+import {launchImageLibrary} from 'react-native-image-picker';
+import RNFS from 'react-native-fs';
+import ImageResizer from '@bam.tech/react-native-image-resizer';
 
 const ArticleDescriptionScreen = ({navigation}) => {
   const [title, setTitle] = useState('');
@@ -43,13 +47,13 @@ const ArticleDescriptionScreen = ({navigation}) => {
       Alert.alert('Please select at least one suitable tags for your article.');
       return;
     }
-    /*
+
     // Later purpose
     else if (imageUtils.length === 0) {
-      Alert.alert('Please upload one  image for your article.');
-      return;
+      //Alert.alert('Please upload one  image for your article.');
+      // return;
     }
-      */
+
     navigation.navigate('EditorScreen', {
       title: title,
       description: description,
@@ -58,11 +62,45 @@ const ArticleDescriptionScreen = ({navigation}) => {
     });
   };
 
+  const selectImage = () => {
+    const options = {
+      mediaType: 'photo',
+      includeBase64: true,
+    };
+
+    launchImageLibrary(options, response => {
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+      } else if (response.error) {
+        console.log('ImagePicker Error: ', response.error);
+      } else if (response.assets) {
+        const {uri, fileSize} = response.assets[0];
+
+        // Check file size (1 MB limit)
+        if (fileSize && fileSize > 1024 * 1024) {
+          Alert.alert('Error', 'File size exceeds 1 MB.');
+          return;
+        }
+
+        // Check dimensions
+        ImageResizer.createResizedImage(uri, 2000, 2000, 'JPEG', 100)
+          .then(resizedImageUri => {
+            // If the image is resized successfully, upload it
+          })
+          .catch(err => {
+            console.log(err);
+            Alert.alert('Error', 'Could not resize the image.');
+          });
+
+        setImageUtils(uri ? uri : '');
+      }
+    });
+  };
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicon name="chevron-back" size={26} color={PRIMARY_COLOR} />
+          <Ionicon name="chevron-back" size={26} color={'#007bff'} />
         </TouchableOpacity>
         <Text style={styles.headerText}>Start Writing</Text>
         <Text style={styles.headerText}> </Text>
@@ -128,15 +166,27 @@ const ArticleDescriptionScreen = ({navigation}) => {
         ))}
       </ScrollView>
 
-      <View style={styles.inputContainer}>
+      {imageUtils !== '' && (
+        <Image
+          source={{uri: imageUtils}}
+          style={{
+            width: 400,
+            alignSelf: 'center',
+            resizeMode: 'contain',
+            height: 300,
+            marginTop: 20,
+          }}
+        />
+      )}
+      <TouchableOpacity onPress={selectImage} style={styles.inputContainer}>
         <Text style={styles.inputLabel}>Related image</Text>
-        <TextInput style={styles.input} placeholder="Upload one image" />
-      </View>
+        <Text style={styles.input}>Upload one image</Text>
+      </TouchableOpacity>
 
       <TouchableOpacity style={styles.submitButton} onPress={handleCreatePost}>
         <Text style={styles.submitButtonText}>Continue</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 };
 
@@ -161,7 +211,7 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: PRIMARY_COLOR,
+    color: '#007bff',
   },
   uploadButton: {
     padding: 8,
@@ -177,7 +227,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
 
     fontWeight: '500',
-    color: PRIMARY_COLOR,
+    color: '#007bff',
     marginHorizontal: hp(1),
     marginBottom: 8,
   },
@@ -208,7 +258,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   captionText: {
-    color: PRIMARY_COLOR,
+    color: '#007bff',
   },
   checkboxContainer: {
     flexDirection: 'row',
@@ -280,8 +330,21 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   selectedGenreText: {
-    color: '#000',
+    color: PRIMARY_COLOR,
     marginHorizontal: hp(0.5),
+  },
+
+  imagePreviewContainer: {
+    marginTop: 20,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+  imagePreview: {
+    width: 200,
+    height: 200,
+    resizeMode: 'cover',
   },
 });
 

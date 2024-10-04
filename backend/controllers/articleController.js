@@ -207,24 +207,20 @@ module.exports.saveArticle = async (req, res) => {
     }
 
     // Check if the article is already saved
-    const isArticleSaved = user.savedArticles.some(id => id === article_id);
-
+    //const isArticleSaved = user.savedArticles.includes(id => id === article_id);
+    const savedArticlesSet = new Set(user.savedArticles);
+    const isArticleSaved = savedArticlesSet.has(article_id);
+  
     if (isArticleSaved) {
       
        // unsave article
-       const articleIndex = user.savedArticles.findIndex(id => id === article_id);
-       const userIndex =  article.savedUsers.findIndex(id => id === req.user.userId);
+       user.savedArticles = user.savedArticles.filter(id => id !== article_id);
+       article.savedUsers = article.savedUsers.filter(id => id !== req.user.userId);
 
-     
-    if(articleIndex != -1){
-       user.savedArticles.splice(articleIndex, 1);
        await user.save();
-       if(userIndex != -1){
-        article.savedUsers.splice(userIndex, 1);
-        await article.save();
-       }
+       await article.save();
        res.status(200).json({ message: 'Article unsaved'});
-    }
+    
   }
    else{
     user.savedArticles.push(article_id);
@@ -255,34 +251,34 @@ module.exports.likeArticle = async (req, res) => {
       return res.status(404).json({ error: 'User or Article not found' });
     }
 
-    // Check if the article is already liked
-    const isArticleLiked = user.likedArticles.some(id => id === article_id);
 
+    // Check if the article is already liked
+    const likedArticlesSet = new Set(user.likedArticles);
+    const isArticleLiked = likedArticlesSet.has(article_id);
+   //console.log("Article Id", article_id);
+ 
+  // console.log('Liked Articles', user.likedArticles);
+ //  console.log('Article Liked', isArticleLiked );
+ //  console.log('Liked Users', articleDb.likedUsers);
     if (isArticleLiked) {
-    
+
       // Unlike It
-      const articleIndex = user.likedArticles.findIndex(id => id === article_id);
-      const userIndex = articleDb.likedUsers.findIndex(id=> id === req.user.userId);
-     
-      if(articleIndex != -1){
-      user.likedArticles.splice(articleIndex, 1);
+      user.likedArticles = user.likedArticles.filter(id => id !== article_id);
+      articleDb.likeCount = Math.max(articleDb.likeCount - 1, 0);
+      articleDb.likedUsers = articleDb.likedUsers.filter(id => id !== req.user.userId);
       await user.save();
-      
-      articleDb.likeCount = Math.max(articleDb.likeCount-1,0);
-      if(userIndex != -1)
-        articleDb.likedUsers.splice(userIndex, -1);
       await articleDb.save();
       res.status(200).json({ message: 'Article remove from liked lists successfully', article:articleDb})
-      }
       
     }else{
-       
       user.likedArticles.push(article_id);
-      await user.save();
       articleDb.likeCount++;
       articleDb.likedUsers.push(req.user.userId);
+
+      await user.save();
       await articleDb.save();
-      res.status(200).json({ message: 'Article liked successfully', article: articleDb });
+
+      return res.status(200).json({ message: 'Article liked successfully', article: articleDb });
     }
 
   } catch (error) {
