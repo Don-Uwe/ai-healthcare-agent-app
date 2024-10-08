@@ -14,6 +14,7 @@ export function beforeSend(event: ErrorEvent, hint: EventHint) {
         errMsg.includes('database') || // wallet connect
         errMsg.includes('idbdatabase') || // wallet connect
         errMsg.includes('walletconnect') || // wallet connect
+        errMsg.includes('fldfpgipfncgndfolcbkdeeknbbbnhcc') || // mytonwallet extension
         errMsg.includes('Attempting to use a disconnected port object') // extension
       )
         sampleRate = 0.01
