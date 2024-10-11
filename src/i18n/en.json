@@ -330,6 +330,7 @@
     },
     "rewards_ended": "Ended",
     "rewards_ends": "Ends",
+    "rewards_starts": "Starts",
     "tvl_dsc": "Trading Volume (dsc)",
     "tvl_asc": "Trading Volume (asc)",
     "lp_dsc": "Liquidity (dsc)",

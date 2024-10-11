@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import TokenAvatar from '@/components/TokenAvatar'
 import { colors, sizes } from '@/theme/cssVariables'
-import { Badge, Box, Flex, Grid, HStack, VStack } from '@chakra-ui/react'
+import { Badge, Box, Flex, Grid, HStack, VStack, useColorMode } from '@chakra-ui/react'
 import { WeeklyRewardData } from '@/hooks/pool/type'
 import { AprData } from '@/features/Clmm/utils/calApr'
 import useTokenPrice from '@/hooks/token/useTokenPrice'
@@ -23,6 +23,8 @@ export default function PoolListItemAprDetailPopoverContent({
   weeklyRewards: WeeklyRewardData
 }) {
   const { t } = useTranslation()
+  const { colorMode } = useColorMode()
+  const isLight = colorMode === 'light'
   const { data: tokenPrices } = useTokenPrice({
     mintList: weeklyRewards.map((r) => r.token.address)
   })
@@ -89,11 +91,39 @@ export default function PoolListItemAprDetailPopoverContent({
           {/* total apr */}
           {weeklyRewards.map((reward) => {
             if (reward.amount === '0') return null
-            const isRewardEnded = reward.endTime ? reward.endTime * 1000 < Date.now() : true
+            const startTime = reward.startTime
+            const endTime = reward.endTime
+            const isRewardStarted = startTime ? startTime * 1000 < Date.now() : true
+            const isRewardEnded = endTime ? endTime * 1000 < Date.now() : true
             return (
               <Flex gap={4} w="full" key={String(reward.token?.address)} justify="space-between" align="center" fontSize="12px" mt="8px">
                 <HStack fontWeight="normal" color={colors.textSecondary} spacing="5px">
-                  <TokenAvatar size="xs" token={reward.token} />
+                  {isRewardStarted ? (
+                    <TokenAvatar size="xs" token={reward.token} />
+                  ) : (
+                    <Box position="relative">
+                      <Box
+                        position="absolute"
+                        top="0"
+                        right="0"
+                        bottom="0"
+                        left="0"
+                        bg={colors.tokenAvatarBg}
+                        display="flex"
+                        justifyContent="center"
+                        alignItems="center"
+                        border={isLight ? `1px solid ${colors.primary}` : 'none'}
+                        borderRadius="50%"
+                        mx={0.5}
+                        gap={0.5}
+                      >
+                        <Box width={0.5} height={0.5} borderRadius="50%" backgroundColor={colors.lightPurple} />
+                        <Box width={0.5} height={0.5} borderRadius="50%" backgroundColor={colors.lightPurple} />
+                        <Box width={0.5} height={0.5} borderRadius="50%" backgroundColor={colors.lightPurple} />
+                      </Box>
+                      <TokenAvatar size="xs" token={reward.token} />
+                    </Box>
+                  )}
                   <Box color={colors.textPrimary}>{formatCurrency(reward.amount, { decimalPlaces: 1, abbreviated: true })}</Box>
                   <Box>{wSolToSolString(reward.token?.symbol)}</Box>
                   <Box color={colors.textPrimary}>
@@ -106,10 +136,18 @@ export default function PoolListItemAprDetailPopoverContent({
                     )
                   </Box>
                 </HStack>
-                {reward.endTime ? (
+                {endTime ? (
                   <Box fontSize="10px" fontWeight="normal" color={colors.textSecondary}>
-                    {isRewardEnded ? t('liquidity.rewards_ended') : t('liquidity.rewards_ends')}{' '}
-                    {dayjs(reward.endTime * 1000).format('MM/DD/YY')}
+                    {isRewardStarted
+                      ? isRewardEnded
+                        ? t('liquidity.rewards_ended')
+                        : t('liquidity.rewards_ends')
+                      : t('liquidity.rewards_starts')}{' '}
+                    {isRewardStarted
+                      ? dayjs(endTime * 1000).format('MM/DD/YY')
+                      : startTime
+                      ? dayjs(startTime * 1000).format('MM/DD/YY')
+                      : null}
                   </Box>
                 ) : null}
               </Flex>

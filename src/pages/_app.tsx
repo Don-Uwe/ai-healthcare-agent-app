@@ -72,7 +72,6 @@ const MyApp = ({ Component, pageProps, lng, breakPoints, ...props }: AppProps & 
             )}
           </DynamicContent>
         </MatchBreakpointsContext.Provider>
-        ;
       </DynamicProviders>
     </>
   )
