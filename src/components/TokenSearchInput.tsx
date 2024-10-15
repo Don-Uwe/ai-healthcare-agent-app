@@ -130,8 +130,8 @@ export default function TokenSearchInput({
     const len = filteredList.length
     for (let i = 0; i < len; i += 1) {
       const current = (index + i * offset + len) % len
-      const { chainId } = filteredList[current] || {}
-      if (chainId) {
+      const { address } = filteredList[current] || {}
+      if (address) {
         return current
       }
     }
