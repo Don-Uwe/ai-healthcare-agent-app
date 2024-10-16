@@ -54,9 +54,9 @@ export default function UnStakeLiquidity({
 
   const { farmBasedData, mutate: mutateFarmPos } = useFarmPositions({})
   const farmPositionData = farmBasedData.get(selectedFarm?.id || '')
-  // const v1Deposited = new Decimal(farmPositionData?.totalV1LpAmount || 0).div(10 ** (selectedFarm?.lpMint.decimals || 0)).toString()
 
   const {
+    vault,
     deposited,
     pendingRewards,
     mutate: mutateFarmBalance
@@ -67,7 +67,13 @@ export default function UnStakeLiquidity({
     mintList: pendingRewards.map((_, idx) => selectedFarm?.rewardInfos[idx]?.mint.address)
   })
 
-  const totalDeposited = new Decimal(deposited)
+  const v1Balance = farmPositionData?.data
+    .filter((d) => d.version === 'V1' && d.userVault !== vault && d.lpAmount !== '0')
+    .reduce((acc, cur) => acc.add(cur.lpAmount), new Decimal(0))
+    ?.toString()
+  const v1Deposited = new Decimal(v1Balance || 0).div(10 ** (selectedFarm?.lpMint.decimals || 0)).toString()
+
+  const totalDeposited = new Decimal(deposited).add(v1Deposited)
   const withdrawAmount = totalDeposited.mul(withdrawPercent).div(100)
 
   useEffect(() => {

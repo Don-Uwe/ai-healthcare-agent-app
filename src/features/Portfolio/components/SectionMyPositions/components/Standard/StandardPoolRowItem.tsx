@@ -261,17 +261,30 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
       {hasStakeFarm && (
         <Collapse in={isOpen}>
           <VStack mt={4} w="full" align="stretch" gap={3}>
-            {stakedFarms.map((stakeFarm) => (
-              <StandardPoolRowStakeFarmItem
-                key={stakeFarm.farmId}
-                hide={isMobile}
-                poolId={pool.id}
-                farmId={stakeFarm.farmId}
-                lpPrice={pool.lpPrice}
-                balanceInfo={allFarmBalances.find((f) => f.id === stakeFarm.farmId)}
-                onUpdatePendingReward={handleUpdatePendingRewards}
-              />
-            ))}
+            {stakedFarms.map((stakeFarm) => {
+              let balanceInfo = allFarmBalances.find((f) => f.id === stakeFarm.farmId)
+              const v1Balance = position.data.find((p) => p.version === 'V1' && p.lpAmount !== '0' && p.farmId === stakeFarm.farmId)
+              if (balanceInfo && v1Balance && balanceInfo.vault !== v1Balance.userVault) {
+                balanceInfo = {
+                  ...balanceInfo,
+                  deposited: new Decimal(balanceInfo.deposited)
+                    .add(v1Balance.lpAmount)
+                    .div(10 ** pool.lpMint.decimals)
+                    .toString()
+                }
+              }
+              return (
+                <StandardPoolRowStakeFarmItem
+                  key={stakeFarm.farmId}
+                  hide={isMobile}
+                  poolId={pool.id}
+                  farmId={stakeFarm.farmId}
+                  lpPrice={pool.lpPrice}
+                  balanceInfo={balanceInfo}
+                  onUpdatePendingReward={handleUpdatePendingRewards}
+                />
+              )
+            })}
           </VStack>
 
           <Box mt={3}>
