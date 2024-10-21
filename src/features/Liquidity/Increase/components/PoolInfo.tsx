@@ -30,6 +30,7 @@ import { panelCard } from '@/theme/cssBlocks'
 import toPercentString from '@/utils/numberish/toPercentString'
 import InfoCircleIcon from '@/icons/misc/InfoCircleIcon'
 import { useAppStore, supportedExplorers } from '@/store/useAppStore'
+import LockIcon from '@/icons/misc/LockIcon'
 
 export default function PoolInfo({ pool }: { pool?: FormattedPoolInfoStandardItem }) {
   const { t } = useTranslation()
@@ -37,6 +38,7 @@ export default function PoolInfo({ pool }: { pool?: FormattedPoolInfoStandardIte
 
   const feeApr = pool?.allApr.week.find((s) => s.isTradingFee)
   const rewardApr = pool?.allApr.week.filter((s) => !s.isTradingFee && !!s.token) || []
+  const hasLockedLiquidity = pool && pool.burnPercent > 0
   const aprData = useMemo(
     () => ({
       fee: {
@@ -156,6 +158,18 @@ export default function PoolInfo({ pool }: { pool?: FormattedPoolInfoStandardIte
           {pool ? formatCurrency(pool.mintAmountB) : '-'}
         </Text>
       </Flex>
+      {hasLockedLiquidity && (
+        <Flex mt={2} justify="space-between" align="center">
+          <HStack gap={1}>
+            <LockIcon color={colors.textSecondary} />
+            <Text color={colors.textSecondary} opacity={0.6} fontSize="xs">
+              {t('liquidity.locked_percent', {
+                percent: formatToRawLocaleStr(toPercentString(pool.burnPercent || 0, { alreadyPercented: true }))
+              })}
+            </Text>
+          </HStack>
+        </Flex>
+      )}
     </Flex>
   )
 }
