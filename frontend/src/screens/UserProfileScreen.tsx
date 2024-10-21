@@ -1,4 +1,11 @@
-import {StyleSheet, View, BackHandler, Text, Alert, Image} from 'react-native';
+import {
+  StyleSheet,
+  View,
+  BackHandler,
+  Text,
+  Alert,
+  TouchableOpacity,
+} from 'react-native';
 import React, {useCallback, useEffect, useState} from 'react';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import ActivityOverview from '../components/ActivityOverview';
@@ -9,28 +16,25 @@ import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import ProfileHeader from '../components/ProfileHeader';
 import {GET_PROFILE_API} from '../helper/APIUtils';
-import {ArticleData, ProfileScreenProps, User} from '../type';
+import {ArticleData, UserProfileScreenProp, User} from '../type';
 import {useQuery} from '@tanstack/react-query';
 import axios from 'axios';
+import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import Loader from '../components/Loader';
 import {useFocusEffect} from '@react-navigation/native';
 
-const ProfileScreen = ({navigation}: ProfileScreenProps) => {
-  const {user_id, user_token} = useSelector((state: any) => state.user);
+const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
+  const {user_token} = useSelector((state: any) => state.user);
   const [refreshing, setRefreshing] = useState<boolean>(false);
-  //const fallback_profile = require('../assets/avatar.jpg');
-  //const user_fallback_profile = Image.resolveAssetSource(fallback_profile).uri;
-
-  //console.log('user fallback profile', user_fallback_profile);
-
+  const {authorId} = route.params;
   const {
     data: user,
     refetch,
     isLoading,
   } = useQuery({
-    queryKey: ['get-profile'],
+    queryKey: ['get-user-profile'],
     queryFn: async () => {
-      const response = await axios.get(`${GET_PROFILE_API}`, {
+      const response = await axios.get(`${GET_PROFILE_API}/${authorId}`, {
         headers: {
           Authorization: `Bearer ${user_token}`,
         },
@@ -38,7 +42,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
       return response.data.profile as User;
     },
   });
-
+  /*
   useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', e => {
       e.preventDefault();
@@ -54,9 +58,10 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
     });
     return unsubscribe;
   }, [navigation]);
+  */
 
   const isDoctor = user !== undefined ? user.isDoctor : false;
-  const bottomBarHeight = useBottomTabBarHeight();
+  //const bottomBarHeight = useBottomTabBarHeight();
   const insets = useSafeAreaInsets();
 
   const onRefresh = () => {
@@ -102,9 +107,9 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
         experience={user.Years_of_experience || 0}
         qualification={user.qualification || ''}
         navigation={navigation}
-        other={true}
-        followers={user ? user.followerCount : 0}
-        followings={user ? user.followingCount : 0}
+        other={false}
+        followers={user ? user.followers.length : 0}
+        followings={user ? user.followings.length : 0}
       />
     );
   };
@@ -133,13 +138,22 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity
+        style={styles.headerLeftButtonEditorScreen}
+        onPress={() => {
+          console.log('States', navigation.getState());
+          console.log('Can go back', navigation.canGoBack());
+          navigation.goBack();
+        }}>
+        <FontAwesome6 size={25} name="arrow-left" color="white" />
+      </TouchableOpacity>
       <View style={[styles.innerContainer, {paddingTop: insets.top}]}>
         <Tabs.Container
           renderHeader={renderHeader}
           renderTabBar={renderTabBar}
           containerStyle={styles.tabsContainer}>
           {/* Tab 1 */}
-          <Tabs.Tab name="My Insights">
+          <Tabs.Tab name="User Insights">
             <Tabs.ScrollView
               automaticallyAdjustContentInsets={true}
               contentInsetAdjustmentBehavior="always"
@@ -148,33 +162,14 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
             </Tabs.ScrollView>
           </Tabs.Tab>
           {/* Tab 2 */}
-          <Tabs.Tab name="My Articles">
+          <Tabs.Tab name="User Articles">
             <Tabs.FlatList
               data={user !== undefined ? user.articles : []}
               renderItem={renderItem}
               showsVerticalScrollIndicator={false}
               contentContainerStyle={[
                 styles.flatListContentContainer,
-                {paddingBottom: bottomBarHeight + 15},
-              ]}
-              keyExtractor={item => item?._id}
-              refreshing={refreshing}
-              ListEmptyComponent={
-                <View style={styles.emptyContainer}>
-                  <Text style={styles.message}>No Article Found</Text>
-                </View>
-              }
-            />
-          </Tabs.Tab>
-          {/* Tab 3 */}
-          <Tabs.Tab name="Saved Articles">
-            <Tabs.FlatList
-              data={user !== undefined ? user.savedArticles : []}
-              renderItem={renderItem}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={[
-                styles.flatListContentContainer,
-                {paddingBottom: bottomBarHeight + 15},
+                {paddingBottom: 15},
               ]}
               keyExtractor={item => item?._id}
               refreshing={refreshing}
@@ -191,7 +186,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
   );
 };
 
-export default ProfileScreen;
+export default UserProfileScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -248,5 +243,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  headerLeftButtonEditorScreen: {
+    marginLeft: 15,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
   },
 });

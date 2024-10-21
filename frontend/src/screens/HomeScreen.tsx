@@ -5,6 +5,7 @@ import {
   BackHandler,
   Alert,
   Text,
+  Image,
   TouchableOpacity,
   FlatList,
   ScrollView,
@@ -36,7 +37,8 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const dispatch = useDispatch();
   const [articleCategories, setArticleCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [sortingType, setSortingType] = useState<string>(''); 
+  const [sortingType, setSortingType] = useState<string>('');
+  const [loading, setLoading] = useState(true);
   const [selectCategoryList, setSelectCategoryList] = useState<
     CategoryType['name'][]
   >([]);
@@ -168,21 +170,21 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     console.log('Filtered before', filtered);
     if (selectedTags.length > 0) {
       filtered = filtered.filter(article =>
-        selectedTags.some(tag => article.tags.includes(tag)),
+        selectedTags.some(tag =>
+          article.tags.some(category => category.name === tag),
+        ),
       );
     }
     console.log('Filtered before sort', filtered);
     if (sortType === 'recent' && filtered.length > 1) {
       filtered = filtered.sort(
         (a, b) =>
-          new Date(b.last_updated).getTime() -
-          new Date(a.last_updated).getTime(),
+          new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime(),
       );
     } else if (sortType === 'oldest' && filtered.length > 1) {
       filtered.sort(
         (a, b) =>
-          new Date(a.last_updated).getTime() -
-          new Date(b.last_updated).getTime(),
+          new Date(a.lastUpdated).getTime() - new Date(b.lastUpdated).getTime(),
       );
     } else if (sortType === 'popular' && filtered.length > 1) {
       filtered.sort((a, b) => b.viewCount - a.viewCount);
@@ -208,6 +210,8 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
             Authorization: `Bearer ${user_token}`,
           },
         });
+
+        console.log('Article Response', response);
         let d = response.data.articles as ArticleData[];
         updateArticles(d);
         return response.data.articles as ArticleData[];
@@ -234,7 +238,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           .toLowerCase()
           .includes(textInput.toLowerCase());
         const matchesTags = article.tags.some(tag =>
-          tag.toLowerCase().includes(textInput.toLowerCase()),
+          tag.name.toLowerCase().includes(textInput.toLowerCase()),
         );
 
         return matchesTitle || matchesTags;
@@ -293,13 +297,16 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         </ScrollView>
       </View>
       <View style={styles.articleContainer}>
-        {filteredArticles && filteredArticles.length > 0 && (
+        {((filteredArticles && filteredArticles.length > 0) ||
+          searchedArticles.length > 0) && (
           <FlatList
             data={
               searchMode
                 ? searchedArticles
-                : filteredArticles.filter(article =>
-                    article.tags.includes(selectedCategory),
+                : filteredArticles.filter(
+                    article =>
+                      article.tags &&
+                      article.tags.some(tag => tag.name === selectedCategory),
                   )
             }
             renderItem={renderItem}
@@ -307,9 +314,21 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
             contentContainerStyle={styles.flatListContentContainer}
             refreshing={refreshing}
             onRefresh={onRefresh}
+            ListEmptyComponent={
+              <View style={styles.emptyContainer}>
+                {/**
+                 *  <Image
+                  source={require('../assets/article_default.jpg')}
+                  style={styles.emptyImgStyle}
+                />
+                 */}
+                <Text style={styles.message}>No Article Found</Text>
+              </View>
+            }
           />
         )}
       </View>
+
       <View style={styles.homePlusIconview}>
         <AddIcon callback={handleNoteIconClick} />
       </View>
@@ -361,5 +380,26 @@ const styles = StyleSheet.create({
     right: 25,
     position: 'absolute',
     zIndex: -2,
+  },
+
+  message: {
+    fontSize: 16,
+    color: '#fff',
+    fontFamily: 'bold',
+    textAlign: 'center',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    top: 70,
+  },
+  emptyImgStyle: {
+    width: 300,
+    height: 200,
+    borderRadius: 8,
+    marginBottom: 10,
+    resizeMode: 'contain',
   },
 });

@@ -6,23 +6,32 @@ import {PRIMARY_COLOR} from '../../helper/Theme';
 import {PreviewScreenProp, User} from '../../type';
 import {createHTMLStructure} from '../../helper/Utils';
 import {useMutation, useQuery} from '@tanstack/react-query';
+import ImageResizer from '@bam.tech/react-native-image-resizer';
+import RNFS from 'react-native-fs';
 import axios from 'axios';
 import Loader from '../../components/Loader';
-import {GET_PROFILE_API, POST_ARTICLE} from '../../helper/APIUtils';
+import {GET_IMAGE, GET_PROFILE_API, POST_ARTICLE} from '../../helper/APIUtils';
 import {useSelector} from 'react-redux';
+import useUploadImage from '../../../hooks/useUploadImage';
 
 export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const {article, title, description, image, selectedGenres} = route.params;
+  const {article, title, authorName, selectedGenres, localImages} =
+    route.params;
   const webViewRef = useRef<WebView>(null);
   const {user_token} = useSelector((state: any) => state.user);
+
+  const {uploadImage, loading} = useUploadImage();
+  console.log(selectedGenres);
 
   React.useEffect(() => {
     navigation.setOptions({
       headerRight: () => (
-        <TouchableOpacity style={styles.button} onPress={() => {
-          createPostMutation.mutate();
-        }}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => {
+            //createPostMutation.mutate();
+            handlePostSubmit();
+          }}>
           <Text style={styles.textWhite}>Post</Text>
         </TouchableOpacity>
       ),
@@ -43,14 +52,84 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
     },
   });
 
+  const handlePostSubmit = async () => {
+    let finalArticle = article;
+    let imageUtil = '';
+
+    // Resize and confirm for all images before uploading
+    try {
+      const confirmation = await new Promise(resolve => {
+        Alert.alert(
+          'Create Post',
+          'Please confirm you want to upload this post.',
+          [
+            {
+              text: 'Cancel',
+              onPress: () => resolve(false),
+              style: 'cancel',
+            },
+            {
+              text: 'OK',
+              onPress: () => resolve(true),
+            },
+          ],
+          {cancelable: false},
+        );
+      });
+
+      if (!confirmation) {
+        Alert.alert('Post discarded');
+        navigation.navigate('TabNavigation');
+      }
+
+      // Process each local image
+      for (let i = 0; i < localImages.length; i++) {
+        const localImage = localImages[i];
+
+        // Resize the image
+        const resizedImageUri = await ImageResizer.createResizedImage(
+          localImage,
+          1000,
+          1000,
+          'JPEG',
+          100,
+        );
+
+        // Upload the resized image
+        const uploadedUrl = await uploadImage(resizedImageUri.uri);
+        // console.log('Uploaded Url',uploadedUrl);
+        if (i === 0) {
+          imageUtil = `${GET_IMAGE}/${uploadedUrl}`;
+          continue;
+        }
+        finalArticle = finalArticle.replace(
+          localImage,
+          `${GET_IMAGE}/${uploadedUrl}`,
+        );
+      }
+
+      console.log('Final Article', finalArticle);
+      createPostMutation.mutate({
+        article: finalArticle,
+        image: imageUtil,
+      });
+    } catch (err) {
+      console.error('Image processing failed:', err);
+      Alert.alert('Error', 'Could not process the images.');
+      return; // Exit on error
+    }
+
+    // console.log(finalArticle);
+  };
+
   const createPostMutation = useMutation({
     mutationKey: ['create-post-key'],
-    mutationFn: async () => {
+    mutationFn: async ({article, image}: {article: string; image: string}) => {
       const response = await axios.post(
         POST_ARTICLE,
         {
           title: title,
-          authorName: user?.user_name,
+          authorName: authorName,
           authorId: user?._id,
           content: article,
           tags: selectedGenres,
@@ -62,6 +141,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
           },
         },
       );
+      // console.log(article);
       return response.data as any;
     },
 
@@ -71,12 +151,45 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
     },
     onError: error => {
       console.log('Article post Error', error);
+      console.log(error);
+
       Alert.alert('Failed to upload your post');
     },
   });
 
+  const createAndUploadHtmlFile = async () => {
+    const filePath = `${RNFS.DocumentDirectoryPath}/${title.substring(
+      0,
+      7,
+    )}.html`;
+
+    try {
+      // Step 1: Create the HTML file
+      await RNFS.writeFile(filePath, article, 'utf8');
+      Alert.alert('Success', `HTML file created at: ${filePath}`);
+
+      // Step 2: Upload the file
+      const formData = new FormData();
+      formData.append('file', {
+        uri: filePath,
+        type: 'text/html', // Change if necessary
+        name: `${title.substring(0, 7)}.html`,
+      });
+
+      const response = await axios.post(UPLOAD_STORAGE, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      Alert.alert('Upload Success', `File uploaded: ${response.data}`);
+    } catch (error) {
+      Alert.alert('Error', `Operation failed: ${error.message}`);
+    }
+  };
+
   // Vultr post
-  if (createPostMutation.isPending) {
+  if (createPostMutation.isPending || loading) {
     return <Loader />;
   }
   return (

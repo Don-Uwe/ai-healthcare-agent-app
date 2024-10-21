@@ -98,11 +98,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     position: 'absolute',
     bottom: 0,
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
+    borderTopLeftRadius: 60,
+    borderTopRightRadius: 60,
     paddingBottom: 8,
-    backgroundColor: 'red',
+    backgroundColor: 'red', // You might want to adjust this color
     borderWidth: 0.19,
+    zIndex: 0, // Ensure this is lower than the items
   },
   mainItemContainer: {
     flex: 1,
@@ -111,8 +112,9 @@ const styles = StyleSheet.create({
     marginVertical: 7,
     borderRadius: 1,
     borderColor: '#333B42',
-    zIndex: -2,
+    zIndex: 1, // Higher zIndex to bring items on top
   },
 });
+
 
 export default TabBar;

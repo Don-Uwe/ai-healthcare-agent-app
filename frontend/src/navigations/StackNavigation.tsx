@@ -12,10 +12,13 @@ import PreviewScreen from '../screens/article/PreviewScreen';
 import ArticleScreen from '../screens/article/ArticleScreen';
 import {TouchableOpacity, StyleSheet} from 'react-native';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
+import Ionicon from 'react-native-vector-icons/Ionicons';
 import ArticleDescriptionScreen from '../screens/article/ArticleDescriptionScreen';
 import ProfileEditScreen from '../screens/ProfileEditScreen';
+import UserProfileScreen from '../screens/UserProfileScreen';
 import {RootStackParamList} from '../type';
-import { PRIMARY_COLOR } from '../helper/Theme';
+import {PRIMARY_COLOR} from '../helper/Theme';
+import LogoutScreen from '../screens/auth/LogoutScreen';
 const Stack = createStackNavigator<RootStackParamList>();
 
 const StackNavigation = () => {
@@ -80,7 +83,23 @@ const StackNavigation = () => {
       <Stack.Screen
         name="ArticleDescriptionScreen"
         component={ArticleDescriptionScreen}
-        options={{headerShown: false}}
+        options={({navigation}) => ({
+          headerShown: true,
+          headerTitle: 'Start Writing',
+          headerBackTitleVisible: false,
+          headerTitleStyle: {color: PRIMARY_COLOR},
+          // eslint-disable-next-line react/no-unstable-nested-components
+          headerLeft: () => (
+            <TouchableOpacity
+              style={styles.headerLeftButtonEditorScreen}
+              onPress={() => {
+                navigation.goBack();
+              }}>
+              <Ionicon name="chevron-back" size={26} color={PRIMARY_COLOR} />
+              {/* <FontAwesome6 size={25} name="arrow-left" color="black" /> */}
+            </TouchableOpacity>
+          ),
+        })}
       />
 
       <Stack.Screen
@@ -123,6 +142,14 @@ const StackNavigation = () => {
           ),
         })}
       />
+
+      <Stack.Screen
+        name="UserProfileScreen"
+        component={UserProfileScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
       <Stack.Screen
         name="ProfileEditScreen"
         component={ProfileEditScreen}
@@ -141,6 +168,13 @@ const StackNavigation = () => {
             </TouchableOpacity>
           ),
         })}
+      />
+      <Stack.Screen
+        name="LogoutScreen"
+        component={LogoutScreen}
+        options={{
+          headerShown: false,
+        }}
       />
     </Stack.Navigator>
   );

@@ -17,6 +17,8 @@ import Feather from 'react-native-vector-icons/Feather';
 import {fp, hp, wp} from '../helper/Metric';
 import {ProfileHeaderProps} from '../type';
 
+import {GET_STORAGE_DATA} from '../helper/APIUtils';
+
 const ProfileHeader = ({
   isDoctor,
   username,
@@ -30,6 +32,9 @@ const ProfileHeader = ({
   experience,
   qualification,
   navigation,
+  other,
+  followers,
+  followings,
 }: ProfileHeaderProps) => {
   const handleCall = phone => {
     let phoneNumber = phone;
@@ -51,11 +56,14 @@ const ProfileHeader = ({
       <View style={styles.contentContainer}>
         <Image
           source={{
-            uri:
-              profileImg ||
-              'https://media.istockphoto.com/id/1337144146/vector/default-avatar-profile-icon-vector.jpg?s=612x612&w=0&k=20&c=BIbFwuv7FxTWvh5S3vB6bkT0Qv8Vn8N5Ffseq84ClGI=',
+            uri: profileImg.startsWith('https')
+              ? profileImg
+              : `${GET_STORAGE_DATA}/${profileImg}`,
           }}
-          style={styles.profileImage}
+          style={[
+            styles.profileImage,
+            !profileImg && {borderWidth: 0.5, borderColor: 'black'},
+          ]}
         />
         <Text style={styles.nameText}>{username}</Text>
         <Text style={[styles.usernameText, {color: PRIMARY_COLOR}]}>
@@ -83,20 +91,49 @@ const ProfileHeader = ({
               style={[styles.iconButton, {backgroundColor: PRIMARY_COLOR}]}>
               <MaterialIcons name="email" size={25} color="white" />
             </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.iconButton, {backgroundColor: PRIMARY_COLOR}]}>
-              <Feather name="edit-3" size={25} color="white" />
-            </TouchableOpacity>
+            {other && (
+              <TouchableOpacity
+                style={[styles.iconButton, {backgroundColor: PRIMARY_COLOR}]}
+                onPress={() => {
+                  navigation.navigate('ProfileEditScreen');
+                }}>
+                <Feather name="edit-3" size={25} color="white" />
+              </TouchableOpacity>
+            )}
           </View>
         ) : (
-          <TouchableOpacity
-            style={styles.editProfileButton}
-            onPress={() => {
-              navigation.navigate('ProfileEditScreen');
-            }}>
-            <Text style={styles.editProfileButtonText}>Edit Profile</Text>
-          </TouchableOpacity>
+          other && (
+            // <TouchableOpacity
+            //   style={styles.editProfileButton}
+            //   onPress={() => {
+            //     navigation.navigate('ProfileEditScreen');
+            //   }}>
+            //   <Text style={styles.editProfileButtonText}>Edit Profile</Text>
+            // </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                navigation.navigate('ProfileEditScreen');
+              }}
+              style={{marginVertical: 10}}>
+              <View style={styles.btnSM}>
+                <MaterialIcons name="edit" size={20} color="black" />
+                <Text style={styles.btnSMText}>Edit Profile</Text>
+              </View>
+            </TouchableOpacity>
+          )
         )}
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate('LogoutScreen', {
+              profile_image: profileImg,
+              username: username,
+            });
+          }}>
+          <View style={styles.btnSM}>
+            <MaterialIcons name="logout" size={20} color="black" />
+            <Text style={styles.btnSMText}>Logout</Text>
+          </View>
+        </TouchableOpacity>
         <View style={styles.infoContainer}>
           {isDoctor ? (
             <>
@@ -121,12 +158,31 @@ const ProfileHeader = ({
                 </Text>
                 <Text style={styles.infoLabel}>Articles</Text>
               </View>
-              <View style={styles.infoBlock}>
-                <Text style={[styles.infoText, {color: PRIMARY_COLOR}]}>
-                  {articlesSaved}
-                </Text>
-                <Text style={styles.infoLabel}>Saved</Text>
-              </View>
+              {other && (
+                <View style={styles.infoBlock}>
+                  <Text style={[styles.infoText, {color: PRIMARY_COLOR}]}>
+                    {articlesSaved}
+                  </Text>
+                  <Text style={styles.infoLabel}>Saved</Text>
+                </View>
+              )}
+              {!other && (
+                <View style={styles.infoBlock}>
+                  <Text style={[styles.infoText, {color: PRIMARY_COLOR}]}>
+                    {followers}
+                  </Text>
+                  <Text style={styles.infoLabel}>Followers</Text>
+                </View>
+              )}
+
+              {!other && (
+                <View style={styles.infoBlock}>
+                  <Text style={[styles.infoText, {color: PRIMARY_COLOR}]}>
+                    {followings}
+                  </Text>
+                  <Text style={styles.infoLabel}>Followings</Text>
+                </View>
+              )}
             </>
           )}
         </View>
@@ -155,6 +211,7 @@ const styles = StyleSheet.create({
     width: 130,
     borderRadius: 100,
     objectFit: 'cover',
+    resizeMode: 'contain',
   },
   nameText: {
     fontSize: fp(6),
@@ -222,5 +279,24 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'regular',
     color: 'black',
+  },
+  btnSM: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    backgroundColor: '#fff',
+    borderColor: '#d1d5db',
+    width: wp(70),
+    gap: 10,
+  },
+  btnSMText: {
+    fontSize: 17,
+    lineHeight: 20,
+    fontWeight: '600',
+    color: '#374151',
   },
 });

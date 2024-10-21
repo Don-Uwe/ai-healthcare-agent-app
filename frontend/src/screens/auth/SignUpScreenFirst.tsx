@@ -44,6 +44,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
         email: email,
         password: password,
         isDoctor: false,
+        Profile_image: '',
       });
       return res.data.token as string;
     },
@@ -53,6 +54,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
     },
 
     onError: (err: AxiosError) => {
+      console.log(err.message);
       if (err.response) {
         const statusCode = err.response.status;
         switch (statusCode) {
@@ -108,7 +110,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
       if (error.response) {
         const statusCode = error.response.status;
         switch (statusCode) {
-          case 400:
+          case 400: {
             if (error.message === 'Email and token are required') {
               Alert.alert('Error', 'Email and token are required');
             } else if (error.message === 'User not found or already verified') {
@@ -117,18 +119,24 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
               Alert.alert('Error', 'Please provide all required fields');
             }
             break;
-          case 429:
+          }
+          case 429: {
             Alert.alert(
               'Error',
               'Verification email already sent. Please try again after 1 hour.',
             );
+            setVerifyBtntxt('Verification mail already sent');
+            setVerifiedModalVisible(false);
             break;
-          case 500:
+          }
+
+          case 500: {
             Alert.alert(
               'Error',
               'Internal server error. Please try again later.',
             );
             break;
+          }
           default:
             Alert.alert(
               'Error',

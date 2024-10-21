@@ -9,13 +9,20 @@ import React, {useState} from 'react';
 import Feather from 'react-native-vector-icons/Feather';
 import {PRIMARY_COLOR} from '../helper/Theme';
 
-const PasswordTab = () => {
+const PasswordTab = ({
+  old_password,
+  new_password,
+  confirm_password,
+  setOldPassword,
+  setNewPassword,
+  setConfirmPassword,
+  handleSubmitPassword,
+}) => {
   // State hooks to manage visibility of passwords
   const [isVisibleOldPassword, setisVisibleOldPassword] = useState(false);
   const [isVisibleNewPassword, setisVisibleNewPassword] = useState(false);
   const [isVisibleConfirmPassword, setisVisibleConfirmPassword] =
     useState(false);
-
   // Toggle functions to change password visibility
   const toggleOldPassword = () => {
     setisVisibleOldPassword(!isVisibleOldPassword);
@@ -39,6 +46,8 @@ const PasswordTab = () => {
               placeholder="Enter your old password"
               placeholderTextColor="#6b7280"
               style={styles.inputControl}
+              value={old_password}
+              onChangeText={text => setOldPassword(text)}
             />
             <TouchableOpacity
               style={styles.eyeIcon}
@@ -61,6 +70,8 @@ const PasswordTab = () => {
               placeholder="Enter your new password"
               placeholderTextColor="#6b7280"
               style={styles.inputControl}
+              value={new_password}
+              onChangeText={text => setNewPassword(text)}
             />
             <TouchableOpacity
               style={styles.eyeIcon}
@@ -83,6 +94,8 @@ const PasswordTab = () => {
               placeholder="Enter your confirm password"
               placeholderTextColor="#6b7280"
               style={styles.inputControl}
+              value={confirm_password}
+              onChangeText={text => setConfirmPassword(text)}
             />
             <TouchableOpacity
               style={styles.eyeIcon}
@@ -98,11 +111,7 @@ const PasswordTab = () => {
       </View>
 
       {/* Save Button */}
-      <TouchableOpacity
-        onPress={() => {
-          // handle onPress
-        }}
-        style={styles.btn}>
+      <TouchableOpacity onPress={handleSubmitPassword} style={styles.btn}>
         <Text style={styles.btnText}>Save</Text>
       </TouchableOpacity>
     </View>

@@ -6,19 +6,19 @@ import {
   Pressable,
   Alert,
   ActivityIndicator,
-  TouchableOpacity
+  TouchableOpacity,
 } from 'react-native';
 import React from 'react';
 import {fp, hp} from '../helper/Metric';
 import {ArticleCardProps, ArticleData} from '../type';
 import moment from 'moment';
 import {useDispatch, useSelector} from 'react-redux';
-import {setArticle} from '../store/articleSlice';
 import axios from 'axios';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import {useMutation} from '@tanstack/react-query';
 import {
+  GET_IMAGE,
   LIKE_ARTICLE,
   SAVE_ARTICLE,
   UPDATE_VIEW_COUNT,
@@ -26,9 +26,8 @@ import {
 import {PRIMARY_COLOR} from '../helper/Theme';
 
 const ArticleCard = ({item, navigation, success}: ArticleCardProps) => {
-  const dispatch = useDispatch();
   const {user_token, user_id} = useSelector((state: any) => state.user);
-
+  console.log('Image Utils', item?.imageUtils[0]);
   const updateViewCountMutation = useMutation({
     mutationKey: ['update-view-count'],
     mutationFn: async () => {
@@ -51,8 +50,10 @@ const ArticleCard = ({item, navigation, success}: ArticleCardProps) => {
       return res.data.article as ArticleData;
     },
     onSuccess: async data => {
-      dispatch(setArticle({article: data}));
-      navigation.navigate('ArticleScreen');
+      navigation.navigate('ArticleScreen', {
+        articleId: Number(item._id),
+        authorId: item.authorId,
+      });
     },
 
     onError: error => {
@@ -134,8 +135,15 @@ const ArticleCard = ({item, navigation, success}: ArticleCardProps) => {
       }}>
       <View style={styles.cardContainer}>
         {/* image */}
-        {item?.imageUtils[0] && item?.imageUtils[0].length === 0 ? (
-          <Image source={{uri: item?.imageUtils[0]}} style={styles.image} />
+        {item?.imageUtils[0] && item?.imageUtils[0].length !== 0 ? (
+          <Image
+            source={{
+              uri: item?.imageUtils[0].startsWith('http')
+                ? item?.imageUtils[0]
+                : `${GET_IMAGE}/${item?.imageUtils[0]}`,
+            }}
+            style={styles.image}
+          />
         ) : (
           <Image
             source={require('../assets/article_default.jpg')}
@@ -145,7 +153,9 @@ const ArticleCard = ({item, navigation, success}: ArticleCardProps) => {
 
         <View style={styles.textContainer}>
           {/* title */}
-          <Text style={styles.footerText}>{item?.tags.join(' | ')}</Text>
+          <Text style={styles.footerText}>
+            {item?.tags.map(tag => tag.name).join(' | ')}
+          </Text>
           <Text style={styles.title}>{item?.title}</Text>
           {/* description */}
           {/**  <Text style={styles.description}>{item?.description}</Text> */}
@@ -165,7 +175,7 @@ const ArticleCard = ({item, navigation, success}: ArticleCardProps) => {
           </Text>
           <Text style={styles.footerText}>
             Last updated: {''}
-            {moment(new Date(item?.last_updated)).format('DD/MM/YYYY')}
+            {moment(new Date(item?.lastUpdated)).format('DD/MM/YYYY')}
           </Text>
 
           <View style={styles.likeSaveContainer}>

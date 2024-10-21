@@ -32,7 +32,6 @@ const SplashScreen = ({navigation}: SplashScreenProp) => {
       console.log('User Id', userId);
       const user = await retrieveItem(KEYS.USER_TOKEN);
       const expiryDate = await retrieveItem(KEYS.USER_TOKEN_EXPIRY_DATE);
-
       if (user && expiryDate && !isDateMoreThanSevenDaysOld(expiryDate)) {
         dispatch(setUserId(userId));
         dispatch(setUserToken(user));

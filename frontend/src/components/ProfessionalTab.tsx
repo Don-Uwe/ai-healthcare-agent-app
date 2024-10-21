@@ -13,6 +13,10 @@ const ProfessionalTab = ({
   specialization,
   qualification,
   years_of_experience,
+  setSpecialization,
+  setQualification,
+  setExperience,
+  handleSubmitProfessionalDetails,
 }: ProfileEditProfessionalTab) => {
   return (
     <View style={styles.container}>
@@ -25,6 +29,8 @@ const ProfessionalTab = ({
             placeholderTextColor="#6b7280"
             style={styles.inputControl}
             value={specialization}
+            onChangeText={text => setSpecialization(text)}
+            autoCapitalize="words"
           />
         </View>
 
@@ -36,6 +42,8 @@ const ProfessionalTab = ({
             placeholderTextColor="#6b7280"
             style={styles.inputControl}
             value={qualification}
+            onChangeText={text => setQualification(text)}
+            autoCapitalize="words"
           />
         </View>
 
@@ -47,16 +55,16 @@ const ProfessionalTab = ({
             placeholderTextColor="#6b7280"
             style={styles.inputControl}
             keyboardType="decimal-pad"
-            value={years_of_experience}
+            value={years_of_experience.toString()}
+            onChangeText={text => setExperience(text)}
+            maxLength={2}
           />
         </View>
       </View>
 
       {/* Save Button */}
       <TouchableOpacity
-        onPress={() => {
-          // handle onPress
-        }}
+        onPress={handleSubmitProfessionalDetails}
         style={styles.btn}>
         <Text style={styles.btnText}>Save</Text>
       </TouchableOpacity>

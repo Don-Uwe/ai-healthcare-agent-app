@@ -42,11 +42,11 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
   return (
     // Main container
     <View style={styles.container}>
-      {/* Header with PodcastPlayer */}
-      <View style={[styles.header, {paddingTop: headerHeight}]}>
+      {/**  Header with PodcastPlayer }
+        <View style={[styles.header, {paddingTop: headerHeight}]}>
         <PodcastPlayer />
       </View>
-      {/* Content including recent podcasts list */}
+      {/* Content including recent podcasts list }
       <View style={styles.content}>
         <View style={styles.recentPodcastsHeader}>
           <Text style={styles.recentPodcastsTitle}>Recent Podcasts</Text>
@@ -54,7 +54,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
             <Text style={styles.seeMoreText}>See more</Text>
           </TouchableOpacity>
         </View>
-        {/* FlatList to display podcasts */}
+        {/* FlatList to display podcasts }
         <FlatList
           data={podcast}
           renderItem={({item}) => (
@@ -74,6 +74,9 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
           }}
         />
       </View>
+      */}
+
+      <Text style={styles.recentPodcastsTitle}>Coming Soon</Text>
     </View>
   );
 };
@@ -84,7 +87,8 @@ export default PodcastsScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: PRIMARY_COLOR,
+    justifyContent: 'center',
   },
   header: {
     backgroundColor: PRIMARY_COLOR,
@@ -106,6 +110,8 @@ const styles = StyleSheet.create({
   recentPodcastsTitle: {
     fontSize: 25,
     fontWeight: 'bold',
+    color: 'white',
+    alignSelf: 'center',
   },
   seeMoreText: {
     fontSize: 16,

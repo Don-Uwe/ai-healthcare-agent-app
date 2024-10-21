@@ -9,7 +9,13 @@ import React from 'react';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import {ProfileEditContactTab} from '../type';
 
-const ContactTab = ({phone_number, contact_email}: ProfileEditContactTab) => {
+const ContactTab = ({
+  phone_number,
+  contact_email,
+  setContactNumber,
+  setContactEmail,
+  handleSubmitContactDetails,
+}: ProfileEditContactTab) => {
   return (
     <View style={styles.container}>
       {/* Content Container */}
@@ -24,6 +30,8 @@ const ContactTab = ({phone_number, contact_email}: ProfileEditContactTab) => {
             style={styles.inputControl}
             value={phone_number}
             keyboardType="number-pad"
+            maxLength={10}
+            onChangeText={text => setContactNumber(text)}
           />
         </View>
 
@@ -37,16 +45,13 @@ const ContactTab = ({phone_number, contact_email}: ProfileEditContactTab) => {
             style={styles.inputControl}
             value={contact_email}
             keyboardType="email-address"
+            onChangeText={text => setContactEmail(text)}
           />
         </View>
       </View>
 
       {/* Save Button */}
-      <TouchableOpacity
-        onPress={() => {
-          // handle onPress
-        }}
-        style={styles.btn}>
+      <TouchableOpacity onPress={handleSubmitContactDetails} style={styles.btn}>
         <Text style={styles.btnText}>Save</Text>
       </TouchableOpacity>
     </View>

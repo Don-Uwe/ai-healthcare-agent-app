@@ -1,7 +1,7 @@
 import type {CompositeScreenProps} from '@react-navigation/native';
 import type {BottomTabScreenProps} from '@react-navigation/bottom-tabs';
 import type {StackScreenProps} from '@react-navigation/stack';
-import {RefObject} from 'react';
+import {Dispatch, RefObject, SetStateAction} from 'react';
 import {BottomSheetModal} from '@gorhom/bottom-sheet'; // Adjust this import based on your actual BottomSheetModal component
 
 export type RootStackParamList = {
@@ -14,20 +14,29 @@ export type RootStackParamList = {
   NewPasswordScreen: {email: string};
   EditorScreen: {
     title: string;
+    authorName: string;
     description: string;
     selectedGenres: Category[];
     imageUtils: string;
   };
   ArticleDescriptionScreen: undefined;
   PreviewScreen: {
-    article: string,
-    title: string,
-    description: string,
-    image: string,
+    article: string;
+    title: string;
+    authorName: string;
+    description: string;
+    image: string;
     selectedGenres: Category[];
+    localImages: string[];
+    htmlImages: string[];
   };
-  ArticleScreen: undefined;
+  ArticleScreen: {
+    articleId: number;
+    authorId: string;
+  };
+  UserProfileScreen: {authorId: string};
   ProfileEditScreen: undefined;
+  LogoutScreen: {profile_image: string; username: string};
 };
 
 export type UserDetail = {
@@ -51,6 +60,10 @@ export type NewPasswordScreenProp = StackScreenProps<
   'NewPasswordScreen'
 >;
 
+export type UserProfileScreenProp =
+  | StackScreenProps<RootStackParamList, 'UserProfileScreen'>
+  | StackScreenProps<RootStackParamList, 'ArticleScreen'>;
+
 export type OtpScreenProp = StackScreenProps<RootStackParamList, 'OtpScreen'>;
 
 export type SignUpScreenFirstProp = StackScreenProps<
@@ -72,6 +85,7 @@ export type ArticleScreenProp = StackScreenProps<
   RootStackParamList,
   'ArticleScreen'
 >;
+//StackScreenProps<RootStackParamList, 'UserProfileScreen'>;
 
 export type EditorScreenProp = StackScreenProps<
   RootStackParamList,
@@ -101,7 +115,10 @@ export type HomeScreenHeaderProps = {
 
 export type ArticleCardProps = {
   item: ArticleData;
-  navigation: HomeScreenProps['navigation'] | ProfileScreenProps['navigation'];
+  navigation:
+    | HomeScreenProps['navigation']
+    | ProfileScreenProps['navigation']
+    | UserProfileScreenProp['navigation'];
   success: () => void;
 };
 
@@ -117,7 +134,12 @@ export type ProfileHeaderProps = {
   specialization: string;
   experience: number;
   qualification: string;
-  navigation: ProfileScreenProps['navigation'];
+  other: boolean;
+  navigation:
+    | ProfileScreenProps['navigation']
+    | UserProfileScreenProp['navigation'];
+  followers: number;
+  followings: number;
 };
 
 export type HomeScreenFilterModalProps = {
@@ -144,17 +166,30 @@ export type ProfileEditGeneralTab = {
   email: string;
   about: string;
   imgUrl: string;
+  setUsername: Dispatch<SetStateAction<string>>;
+  setUserHandle: Dispatch<SetStateAction<string>>;
+  setEmail: Dispatch<SetStateAction<string>>;
+  setAbout: Dispatch<SetStateAction<string>>;
+  handleSubmitGeneralDetails: () => void;
+  selectImage: () => void;
 };
 
 export type ProfileEditProfessionalTab = {
   specialization: string;
   qualification: string;
   years_of_experience: string;
+  setSpecialization: Dispatch<SetStateAction<string>>;
+  setQualification: Dispatch<SetStateAction<string>>;
+  setExperience: Dispatch<SetStateAction<string>>;
+  handleSubmitProfessionalDetails: () => void;
 };
 
 export type ProfileEditContactTab = {
   phone_number: string;
   contact_email: string;
+  setContactNumber: Dispatch<SetStateAction<string>>;
+  setContactEmail: Dispatch<SetStateAction<string>>;
+  handleSubmitContactDetails: () => void;
 };
 
 export type AddIconProp = {
@@ -193,12 +228,12 @@ export type ArticleData = {
   authorId: string;
   content: string;
   summary: string;
-  tags: string[];
-  last_updated: string;
+  tags: Category[];
+  lastUpdated: string;
   imageUtils: string[];
   viewCount: number;
   likeCount: number;
-  likedUsers: string[];
+  likedUsers: User[];
   savedUsers: string[];
 };
 
@@ -213,7 +248,6 @@ export type User = {
   __v: number;
   _id: string;
   about: null;
-  articles: any[];
   contact_detail: Contactdetail;
   created_at: string;
   email: string;
@@ -230,7 +264,8 @@ export type User = {
   password: string;
   qualification: null;
   readArticles: any[];
-  savedArticles: any[];
+  savedArticles: ArticleData[];
+  articles: ArticleData[];
   specialization: string | null;
   user_handle: string;
   user_id: string;

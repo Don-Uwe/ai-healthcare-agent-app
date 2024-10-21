@@ -166,7 +166,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
             Alert.alert('Error', 'Internal server error');
         }
       } else {
-        Alert.alert('Error', 'Network error. Please try again.');
+        Alert.alert('Error', 'User not found');
       }
     },
   });

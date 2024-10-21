@@ -44,6 +44,7 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
         specialization: specialization,
         qualification: education,
         Years_of_experience: experience,
+        Profile_image: '',
         contact_detail: contactDetail,
       });
       return res.data.token as string;
@@ -165,7 +166,7 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
     } else if (validator.validate(businessEmail) === false) {
       Alert.alert('Please enter a valid mail id');
       return;
-    } else if (phone.length < 10 || !validPhoneNumber()) {
+    } else if (phone.length < 10 || !validPhoneNumber(phone)) {
       Alert.alert('Please enter a valid phone number');
       return;
     } else {
@@ -180,8 +181,8 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
     }
   };
 
-  const validPhoneNumber = () => {
-    const phoneNumberRegex: RegExp = /^\+\d{1,3} \d{7,10}$/;
+  const validPhoneNumber = phone => {
+    const phoneNumberRegex = /^\+\d{1,3}\d{7,10}$/;
     return phoneNumberRegex.test(phone);
   };
 

@@ -1,4 +1,4 @@
-import {View, Image} from 'react-native';
+import {View, Image, Text} from 'react-native';
 import React from 'react';
 
 const ActivityOverview = () => {
@@ -8,6 +8,7 @@ const ActivityOverview = () => {
         flex: 1,
         backgroundColor: 'white',
       }}>
+      <Text style={{color: 'black', fontSize: 18}}> Coming Soon </Text>
       <Image
         source={{
           uri: 'https://i.ibb.co/T2WNVJZ/Whats-App-Image-2024-07-14-at-12-46-02-AM-1.jpg',

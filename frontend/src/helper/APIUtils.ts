@@ -1,4 +1,5 @@
-const BASE_URL = 'http://192.168.0.101:3025/api';
+// const BASE_URL = 'http://10.0.2.2:3025/api';
+const BASE_URL = 'http://139.84.174.38/api';
 const LOGIN_API = `${BASE_URL}/user/login`;
 const REGISTRATION_API = `${BASE_URL}/user/register`;
 const ARTICLE_TAGS_API = '/articles/tags';
@@ -14,9 +15,18 @@ const UPDATE_VIEW_COUNT = `${BASE_URL}/articles/updateViewCount`;
 const SAVE_ARTICLE = `${BASE_URL}/articles/saveArticle`;
 const LIKE_ARTICLE = `${BASE_URL}/articles/likeArticle`;
 const POST_ARTICLE = `${BASE_URL}/articles`;
-
-
-
+const GET_ARTICLE_BY_ID = `${BASE_URL}/articles`;
+const GET_USER_DETAILS_API = `${BASE_URL}/user/getdetails`;
+const UPDATE_USER_GENERAL_DETAILS = `${BASE_URL}/user/update-general-details`;
+const UPDATE_USER_PASSWORD = `${BASE_URL}/user/update-password`;
+const UPDATE_USER_CONTACT_DETAILS = `${BASE_URL}/user/update-contact-details`;
+const UPDATE_USER_PROFESSIONAL_DETAILS = `${BASE_URL}/user/update-professional-details`;
+const UPLOAD_STORAGE = `${BASE_URL}/upload-storage`;
+const GET_STORAGE_DATA = `${BASE_URL}/getFile`;
+const UPDATE_PROFILE_IMAGE = `${BASE_URL}/user/update-profile-image`;
+const GET_PROFILE_IMAGE_BY_ID = `${BASE_URL}/user/getprofileimage`;
+const GET_IMAGE = `${BASE_URL}/getfile`;
+const USER_LOGOUT = `${BASE_URL}/user/logout`;
 export {
   BASE_URL,
   LOGIN_API,
@@ -33,5 +43,17 @@ export {
   UPDATE_VIEW_COUNT,
   SAVE_ARTICLE,
   LIKE_ARTICLE,
-  POST_ARTICLE
+  POST_ARTICLE,
+  GET_ARTICLE_BY_ID,
+  GET_USER_DETAILS_API,
+  UPDATE_USER_GENERAL_DETAILS,
+  UPDATE_USER_PASSWORD,
+  UPDATE_USER_CONTACT_DETAILS,
+  UPDATE_USER_PROFESSIONAL_DETAILS,
+  UPLOAD_STORAGE,
+  GET_STORAGE_DATA,
+  UPDATE_PROFILE_IMAGE,
+  GET_PROFILE_IMAGE_BY_ID,
+  GET_IMAGE,
+  USER_LOGOUT,
 };
