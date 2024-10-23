@@ -1,14 +1,16 @@
 import { useEffect, useMemo } from 'react'
 import { getCpLockPda, CpmmLockInfo } from '@raydium-io/raydium-sdk-v2'
 import shallow from 'zustand/shallow'
-import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
 import useSWR from 'swr'
-
+import { Connection } from '@solana/web3.js'
+import logMessage from '@/utils/log'
+import ToPublicKey from '@/utils/publicKey'
 import useRefreshEpochInfo from '@/hooks/app/useRefreshEpochInfo'
 import { useAppStore, useTokenAccountStore, initTokenAccountSate, useTokenStore } from '@/store'
 import { useEvent } from '@/hooks/useEvent'
 import axios from 'axios'
+import { getPdaIdCache } from '@/utils/pool/pdaCache'
 
 export type CpmmLockData = CpmmLockInfo & { nftMint: string }
 // key: lp mint
@@ -18,9 +20,33 @@ export const LOCK_LIQUIDITY_SEED = Buffer.from('locked_liquidity', 'utf8')
 
 let lastRefreshTag = initTokenAccountSate.refreshCpmmPositionTag
 
-const fetcher = async ([host, publicKeyList]: [string, string[]]) => {
+const checkCpmmLockId = async ([connection, publicKeyList]: [Connection, string[]]) => {
+  logMessage('rpc: check cpmm lock id')
+  const commitment = useAppStore.getState().commitment
+
+  const chunkSize = 100
+  const keyGroup = []
+  for (let i = 0; i < publicKeyList.length; i += chunkSize) {
+    keyGroup.push(publicKeyList.slice(i, i + chunkSize))
+  }
+
   const res = await Promise.all(
-    publicKeyList.map(async (key) => {
+    keyGroup.map((list) =>
+      connection.getMultipleAccountsInfoAndContext(
+        list.map((publicKey) => ToPublicKey(publicKey)),
+        commitment
+      )
+    )
+  )
+  return res.flat()
+}
+
+const fetcher = async ([connection, host, publicKeyList]: [Connection, string, string[]]) => {
+  const checkData = await checkCpmmLockId([connection, publicKeyList])
+  const checkRes = checkData.map((d) => d.value).flat()
+  const res = await Promise.all(
+    publicKeyList.map(async (key, idx) => {
+      if (!checkRes[idx]) return undefined
       try {
         const r = await axios.get(host + `?id=${key}`)
         return r.data as CpmmLockInfo
@@ -52,22 +78,32 @@ export default function useLockCpmmBalance({ refreshInterval = 1000 * 60 * 5 }: 
   )
 
   const allPossibleLockMints = useMemo(
-    () => balanceMints.map((acc) => getCpLockPda(new PublicKey(LOCK_CPMM_PROGRAM), acc.accountInfo.mint).publicKey.toBase58()),
+    () =>
+      balanceMints.map((acc) =>
+        getPdaIdCache({
+          program: LOCK_CPMM_PROGRAM,
+          mint: acc.accountInfo.mint,
+          identifier: '-cpmm',
+          pdaFunc: getCpLockPda
+        })
+      ),
     [balanceMints]
   )
 
   const needFetch = tokenAccLoaded && LOCK_CPMM_PROGRAM && connection && tokenAccountRawInfos.length > 0 && allPossibleLockMints.length > 0
-  const { data, isLoading, isValidating, mutate, ...swrProps } = useSWR(needFetch ? [cpmmLockUrl, allPossibleLockMints] : null, fetcher, {
-    dedupingInterval: refreshInterval,
-    focusThrottleInterval: refreshInterval,
-    refreshInterval,
-    keepPreviousData: !!needFetch && !!owner
-  })
+  const { data, isLoading, isValidating, mutate, ...swrProps } = useSWR(
+    needFetch ? [connection, cpmmLockUrl, allPossibleLockMints] : null,
+    fetcher,
+    {
+      dedupingInterval: refreshInterval,
+      focusThrottleInterval: refreshInterval,
+      refreshInterval,
+      keepPreviousData: !!needFetch && !!owner
+    }
+  )
 
   const balanceData = useMemo(() => {
     const positionMap: CpmmLockDataMap = new Map()
-    // const filteredData = (data?.filter(Boolean) || []) as CpmmLockInfo[]
-    // if (!filteredData.length) return positionMap
 
     ;(data?.filter(Boolean) || []).forEach((positionRes, idx) => {
       if (!positionRes) return

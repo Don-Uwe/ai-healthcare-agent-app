@@ -19,6 +19,7 @@ import { useAppStore, useTokenAccountStore, initTokenAccountSate, useTokenStore 
 import { useEvent } from '@/hooks/useEvent'
 import ToPublicKey from '@/utils/publicKey'
 import logMessage from '@/utils/log'
+import { getPdaIdCache } from '@/utils/pool/pdaCache'
 
 export type ClmmPosition = ReturnType<typeof PositionInfoLayout.decode> & { key?: string }
 export type ClmmDataMap = Map<string, ClmmPosition[]>
@@ -99,7 +100,15 @@ export default function useClmmBalance({
   }, [tokenAccountRawInfos])
 
   const allLockMints = useMemo(
-    () => balanceMints.map((acc) => getPdaLockClPositionIdV2(new PublicKey(lockProgramId), acc.accountInfo.mint).publicKey.toBase58()),
+    () =>
+      balanceMints.map((acc) =>
+        getPdaIdCache({
+          program: lockProgramId,
+          mint: acc.accountInfo.mint,
+          identifier: '-clLock',
+          pdaFunc: getPdaLockClPositionIdV2
+        })
+      ),
     [balanceMints]
   )
   const { data: lockData, mutate: mutateLockInfo } = useSWR(tokenAccLoaded && connection ? [connection, allLockMints] : null, lockFetcher, {
@@ -123,7 +132,14 @@ export default function useClmmBalance({
   const allPositionKey = useMemo(
     () =>
       balanceMints
-        .map((acc) => getPdaPersonalPositionAddress(new PublicKey(clmmProgramId), acc.accountInfo.mint).publicKey.toBase58())
+        .map((acc) =>
+          getPdaIdCache({
+            program: clmmProgramId,
+            mint: acc.accountInfo.mint,
+            identifier: '-clPos',
+            pdaFunc: getPdaPersonalPositionAddress
+          })
+        )
         .concat(Object.keys(lockPositionInfo)),
     [balanceMints, lockPositionInfo]
   )

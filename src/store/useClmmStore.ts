@@ -18,9 +18,7 @@ import {
   toToken,
   solToWSolToken,
   TxVersion,
-  getTransferAmountFeeV2,
-  getPdaLockClPositionIdV2,
-  LockClPositionLayoutV2
+  getTransferAmountFeeV2
 } from '@raydium-io/raydium-sdk-v2'
 import { PublicKey, VersionedTransaction } from '@solana/web3.js'
 import createStore from '@/store/createStore'
