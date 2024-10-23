@@ -530,7 +530,6 @@ export const useLiquidityStore = createStore<LiquidityStore>(
       const { raydium, txVersion, connection } = useAppStore.getState()
       if (!raydium || !connection) return ''
 
-      console.log(123132222, nftMint.toBase58())
       const { execute } = await raydium.cpmm.harvestLockLp({
         poolInfo,
         nftMint,
