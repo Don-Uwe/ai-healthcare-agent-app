@@ -44,7 +44,7 @@ export default function DepositedNFTModal({ nftAddress, isOpen, onClose }: { nft
           <Text variant="title" fontSize="md" mb="6" fontWeight="400">
             {t('clmm.nft_desc')}
           </Text>
-          <Image m="0 auto" src="/images/clmm-nft.png" />
+          <Image w="260px" height="260px" m="0 auto" src="/images/clmm-nft.jpg" />
           <Flex
             m="0 auto"
             py="2"

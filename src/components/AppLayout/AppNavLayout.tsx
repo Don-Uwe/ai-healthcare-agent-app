@@ -23,7 +23,7 @@ import {
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import React, { ReactNode, useRef } from 'react'
-import { useTranslation, Trans } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import MobileDesktop, { Desktop, Mobile } from '../MobileDesktop'
 import SolWallet from '../SolWallet'
 import { MobileBottomNavbar } from './MobileBottomNavbar'
@@ -38,7 +38,6 @@ import { VersionedTransactionSettingField } from './components/VersionedTransact
 // import { TransactionFeeSetting } from './components/TransactionFeeSetting'
 import { PriorityButton } from './components/PriorityButton'
 import DisclaimerModal from './components/DisclaimerModal'
-import { keyframes } from '@emotion/react'
 import AppVersion from './AppVersion'
 
 export interface NavSettings {
@@ -56,24 +55,6 @@ function AppNavLayout({
   const { t } = useTranslation()
   const { pathname } = useRouter()
 
-  const betaTooltipRef = useRef<HTMLDivElement>(null)
-  const { isOpen, onClose } = useDisclosure({ defaultIsOpen: true })
-  const closeBetaTooltip = () => {
-    if (betaTooltipRef.current) {
-      betaTooltipRef.current.style.animation = `${fadeOut} 0.5s forwards`
-      setTimeout(() => onClose(), 500)
-    }
-  }
-
-  const fadeIn = keyframes`
-  from { transform: translateY(-100%); }
-  to { transform: translateY(0); }
-`
-
-  const fadeOut = keyframes`
-  from { transform: translateY(0); }
-  to { transform: translateY(-100%); }
-`
   return (
     <Flex direction="column" id="app-layout" height="full" overflow={overflowHidden ? 'hidden' : 'auto'}>
       <HStack

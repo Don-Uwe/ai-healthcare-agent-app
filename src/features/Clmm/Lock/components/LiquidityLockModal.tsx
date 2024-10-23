@@ -25,11 +25,11 @@ import { FormattedPoolInfoConcentratedItem } from '@/hooks/pool/type'
 import useClmmBalance, { ClmmPosition } from '@/hooks/portfolio/clmm/useClmmBalance'
 import { TokenPrice } from '@/hooks/token/useTokenPrice'
 import { useClmmStore } from '@/store'
-import { routeToPage } from '@/utils/routeTools'
 
 function LiquidityLockModal({
   isOpen,
   onClose,
+  onLockSuccess,
   onRefresh,
   poolInfo,
   position,
@@ -37,6 +37,7 @@ function LiquidityLockModal({
 }: {
   isOpen: boolean
   onClose: () => void
+  onLockSuccess: (val: string) => void
   onRefresh: () => void
   poolInfo: FormattedPoolInfoConcentratedItem
   position: ClmmPosition
@@ -198,8 +199,7 @@ function LiquidityLockModal({
                 onSent: (address) => (nftAddress = address.lockNftMint.toBase58()),
                 onConfirmed: () => {
                   handleCloseModal()
-                  routeToPage('portfolio', { queryProps: { section: 'my-positions', position_tab: 'concentrated' } })
-                  // setTimeout(() => onRefresh(), 1000)
+                  onLockSuccess(nftAddress)
                 }
               })
             }}

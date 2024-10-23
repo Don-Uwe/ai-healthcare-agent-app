@@ -197,8 +197,10 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
   const isAllLiquidityLocked = lockInfo.length > 0 && isEmptyLp
 
   return (
-    <Box {...panelCard} bg={colors.backgroundLight} borderRadius="xl" w="full" {...(!isPartialLiquidityLocked && { pb: isMobile ? 2 : 3 })}>
+    <Box {...panelCard} bg={colors.backgroundLight} borderRadius="xl" w="full">
       <Box
+        {...(isAllLiquidityLocked && { bg: colors.modalContainerBg })}
+        {...(!isPartialLiquidityLocked && { pb: isMobile ? 2 : 3 })}
         display={'grid'}
         alignItems="center"
         flexWrap="wrap"

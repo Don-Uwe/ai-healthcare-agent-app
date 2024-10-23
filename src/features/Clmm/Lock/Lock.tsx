@@ -6,6 +6,7 @@ import { colors } from '@/theme/cssVariables/colors'
 import { routeBack } from '@/utils/routeTools'
 import LiquidityItem from './components/LiquidityItem'
 import LiquidityLockModal from './components/LiquidityLockModal'
+import LockedNFTModal from '@/features/Liquidity/Lock/components/LockedNFTModal'
 import useAllPositionInfo from '@/hooks/portfolio/useAllPositionInfo'
 import { ClmmPosition } from '@/hooks/portfolio/clmm/useClmmBalance'
 import useTokenPrice from '@/hooks/token/useTokenPrice'
@@ -14,7 +15,8 @@ import { BN } from 'bn.js'
 export default function Lock() {
   const { t } = useTranslation()
   const { isOpen, onOpen, onClose } = useDisclosure()
-
+  const { isOpen: isNFTOpen, onOpen: onNFTOpen, onClose: onNFTClose } = useDisclosure()
+  const [nftAddress, setNFTAddress] = useState('')
   const { clmmBalanceInfo, formattedClmmDataMap, clmmLockInfo, mutateClmmLockInfo, isLoading } = useAllPositionInfo({ shouldFetch: false })
   const { data: tokenPrices } = useTokenPrice({
     mintList: Object.values(formattedClmmDataMap)
@@ -41,6 +43,11 @@ export default function Lock() {
     })
     return positionsByPool.flat().filter((p) => p.liquidity.gt(new BN(0)))
   }, [clmmBalanceInfo, formattedClmmDataMap])
+
+  const onLockSuccess = useCallback((val: string) => {
+    onNFTOpen()
+    setNFTAddress(val || '')
+  }, [])
 
   useEffect(() => {
     if (!allPosition.length) setSelectedPosition(null)
@@ -144,12 +151,14 @@ export default function Lock() {
         <LiquidityLockModal
           isOpen={isOpen}
           onClose={onClose}
+          onLockSuccess={onLockSuccess}
           tokenPrices={tokenPrices}
           position={selectedPosition}
           poolInfo={formattedClmmDataMap[selectedPosition.poolId.toBase58()]}
           onRefresh={mutateClmmLockInfo}
         />
       )}
+      <LockedNFTModal nftAddress={nftAddress} positionTabValue="concentrated" isOpen={isNFTOpen} onClose={onNFTClose} />
     </>
   )
 }

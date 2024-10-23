@@ -20,9 +20,20 @@ import CopyIcon from '@/icons/misc/CopyIcon'
 import ExternalLink from '@/icons/misc/ExternalLink'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
 import { useAppStore, supportedExplorers } from '@/store/useAppStore'
+import { PositionTabValues } from '@/hooks/portfolio/useAllPositionInfo'
 import { routeToPage } from '@/utils/routeTools'
 
-export default function LockedNFTModal({ nftAddress, isOpen, onClose }: { nftAddress: string; isOpen: boolean; onClose: () => void }) {
+export default function LockedNFTModal({
+  nftAddress,
+  positionTabValue,
+  isOpen,
+  onClose
+}: {
+  nftAddress: string
+  positionTabValue: PositionTabValues
+  isOpen: boolean
+  onClose: () => void
+}) {
   const { t } = useTranslation()
   const explorerUrl = useAppStore((s) => s.explorerUrl)
   const { onCopy, setValue } = useClipboard(nftAddress)
@@ -43,7 +54,7 @@ export default function LockedNFTModal({ nftAddress, isOpen, onClose }: { nftAdd
           <Text variant="title" fontSize="md" mb="6" fontWeight="400">
             {t('liquidity.nft_desc')}
           </Text>
-          <Image m="0 auto" src="/images/clmm-nft.png" />
+          <Image m="0 auto" src="/images/lock-nft.png" />
           <Flex
             m="0 auto"
             py="2"
@@ -92,7 +103,7 @@ export default function LockedNFTModal({ nftAddress, isOpen, onClose }: { nftAdd
         <ModalFooter px="0" py="0" mt="4" mb="2">
           <Button
             onClick={() => {
-              routeToPage('portfolio', { queryProps: { section: 'my-positions', position_tab: 'standard' } })
+              routeToPage('portfolio', { queryProps: { section: 'my-positions', position_tab: positionTabValue } })
             }}
             w="100%"
           >

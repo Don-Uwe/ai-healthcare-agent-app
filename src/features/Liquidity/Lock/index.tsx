@@ -1,4 +1,4 @@
-import { Box, Button, Flex, Grid, GridItem, HStack, Skeleton, Text, useDisclosure } from '@chakra-ui/react'
+import { Box, Button, Flex, Link, Grid, GridItem, HStack, Skeleton, Text, useDisclosure } from '@chakra-ui/react'
 import { useState, useCallback, useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import ChevronLeftIcon from '@/icons/misc/ChevronLeftIcon'
@@ -101,6 +101,11 @@ export default function Lock() {
             </Text>
             <Box color={colors.lightPurple} fontSize="md" lineHeight="20px" mb={7}>
               <Text mb={7}>{t('liquidity.lock_cpmm_desc1')}</Text>
+              <Text mb={7} color={colors.semanticWarning}>
+                <Trans i18nKey="liquidity.lock_cpmm_desc4">
+                  <Link href="https://docs.raydium.io/raydium/pool-creation/burn-and-earn" isExternal></Link>
+                </Trans>
+              </Text>
               <Text mb={7}>
                 <Trans i18nKey="liquidity.lock_cpmm_desc2">
                   <Text as="span" fontWeight="bold"></Text>
@@ -144,7 +149,7 @@ export default function Lock() {
       {selectedPosition && selectedPoolInfo && (
         <LiquidityLockModal isOpen={isOpen} onClose={onClose} onConfirm={onLock} poolInfo={selectedPoolInfo} />
       )}
-      <LockedNFTModal nftAddress={nftAddress} isOpen={isNFTOpen} onClose={onNFTClose} />
+      <LockedNFTModal nftAddress={nftAddress} positionTabValue="standard" isOpen={isNFTOpen} onClose={onNFTClose} />
     </>
   )
 }
