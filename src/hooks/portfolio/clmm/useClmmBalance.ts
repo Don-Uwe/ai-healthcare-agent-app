@@ -171,6 +171,7 @@ export default function useClmmBalance({
       const lockData = lockPositionInfo[allPositionKey[idx]]
       if (lockData) {
         lockInfo[poolId] = {
+          ...(lockInfo[poolId] || {}),
           [position.nftMint.toBase58()]: lockPositionInfo[allPositionKey[idx]]
         }
       }
