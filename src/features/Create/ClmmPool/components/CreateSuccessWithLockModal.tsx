@@ -26,7 +26,7 @@ export default function CreateSuccessWithLockModal({ isOpen, onClose }: { isOpen
           <Button w="100%" onClick={() => routeToPage('pools')}>
             {t('common.got_it')}
           </Button>
-          <Button variant="ghost" w="100%" fontSize="sm" onClick={() => routeToPage('lock')}>
+          <Button variant="ghost" w="100%" fontSize="sm" onClick={() => routeToPage('clmm-lock')}>
             {t('liquidity.lock_my_liquidity')}
           </Button>
         </ModalFooter>

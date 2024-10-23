@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { Box, Button, Collapse, GridItem, HStack, VStack, useDisclosure, Skeleton } from '@chakra-ui/react'
 import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 import MigrateFromStandardDialog from '@/features/Clmm/MigrateClmmFromStandardDialog/Dialog'
@@ -14,12 +14,15 @@ import { debounce } from '@/utils/functionMethods'
 import ActionButtons from './ItemDetail/ActionButtons'
 import ItemName from './ItemDetail/ItemName'
 import PendingRewards from './ItemDetail/PendingRewards'
+import PendingFees from './ItemDetail/PendingFees'
 import StandardMyPosition from './ItemDetail/StandardMyPosition'
+import LockedPosition from './ItemDetail/LockedPosition'
 import StandardPoolAPR from './ItemDetail/StandardPoolAPR'
 import TokenPooledInfo from './ItemDetail/TokenInfo'
 import MobileStandardAMMDetailDrawer from './components/MobileStandardAMMDetailDrawer'
 import StandardPoolRowStakeFarmHoldItem from './components/StandardPoolRowStakeFarmHoldItem'
 import StandardPoolRowStakeFarmItem from './components/StandardPoolRowStakeFarmItem'
+import ClaimFeesModal from './components/ClaimFeesModal'
 import { useEvent } from '@/hooks/useEvent'
 import { panelCard } from '@/theme/cssBlocks'
 import { FarmBalanceInfo } from '@/hooks/farm/type'
@@ -27,6 +30,7 @@ import Decimal from 'decimal.js'
 import { useTranslation } from 'react-i18next'
 import BN from 'bn.js'
 import useMigratePoolConfig from '@/hooks/pool/useMigratePoolConfig'
+import { CpmmLockData } from '@/hooks/portfolio/cpmm/useLockCpmmBalance'
 
 type PoolItemProps = {
   pool?: FormattedPoolInfoStandardItem
@@ -34,25 +38,28 @@ type PoolItemProps = {
   position: FarmPositionInfo
   stakedFarmMap: Map<string, FormattedFarmInfoV6>
   allFarmBalances: FarmBalanceInfo[]
+  lockInfo: CpmmLockData[]
 }
 
-export default function StandardPoolRowItem({ pool, isLoading, position, stakedFarmMap, allFarmBalances }: PoolItemProps) {
+export default function StandardPoolRowItem({ pool, isLoading, position, stakedFarmMap, allFarmBalances, lockInfo }: PoolItemProps) {
   const { t } = useTranslation()
   const harvestAllFarmAct = useFarmStore((s) => s.harvestAllAct)
   const getTokenBalanceUiAmount = useTokenAccountStore((s) => s.getTokenBalanceUiAmount)
   const { isOpen, onOpen, onClose } = useDisclosure()
   const { isOpen: isHarvesting, onOpen: onHarvesting, onClose: offHarvesting } = useDisclosure()
   const { isOpen: isMigrateOpen, onOpen: onMigrateOpen, onClose: onMigrateClose } = useDisclosure()
+  const { isOpen: isClaimModalOpen, onOpen: onClaimModalOpen, onClose: onClaimModalClose } = useDisclosure()
   const { isOpen: isRpcFetching, onOpen: onRpcFetching } = useDisclosure()
   const [refreshTag, setRefreshTag] = useState(0)
   const isMobile = useAppStore((s) => s.isMobile)
+  const lockInfoRef = useRef<CpmmLockData | undefined>()
+
   const [allPendingRewards, setAllPendingRewards] = useState<
     Map<string, { mint: ApiV3Token[]; usd: string; amount: string[]; rewardTokenUsd: string[] }>
   >(new Map())
   const updateReward = new Map()
   const { data: migratePoolList } = useMigratePoolConfig({})
   const migrateData = migratePoolList.find((p) => p.lpMint === pool?.lpMint.address)
-  const isPc = !isMobile
 
   const hasStakeFarm = position.hasAmount
   const stakedFarms = position.data.filter((d) => new Decimal(d.lpAmount || 0).gt(0))
@@ -72,6 +79,11 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
     return [farm, farmLpAmount]
   }, [position.data, stakedFarms])
 
+  const handleClaimModalOpen = useEvent((info?: CpmmLockData) => {
+    lockInfoRef.current = info
+    onClaimModalOpen()
+  })
+
   const { data: rpcPoolData, mutate } = useFetchRpcPoolData({
     shouldFetch: isRpcFetching,
     poolId: pool?.id,
@@ -83,6 +95,8 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
   const allLpUiAmount = new Decimal(position.totalLpAmount || 0).add(unStakeLpBalance).div(10 ** (pool?.lpMint.decimals ?? 0))
 
   const canMigrate = !!migrateData && allLpUiAmount.gt(0)
+
+  const isEmptyLp = allLpUiAmount.isZero() && farmLpAmount === '0'
 
   const baseRatio = new Decimal(
     rpcPoolData?.baseReserve.div(new BN(10).pow(new BN(rpcPoolData.baseDecimals))).toString() || pool?.mintAmountA || 0
@@ -179,8 +193,11 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
 
   const canStake = !unStakeLpBalance.isZero() && stakedFarmList.filter((f) => f.isOngoing).length > 0
 
+  const isPartialLiquidityLocked = (lockInfo.length > 0 && !isEmptyLp) || lockInfo.length > 1
+  const isAllLiquidityLocked = lockInfo.length > 0 && isEmptyLp
+
   return (
-    <Box {...panelCard} py={[4, 5]} px={[3, 8]} pb={isPc && isOpen ? 3 : 5} bg={colors.backgroundLight} borderRadius="xl" w="full">
+    <Box {...panelCard} bg={colors.backgroundLight} borderRadius="xl" w="full" {...(!isPartialLiquidityLocked && { pb: isMobile ? 2 : 3 })}>
       <Box
         display={'grid'}
         alignItems="center"
@@ -193,7 +210,7 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
           "acts  acts" auto / 1fr 1fr
         `,
           `
-          "name  i1  i2   acts" auto 
+          "name  i1  i2   acts" auto
           "d     d   d    acts" auto / 3fr 1.8fr 1.8fr 5fr
         `,
           `
@@ -202,6 +219,8 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
         ]}
         columnGap={8}
         rowGap={[2, 3]}
+        pt={[2, 3]}
+        px={[3, 8]}
       >
         <GridItem flexGrow={1} area="name" maxW={['unset', '200px']}>
           <ItemName
@@ -214,7 +233,11 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
         </GridItem>
 
         <GridItem flexGrow={1} area="i1" w={['unset', '92px']} maxW={['unset', '150px']}>
-          <StandardMyPosition positionUsd={lpAmountUSD} />
+          {isAllLiquidityLocked ? (
+            <LockedPosition positionUsd={lockInfo[0].positionInfo.usdValue} burnPercent={lockInfo[0].positionInfo.tvlPercentage} />
+          ) : (
+            <StandardMyPosition positionUsd={lpAmountUSD} />
+          )}
         </GridItem>
 
         <GridItem flexGrow={1} area="i2" w={['unset', '92px']} maxW={['unset', '150px']}>
@@ -230,14 +253,26 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
           rowGap={3}
           justifyItems="stretch"
         >
-          <TokenPooledInfo base={{ token: pool.mintA, amount: pooledAmountA }} quote={{ token: pool.mintB, amount: pooledAmountB }} />
-          <PendingRewards
-            pendingReward={totalPending.toString()}
-            rewardInfo={pendingRewardsInfo}
-            positionStatus={positionStatus}
-            isLoading={isHarvesting}
-            onHarvest={handleHarvest}
+          <TokenPooledInfo
+            base={{ token: pool.mintA, amount: isAllLiquidityLocked ? lockInfo[0].positionInfo.amountA : pooledAmountA }}
+            quote={{ token: pool.mintB, amount: isAllLiquidityLocked ? lockInfo[0].positionInfo.amountB : pooledAmountB }}
           />
+          {isAllLiquidityLocked ? (
+            <PendingFees
+              pendingFee={lockInfo[0].positionInfo.unclaimedFee.usdValue}
+              poolInfo={pool}
+              lockData={lockInfo[0]}
+              onHarvest={handleClaimModalOpen}
+            />
+          ) : (
+            <PendingRewards
+              pendingReward={totalPending.toString()}
+              rewardInfo={pendingRewardsInfo}
+              positionStatus={positionStatus}
+              isLoading={isHarvesting}
+              onHarvest={handleHarvest}
+            />
+          )}
         </GridItem>
 
         <GridItem area="acts" ml={['unset', 'auto']}>
@@ -254,50 +289,101 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
             }}
             canViewMore={Boolean(stakeFarmCount) && !isOpen}
             onClickViewMore={onOpen}
+            isLocked={isAllLiquidityLocked}
           />
         </GridItem>
       </Box>
-
       {hasStakeFarm && (
-        <Collapse in={isOpen}>
-          <VStack mt={4} w="full" align="stretch" gap={3}>
-            {stakedFarms.map((stakeFarm) => {
-              let balanceInfo = allFarmBalances.find((f) => f.id === stakeFarm.farmId)
-              const v1Balance = position.data.find((p) => p.version === 'V1' && p.lpAmount !== '0' && p.farmId === stakeFarm.farmId)
-              if (balanceInfo && v1Balance && balanceInfo.vault !== v1Balance.userVault) {
-                balanceInfo = {
-                  ...balanceInfo,
-                  deposited: new Decimal(balanceInfo.deposited)
-                    .add(v1Balance.lpAmount)
-                    .div(10 ** pool.lpMint.decimals)
-                    .toString()
+        <Box px={[3, 8]}>
+          <Collapse in={isOpen}>
+            <VStack mt={4} w="full" align="stretch" gap={3}>
+              {stakedFarms.map((stakeFarm) => {
+                let balanceInfo = allFarmBalances.find((f) => f.id === stakeFarm.farmId)
+                const v1Balance = position.data.find((p) => p.version === 'V1' && p.lpAmount !== '0' && p.farmId === stakeFarm.farmId)
+                if (balanceInfo && v1Balance && balanceInfo.vault !== v1Balance.userVault) {
+                  balanceInfo = {
+                    ...balanceInfo,
+                    deposited: new Decimal(balanceInfo.deposited)
+                      .add(v1Balance.lpAmount)
+                      .div(10 ** pool.lpMint.decimals)
+                      .toString()
+                  }
                 }
-              }
-              return (
-                <StandardPoolRowStakeFarmItem
-                  key={stakeFarm.farmId}
-                  hide={isMobile}
-                  poolId={pool.id}
-                  farmId={stakeFarm.farmId}
-                  lpPrice={pool.lpPrice}
-                  balanceInfo={balanceInfo}
-                  onUpdatePendingReward={handleUpdatePendingRewards}
-                />
-              )
-            })}
-          </VStack>
 
-          <Box mt={3}>
-            <StandardPoolRowStakeFarmHoldItem lpMint={pool.lpMint} lpPrice={pool.lpPrice} apr={pool.day.apr} />
-          </Box>
-
-          <HStack mt={3} justifyItems="center" position="relative" zIndex={1}>
-            <Button mx="auto" rightIcon={<ExpandUpIcon />} variant="ghost" size="sm" onClick={onClose}>
-              {t('common.view_less')}
-            </Button>
-          </HStack>
-        </Collapse>
+                return (
+                  <StandardPoolRowStakeFarmItem
+                    key={stakeFarm.farmId}
+                    hide={isMobile}
+                    poolId={pool.id}
+                    farmId={stakeFarm.farmId}
+                    lpPrice={pool.lpPrice}
+                    balanceInfo={balanceInfo}
+                    onUpdatePendingReward={handleUpdatePendingRewards}
+                  />
+                )
+              })}
+            </VStack>
+            <Box mt={3}>
+              <StandardPoolRowStakeFarmHoldItem lpMint={pool.lpMint} lpPrice={pool.lpPrice} apr={pool.day.apr} />
+            </Box>
+            <HStack mt={3} justifyItems="center" position="relative" zIndex={1}>
+              <Button mx="auto" rightIcon={<ExpandUpIcon />} variant="ghost" size="sm" onClick={onClose}>
+                {t('common.view_less')}
+              </Button>
+            </HStack>
+          </Collapse>
+        </Box>
       )}
+      {isPartialLiquidityLocked &&
+        (isAllLiquidityLocked ? lockInfo.slice(1, lockInfo.length) : lockInfo).map((info, idx) => (
+          <Box
+            key={idx}
+            bg={colors.modalContainerBg}
+            display={'grid'}
+            alignItems="center"
+            flexWrap="wrap"
+            gridTemplate={[
+              `
+          "i1    i2  " auto
+          "d     d   " auto / 1fr 1fr
+        `,
+              `
+          "i1  i2  .   ." auto
+          "d     d   d    ." auto / 3fr 1.8fr 1.8fr 5fr
+        `,
+              `
+          ".  i1  i2  d ." auto / 3fr 1.8fr 1.8fr 9fr minmax(200px, 5fr)
+        `
+            ]}
+            columnGap={8}
+            rowGap={[2, 3]}
+            py={[2, 3]}
+            px={[3, 8]}
+            mt={[2, 3]}
+          >
+            <GridItem flexGrow={1} area="i1" w={['unset', '92px']} maxW={['unset', '150px']}>
+              <LockedPosition positionUsd={info.positionInfo.usdValue} burnPercent={info.positionInfo.tvlPercentage} />
+            </GridItem>
+            <GridItem flexGrow={1} area="i2" w={['unset', '92px']} maxW={['unset', '150px']}>
+              <StandardPoolAPR positionAPR={pool.day.apr} isLocked={true} />
+            </GridItem>
+            <GridItem
+              area="d"
+              display="grid"
+              gridTemplateColumns={['unset', '1fr 1fr']}
+              gridTemplateRows={['auto auto', 'unset']}
+              columnGap={4}
+              rowGap={3}
+              justifyItems="stretch"
+            >
+              <TokenPooledInfo
+                base={{ token: pool.mintA, amount: info.positionInfo.amountA }}
+                quote={{ token: pool.mintB, amount: info.positionInfo.amountB }}
+              />
+              <PendingFees pendingFee={totalPending.toString()} poolInfo={pool} lockData={info} onHarvest={handleClaimModalOpen} />
+            </GridItem>
+          </Box>
+        ))}
 
       {hasStakeFarm && isMobile && (
         <MobileStandardAMMDetailDrawer
@@ -335,6 +421,9 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
           onClose={onMigrateClose}
           onRefresh={mutate}
         />
+      ) : null}
+      {isClaimModalOpen && lockInfoRef.current ? (
+        <ClaimFeesModal isOpen={isClaimModalOpen} onClose={onClaimModalClose} poolInfo={pool} lockData={lockInfoRef.current} />
       ) : null}
     </Box>
   )

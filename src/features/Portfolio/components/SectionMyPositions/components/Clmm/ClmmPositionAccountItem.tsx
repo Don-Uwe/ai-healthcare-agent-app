@@ -16,6 +16,7 @@ import { useEvent } from '@/hooks/useEvent'
 import { useAppStore } from '@/store'
 import { useClmmStore } from '@/store/useClmmStore'
 import { RpcPoolData } from '@/hooks/pool/clmm/useSubscribeClmmInfo'
+import { ClmmLockInfo } from '@/hooks/portfolio/clmm/useClmmBalance'
 import BN from 'bn.js'
 import Decimal from 'decimal.js'
 
@@ -24,7 +25,7 @@ type ClmmPositionAccountItemProps = {
   position: PositionWithUpdateFn
   baseIn: boolean
   initRpcPoolData?: RpcPoolData
-  isLock?: boolean
+  lockData?: ClmmLockInfo['']['']
   setNoRewardClmmPos: (val: string, isDelete?: boolean) => void
   onSubscribe: () => void
 }
@@ -36,12 +37,13 @@ const realTimeRefresh = 15 * 1000
 export default function ClmmPositionAccountItem({
   poolInfo,
   position,
-  isLock,
+  lockData,
   baseIn,
   initRpcPoolData,
   setNoRewardClmmPos,
   onSubscribe
 }: ClmmPositionAccountItemProps) {
+  const isLock = !!lockData
   const isMobile = useAppStore((s) => s.isMobile)
   const removeLiquidityAct = useClmmStore((s) => s.removeLiquidityAct)
   const harvestLockPositionAct = useClmmStore((s) => s.harvestLockPositionAct)
@@ -99,8 +101,9 @@ export default function ClmmPositionAccountItem({
   })
   const handleHarvest = useEvent(({ onSend, onFinally }: { onSend?: () => void; onFinally?: () => void }) => {
     onSend?.()
-    if (isLock) {
+    if (lockData) {
       harvestLockPositionAct({
+        lockData,
         poolInfo,
         position,
         needRefresh: true,

@@ -21,7 +21,7 @@ type TokenInfoProps = {
 export default function TokenPooledInfo({ base, quote }: TokenInfoProps) {
   const { t } = useTranslation()
   return (
-    <Flex direction="column" justify={'space-between'} bg={colors.backgroundDark} rounded="lg" py={3} px={4}>
+    <Flex direction="column" justify={'space-between'} bg={colors.backgroundDark} rounded="lg" py={3} px={4} gap={4}>
       <Flex justify={'space-between'} align="center">
         <Text fontSize="sm" color={colors.textTertiary}>
           {t('amm.pooled_token', { token: base.token?.symbol })}

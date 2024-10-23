@@ -16,7 +16,7 @@ interface Props<T> {
   fetchLpPoolInfo?: boolean
   type?: T
 }
-type MintData = RawMint & { address: PublicKey }
+export type MintData = RawMint & { address: PublicKey }
 
 const preFetchMints: Map<string, MintData> = new Map()
 const poolLpAuthority = new Set([
@@ -63,7 +63,7 @@ const fetcher = async ([connection, publicKeyList]: [Connection, string[]]) => {
       return undefined
     })
     .filter((d) => !!d)
-    .concat(fetchedList.map((p) => preFetchMints.get(p)))
+    .concat(fetchedList.map((p) => preFetchMints.get(p)!))
 
   // try {
   //   setStorageItem(LP_CACHE_KEY, JSON.stringify(Array.from(noneLpMintSet)))

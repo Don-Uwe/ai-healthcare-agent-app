@@ -30,7 +30,7 @@ import { useRouter } from 'next/router'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 
-type CreateTarget = 'standard-amm' | 'concentrated-liquidity' | 'standard-farm' | 'lock'
+type CreateTarget = 'standard-amm' | 'concentrated-liquidity' | 'standard-farm' | 'clmm-lock' | 'cpmm-lock'
 
 export function CreatePoolEntryDialog({
   isOpen,
@@ -56,8 +56,11 @@ export function CreatePoolEntryDialog({
       case 'standard-farm':
         to = '/liquidity/create-farm'
         break
-      case 'lock':
+      case 'clmm-lock':
         to = '/clmm/lock'
+        break
+      case 'cpmm-lock':
+        to = '/liquidity/lock'
         break
       default:
         break
@@ -214,7 +217,7 @@ export function CreatePoolEntryDialogBody({ type, onChange }: { type: CreateTarg
       <CreateBlock
         title={t('create_pool.modal_section_header_lock')}
         description={
-          type === 'lock' ? (
+          type === 'clmm-lock' || type === 'cpmm-lock' ? (
             <Trans i18nKey="create_pool.modal_section_header_lock_desc">
               <Link href="https://docs.raydium.io/raydium/pool-creation/creating-a-clmm-pool-and-farm/burn-and-earn" isExternal>
                 Learn more
@@ -222,8 +225,26 @@ export function CreatePoolEntryDialogBody({ type, onChange }: { type: CreateTarg
             </Trans>
           ) : null
         }
-        selected={type === 'lock'}
-        onClick={() => onChange('lock')}
+        selected={type === 'clmm-lock' || type === 'cpmm-lock'}
+        renderPoolType={
+          type === 'clmm-lock' || type === 'cpmm-lock'
+            ? () => (
+                <Stack flexDirection={['column', 'row']}>
+                  <PoolTypeItem
+                    isActive={type === 'clmm-lock'}
+                    name={t('create_pool.modal_tab_concentrated')}
+                    onClickSelf={() => onChange('clmm-lock')}
+                  />
+                  <PoolTypeItem
+                    isActive={type === 'cpmm-lock'}
+                    name={t('create_pool.modal_tab_standard_amm')}
+                    onClickSelf={() => onChange('cpmm-lock')}
+                  />
+                </Stack>
+              )
+            : undefined
+        }
+        onClick={() => onChange('clmm-lock')}
       />
     </Flex>
   )

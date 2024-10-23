@@ -38,6 +38,20 @@ const LIQUIDITY_TX_MSG = {
     txHistoryTitle: '',
     txHistoryDesc: '',
     components: {}
+  },
+  lockLp: {
+    title: 'transaction_history.lock_position',
+    desc: 'transaction_history.position_locked',
+    txHistoryTitle: 'transaction_history.lock_position',
+    txHistoryDesc: 'transaction_history.position_locked',
+    components: { sub: <Text as="span" color={colors.textSecondary} fontWeight="700" /> }
+  },
+  harvestLock: {
+    title: 'transaction_history.harvest_rewards',
+    desc: 'transaction_history.harvest_lock_reward_desc',
+    txHistoryTitle: 'transaction_history.harvest_rewards',
+    txHistoryDesc: 'transaction_history.harvest_lock_reward_desc',
+    components: {}
   }
 }
 export const getTxMeta = ({ action, values = {} }: { action: keyof typeof LIQUIDITY_TX_MSG; values?: Record<string, unknown> }) => {

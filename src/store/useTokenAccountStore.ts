@@ -37,6 +37,8 @@ export interface TokenAccountStore {
   refreshClmmPositionTag: number
   refreshTokenAccTime: number
 
+  refreshCpmmPositionTag: number
+
   fetchTokenAccountAct: (params: { commitment?: Commitment; forceFetch?: boolean }) => Promise<void>
   updateTokenAccountAct: () => void
   getTokenBalanceUiAmount: (params: { mint: string | PublicKey; decimals?: number; isNative?: boolean }) => {
@@ -57,6 +59,7 @@ export const initTokenAccountSate = {
   tokenAccountRawInfos: [],
   tokenAccountMap: new Map(),
   refreshClmmPositionTag: 0,
+  refreshCpmmPositionTag: 0,
   refreshTokenAccTime: Date.now()
 }
 

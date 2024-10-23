@@ -80,7 +80,7 @@ export default function LiquidityItem({
             {t('clmm.position')}: {formatCurrency(totalVolume.toString(), { symbol: '$', abbreviated: true, decimalPlaces: 2 })}
           </Text>
           <Text fontSize="xs" lineHeight="16px" opacity={0.5}>
-            {t('liquidity.nft_mint')} {shortenAddress(position.nftMint.toBase58(), 6)}
+            {`${t('liquidity.nft_mint')} ${shortenAddress(position.nftMint.toBase58(), 6)}`}
           </Text>
         </Flex>
         {isSelected ? <CircleCheck width={16} height={16} fill={colors.secondary} /> : <Box width="16px" height="16px" opacity="0" />}

@@ -1,20 +1,21 @@
 import { useEffect, useMemo } from 'react'
 import {
   getPdaPersonalPositionAddress,
+  getPdaLockClPositionIdV2,
   PositionInfoLayout,
   TickUtils,
   ApiV3PoolInfoConcentratedItem,
-  PositionUtils
+  PositionUtils,
+  LockClPositionLayoutV2
 } from '@raydium-io/raydium-sdk-v2'
 import shallow from 'zustand/shallow'
 import { PublicKey, Connection } from '@solana/web3.js'
 import Decimal from 'decimal.js'
 import BN from 'bn.js'
 import useSWR from 'swr'
-import axios from '@/api/axios'
 
 import useRefreshEpochInfo from '@/hooks/app/useRefreshEpochInfo'
-import { useAppStore, useTokenAccountStore, initTokenAccountSate } from '@/store'
+import { useAppStore, useTokenAccountStore, initTokenAccountSate, useTokenStore } from '@/store'
 import { useEvent } from '@/hooks/useEvent'
 import ToPublicKey from '@/utils/publicKey'
 import logMessage from '@/utils/log'
@@ -22,14 +23,11 @@ import logMessage from '@/utils/log'
 export type ClmmPosition = ReturnType<typeof PositionInfoLayout.decode> & { key?: string }
 export type ClmmDataMap = Map<string, ClmmPosition[]>
 
-// const NFT_CACHE_KEY = '_r_non_nft_'
 let lastRefreshTag = initTokenAccountSate.refreshClmmPositionTag
-// const noneNftMintSet = new Set<string>(JSON.parse(getStorageItem(NFT_CACHE_KEY) || '[]'))
 
 const fetcher = async ([connection, publicKeyList]: [Connection, string[]]) => {
   logMessage('rpc: get clmm position balance info')
   const commitment = useAppStore.getState().commitment
-  // const readyList = publicKeyList.filter((k) => !noneNftMintSet.has(k))
 
   const chunkSize = 100
   const keyGroup = []
@@ -45,75 +43,149 @@ const fetcher = async ([connection, publicKeyList]: [Connection, string[]]) => {
       )
     )
   )
-  // const data = res.flat().filter((d, idx) => {
-  //   if (!d) noneNftMintSet.add(readyList[idx])
-  //   return !!d
-  // })
-
-  // try {
-  //   setStorageItem(NFT_CACHE_KEY, JSON.stringify(Array.from(noneNftMintSet)))
-  // } catch {
-  //   console.error('unable set non nft mints')
-  // }
   return res.flat()
 }
 
 export interface ClmmLockInfo {
-  [poolId: string]: { [nftMint: string]: { lockId: string; nftAccount: string; positionId: string } }
+  [poolId: string]: { [nftMint: string]: ReturnType<typeof LockClPositionLayoutV2.decode> }
 }
 
-const lockFetcher = (url: string) =>
-  axios.get<ClmmLockInfo>(url, {
-    skipError: true
-  })
+const lockFetcher = async ([connection, publicKeyList]: [Connection, string[]]) => {
+  logMessage('rpc: get clmm lock position info')
+  const commitment = useAppStore.getState().commitment
+
+  const chunkSize = 100
+  const keyGroup = []
+  for (let i = 0; i < publicKeyList.length; i += chunkSize) {
+    keyGroup.push(publicKeyList.slice(i, i + chunkSize))
+  }
+
+  const res = await Promise.all(
+    keyGroup.map((list) =>
+      connection.getMultipleAccountsInfoAndContext(
+        list.map((publicKey) => ToPublicKey(publicKey)),
+        commitment
+      )
+    )
+  )
+
+  return res.flat()
+}
 
 export default function useClmmBalance({
   programId,
+  clmmLockProgramId,
   refreshInterval = 1000 * 60 * 5
 }: {
   programId?: string | PublicKey
+  clmmLockProgramId?: string | PublicKey
   refreshInterval?: number
 }) {
-  const [connection, CLMM_PROGRAM_ID, tokenAccLoaded, owner, OWNER_HOST, OWNER_LOCK_POSITION_URL] = useAppStore(
-    (s) => [
-      s.connection,
-      s.programIdConfig.CLMM_PROGRAM_ID,
-      s.tokenAccLoaded,
-      s.publicKey,
-      s.urlConfigs.OWNER_BASE_HOST,
-      s.urlConfigs.OWNER_LOCK_POSITION
-    ],
+  const [connection, CLMM_PROGRAM_ID, CLMM_LOCK_PROGRAM_ID, tokenAccLoaded, owner] = useAppStore(
+    (s) => [s.connection, s.programIdConfig.CLMM_PROGRAM_ID, s.programIdConfig.CLMM_LOCK_PROGRAM_ID, s.tokenAccLoaded, s.publicKey],
     shallow
   )
   const clmmProgramId = programId || CLMM_PROGRAM_ID
+  const lockProgramId = clmmLockProgramId || CLMM_LOCK_PROGRAM_ID
   const [tokenAccountRawInfos, refreshClmmPositionTag] = useTokenAccountStore(
     (s) => [s.tokenAccountRawInfos, s.refreshClmmPositionTag],
     shallow
   )
   useRefreshEpochInfo()
 
-  const url = !owner ? null : OWNER_HOST + OWNER_LOCK_POSITION_URL.replace('{owner}', owner!.toString())
-  const {
-    data: lockData,
-    // isLoading: isLockLoading,
-    // error: lockError,
-    mutate: mutateLockInfo
-  } = useSWR(url, lockFetcher, {
+  const balanceMints = useMemo(() => {
+    const tokenMap = useTokenStore.getState().tokenMap
+    return tokenAccountRawInfos.filter((acc) => acc.accountInfo.amount.eq(new BN(1)) && !tokenMap.has(acc.accountInfo.mint.toBase58()))
+  }, [tokenAccountRawInfos])
+
+  const allLockMints = useMemo(
+    () => balanceMints.map((acc) => getPdaLockClPositionIdV2(new PublicKey(lockProgramId), acc.accountInfo.mint).publicKey.toBase58()),
+    [balanceMints]
+  )
+  const { data: lockData, mutate: mutateLockInfo } = useSWR(tokenAccLoaded && connection ? [connection, allLockMints] : null, lockFetcher, {
     dedupingInterval: refreshInterval,
     focusThrottleInterval: refreshInterval,
     refreshInterval
   })
 
-  const lockInfo = lockData?.data
-  const lockNftMints = useMemo(() => {
-    return lockInfo
-      ? Object.keys(lockInfo)
-          .map((key) => Object.keys(lockInfo[key]))
-          .flat()
-      : []
-  }, [lockInfo])
+  const lockPositionInfo = useMemo(() => {
+    if (!lockData) return {}
+    const allData = lockData.map((d) => d.value).flat()
+    const lockPosition: { [nftAccount: string]: ReturnType<typeof LockClPositionLayoutV2.decode> } = {}
+    allData.forEach((lockRes) => {
+      if (!lockRes) return
+      const lockInfo = LockClPositionLayoutV2.decode(lockRes.data)
+      lockPosition[lockInfo.positionId.toBase58()] = lockInfo
+    })
+    return lockPosition
+  }, [lockData, allLockMints])
 
-  const balanceMints = useMemo(() => tokenAccountRawInfos.filter((acc) => acc.accountInfo.amount.eq(new BN(1))), [tokenAccountRawInfos])
+  const allPositionKey = useMemo(
+    () =>
+      balanceMints
+        .map((acc) => getPdaPersonalPositionAddress(new PublicKey(clmmProgramId), acc.accountInfo.mint).publicKey.toBase58())
+        .concat(Object.keys(lockPositionInfo)),
+    [balanceMints, lockPositionInfo]
+  )
+
+  const needFetch = tokenAccLoaded && clmmProgramId && connection && tokenAccountRawInfos.length > 0 && allPositionKey.length > 0
+  const {
+    data: chunkData,
+    isLoading,
+    isValidating,
+    mutate,
+    ...swrProps
+  } = useSWR(needFetch ? [connection!, allPositionKey] : null, fetcher, {
+    dedupingInterval: refreshInterval,
+    focusThrottleInterval: refreshInterval,
+    refreshInterval,
+    keepPreviousData: !!needFetch && !!owner
+  })
+
+  const data = useMemo(() => chunkData?.filter(Boolean) || [], [chunkData])
+
+  const [balanceData, lockInfo] = useMemo(() => {
+    const allData = data.map((d) => d.value).flat()
+    const positionMap: ClmmDataMap = new Map()
+    const lockInfo: ClmmLockInfo = {}
+    allData.forEach((positionRes, idx) => {
+      if (!positionRes) return
+      const position = PositionInfoLayout.decode(positionRes.data)
+      const poolId = position.poolId.toBase58()
+      const lockData = lockPositionInfo[allPositionKey[idx]]
+      if (lockData) {
+        lockInfo[poolId] = {
+          [position.nftMint.toBase58()]: lockPositionInfo[allPositionKey[idx]]
+        }
+      }
+      if (!positionMap.get(poolId))
+        positionMap.set(poolId, [
+          {
+            ...position,
+            key: allPositionKey[idx]
+          }
+        ])
+      else positionMap.set(poolId, [...Array.from(positionMap.get(poolId)!), position])
+    })
+    return [positionMap, lockInfo]
+  }, [data, allPositionKey, lockPositionInfo])
+
+  useEffect(() => {
+    if (lastRefreshTag === refreshClmmPositionTag) return
+    lastRefreshTag = refreshClmmPositionTag
+    mutate()
+    mutateLockInfo()
+  }, [refreshClmmPositionTag, mutate, mutateLockInfo])
+
+  useEffect(() => {
+    localStorage.removeItem('_r_nft_b_')
+  }, [])
+
+  const reFetchBalance = useEvent(() => {
+    mutate()
+    mutateLockInfo()
+  })
+
   const getPriceAndAmount = useEvent(({ poolInfo, position }: { poolInfo: ApiV3PoolInfoConcentratedItem; position: ClmmPosition }) => {
     const priceLower = TickUtils.getTickPrice({
       poolInfo,
@@ -156,67 +228,6 @@ export default function useClmmBalance({
       amountSlippageA: _amountSlippageA,
       amountSlippageB: _amountSlippageB
     }
-  })
-
-  const allPositionKey = useMemo(
-    () =>
-      balanceMints
-        .map((acc) => getPdaPersonalPositionAddress(new PublicKey(clmmProgramId), acc.accountInfo.mint).publicKey.toBase58())
-        .concat(
-          lockNftMints.map((mint) => getPdaPersonalPositionAddress(new PublicKey(clmmProgramId), new PublicKey(mint)).publicKey.toBase58())
-        ),
-    [balanceMints, lockNftMints]
-  )
-
-  const needFetch = tokenAccLoaded && clmmProgramId && connection && tokenAccountRawInfos.length > 0 && allPositionKey.length > 0
-  const {
-    data: chunkData,
-    isLoading,
-    isValidating,
-    mutate,
-    ...swrProps
-  } = useSWR(needFetch ? [connection!, allPositionKey] : null, fetcher, {
-    dedupingInterval: refreshInterval,
-    focusThrottleInterval: refreshInterval,
-    refreshInterval,
-    keepPreviousData: !!needFetch && !!owner
-  })
-
-  const data = useMemo(() => chunkData?.filter(Boolean) || [], [chunkData])
-
-  const balanceData = useMemo(() => {
-    const allData = data.map((d) => d.value).flat()
-    const positionMap: ClmmDataMap = new Map()
-    allData.forEach((positionRes, idx) => {
-      if (!positionRes) return
-      const position = PositionInfoLayout.decode(positionRes.data)
-      const poolId = position.poolId.toBase58()
-      if (!positionMap.get(poolId))
-        positionMap.set(poolId, [
-          {
-            ...position,
-            key: allPositionKey[idx]
-          }
-        ])
-      else positionMap.set(poolId, [...Array.from(positionMap.get(poolId)!), position])
-    })
-    return positionMap
-  }, [data, allPositionKey])
-
-  useEffect(() => {
-    if (lastRefreshTag === refreshClmmPositionTag) return
-    lastRefreshTag = refreshClmmPositionTag
-    mutate()
-    mutateLockInfo()
-  }, [refreshClmmPositionTag, mutate, mutateLockInfo])
-
-  useEffect(() => {
-    localStorage.removeItem('_r_nft_b_')
-  }, [])
-
-  const reFetchBalance = useEvent(() => {
-    mutate()
-    mutateLockInfo()
   })
 
   return {

@@ -18,9 +18,11 @@ import {
   toToken,
   solToWSolToken,
   TxVersion,
-  getTransferAmountFeeV2
+  getTransferAmountFeeV2,
+  getPdaLockClPositionIdV2,
+  LockClPositionLayoutV2
 } from '@raydium-io/raydium-sdk-v2'
-import { PublicKey, VersionedTransaction, Transaction } from '@solana/web3.js'
+import { PublicKey, VersionedTransaction } from '@solana/web3.js'
 import createStore from '@/store/createStore'
 import { useAppStore, useTokenAccountStore, useLiquidityStore } from '@/store'
 import { isSolWSol } from '@/utils/token'
@@ -35,7 +37,7 @@ import { TxCallbackProps } from '../types/tx'
 import { getComputeBudgetConfig } from '@/utils/tx/computeBudget'
 import { handleMultiTxRetry } from '@/hooks/toast/retryTx'
 import { shortenAddress } from '@/utils/token'
-import { ClmmLockInfo } from '@/hooks/portfolio/clmm/useClmmLockPosition'
+import { ClmmLockInfo } from '@/hooks/portfolio/clmm/useClmmBalance'
 
 import BN from 'bn.js'
 import Decimal from 'decimal.js'
@@ -117,6 +119,7 @@ interface ClmmState {
   ) => Promise<string>
   harvestLockPositionAct: (
     props: {
+      lockData: ClmmLockInfo['']['']
       poolInfo: ApiV3PoolInfoConcentratedItem
       position: ClmmPositionLayout
       needRefresh?: boolean
@@ -661,14 +664,15 @@ export const useClmmStore = createStore<ClmmState>(
         .finally(txProps.onFinally)
     },
 
-    harvestLockPositionAct: async ({ poolInfo, position, needRefresh, onConfirmed, ...txProps }) => {
+    harvestLockPositionAct: async ({ lockData, poolInfo, needRefresh, onConfirmed, ...txProps }) => {
       const { raydium, txVersion } = useAppStore.getState()
       if (!raydium) return ''
       const computeBudgetConfig = await getComputeBudgetConfig()
       const { execute } = await raydium.clmm.harvestLockPosition({
         // programId: useAppStore.getState().programIdConfig.CLMM_LOCK_PROGRAM_ID,
         // authProgramId: useAppStore.getState().programIdConfig.CLMM_LOCK_AUTH_ID,
-        ownerPosition: position,
+        // ownerPosition: position,
+        lockData,
         txVersion,
         computeBudgetConfig
       })

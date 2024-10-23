@@ -9,57 +9,51 @@ import {
   Text,
   Box,
   Flex,
-  HStack,
   Input
 } from '@chakra-ui/react'
 import { useState } from 'react'
+import Decimal from 'decimal.js'
 import { useTranslation, Trans } from 'react-i18next'
 import { colors } from '@/theme/cssVariables'
-import TokenAvatar from '@/components/TokenAvatar'
+import TokenAvatarPair from '@/components/TokenAvatarPair'
+import AmountSlider from '@/components/AmountSlider'
 import InfoCircleIcon from '@/icons/misc/InfoCircleIcon'
 import WarningIcon from '@/icons/misc/WarningIcon'
-import { shortenAddress } from '@/utils/token'
-import { getMintSymbol } from '@/utils/token'
+import { LockCpmmPoolInfo } from '@/hooks/portfolio/cpmm/useLockableCpmmLp'
 import { formatCurrency } from '@/utils/numberish/formatter'
-import { FormattedPoolInfoConcentratedItem } from '@/hooks/pool/type'
-import useClmmBalance, { ClmmPosition } from '@/hooks/portfolio/clmm/useClmmBalance'
-import { TokenPrice } from '@/hooks/token/useTokenPrice'
-import { useClmmStore } from '@/store'
-import { routeToPage } from '@/utils/routeTools'
+import { useTokenAccountStore } from '@/store'
+import { ApiV3PoolInfoStandardItemCpmm } from '@raydium-io/raydium-sdk-v2'
+import BN from 'bn.js'
 
 function LiquidityLockModal({
   isOpen,
   onClose,
-  onRefresh,
-  poolInfo,
-  position,
-  tokenPrices
+  onConfirm,
+  poolInfo
 }: {
   isOpen: boolean
   onClose: () => void
-  onRefresh: () => void
-  poolInfo: FormattedPoolInfoConcentratedItem
-  position: ClmmPosition
-  tokenPrices: Record<string, TokenPrice>
+  onConfirm: (params: { poolInfo: ApiV3PoolInfoStandardItemCpmm; lpAmount: BN }) => void
+  poolInfo: LockCpmmPoolInfo
 }) {
   const { t } = useTranslation()
-  const lockPositionAct = useClmmStore((s) => s.lockPositionAct)
-  const { getPriceAndAmount } = useClmmBalance({})
-  const { amountA, amountB } = getPriceAndAmount({ poolInfo, position })
 
   const [confirmText, setConfirmText] = useState('')
+  const [percent, setPercent] = useState(100)
 
   const handleCloseModal = () => {
     setConfirmText('')
     onClose()
   }
 
-  const poolNft = position.nftMint.toBase58()
-  const poolName = poolInfo.poolName
-
-  const mintAValue = amountA.mul(tokenPrices[poolInfo.mintA.address]?.value || 0)
-  const mintBValue = amountB.mul(tokenPrices[poolInfo.mintB.address]?.value || 0)
-  const positionAmount = mintAValue.add(mintBValue)
+  const getTokenBalanceUiAmount = useTokenAccountStore((s) => s.getTokenBalanceUiAmount)
+  const lpBalance = new Decimal(getTokenBalanceUiAmount({ mint: poolInfo.lpMint.address, decimals: poolInfo.lpMint.decimals }).amount)
+    .mul(percent)
+    .div(100)
+    .toString()
+  const mintAmountA = new Decimal(lpBalance).mul(poolInfo.baseRatio).mul(percent).div(100)
+  const mintAmountB = new Decimal(lpBalance).mul(poolInfo.quoteRatio).mul(percent).div(100)
+  const lpValue = new Decimal(lpBalance).mul(poolInfo.lpPrice).toDecimalPlaces(6).toString()
 
   return (
     <Modal isOpen={isOpen} onClose={handleCloseModal} size={{ base: 'md', md: 'xl' }}>
@@ -79,69 +73,56 @@ function LiquidityLockModal({
               <Text as="span" fontWeight="bold"></Text>
             </Trans>
           </Text>
-          <Box
-            rounded={'xl'}
-            border={`1px solid ${colors.selectInactive}`}
-            bg={colors.modalContainerBg}
-            px={5}
-            py={3}
-            my={6}
-            mx={[0, 0, 16]}
-          >
-            <Flex alignItems="center" gap={1} justifyContent="space-between" color={colors.lightPurple} mb={2}>
-              <Text>
-                {poolName} {t('liquidity.pool_position_nft')}
-              </Text>
-              <Text>{shortenAddress(poolNft, 5)}</Text>
-            </Flex>
-            <Flex alignItems="center" gap={1} justifyContent="space-between" color={colors.lightPurple} mb={2}>
-              <Text>{t('clmm.position')}: </Text>
-              <Text>
-                {formatCurrency(positionAmount, {
-                  symbol: '$',
-                  abbreviated: true,
-                  decimalPlaces: 2
-                })}
-              </Text>
-            </Flex>
-            <Flex alignItems="center" gap={1} justifyContent="space-between" mb={3} fontSize="sm">
-              <HStack gap={1}>
-                <TokenAvatar size={'sm'} token={poolInfo.mintA} />
-                <Text color={colors.textPrimary}>
-                  {formatCurrency(amountA, {
-                    abbreviated: true,
+          <Box rounded={'xl'} border={`1px solid ${colors.selectInactive}`} bg={colors.modalContainerBg} px={[1, 4]} py={2} my={6}>
+            <Text color={colors.lightPurple} mb={2}>
+              {t('liquidity.lock_cpmm_set_amount')}
+            </Text>
+            <Flex bg={colors.backgroundDark} rounded={'xl'} align="center" justifyContent="space-between" px={4} py={2} gap={1} mb={2}>
+              <Flex align="center" gap={3}>
+                <TokenAvatarPair size="md" token1={poolInfo.mintA} token2={poolInfo.mintB} />
+                <Flex flexDirection="column" gap={0.5}>
+                  <Text color={colors.lightPurple} fontSize={['md', '20px']} fontWeight="500" lineHeight="24px">
+                    {poolInfo.poolName.replace(' - ', '/')}
+                  </Text>
+                  <Text fontSize="sm">
+                    {formatCurrency(mintAmountA, {
+                      decimalPlaces: 2
+                    })}{' '}
+                    <Text as="span" color={colors.textSecondary}>
+                      {poolInfo.mintA?.symbol}
+                    </Text>
+                    {' / '}
+                    {formatCurrency(mintAmountB, {
+                      decimalPlaces: 2
+                    })}{' '}
+                    <Text as="span" color={colors.textSecondary}>
+                      {poolInfo.mintB?.symbol}
+                    </Text>
+                  </Text>
+                </Flex>
+              </Flex>
+              <Box textAlign="right">
+                <Text fontSize="xl" fontWeight="medium">
+                  {formatCurrency(lpValue, {
+                    symbol: '$',
                     decimalPlaces: 2
                   })}
                 </Text>
-                <Text color={colors.lightPurple}>{getMintSymbol({ mint: poolInfo.mintA, transformSol: true })}</Text>
-              </HStack>
-              <Text color={colors.textPrimary}>
-                {formatCurrency(mintAValue, {
-                  symbol: '$',
-                  abbreviated: true,
-                  decimalPlaces: 2
-                })}
-              </Text>
-            </Flex>
-            <Flex alignItems="center" gap={1} justifyContent="space-between" fontSize="14px">
-              <HStack gap={1}>
-                <TokenAvatar size={'sm'} token={poolInfo.mintB} />
-                <Text color={colors.textPrimary}>
-                  {formatCurrency(amountB, {
-                    abbreviated: true,
+                <Text fontSize="sm" color={colors.lightPurple}>
+                  {formatCurrency(lpBalance, {
                     decimalPlaces: 2
-                  })}
+                  })}{' '}
+                  LP
                 </Text>
-                <Text color={colors.lightPurple}>{getMintSymbol({ mint: poolInfo.mintB, transformSol: true })}</Text>
-              </HStack>
-              <Text color={colors.textPrimary}>
-                {formatCurrency(mintBValue, {
-                  symbol: '$',
-                  abbreviated: true,
-                  decimalPlaces: 2
-                })}
-              </Text>
+              </Box>
             </Flex>
+            <AmountSlider
+              renderTopLeftLabel={() => 'Locked Amount'}
+              percent={percent}
+              isDisabled={false}
+              onChange={setPercent}
+              defaultValue={percent}
+            />
           </Box>
           <Flex rounded={'lg'} bg={colors.background03} py={3} px={4} gap={3}>
             <Text pt={0.5}>
@@ -191,14 +172,9 @@ function LiquidityLockModal({
             loadingText={t('liquidity.lock_liquidity') + '...'}
             isDisabled={confirmText !== t('liquidity.lock_confirm_text')}
             onClick={() => {
-              lockPositionAct({
+              onConfirm({
                 poolInfo,
-                position,
-                onConfirmed: () => {
-                  handleCloseModal()
-                  routeToPage('portfolio', { queryProps: { section: 'my-positions', position_tab: 'concentrated' } })
-                  // setTimeout(() => onRefresh(), 1000)
-                }
+                lpAmount: new BN(new Decimal(lpBalance).mul(10 ** poolInfo.lpMint.decimals).toFixed(0))
               })
             }}
           >

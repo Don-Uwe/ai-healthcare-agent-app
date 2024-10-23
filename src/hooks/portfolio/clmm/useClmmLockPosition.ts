@@ -7,7 +7,7 @@ import { isValidPublicKey } from '@/utils/publicKey'
 let refreshTag = Date.now()
 export const refreshClmmLock = () => (refreshTag = Date.now())
 
-export interface ClmmLockInfo {
+interface ClmmLockInfo {
   [poolId: string]: { [nftMint: string]: { lockId: string; nftAccount: string; positionId: string } }
 }
 
@@ -15,7 +15,7 @@ const fetcher = ([url]: [string]) =>
   axios.get<ClmmLockInfo>(url, {
     skipError: true
   })
-
+/** deprecated */
 export default function useClmmLockPosition(props: { shouldFetch?: boolean; refreshInterval?: number }) {
   const { shouldFetch = true, refreshInterval = 1000 * 60 * 3 } = props || {}
   const owner = useAppStore((s) => s.publicKey)

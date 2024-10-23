@@ -10,7 +10,8 @@ import {
   Percent,
   getCpmmPdaAmmConfigId,
   CpmmConfigInfoLayout,
-  ApiCpmmConfigInfo
+  ApiCpmmConfigInfo,
+  CpmmLockExtInfo
 } from '@raydium-io/raydium-sdk-v2'
 import { PublicKey } from '@solana/web3.js'
 import createStore from './createStore'
@@ -18,7 +19,7 @@ import { useAppStore } from './useAppStore'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
 import { txStatusSubject } from '@/hooks/toast/useTxStatus'
 import { getDefaultToastData, transformProcessData, handleMultiTxToast } from '@/hooks/toast/multiToastUtil'
-import { TxCallbackProps } from '@/types/tx'
+import { TxCallbackProps, TxCallbackPropsGeneric } from '@/types/tx'
 import { formatLocaleStr } from '@/utils/numberish/formatter'
 
 import { getTxMeta } from './configs/liquidity'
@@ -29,6 +30,7 @@ import { handleMultiTxRetry } from '@/hooks/toast/retryTx'
 import BN from 'bn.js'
 import Decimal from 'decimal.js'
 import { getComputeBudgetConfig } from '@/utils/tx/computeBudget'
+import { useTokenAccountStore } from './useTokenAccountStore'
 
 export const LIQUIDITY_SLIPPAGE_KEY = '_r_lqd_slippage_'
 
@@ -106,6 +108,21 @@ interface LiquidityStore {
       farmInfo?: FormatFarmInfoOutV6
       userFarmLpAmount?: BN
       base: 'MintA' | 'MintB'
+    } & TxCallbackProps
+  ) => Promise<string>
+
+  lockCpmmLpAct: (
+    params: {
+      poolInfo: ApiV3PoolInfoStandardItemCpmm
+      lpAmount: BN
+    } & TxCallbackPropsGeneric<CpmmLockExtInfo>
+  ) => Promise<string>
+
+  harvestLockCpmmLpAct: (
+    params: {
+      poolInfo: ApiV3PoolInfoStandardItemCpmm
+      nftMint: PublicKey
+      lpFeeAmount: BN
     } & TxCallbackProps
   ) => Promise<string>
 
@@ -463,6 +480,92 @@ export const useLiquidityStore = createStore<LiquidityStore>(
           toastSubject.next({ txError: e, ...migrateMeta })
           return ''
         })
+    },
+
+    lockCpmmLpAct: async ({ poolInfo, lpAmount, ...txCallback }) => {
+      const { raydium, txVersion, connection } = useAppStore.getState()
+      if (!raydium || !connection) return ''
+
+      const { execute, extInfo } = await raydium.cpmm.lockLp({
+        poolInfo,
+        lpAmount,
+        withMetadata: true,
+        txVersion
+      })
+
+      const meta = getTxMeta({
+        action: 'lockLp',
+        values: {
+          position: `${new Decimal(lpAmount.toString()).div(10 ** poolInfo.lpMint.decimals).toString()} ${getMintSymbol({
+            mint: poolInfo.mintA,
+            transformSol: true
+          })}-${getMintSymbol({
+            mint: poolInfo.mintB,
+            transformSol: true
+          })} LP`
+        }
+      })
+
+      return execute()
+        .then(({ txId, signedTx }) => {
+          txStatusSubject.next({
+            txId,
+            ...meta,
+            signedTx,
+            mintInfo: [poolInfo.mintA, poolInfo.mintB],
+            ...txCallback,
+            onSent: () => txCallback.onSent?.(extInfo as CpmmLockExtInfo)
+          })
+          return txId
+        })
+        .catch((e) => {
+          txCallback.onError?.()
+          toastSubject.next({ txError: e })
+          return ''
+        })
+        .finally(() => txCallback.onFinally?.(extInfo as CpmmLockExtInfo))
+    },
+
+    harvestLockCpmmLpAct: async ({ poolInfo, nftMint, lpFeeAmount, ...txCallback }) => {
+      const { raydium, txVersion, connection } = useAppStore.getState()
+      if (!raydium || !connection) return ''
+
+      const { execute } = await raydium.cpmm.harvestLockLp({
+        poolInfo,
+        nftMint,
+        lpFeeAmount,
+        txVersion
+      })
+
+      const meta = getTxMeta({
+        action: 'harvestLock',
+        values: {
+          mintA: getMintSymbol({ mint: poolInfo.mintA, transformSol: true }),
+          mintB: getMintSymbol({ mint: poolInfo.mintB, transformSol: true })
+        }
+      })
+
+      return execute()
+        .then(({ txId, signedTx }) => {
+          txStatusSubject.next({
+            txId,
+            ...meta,
+            signedTx,
+            mintInfo: [poolInfo.mintA, poolInfo.mintB],
+            ...txCallback,
+            onConfirmed: () => {
+              txCallback.onConfirmed?.()
+              setTimeout(() => useTokenAccountStore.setState({ refreshCpmmPositionTag: Date.now() }), 500)
+            }
+          })
+          return txId
+        })
+        .catch((e) => {
+          txCallback.onError?.()
+          toastSubject.next({ txError: e })
+          return ''
+        })
+        .finally(txCallback.onFinally)
     },
 
     computePairAmount: async ({ pool, amount, baseIn, baseReserve, quoteReserve }) => {

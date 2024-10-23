@@ -9,9 +9,10 @@ import { useTranslation } from 'react-i18next'
 type MyPositionProps = {
   positionAPR: number | string
   center?: boolean
+  isLocked?: boolean
 }
 
-export default function StandardPoolAPR({ positionAPR, center }: MyPositionProps) {
+export default function StandardPoolAPR({ positionAPR, center, isLocked = false }: MyPositionProps) {
   const { t } = useTranslation()
   return (
     <Flex direction="column" justify={'space-between'} py={1}>
@@ -22,15 +23,17 @@ export default function StandardPoolAPR({ positionAPR, center }: MyPositionProps
         <Text fontSize="lg" color={colors.textPrimary} lineHeight={1} fontWeight="medium">
           {formatToRawLocaleStr(toApr({ val: positionAPR, multiply: false }))}
         </Text>
-        <QuestionToolTip
-          iconProps={{
-            width: 16,
-            height: 16,
-            fill: colors.textSecondary
-          }}
-          iconType="info"
-          label={t('liquidity.APR_tooltip')}
-        />
+        {!isLocked && (
+          <QuestionToolTip
+            iconProps={{
+              width: 16,
+              height: 16,
+              fill: colors.textSecondary
+            }}
+            iconType="info"
+            label={t('liquidity.APR_tooltip')}
+          />
+        )}
       </HStack>
     </Flex>
   )

@@ -1,50 +1,55 @@
 import { Box, Button, Flex, Grid, GridItem, HStack, Skeleton, Text, useDisclosure } from '@chakra-ui/react'
-import { useState, useCallback, useMemo, useEffect } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import ChevronLeftIcon from '@/icons/misc/ChevronLeftIcon'
 import { colors } from '@/theme/cssVariables/colors'
 import { routeBack } from '@/utils/routeTools'
 import LiquidityItem from './components/LiquidityItem'
 import LiquidityLockModal from './components/LiquidityLockModal'
-import useAllPositionInfo from '@/hooks/portfolio/useAllPositionInfo'
-import { ClmmPosition } from '@/hooks/portfolio/clmm/useClmmBalance'
-import useTokenPrice from '@/hooks/token/useTokenPrice'
-import { BN } from 'bn.js'
+import LockedNFTModal from './components/LockedNFTModal'
+import useLockableCpmmLp from '@/hooks/portfolio/cpmm/useLockableCpmmLp'
+import { MintData } from '@/hooks/token/useFetchAccLpMint'
+import { useLiquidityStore, useTokenAccountStore } from '@/store'
+import { ApiV3PoolInfoStandardItemCpmm, CpmmLockExtInfo } from '@raydium-io/raydium-sdk-v2'
+import BN from 'bn.js'
 
 export default function Lock() {
   const { t } = useTranslation()
   const { isOpen, onOpen, onClose } = useDisclosure()
+  const { isOpen: isNFTOpen, onOpen: onNFTOpen, onClose: onNFTClose } = useDisclosure()
+  const lockCpmmLpAct = useLiquidityStore((s) => s.lockCpmmLpAct)
+  const [nftAddress, setNFTAddress] = useState('')
 
-  const { clmmBalanceInfo, formattedClmmDataMap, clmmLockInfo, mutateClmmLockInfo, isLoading } = useAllPositionInfo({ shouldFetch: false })
-  const { data: tokenPrices } = useTokenPrice({
-    mintList: Object.values(formattedClmmDataMap)
-      .map((pool) => [pool.mintA.address, pool.mintB.address])
-      .flat()
-  })
-  const [selectedPosition, setSelectedPosition] = useState<ClmmPosition | null>(null)
+  const { data, poolData, isLoading } = useLockableCpmmLp()
 
-  const handleSelectPosition = useCallback((position: ClmmPosition) => {
+  const [selectedPosition, setSelectedPosition] = useState<MintData | null>(null)
+  const selectedPoolInfo = poolData.find((p) => p.lpMint.address === selectedPosition?.address.toBase58())
+
+  const handleSelectPosition = useCallback((position: MintData | null) => {
     setSelectedPosition(position)
   }, [])
 
-  const allPosition: ClmmPosition[] = useMemo(() => {
-    const positionsByPool = Array.from(clmmBalanceInfo.values())
-    positionsByPool.sort(
-      (a, b) => (formattedClmmDataMap[b[0].poolId.toBase58()]?.tvl || 0) - (formattedClmmDataMap[a[0].poolId.toBase58()]?.tvl || 0)
-    )
-    positionsByPool.forEach((positions) => {
-      positions.sort((a, b) => {
-        if (a.liquidity.isZero() && !b.liquidity.isZero()) return 1
-        if (b.liquidity.isZero() && !a.liquidity.isZero()) return -1
-        return a.tickLower - b.tickLower
-      })
-    })
-    return positionsByPool.flat().filter((p) => p.liquidity.gt(new BN(0)))
-  }, [clmmBalanceInfo, formattedClmmDataMap])
+  const onLockSuccess = useCallback((val: string) => {
+    onNFTOpen()
+    setNFTAddress(val || '')
+  }, [])
 
-  useEffect(() => {
-    if (!allPosition.length) setSelectedPosition(null)
-  }, [allPosition.length])
+  const onLock = useCallback(
+    (params: { poolInfo: ApiV3PoolInfoStandardItemCpmm; lpAmount: BN }) => {
+      let nftAddress = ''
+      lockCpmmLpAct({
+        ...params,
+        onSent: (info: CpmmLockExtInfo) => (nftAddress = info.nftMint.toString()),
+        onConfirmed: () => {
+          onLockSuccess(nftAddress)
+          useTokenAccountStore.setState({ refreshCpmmPositionTag: Date.now() })
+        }
+      })
+    },
+    [lockCpmmLpAct, onLockSuccess]
+  )
+
+  useEffect(() => () => setSelectedPosition(null), [])
 
   return (
     <>
@@ -92,16 +97,16 @@ export default function Lock() {
             py={6}
           >
             <Text fontSize="xl" fontWeight="medium" lineHeight="26px" mb={3}>
-              {t('liquidity.lock_clmm_title')}
+              {t('liquidity.lock_cpmm_title')}
             </Text>
             <Box color={colors.lightPurple} fontSize="md" lineHeight="20px" mb={7}>
-              <Text mb={7}>{t('liquidity.lock_clmm_desc1')}</Text>
+              <Text mb={7}>{t('liquidity.lock_cpmm_desc1')}</Text>
               <Text mb={7}>
-                <Trans i18nKey={'liquidity.lock_clmm_desc2'}>
+                <Trans i18nKey="liquidity.lock_cpmm_desc2">
                   <Text as="span" fontWeight="bold"></Text>
                 </Trans>
               </Text>
-              <Text>{t('liquidity.lock_clmm_desc3')}</Text>
+              <Text>{t('liquidity.lock_cpmm_desc3')}</Text>
             </Box>
             <Flex flexDirection="column" gap={3} mb={7}>
               {isLoading ? (
@@ -111,24 +116,20 @@ export default function Lock() {
                   <Skeleton borderRadius="8px" height={['150px', '70px']} />
                   <Skeleton borderRadius="8px" height={['150px', '70px']} />
                 </Flex>
-              ) : allPosition.length === 0 ? (
+              ) : data.length === 0 ? (
                 <Box textAlign="center" fontSize="sm" color={colors.lightPurple} bg={colors.backgroundDark} rounded="md" py={7}>
-                  {t('liquidity.lock_clmm_positions_empty')}
+                  {t('liquidity.lock_cpmm_positions_empty')}
                 </Box>
               ) : (
-                allPosition.map((position) => {
-                  const positionNft = position.nftMint.toBase58()
-                  const poolId = position.poolId.toBase58()
-                  const poolInfo = formattedClmmDataMap[poolId]
-                  if (!poolInfo || clmmLockInfo[poolId]?.[positionNft]) return null
+                data.map((lpMint) => {
+                  const poolInfo = poolData.find((p) => p.lpMint.address === lpMint.address.toBase58())
+                  if (!poolInfo) return null
                   return (
                     <LiquidityItem
-                      key={positionNft}
-                      position={position}
+                      key={poolInfo.lpMint.address}
                       poolInfo={poolInfo}
-                      tokenPrices={tokenPrices}
-                      isSelected={selectedPosition?.nftMint.toBase58() === positionNft}
-                      onClick={() => handleSelectPosition(position)}
+                      isSelected={selectedPosition?.address.toBase58() === poolInfo.lpMint.address}
+                      onClick={() => handleSelectPosition(lpMint)}
                     />
                   )
                 })
@@ -140,16 +141,10 @@ export default function Lock() {
           </Flex>
         </GridItem>
       </Grid>
-      {selectedPosition && formattedClmmDataMap[selectedPosition.poolId.toBase58()] && (
-        <LiquidityLockModal
-          isOpen={isOpen}
-          onClose={onClose}
-          tokenPrices={tokenPrices}
-          position={selectedPosition}
-          poolInfo={formattedClmmDataMap[selectedPosition.poolId.toBase58()]}
-          onRefresh={mutateClmmLockInfo}
-        />
+      {selectedPosition && selectedPoolInfo && (
+        <LiquidityLockModal isOpen={isOpen} onClose={onClose} onConfirm={onLock} poolInfo={selectedPoolInfo} />
       )}
+      <LockedNFTModal nftAddress={nftAddress} isOpen={isNFTOpen} onClose={onNFTClose} />
     </>
   )
 }

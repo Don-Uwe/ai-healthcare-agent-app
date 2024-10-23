@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect, useMemo } from 'react'
+import React, { useCallback, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Box, Flex, Grid, GridItem, HStack, Tag, Text, Skeleton, useDisclosure } from '@chakra-ui/react'
 import Link from 'next/link'
@@ -21,7 +21,7 @@ import ClmmPositionAccountItem from './ClmmPositionAccountItem'
 import toPercentString from '@/utils/numberish/toPercentString'
 import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
 import { QuestionToolTip } from '@/components/QuestionToolTip'
-import { ClmmLockInfo } from '@/hooks/portfolio/clmm/useClmmLockPosition'
+import { ClmmLockInfo } from '@/hooks/portfolio/clmm/useClmmBalance'
 
 const LIST_THRESHOLD = 10
 
@@ -215,7 +215,7 @@ export function ClmmPositionItemsCard({
                 baseIn={baseIn}
                 initRpcPoolData={initRpcPoolData}
                 setNoRewardClmmPos={setNoRewardClmmPos}
-                isLock={true}
+                lockData={lockInfo[position.nftMint.toBase58()]}
                 onSubscribe={onSubscribe}
               />
             ))}

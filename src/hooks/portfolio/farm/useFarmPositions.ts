@@ -25,6 +25,16 @@ export type FarmPositionInfo = {
   }[]
 }
 
+export const EMPTY_FARM_POS: FarmPositionInfo = {
+  hasAmount: false,
+  hasV1Data: false,
+  totalLpAmount: '0',
+  totalV1LpAmount: '0',
+  lpMint: '',
+  vault: '',
+  data: []
+}
+
 const fetcher = ([url]: [url: string]) => axios.get<FarmPositionData>(url, { skipError: true })
 
 export default function useFarmPositions(props: { shouldFetch?: boolean; refreshInterval?: number }) {

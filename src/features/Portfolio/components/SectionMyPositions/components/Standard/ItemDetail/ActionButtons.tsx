@@ -16,6 +16,7 @@ type ActionButtonsProps = {
   canMigrate: boolean
   canStake: boolean
   canViewMore: boolean
+  isLocked?: boolean
   onClickViewMore?(): void
   onMigrateOpen?(): void
 }
@@ -28,6 +29,7 @@ export default function ActionButtons({
   canMigrate,
   canViewMore,
   canStake,
+  isLocked,
   onClickViewMore,
   onMigrateOpen
 }: ActionButtonsProps) {
@@ -84,16 +86,18 @@ export default function ActionButtons({
         </Button>
       )}
       <Flex gap={[variant === 'drawer-face' ? 4 : 2, 3]} flex={1} justifyContent="flex-end">
-        <Button
-          variant="outline"
-          size={variant === 'drawer-face' ? 'md' : 'xs'}
-          w={variant === 'drawer-face' ? undefined : 9}
-          h={variant === 'drawer-face' ? undefined : '30px'}
-          px={0}
-          onClick={hasFarmLp ? onUnstaking : onRemoveLiquidity}
-        >
-          <MinusIcon color={colors.secondary} />
-        </Button>
+        {!isLocked && (
+          <Button
+            variant="outline"
+            size={variant === 'drawer-face' ? 'md' : 'xs'}
+            w={variant === 'drawer-face' ? undefined : 9}
+            h={variant === 'drawer-face' ? undefined : '30px'}
+            px={0}
+            onClick={hasFarmLp ? onUnstaking : onRemoveLiquidity}
+          >
+            <MinusIcon color={colors.secondary} />
+          </Button>
+        )}
         <Button
           variant="solid"
           size={variant === 'drawer-face' ? 'md' : 'xs'}
@@ -104,15 +108,17 @@ export default function ActionButtons({
         >
           <PlusIcon color={colors.buttonSolidText} />
         </Button>
-        {canMigrate ? (
-          <Button size={variant === 'drawer-face' ? 'md' : 'sm'} onClick={onMigrateOpen}>
-            {t('portfolio.stake_item_migrate_button')}
-          </Button>
-        ) : (
-          <Button size={variant === 'drawer-face' ? 'md' : 'sm'} isDisabled={!canStake} onClick={onStake}>
-            {t('portfolio.stake_item_stake_button')}
-          </Button>
-        )}
+        {!isLocked ? (
+          canMigrate ? (
+            <Button size={variant === 'drawer-face' ? 'md' : 'sm'} onClick={onMigrateOpen}>
+              {t('portfolio.stake_item_migrate_button')}
+            </Button>
+          ) : (
+            <Button size={variant === 'drawer-face' ? 'md' : 'sm'} isDisabled={!canStake} onClick={onStake}>
+              {t('portfolio.stake_item_stake_button')}
+            </Button>
+          )
+        ) : null}
       </Flex>
     </Flex>
   )
