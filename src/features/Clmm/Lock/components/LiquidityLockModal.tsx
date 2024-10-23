@@ -191,9 +191,11 @@ function LiquidityLockModal({
             loadingText={t('liquidity.lock_liquidity') + '...'}
             isDisabled={confirmText !== t('liquidity.lock_confirm_text')}
             onClick={() => {
+              let nftAddress = ''
               lockPositionAct({
                 poolInfo,
                 position,
+                onSent: (address) => (nftAddress = address.lockNftMint.toBase58()),
                 onConfirmed: () => {
                   handleCloseModal()
                   routeToPage('portfolio', { queryProps: { section: 'my-positions', position_tab: 'concentrated' } })

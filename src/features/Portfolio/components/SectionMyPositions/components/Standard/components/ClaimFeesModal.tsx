@@ -37,6 +37,7 @@ export default function ClaimFeesModal({
   lockData: CpmmLockData
 }) {
   const { t } = useTranslation()
+
   const harvestLockCpmmLpAct = useLiquidityStore((s) => s.harvestLockCpmmLpAct)
   const [sending, setIsSending] = useState(false)
   const [percent, setPercent] = useState(100)

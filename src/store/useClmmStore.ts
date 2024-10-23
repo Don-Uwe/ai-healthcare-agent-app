@@ -18,7 +18,8 @@ import {
   toToken,
   solToWSolToken,
   TxVersion,
-  getTransferAmountFeeV2
+  getTransferAmountFeeV2,
+  ClmmLockAddress
 } from '@raydium-io/raydium-sdk-v2'
 import { PublicKey, VersionedTransaction } from '@solana/web3.js'
 import createStore from '@/store/createStore'
@@ -31,7 +32,7 @@ import getEphemeralSigners from '@/utils/tx/getEphemeralSigners'
 import { getMintSymbol } from '@/utils/token'
 
 import { CLMM_FEE_CONFIGS, getTxMeta } from './configs/clmm'
-import { TxCallbackProps } from '../types/tx'
+import { TxCallbackProps, TxCallbackPropsGeneric } from '../types/tx'
 import { getComputeBudgetConfig } from '@/utils/tx/computeBudget'
 import { handleMultiTxRetry } from '@/hooks/toast/retryTx'
 import { shortenAddress } from '@/utils/token'
@@ -113,7 +114,7 @@ interface ClmmState {
       poolInfo: ApiV3PoolInfoConcentratedItem
       position: ClmmPositionLayout
       onCloseToast?: () => void
-    } & TxCallbackProps
+    } & TxCallbackPropsGeneric<ClmmLockAddress>
   ) => Promise<string>
   harvestLockPositionAct: (
     props: {
@@ -623,7 +624,7 @@ export const useClmmStore = createStore<ClmmState>(
       const { raydium, txVersion } = useAppStore.getState()
       if (!raydium) return ''
       const computeBudgetConfig = await getComputeBudgetConfig()
-      const { execute } = await raydium.clmm.lockPosition({
+      const { execute, extInfo } = await raydium.clmm.lockPosition({
         ownerPosition: position,
         txVersion,
         computeBudgetConfig
@@ -643,7 +644,9 @@ export const useClmmStore = createStore<ClmmState>(
             ...meta,
             signedTx,
             mintInfo: [poolInfo.mintA, poolInfo.mintB],
-            onSent: txProps.onSent,
+            onSent: () => {
+              txProps.onSent?.(extInfo as ClmmLockAddress)
+            },
             onClose: txProps.onCloseToast,
             onConfirmed: () => {
               txProps.onConfirmed?.()
@@ -659,7 +662,9 @@ export const useClmmStore = createStore<ClmmState>(
           toastSubject.next({ txError: e, ...meta })
           return ''
         })
-        .finally(txProps.onFinally)
+        .finally(() => {
+          txProps.onFinally?.(extInfo as ClmmLockAddress)
+        })
     },
 
     harvestLockPositionAct: async ({ lockData, poolInfo, needRefresh, onConfirmed, ...txProps }) => {

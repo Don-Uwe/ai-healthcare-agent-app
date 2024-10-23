@@ -105,7 +105,7 @@ export default function useLockCpmmBalance({ refreshInterval = 1000 * 60 * 5 }: 
   const balanceData = useMemo(() => {
     const positionMap: CpmmLockDataMap = new Map()
 
-    ;(data?.filter(Boolean) || []).forEach((positionRes, idx) => {
+    ;(data || []).forEach((positionRes, idx) => {
       if (!positionRes) return
       if (!positionMap.get(positionRes.poolInfo.lpMint.address))
         positionMap.set(positionRes.poolInfo.lpMint.address, [{ ...positionRes, nftMint: balanceMints[idx].accountInfo.mint.toBase58() }])
