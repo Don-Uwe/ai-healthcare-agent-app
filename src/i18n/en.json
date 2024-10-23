@@ -348,7 +348,7 @@
     "lock_cpmm_title": "Burn/Lock Liquidity for standard AMM position",
     "lock_clmm_title": "Burn/Lock Liquidity for CLMM position",
     "lock_cpmm_set_amount": "Set amount of position to lock:",
-    "lock_cpmm_desc1": "Token teams can permanently lock liquidity. The LP tokens representing your position is sent to a locked token account. Fees will still be claimable.",
+    "lock_cpmm_desc1": "Token teams can permanently lock liquidity. The LP tokens representing your position is sent to a locked token account. Fees auto-compound to the original position, but remain claimable.",
     "lock_cpmm_desc2": "To start, select a standard AMM position below to lock. Ensure that <0>position value and LP balance</0> match the position you want to lock!",
     "lock_cpmm_desc3": "Note: Technically, your LP tokens are not burned but permanently locked.",
     "lock_cpmm_desc4": "NOTE: This feature only supports CPMM pools created on the UI. Older V4 pools are not supported at this time.<0>Learn more here.</0>",
