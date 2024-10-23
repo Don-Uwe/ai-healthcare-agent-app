@@ -283,7 +283,7 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
     mutateFarmPos()
     mutateFarmsInfo()
     mutateFarmBalance()
-    useTokenAccountStore.setState({ refreshClmmPositionTag: Date.now() })
+    useTokenAccountStore.setState({ refreshClmmPositionTag: Date.now(), refreshCpmmPositionTag: Date.now() })
   })
 
   const handleHarvest = useEvent(async ({ tab, zeroClmmPos }: { tab: PositionTabValues; zeroClmmPos?: Set<string> }) => {
