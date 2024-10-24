@@ -200,7 +200,6 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
     <Box {...panelCard} bg={colors.backgroundLight} borderRadius="xl" w="full">
       <Box
         {...(isAllLiquidityLocked && { bg: colors.modalContainerBg })}
-        {...(!isPartialLiquidityLocked && { pb: isMobile ? 2 : 3 })}
         display={'grid'}
         alignItems="center"
         flexWrap="wrap"
@@ -223,6 +222,7 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
         rowGap={[2, 3]}
         pt={[2, 3]}
         px={[3, 8]}
+        pb={[2, 3]}
       >
         <GridItem flexGrow={1} area="name" maxW={['unset', '200px']}>
           <ItemName
@@ -298,7 +298,7 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
       {hasStakeFarm && (
         <Box px={[3, 8]}>
           <Collapse in={isOpen}>
-            <VStack mt={4} w="full" align="stretch" gap={3}>
+            <VStack mt={[2, 1]} w="full" align="stretch" gap={3}>
               {stakedFarms.map((stakeFarm) => {
                 let balanceInfo = allFarmBalances.find((f) => f.id === stakeFarm.farmId)
                 const v1Balance = position.data.find((p) => p.version === 'V1' && p.lpAmount !== '0' && p.farmId === stakeFarm.farmId)
@@ -328,7 +328,7 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
             <Box mt={3}>
               <StandardPoolRowStakeFarmHoldItem lpMint={pool.lpMint} lpPrice={pool.lpPrice} apr={pool.day.apr} />
             </Box>
-            <HStack mt={3} justifyItems="center" position="relative" zIndex={1}>
+            <HStack mt={3} pb={[2, 3]} justifyItems="center" position="relative" zIndex={1}>
               <Button mx="auto" rightIcon={<ExpandUpIcon />} variant="ghost" size="sm" onClick={onClose}>
                 {t('common.view_less')}
               </Button>
@@ -361,7 +361,6 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
             rowGap={[2, 3]}
             py={[2, 3]}
             px={[3, 8]}
-            mt={[2, 3]}
           >
             <GridItem flexGrow={1} area="i1" w={['unset', '92px']} maxW={['unset', '150px']}>
               <LockedPosition positionUsd={info.positionInfo.usdValue} burnPercent={info.positionInfo.tvlPercentage} />
