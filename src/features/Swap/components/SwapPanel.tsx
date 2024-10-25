@@ -28,6 +28,7 @@ import dayjs from 'dayjs'
 import { NATIVE_MINT } from '@solana/spl-token'
 import { Trans } from 'react-i18next'
 import { formatToRawLocaleStr } from '@/utils/numberish/formatter'
+import { isValidPublicKey } from '@/utils/publicKey'
 import useTokenInfo from '@/hooks/token/useTokenInfo'
 import { debounce } from '@/utils/functionMethods'
 
@@ -84,7 +85,9 @@ export function SwapPanel({
     if (!cacheLoaded) return
     onInputMintChange?.(inputMint)
     onOutputMintChange?.(outputMint)
-    setUrlQuery({ inputMint: mintToUrl(inputMint), outputMint: mintToUrl(outputMint) })
+    const validInputMint = isValidPublicKey(inputMint) ? inputMint : '',
+      validOutputMint = isValidPublicKey(outputMint) ? outputMint : ''
+    setUrlQuery({ inputMint: mintToUrl(validInputMint), outputMint: mintToUrl(validOutputMint) })
   }, [inputMint, outputMint, cacheLoaded])
 
   const [amountIn, setAmountIn] = useState<string>('')

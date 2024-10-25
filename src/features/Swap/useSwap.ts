@@ -6,6 +6,7 @@ import useSWR from 'swr'
 import shallow from 'zustand/shallow'
 import { useCallback, useEffect, useState } from 'react'
 import { debounce } from '@/utils/functionMethods'
+import { isValidPublicKey } from '@/utils/publicKey'
 import Decimal from 'decimal.js'
 import { ApiSwapV1OutSuccess, ApiSwapV1OutError } from './type'
 
@@ -34,8 +35,8 @@ export default function useSwap(props: {
 
   const [amount, setAmount] = useState('')
   const [inputMint, outputMint] = [
-    propInputMint ? solToWSol(propInputMint).toBase58() : propInputMint,
-    propOutputMint ? solToWSol(propOutputMint).toBase58() : propOutputMint
+    isValidPublicKey(propInputMint) ? solToWSol(propInputMint).toBase58() : propInputMint,
+    isValidPublicKey(propOutputMint) ? solToWSol(propOutputMint).toBase58() : propOutputMint
   ]
 
   const [txVersion, urlConfigs] = useAppStore((s) => [s.txVersion, s.urlConfigs], shallow)
