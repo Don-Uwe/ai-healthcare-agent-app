@@ -12,12 +12,13 @@ import { toastSubject } from '../toast/useGlobalToast'
 import { cancelAllRetry } from '@/utils/common'
 import { sendWalletEvent } from '@/api/event'
 import { validateTxData, extendTxData } from '@/api/txService'
+import { parseUserAgent } from 'react-device-detect'
 
 const localFakePubKey = '_r_f_wallet_'
 
 function useInitConnection(props: SSRData) {
   const { connection } = useConnection()
-  const { publicKey: _publicKey, signAllTransactions: _signAllTransactions, wallet, connected } = useWallet()
+  const { publicKey: _publicKey, signAllTransactions: _signAllTransactions, signTransaction, wallet, connected } = useWallet()
 
   const publicKey = useMemo(() => {
     const localPub = getDevOnlyStorage(localFakePubKey)
@@ -48,8 +49,21 @@ function useInitConnection(props: SSRData) {
               }
             }
 
+            const deviceInfo = parseUserAgent(window.navigator.userAgent)
+            const adapter = useAppStore.getState().wallet?.adapter
+            const isAndroidCoinBase = deviceInfo.os.name === 'Android' && adapter?.name === 'Coinbase Wallet'
+
             const time = Date.now()
-            const allSignedTx = await _signAllTransactions(transactions)
+            alert(transactions.length)
+            let allSignedTx: T[] = []
+            if (isAndroidCoinBase) {
+              for (const tx of transactions) {
+                const signed = await signTransaction!(tx)
+                allSignedTx.push(signed)
+              }
+            } else {
+              allSignedTx = await _signAllTransactions(transactions)
+            }
             const allBase64Tx = allSignedTx.map(txToBase64)
             const res = await validateTxData({
               preData: unsignedTxData,
