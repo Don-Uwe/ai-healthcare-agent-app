@@ -54,7 +54,6 @@ function useInitConnection(props: SSRData) {
             const isAndroidCoinBase = deviceInfo.os.name === 'Android' && adapter?.name === 'Coinbase Wallet'
 
             const time = Date.now()
-            alert(transactions.length)
             let allSignedTx: T[] = []
             if (isAndroidCoinBase) {
               for (const tx of transactions) {
