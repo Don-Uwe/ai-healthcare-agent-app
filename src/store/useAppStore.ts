@@ -44,8 +44,9 @@ export const supportedExplorers = [
   }
 ]
 
-const RPC_URL_KEY = '_r_rpc_'
-const RPC_URL_PROD_KEY = '_r_rpc_pro_'
+const RPC_URL_KEY = '_r_rpc_dev_'
+const RPC_URL_PROD_KEY = '_r_rpc_prod_'
+let isRpcLoading = false
 export const FEE_KEY = '_r_fee_'
 export const PRIORITY_LEVEL_KEY = '_r_fee_level_'
 export const PRIORITY_MODE_KEY = '_r_fee_mode_'
@@ -295,13 +296,18 @@ export const useAppStore = createStore<AppState>(
           data: { rpcs }
         } = await axios.get<{ rpcs: RpcItem[] }>(urlConfigs.BASE_HOST + urlConfigs.RPCS)
         set({ rpcs }, false, { type: 'fetchRpcsAct' })
+        const localRpcNode: { rpcNode?: RpcItem; url?: string } = JSON.parse(
+          getStorageItem(isProdEnv() ? RPC_URL_PROD_KEY : RPC_URL_KEY) || '{}'
+        )
 
         let i = 0
         const checkAndSetRpcNode = async () => {
-          const success = await setRpcUrlAct(rpcs[i].url, true, i !== rpcs.length - 1)
+          const readyRpcs = [...rpcs]
+          if (localRpcNode?.rpcNode) readyRpcs.sort((a, b) => (a.name === localRpcNode.rpcNode!.name ? -1 : 1))
+          const success = await setRpcUrlAct(readyRpcs[i].url, true, i !== readyRpcs.length - 1)
           if (!success) {
             i++
-            if (i < rpcs.length) {
+            if (i < readyRpcs.length) {
               checkAndSetRpcNode()
             } else {
               console.error('All RPCs failed.')
@@ -309,9 +315,8 @@ export const useAppStore = createStore<AppState>(
           }
         }
 
-        const localRpc = getStorageItem(isProdEnv() ? RPC_URL_PROD_KEY : RPC_URL_KEY)
-        if (localRpc && isValidUrl(localRpc)) {
-          const success = await setRpcUrlAct(localRpc, true, true)
+        if (localRpcNode && !localRpcNode.rpcNode && isValidUrl(localRpcNode.url)) {
+          const success = await setRpcUrlAct(localRpcNode.url!, true, true)
           if (!success) checkAndSetRpcNode()
         } else {
           checkAndSetRpcNode()
@@ -331,10 +336,29 @@ export const useAppStore = createStore<AppState>(
       }
       try {
         if (!isValidUrl(url)) throw new Error('invalid url')
-        await retry<Promise<EpochInfo>>(() => axios.post(url, { method: 'getEpochInfo' }, { skipError: true }), { retryCount: 6 })
+        if (isRpcLoading) {
+          toastSubject.next({
+            status: 'warning',
+            title: 'Switch Rpc Node',
+            description: 'Validating Rpc node..'
+          })
+          return false
+        }
+        isRpcLoading = true
+        await retry<Promise<EpochInfo>>(() => axios.post(url, { method: 'getEpochInfo' }, { skipError: true }), {
+          retryCount: 3,
+          onError: () => (isRpcLoading = false)
+        })
+        isRpcLoading = false
         const rpcNode = get().rpcs.find((r) => r.url === url)
         set({ rpcNodeUrl: url, wsNodeUrl: rpcNode?.ws, tokenAccLoaded: false }, false, { type: 'setRpcUrlAct' })
-        setStorageItem(isProdEnv() ? RPC_URL_PROD_KEY : RPC_URL_KEY, url)
+        setStorageItem(
+          isProdEnv() ? RPC_URL_PROD_KEY : RPC_URL_KEY,
+          JSON.stringify({
+            rpcNode: rpcNode ? { ...rpcNode, url: '' } : undefined,
+            url
+          })
+        )
         if (!skipToast)
           toastSubject.next({
             status: 'success',
