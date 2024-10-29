@@ -82,14 +82,7 @@ MyApp.getInitialProps = async (appContext: AppContext) => {
   try {
     const ctx = await App.getInitialProps(appContext)
     const userAgent = appContext.ctx.req?.headers['user-agent'] || ''
-    let breakPoints = {
-      isMobile: false,
-      isTablet: false,
-      isDesktop: false
-    }
-    if (typeof userAgent === 'string' && userAgent.length > 0) {
-      breakPoints = getSelectorsByUserAgent(userAgent)
-    }
+    const breakPoints = getSelectorsByUserAgent(userAgent)
     let lng = getCookie('i18nextLng', { req: appContext.ctx.req, res: appContext.ctx.res }) as string
     lng = lng || 'en'
     i18n.changeLanguage(lng)
