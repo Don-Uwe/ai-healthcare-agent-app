@@ -85,11 +85,11 @@ export default function ActionButtons({
           {t('common.view_more')}
         </Button>
       )}
-      <Flex gap={[variant === 'drawer-face' ? 4 : 2, 3]} flex={1} justifyContent="flex-end">
+      <Flex gap={[variant === 'drawer-face' ? 1 : 2, 3]} flex={1} justifyContent={variant === 'drawer-face' ? 'space-between' : 'flex-end'}>
         {!isLocked && (
           <Button
             variant="outline"
-            size={variant === 'drawer-face' ? 'md' : 'xs'}
+            size={variant === 'drawer-face' ? 'sm' : 'xs'}
             w={variant === 'drawer-face' ? undefined : 9}
             h={variant === 'drawer-face' ? undefined : '30px'}
             px={0}
@@ -100,7 +100,7 @@ export default function ActionButtons({
         )}
         <Button
           variant="solid"
-          size={variant === 'drawer-face' ? 'md' : 'xs'}
+          size={variant === 'drawer-face' ? 'sm' : 'xs'}
           w={variant === 'drawer-face' ? undefined : 9}
           h={variant === 'drawer-face' ? undefined : '30px'}
           px={0}
@@ -110,11 +110,11 @@ export default function ActionButtons({
         </Button>
         {!isLocked ? (
           canMigrate ? (
-            <Button size={variant === 'drawer-face' ? 'md' : 'sm'} onClick={onMigrateOpen}>
+            <Button size="sm" onClick={onMigrateOpen}>
               {t('portfolio.stake_item_migrate_button')}
             </Button>
           ) : (
-            <Button size={variant === 'drawer-face' ? 'md' : 'sm'} isDisabled={!canStake} onClick={onStake}>
+            <Button size="sm" isDisabled={!canStake} onClick={onStake}>
               {t('portfolio.stake_item_stake_button')}
             </Button>
           )

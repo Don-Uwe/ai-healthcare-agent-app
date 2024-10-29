@@ -104,7 +104,7 @@ export default function MobileStandardAMMDetailDrawer({
             </GridItem>
 
             <GridItem flexGrow={1} area="i2" justifySelf="center" w={['unset', '92px']} maxW={['unset', '150px']}>
-              <StandardPoolAPR center positionAPR={0} />
+              <StandardPoolAPR center positionAPR={pool.day.apr} />
             </GridItem>
 
             <GridItem
@@ -167,7 +167,7 @@ export default function MobileStandardAMMDetailDrawer({
           </Grid>
         </DrawerBody>
         <DrawerFooter bg="transparent">
-          <Button variant="ghost" w="full" h="20px">
+          <Button variant="ghost" w="full" h="20px" onClick={onClose}>
             {t('button.close')}
           </Button>
         </DrawerFooter>
