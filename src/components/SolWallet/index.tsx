@@ -10,6 +10,7 @@ import { colors } from '@/theme/cssVariables'
 import { encodeStr } from '@/utils/common'
 import { useAppStore } from '@/store/useAppStore'
 import { useTranslation } from 'react-i18next'
+import { WALLET_STORAGE_KEY } from '@/hooks/app/useInitConnection'
 
 export default function SolWallet() {
   const { wallets, select, disconnect, connected, connecting, wallet } = useWallet()
@@ -24,6 +25,10 @@ export default function SolWallet() {
   const handleSelectWallet = useEvent((wallet: Wallet) => {
     select(wallet.adapter.name)
     handleClose()
+    setTimeout(() => {
+      // remove before connected
+      localStorage.removeItem(WALLET_STORAGE_KEY)
+    }, 0)
   })
 
   if (connected)

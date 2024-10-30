@@ -15,6 +15,7 @@ import { validateTxData, extendTxData } from '@/api/txService'
 import { parseUserAgent } from 'react-device-detect'
 
 const localFakePubKey = '_r_f_wallet_'
+export const WALLET_STORAGE_KEY = 'walletName'
 
 function useInitConnection(props: SSRData) {
   const { connection } = useConnection()
@@ -186,6 +187,7 @@ function useInitConnection(props: SSRData) {
         connectStatus: 'success',
         walletName: wallet?.adapter.name || 'unknown'
       })
+      if (wallet) localStorage.setItem(WALLET_STORAGE_KEY, `"${wallet?.adapter.name}"`)
     }
   }, [publicKey, connected, wallet?.adapter.name])
 }

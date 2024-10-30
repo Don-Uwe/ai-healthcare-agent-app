@@ -8,6 +8,7 @@ import { colors } from '@/theme/cssVariables'
 import { useTranslation } from 'react-i18next'
 import { MoonpayBuy } from '@/components/Moonpay'
 import MoonPayIcon from '@/icons/misc/MoonPayIcon'
+import { WALLET_STORAGE_KEY } from '@/hooks/app/useInitConnection'
 
 export default function WalletOnramp() {
   const { wallets, select, connected, connecting } = useWallet()
@@ -20,6 +21,10 @@ export default function WalletOnramp() {
   const handleSelectWallet = useEvent((wallet: Wallet) => {
     select(wallet.adapter.name)
     handleClose()
+    setTimeout(() => {
+      // remove before connected
+      localStorage.removeItem(WALLET_STORAGE_KEY)
+    }, 0)
   })
 
   if (connected)
