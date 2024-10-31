@@ -405,7 +405,7 @@ function TokenInput(props: TokenInputProps) {
             id={id}
             onChange={(e) => {
               const targetValue = e?.currentTarget?.value.replace(new RegExp(`\\${thousandSeparator}`, 'g'), '')
-              const rawValue = targetValue === '.' ? '0.' : targetValue
+              const rawValue = targetValue === detectedSeparator ? '0.' : targetValue.replace(detectedSeparator, '.')
               if (Number.isNaN(rawValue)) return
               onChange?.(rawValue)
             }}
