@@ -4,26 +4,24 @@ import {
   Grid,
   GridItem,
   HStack,
-  InputGroup,
   Spacer,
   StackProps,
   SystemStyleObject,
   Text,
   useColorMode,
-  useDisclosure,
-  Input
+  useDisclosure
 } from '@chakra-ui/react'
 import { ApiV3Token, TokenInfo, SOL_INFO } from '@raydium-io/raydium-sdk-v2'
+import { NumericFormat } from 'react-number-format'
 import Decimal from 'decimal.js'
-import React, { ReactNode, useEffect, useState, useRef } from 'react'
+import React, { ReactNode, useEffect, useState, useRef, useMemo } from 'react'
 import useTokenPrice from '@/hooks/token/useTokenPrice'
 import { useEvent } from '@/hooks/useEvent'
-import { toastSubject } from '@/hooks/toast/useGlobalToast'
 import BalanceWalletIcon from '@/icons/misc/BalanceWalletIcon'
 import ChevronDownIcon from '@/icons/misc/ChevronDownIcon'
 import { useAppStore, useTokenAccountStore, useTokenStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
-import { trimTrailZero, formatCurrency, formatToRawLocaleStr, detectedSeparator } from '@/utils/numberish/formatter'
+import { trimTrailZero, formatCurrency, detectedSeparator } from '@/utils/numberish/formatter'
 
 import { t } from 'i18next'
 import Button from './Button'
@@ -182,6 +180,8 @@ function TokenInput(props: TokenInputProps) {
   const [unknownToken, setUnknownToken] = useState<TokenInfo | ApiV3Token>()
   const [freezeToken, setFreezeToken] = useState<TokenInfo | ApiV3Token>()
 
+  const thousandSeparator = useMemo(() => (detectedSeparator === ',' ? '.' : ','), [])
+
   // const handleValidate = useEvent((value: string) => {
   //   return numberRegExp.test(value)
   // })
@@ -290,26 +290,6 @@ function TokenInput(props: TokenInputProps) {
     }
   })
 
-  const handleParseVal = useEvent((propVal: string) => {
-    const val = propVal.match(new RegExp(`[0-9${detectedSeparator}]`, 'gi'))?.join('') || ''
-    if (!val) return ''
-    const splitArr = val.split(detectedSeparator)
-    if (splitArr.length > 2) return [splitArr[0], splitArr[1]].join('.')
-    if (token && splitArr[1] && splitArr[1].length > token.decimals) {
-      return [splitArr[0], splitArr[1].substring(0, token.decimals)].join('.')
-    }
-    return val === detectedSeparator ? '0.' : val.replace(detectedSeparator, '.')
-    // const val = propVal.match(/[0-9.]/gi)?.join('') || ''
-    // if (!val) return ''
-    // const splitArr = val.split('.')
-    // if (splitArr.length > 2) return [splitArr[0], splitArr[1]].join('.')
-    // if (token && splitArr[1] && splitArr[1].length > token.decimals) {
-    //   //.replace(/([1-9]+(\.[0-9]+[1-9])?)(\.?0+$)/, '$1')
-    //   return [splitArr[0], splitArr[1].substring(0, token.decimals)].join('.')
-    // }
-    // return val === '.' ? '0.' : val
-  })
-
   useEffect(() => {
     if (!defaultUnknownToken) return
     handleSelectToken(defaultUnknownToken)
@@ -409,35 +389,34 @@ function TokenInput(props: TokenInputProps) {
         </GridItem>
 
         <GridItem area="input" color={colors.textPrimary} fontWeight={500} fontSize={sizes.inputText}>
-          <InputGroup sx={{ width }}>
-            <Input
-              variant="number"
-              inputMode="decimal"
-              sx={{ '& input[inputmode=decimal]': { opacity: 1 } }}
-              onChange={(e) => {
-                onChange?.(handleParseVal(e?.currentTarget?.value || ''))
-              }}
-              onFocus={handleFocus}
-              isDisabled={readonly || loading}
-              value={formatToRawLocaleStr(value)}
-              min={0}
-              width={width || '100%'}
-              opacity={loading ? 0.2 : 1}
-              id={id}
-              name={name}
-              textAlign="end"
-              fontWeight={500}
-              fontSize={sizes.inputText}
-              paddingX={0}
-              height="unset"
-              bg="transparent"
-              _focus={{ bg: 'transparent' }}
-              _hover={{ bg: 'transparent' }}
-              _active={{ bg: 'transparent' }}
-            />
-          </InputGroup>
+          <NumericFormat
+            inputMode="decimal"
+            decimalScale={token?.decimals}
+            value={typeof value === 'undefined' ? '' : value}
+            thousandSeparator={thousandSeparator}
+            decimalSeparator={detectedSeparator}
+            allowNegative={false}
+            valueIsNumericString
+            placeholder={''}
+            name={name}
+            onFocus={handleFocus}
+            disabled={readonly || loading}
+            min={0}
+            id={id}
+            onChange={(e) => {
+              const targetValue = e?.currentTarget?.value.replace(new RegExp(`\\${thousandSeparator}`, 'g'), '')
+              const rawValue = targetValue === '.' ? '0.' : targetValue
+              if (Number.isNaN(rawValue)) return
+              onChange?.(rawValue)
+            }}
+            style={{
+              textAlign: 'end',
+              background: 'transparent',
+              opacity: loading ? 0.2 : 1,
+              width: width || '100%'
+            }}
+          />
         </GridItem>
-
         <GridItem area="price" color={colors.textTertiary} fontSize={sizes.opacityVolume}>
           <Text textAlign="right">~{formatCurrency(totalPrice, { symbol: '$', maximumDecimalTrailingZeroes: 5 })}</Text>
         </GridItem>
