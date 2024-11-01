@@ -63,12 +63,13 @@
 
 
  <br>
- 
+
+
 ||||
 |:----------------------------------------:|:-----------------------------------------:|:-----------------------------------------: |
 | <img src="https://github.com/user-attachments/assets/7f393df5-fcd1-4148-8174-a4fb2b3d439b" width="70%" /> | <img src="https://github.com/user-attachments/assets/5b468454-04b9-46b2-97d4-a03e05d1705b" width="70%" />| <img src="https://github.com/user-attachments/assets/c6faba37-8c39-4934-bf22-86bad5c1ab7f" width="70%" /> |
 | <img src="https://github.com/user-attachments/assets/9674c7c6-0835-4351-85a8-e087f43499af" width="70%" /> | <img src="https://github.com/user-attachments/assets/e6e5ca7d-bceb-4399-8117-6a75e3eb0e97" width="70%" /> | <img src="https://github.com/user-attachments/assets/8e049ef4-3c59-4c9c-abce-c01fcdf8e265" width="70%" /> |
-|  <img src="https://github.com/user-attachments/assets/b6a94806-3671-46f3-9891-cc75e6f7eee1" width="70%" /> |
+|  <img src="https://github.com/user-attachments/assets/b6a94806-3671-46f3-9891-cc75e6f7eee1" width="70%" /> |  <img src="https://github.com/user-attachments/assets/3d71832b-a29e-476a-a964-68c6e6849d69" width="70%" />|
 <!--ABOUT US--->
 :zap: About Us:
 UltimateHealth is an innovative open-source project that aims to provide a comprehensive online library and article management application focused on health. The project is designed to cater to users looking for reliable and trustworthy information on various health-related topics.
