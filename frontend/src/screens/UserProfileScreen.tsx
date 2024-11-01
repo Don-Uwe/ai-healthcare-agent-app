@@ -15,9 +15,9 @@ import {useSelector} from 'react-redux';
 import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import ProfileHeader from '../components/ProfileHeader';
-import {GET_PROFILE_API} from '../helper/APIUtils';
+import {GET_PROFILE_API, UPDATE_VIEW_COUNT} from '../helper/APIUtils';
 import {ArticleData, UserProfileScreenProp, User} from '../type';
-import {useQuery} from '@tanstack/react-query';
+import {useMutation, useQuery} from '@tanstack/react-query';
 import axios from 'axios';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import Loader from '../components/Loader';
@@ -27,6 +27,9 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   const {user_token} = useSelector((state: any) => state.user);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const {authorId} = route.params;
+  const [articleId, setArticleId] = useState<number>();
+  //const [authorId, setAuthorId] = useState<string>('');
+
   const {
     data: user,
     refetch,
@@ -63,6 +66,63 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   const isDoctor = user !== undefined ? user.isDoctor : false;
   //const bottomBarHeight = useBottomTabBarHeight();
   const insets = useSafeAreaInsets();
+
+  const onArticleViewed = ({
+    articleId,
+    authorId,
+  }: {
+    articleId: number;
+    authorId: string;
+  }) => {
+    setArticleId(articleId);
+    //setAuthorId(authorId);
+
+    updateViewCountMutation.mutate({
+      articleId: Number(articleId),
+    });
+  };
+  const updateViewCountMutation = useMutation({
+    mutationKey: ['update-view-count-user-profile'],
+    mutationFn: async ({
+      articleId,
+    }: // authorId,
+    {
+      articleId: number;
+      //  authorId: string;
+    }) => {
+      if (user_token === '') {
+        Alert.alert('No token found');
+        return;
+      }
+      const res = await axios.post(
+        UPDATE_VIEW_COUNT,
+        {
+          article_id: articleId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user_token}`,
+          },
+        },
+      );
+
+      return res.data.article as ArticleData;
+    },
+    onSuccess: async data => {
+      console.log('Article Id', articleId);
+      console.log('Author Id', authorId);
+
+      navigation.navigate('ArticleScreen', {
+        articleId: Number(articleId),
+        authorId: authorId,
+      });
+    },
+
+    onError: error => {
+      console.log('Update View Count Error', error);
+      Alert.alert('Internal server error, try again!');
+    },
+  });
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -158,7 +218,12 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
               automaticallyAdjustContentInsets={true}
               contentInsetAdjustmentBehavior="always"
               contentContainerStyle={styles.scrollViewContentContainer}>
-              <ActivityOverview />
+              <ActivityOverview
+                onArticleViewed={onArticleViewed}
+                others={true}
+                userId={user?._id}
+                articlePosted={user.articles ? user.articles.length : 0}
+              />
             </Tabs.ScrollView>
           </Tabs.Tab>
           {/* Tab 2 */}

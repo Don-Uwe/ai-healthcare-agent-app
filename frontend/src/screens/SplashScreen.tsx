@@ -36,14 +36,24 @@ const SplashScreen = ({navigation}: SplashScreenProp) => {
         dispatch(setUserId(userId));
         dispatch(setUserToken(user));
 
-        navigation.navigate('TabNavigation');
+        navigation.reset({
+          index: 0,
+          routes: [{name: 'TabNavigation'}], // Send user to LoginScreen after logout
+        });
       } else {
         await clearStorage();
-        navigation.navigate('LoginScreen');
+        navigation.reset({
+          index: 0,
+          routes: [{name: 'LoginScreen'}], // Send user to LoginScreen after logout
+        });
       }
     } catch (error) {
       console.error('Error retrieving user data from storage', error);
-      navigation.navigate('LoginScreen'); // Navigate to LoginPage if there's an error
+      // navigation.navigate('LoginScreen'); // Navigate to LoginPage if there's an error
+      navigation.reset({
+        index: 0,
+        routes: [{name: 'LoginScreen'}], // Send user to LoginScreen after logout
+      });
     }
   };
 

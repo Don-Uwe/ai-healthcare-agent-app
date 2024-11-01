@@ -129,10 +129,12 @@ const ProfileHeader = ({
               username: username,
             });
           }}>
-          <View style={styles.btnSM}>
-            <MaterialIcons name="logout" size={20} color="black" />
-            <Text style={styles.btnSMText}>Logout</Text>
-          </View>
+          {other && (
+            <View style={styles.btnSM}>
+              <MaterialIcons name="logout" size={20} color="black" />
+              <Text style={styles.btnSMText}>Logout</Text>
+            </View>
+          )}
         </TouchableOpacity>
         <View style={styles.infoContainer}>
           {isDoctor ? (

@@ -167,10 +167,10 @@ const ArticleCard = ({item, navigation, success}: ArticleCardProps) => {
             {item?.authorName} {''}
           </Text>
           <Text style={{...styles.footerText, marginBottom: 3}}>
-            {item?.viewCount
-              ? item?.viewCount > 1
-                ? `${item?.viewCount} views`
-                : `${item?.viewCount} view`
+            {item?.viewUsers
+              ? item?.viewUsers.length > 1
+                ? `${item?.viewUsers.length} views`
+                : `${item?.viewUsers.length} view`
               : '0 view'}
           </Text>
           <Text style={styles.footerText}>

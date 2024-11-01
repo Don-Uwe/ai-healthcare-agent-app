@@ -271,6 +271,7 @@ export const removeItem = async key => {
 export const clearStorage = async () => {
   try {
     await AsyncStorage.clear();
+    //navigation.navigate('LoginScreen');
   } catch (error) {
     console.error('Error removing item:', error);
   }

@@ -18,6 +18,7 @@ const POST_ARTICLE = `${BASE_URL}/articles`;
 const GET_ARTICLE_BY_ID = `${BASE_URL}/articles`;
 const GET_USER_DETAILS_API = `${BASE_URL}/user/getdetails`;
 const UPDATE_USER_GENERAL_DETAILS = `${BASE_URL}/user/update-general-details`;
+const UPDATE_READ_EVENT = `${BASE_URL}/article/readEvent`;
 const UPDATE_USER_PASSWORD = `${BASE_URL}/user/update-password`;
 const UPDATE_USER_CONTACT_DETAILS = `${BASE_URL}/user/update-contact-details`;
 const UPDATE_USER_PROFESSIONAL_DETAILS = `${BASE_URL}/user/update-professional-details`;
@@ -27,6 +28,16 @@ const UPDATE_PROFILE_IMAGE = `${BASE_URL}/user/update-profile-image`;
 const GET_PROFILE_IMAGE_BY_ID = `${BASE_URL}/user/getprofileimage`;
 const GET_IMAGE = `${BASE_URL}/getfile`;
 const USER_LOGOUT = `${BASE_URL}/user/logout`;
+/** Analytics Part */
+const GET_TOTAL_LIKES_VIEWS = `${BASE_URL}/analytics/user-stats/`;
+const GET_TOTAL_READS = `${BASE_URL}/analytics/total-reads/`;
+const GET_TOTAL_WRITES = `${BASE_URL}/analytics/total-writes/`;
+const GET_MOSTLY_VIEWED = `${BASE_URL}/analytics/mostly-viewed/`;
+const GET_MONTHLY_READ_REPORT = `${BASE_URL}/analytics/monthly-reads/`;
+const GET_YEARLY_READ_REPORT = `${BASE_URL}/analytics/yearly-reads/`;
+const GET_MONTHLY_WRITES_REPORT = `${BASE_URL}/analytics/monthly-writes/`;
+const GET_YEARLY_WRITES_REPORT = `${BASE_URL}/analytics/yearly-writes/`;
+
 export {
   BASE_URL,
   LOGIN_API,
@@ -56,4 +67,13 @@ export {
   GET_PROFILE_IMAGE_BY_ID,
   GET_IMAGE,
   USER_LOGOUT,
+  UPDATE_READ_EVENT,
+  GET_TOTAL_LIKES_VIEWS,
+  GET_TOTAL_READS,
+  GET_TOTAL_WRITES,
+  GET_MOSTLY_VIEWED,
+  GET_MONTHLY_READ_REPORT,
+  GET_MONTHLY_WRITES_REPORT,
+  GET_YEARLY_READ_REPORT,
+  GET_YEARLY_WRITES_REPORT,
 };

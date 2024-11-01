@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
 import TabNavigation from './TabNavigation';
 import SplashScreen from '../screens/SplashScreen';
@@ -10,18 +10,61 @@ import NewPasswordScreen from '../screens/auth/NewPasswordScreen';
 import EditorScreen from '../screens/article/EditorScreen';
 import PreviewScreen from '../screens/article/PreviewScreen';
 import ArticleScreen from '../screens/article/ArticleScreen';
-import {TouchableOpacity, StyleSheet} from 'react-native';
+import {TouchableOpacity, StyleSheet, Alert, BackHandler} from 'react-native';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import Ionicon from 'react-native-vector-icons/Ionicons';
 import ArticleDescriptionScreen from '../screens/article/ArticleDescriptionScreen';
 import ProfileEditScreen from '../screens/ProfileEditScreen';
 import UserProfileScreen from '../screens/UserProfileScreen';
-import {RootStackParamList} from '../type';
+import {RootStackParamList, TabParamList} from '../type';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import LogoutScreen from '../screens/auth/LogoutScreen';
+import {useNavigation, NavigationProp} from '@react-navigation/native';
 const Stack = createStackNavigator<RootStackParamList>();
 
 const StackNavigation = () => {
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const nav = useNavigation<NavigationProp<TabParamList>>();
+
+  useEffect(() => {
+    const backAction = () => {
+      const currentRoute =
+        navigation?.getState()?.routes[navigation?.getState()?.index || 0]
+          ?.name;
+      const currTab = nav?.getState().routes[nav?.getState()?.index || 0]?.name;
+
+      console.log('Current Route', currentRoute);
+      console.log('Current Route', currTab);
+      if (
+        currentRoute === 'TabNavigation' ||
+        currentRoute === 'LoginScreen' ||
+        currTab === 'Home' ||
+        currTab === 'Podcasts' ||
+        currTab === 'Profile'
+      ) {
+        Alert.alert('Warning', 'Do you want to exit?', [
+          {text: 'No', onPress: () => null},
+          {text: 'Yes', onPress: () => BackHandler.exitApp()},
+        ]);
+        return true; // Prevent default behavior
+      } else if (navigation.canGoBack()) {
+        navigation.goBack(); // Allow back navigation for other screens
+      } else {
+        Alert.alert('Warning', 'Do you want to exit?', [
+          {text: 'No', onPress: () => null},
+          {text: 'Yes', onPress: () => BackHandler.exitApp()},
+        ]);
+        return true; // Prevent default behavior
+      }
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction,
+    );
+
+    return () => backHandler;
+  }, [navigation, nav]);
   return (
     <Stack.Navigator>
       <Stack.Screen

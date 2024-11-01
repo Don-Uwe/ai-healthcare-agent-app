@@ -22,6 +22,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
   const headerHeight = useHeaderHeight();
 
   // Effect to handle back navigation and show an exit confirmation alert
+  /*
   useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', e => {
       e.preventDefault();
@@ -30,7 +31,9 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
         'Do you want to exit',
         [
           {text: 'No', onPress: () => null},
-          {text: 'Yes', onPress: () => BackHandler.exitApp()},
+          {text: 'Yes', onPress: () => {
+            BackHandler.exitApp()
+          }},
         ],
         {cancelable: true},
       );
@@ -38,6 +41,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
 
     return unsubscribe;
   }, [navigation]);
+  */
 
   return (
     // Main container

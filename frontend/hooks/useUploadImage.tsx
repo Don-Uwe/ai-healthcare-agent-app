@@ -21,7 +21,7 @@ const useUploadImage = () => {
           'Content-Type': 'multipart/form-data',
         },
       });
-      return response.data.key;
+      return response.data.key as string;
     } catch (err) {
       console.error('Image upload failed', err);
       //throw err;

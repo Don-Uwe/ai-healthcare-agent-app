@@ -6,6 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
+  Image,
   Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -18,11 +19,13 @@ import axios, {AxiosError} from 'axios';
 import {REGISTRATION_API, VERIFICATION_MAIL_API} from '../../helper/APIUtils';
 import EmailVerifiedModal from '../../components/VerifiedModal';
 import Loader from '../../components/Loader';
+import Snackbar from 'react-native-snackbar';
+import useUploadImage from '../../../hooks/useUploadImage';
 var validator = require('email-validator');
 
 const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
   const {user} = route.params;
-
+  const {uploadImage, loading} = useUploadImage();
   const [specialization, setSpecialization] = useState('');
   const [education, setEducation] = useState('');
   const [experience, setExperience] = useState('');
@@ -34,7 +37,13 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
 
   const doctorRegisterMutation = useMutation({
     mutationKey: ['doctor-user-registration'],
-    mutationFn: async ({contactDetail}: {contactDetail: Contactdetail}) => {
+    mutationFn: async ({
+      contactDetail,
+      profile_url,
+    }: {
+      contactDetail: Contactdetail;
+      profile_url: string;
+    }) => {
       const res = await axios.post(REGISTRATION_API, {
         user_name: user.user_name,
         user_handle: user.user_handle,
@@ -44,7 +53,7 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
         specialization: specialization,
         qualification: education,
         Years_of_experience: experience,
-        Profile_image: '',
+        Profile_image: profile_url,
         contact_detail: contactDetail,
       });
       return res.data.token as string;
@@ -63,23 +72,28 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
             console.log('Error message', errorData);
             Alert.alert('Registration failed', 'Please try again');
             break;
-          case 409:
+          case 409: {
             Alert.alert(
               'Registration failed',
               'Email or user handle already exists',
             );
             break;
-          case 500:
+          }
+
+          case 500: {
             Alert.alert(
               'Registration failed',
               'Internal server error. Please try again later.',
             );
             break;
-          default:
+          }
+
+          default: {
             Alert.alert(
               'Registration failed',
               'Something went wrong. Please try again later.',
             );
+          }
         }
       } else {
         console.log('General User Registration Error', err);
@@ -166,7 +180,7 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
     } else if (validator.validate(businessEmail) === false) {
       Alert.alert('Please enter a valid mail id');
       return;
-    } else if (phone.length < 10 || !validPhoneNumber(phone)) {
+    } else if (phone.length < 10) {
       Alert.alert('Please enter a valid phone number');
       return;
     } else {
@@ -175,18 +189,65 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
           businessEmail && businessEmail !== '' ? businessEmail : user.email,
         phone_no: phone,
       };
-      doctorRegisterMutation.mutate({
-        contactDetail: contactDetail,
-      });
+
+      registerDoctor(contactDetail);
+      //doctorRegisterMutation.mutate({
+      //contactDetail: contactDetail,
+      //});
     }
   };
 
+  const registerDoctor = async (contactDetail: Contactdetail) => {
+    Alert.alert(
+      '',
+      'Are you sure you want to use this image?',
+      [
+        {
+          text: 'Cancel',
+          onPress: () => {
+            // setUserProfileImage(user?.Profile_image || '');
+            //setUserProfileImage('');
+            Snackbar.show({
+              text: 'Your profile image will not be uploaded.',
+              duration: Snackbar.LENGTH_SHORT,
+            });
+            doctorRegisterMutation.mutate({
+              contactDetail: contactDetail,
+              profile_url: '',
+            });
+          },
+          style: 'cancel',
+        },
+        {
+          text: 'OK',
+          onPress: async () => {
+            try {
+              // Upload the resized image
+              let result;
+              if (user.profile_image && user.profile_image !== '') {
+                result = await uploadImage(user.profile_image);
+              }
+              doctorRegisterMutation.mutate({
+                contactDetail: contactDetail,
+                profile_url: result ? result : '',
+              });
+              // setSubmitProfileUrl(result ? result : '');
+            } catch (err) {
+              console.error('Registration failed', err);
+              Alert.alert('Error Occured', 'Registration failed');
+            }
+          },
+        },
+      ],
+      {cancelable: false},
+    );
+  };
   const validPhoneNumber = phone => {
     const phoneNumberRegex = /^\+\d{1,3}\d{7,10}$/;
     return phoneNumberRegex.test(phone);
   };
 
-  if (doctorRegisterMutation.isPending || verifyMail.isPending) {
+  if (doctorRegisterMutation.isPending || verifyMail.isPending || loading) {
     return <Loader />;
   }
   return (
@@ -194,7 +255,7 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
       <TouchableOpacity
         style={{flex: 0, backgroundColor: PRIMARY_COLOR}}
         onPress={() => {
-          navigation.navigate('LoginScreen');
+          navigation.goBack();
         }}>
         <AntIcon name="arrowleft" size={35} color="white" />
       </TouchableOpacity>
@@ -209,6 +270,21 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
       </View>
       <View style={styles.footer}>
         <View style={styles.form}>
+          <View style={{alignSelf: 'center', marginBottom: 10}}>
+            {user.profile_image === '' ? (
+              <Icon name="person-add" size={70} color="#0CAFFF" />
+            ) : (
+              <Image
+                style={{
+                  height: 80,
+                  width: 80,
+                  borderRadius: 40,
+                  resizeMode: 'cover',
+                }}
+                source={{uri: user.profile_image}}
+              />
+            )}
+          </View>
           <View style={styles.field}>
             <TextInput
               style={styles.input}
@@ -303,11 +379,11 @@ const styles = StyleSheet.create({
     height: hp(36),
     paddingTop: 0,
     alignItems: 'center',
-    backgroundColor: '#0CAFFF',
+    backgroundColor: PRIMARY_COLOR,
   },
   footer: {
     flex: 1,
-    width: '90%',
+    width: '98%',
     alignSelf: 'center',
     backgroundColor: 'white',
     marginTop: -50,
@@ -330,7 +406,7 @@ const styles = StyleSheet.create({
   },
   form: {
     padding: 20,
-    marginTop: 60,
+    marginTop: 15,
   },
   field: {},
   input: {
@@ -354,7 +430,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'center',
     marginTop: 20,
-    width: '60%',
+    width: '90%',
   },
   buttonText: {
     color: '#fff',

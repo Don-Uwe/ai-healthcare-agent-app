@@ -3,11 +3,13 @@ import type {BottomTabScreenProps} from '@react-navigation/bottom-tabs';
 import type {StackScreenProps} from '@react-navigation/stack';
 import {Dispatch, RefObject, SetStateAction} from 'react';
 import {BottomSheetModal} from '@gorhom/bottom-sheet'; // Adjust this import based on your actual BottomSheetModal component
+import { Double } from 'react-native/Libraries/Types/CodegenTypes';
 
 export type RootStackParamList = {
+
   SplashScreen: undefined;
-  TabNavigation: undefined;
   LoginScreen: undefined;
+  TabNavigation: undefined;
   SignUpScreenFirst: undefined;
   SignUpScreenSecond: {user: UserDetail};
   OtpScreen: {email: string};
@@ -44,6 +46,7 @@ export type UserDetail = {
   user_handle: string;
   email: string;
   password: string;
+  profile_image: string;
 };
 export type TabParamList = {
   Home: undefined;
@@ -232,9 +235,37 @@ export type ArticleData = {
   lastUpdated: string;
   imageUtils: string[];
   viewCount: number;
+  viewUsers: User[];
   likeCount: number;
   likedUsers: User[];
   savedUsers: string[];
+};
+
+export type UserStatus = {
+  totalLikes: number;
+  totalViews: number;
+  likeProgress: number;
+  viewProgress: number;
+};
+
+export type ReadStatus = {
+  totalReads: number;
+  progress: number;
+};
+
+export type MonthStatus = {
+  date: string;
+  value: number;
+};
+
+export type YearStatus = {
+  month: string;
+  value: number;
+};
+
+export type WriteStatus = {
+  totalWrites: number;
+  progress: number;
 };
 
 export type CategoryType = {

@@ -3,6 +3,7 @@ import {
   StyleSheet,
   Text,
   View,
+  Image,
   TextInput,
   TouchableOpacity,
   ScrollView,
@@ -18,12 +19,22 @@ import {PRIMARY_COLOR} from '../../helper/Theme';
 import {SignUpScreenFirstProp, UserDetail} from '../../type';
 import {useMutation} from '@tanstack/react-query';
 import axios, {AxiosError} from 'axios';
+import Snackbar from 'react-native-snackbar';
 import {REGISTRATION_API, VERIFICATION_MAIL_API} from '../../helper/APIUtils';
 import EmailVerifiedModal from '../../components/VerifiedModal';
+import ImageResizer from '@bam.tech/react-native-image-resizer';
 import Loader from '../../components/Loader';
+import useUploadImage from '../../../hooks/useUploadImage';
+import {
+  ImageLibraryOptions,
+  launchImageLibrary,
+  ImagePickerResponse,
+} from 'react-native-image-picker';
 var validator = require('email-validator');
 
 const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
+  const {uploadImage, loading} = useUploadImage();
+  const [user_profile_image, setUserProfileImage] = useState('');
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -35,16 +46,50 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
   const [isFocus, setIsFocus] = useState(false);
   const [isSecureEntry, setIsSecureEntry] = useState(true);
 
+  const selectImage = async () => {
+    const options: ImageLibraryOptions = {
+      mediaType: 'photo',
+    };
+
+    launchImageLibrary(options, async (response: ImagePickerResponse) => {
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+      } else if (response.errorMessage) {
+        console.log('ImagePicker Error: ', response.errorMessage);
+      } else if (response.assets) {
+        const {uri, fileSize} = response.assets[0];
+
+        // Check file size (1 MB limit)
+        if (fileSize && fileSize > 1024 * 1024) {
+          Alert.alert('Error', 'File size exceeds 1 MB.');
+          return;
+        }
+
+        if (uri) {
+          ImageResizer.createResizedImage(uri, 1000, 1000, 'JPEG', 100)
+            .then(async resizedImageUri => {
+              setUserProfileImage(resizedImageUri.uri);
+            })
+            .catch(err => {
+              console.log(err);
+              Alert.alert('Error', 'Could not resize the image.');
+              setUserProfileImage('');
+            });
+        }
+      }
+    });
+  };
+
   const userRegisterMutation = useMutation({
     mutationKey: ['general-user-registration'],
-    mutationFn: async () => {
+    mutationFn: async ({profile_url}: {profile_url: string}) => {
       const res = await axios.post(REGISTRATION_API, {
         user_name: name,
         user_handle: username,
         email: email,
         password: password,
         isDoctor: false,
-        Profile_image: '',
+        Profile_image: profile_url,
       });
       return res.data.token as string;
     },
@@ -173,13 +218,15 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
     }
 
     if (role === 'general') {
-      userRegisterMutation.mutate();
+      registerGeneralUser();
+      // userRegisterMutation.mutate();
     } else {
       const detail: UserDetail = {
         user_name: name,
         user_handle: username,
         email: email,
         password: password,
+        profile_image: user_profile_image
       };
       navigation.navigate('SignUpScreenSecond', {
         user: detail,
@@ -187,12 +234,55 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
     }
   };
 
+  const registerGeneralUser = async () => {
+    Alert.alert(
+      '',
+      'Are you sure you want to use this image?',
+      [
+        {
+          text: 'Cancel',
+          onPress: () => {
+            // setUserProfileImage(user?.Profile_image || '');
+            setUserProfileImage('');
+            Snackbar.show({
+              text: 'Your profile image will not  be uploaded.',
+              duration: Snackbar.LENGTH_SHORT,
+            });
+            userRegisterMutation.mutate({
+              profile_url: '',
+            });
+          },
+          style: 'cancel',
+        },
+        {
+          text: 'OK',
+          onPress: async () => {
+            try {
+              // Upload the resized image
+              const result = await uploadImage(user_profile_image);
+              // console.log('Image uploaded:', result);
+              // After uploading, update the profile image with the returned URL
+              //  userProfileImageMutation.mutate(result);
+              userRegisterMutation.mutate({
+                profile_url: result ? result : '',
+              });
+              //setSubmitProfileUrl(result ? result : '');
+            } catch (err) {
+              console.error('Upload failed');
+              Alert.alert('Error', 'Upload failed');
+            }
+          },
+        },
+      ],
+      {cancelable: false},
+    );
+  };
   const data = [
     {label: 'General User', value: 'general'},
     {label: 'Doctor', value: 'doctor'},
   ];
 
-  if (userRegisterMutation.isPending || verifyMail.isPending) {
+  if (userRegisterMutation.isPending || verifyMail.isPending || loading) {
     return <Loader />;
   }
 
@@ -213,9 +303,21 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
 
       <View style={styles.footer}>
         <ScrollView>
-          <View style={styles.iconContainer}>
-            <Icon name="person-add" size={70} color="#0CAFFF" />
-          </View>
+          <TouchableOpacity onPress={selectImage} style={styles.iconContainer}>
+            {user_profile_image === '' ? (
+              <Icon name="person-add" size={70} color="#0CAFFF" />
+            ) : (
+              <Image
+                style={{
+                  height: 80,
+                  width: 80,
+                  borderRadius: 40,
+                  resizeMode: 'cover',
+                }}
+                source={{uri: user_profile_image}}
+              />
+            )}
+          </TouchableOpacity>
           <View style={styles.form}>
             <View style={styles.field}>
               <TextInput
@@ -322,9 +424,9 @@ const styles = StyleSheet.create({
   header: {
     width: '100%',
     height: hp(25),
-    paddingTop: 20,
+    paddingTop: 4,
     alignItems: 'center',
-    backgroundColor: '#0CAFFF',
+    backgroundColor: PRIMARY_COLOR,
   },
   footer: {
     flex: 1,
@@ -332,7 +434,7 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     alignSelf: 'center',
     backgroundColor: 'white',
-    marginTop: -50,
+    marginTop: -60,
     borderRadius: 10,
   },
   title: {
@@ -351,15 +453,16 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   form: {
-    padding: 20,
+    padding: 10,
   },
   field: {},
   input: {
     height: 40,
+    //width:'98%',
     borderColor: '#0CAFFF',
     borderWidth: 1,
     borderRadius: 5,
-    paddingHorizontal: 10,
+    paddingHorizontal: 6,
     marginBottom: 20,
     fontSize: 15,
   },
@@ -375,7 +478,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'center',
     marginTop: 20,
-    width: '60%',
+    width: '90%',
   },
   buttonText: {
     color: '#fff',

@@ -5,6 +5,7 @@
  * @format
  */
 
+
 import React from 'react';
 import {Platform, StatusBar, useColorScheme, View} from 'react-native';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
@@ -16,6 +17,7 @@ import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 
 const queryClient = new QueryClient();
 function App(): React.JSX.Element {
+  //const navigation = useNavigation();
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {

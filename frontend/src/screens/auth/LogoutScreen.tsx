@@ -12,13 +12,14 @@ import {PRIMARY_COLOR} from '../../helper/Theme';
 import {GET_STORAGE_DATA, USER_LOGOUT} from '../../helper/APIUtils';
 import {useMutation} from '@tanstack/react-query';
 import axios, {AxiosError} from 'axios';
-import {useSelector} from 'react-redux';
+import {resetUserState, setUserId, setUserToken} from '../../store/UserSlice';
+import {useDispatch, useSelector} from 'react-redux';
 import {clearStorage} from '../../helper/Utils';
 
 const LogoutScreen = ({navigation, route}) => {
   const {profile_image, username} = route.params;
   const {user_token} = useSelector((state: any) => state.user);
-
+  const dispatch = useDispatch();
   const userLogoutMutation = useMutation({
     mutationKey: ['user-logout'],
     mutationFn: async () => {
@@ -36,7 +37,13 @@ const LogoutScreen = ({navigation, route}) => {
     onSuccess: async () => {
       Alert.alert('Success', 'Logout successfully');
       await clearStorage();
-      navigation.navigate('LoginScreen');
+      dispatch(resetUserState());
+      //navigation.navigate('LoginScreen');
+      //navigation.replace('LoginScreen');
+      navigation.reset({
+        index: 0,
+        routes: [{name: 'LoginScreen'}], // Send user to LoginScreen after logout
+      });
     },
 
     onError: (err: AxiosError) => {

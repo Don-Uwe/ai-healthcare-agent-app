@@ -9,6 +9,7 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  Dimensions,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {useQuery, useMutation} from '@tanstack/react-query';
@@ -26,15 +27,18 @@ import {
   GET_PROFILE_IMAGE_BY_ID,
   GET_STORAGE_DATA,
   LIKE_ARTICLE,
+  UPDATE_READ_EVENT,
 } from '../../helper/APIUtils';
 import axios from 'axios';
 import Loader from '../../components/Loader';
 import {setArticle} from '../../store/articleSlice';
+import Snackbar from 'react-native-snackbar';
 
 const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const insets = useSafeAreaInsets();
   const {articleId, authorId} = route.params;
   const {user_id, user_token} = useSelector((state: any) => state.user);
+  const [readEventSave, setReadEventSave] = useState(false);
   const [webViewHeight, setWebViewHeight] = useState(0);
 
   const webViewRef = useRef<WebView>(null);
@@ -55,6 +59,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
       return response.data.article as ArticleData;
     },
   });
+
+  console.log('View Users', article?.viewUsers);
 
   const handleLike = () => {
     if (article) {
@@ -138,6 +144,50 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     },
   });
 
+  const updateReadEventMutation = useMutation({
+    mutationKey: ['update-read-event-status'],
+
+    mutationFn: async () => {
+      if (!user_token || user_token === '') {
+        Alert.alert('No token found');
+        return;
+      }
+      const res = await axios.post(
+        UPDATE_READ_EVENT,
+        {
+          article_id: article?._id,
+          //user_id: user_id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user_token}`,
+          },
+        },
+      );
+      return res.data as any;
+    },
+
+    onSuccess: () => {
+      console.log('Read Event Updated');
+      setReadEventSave(true);
+      //Alert.alert('Your Read status updated'); For debug purpose
+      Snackbar.show({
+        text: 'Your read status updated.',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+    },
+
+    onError: err => {
+      console.log('Update Read Status mutation error', err);
+      //Alert.alert('Try Again!');
+      //console.log('Follow Error', err);
+      Snackbar.show({
+        text: 'Failed to update your read status.',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+    },
+  });
+
   console.log('author id', authorId);
   const {data: authorFollowers, refetch: refetchFollowers} = useQuery({
     queryKey: ['authorFollowers'],
@@ -155,7 +205,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     },
   });
 
-  const {data: profile_image, refetch: refetchProfile} = useQuery({
+  const {data: profile_image} = useQuery({
     queryKey: ['author_profile_image'],
     queryFn: async () => {
       const response = await axios.get(
@@ -194,6 +244,18 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     <View style={styles.container}>
       <ScrollView
         style={styles.scrollView}
+        onScroll={e => {
+          var windowHeight = Dimensions.get('window').height,
+            height = e.nativeEvent.contentSize.height,
+            offset = e.nativeEvent.contentOffset.y;
+          if (windowHeight + offset >= height) {
+            //ScrollEnd,
+            console.log('ScrollEnd');
+            if (article && !readEventSave) {
+              updateReadEventMutation.mutate();
+            }
+          }
+        }}
         contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.imageContainer}>
           {article && article?.imageUtils && article?.imageUtils.length > 0 ? (
@@ -235,10 +297,10 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
         <View style={styles.contentContainer}>
           {article && (
             <Text style={{...styles.viewText, marginBottom: 10}}>
-              {article && article?.viewCount
-                ? article.viewCount > 1
-                  ? `${article.viewCount} views`
-                  : `${article.viewCount} view`
+              {article && article?.viewUsers.length
+                ? article.viewUsers.length > 1
+                  ? `${article.viewUsers.length} views`
+                  : `${article.viewUsers.length} view`
                 : '0 view'}
             </Text>
           )}
