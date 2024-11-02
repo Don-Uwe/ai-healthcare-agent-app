@@ -234,16 +234,16 @@ export default function PoolListItem({
                 {formatCurrency(pool.tvl, { symbol: '$', decimalPlaces: 0 })}
               </Text>
               <Box minWidth="22px">
-                {pool.burnPercent > 5 && (
+                {Math.abs(pool.burnPercent || 0) > 5 && (
                   <Tooltip
                     label={t('liquidity.total_locked_position', {
-                      percent: formatToRawLocaleStr(toPercentString(pool.burnPercent, { alreadyPercented: true }))
+                      percent: formatToRawLocaleStr(toPercentString(Math.abs(pool.burnPercent || 0), { alreadyPercented: true }))
                     })}
                   >
                     <CircularProgress
                       size="22px"
                       thickness="8px"
-                      value={pool.burnPercent}
+                      value={Math.abs(pool.burnPercent || 0)}
                       trackColor="rgba(191, 210, 255, 0.3)"
                       color={colors.lightPurple}
                     >

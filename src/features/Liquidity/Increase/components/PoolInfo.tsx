@@ -38,7 +38,7 @@ export default function PoolInfo({ pool }: { pool?: FormattedPoolInfoStandardIte
 
   const feeApr = pool?.allApr.week.find((s) => s.isTradingFee)
   const rewardApr = pool?.allApr.week.filter((s) => !s.isTradingFee && !!s.token) || []
-  const hasLockedLiquidity = pool && pool.burnPercent > 0
+  const hasLockedLiquidity = pool && Math.abs(pool.burnPercent || 0) > 0
   const aprData = useMemo(
     () => ({
       fee: {
@@ -164,7 +164,7 @@ export default function PoolInfo({ pool }: { pool?: FormattedPoolInfoStandardIte
             <LockIcon color={colors.textSecondary} />
             <Text color={colors.textSecondary} opacity={0.6} fontSize="xs">
               {t('liquidity.locked_percent', {
-                percent: formatToRawLocaleStr(toPercentString(pool.burnPercent || 0, { alreadyPercented: true }))
+                percent: formatToRawLocaleStr(toPercentString(Math.abs(pool.burnPercent || 0), { alreadyPercented: true }))
               })}
             </Text>
           </HStack>
