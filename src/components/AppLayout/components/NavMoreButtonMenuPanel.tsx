@@ -6,6 +6,7 @@ import DocThumbnailIcon from '@/icons/pageNavigation/DocThumbnailIcon'
 import FeedbackThumbnailIcon from '@/icons/pageNavigation/FeedbackThumbnailIcon'
 import StakingPageThumbnailIcon from '@/icons/pageNavigation/StakingPageThumbnailIcon'
 import BridgePageThumbnailIcon from '@/icons/pageNavigation/BridgePageThumbnailIcon'
+import DisclaimerThumbnailIcon from '@/icons/pageNavigation/DisclaimerThumbnailIcon'
 import { colors } from '@/theme/cssVariables'
 import { Box, Flex, HStack, MenuDivider, MenuItem, MenuList, Text, Link } from '@chakra-ui/react'
 import NextLink from 'next/link'
@@ -34,6 +35,15 @@ export function NavMoreButtonMenuPanel() {
           </Link>
         </MenuItem>
         <MenuDivider />
+        <MenuItem>
+          <Link as={NextLink} href="/docs/disclaimer" _hover={{ textDecoration: 'none' }} w="full" isExternal>
+            <HStack>
+              <DisclaimerThumbnailIcon />
+              <Text>{t('disclaimer.title')}</Text>
+              <ExternalLink color={colors.textSecondary} />
+            </HStack>
+          </Link>
+        </MenuItem>
         <MenuItem>
           <Link as={NextLink} href="https://docs.raydium.io/raydium/" _hover={{ textDecoration: 'none' }} w="full" isExternal>
             <HStack>

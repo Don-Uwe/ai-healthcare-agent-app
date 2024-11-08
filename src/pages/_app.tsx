@@ -21,7 +21,7 @@ const DynamicProviders = dynamic(() => import('@/provider').then((mod) => mod.Pr
 const DynamicContent = dynamic(() => import('@/components/Content'))
 const DynamicAppNavLayout = dynamic(() => import('@/components/AppLayout/AppNavLayout'))
 
-const CONTENT_ONLY_PATH = ['/', '404', '/docs/disclaimer', '/moonpay']
+const CONTENT_ONLY_PATH = ['/', '404', '/moonpay']
 const OVERFLOW_HIDDEN_PATH = ['/liquidity-pools']
 
 Decimal.set({ precision: 1e3 })
