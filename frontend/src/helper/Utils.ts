@@ -12,6 +12,15 @@ export const checkInternetConnection = (
   return unsubscribe;
 };
 
+export function formatCount(count: number) {
+  if (count < 1000) {
+    return count.toString();
+  } else if (count < 1000000) {
+    return Math.floor(count / 1000) + 'k';
+  } else {
+    return Math.floor(count / 1000000) + 'M';
+  }
+}
 export const Categories: CategoryType[] = [
   {id: 1, name: 'Cardiology'},
   {id: 2, name: 'Neurology'},
@@ -526,8 +535,20 @@ export const KEYS = {
   USER_ID: 'USER_ID',
   USER_TOKEN: 'USER_TOKEN',
   USER_TOKEN_EXPIRY_DATE: 'USER_TOKEN_EXPIRY_DATE',
+  VULTR_CHAT_MODEL:'zephyr-7b-beta-f32',
+  VULTR_COLLECTION:'care_companion'
 };
 
+export const VULTR_CHAT_ROLES = {
+  'user': 'user',
+  'system':'system',
+  'assistant':'assistant'
+};
+export const VULTR_CHAT_PROFILE_AVTARS = {
+   'user':'',
+   'system':'',
+   'assistant':'https://static.vecteezy.com/system/resources/previews/026/309/247/non_2x/robot-chat-or-chat-bot-logo-modern-conversation-automatic-technology-logo-design-template-vector.jpg'
+}
 export const createHTMLStructure = (
   title: string,
   body: string,

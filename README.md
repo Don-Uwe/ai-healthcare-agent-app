@@ -127,8 +127,16 @@ Users can also listen to articles (audio features) if they prefer. The Chat Sect
  *  Profile API Integration 
  *  Article API Integration 
  *  Search & Filter Feature 
- *  User Insights
+ *  User Insights 
  *  Article Post via file upload
+ *  Edit Or Update Article
+ *  Review Team
+ *  Push Notification
+
+   // Phase II (Initial Implementation Vultr Hackathon)
+ *  Chat (Comment, Share on the article)
+ *  Chat With AI
+   
 
   </details>
 

@@ -11,6 +11,9 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {View} from 'react-native';
 import {TabParamList} from '../type';
+import ChatbotScreen from '../screens/ChatbotScreen';
+import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
+
 const Tab = createBottomTabNavigator<TabParamList>();
 const TabNavigation = () => {
   return (
@@ -60,6 +63,35 @@ const TabNavigation = () => {
             </View>
           ),
         }}
+      />
+      <Tab.Screen
+        name="Chatbot"
+        component={ChatbotScreen}
+        options={({navigation}) => ({
+          headerTitleAlign: 'center',
+          title: 'Chatbot',
+          headerShown: true,
+          headerBackTitleVisible: false,
+          headerShadowVisible: false,
+          tabBarHideOnKeyboard: true,
+          headerLeft: () => (
+            <TouchableOpacity
+              style={{
+                marginLeft: 15,
+                height: 40,
+                width: 40,
+                borderRadius: 50,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'white',
+              }}
+              onPress={() => {
+                navigation.goBack();
+              }}>
+              <FontAwesome6 size={20} name="arrow-left" color="black" />
+            </TouchableOpacity>
+          ),
+        })}
       />
       <Tab.Screen
         name="Profile"

@@ -23,7 +23,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
   //const fallback_profile = require('../assets/avatar.jpg');
   //const user_fallback_profile = Image.resolveAssetSource(fallback_profile).uri;
 
-  //console.log('user fallback profile', user_fallback_profile);
+  console.log('user fallback profile', user_token);
 
   const {
     data: user,

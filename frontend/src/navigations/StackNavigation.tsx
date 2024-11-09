@@ -219,6 +219,34 @@ const StackNavigation = () => {
           headerShown: false,
         }}
       />
+      {/* <Stack.Screen
+        name="ChatbotScreen"
+        component={ChatbotScreen}
+        options={({navigation}) => ({
+          headerTitleAlign: 'center',
+          title: 'Chatbot',
+          headerShown: true,
+          headerBackTitleVisible: false,
+          headerShadowVisible: false,
+          headerLeft: () => (
+            <TouchableOpacity
+              style={{
+                marginLeft: 15,
+                height: 40,
+                width: 40,
+                borderRadius: 50,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'white',
+              }}
+              onPress={() => {
+                navigation.goBack();
+              }}>
+              <FontAwesome6 size={20} name="arrow-left" color="black" />
+            </TouchableOpacity>
+          ),
+        })}
+      /> */}
     </Stack.Navigator>
   );
 };
@@ -240,6 +268,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 6,
     borderRadius: 50,
+  },
+  dropdown: {
+    height: 40,
+    // borderColor: '#0CAFFF',
+    // borderWidth: 1,
+    borderRadius: 100,
+    paddingHorizontal: 17,
+    marginBottom: 20,
+    paddingRight: 12,
+    width: 150,
+    backgroundColor: 'rgb(229, 233, 241)',
+  },
+  placeholderStyle: {
+    fontSize: 15,
+    color: 'black',
   },
 });
 export default StackNavigation;

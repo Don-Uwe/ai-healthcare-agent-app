@@ -24,6 +24,7 @@ import {
   UPDATE_VIEW_COUNT,
 } from '../helper/APIUtils';
 import {PRIMARY_COLOR} from '../helper/Theme';
+import { formatCount } from '../helper/Utils';
 
 const ArticleCard = ({item, navigation, success}: ArticleCardProps) => {
   const {user_token, user_id} = useSelector((state: any) => state.user);
@@ -61,6 +62,8 @@ const ArticleCard = ({item, navigation, success}: ArticleCardProps) => {
       Alert.alert('Internal server error, try again!');
     },
   });
+
+
 
   const updateSaveStatusMutation = useMutation({
     mutationKey: ['update-view-count'],
@@ -169,7 +172,8 @@ const ArticleCard = ({item, navigation, success}: ArticleCardProps) => {
           <Text style={{...styles.footerText, marginBottom: 3}}>
             {item?.viewUsers
               ? item?.viewUsers.length > 1
-                ? `${item?.viewUsers.length} views`
+
+                ? `${formatCount(item?.viewUsers.length)} views`
                 : `${item?.viewUsers.length} view`
               : '0 view'}
           </Text>
@@ -193,7 +197,7 @@ const ArticleCard = ({item, navigation, success}: ArticleCardProps) => {
                   <AntDesign name="hearto" size={26} color={'black'} />
                 )}
                 <Text style={{...styles.title, marginStart: 3}}>
-                  {item.likedUsers.length}
+                  {formatCount(item.likedUsers.length)}
                 </Text>
               </TouchableOpacity>
             )}
