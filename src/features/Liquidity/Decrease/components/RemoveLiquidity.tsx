@@ -1,4 +1,4 @@
-import { Box, Flex, SimpleGrid, Text } from '@chakra-ui/react'
+import { Box, Flex, Text } from '@chakra-ui/react'
 import { useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -38,6 +38,7 @@ export default function UnStakeLiquidity({
   onRefresh: () => void
 }) {
   const { t } = useTranslation()
+  const isMobile = useAppStore((s) => s.isMobile)
   const featureDisabled = useAppStore((s) => s.featureDisabled.removeStandardPosition)
   const epochInfo = useRefreshEpochInfo()
   const removeLiquidityAct = useLiquidityStore((s) => s.removeLiquidityAct)
@@ -132,13 +133,15 @@ export default function UnStakeLiquidity({
       <Flex justifyContent="space-between" align="center" py="6" px="4" bg={colors.backgroundDark} borderRadius="12px">
         <Flex gap="2" alignItems="center">
           <TokenAvatarPair token1={poolInfo?.mintA} token2={poolInfo?.mintB} />
-          <Text variant="title" fontSize="xl" color={colors.textSecondary}>
+          <Text variant="title" fontSize={['sm', 'xl']} color={colors.textSecondary}>
             {poolInfo?.poolName.replace(' - ', '/')}
           </Text>
         </Flex>
         <Box textAlign="right">
-          <Text fontSize="28px">{formatCurrency(removeValue.toString(), { symbol: '$', maximumDecimalTrailingZeroes: 2 })}</Text>
-          <Text variant="label">{formatCurrency(removeAmount.toString(), { decimalPlaces: poolInfo?.lpMint.decimals })} LP</Text>
+          <Text fontSize={['sm', '28px']}>{formatCurrency(removeValue.toString(), { symbol: '$', maximumDecimalTrailingZeroes: 2 })}</Text>
+          <Text variant="label">
+            {formatCurrency(removeAmount.toString(), { decimalPlaces: isMobile ? 6 : poolInfo?.lpMint.decimals })} LP
+          </Text>
         </Box>
       </Flex>
       <AmountSlider isDisabled={featureDisabled || liquidity.isZero()} percent={removePercent} onChange={setRemovePercent} mt={4} />
@@ -162,18 +165,17 @@ export default function UnStakeLiquidity({
         <Flex alignItems="center" gap="1" fontSize="sm">
           <TokenAvatarPair mr="1" token1={poolInfo?.mintA} token2={poolInfo?.mintB} />
           {formatCurrency(withdrawAmountAFee, {
-            decimalPlaces: poolInfo?.mintA.decimals
+            decimalPlaces: isMobile ? 3 : poolInfo?.mintA.decimals
           })}{' '}
           <Text fontSize="sm" variant="label">
             {poolInfo?.mintA.symbol}
           </Text>
           <Box>/</Box>
-          {formatCurrency(withdrawAmountBFee, { decimalPlaces: poolInfo?.mintB.decimals })}{' '}
+          {formatCurrency(withdrawAmountBFee, { decimalPlaces: isMobile ? 3 : poolInfo?.mintB.decimals })}{' '}
           <Text fontSize="sm" variant="label">
             {poolInfo?.mintB.symbol}
           </Text>
         </Flex>
-        <SimpleGrid columns={2} rowGap="6px" columnGap="44px"></SimpleGrid>
       </Box>
       <Button mt={10} isLoading={isTxSending} isDisabled={featureDisabled || !poolInfo || removeAmount.isZero()} onClick={handleRemove}>
         {featureDisabled ? t('common.disabled') : t('liquidity.remove_liquidity')}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, MouseEvent, KeyboardEvent, useRef, useDeferredValue } from 'react'
+import { useState, useEffect, useMemo, useCallback, MouseEvent, KeyboardEvent, useRef, useDeferredValue, forwardRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Box, BoxProps, Flex, Text, Input, Popover, PopoverAnchor, PopoverContent, PopoverBody, HStack } from '@chakra-ui/react'
 import { ApiV3Token, solToWSol } from '@raydium-io/raydium-sdk-v2'
@@ -23,14 +23,10 @@ type SearchBarProps = {
   hideAutoComplete?: boolean
 } & Omit<BoxProps, 'value' | 'onChange'>
 
-export default function TokenSearchInput({
-  value,
-  onChange,
-  hideAutoComplete,
-  selectedListValue,
-  onSelectedListChange,
-  ...boxProps
-}: SearchBarProps) {
+export default forwardRef(function TokenSearchInput(
+  { value, onChange, hideAutoComplete, selectedListValue, onSelectedListChange, ...boxProps }: SearchBarProps,
+  searchRef
+) {
   const { t } = useTranslation()
   const [displayTokenList, tokenMap, setExtraTokenListAct, setDisplayTokenListAct] = useTokenStore(
     (s) => [s.displayTokenList, s.tokenMap, s.setExtraTokenListAct, s.setDisplayTokenListAct],
@@ -108,6 +104,14 @@ export default function TokenSearchInput({
     if (!selectedList.length || !value) return
     if (selectedList.some((t) => t.address === value)) onChange('')
   }, [value, selectedList, onChange])
+
+  useEffect(() => {
+    if (typeof searchRef === 'function') {
+      searchRef(anchorRef.current)
+    } else if (searchRef) {
+      searchRef.current = anchorRef.current
+    }
+  }, [searchRef])
 
   const _filteredList = useMemo(() => {
     if (!searchValue) return []
@@ -336,7 +340,7 @@ export default function TokenSearchInput({
       </Popover>
     </Box>
   )
-}
+})
 
 function TokenTag(props: { token: ApiV3Token; handleRemove: (e: MouseEvent<HTMLDivElement>) => void; idx: number }) {
   return (

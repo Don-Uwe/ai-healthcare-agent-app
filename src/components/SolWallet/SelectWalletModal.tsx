@@ -40,6 +40,7 @@ import { Wallet } from '@solana/wallet-adapter-react'
 import { useState, useCallback } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import NextLink from 'next/link'
+import { useAppStore } from '@/store'
 
 interface Props {
   wallets: Wallet[]
@@ -52,6 +53,7 @@ interface Props {
 
 export default function SelectWalletModal({ wallets, isOpen, onSelectWallet, onClose }: Props) {
   const { t } = useTranslation()
+  const isMobile = useAppStore((s) => s.isMobile)
   /*
   const networks: Network[] = [
     { name: 'Solana', icon: <SolanaNetworkIcon /> },
@@ -177,9 +179,17 @@ export default function SelectWalletModal({ wallets, isOpen, onSelectWallet, onC
               </HStack>
             </Box> */}
               <Box mb={6} flex={'1'} overflowY={'scroll'}>
-                <Text fontSize={['sm', 'md']} color={colors.textPrimary} fontWeight={500} mb={4}>
-                  {t('wallet_connect_panel.choose_wallet')}
-                </Text>
+                <HStack justifyContent="space-between">
+                  <Text fontSize={['sm', 'md']} color={colors.textPrimary} fontWeight={500} mb={4}>
+                    {t('wallet_connect_panel.choose_wallet')}
+                  </Text>
+                  {isMobile && (
+                    <Flex color={colors.textSecondary} fontSize="sm" fontWeight={500} justify="space-between" gap={1} mb={4}>
+                      <Text>{t('wallet_connect_panel.show_uninstalled')}</Text>
+                      <Switch checked={canShowUninstalledWallets} onChange={() => setCanShowUninstalledWallets((b) => !b)} />
+                    </Flex>
+                  )}
+                </HStack>
                 {/* have divider  */}
                 <SimpleGrid gridTemplateColumns={['1fr', '1fr 1fr']} rowGap={['10px', 3]} columnGap={4}>
                   {recommendedWallets.map((wallet) => (
@@ -212,53 +222,64 @@ export default function SelectWalletModal({ wallets, isOpen, onSelectWallet, onC
                   </SimpleGrid>
                 </Collapse>
               </Box>
-              <Flex
-                bg={colors.backgroundTransparent07}
-                color={colors.textSecondary}
-                fontSize="sm"
-                fontWeight={500}
-                justify="space-between"
-                rounded="xl"
-                py={4}
-                px={5}
-                mb={3}
-              >
-                <HStack>
-                  <WalletSelectWalletIcon />
-                  <Text>{t('wallet_connect_panel.show_uninstalled_wallets')}</Text>
-                </HStack>
-                <Switch checked={canShowUninstalledWallets} onChange={() => setCanShowUninstalledWallets((b) => !b)} />
-              </Flex>
-              <Flex
-                bg={colors.backgroundTransparent07}
-                color={colors.textSecondary}
-                fontSize="sm"
-                fontWeight={500}
-                justify="space-between"
-                rounded="xl"
-                py={4}
-                px={5}
-              >
-                <HStack>
-                  <WalletSelectEggIcon />
-                  <Text>{t('wallet_connect_panel.tour_title')}</Text>
-                </HStack>
-                <Link as={NextLink} href="https://docs.raydium.io/raydium/" _hover={{ textDecoration: 'none' }} isExternal>
+              {!isMobile && (
+                <Flex
+                  bg={colors.backgroundTransparent07}
+                  color={colors.textSecondary}
+                  fontSize="sm"
+                  fontWeight={500}
+                  justify="space-between"
+                  rounded="xl"
+                  py={4}
+                  px={5}
+                  mb={3}
+                >
                   <HStack>
-                    <Text>{t('wallet_connect_panel.tour_desc')}</Text>
-                    <ChevronRightIcon width={'14px'} height={'14px'} />
+                    <WalletSelectWalletIcon />
+                    <Text>{t('wallet_connect_panel.show_uninstalled_wallets')}</Text>
                   </HStack>
-                </Link>
-              </Flex>
-              <Flex justifyContent="center" alignItems="center" color={colors.lightPurple} pt={4}>
-                <Text fontSize="xs">{t('wallet_connect_panel.buy_crypto_with_fiat')}</Text>
-                <MoonpayBuy>
-                  <HStack gap={0}>
-                    <MoonPayIconWithText />
-                    <ChevronRightIcon width={'16px'} height={'16px'} />
+                  <Switch checked={canShowUninstalledWallets} onChange={() => setCanShowUninstalledWallets((b) => !b)} />
+                </Flex>
+              )}
+              <Box
+                bg={isMobile ? colors.backgroundLight : 'transparent'}
+                position={isMobile ? 'fixed' : 'unset'}
+                bottom={isMobile ? '0' : 'unset'}
+                left={isMobile ? '0' : 'unset'}
+                right={isMobile ? '0' : 'unset'}
+              >
+                <Flex
+                  bg={isMobile ? 'transparent' : colors.backgroundTransparent07}
+                  color={colors.textSecondary}
+                  fontSize="sm"
+                  fontWeight={500}
+                  justify={isMobile ? 'center' : 'space-between'}
+                  rounded="xl"
+                  gap={isMobile ? 1 : 0}
+                  py={4}
+                  px={5}
+                >
+                  <HStack>
+                    <WalletSelectEggIcon />
+                    <Text>{t('wallet_connect_panel.tour_title')}</Text>
                   </HStack>
-                </MoonpayBuy>
-              </Flex>
+                  <Link as={NextLink} href="https://docs.raydium.io/raydium/" _hover={{ textDecoration: 'none' }} isExternal>
+                    <HStack gap={1}>
+                      <Text>{t('wallet_connect_panel.tour_desc')}</Text>
+                      <ChevronRightIcon width={'14px'} height={'14px'} />
+                    </HStack>
+                  </Link>
+                </Flex>
+                <Flex justifyContent="center" alignItems="center" color={colors.lightPurple} pt={isMobile ? 0 : 4} mb={isMobile ? 6 : 0}>
+                  <Text fontSize="xs">{t('wallet_connect_panel.buy_crypto_with_fiat')}</Text>
+                  <MoonpayBuy>
+                    <HStack gap={0}>
+                      <MoonPayIconWithText />
+                      <ChevronRightIcon width={'16px'} height={'16px'} />
+                    </HStack>
+                  </MoonpayBuy>
+                </Flex>
+              </Box>
             </Box>
           </ModalBody>
         )}

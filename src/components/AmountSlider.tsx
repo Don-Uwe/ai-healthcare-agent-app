@@ -5,6 +5,7 @@ import { Box, BoxProps, Button, HStack, Slider, SliderFilledTrack, SliderThumb, 
 import { ReactNode, RefObject, useEffect, useState, useImperativeHandle } from 'react'
 import { Menu } from 'react-feather'
 import { useTranslation } from 'react-i18next'
+import { Desktop, Mobile } from '@/components/MobileDesktop'
 
 export type AmountSliderProps = {
   percent?: number
@@ -68,6 +69,75 @@ export default function AmountSlider({
           </Text>
         </HStack>
 
+        <Desktop>
+          <HStack spacing={sizes.buttonSpace}>
+            <Button
+              variant="rect-rounded-radio"
+              size="xs"
+              isDisabled={isDisabled}
+              onClick={() => {
+                setHotPercent(25)
+                setPercent(25)
+              }}
+            >
+              25%
+            </Button>
+            <Button
+              variant="rect-rounded-radio"
+              size="xs"
+              isDisabled={isDisabled}
+              onClick={() => {
+                setHotPercent(50)
+                setPercent(50)
+              }}
+            >
+              50%
+            </Button>
+            <Button
+              variant="rect-rounded-radio"
+              size="xs"
+              isDisabled={isDisabled}
+              onClick={() => {
+                setHotPercent(75)
+                setPercent(75)
+              }}
+            >
+              75%
+            </Button>
+            <Button
+              variant="rect-rounded-radio"
+              size="xs"
+              isDisabled={isDisabled}
+              onClick={() => {
+                setHotPercent(100)
+                setPercent(100)
+              }}
+            >
+              100%
+            </Button>
+          </HStack>
+        </Desktop>
+      </HStack>
+      {/* <Box paddingX={0}> */}
+      <Box paddingX={3}>
+        <Slider
+          focusThumbOnChange={false}
+          value={hotPercent}
+          isDisabled={isDisabled}
+          onChange={(percent) => {
+            setHotPercent(percent)
+          }}
+          onChangeEnd={(percent) => setPercent(percent)}
+        >
+          <SliderTrack>
+            <SliderFilledTrack />
+          </SliderTrack>
+          <SliderThumb>
+            <Menu width={'12px'} height={'12px'} color={colors.backgroundDark}></Menu>
+          </SliderThumb>
+        </Slider>
+      </Box>
+      <Mobile>
         <HStack spacing={sizes.buttonSpace}>
           <Button
             variant="rect-rounded-radio"
@@ -114,42 +184,7 @@ export default function AmountSlider({
             100%
           </Button>
         </HStack>
-      </HStack>
-      {/* <Box paddingX={0}> */}
-      <Box paddingX={3}>
-        <Slider
-          focusThumbOnChange={false}
-          value={hotPercent}
-          isDisabled={isDisabled}
-          onChange={(percent) => {
-            setHotPercent(percent)
-          }}
-          onChangeEnd={(percent) => setPercent(percent)}
-        >
-          {/* <SliderMark value={0} sx={{ '--tx': '-0%' }}>
-        0%
-      </SliderMark>
-      <SliderMark value={25} sx={{ '--tx': '-25%' }}>
-        25%
-      </SliderMark>
-      <SliderMark value={50} sx={{ '--tx': '-50%' }}>
-        50%
-      </SliderMark>
-      <SliderMark value={75} sx={{ '--tx': '-75%' }}>
-        75%
-      </SliderMark>
-      <SliderMark value={100} sx={{ '--tx': '-100%' }}>
-        100%
-      </SliderMark> */}
-
-          <SliderTrack>
-            <SliderFilledTrack />
-          </SliderTrack>
-          <SliderThumb>
-            <Menu width={'12px'} height={'12px'} color={colors.backgroundDark}></Menu>
-          </SliderThumb>
-        </Slider>
-      </Box>
+      </Mobile>
     </Box>
   )
 }

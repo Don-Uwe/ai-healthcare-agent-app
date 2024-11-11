@@ -1,12 +1,10 @@
-import { Flex, Text, CircularProgress, CircularProgressLabel, HStack } from '@chakra-ui/react'
+import { Flex, Text, HStack } from '@chakra-ui/react'
 import { useTranslation } from 'react-i18next'
 
 import { colors } from '@/theme/cssVariables'
-import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
-import toPercentString from '@/utils/numberish/toPercentString'
+import { formatCurrency } from '@/utils/numberish/formatter'
 import { QuestionToolTip } from '@/components/QuestionToolTip'
-import Tooltip from '@/components/Tooltip'
-import LiquidityLockIcon from '@/icons/misc/LiquidityLockIcon'
+import LockPercentCircle from '@/components/LockPercentCircle'
 
 type MyPositionProps = {
   positionUsd: number | string
@@ -37,23 +35,13 @@ export default function LockedPosition({ positionUsd, burnPercent }: MyPositionP
       <Flex fontSize="lg" color={colors.textPrimary} fontWeight="medium" gap="1" align="center">
         {formatCurrency(positionUsd, { symbol: '$', abbreviated: true, decimalPlaces: 2 })}
         {burnPercent > 5 && (
-          <Tooltip
-            label={t('liquidity.total_locked_position', {
-              percent: formatToRawLocaleStr(toPercentString(burnPercent, { alreadyPercented: true }))
-            })}
-          >
-            <CircularProgress
-              size="16px"
-              thickness="8px"
-              value={burnPercent}
-              trackColor="rgba(191, 210, 255, 0.3)"
-              color={colors.lightPurple}
-            >
-              <CircularProgressLabel display="flex" justifyContent="center">
-                <LiquidityLockIcon width={10} height={10} />
-              </CircularProgressLabel>
-            </CircularProgress>
-          </Tooltip>
+          <LockPercentCircle
+            value={burnPercent}
+            iconProps={{
+              width: 10,
+              height: 10
+            }}
+          />
         )}
       </Flex>
     </Flex>

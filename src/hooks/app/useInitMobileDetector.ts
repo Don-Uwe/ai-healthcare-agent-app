@@ -1,13 +1,13 @@
 import { useEffect } from 'react'
-import { useDiviceInfoDetector } from '../useMobileDetector'
+import { useDeviceInfoDetector } from '../useMobileDetector'
 import { useAppStore } from '@/store'
 
 export default function useInitMobileDetector() {
-  const { isMobile, isLaptop } = useDiviceInfoDetector()
+  const { isMobile, isDesktop } = useDeviceInfoDetector()
   useEffect(() => {
     useAppStore.setState({ isMobile })
   }, [isMobile])
   useEffect(() => {
-    useAppStore.setState({ isLaptop })
-  }, [isLaptop])
+    useAppStore.setState({ isDesktop })
+  }, [isDesktop])
 }

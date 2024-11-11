@@ -24,7 +24,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import React, { ReactNode, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import MobileDesktop, { Desktop, Mobile } from '../MobileDesktop'
+import { Desktop, Mobile } from '../MobileDesktop'
 import SolWallet from '../SolWallet'
 import { MobileBottomNavbar } from './MobileBottomNavbar'
 import { ColorThemeSettingField } from './components/ColorThemeSettingField'
@@ -35,7 +35,6 @@ import { RPCConnectionSettingField } from './components/RPCConnectionSettingFiel
 import { Divider } from './components/SettingFieldDivider'
 import { SlippageToleranceSettingField } from './components/SlippageToleranceSettingField'
 import { VersionedTransactionSettingField } from './components/VersionedTransactionSettingField'
-// import { TransactionFeeSetting } from './components/TransactionFeeSetting'
 import { PriorityButton } from './components/PriorityButton'
 import DisclaimerModal from './components/DisclaimerModal'
 import AppVersion from './AppVersion'
@@ -98,18 +97,9 @@ function AppNavLayout({
         {/* nav routes */}
         <Desktop>
           <HStack flexGrow={1} justify="start" overflow={['auto', 'visible']} gap={15}>
-            <RouteLink href="/swap" isActive={pathname === '/swap'}>
-              {t('swap.title')}
-            </RouteLink>
-            <RouteLink href="/liquidity-pools" isActive={pathname.includes('/liquidity')}>
-              {t('liquidity.title')}
-            </RouteLink>
-            <RouteLink href="/portfolio" isActive={pathname === '/portfolio'}>
-              {t('portfolio.title')}
-            </RouteLink>
-            {/* <RouteLink href="/playground" isActive={pathname === '/playground'}>
-              {t('common.playground')}
-            </RouteLink> */}
+            <RouteLink href="/swap" isActive={pathname === '/swap'} title={t('swap.title')} />
+            <RouteLink href="/liquidity-pools" isActive={pathname.includes('/liquidity')} title={t('liquidity.title')} />
+            <RouteLink href="/portfolio" isActive={pathname === '/portfolio'} title={t('portfolio.title')} />
             <Menu size="lg">
               <MenuButton fontSize={'lg'} px={4} py={2}>
                 <Flex
@@ -164,35 +154,41 @@ function AppNavLayout({
   )
 }
 
-function RouteLink(props: { isActive?: boolean; children: ReactNode; href: string }) {
+function RouteLink({
+  href,
+  isActive,
+  title,
+  external = false
+}: {
+  href: string
+  isActive: boolean
+  title: string | React.ReactNode
+  external?: boolean
+}) {
   return (
-    <MobileDesktop
-      pc={
-        <Link href={props.href}>
-          <Text
-            as="span"
-            textColor={props.isActive ? colors.textSecondary : colors.textTertiary}
-            fontSize="lg"
-            px={4}
-            py={2}
-            rounded="xl"
-            transition="200ms"
-            _hover={{ bg: colors.backgroundLight, color: colors.textSecondary }}
-          >
-            {props.children}
-          </Text>
-        </Link>
-      }
-      mobile={
-        props.isActive ? (
-          <Link href={props.href}>
-            <Text as="span" fontSize="xl" fontWeight={500} textColor={colors.textSecondary}>
-              {props.children}
-            </Text>
-          </Link>
-        ) : null
-      }
-    />
+    <Link
+      href={href}
+      shallow
+      {...(external
+        ? {
+            target: '_blank',
+            rel: 'noopener noreferrer'
+          }
+        : {})}
+    >
+      <Text
+        as="span"
+        textColor={isActive ? colors.textSecondary : colors.textTertiary}
+        fontSize="lg"
+        px={4}
+        py={2}
+        rounded="xl"
+        transition="200ms"
+        _hover={{ bg: colors.backgroundLight, color: colors.textSecondary }}
+      >
+        {title}
+      </Text>
+    </Link>
   )
 }
 
@@ -257,8 +253,6 @@ function SettingsMenuModalContent(props: { isOpen: boolean; triggerRef: React.Re
           <VersionedTransactionSettingField />
           <Divider />
           <DefaultExplorerSettingField />
-          {/* <Divider />
-          <TransactionFeeSetting /> */}
           <Divider />
           <LanguageSettingField />
           <Divider />

@@ -53,7 +53,7 @@ export function TVLInfoPanelMobile({ tvl, volume }: { tvl: string | number; volu
 
       <HStack>
         <Text fontSize="sm" fontWeight={400}>
-          {t('common.volume')}
+          {t('common.vol_24h')}
         </Text>
         <Text fontSize="md" fontWeight={500}>
           {formatCurrency(volume, { symbol: '$', abbreviated: true, decimalPlaces: 2 })}

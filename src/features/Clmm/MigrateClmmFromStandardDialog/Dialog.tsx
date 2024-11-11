@@ -321,7 +321,7 @@ export default function MigrateFromStandardDialog({
     <Modal isOpen={isOpen} onClose={onClose} size={'2xl'}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>{t('migrate_clmm.title')}</ModalHeader>
+        <ModalHeader fontSize={['sm', 'md']}>{t('migrate_clmm.title')}</ModalHeader>
         <ModalCloseButton />
 
         <ModalBody mb={5}>
@@ -459,7 +459,7 @@ export default function MigrateFromStandardDialog({
                   `
                     "current"  auto
                     "arrow  "  auto
-                    "details" / 1fr 
+                    "details" / 1fr
                   `,
                   `
                     "current arrow details" auto / 1.2fr auto 2fr

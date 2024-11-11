@@ -77,12 +77,14 @@ export default function PortfolioIdle({ idleBalance, productiveBalance, idleList
             columnGap={3}
           >
             <GridItem area={'pie'} w="full" placeSelf={'center'}>
-              <PortfolioPieChart
-                data={[{ value: 100 - idlePercent }, { value: idlePercent }]}
-                valueDataKey="value"
-                palette={IDLE_TOKENS_COLORS}
-                roundCenterLabel={idlePercent + '%'}
-              />
+              <Box width="100%" height="120px">
+                <PortfolioPieChart
+                  data={[{ value: 100 - idlePercent }, { value: idlePercent }]}
+                  valueDataKey="value"
+                  palette={IDLE_TOKENS_COLORS}
+                  roundCenterLabel={idlePercent + '%'}
+                />
+              </Box>
             </GridItem>
 
             <GridItem area={'total'} justifySelf={['center', 'unset']}>

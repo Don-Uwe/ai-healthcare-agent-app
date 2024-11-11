@@ -202,7 +202,6 @@ export default function StakingPoolItem({ pool, apiVaultData }: { pool: ApiStake
                 </Text>
                 <ChevronUpIcon width={12} height={12} />
               </HStack>
-              <SwapButton position={'absolute'} top={0} right={0} size={'sm'} minH={7} height={'unset'} alignSelf={'end'} />
             </HStack>
           </Mobile>
         </HStack>
@@ -229,10 +228,17 @@ function SwapButton(props: ButtonProps) {
 function HarvestButton(props: { pendingAmount: string; isLoading: boolean; onClick: () => void }) {
   const { t } = useTranslation()
   const connected = useAppStore((s) => s.connected)
+  const isMobile = useAppStore((s) => s.isMobile)
 
   if (!connected) return <ConnectedButton size="sm" />
   return (
-    <Button size={['sm', 'sm']} isLoading={props.isLoading} isDisabled={new Decimal(props.pendingAmount).lte(0)} onClick={props.onClick}>
+    <Button
+      size={['sm', 'sm']}
+      isLoading={props.isLoading}
+      minWidth={isMobile ? '5rem !important' : '100px'}
+      isDisabled={new Decimal(props.pendingAmount).lte(0)}
+      onClick={props.onClick}
+    >
       {t('button.harvest')}
     </Button>
   )
@@ -300,6 +306,7 @@ function AvailableStakeTokenButtons(props: {
           <Button
             pointerEvents={!props.canStake ? 'none' : 'unset'}
             size="sm"
+            minWidth="4rem"
             isDisabled={!props.canStake || depositDisabled}
             onClick={() => {
               props.onClickStake()

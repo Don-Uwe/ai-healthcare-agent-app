@@ -45,6 +45,7 @@ export default function SectionMyPositions() {
   ]
   const connected = useAppStore((s) => s.connected)
   const owner = useAppStore((s) => s.publicKey)
+  const isMobile = useAppStore((s) => s.isMobile)
 
   const defaultTab = (query.tab as string) || tabs[0].value
 
@@ -157,13 +158,37 @@ export default function SectionMyPositions() {
             <Box py="6px" px={4} bg={colors.transparentContainerBg} borderRadius="12px">
               <HStack justify={'space-between'} gap={8}>
                 <Flex gap={[0, 2]} direction={['column', 'row']} fontSize={['xs', 'sm']} align={['start', 'center']}>
-                  <Text whiteSpace={'nowrap'} color={colors.textSecondary}>
-                    {t('portfolio.harvest_all_label')}
-                  </Text>
+                  <HStack gap={1}>
+                    <Text whiteSpace={'nowrap'} color={colors.textSecondary}>
+                      {t('portfolio.harvest_all_label')}
+                    </Text>
+                    {isMobile && currentRewardState.rewardInfo.length > 0 && (
+                      <QuestionToolTip
+                        label={
+                          <>
+                            {currentRewardState.rewardInfo.map((r) => (
+                              <Flex key={r.mint.address} alignItems="center" gap="1" my="2">
+                                <TokenAvatar key={`pool-reward-${r.mint.address}`} size={'sm'} token={r.mint} />
+                                <Text color={colors.textPrimary}>
+                                  {formatCurrency(r.amount, {
+                                    maximumDecimalTrailingZeroes: 5
+                                  })}
+                                </Text>
+                                <Text>{getMintSymbol({ mint: r.mint, transformSol: true })}</Text>
+                                <Text color={colors.textPrimary}>({formatCurrency(r.amountUSD, { symbol: '$', decimalPlaces: 4 })})</Text>
+                              </Flex>
+                            ))}
+                          </>
+                        }
+                        iconType="info"
+                        iconProps={{ width: 10, height: 10, fill: colors.textSecondary }}
+                      />
+                    )}
+                  </HStack>
                   <HStack>
                     <Flex gap="2" alignItems="center" whiteSpace={'nowrap'} color={colors.textPrimary} fontWeight={500}>
                       {formatCurrency(currentRewardState.pendingReward, { symbol: '$', maximumDecimalTrailingZeroes: 4 })}
-                      {currentRewardState.rewardInfo.length > 0 ? (
+                      {!isMobile && currentRewardState.rewardInfo.length > 0 ? (
                         <QuestionToolTip
                           label={
                             <>
@@ -189,7 +214,8 @@ export default function SectionMyPositions() {
                   </HStack>
                 </Flex>
                 <Button
-                  size={['sm', 'md']}
+                  size={['xs', 'md']}
+                  minHeight={[7, 10]}
                   isLoading={isSending}
                   isDisabled={!currentRewardState.isReady}
                   onClick={() => handleHarvest({ tab: currentTab as PositionTabValues, zeroClmmPos: noRewardClmmPos.current })}

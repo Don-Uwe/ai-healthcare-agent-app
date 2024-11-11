@@ -46,15 +46,15 @@ export default function LockedNFTModal({
     <Modal size="xl" isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent sx={{ bg: colors.backgroundLight }}>
-        <ModalHeader mb="5" fontSize="xl">
+        <ModalHeader mb="5" fontSize={['lg', 'xl']}>
           {t('liquidity.position_locked_success')}
         </ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <Text variant="title" fontSize="md" mb="6" fontWeight="400">
+          <Text variant="title" fontSize={['sm', 'md']} mb="6" fontWeight="400">
             {t('liquidity.nft_desc')}
           </Text>
-          <Image m="0 auto" src="/images/lock-nft.png" />
+          <Image w={['260px', '300px']} h={['260px', '300px']} m="0 auto" src="/images/lock-nft.png" />
           <Flex
             m="0 auto"
             py="2"
@@ -64,9 +64,9 @@ export default function LockedNFTModal({
             rounded="xl"
             alignItems="center"
             w="fit-content"
-            fontSize="md"
+            fontSize={['sm', 'md']}
             fontWeight="500"
-            mt="2"
+            mt={6}
           >
             <Text color={colors.textSecondary}>{t('clmm.nft_mint')}:</Text>
             <Text color={colors.textPurple} mr="2">
@@ -93,7 +93,7 @@ export default function LockedNFTModal({
             </a>
           </Flex>
 
-          <Text color={colors.textSecondary} mt="4" mb="2">
+          <Text color={colors.textSecondary} fontSize={['sm', 'md']} mt="4" mb="2">
             <Trans
               i18nKey="liquidity.dont_burn_nft"
               components={{ sub: <Text display="inline-block" color={colors.textPink} variant="title" /> }}

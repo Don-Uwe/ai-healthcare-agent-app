@@ -157,7 +157,7 @@ export default function Stake({ poolInfo, disabled, onRefresh }: Props) {
           </Text>
         </Flex>
         <Box textAlign="right">
-          <Text fontSize={['22px', '28px']} fontWeight="500">
+          <Text fontSize={['sm', '28px']} fontWeight="500">
             {formatCurrency(lpBalance.amount.mul(percent).div(100).toString(), { decimalPlaces: poolInfo.lpMint.decimals })}
           </Text>
           <Text variant="label" fontSize="sm">

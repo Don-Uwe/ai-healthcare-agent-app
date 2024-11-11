@@ -15,7 +15,6 @@ import { useEvent } from '@/hooks/useEvent'
 import PlusCircleIcon from '@/icons/misc/PlusCircleIcon'
 import { useAppStore, useClmmStore, useFarmStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
-import { WEEK_SECONDS } from '@/utils/date'
 
 import SubPageNote from '@/components/SubPageNote'
 import ChevronLeftIcon from '@/icons/misc/ChevronLeftIcon'
@@ -36,7 +35,6 @@ interface QueryParams {
 const FARM_REFRESH_INTERVAL = 60 * 1000 * 2
 
 export default function FarmEdit() {
-  const isMobile = useAppStore((s) => s.isMobile)
   const { t } = useTranslation()
   const { query } = useRouter()
   const { farmId, clmmId } = (query || {}) as QueryParams

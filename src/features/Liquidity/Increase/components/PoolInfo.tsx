@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 import {
   Box,
   Flex,
@@ -17,6 +17,7 @@ import {
 import { useTranslation } from 'react-i18next'
 import TokenAvatar from '@/components/TokenAvatar'
 import { aprColors, PoolListItemAprLine } from '@/features/Pools/components/PoolListItemAprLine'
+import { AprData } from '@/features/Clmm/utils/calApr'
 import CopyIcon from '@/icons/misc/CopyIcon'
 import ExternalLinkLargeIcon from '@/icons/misc/ExternalLinkLargeIcon'
 import { colors } from '@/theme/cssVariables'
@@ -32,30 +33,10 @@ import InfoCircleIcon from '@/icons/misc/InfoCircleIcon'
 import { useAppStore, supportedExplorers } from '@/store/useAppStore'
 import LockIcon from '@/icons/misc/LockIcon'
 
-export default function PoolInfo({ pool }: { pool?: FormattedPoolInfoStandardItem }) {
+export default function PoolInfo({ pool, aprData }: { pool?: FormattedPoolInfoStandardItem; aprData: AprData }) {
   const { t } = useTranslation()
   const [baseToken, quoteToken] = [pool?.mintA, pool?.mintB]
-
-  const feeApr = pool?.allApr.week.find((s) => s.isTradingFee)
-  const rewardApr = pool?.allApr.week.filter((s) => !s.isTradingFee && !!s.token) || []
   const hasLockedLiquidity = pool && Math.abs(pool.burnPercent || 0) > 0
-  const aprData = useMemo(
-    () => ({
-      fee: {
-        apr: feeApr?.apr || 0,
-        percentInTotal: feeApr?.percent || 0
-      },
-      rewards:
-        rewardApr.map((r) => ({
-          apr: r.apr,
-          percentInTotal: r.percent,
-          mint: r.token!
-        })) || [],
-      apr: rewardApr.reduce((acc, cur) => acc + cur.apr, 0)
-    }),
-    [pool]
-  )
-
   const onCopySuccess = useCallback((content: string) => {
     toastSubject.next({
       status: 'success',
@@ -65,7 +46,7 @@ export default function PoolInfo({ pool }: { pool?: FormattedPoolInfoStandardIte
   }, [])
 
   return (
-    <Flex {...panelCard} bg={colors.backgroundLight} borderRadius="20px" py={7} px={6} direction="column">
+    <Flex {...panelCard} bg={[colors.backgroundDark, colors.backgroundLight]} borderRadius="20px" py={7} px={6} direction="column">
       <Flex justify="space-between" align="center">
         <Box>
           <Text fontSize={['xs', 'sm']} color={colors.textTertiary}>

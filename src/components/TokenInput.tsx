@@ -30,6 +30,7 @@ import TokenSelectDialog, { TokenSelectDialogProps } from './TokenSelectDialog'
 import TokenUnknownAddDialog from './TokenSelectDialog/components/TokenUnknownAddDialog'
 import TokenFreezeDialog from './TokenSelectDialog/components/TokenFreezeDialog'
 import { TokenListHandles } from './TokenSelectDialog/components/TokenList'
+import useResponsive from '@/hooks/useResponsive'
 
 export const DEFAULT_SOL_RESERVER = 0.01
 export interface TokenInputProps extends Pick<TokenSelectDialogProps, 'filterFn'> {
@@ -129,7 +130,7 @@ function TokenInput(props: TokenInputProps) {
     sx,
     defaultUnknownToken
   } = props
-  const isMobile = useAppStore((s) => s.isMobile)
+  const { isMobile } = useResponsive()
   const setExtraTokenListAct = useTokenStore((s) => s.setExtraTokenListAct)
   const whiteListMap = useTokenStore((s) => s.whiteListMap)
   const { colorMode } = useColorMode()

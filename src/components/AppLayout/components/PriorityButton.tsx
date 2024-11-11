@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react'
+import { useWallet } from '@solana/wallet-adapter-react'
 import { useDisclosure } from '@/hooks/useDelayDisclosure'
 import { Flex, Button, Text } from '@chakra-ui/react'
 import { colors } from '@/theme/cssVariables'
@@ -15,6 +16,7 @@ import PriorityFixIcon from '@/icons/misc/PriorityFixIcon'
 export function PriorityButton() {
   const { isOpen, onClose, onOpen } = useDisclosure()
   const { isMobile } = useResponsive()
+  const { connected } = useWallet()
   const transactionFee = useAppStore((s) => s.transactionFee)
   const feeConfig = useAppStore((s) => s.feeConfig)
   const priorityLevel = useAppStore((s) => s.priorityLevel)
@@ -58,9 +60,11 @@ export function PriorityButton() {
     <>
       <Flex align="center" onClick={() => onOpen()} ref={triggerRef}>
         {isMobile ? (
-          <Flex color={colors.textSecondary} cursor="pointer">
-            <PriorityIcon />
-          </Flex>
+          connected && (
+            <Flex color={colors.textSecondary} cursor="pointer">
+              <PriorityIcon />
+            </Flex>
+          )
         ) : (
           <Button
             size="sm"

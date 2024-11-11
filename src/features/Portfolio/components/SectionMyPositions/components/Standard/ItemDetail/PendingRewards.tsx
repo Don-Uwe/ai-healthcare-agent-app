@@ -25,7 +25,7 @@ export default function PendingRewards({ pendingReward, positionStatus, rewardIn
   }
   const isEmpty = !rewardInfo.some((r) => !new Decimal(r.amount).isZero())
   return (
-    <Flex justify={'space-between'} bg={colors.backgroundDark} rounded="lg" py={2.5} px={4} gap={8}>
+    <Flex justify={'space-between'} bg={colors.backgroundDark} rounded="lg" py={[4, 2.5]} px={4} gap={8}>
       <VStack align="flex-start" justifyContent={'space-between'}>
         <Text fontSize="sm" color={colors.textTertiary}>
           {t('amm.pending_reward')}

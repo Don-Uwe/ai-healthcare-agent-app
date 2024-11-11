@@ -14,7 +14,7 @@ type PositionBalanceProps = {
 export default function PositionBalance({ myPosition = '345.02', staked = '256.45', unstaked = '0' }: PositionBalanceProps) {
   const { t } = useTranslation()
   return (
-    <Flex {...panelCard} py="22px" px="24px" bg={colors.backgroundLight} borderRadius="20px" direction="column">
+    <Flex {...panelCard} py="22px" px="24px" bg={[colors.backgroundDark, colors.backgroundLight]} borderRadius="20px" direction="column">
       <Flex justify={'space-between'} align="center">
         <Text color={colors.textSecondary} fontSize="sm">
           {t('liquidity.my_position')}

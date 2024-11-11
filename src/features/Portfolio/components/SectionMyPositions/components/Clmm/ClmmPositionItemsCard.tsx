@@ -15,8 +15,8 @@ import { FormattedPoolInfoConcentratedItem } from '@/hooks/pool/type'
 import useSubscribeClmmInfo, { RpcPoolData } from '@/hooks/pool/clmm/useSubscribeClmmInfo'
 import SwapHorizontalIcon from '@/icons/misc/SwapHorizontalIcon'
 import ChevronDoubleDownIcon from '@/icons/misc/ChevronDoubleDownIcon'
-import { Desktop, Mobile } from '@/components/MobileDesktop'
 import { panelCard } from '@/theme/cssBlocks'
+import { useAppStore } from '@/store'
 import ClmmPositionAccountItem from './ClmmPositionAccountItem'
 import toPercentString from '@/utils/numberish/toPercentString'
 import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
@@ -42,6 +42,7 @@ export function ClmmPositionItemsCard({
   setNoRewardClmmPos: (val: string, isDelete?: boolean) => void
 }) {
   const { t } = useTranslation()
+  const isMobile = useAppStore((s) => s.isMobile)
   const { isOpen: baseIn, onToggle } = useDisclosure({ defaultIsOpen: true })
   const { isOpen: isSubscribe, onOpen: onSubscribe } = useDisclosure()
   const data = useSubscribeClmmInfo({ poolInfo, subscribe: isSubscribe || false })
@@ -88,7 +89,7 @@ export function ClmmPositionItemsCard({
       alignItems={'center'}
     >
       <GridItem area="face" justifySelf={['stretch', 'left']}>
-        <Flex flexDirection={['column', 'row']} gap={2} justify="space-between" alignItems="center">
+        <Flex gap={2} justify="space-between" alignItems="center">
           <Tooltip
             label={
               <Box py={0.5}>
@@ -116,12 +117,19 @@ export function ClmmPositionItemsCard({
               </Tag>
             </HStack>
           </Tooltip>
+          {isMobile && (
+            <Link href={`/clmm/create-position?pool_id=${poolInfo.id}`}>
+              <Button fontSize="xs" height="1.5rem" minHeight="1.5rem" minWidth="4rem" px={2} color={colors.buttonSolidText}>
+                {t('button.create')}
+              </Button>
+            </Link>
+          )}
         </Flex>
       </GridItem>
 
       <GridItem area="price" justifySelf={['stretch', 'left']}>
-        <Flex flexDirection={['column', 'row']} gap={2} justify="space-between" alignItems="center">
-          <Text color={colors.lightPurple}>
+        <Flex gap={2} justify={['start', 'space-between']} alignItems="center">
+          <Text color={colors.lightPurple} fontSize={isMobile ? 'xs' : 'md'}>
             {t('field.current_price')}:{' '}
             <Text as="span" color={colors.textPrimary}>
               {baseIn
@@ -138,37 +146,38 @@ export function ClmmPositionItemsCard({
             })}
           </Text>
           {/* switch button */}
-          <Box alignSelf="center" ml={[0, 2]}>
-            <Tooltip label={t('portfolio.section_positions_clmm_switch_direction_tooltip')}>
-              <Box
-                onClick={onToggle}
-                px={['12px', '12px']}
-                py={['5px', '6px']}
-                color={colors.secondary}
-                border="1px solid currentColor"
-                rounded={['8px', '8px']}
-                cursor="pointer"
-                display={'flex'}
-                alignItems={'center'}
-              >
-                <Desktop>
+          {isMobile ? (
+            <SwapHorizontalIcon onClick={onToggle} color={colors.secondary} />
+          ) : (
+            <Box alignSelf="center" ml={[0, 2]}>
+              <Tooltip label={t('portfolio.section_positions_clmm_switch_direction_tooltip')}>
+                <Box
+                  onClick={onToggle}
+                  px={['12px', '12px']}
+                  py={['5px', '6px']}
+                  color={colors.secondary}
+                  border="1px solid currentColor"
+                  rounded={['8px', '8px']}
+                  cursor="pointer"
+                  display={'flex'}
+                  alignItems={'center'}
+                >
                   <SwapHorizontalIcon height={18} width={18} />
-                </Desktop>
-                <Mobile>
-                  <SwapHorizontalIcon height={12} width={12} />
-                </Mobile>
-              </Box>
-            </Tooltip>
-          </Box>
+                </Box>
+              </Tooltip>
+            </Box>
+          )}
         </Flex>
       </GridItem>
 
       <GridItem area={'action'} justifySelf={['center', 'right']}>
-        <Link href={`/clmm/create-position?pool_id=${poolInfo.id}`}>
-          <Button size="sm" variant="outline">
-            {t('clmm.create_new_position')}
-          </Button>
-        </Link>
+        {isMobile ? null : (
+          <Link href={`/clmm/create-position?pool_id=${poolInfo.id}`}>
+            <Button size="sm" variant="outline">
+              {t('clmm.create_new_position')}
+            </Button>
+          </Link>
+        )}
       </GridItem>
 
       <GridItem area={'items'}>
@@ -188,9 +197,9 @@ export function ClmmPositionItemsCard({
           )}
         </Flex>
         {hasLockedLiquidity && (
-          <Flex flexDir="column" mt={3} gap={3}>
+          <Flex flexDir="column" mt={[0, 3]} gap={3}>
             <HStack gap={1}>
-              <Text fontWeight="medium" color={colors.lightPurple} pl={1}>
+              <Text fontSize={['sm', 'md']} fontWeight="medium" color={colors.lightPurple} pl={1}>
                 {t('liquidity.locked_positions')}
               </Text>
               <QuestionToolTip

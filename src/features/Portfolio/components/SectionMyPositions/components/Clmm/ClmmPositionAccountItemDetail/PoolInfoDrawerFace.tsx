@@ -44,10 +44,10 @@ export default function PoolInfoDrawerFace({
       {/* pool name */}
       <HStack>
         <Box fontSize="lg" fontWeight={500} color={colors.textPrimary}>
-          {poolInfo.mintA.symbol} / {poolInfo.mintB.symbol}
+          {poolInfo.mintA.symbol}/{poolInfo.mintB.symbol}
         </Box>
         <Tag size={['sm', 'md']} variant="rounded">
-          {formatToRawLocaleStr(toPercentString(poolInfo.feeRate))}
+          {formatToRawLocaleStr(toPercentString(poolInfo.feeRate * 100))}
         </Tag>
       </HStack>
 
@@ -56,7 +56,7 @@ export default function PoolInfoDrawerFace({
         <Text fontWeight="500" whiteSpace={'nowrap'}>
           {rangeValue}
         </Text>
-        <Text color={colors.textTertiary} whiteSpace={'nowrap'}>
+        <Text color={colors.lightPurple} opacity={0.5} whiteSpace={'nowrap'}>
           {rangeValueUnit}
         </Text>
         <Badge variant={inRange ? 'ok' : 'error'}>{inRange ? t('clmm.in_range') : t('clmm.out_of_range')}</Badge>

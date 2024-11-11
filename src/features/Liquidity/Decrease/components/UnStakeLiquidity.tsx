@@ -137,12 +137,12 @@ export default function UnStakeLiquidity({
       <Flex justifyContent="space-between" align="center" py="6" px="4" bg={colors.backgroundDark} borderRadius="12px">
         <Flex gap="2" alignItems="center">
           <TokenAvatarPair token1={poolInfo?.mintA} token2={poolInfo?.mintB} />
-          <Text variant="title" fontSize="xl" color={colors.textSecondary}>
+          <Text variant="title" fontSize={['sm', 'xl']} color={colors.textSecondary}>
             {poolInfo?.poolName.replace(' - ', '/')}
           </Text>
         </Flex>
         <Box textAlign="right">
-          <Text fontSize="28px">{formatCurrency(withdrawAmount.mul(lpPrice).toString(), { symbol: '$', decimalPlaces: 2 })}</Text>
+          <Text fontSize={['sm', '28px']}>{formatCurrency(withdrawAmount.mul(lpPrice).toString(), { symbol: '$', decimalPlaces: 2 })}</Text>
           <Text variant="label">{formatCurrency(withdrawAmount.toString(), { decimalPlaces: poolInfo?.lpMint.decimals })} LP</Text>
         </Box>
       </Flex>
@@ -169,7 +169,7 @@ export default function UnStakeLiquidity({
         <Text fontSize="md" fontWeight="medium" color={colors.textSecondary}>
           {t('liquidity.rewards_to_be_harvested')}
         </Text>
-        <SimpleGrid columns={2} rowGap="6px" columnGap="44px">
+        <SimpleGrid columns={[1, 2]} rowGap="6px" columnGap="44px">
           {pendingRewards.map((rewardAmount, idx) => {
             const rewardMint = selectedFarm?.rewardInfos[idx]
             if (!rewardMint) return null

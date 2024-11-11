@@ -1,32 +1,33 @@
-import { FormattedPoolInfoStandardItem } from '@/hooks/pool/type'
-import { FarmPositionInfo } from '@/hooks/portfolio/farm/useFarmPositions'
-import { colors } from '@/theme/cssVariables'
 import {
   Box,
   Button,
   Drawer,
   DrawerBody,
-  DrawerCloseButton,
   DrawerContent,
   DrawerFooter,
-  DrawerHeader,
   DrawerOverlay,
+  Flex,
   Grid,
   GridItem,
+  HStack,
   Text,
   VStack
 } from '@chakra-ui/react'
+import { useTranslation } from 'react-i18next'
+import { FormattedPoolInfoStandardItem } from '@/hooks/pool/type'
+import { FarmPositionInfo } from '@/hooks/portfolio/farm/useFarmPositions'
+import { colors } from '@/theme/cssVariables'
 import ActionButtons from '../ItemDetail/ActionButtons'
-import ItemName from '../ItemDetail/ItemName'
 import PendingRewards from '../ItemDetail/PendingRewards'
 import StandardMyPosition from '../ItemDetail/StandardMyPosition'
-import StandardPoolAPR from '../ItemDetail/StandardPoolAPR'
 import TokenPooledInfo from '../ItemDetail/TokenInfo'
+import { FarmTitleBadge } from '../ItemDetail/FarmTitleBadge'
+import StandardPoolAPR from '../ItemDetail/StandardPoolAPR'
 import StandardPoolRowStakeFarmHoldItem from './StandardPoolRowStakeFarmHoldItem'
 import StandardPoolRowStakeFarmItem from './StandardPoolRowStakeFarmItem'
 import { FarmBalanceInfo } from '@/hooks/farm/type'
-import { useTranslation } from 'react-i18next'
 import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
+import TokenAvatarPair from '@/components/TokenAvatarPair'
 
 export default function MobileStandardAMMDetailDrawer({
   isOpen,
@@ -74,8 +75,6 @@ export default function MobileStandardAMMDetailDrawer({
     <Drawer isOpen={isOpen} variant="popFromBottom" placement="bottom" onClose={onClose}>
       <DrawerOverlay />
       <DrawerContent>
-        <DrawerCloseButton />
-        <DrawerHeader visibility="hidden">{t('liquidity_pools.modal_header_standard_position_detail')}</DrawerHeader>
         <DrawerBody>
           <Grid
             gridTemplate={`
@@ -86,38 +85,29 @@ export default function MobileStandardAMMDetailDrawer({
               "acts  acts" auto / 1fr 1fr
             `}
             columnGap={8}
-            rowGap={[2, 3]}
+            rowGap={2}
           >
-            <GridItem flexGrow={1} area="name" maxW={['unset', '200px']}>
-              <ItemName
-                variant="item-face"
-                baseToken={pool.mintA}
-                quoteToken={pool.mintB}
-                poolName={pool.poolName}
-                hasStakeFarm={hasStakeFarm}
-                stakeFarmCount={stakeFarmCount}
-              />
+            <GridItem flexGrow={1} area="name">
+              <Flex flexWrap={'wrap'} direction="column" alignItems="center" rowGap={1} columnGap={1}>
+                <TokenAvatarPair size="40px" token1={pool.mintA} token2={pool.mintB} />
+                <HStack spacing={2}>
+                  <Box color={colors.textPrimary} fontWeight="500" fontSize="20px" whiteSpace={'nowrap'}>
+                    {pool.poolName.replace(' - ', '/')}
+                  </Box>
+                  {hasStakeFarm && stakeFarmCount !== 0 && <FarmTitleBadge stakeFarmCount={stakeFarmCount} />}
+                </HStack>
+              </Flex>
             </GridItem>
 
-            <GridItem flexGrow={1} area="i1" justifySelf="center" w={['unset', '92px']} maxW={['unset', '150px']}>
-              <StandardMyPosition center positionUsd={lpAmountUSD} />
+            <GridItem flexGrow={1} area="i1" justifySelf="center">
+              <StandardMyPosition positionUsd={lpAmountUSD} />
             </GridItem>
 
-            <GridItem flexGrow={1} area="i2" justifySelf="center" w={['unset', '92px']} maxW={['unset', '150px']}>
+            <GridItem flexGrow={1} area="i2" justifySelf="center">
               <StandardPoolAPR center positionAPR={pool.day.apr} />
             </GridItem>
 
-            <GridItem
-              area="d"
-              flexGrow={3}
-              display="grid"
-              maxW={['unset', '700px']}
-              gridTemplateColumns={['unset', '1fr 1fr']}
-              gridTemplateRows={['auto auto', 'unset']}
-              columnGap={4}
-              rowGap={3}
-              justifyItems="stretch"
-            >
+            <GridItem area="d" display="grid" gridTemplateRows="auto auto" columnGap={4} rowGap={3} justifyItems="stretch">
               <TokenPooledInfo base={{ token: pool.mintA, amount: pooledAmountA }} quote={{ token: pool.mintB, amount: pooledAmountB }} />
               <PendingRewards
                 pendingReward={pendingReward}
@@ -129,7 +119,7 @@ export default function MobileStandardAMMDetailDrawer({
             </GridItem>
 
             <GridItem area="subs">
-              <Text fontSize="sm" mt={1} mb={2} color={colors.textSecondary}>
+              <Text fontSize="sm" mt={1} mb={3} color={colors.textSecondary}>
                 {t('liquidity_pools.farms')}
               </Text>
               {hasStakeFarm && (
@@ -154,7 +144,7 @@ export default function MobileStandardAMMDetailDrawer({
               )}
             </GridItem>
 
-            <GridItem area="acts" ml={['unset', 'auto']}>
+            <GridItem area="acts">
               <ActionButtons
                 variant="drawer-face"
                 poolId={pool.id}

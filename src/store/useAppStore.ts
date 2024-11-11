@@ -76,7 +76,7 @@ interface AppState {
   publicKey?: PublicKey
   explorerUrl: string
   isMobile: boolean
-  isLaptop: boolean
+  isDesktop: boolean
   aprMode: 'M' | 'D'
   wallet?: Wallet
   initialing: boolean
@@ -134,7 +134,7 @@ const appInitState = {
   blockSlotCountForSecond: 0,
   explorerUrl: supportedExplorers[0].host,
   isMobile: false,
-  isLaptop: false,
+  isDesktop: false,
   aprMode: 'M' as 'M' | 'D',
   rpcs: [],
   urlConfigs: API_URLS,

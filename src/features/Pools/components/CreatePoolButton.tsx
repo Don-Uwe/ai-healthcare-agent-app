@@ -1,10 +1,10 @@
-import { HStack, Text, useDisclosure } from '@chakra-ui/react'
+import { HStack, useDisclosure } from '@chakra-ui/react'
 import { useTranslation } from 'react-i18next'
 
 import Button from '@/components/Button'
 import { Desktop, Mobile } from '@/components/MobileDesktop'
 import { CreatePoolEntryDialog } from '@/features/Create/components/CreatePoolEntryDialog'
-import PlusCircleIcon from '@/icons/misc/PlusCircleIcon'
+import PlusIcon from '@/icons/misc/PlusIcon'
 import { colors } from '@/theme/cssVariables'
 
 export type PoolType = 'standard' | 'concentrated'
@@ -16,11 +16,16 @@ export default function CreatePoolButton() {
   return (
     <>
       <Mobile>
-        <HStack spacing={0.5} align="center" color={colors.secondary} onClick={onOpen}>
-          <PlusCircleIcon width="14px" height="14px" />
-          <Text translateY={'-5%'} transform={'auto'} fontSize="md" fontWeight="500">
-            {t('liquidity.create_pool_mobile')}
-          </Text>
+        <HStack
+          width={12}
+          height="100%"
+          border="1px solid #22D1F8"
+          borderRadius="md"
+          justifyContent="center"
+          color={colors.secondary}
+          onClick={onOpen}
+        >
+          <PlusIcon width="16px" height="16px" />
         </HStack>
       </Mobile>
       <Desktop>

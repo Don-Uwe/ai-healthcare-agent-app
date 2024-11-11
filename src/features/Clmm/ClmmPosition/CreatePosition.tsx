@@ -449,12 +449,14 @@ export default function CreatePosition() {
             px={[4, 6]}
             gap={[3, 4]}
           >
-            <Flex flex={1} gap="2" alignItems="center" fontSize="20px" fontWeight="500">
-              <TokenAvatarPair token1={currentPool?.mintA} token2={currentPool?.mintB} />
-              {currentPool?.poolName.replace('-', '/')}
-              <Tag size="sm" variant="rounded">
-                {formatToRawLocaleStr(toPercentString((currentPool?.feeRate || 0) * 100))}
-              </Tag>
+            <Flex direction={['column', 'row']} flex={1} gap="2" fontSize="20px" fontWeight="500">
+              <Flex gap="2" alignItems="center">
+                <TokenAvatarPair token1={currentPool?.mintA} token2={currentPool?.mintB} />
+                {currentPool?.poolName.replace('-', '/')}
+                <Tag size="sm" variant="rounded">
+                  {formatToRawLocaleStr(toPercentString((currentPool?.feeRate || 0) * 100))}
+                </Tag>
+              </Flex>
               {hasLockedLiquidity && (
                 <Flex alignItems="center" gap={1}>
                   <LockIcon />

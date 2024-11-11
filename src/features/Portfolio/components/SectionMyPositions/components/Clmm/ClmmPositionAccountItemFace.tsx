@@ -3,7 +3,7 @@ import { Desktop, Mobile } from '@/components/MobileDesktop'
 import { FormattedPoolInfoConcentratedItem } from '@/hooks/pool/type'
 import useClmmBalance, { ClmmPosition } from '@/hooks/portfolio/clmm/useClmmBalance'
 import Close from '@/icons/misc/Close'
-import FullExpandIcon from '@/icons/misc/FullExpandIcon'
+import ChevronRightIcon from '@/icons/misc/ChevronRightIcon'
 import ChevronDownIcon from '@/icons/misc/ChevronDownIcon'
 import ChevronUpIcon from '@/icons/misc/ChevronUpIcon'
 import MinusIcon from '@/icons/misc/MinusIcon'
@@ -15,7 +15,7 @@ import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatte
 import { TokenPrice } from '@/hooks/token/useTokenPrice'
 import { AprKey } from '@/hooks/pool/type'
 import { getPositionAprCore } from '@/features/Clmm/utils/calApr'
-import { Badge, Button, Divider, Flex, Grid, GridItem, HStack, Text, Tooltip, useDisclosure } from '@chakra-ui/react'
+import { Badge, Button, Divider, Flex, HStack, Text, Tooltip, useDisclosure } from '@chakra-ui/react'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'react-i18next'
 import BN from 'bn.js'
@@ -212,103 +212,24 @@ export default function ClmmPositionAccountItemFace({
         </Flex>
       </Desktop>
       <Mobile>
-        <Flex borderRadius="xl" overflow={'hidden'} flexWrap="wrap" justifyContent="space-between">
-          <Grid
-            width={'full'}
-            gridAutoFlow={['column', 'row']}
-            gridTemplate={`
-            "title" auto 
-            "body" auto / 1fr`}
-            alignItems={'center'}
-          >
-            <GridItem gridArea={'title'}>
-              <HStack flexBasis="500px" flexWrap={['wrap', 'nowrap']} bg={colors.backgroundTransparent07} py={2} px={3} justify="center">
-                <Text fontSize="sm" fontWeight="500" whiteSpace={'nowrap'}>
-                  {rangeValue}
-                </Text>
-                <Text fontSize="sm" color={colors.lightPurple} whiteSpace={'nowrap'}>
-                  {rangeValueUnit}
-                </Text>
-                <Badge variant={inRange ? 'ok' : 'error'}>{inRange ? t('clmm.in_range') : t('clmm.out_of_range')}</Badge>
-              </HStack>
-            </GridItem>
-
-            <GridItem gridArea={'body'}>
-              <Grid
-                gridTemplate={`
-                  "info btns  " auto
-                  "apr  btns" auto 
-                  "vbtn vbtn" auto / 1fr`}
-                bg={colors.backgroundDark}
-                py={3}
-                px={3}
-                gap={1}
-                alignItems={'center'}
-              >
-                <GridItem gridArea={'info'} justifySelf={['unset', 'center']}>
-                  <HStack>
-                    <Text fontSize="sm" color={colors.textSecondary}>
-                      {t('clmm.position')}
-                    </Text>
-                    <Text fontSize="sm" color={colors.textPrimary}>
-                      {formatCurrency(totalVolume.toString(), { symbol: '$', decimalPlaces: 2 })}
-                    </Text>
-                  </HStack>
-                </GridItem>
-
-                <GridItem gridArea={'apr'} justifySelf={['unset', 'center']}>
-                  <HStack>
-                    <Text fontSize="sm" color={colors.textSecondary}>
-                      {t('field.apr')}
-                    </Text>
-                    <Text fontSize="sm" color={colors.textPrimary}>
-                      {formatToRawLocaleStr(toAPRPercent(apr.apr))}
-                    </Text>
-                    <AprMDSwitchWidget color={colors.textSecondary} />
-                  </HStack>
-                </GridItem>
-
-                <GridItem gridArea={'btns'} justifySelf="flex-end">
-                  {isLock ? (
-                    <Button
-                      isLoading={isLoading}
-                      isDisabled={!hasReward}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onHarvest({})
-                      }}
-                      size="sm"
-                      fontSize="md"
-                      variant="outline"
-                    >
-                      {t('portfolio.section_positions_clmm_account_pending_yield_button')}
-                    </Button>
-                  ) : (
-                    <HStack>
-                      <MinusButton isLoading={false} onClick={onClickMinusButton} />
-                      <PlusButton isLoading={false} onClick={onClickPlusButton} />
-                    </HStack>
-                  )}
-                </GridItem>
-
-                <GridItem gridArea={'vbtn'} justifySelf="center">
-                  <ViewButton onClick={onClickViewTrigger} />
-                </GridItem>
-              </Grid>
-            </GridItem>
-          </Grid>
+        <Flex
+          borderRadius="md"
+          justifyContent="space-between"
+          p={3}
+          alignItems={'center'}
+          bg={colors.backgroundDark}
+          onClick={onClickViewTrigger}
+        >
+          <Text fontSize="sm" fontWeight="500">
+            {rangeValue}
+          </Text>
+          <Flex justifyContent="space-between" alignItems="center">
+            <Badge variant={inRange ? 'ok' : 'error'}>{inRange ? t('clmm.in_range') : t('clmm.out_of_range')}</Badge>
+            <ChevronRightIcon color={colors.secondary} />
+          </Flex>
         </Flex>
       </Mobile>
     </>
-  )
-}
-
-function ViewButton(props: { onClick: () => void }) {
-  const { t } = useTranslation()
-  return (
-    <Button leftIcon={<FullExpandIcon />} variant="ghost" size="sm" onClick={props.onClick}>
-      {t('portfolio.section_positions_clmm_account_view_more')}
-    </Button>
   )
 }
 

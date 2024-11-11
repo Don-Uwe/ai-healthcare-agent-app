@@ -203,7 +203,7 @@ export default function Swap() {
           </PanelCard>
         </GridItem>
 
-        <GridItem gridArea="kline" {...(isMobile ? { mb: 3 } : {})}>
+        <GridItem gridArea="kline" {...(isMobile ? { mb: 3 } : {})} overflow="hidden">
           <PanelCard ref={klineRef} p={[3, 3]} gap={4} height="100%" {...(isMobile || !isPCChartShown ? { display: 'none' } : {})}>
             <SwapKlinePanel
               untilDate={untilDate.current}

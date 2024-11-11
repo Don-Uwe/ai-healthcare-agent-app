@@ -68,13 +68,13 @@ function LiquidityLockModal({
       <ModalContent bg={colors.backgroundLight} border={`1px solid ${colors.buttonSolidText}`} p={{ base: 4, md: 8 }}>
         <Flex flexDirection="column" justifyContent="center" alignItems="center" gap={5} mt={2}>
           <InfoCircleIcon width={32} height={32} color={colors.textPink} />
-          <Text fontSize="xl" fontWeight="medium">
+          <Text fontSize={['lg', 'xl']} fontWeight="medium">
             {t('liquidity.lock_liquidity_permanently')}
           </Text>
         </Flex>
         <ModalCloseButton />
-        <ModalBody mt={6}>
-          <Text color={colors.lightPurple} lineHeight="20px">
+        <ModalBody mt={[5, 6]}>
+          <Text color={colors.lightPurple} lineHeight="20px" fontSize={['sm', 'md']}>
             <Trans i18nKey="liquidity.lock_desc4">
               <Text as="span" fontWeight="bold"></Text>
               <Text as="span" fontWeight="bold"></Text>
@@ -86,16 +86,16 @@ function LiquidityLockModal({
             bg={colors.modalContainerBg}
             px={5}
             py={3}
-            my={6}
+            my={[4, 6]}
             mx={[0, 0, 16]}
           >
-            <Flex alignItems="center" gap={1} justifyContent="space-between" color={colors.lightPurple} mb={2}>
+            <Flex alignItems="center" gap={1} justifyContent="space-between" fontSize={['sm', 'md']} color={colors.lightPurple} mb={[1, 2]}>
               <Text>
                 {poolName} {t('liquidity.pool_position_nft')}
               </Text>
               <Text>{shortenAddress(poolNft, 5)}</Text>
             </Flex>
-            <Flex alignItems="center" gap={1} justifyContent="space-between" color={colors.lightPurple} mb={2}>
+            <Flex alignItems="center" gap={1} justifyContent="space-between" fontSize={['sm', 'md']} color={colors.lightPurple} mb={[1, 2]}>
               <Text>{t('clmm.position')}: </Text>
               <Text>
                 {formatCurrency(positionAmount, {
@@ -105,7 +105,7 @@ function LiquidityLockModal({
                 })}
               </Text>
             </Flex>
-            <Flex alignItems="center" gap={1} justifyContent="space-between" mb={3} fontSize="sm">
+            <Flex alignItems="center" gap={1} justifyContent="space-between" fontSize={['xs', 'sm']} mb={[1, 3]}>
               <HStack gap={1}>
                 <TokenAvatar size={'sm'} token={poolInfo.mintA} />
                 <Text color={colors.textPrimary}>
@@ -124,7 +124,7 @@ function LiquidityLockModal({
                 })}
               </Text>
             </Flex>
-            <Flex alignItems="center" gap={1} justifyContent="space-between" fontSize="14px">
+            <Flex alignItems="center" gap={1} justifyContent="space-between" fontSize={['xs', 'sm']}>
               <HStack gap={1}>
                 <TokenAvatar size={'sm'} token={poolInfo.mintB} />
                 <Text color={colors.textPrimary}>
@@ -161,7 +161,8 @@ function LiquidityLockModal({
             px={7}
             py={4}
             gap={2}
-            mt={6}
+            mt={[4, 6]}
+            fontSize={['sm', 'md']}
           >
             <Text color={colors.lightPurple}>{t('liquidity.lock_to_confirm')}</Text>
             <Text color={colors.lightPurple} fontWeight="medium" userSelect="none">
@@ -172,7 +173,6 @@ function LiquidityLockModal({
               w="full"
               rounded="lg"
               color={colors.lightPurple}
-              fontSize="md"
               fontWeight="medium"
               textAlign="center"
               sx={{
@@ -185,7 +185,7 @@ function LiquidityLockModal({
             />
           </Flex>
         </ModalBody>
-        <ModalFooter mt="8" flexDirection="column" gap="2">
+        <ModalFooter mt={[4, 8]} flexDirection="column" gap="2">
           <Button
             variant="danger"
             w="full"

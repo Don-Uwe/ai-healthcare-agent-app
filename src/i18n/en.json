@@ -13,6 +13,7 @@
     "view_chart": "View Chart",
     "tvl": "TVL",
     "volume": "Volume",
+    "vol_24h": "Vol. 24h",
     "24h_volume": "24h Volume",
     "24h_pool_fee": "24h Pool Fee",
     "rewards": "Rewards",
@@ -97,7 +98,9 @@
     "back": "Back",
     "next_step": "Next Step",
     "migrate": "Migrate",
-    "connect_wallet": "Connect Wallet"
+    "connect_wallet": "Connect Wallet",
+    "connect": "Connect",
+    "create": "Create"
   },
   "badge": {
     "suggested": "Suggested",
@@ -157,6 +160,7 @@
     "choose_network": "Choose network",
     "choose_wallet": "Choose wallet",
     "show_uninstalled_wallets": "Show uninstalled wallets",
+    "show_uninstalled": "Show uninstalled",
     "tour_title": "New here?",
     "tour_desc": "Get started on Raydium",
     "disconnect": "Disconnect",
@@ -270,7 +274,6 @@
     "fee_rate": "Fee Rate",
     "show_farms": "Show Farms",
     "create_pool": "Create",
-    "create_pool_mobile": "create",
     "create_pool_tx_title": "Create pool",
     "create_pool_tx_desc": "create <sub>{{mintA}} - {{mintB}}</sub> pool",
     "value": "value",
@@ -343,6 +346,7 @@
     "lock_liquidity": "Lock Liquidity",
     "lock_my_liquidity": "Lock my liquidity",
     "locked_percent": "{{percent}} permanently locked",
+    "locked_position": "Locked position",
     "locked_positions": "Locked positions",
     "locked_positions_tip_info": "You previously permanently locked the NFT for this position, however trading fees earned are still fully claimable.",
     "lock_cpmm_title": "Burn/Lock Liquidity for standard AMM position",
@@ -377,7 +381,9 @@
     "pending_fees": "Pending fees",
     "locked_lp_amount": "Locked LP Amount",
     "approx_lp_fees": "Approx LP Fees",
-    "approx_fee_breakdown": "Approx Fee breakdown"
+    "approx_fee_breakdown": "Approx Fee breakdown",
+    "show_more": "Show more",
+    "pool_detail": "Pool detail"
   },
   "create_pool": {
     "modal_title": "I want to...",
@@ -500,15 +506,15 @@
     "section_positions_tab_standard": "Standard",
     "section_positions_tab_staking": "Staked RAY",
     "section_positions_clmm_switch_direction_tooltip": "Base/quote tokens have been switched to simplify data display.",
-    "section_positions_clmm_account_view_more": "View More",
     "section_positions_clmm_account_view_less": "View Less",
     "section_positions_clmm_account_nft_mint_address": "NFT Mint Address",
     "section_positions_clmm_account_pending_yield": "Pending Yield",
     "section_positions_clmm_account_pending_yield_button": "Harvest",
     "section_my_created_farms": "My created farms",
-    "section_department_tab_clmm": "Concentrated",
+    "section_department_tab_clmm": "CLMM",
     "section_department_tab_standard": "Standard",
-    "section_department_tab_all": "All",
+    "section_department_tab_staked_ray": "Staked RAY",
+    "section_department_tab_all": "All Type",
     "section_my_created_farms_item_edit_farm_button": "Edit Farm",
     "no_staked_farm": "You don’t have any staked RAY.",
     "no_standard_positions": "You don’t have any standard liquidity positions.",
@@ -548,7 +554,8 @@
     "unstake_modal_confirm_text": "Unstake {{symbol}}",
     "stake_modal_header": "Stake {{symbol}}",
     "stake_modal_confirm_text": "Stake {{symbol}}",
-    "alert_empty_token": "Insufficient RAY balance"
+    "alert_empty_token": "Insufficient RAY balance",
+    "my_staked_ray": "My Staked RAY"
   },
   "wallet": {
     "connected_hint": {

@@ -64,7 +64,7 @@ export default function TokenUnknownAddDialog({ onConfirm, isOpen, onClose, toke
               borderRadius={4}
               mt={5}
               background={colors.backgroundDark}
-              px={16}
+              px={4}
               py={4}
               alignItems="center"
               justifyContent={'space-between'}

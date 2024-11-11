@@ -1,14 +1,17 @@
-import { ReactNode, useCallback, useEffect, useState } from 'react'
+import { ReactNode, useCallback, useEffect, useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, Grid, GridItem, HStack, Text, TooltipProps, VStack } from '@chakra-ui/react'
+import { Box, Flex, Grid, GridItem, HStack, Text, TooltipProps, VStack, useDisclosure } from '@chakra-ui/react'
 import { ApiV3PoolInfoStandardItem, ApiV3Token, TokenInfo, CREATE_CPMM_POOL_PROGRAM } from '@raydium-io/raydium-sdk-v2'
 import Decimal from 'decimal.js'
 
 import Tabs, { TabItem } from '@/components/Tabs'
+import { Desktop, Mobile } from '@/components/MobileDesktop'
 import useFetchPoolById from '@/hooks/pool/useFetchPoolById'
 import useFarmPositions from '@/hooks/portfolio/farm/useFarmPositions'
 import { useEvent } from '@/hooks/useEvent'
 import ChevronLeftIcon from '@/icons/misc/ChevronLeftIcon'
+import LockIcon from '@/icons/misc/LockIcon'
+import ExpandLeftTopIcon from '@/icons/misc/ExpandLeftTopIcon'
 import { useTokenAccountStore } from '@/store/useTokenAccountStore'
 import { panelCard } from '@/theme/cssBlocks'
 import { colors } from '@/theme/cssVariables'
@@ -20,9 +23,13 @@ import { LiquidityActionModeType, LiquidityTabOptionType, tabValueModeMapping } 
 import AddLiquidity from './Add'
 import Stake from './Stake'
 import PoolInfo from './components/PoolInfo'
+import PoolInfoMobileDrawer from './components/PoolInfoMobileDrawer'
 import PositionBalance from './components/PositionBalance'
 import StakeableHint from './components/StakeableHint'
 import useFetchFarmByLpMint from '@/hooks/farm/useFetchFarmByLpMint'
+import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
+import toPercentString from '@/utils/numberish/toPercentString'
+import { PoolListItemAprLine } from '@/features/Pools/components/PoolListItemAprLine'
 
 export type IncreaseLiquidityPageQuery = {
   pool_id?: string
@@ -50,6 +57,7 @@ export default function Increase() {
   const { lpBasedData } = useFarmPositions({})
 
   const [tokenPair, setTokenPair] = useState<{ base?: ApiV3Token; quote?: ApiV3Token }>({})
+  const { isOpen, onOpen, onClose } = useDisclosure()
 
   const { formattedData, isLoading, mutate } = useFetchPoolById<ApiV3PoolInfoStandardItem>({
     shouldFetch: Boolean(urlPoolId),
@@ -94,6 +102,26 @@ export default function Increase() {
   const [tabValue, setTabValue] = useState<LiquidityTabOptionType | undefined>(undefined)
 
   const [mode, setMode] = useState<LiquidityActionModeType>('add')
+
+  const feeApr = pool?.allApr.week.find((s) => s.isTradingFee)
+  const rewardApr = pool?.allApr.week.filter((s) => !s.isTradingFee && !!s.token) || []
+  const hasLockedLiquidity = pool && pool.burnPercent > 0
+  const aprData = useMemo(
+    () => ({
+      fee: {
+        apr: feeApr?.apr || 0,
+        percentInTotal: feeApr?.percent || 0
+      },
+      rewards:
+        rewardApr.map((r) => ({
+          apr: r.apr,
+          percentInTotal: r.percent,
+          mint: r.token!
+        })) || [],
+      apr: rewardApr.reduce((acc, cur) => acc + cur.apr, 0)
+    }),
+    [pool]
+  )
 
   const handleRefresh = useEvent(() => {
     mutate()
@@ -191,8 +219,70 @@ export default function Increase() {
         </GridItem>
         {/* right */}
         <GridItem>
-          <VStack maxW={['revert', '400px']} justify="flex-start" align="stretch" spacing={4}>
-            <PoolInfo
+          <Desktop>
+            <VStack maxW={['revert', '400px']} justify="flex-start" align="stretch" spacing={4}>
+              <PoolInfo
+                pool={
+                  pool && rpcData
+                    ? {
+                        ...pool,
+                        mintAmountA: new Decimal(rpcData.baseReserve.toString()).div(10 ** pool.mintA.decimals).toNumber(),
+                        mintAmountB: new Decimal(rpcData.quoteReserve.toString()).div(10 ** pool.mintB.decimals).toNumber()
+                      }
+                    : pool
+                }
+                aprData={aprData}
+              />
+              <PositionBalance
+                myPosition={Number(lpBalance.amount.mul(pool?.lpPrice ?? 0).toFixed(pool?.lpMint.decimals ?? 6))}
+                staked={stakedData}
+                unstaked={lpBalance.isZero ? '--' : lpBalance.text}
+              />
+            </VStack>
+          </Desktop>
+          <Mobile>
+            <Flex bg={colors.backgroundLight} borderRadius="20px" py={3} px={6} direction="column" gap={2} mb={1} onClick={onOpen}>
+              <Flex justify="space-between">
+                <Box>
+                  <Text fontSize="sm" color={colors.textSecondary} opacity={0.5}>
+                    {t('liquidity.total_apr_7d')}
+                  </Text>
+                  <HStack mt={1}>
+                    <Text fontSize="lg" fontWeight={500} color={colors.textPrimary}>
+                      {formatToRawLocaleStr(toPercentString(pool?.week.apr))}
+                    </Text>
+                    <PoolListItemAprLine aprData={aprData} />
+                  </HStack>
+                </Box>
+                <Box>
+                  <Text color={colors.textSecondary} fontSize="sm" opacity={0.5}>
+                    {t('liquidity.pool_liquidity')}
+                  </Text>
+                  <Text color={colors.textSecondary} fontSize="sm" textAlign="right" mt={1}>
+                    {pool ? `$${formatCurrency(new Decimal(pool.lpAmount).mul(pool.lpPrice).toString())}` : '-'}
+                  </Text>
+                </Box>
+              </Flex>
+              {hasLockedLiquidity && (
+                <HStack gap={1}>
+                  <LockIcon color={colors.textSecondary} />
+                  <Text color={colors.textSecondary} opacity={0.6} fontSize="xs">
+                    {t('liquidity.locked_percent', {
+                      percent: formatToRawLocaleStr(toPercentString(pool.burnPercent || 0, { alreadyPercented: true }))
+                    })}
+                  </Text>
+                </HStack>
+              )}
+              <HStack justify="center">
+                <Text fontWeight="medium" fontSize="xs" color={colors.lightPurple}>
+                  {t('liquidity.show_more')}
+                </Text>
+                <ExpandLeftTopIcon />
+              </HStack>
+            </Flex>
+            <PoolInfoMobileDrawer
+              isOpen={isOpen}
+              onClose={onClose}
               pool={
                 pool && rpcData
                   ? {
@@ -202,13 +292,12 @@ export default function Increase() {
                     }
                   : pool
               }
-            />
-            <PositionBalance
+              aprData={aprData}
               myPosition={Number(lpBalance.amount.mul(pool?.lpPrice ?? 0).toFixed(pool?.lpMint.decimals ?? 6))}
               staked={stakedData}
               unstaked={lpBalance.isZero ? '--' : lpBalance.text}
             />
-          </VStack>
+          </Mobile>
         </GridItem>
       </Grid>
     </>

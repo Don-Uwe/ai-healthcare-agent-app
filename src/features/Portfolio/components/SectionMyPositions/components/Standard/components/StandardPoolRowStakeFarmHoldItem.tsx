@@ -28,7 +28,7 @@ export default function StandardPoolRowStakeFarmHoldItem({
       flexDirection={['column', 'row']}
       py={[3, 2]}
       px={[4, 8]}
-      columnGap={8}
+      gap={[1, 8]}
       bg={colors.backgroundTransparent12}
       borderRadius="xl"
       w="full"

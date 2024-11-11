@@ -98,11 +98,11 @@ export function SwapInfoBoard({
 
         <HStack gap={4} py={1} justifyContent="space-between">
           <ItemLabel name={t('swap.info_estimated_fees')} tooltip={t('swap.info_estimated_fees_tooltip')} />
-          <Text align="end" fontSize="xs" color={colors.textPrimary}>
+          <Box textAlign="end" fontSize="xs" color={colors.textPrimary}>
             {computedSwapResult?.routePlan.map((route) => (
               <FeeItem key={route.poolId} route={route} />
             ))}
-          </Text>
+          </Box>
         </HStack>
       </Collapse>
 

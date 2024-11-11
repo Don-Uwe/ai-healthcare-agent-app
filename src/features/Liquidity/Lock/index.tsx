@@ -57,7 +57,7 @@ export default function Lock() {
         gridTemplate={[
           `
             "back  " auto
-            "panel  " minmax(80px, 1fr) / 1fr  
+            "panel  " minmax(80px, 1fr) / 1fr
           `,
           `
             "back panel  " auto / 1fr minmax(640px, 2fr) 1fr
@@ -96,24 +96,31 @@ export default function Lock() {
             px={[3, 7]}
             py={6}
           >
-            <Text fontSize="xl" fontWeight="medium" lineHeight="26px" mb={3}>
+            <Text
+              fontSize={['md', 'xl']}
+              textAlign={['center', 'start']}
+              color={[colors.lightPurple, colors.textPrimary]}
+              fontWeight="medium"
+              lineHeight="26px"
+              mb={3}
+            >
               {t('liquidity.lock_cpmm_title')}
             </Text>
-            <Box color={colors.lightPurple} fontSize="md" lineHeight="20px" mb={7}>
-              <Text mb={7}>{t('liquidity.lock_cpmm_desc1')}</Text>
-              <Text mb={7} color={colors.semanticWarning}>
+            <Box color={colors.lightPurple} fontSize={['sm', 'md']} lineHeight="20px" mb={[4, 7]}>
+              <Text mb={[4, 7]}>{t('liquidity.lock_cpmm_desc1')}</Text>
+              <Text mb={[4, 7]} color={colors.semanticWarning}>
                 <Trans i18nKey="liquidity.lock_cpmm_desc4">
                   <Link href="https://docs.raydium.io/raydium/pool-creation/burn-and-earn" isExternal></Link>
                 </Trans>
               </Text>
-              <Text mb={7}>
+              <Text mb={[4, 7]}>
                 <Trans i18nKey="liquidity.lock_cpmm_desc2">
                   <Text as="span" fontWeight="bold"></Text>
                 </Trans>
               </Text>
               <Text>{t('liquidity.lock_cpmm_desc3')}</Text>
             </Box>
-            <Flex flexDirection="column" gap={3} mb={7}>
+            <Flex flexDirection="column" gap={3} mb={[4, 7]}>
               {isLoading ? (
                 <Flex direction={['column']} gap={3}>
                   <Skeleton borderRadius="8px" height={['150px', '70px']} />

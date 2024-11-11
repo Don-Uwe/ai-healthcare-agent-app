@@ -61,20 +61,20 @@ function LiquidityLockModal({
       <ModalContent bg={colors.backgroundLight} border={`1px solid ${colors.buttonSolidText}`} p={{ base: 4, md: 8 }}>
         <Flex flexDirection="column" justifyContent="center" alignItems="center" gap={5} mt={2}>
           <InfoCircleIcon width={32} height={32} color={colors.textPink} />
-          <Text fontSize="xl" fontWeight="medium">
+          <Text fontSize={['lg', 'xl']} fontWeight="medium">
             {t('liquidity.lock_liquidity_permanently')}
           </Text>
         </Flex>
         <ModalCloseButton />
-        <ModalBody mt={6}>
-          <Text color={colors.lightPurple} lineHeight="20px">
+        <ModalBody mt={[5, 6]}>
+          <Text color={colors.lightPurple} lineHeight="20px" fontSize={['sm', 'md']}>
             <Trans i18nKey="liquidity.lock_desc4">
               <Text as="span" fontWeight="bold"></Text>
               <Text as="span" fontWeight="bold"></Text>
             </Trans>
           </Text>
-          <Box rounded={'xl'} border={`1px solid ${colors.selectInactive}`} bg={colors.modalContainerBg} px={[1, 4]} py={2} my={6}>
-            <Text color={colors.lightPurple} mb={2}>
+          <Box rounded={'xl'} border={`1px solid ${colors.selectInactive}`} bg={colors.modalContainerBg} px={[3, 4]} py={2} my={[5, 6]}>
+            <Text color={colors.lightPurple} fontSize={['sm', 'md']} mb={2}>
               {t('liquidity.lock_cpmm_set_amount')}
             </Text>
             <Flex bg={colors.backgroundDark} rounded={'xl'} align="center" justifyContent="space-between" px={4} py={2} gap={1} mb={2}>
@@ -102,7 +102,7 @@ function LiquidityLockModal({
                 </Flex>
               </Flex>
               <Box textAlign="right">
-                <Text fontSize="xl" fontWeight="medium">
+                <Text fontSize={['md', 'xl']} fontWeight="medium">
                   {formatCurrency(lpValue, {
                     symbol: '$',
                     decimalPlaces: 2
@@ -138,6 +138,7 @@ function LiquidityLockModal({
             rounded={'xl'}
             bg={colors.modalContainerBg}
             border={`1px solid ${colors.selectInactive}`}
+            fontSize={['sm', 'md']}
             px={7}
             py={4}
             gap={2}

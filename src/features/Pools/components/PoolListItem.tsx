@@ -1,8 +1,6 @@
 import {
   Box,
   Center,
-  CircularProgress,
-  CircularProgressLabel,
   Flex,
   Grid,
   GridItem,
@@ -32,7 +30,6 @@ import ChartInfoIcon from '@/icons/misc/ChartInfoIcon'
 import SwapPoolItemIcon from '@/icons/misc/SwapPoolItemIcon'
 import OpenBookIcon from '@/icons/misc/OpenBookIcon'
 import PulseIcon from '@/icons/misc/PulseIcon'
-import LiquidityLockIcon from '@/icons/misc/LiquidityLockIcon'
 import QuestionCircleIcon from '@/icons/misc/QuestionCircleIcon'
 import StarIcon from '@/icons/misc/StarIcon'
 import { useAppStore } from '@/store'
@@ -47,6 +44,7 @@ import PoolListItemAprDetailPopoverContent from './PoolListItemAprDetailPopoverC
 import { aprColors, PoolListItemAprLine } from './PoolListItemAprLine'
 import { PoolListItemAprPie } from './PoolListItemAprPie'
 import { PoolListItemRewardStack } from './PoolListItemRewardStack'
+import LockPercentCircle from '@/components/LockPercentCircle'
 
 export default function PoolListItem({
   styleType = 'list',
@@ -235,32 +233,20 @@ export default function PoolListItem({
               </Text>
               <Box minWidth="22px">
                 {Math.abs(pool.burnPercent || 0) > 5 && (
-                  <Tooltip
-                    label={t('liquidity.total_locked_position', {
-                      percent: formatToRawLocaleStr(toPercentString(Math.abs(pool.burnPercent || 0), { alreadyPercented: true }))
-                    })}
-                  >
-                    <CircularProgress
-                      size="22px"
-                      thickness="8px"
-                      value={Math.abs(pool.burnPercent || 0)}
-                      trackColor="rgba(191, 210, 255, 0.3)"
-                      color={colors.lightPurple}
-                    >
-                      <CircularProgressLabel display="flex" justifyContent="center">
-                        <LiquidityLockIcon />
-                      </CircularProgressLabel>
-                    </CircularProgress>
-                  </Tooltip>
+                  <LockPercentCircle
+                    value={Math.abs(pool.burnPercent || 0)}
+                    circularProps={{
+                      size: '22px',
+                      thickness: '8px'
+                    }}
+                  />
                 )}
               </Box>
             </HStack>
+            <Text as={'span'} fontSize="lg" textAlign={'right'}>
+              {formatCurrency(timeData.volume, { symbol: '$', abbreviated: isMobile, decimalPlaces: 0 })}
+            </Text>
           </Desktop>
-
-          <Text as={'span'} fontSize={['sm', 'lg']} textAlign={'right'}>
-            {formatCurrency(timeData.volume, { symbol: '$', abbreviated: isMobile, decimalPlaces: 0 })}
-          </Text>
-
           <Desktop>
             <Text as={'span'} fontSize={['sm', 'lg']} textAlign={'right'}>
               {formatCurrency(timeData.volumeFee, { symbol: '$', decimalPlaces: 0 })}
@@ -278,12 +264,39 @@ export default function PoolListItem({
             }
           >
             <HStack flexDirection={['column', 'column', 'row']} gap={[1, 2, 5]} alignItems={['revert', 'revert', 'center']}>
-              <Box width={['unset', '80px', '100px']}>
-                <Text fontSize={['md', 'lg', 'xl']} fontWeight={500} whiteSpace="nowrap" align={['revert', 'revert', 'right']}>
-                  {formatToRawLocaleStr(toAPRPercent(timeData.apr))}
-                </Text>
-                <PoolListItemAprLine aprData={aprData} />
-              </Box>
+              <Desktop>
+                <Box width={['unset', '80px', '100px']}>
+                  <Text fontSize={['md', 'lg', 'xl']} fontWeight={500} whiteSpace="nowrap" align={['revert', 'revert', 'right']}>
+                    {formatToRawLocaleStr(toAPRPercent(timeData.apr))}
+                  </Text>
+                  <PoolListItemAprLine aprData={aprData} />
+                </Box>
+              </Desktop>
+              <Mobile>
+                <HStack gap={1} justifyContent="flex-end">
+                  {pool.burnPercent > 5 && (
+                    <LockPercentCircle
+                      value={pool.burnPercent}
+                      circularProps={{
+                        size: '16px'
+                      }}
+                      iconProps={{
+                        width: 10,
+                        height: 10
+                      }}
+                    />
+                  )}
+                  <Text as={'span'} fontWeight="medium" textAlign={'right'}>
+                    {formatCurrency(timeData.volume, { symbol: '$', decimalPlaces: 0 })}
+                  </Text>
+                </HStack>
+                <HStack gap={2} justifyContent="flex-end">
+                  <Text fontSize="sm" whiteSpace="nowrap" align="revert" color={colors.lightPurple}>
+                    {formatToRawLocaleStr(toAPRPercent(timeData.apr))}
+                  </Text>
+                  <PoolListItemAprLine aprData={aprData} />
+                </HStack>
+              </Mobile>
               <Desktop>
                 {/* Reward stack */}
                 <Flex>
@@ -524,7 +537,13 @@ export default function PoolListItem({
                         <Text fontWeight="500">
                           {baseToken?.symbol}/{quoteToken?.symbol}
                         </Text>
-                        <StarIcon selected={isFavorite} onClick={onFavoriteClick} />
+                        <StarIcon
+                          selected={isFavorite}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onFavoriteClick()
+                          }}
+                        />
                       </HStack>
                       <HStack spacing="6px">
                         <Tag size="sm" variant="rounded">

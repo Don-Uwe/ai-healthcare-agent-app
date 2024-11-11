@@ -12,6 +12,7 @@ import {
   Tag,
   Text,
   useBreakpointValue,
+  useOutsideClick,
   useDisclosure,
   useUpdateEffect
 } from '@chakra-ui/react'
@@ -37,6 +38,7 @@ import usePrevious from '@/hooks/usePrevious'
 import useSort from '@/hooks/useSort'
 import GridIcon from '@/icons/misc/GridIcon'
 import ListIcon from '@/icons/misc/ListIcon'
+import SearchIcon from '@/icons/misc/SearchIcon'
 import MoreListControllers from '@/icons/misc/MoreListControllers'
 import NotFound from '@/icons/misc/NotFound'
 import OpenBookIcon from '@/icons/misc/OpenBookIcon'
@@ -46,7 +48,6 @@ import { appLayoutPaddingX, revertAppLayoutPaddingX } from '@/theme/detailConfig
 import { isValidPublicKey } from '@/utils/publicKey'
 import toPercentString from '@/utils/numberish/toPercentString'
 import { formatToRawLocaleStr } from '@/utils/numberish/formatter'
-import { shakeUndefindedItem } from '@/utils/shakeUndefindedItem'
 import { useEffectWithUrl, useStateWithUrl } from '../../hooks/useStateWithUrl'
 import CreatePoolButton from './components/CreatePoolButton'
 import PoolChartModal from './components/PoolChart'
@@ -149,6 +150,7 @@ export default function Pools() {
   const gridCardSize = useBreakpointValue({ base: undefined, sm: 290 })
   const gridCardGap = useBreakpointValue({ base: 4, sm: 5 })
   const { isOpen: isChartOpen, onOpen: openChart, onClose: closeChart } = useDisclosure()
+  const { isOpen: isMobileSearchOpen, onOpen: openMobileSearch, onClose: closeMobileSearch } = useDisclosure()
   const [chartPoolInfo, setChartPoolInfo] = useState<FormattedPoolInfoItem>()
 
   // -------- search --------
@@ -178,7 +180,10 @@ export default function Pools() {
         skipSyncQuery.current = true
         setSearchTokens(searchTokens)
       }
-      if (searchMints) setSearchText((searchText) => searchText || searchMints)
+      if (searchMints) {
+        setSearchText((searchText) => searchText || searchMints)
+        isMobile && openMobileSearch()
+      }
     },
     [tokenMap]
   )
@@ -354,6 +359,15 @@ export default function Pools() {
     ),
     [currentLayoutStyle, timeBase]
   )
+  const searchRef = useRef<HTMLDivElement>(null)
+  useOutsideClick({
+    ref: searchRef,
+    handler() {
+      if (searchText == '' && searchTokens.length === 0) {
+        closeMobileSearch()
+      }
+    }
+  })
   return (
     <>
       <Flex flexDirection="column" height={'100%'} flexGrow={1} {...containerProps}>
@@ -369,9 +383,7 @@ export default function Pools() {
 
         <Mobile>
           <Box {...titleContainerProps} mb={0.5} flexShrink={0} marginX={revertAppLayoutPaddingX}>
-            <Mobile>
-              <TVLInfoPanelMobile tvl={tvl} volume={volume} />
-            </Mobile>
+            <TVLInfoPanelMobile tvl={tvl} volume={volume} />
           </Box>
         </Mobile>
 
@@ -383,17 +395,17 @@ export default function Pools() {
             py={2}
             gridTemplate={[
               `
-              "tabs more btn" auto 
-              "coll coll  coll" auto 
+              "tabs more btn" auto
+              "coll coll  coll" auto
               "search search search" auto / auto auto 1fr
             `,
               `
               "tabs tabs  tabs" auto
-              "search more btn" auto 
+              "search more btn" auto
               "coll  coll  coll" auto / auto  auto 1fr
             `,
               `
-              "tabs search more btn" auto 
+              "tabs search more btn" auto
               "coll coll coll  coll" auto / auto auto auto 1fr
             `
             ]}
@@ -431,20 +443,30 @@ export default function Pools() {
             </GridItem>
 
             <GridItem area={'search'}>
-              <TokenSearchInput
-                width={['unset', '26em']}
-                value={searchText}
-                onChange={setSearchText}
-                selectedListValue={searchTokens}
-                onSelectedListChange={setSearchTokens}
-                hideAutoComplete={!!searchIdData}
-              />
+              {(!isMobile || isMobileSearchOpen) && (
+                <TokenSearchInput
+                  ref={searchRef}
+                  width={['unset', '26em']}
+                  value={searchText}
+                  onChange={setSearchText}
+                  selectedListValue={searchTokens}
+                  onSelectedListChange={setSearchTokens}
+                  hideAutoComplete={!!searchIdData}
+                />
+              )}
             </GridItem>
 
             <GridItem area={'more'}>
-              <Button onClick={toggleSubcontrollers} variant="capsule" height={['34px', '40px']} isActive={isCollapseOpen}>
-                <MoreListControllers color={colors.textSecondary} width={listControllerIconSize} height={listControllerIconSize} />
-              </Button>
+              <Flex gap={3}>
+                <Button onClick={toggleSubcontrollers} variant="capsule" height={['34px', '40px']} isActive={isCollapseOpen}>
+                  <MoreListControllers color={colors.textSecondary} width={listControllerIconSize} height={listControllerIconSize} />
+                </Button>
+                {isMobile && !isMobileSearchOpen && (
+                  <Button onClick={openMobileSearch} variant="capsule" height="34px" pl={3} pr={7}>
+                    <SearchIcon color={colors.textQuaternary} opacity={0.5} width="16px" height="16px" />
+                  </Button>
+                )}
+              </Flex>
             </GridItem>
 
             <GridItem area={'btn'} justifySelf={'end'}>
@@ -467,7 +489,7 @@ export default function Pools() {
                     {/* Widgets */}
                     <Box>
                       <FormControl display="flex" alignItems="center">
-                        <FormLabel minW={['120px', 'unset']}>{t('common.layout')}</FormLabel>
+                        <FormLabel minW={['80px', 'unset']}>{t('common.layout')}</FormLabel>
                         <Tabs
                           items={[
                             { value: 'list', label: <ListIcon key={`list-icon`} /> },
@@ -477,13 +499,16 @@ export default function Pools() {
                           variant="roundedPlain"
                           size="sm"
                           onChange={setCurrentLayoutStyle}
+                          tabItemSX={{
+                            px: isMobile ? 1 : '1em'
+                          }}
                         />
                       </FormControl>
                     </Box>
 
                     <Box>
                       <FormControl display="flex" alignItems="center">
-                        <FormLabel minW={['120px', 'unset']}>{t('common.time_base')}</FormLabel>
+                        <FormLabel minW={['80px', 'unset']}>{t('common.time_base')}</FormLabel>
                         <Tabs
                           variant="roundedPlain"
                           items={Object.keys(FILED_KEY).map((key) => ({
@@ -493,13 +518,16 @@ export default function Pools() {
                           value={timeBase}
                           onChange={setTimeBase}
                           tabListSX={{ height: '24px' }}
+                          tabItemSX={{
+                            px: isMobile ? 1 : '1em'
+                          }}
                         />
                       </FormControl>
                     </Box>
 
                     <Flex alignItems="center">
                       <FormControl display="flex" alignItems="center">
-                        <FormLabel minW={['120px', 'unset']}>{t('liquidity.show_farms')}</FormLabel>
+                        <FormLabel minW={['80px', 'unset']}>{t('liquidity.show_farms')}</FormLabel>
                         <Switch defaultChecked={showFarms} onChange={handleSwitchFarmChange} />
                       </FormControl>
                     </Flex>
@@ -507,7 +535,7 @@ export default function Pools() {
                     {currentLayoutStyle === 'grid' ? (
                       <Flex alignItems="center">
                         <FormControl display="flex" alignItems="center">
-                          <FormLabel minW={['120px', 'unset']}>{t('common.sort_by')}</FormLabel>
+                          <FormLabel minW={['80px', 'unset']}>{t('common.sort_by')}</FormLabel>
                           <Select
                             sx={({ isPanelOpen }) => ({
                               height: '34px',

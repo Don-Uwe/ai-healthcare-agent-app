@@ -189,10 +189,8 @@ export default function ClmmPositionAccountItem({
             poolInfo={poolInfo}
             position={position}
             aprData={aprData}
-            timeBasis={timeBasis}
             onTimeBasisChange={setTimeBasis}
             nftMint={position.nftMint.toString()}
-            rewardInfos={allRewardInfos}
             totalPendingYield={totalPendingYield.toString()}
             baseIn={baseIn}
             onClickCloseButton={handleClosePosition}

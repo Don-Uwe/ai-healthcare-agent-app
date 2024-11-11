@@ -6,8 +6,6 @@ import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import { useMemo } from 'react'
 import Decimal from 'decimal.js'
-import { getSelectorsByUserAgent } from 'react-device-detect'
-import { BreakpointChecks, MatchBreakpointsContext } from '@/hooks/useResponsive'
 
 import i18n from '../i18n'
 import { isClient } from '../utils/common'
@@ -26,18 +24,13 @@ const OVERFLOW_HIDDEN_PATH = ['/liquidity-pools']
 
 Decimal.set({ precision: 1e3 })
 
-const MyApp = ({ Component, pageProps, lng, breakPoints, ...props }: AppProps & { lng: string; breakPoints: BreakpointChecks }) => {
+const MyApp = ({ Component, pageProps, ...props }: AppProps) => {
   const { pathname } = useRouter()
 
   const [onlyContent, overflowHidden] = useMemo(
     () => [CONTENT_ONLY_PATH.includes(pathname), OVERFLOW_HIDDEN_PATH.includes(pathname)],
     [pathname]
   )
-
-  // if (isLocal()) {
-  //   const lang = lng || (getCookie('i18nextLng') as string) || 'en'
-  //   i18n.changeLanguage(lang)
-  // }
 
   return (
     <>
@@ -61,17 +54,15 @@ const MyApp = ({ Component, pageProps, lng, breakPoints, ...props }: AppProps & 
         <title>{pageProps?.title ? `${pageProps.title} Raydium` : 'Raydium'}</title>
       </Head>
       <DynamicProviders>
-        <MatchBreakpointsContext.Provider value={breakPoints}>
-          <DynamicContent {...props}>
-            {onlyContent ? (
+        <DynamicContent {...props}>
+          {onlyContent ? (
+            <Component {...pageProps} />
+          ) : (
+            <DynamicAppNavLayout overflowHidden={overflowHidden}>
               <Component {...pageProps} />
-            ) : (
-              <DynamicAppNavLayout overflowHidden={overflowHidden}>
-                <Component {...pageProps} />
-              </DynamicAppNavLayout>
-            )}
-          </DynamicContent>
-        </MatchBreakpointsContext.Provider>
+            </DynamicAppNavLayout>
+          )}
+        </DynamicContent>
       </DynamicProviders>
     </>
   )
@@ -81,13 +72,11 @@ MyApp.getInitialProps = async (appContext: AppContext) => {
   if (isClient()) return {}
   try {
     const ctx = await App.getInitialProps(appContext)
-    const userAgent = appContext.ctx.req?.headers['user-agent'] || ''
-    const breakPoints = getSelectorsByUserAgent(userAgent)
     let lng = getCookie('i18nextLng', { req: appContext.ctx.req, res: appContext.ctx.res }) as string
     lng = lng || 'en'
     i18n.changeLanguage(lng)
 
-    return { ...ctx, breakPoints }
+    return ctx
   } catch (err) {
     return {}
   }

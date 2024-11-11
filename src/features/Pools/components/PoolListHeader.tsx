@@ -1,9 +1,10 @@
 import SortUpDownArrow from '@/components/SortUpDownArrow'
 import { colors } from '@/theme/cssVariables'
-import { Box, Flex, Hide, useColorMode } from '@chakra-ui/react'
+import { Box, Flex, useColorMode } from '@chakra-ui/react'
 import { useTranslation } from 'react-i18next'
 import { poolListGrid } from '../cssBlocks'
 import { TimeBase, POOL_SORT_KEY } from '../util'
+import { Desktop, Mobile } from '@/components/MobileDesktop'
 
 export function PoolListHeader({
   sortKey,
@@ -35,8 +36,7 @@ export function PoolListHeader({
       fontSize={['sm', 'md']}
     >
       <Box pl={[0, 4 + 6]}>{t('liquidity.pool')}</Box>
-
-      <Hide below="sm">
+      <Desktop>
         <Flex
           justifyContent={'end'}
           alignItems="center"
@@ -49,24 +49,25 @@ export function PoolListHeader({
           {t('liquidity.title')}
           {sortKey === POOL_SORT_KEY.liquidity ? <SortUpDownArrow width="12px" height="12px" isDown={Boolean(order)} /> : null}
         </Flex>
-      </Hide>
-
-      <Flex justifyContent={'end'} alignItems="center" gap="1" cursor="pointer" onClick={() => handleClickSort('volume')}>
-        {t(`field.${timeBase}_volume`)}
-        {sortKey === POOL_SORT_KEY.volume ? <SortUpDownArrow width="12px" height="12px" isDown={Boolean(order)} /> : null}
-      </Flex>
-
-      <Hide below="sm">
+        <Flex justifyContent={'end'} alignItems="center" gap="1" cursor="pointer" onClick={() => handleClickSort('volume')}>
+          {t(`field.${timeBase}_volume`)}
+          {sortKey === POOL_SORT_KEY.volume ? <SortUpDownArrow width="12px" height="12px" isDown={Boolean(order)} /> : null}
+        </Flex>
         <Flex justifyContent={'end'} alignItems="center" gap="1" cursor="pointer" onClick={() => handleClickSort('fee')}>
           {t(`field.${timeBase}_fees`)}
           {sortKey === POOL_SORT_KEY.fee ? <SortUpDownArrow width="12px" height="12px" isDown={Boolean(order)} /> : null}
         </Flex>
-      </Hide>
-
-      <Flex alignItems="center" gap="1" cursor="pointer" onClick={() => handleClickSort('apr')}>
-        {t(`field.${timeBase}_apr`)}
-        {sortKey === POOL_SORT_KEY.apr ? <SortUpDownArrow width="12px" height="12px" isDown={Boolean(order)} /> : null}
-      </Flex>
+        <Flex alignItems="center" gap="1" cursor="pointer" onClick={() => handleClickSort('apr')}>
+          {t(`field.${timeBase}_apr`)}
+          {sortKey === POOL_SORT_KEY.apr ? <SortUpDownArrow width="12px" height="12px" isDown={Boolean(order)} /> : null}
+        </Flex>
+      </Desktop>
+      <Mobile>
+        <Flex alignItems="center" gap="1" cursor="pointer" onClick={() => handleClickSort('volume')}>
+          {t('common.volume')}/{t(`field.${timeBase}_apr`)}
+          {sortKey === POOL_SORT_KEY.volume ? <SortUpDownArrow width="12px" height="12px" isDown={Boolean(order)} /> : null}
+        </Flex>
+      </Mobile>
       <Box />
     </Flex>
   )
