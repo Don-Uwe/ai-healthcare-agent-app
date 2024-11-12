@@ -39,6 +39,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
       });
       return response.data.profile as User;
     },
+    
   });
 
   const onArticleViewed = ({

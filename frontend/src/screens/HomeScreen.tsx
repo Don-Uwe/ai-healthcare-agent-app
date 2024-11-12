@@ -210,6 +210,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const {
     data: articleData,
     isLoading,
+    isError,
     refetch,
   } = useQuery({
     queryKey: ['get-all-articles'],
@@ -260,6 +261,10 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     }
   };
 
+  if (isError || !articleData || articleData.length === 0) {
+    return <Text style={styles.message}>No Article Found</Text>;
+  }
+  
   if (isLoading) {
     return <Loader />;
   }

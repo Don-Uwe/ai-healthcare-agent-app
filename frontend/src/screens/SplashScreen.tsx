@@ -1,10 +1,13 @@
 import React, {useEffect} from 'react';
-import {View, Text, StyleSheet, Image} from 'react-native';
+import {View, Text, StyleSheet, Image, Alert, BackHandler} from 'react-native';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
-import {SplashScreenProp} from '../type';
+import {SplashScreenProp, User} from '../type';
 import {clearStorage, KEYS, retrieveItem} from '../helper/Utils';
 import {useDispatch} from 'react-redux';
 import {setUserId, setUserToken} from '../store/UserSlice';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import axios, {AxiosError} from 'axios';
+import {GET_PROFILE_API} from '../helper/APIUtils';
 
 const SplashScreen = ({navigation}: SplashScreenProp) => {
   const dispatch = useDispatch();
@@ -17,14 +20,46 @@ const SplashScreen = ({navigation}: SplashScreenProp) => {
     return daysDifference >= 6;
   }
 
-  // For testing purpose
-  function isDateNotMoreThanTenMinutesOld(dateString: string) {
-    const inputDate = new Date(dateString);
-    const currentDate = new Date();
-    const timeDifference = currentDate.getTime() - inputDate.getTime();
-    const minutesDifference = timeDifference / (1000 * 60);
-    return minutesDifference <= 10;
-  }
+  const getUserData = async (user_token: string) => {
+    try {
+      const response = await axios.get(`${GET_PROFILE_API}`, {
+        headers: {
+          Authorization: `Bearer ${user_token}`,
+        },
+      });
+
+      return response.data.profile as User;
+    } catch (err) {
+      // Token is blacklisted
+      const status = err.response.status;
+      //console.log('lOGIN STATUS', status);
+
+      if (status === 403) {
+        Alert.alert(
+          'Session Expired',
+          'You have logged in from a different device. Please create a new login session. Your previous session has been terminated.',
+          [
+            {
+              text: 'continue',
+              onPress: () => {
+                navigation.reset({
+                  index: 0,
+                  routes: [{name: 'LoginScreen'}],
+                });
+              },
+            },
+            {
+              text: 'exit',
+              onPress: () => {
+                BackHandler.exitApp(); // This works on Android, for iOS it is not possible
+              },
+            },
+          ],
+          {cancelable: false},
+        );
+      }
+    }
+  };
 
   const checkLoginStatus = async () => {
     try {
@@ -33,6 +68,10 @@ const SplashScreen = ({navigation}: SplashScreenProp) => {
       const user = await retrieveItem(KEYS.USER_TOKEN);
       const expiryDate = await retrieveItem(KEYS.USER_TOKEN_EXPIRY_DATE);
       if (user && expiryDate && !isDateMoreThanSevenDaysOld(expiryDate)) {
+        // check if token blacklisted or not, later more than 7 days check will remove no need
+
+        await getUserData(user);
+
         dispatch(setUserId(userId));
         dispatch(setUserToken(user));
 
