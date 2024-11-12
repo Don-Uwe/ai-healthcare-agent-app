@@ -34,20 +34,36 @@
 </table>
 </div>
 <hr>
+
+
+[![Download Latest APK](https://img.shields.io/badge/Download%20APK-blue?style=for-the-badge&logo=android)](https://drive.google.com/file/d/1q0mbHFEYyo8i6aXgCs5HGn4oQ9adHSNV/view?usp=sharing)
+
 <!------------------------------------------------------------------------FEATURED IN------------------------------------------------------------------------------>
 
+<br>
 
-## :zap: Featured In:
+ ## :zap: Programs Participated In: 
 
 
+<br>
+
+<!--
  <div>
-    <h2><img src="https://github.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/blob/master/Emojis/Hand%20gestures/Flexed%20Biceps.png?raw=true" width="35" height="35" > Open Source Programs</h2>
+    <h2><img src="https://github.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/blob/master/Emojis/Hand%20gestures/Flexed%20Biceps.png?raw=true" width="35" height="35" >Programs Participated In</h2>
   </div>
+
+  -->
 <table>
    <tr>
       <th>Event Logo</th>
       <th>Event Name</th>
       <th>Event Description</th>
+   </tr>
+
+   <tr>
+      <td><img src="https://github.com/user-attachments/assets/2b03167c-a598-48be-9f93-66130e58ec00" width="200" height="auto" loading="lazy" alt="Vultr Cloud Innovate Hackathon"/></td>
+      <td>Vultr Cloud Innovate Hackathon</td>
+      <td>The Vultr Cloud Hackathon is an exciting competition that challenges participants to harness the power of Vultr's cloud infrastructure to develop creative and innovative solutions. Participants will use Vultr's scalable cloud services, including computing, storage, and networking, to build projects that solve real-world problems or push the boundaries of technology.</td>
    </tr>
    <tr>
       <td><img src="https://user-images.githubusercontent.com/63473496/153487849-4f094c16-d21c-463e-9971-98a8af7ba372.png" width="200" height="auto" loading="lazy" alt="GSSoC 24"/></td>
@@ -58,18 +74,24 @@
 <hr>
 
 
- ## 📸 Screenshots
+
 
 
 
  <br>
 
 
+<!--
+
+ ## 📸 Screenshots
+
 ||||
 |:----------------------------------------:|:-----------------------------------------:|:-----------------------------------------: |
 | <img src="https://github.com/user-attachments/assets/7f393df5-fcd1-4148-8174-a4fb2b3d439b" width="70%" /> | <img src="https://github.com/user-attachments/assets/5b468454-04b9-46b2-97d4-a03e05d1705b" width="70%" />| <img src="https://github.com/user-attachments/assets/c6faba37-8c39-4934-bf22-86bad5c1ab7f" width="70%" /> |
 | <img src="https://github.com/user-attachments/assets/9674c7c6-0835-4351-85a8-e087f43499af" width="70%" /> | <img src="https://github.com/user-attachments/assets/e6e5ca7d-bceb-4399-8117-6a75e3eb0e97" width="70%" /> | <img src="https://github.com/user-attachments/assets/8e049ef4-3c59-4c9c-abce-c01fcdf8e265" width="70%" /> |
 |  <img src="https://github.com/user-attachments/assets/b6a94806-3671-46f3-9891-cc75e6f7eee1" width="70%" /> |  <img src="https://github.com/user-attachments/assets/3d71832b-a29e-476a-a964-68c6e6849d69" width="70%" />|
+
+--> 
 <!--ABOUT US--->
 :zap: About Us:
 UltimateHealth is an innovative open-source project that aims to provide a comprehensive online library and article management application focused on health. The project is designed to cater to users looking for reliable and trustworthy information on various health-related topics.
