@@ -2,7 +2,7 @@ import dynamic from 'next/dynamic'
 import { useLiquidityStore, useAppStore } from '@/store'
 import { useEffect } from 'react'
 
-const CreatePool = dynamic(() => import('@/features/Create/StandardPool'))
+const CreatePool = dynamic(() => import('@/features/Create/StandardPool'), { ssr: false })
 
 function CreatePoolPage() {
   const raydium = useAppStore((s) => s.raydium)

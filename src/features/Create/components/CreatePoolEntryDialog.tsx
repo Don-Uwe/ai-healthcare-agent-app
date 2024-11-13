@@ -30,7 +30,7 @@ import { useRouter } from 'next/router'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 
-type CreateTarget = 'standard-amm' | 'concentrated-liquidity' | 'standard-farm' | 'clmm-lock' | 'cpmm-lock'
+type CreateTarget = 'legacy-amm' | 'standard-amm' | 'concentrated-liquidity' | 'standard-farm' | 'clmm-lock' | 'cpmm-lock'
 
 export function CreatePoolEntryDialog({
   isOpen,
@@ -43,10 +43,14 @@ export function CreatePoolEntryDialog({
 }) {
   const router = useRouter()
   const [type, setType] = useState<CreateTarget>(defaultType)
-
   const onConfirm = useCallback(() => {
     let to = ''
+    const query = { ...router.query }
     switch (type) {
+      case 'legacy-amm':
+        query.type = 'legacy-amm'
+        to = '/liquidity/create-pool'
+        break
       case 'standard-amm':
         to = '/liquidity/create-pool'
         break
@@ -67,9 +71,7 @@ export function CreatePoolEntryDialog({
     }
     router.push({
       pathname: to,
-      query: {
-        ...router.query
-      }
+      query
     })
   }, [router, type])
 
@@ -159,12 +161,15 @@ function CreatePoolEntryMobileDrawer({
 
 export function CreatePoolEntryDialogBody({ type, onChange }: { type: CreateTarget; onChange: (val: CreateTarget) => void }) {
   const { t } = useTranslation()
+  const isCreatePool = ['concentrated-liquidity', 'standard-amm', 'legacy-amm'].includes(type)
+  const isLockPool = ['clmm-lock', 'cpmm-lock'].includes(type)
+  const isCreateFarm = type === 'standard-farm'
   return (
     <Flex direction="column" gap={4}>
       <CreateBlock
         title={t('create_pool.modal_section_header_pool')}
         description={
-          type === 'concentrated-liquidity' || type === 'standard-amm' ? (
+          isCreatePool ? (
             <Trans i18nKey="create_pool.modal_section_header_pool_desc">
               <Link href="https://docs.raydium.io/raydium/pool-creation/creating-a-clmm-pool-and-farm" isExternal>
                 CLMM
@@ -175,23 +180,52 @@ export function CreatePoolEntryDialogBody({ type, onChange }: { type: CreateTarg
             </Trans>
           ) : null
         }
-        selected={type === 'concentrated-liquidity' || type === 'standard-amm'}
+        selected={isCreatePool}
         renderPoolType={
-          type === 'concentrated-liquidity' || type === 'standard-amm'
+          isCreatePool
             ? () => (
-                <Stack flexDirection={['column', 'row']}>
-                  <PoolTypeItem
-                    isSuggested
-                    isActive={type === 'concentrated-liquidity'}
-                    name={t('create_pool.modal_tab_concentrated')}
-                    onClickSelf={() => onChange('concentrated-liquidity')}
-                  />
-                  <PoolTypeItem
-                    isActive={type === 'standard-amm'}
-                    name={t('create_pool.modal_tab_standard_amm')}
-                    onClickSelf={() => onChange('standard-amm')}
-                  />
-                </Stack>
+                <>
+                  <Text fontSize="sm">{t('create_pool.pool_type')}</Text>
+                  <Stack flexDirection={['column']} mt={2} gap={3}>
+                    <PoolTypeItem
+                      isSuggested
+                      isActive={type === 'concentrated-liquidity'}
+                      content={
+                        <Box>
+                          <Text whiteSpace="nowrap" fontSize="sm">
+                            {t('create_pool.modal_tab_concentrated')}
+                          </Text>
+                          <Text fontSize="xs">{t('create_pool.modal_tab_concentrated_desc')}</Text>
+                        </Box>
+                      }
+                      onClickSelf={() => onChange('concentrated-liquidity')}
+                    />
+                    <PoolTypeItem
+                      isActive={type === 'standard-amm'}
+                      content={
+                        <Box>
+                          <Text whiteSpace="nowrap" fontSize="sm">
+                            {t('create_pool.modal_tab_standard_amm')}
+                          </Text>
+                          <Text fontSize="xs">{t('create_pool.modal_tab_standard_amm_desc')}</Text>
+                        </Box>
+                      }
+                      onClickSelf={() => onChange('standard-amm')}
+                    />
+                    <PoolTypeItem
+                      isActive={type === 'legacy-amm'}
+                      content={
+                        <Box>
+                          <Text whiteSpace="nowrap" fontSize="sm">
+                            {t('create_pool.modal_tab_legacy_amm')}
+                          </Text>
+                          <Text fontSize="xs">{t('create_pool.modal_tab_legacy_amm_desc')}</Text>
+                        </Box>
+                      }
+                      onClickSelf={() => onChange('legacy-amm')}
+                    />
+                  </Stack>
+                </>
               )
             : undefined
         }
@@ -200,7 +234,7 @@ export function CreatePoolEntryDialogBody({ type, onChange }: { type: CreateTarg
       <CreateBlock
         title={t('farm.create')}
         description={
-          type === 'standard-farm' ? (
+          isCreateFarm ? (
             <Trans i18nKey="create_pool.modal_section_header_farm_desc">
               <Link href="https://docs.raydium.io/raydium/pool-creation/creating-a-clmm-pool-and-farm" isExternal>
                 CLMM
@@ -211,13 +245,13 @@ export function CreatePoolEntryDialogBody({ type, onChange }: { type: CreateTarg
             </Trans>
           ) : null
         }
-        selected={type === 'standard-farm'}
+        selected={isCreateFarm}
         onClick={() => onChange('standard-farm')}
       />
       <CreateBlock
         title={t('create_pool.modal_section_header_lock')}
         description={
-          type === 'clmm-lock' || type === 'cpmm-lock' ? (
+          isLockPool ? (
             <Trans i18nKey="create_pool.modal_section_header_lock_desc">
               <Link href="https://docs.raydium.io/raydium/pool-creation/burn-and-earn" isExternal>
                 Learn more
@@ -225,19 +259,27 @@ export function CreatePoolEntryDialogBody({ type, onChange }: { type: CreateTarg
             </Trans>
           ) : null
         }
-        selected={type === 'clmm-lock' || type === 'cpmm-lock'}
+        selected={isLockPool}
         renderPoolType={
-          type === 'clmm-lock' || type === 'cpmm-lock'
+          isLockPool
             ? () => (
                 <Stack flexDirection={['column', 'row']}>
                   <PoolTypeItem
                     isActive={type === 'clmm-lock'}
-                    name={t('create_pool.modal_tab_concentrated')}
+                    content={
+                      <Text whiteSpace="nowrap" fontSize="sm">
+                        {t('create_pool.modal_tab_concentrated')}
+                      </Text>
+                    }
                     onClickSelf={() => onChange('clmm-lock')}
                   />
                   <PoolTypeItem
                     isActive={type === 'cpmm-lock'}
-                    name={t('create_pool.modal_tab_standard_amm')}
+                    content={
+                      <Text whiteSpace="nowrap" fontSize="sm">
+                        {t('create_pool.modal_tab_standard_amm')}
+                      </Text>
+                    }
                     onClickSelf={() => onChange('cpmm-lock')}
                   />
                 </Stack>
@@ -278,18 +320,18 @@ function CreateBlock(props: {
         {props.description}
       </Box>
 
-      {props.renderPoolType && <Box mt={4}>{props.renderPoolType()}</Box>}
+      {props.renderPoolType && <Box mt={2}>{props.renderPoolType()}</Box>}
     </Box>
   )
 }
 
 function PoolTypeItem({
-  name,
+  content,
   isActive,
   onClickSelf,
   isSuggested
 }: {
-  name: string
+  content: React.ReactNode
   isActive?: boolean
   onClickSelf?: () => void
   isSuggested?: boolean
@@ -322,9 +364,7 @@ function PoolTypeItem({
         <Box gridRow={1} gridColumn={1} rounded="full" p="3px" bg={isActive ? colors.secondary : colors.textSecondary}></Box>
         <Box gridRow={1} gridColumn={1} rounded="full" p="8px" opacity={0.3} bg={isActive ? colors.secondary : colors.textSecondary}></Box>
       </Box>
-      <Text whiteSpace="nowrap" fontSize="sm">
-        {name}
-      </Text>
+      {content}
     </HStack>
   )
 }

@@ -387,8 +387,13 @@
   },
   "create_pool": {
     "modal_title": "I want to...",
+    "pool_type": "Pool type:",
     "modal_tab_standard_amm": "Standard AMM",
+    "modal_tab_standard_amm_desc": "Newest CPMM, cheaper, supports Token 2022",
+    "modal_tab_legacy_amm": "Legacy AMM v4",
+    "modal_tab_legacy_amm_desc": "Legacy AMM program, more expensive due to orderbook market requirement",
     "modal_tab_concentrated": "Concentrated Liquidity",
+    "modal_tab_concentrated_desc": "Custom ranges, increased capital efficiency",
     "modal_section_header_pool": "Create pool",
     "modal_section_header_pool_desc": "Select pool type to create a pool for any token pair. Read the guide for <0>CLMM</0> or <1>Standard</1> pools.",
     "modal_section_header_pool_desc_link": "detailed guide",
@@ -608,7 +613,9 @@
     "no_chart_data_hint": "Please wait for a moment or try refreshing the page.",
     "liquidity_not_enough": "Liquidity not enough",
     "swap_slippage_error_title": "Swap failed due to slippage error!",
-    "swap_slippage_error_desc": "Slippage has exceeded user settings.\nTry again or adjust your slippage tolerance."
+    "swap_slippage_error_desc": "Slippage has exceeded user settings.\nTry again or adjust your slippage tolerance.",
+    "initial_liquidity_low": "Initial liquidity is too low, try increasing the amount.",
+    "amm_not_support_2022": "Amm V4 pool does not support token 2022"
   },
   "input": {
     "max_button": "Max",
@@ -732,6 +739,8 @@
     "note_done_2": "You can now create a farm or go back",
     "current_price": "Current price",
     "initial_liquidity": "Initial liquidity",
+    "initialize_cpmm_pool": "Initialize CPMM pool",
+    "initialize_amm_v4_pool": "Initialize AMM v4 pool",
     "base_token_initial_liquidity": "Base token initial liquidity",
     "quote_token_initial_liquidity": "Quote token initial liquidity",
     "market_open_book_id": "OpenBook Program ID",
@@ -759,6 +768,7 @@
     "initial_price_tooltip": "Initial price is set by the ratio of tokens deposited for initial liquidity. If the token is already trading on Raydium, initial price will be auto-filled with the current price.",
     "pool_creation_fee_note": "Note: A creation fee of {{subject}} SOL is required for new pools.",
     "pool_creation_fee_tooltip": "A pool creation fee of 0.15 SOL is currently reserved to support front and backend infrastructure. Approximately 0.05 SOL is required for program account creation and network fees.",
+    "pool_ammv4_creation_fee_tooltip": "A pool creation fee of 0.40 SOL is currently reserved to support front and backend infrastructure. Approximately 0.3 SOL is required for OpenBook Market rent and program account creation.",
     "custom": "Custom",
     "start_now": "Start Now",
     "current_price_tooltip": "This is the current price of an existing pool on Raydium. You can still enter a different initial price but be aware this may lead to arbitrage if the price difference is large."

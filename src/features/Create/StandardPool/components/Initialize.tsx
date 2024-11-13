@@ -36,11 +36,12 @@ import useFetchPoolByMint from '@/hooks/pool/useFetchPoolByMint'
 import CreateSuccessModal from './CreateSuccessModal'
 import useInitPoolSchema from '../hooks/useInitPoolSchema'
 import useBirdeyeTokenPrice from '@/hooks/token/useBirdeyeTokenPrice'
+import { useCreateMarketStore } from '@/store'
 
 import Decimal from 'decimal.js'
 import dayjs from 'dayjs'
 
-export default function Initialize() {
+export default function Initialize({ isAmmV4 }: { isAmmV4: boolean }) {
   const { t } = useTranslation()
   const tokenMap = useTokenStore((s) => s.tokenMap)
   const [inputMint, setInputMint] = useState<string>(PublicKey.default.toBase58())
@@ -48,6 +49,7 @@ export default function Initialize() {
   const [baseToken, quoteToken] = [tokenMap.get(inputMint), tokenMap.get(outputMint)]
 
   const [createPoolAct, newCreatedPool] = useLiquidityStore((s) => [s.createPoolAct, s.newCreatedPool], shallow)
+  const createMarketAndPoolAct = useCreateMarketStore((s) => s.createMarketAndPoolAct)
 
   const [baseIn, setBaeIn] = useState(true)
   const [startDate, setStartDate] = useState<Date | undefined>()
@@ -63,11 +65,11 @@ export default function Initialize() {
   const [tokenAmount, setTokenAmount] = useState<{ base: string; quote: string }>({ base: '', quote: '' })
   const [baseSymbol, quoteSymbol] = [wSolToSolString(baseToken?.symbol), wSolToSolString(quoteToken?.symbol)]
 
-  // TODO: fee configs
   const cpmmFeeConfigs = useLiquidityStore((s) => s.cpmmFeeConfigs)
   const clmmFeeOptions = Object.values(cpmmFeeConfigs)
   const poolKey = `${baseSymbol}-${quoteSymbol}`
   const [currentConfig, setCurrentConfig] = useState<ApiCpmmConfigInfo | undefined>()
+  const [newPoolId, setNewPoolId] = useState<string | undefined>()
 
   const { data: tokenPrices = {}, isLoading: isPriceLoading } = useBirdeyeTokenPrice({
     mintList: [inputMint, outputMint]
@@ -127,9 +129,15 @@ export default function Initialize() {
           .toDecimalPlaces(baseToken?.decimals ?? 6)
           .toString()
 
-  const error = useInitPoolSchema({ baseToken, quoteToken, tokenAmount, startTime: startDate, feeConfig: currentConfig })
+  const error = useInitPoolSchema({ baseToken, quoteToken, tokenAmount, startTime: startDate, feeConfig: currentConfig, isAmmV4 })
 
-  useEffect(() => () => useLiquidityStore.setState({ newCreatedPool: undefined }), [])
+  useEffect(
+    () => () => {
+      useLiquidityStore.setState({ newCreatedPool: undefined })
+      setNewPoolId(undefined)
+    },
+    []
+  )
 
   const handleSelectToken = useCallback(
     (token: TokenInfo | ApiV3Token, side?: 'input' | 'output') => {
@@ -147,6 +155,21 @@ export default function Initialize() {
 
   const onInitializeClick = () => {
     onLoading()
+    if (isAmmV4) {
+      let poolId = ''
+      createMarketAndPoolAct({
+        baseToken: solToWSolToken(baseToken!),
+        quoteToken: solToWSolToken(quoteToken!),
+        baseAmount: new Decimal(tokenAmount.base).mul(10 ** baseToken!.decimals).toFixed(0),
+        quoteAmount: new Decimal(tokenAmount.quote).mul(10 ** quoteToken!.decimals).toFixed(0),
+        startTime: startDate,
+        onSent: (data) => (poolId = data.ammId.toBase58()),
+        onConfirmed: () => setNewPoolId(poolId),
+        onError: onTxError,
+        onFinally: offLoading
+      })
+      return
+    }
     createPoolAct({
       pool: {
         mintA: solToWSolToken(baseToken!),
@@ -232,70 +255,72 @@ export default function Initialize() {
           </Box>
         </HStack>
       </Flex>
-      <Flex direction="column" w="full" align={'flex-start'} gap={3}>
-        <Text fontWeight="medium" fontSize="sm">
-          {t('field.fee_tier')}
-        </Text>
-        <Flex w="full" gap="2">
-          <Select
-            variant="filledDark"
-            items={clmmFeeOptions}
-            value={currentConfig}
-            renderItem={(v, idx) => {
-              if (v) {
-                const existed = new Set(existingPools.values()).has(v.id)
-                const selected = currentConfig?.id === v.id
-                const isLastItem = idx === clmmFeeOptions.length - 1
-                return (
-                  <HStack
-                    color={colors.textPrimary}
-                    opacity={existed ? 0.5 : 1}
-                    cursor={existed ? 'not-allowed' : 'pointer'}
-                    justifyContent="space-between"
-                    mx={4}
-                    py={2.5}
-                    fontSize="sm"
-                    borderBottom={isLastItem ? 'none' : `1px solid ${colors.buttonBg01}`}
-                    _hover={{
-                      borderBottom: '1px solid transparent'
-                    }}
-                  >
-                    <Text>{percentFormatter.format(v.tradeFeeRate / 1000000)}</Text>
-                    {selected && <SubtractIcon />}
-                  </HStack>
-                )
-              }
-              return null
-            }}
-            renderTriggerItem={(v) => (v ? <Text fontSize="sm">{percentFormatter.format(v.tradeFeeRate / 1000000)}</Text> : null)}
-            onChange={(val) => {
-              setCurrentConfig(val)
-              const existed = new Set(existingPools.values()).has(val.id)
-              const selected = currentConfig?.id === val.id
-              !existed && !selected && setCurrentConfig(val)
-            }}
-            sx={{
-              w: 'full',
-              height: '42px'
-            }}
-            popoverContentSx={{
-              border: `1px solid ${colors.selectInactive}`,
-              py: 0
-            }}
-            popoverItemSx={{
-              p: 0,
-              lineHeight: '18px',
-              _hover: {
-                bg: colors.modalContainerBg
-              }
-            }}
-            icons={{
-              open: <ChevronUp color={colors.textSecondary} opacity="0.5" />,
-              close: <ChevronDown color={colors.textSecondary} opacity="0.5" />
-            }}
-          />
+      {isAmmV4 ? null : (
+        <Flex direction="column" w="full" align={'flex-start'} gap={3}>
+          <Text fontWeight="medium" fontSize="sm">
+            {t('field.fee_tier')}
+          </Text>
+          <Flex w="full" gap="2">
+            <Select
+              variant="filledDark"
+              items={clmmFeeOptions}
+              value={currentConfig}
+              renderItem={(v, idx) => {
+                if (v) {
+                  const existed = new Set(existingPools.values()).has(v.id)
+                  const selected = currentConfig?.id === v.id
+                  const isLastItem = idx === clmmFeeOptions.length - 1
+                  return (
+                    <HStack
+                      color={colors.textPrimary}
+                      opacity={existed ? 0.5 : 1}
+                      cursor={existed ? 'not-allowed' : 'pointer'}
+                      justifyContent="space-between"
+                      mx={4}
+                      py={2.5}
+                      fontSize="sm"
+                      borderBottom={isLastItem ? 'none' : `1px solid ${colors.buttonBg01}`}
+                      _hover={{
+                        borderBottom: '1px solid transparent'
+                      }}
+                    >
+                      <Text>{percentFormatter.format(v.tradeFeeRate / 1000000)}</Text>
+                      {selected && <SubtractIcon />}
+                    </HStack>
+                  )
+                }
+                return null
+              }}
+              renderTriggerItem={(v) => (v ? <Text fontSize="sm">{percentFormatter.format(v.tradeFeeRate / 1000000)}</Text> : null)}
+              onChange={(val) => {
+                setCurrentConfig(val)
+                const existed = new Set(existingPools.values()).has(val.id)
+                const selected = currentConfig?.id === val.id
+                !existed && !selected && setCurrentConfig(val)
+              }}
+              sx={{
+                w: 'full',
+                height: '42px'
+              }}
+              popoverContentSx={{
+                border: `1px solid ${colors.selectInactive}`,
+                py: 0
+              }}
+              popoverItemSx={{
+                p: 0,
+                lineHeight: '18px',
+                _hover: {
+                  bg: colors.modalContainerBg
+                }
+              }}
+              icons={{
+                open: <ChevronUp color={colors.textSecondary} opacity="0.5" />,
+                close: <ChevronDown color={colors.textSecondary} opacity="0.5" />
+              }}
+            />
+          </Flex>
         </Flex>
-      </Flex>
+      )}
       {/* start time */}
       <Flex direction="column" w="full" gap={3}>
         <Text fontWeight="medium" textAlign="left" fontSize="sm">
@@ -406,9 +431,16 @@ export default function Initialize() {
         )}
         <HStack color={colors.semanticWarning}>
           <Text fontWeight="medium" fontSize="sm" my="-2">
-            {t('create_standard_pool.pool_creation_fee_note', { subject: '~0.2' })}
+            {isAmmV4
+              ? t('create_standard_pool.pool_creation_fee_note', { subject: '~0.7' })
+              : t('create_standard_pool.pool_creation_fee_note', { subject: '~0.2' })}
           </Text>
-          <QuestionToolTip iconType="question" label={t('create_standard_pool.pool_creation_fee_tooltip')} />
+          <QuestionToolTip
+            iconType="question"
+            label={
+              isAmmV4 ? t('create_standard_pool.pool_ammv4_creation_fee_tooltip') : t('create_standard_pool.pool_creation_fee_tooltip')
+            }
+          />
         </HStack>
         <Text color="red" my="-2">
           {tokenAmount.base || tokenAmount.quote ? error : ''}
@@ -419,7 +451,7 @@ export default function Initialize() {
           {t('create_standard_pool.button_initialize_liquidity_pool')}
         </Button>
       </HStack>
-      {newCreatedPool ? <CreateSuccessModal ammId={newCreatedPool.poolId.toString()} /> : null}
+      {newCreatedPool || newPoolId ? <CreateSuccessModal ammId={newCreatedPool ? newCreatedPool.poolId.toString() : newPoolId!} /> : null}
       <TxErrorModal description="Failed to create pool. Please try again later." isOpen={isTxError} onClose={offTxError} />
     </VStack>
   )

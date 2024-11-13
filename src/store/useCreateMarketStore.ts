@@ -1,16 +1,28 @@
-import { ApiV3Token, getAssociatedPoolKeys, MARKET_STATE_LAYOUT_V3 } from '@raydium-io/raydium-sdk-v2'
-import { PublicKey } from '@solana/web3.js'
+import {
+  ApiV3Token,
+  getAssociatedPoolKeys,
+  MARKET_STATE_LAYOUT_V3,
+  TxVersion,
+  LOOKUP_TABLE_CACHE,
+  CreatePoolAddress,
+  MarketExtInfo
+} from '@raydium-io/raydium-sdk-v2'
+import { PublicKey, Transaction, VersionedTransaction, TransactionMessage, SystemProgram } from '@solana/web3.js'
+import { TOKEN_2022_PROGRAM_ID } from '@solana/spl-token'
 import { useAppStore, useTokenAccountStore, useTokenStore } from './'
 import createStore from './createStore'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
-import { TxCallbackProps } from '@/types/tx'
-import { isValidPublicKey } from '@/utils/publicKey'
-import { wSolToSol, solToWSol, solToWsolString } from '@/utils/token'
+import { TxCallbackProps, TxCallbackPropsGeneric } from '@/types/tx'
+import ToPublicKey, { isValidPublicKey } from '@/utils/publicKey'
+import { wSolToSol, solToWSol, solToWsolString, wSolToSolString } from '@/utils/token'
 import { getTxMeta } from './configs/market'
 import { getDefaultToastData, transformProcessData, handleMultiTxToast } from '@/hooks/toast/multiToastUtil'
 import { handleMultiTxRetry } from '@/hooks/toast/retryTx'
 import logMessage from '@/utils/log'
-// import { getComputeBudgetConfig } from '@/utils/tx/computeBudget'
+import { getStorageItem, setStorageItem, deleteStorageItem } from '@/utils/localStorage'
+import BN from 'bn.js'
+import { getComputeBudgetConfig } from '@/utils/tx/computeBudget'
+import { v4 as uuidv4 } from 'uuid'
 interface CreateMarketState {
   checkMarketAct: (marketId: string) => Promise<{ isValid: boolean; mintA?: string; mintB?: string }>
   createMarketAct: (
@@ -20,6 +32,15 @@ interface CreateMarketState {
       orderSize: string | number
       priceTick: string | number
     } & TxCallbackProps
+  ) => Promise<{ txId: string[]; marketId: string }>
+  createMarketAndPoolAct: (
+    params: {
+      baseToken: ApiV3Token
+      quoteToken: ApiV3Token
+      baseAmount: string
+      quoteAmount: string
+      startTime?: Date
+    } & TxCallbackPropsGeneric<CreatePoolAddress & MarketExtInfo['address']>
   ) => Promise<{ txId: string[]; marketId: string }>
 }
 
@@ -190,6 +211,123 @@ export const useCreateMarketStore = createStore<CreateMarketState>(
           return { txId: [], marketId: '' }
         })
         .finally(txProps.onFinally)
+    },
+    createMarketAndPoolAct: async ({ baseToken, quoteToken, baseAmount, quoteAmount, startTime, ...txProps }) => {
+      const { raydium, connection, txVersion, publicKey } = useAppStore.getState()
+      if (!raydium || !connection || !publicKey) return { txId: [], marketId: '' }
+
+      if (baseToken.programId === TOKEN_2022_PROGRAM_ID.toBase58() || quoteToken.programId === TOKEN_2022_PROGRAM_ID.toBase58()) {
+        toastSubject.next({ status: 'error', title: 'error', description: `Create market and Amm V4 pool do not support token 2022` })
+        txProps.onError?.()
+        txProps.onFinally?.({} as any)
+        return { txId: [], marketId: '' }
+      }
+
+      const seedStorageKey = `${publicKey.toBase58().slice(0, 5)}-${baseToken.address.slice(0, 5)}-${quoteToken.address.slice(0, 5)}`
+      let assignSeed = getStorageItem(seedStorageKey)
+      if (!assignSeed) {
+        assignSeed = uuidv4().slice(0, 6)
+        setStorageItem(seedStorageKey, assignSeed)
+      }
+
+      const computeBudgetConfig = await getComputeBudgetConfig()
+      const { execute, transactions, extInfo } = await raydium.liquidity.createMarketAndPoolV4({
+        baseMintInfo: {
+          mint: new PublicKey(solToWSol(baseToken.address)!),
+          decimals: baseToken.decimals
+        },
+        quoteMintInfo: {
+          mint: new PublicKey(solToWSol(quoteToken.address)!),
+          decimals: quoteToken.decimals
+        },
+        lowestFeeMarket: true,
+        assignSeed,
+        baseAmount: new BN(baseAmount),
+        quoteAmount: new BN(quoteAmount),
+        startTime: new BN((startTime ? Number(startTime) : Date.now() + 60 * 1000) / 1000),
+        txVersion,
+        ownerInfo: {
+          useSOLBalance: true
+        },
+        associatedOnly: false,
+        computeBudgetConfig
+      })
+
+      const meta = getTxMeta({
+        action: 'createPool',
+        values: { mintA: wSolToSolString(baseToken.symbol), mintB: wSolToSolString(quoteToken.symbol) }
+      })
+
+      const txLength = transactions.length
+      const { toastId, processedId, handler } = getDefaultToastData({
+        txLength,
+        ...txProps,
+        onSent: () => {
+          txProps.onSent?.(extInfo.address)
+        },
+        onConfirmed: () => {
+          deleteStorageItem(seedStorageKey)
+          txProps.onConfirmed?.()
+        }
+      })
+      const getSubTxTitle = (idx: number) =>
+        ['create_standard_pool.step_1_name', 'transaction_history.set_up', 'transaction_history.create_pool'][idx]
+
+      let readyAccounts: string[][] = []
+      if (txVersion === TxVersion.V0) {
+        readyAccounts = (transactions as VersionedTransaction[]).map((tx) =>
+          TransactionMessage.decompile(tx.message, {
+            addressLookupTableAccounts: [LOOKUP_TABLE_CACHE['2immgwYNHBbyVQKVGCEkgWpi53bLwWNRMB5G2nbgYV17']]
+          })
+            .instructions.filter((i) => i.programId.equals(SystemProgram.programId))
+            .map((tx) => tx.keys.map((k) => k.pubkey.toBase58())[1])
+        )
+      } else {
+        readyAccounts = (transactions as Transaction[]).map((tx) =>
+          tx.instructions.filter((i) => i.programId.equals(SystemProgram.programId)).map((tx) => tx.keys.map((k) => k.pubkey.toBase58())[1])
+        )
+      }
+
+      const createdAccounts = await raydium.connection.getMultipleAccountsInfo(
+        readyAccounts.flat().map((acc) => ToPublicKey(acc)),
+        { commitment: 'confirmed' }
+      )
+      let skipTxCount = 0
+      if (!createdAccounts.slice(0, readyAccounts[0].length).some((r) => !r)) skipTxCount++
+      if (!createdAccounts.slice(readyAccounts[0].length - 1, -1).some((r) => !r)) skipTxCount++
+
+      return execute({
+        sequentially: true,
+        skipTxCount,
+        onTxUpdate: (data) => {
+          handleMultiTxRetry(data)
+          handleMultiTxToast({
+            toastId,
+            processedId: transformProcessData({ processedId, data }),
+            txLength,
+            meta,
+            handler,
+            getSubTxTitle
+          })
+        }
+      })
+        .then((r) => {
+          handleMultiTxToast({
+            toastId,
+            processedId: transformProcessData({ processedId, data: [] }),
+            txLength,
+            meta,
+            handler,
+            getSubTxTitle
+          })
+          return { txId: r.txIds, marketId: extInfo.address.marketId.toString() || '' }
+        })
+        .catch((e) => {
+          txProps.onError?.()
+          toastSubject.next({ txError: e })
+          return { txId: [], marketId: '' }
+        })
+        .finally(() => txProps.onFinally?.(extInfo.address))
     }
   }),
   'useCreateMarketStore'

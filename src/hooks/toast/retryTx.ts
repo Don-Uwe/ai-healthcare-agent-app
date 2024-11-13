@@ -79,7 +79,7 @@ export const handleMultiTxRetry = (
   }[]
 ) => {
   processedData.forEach((data) => {
-    if (data.status === 'sent') {
+    if (data.status === 'sent' && data.txId) {
       retryTx({ tx: data.signedTx, id: data.txId })
       return
     }

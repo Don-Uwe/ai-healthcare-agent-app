@@ -10,6 +10,13 @@ const MARKET_TX_MSG = {
     txHistoryTitle: 'create_market.title',
     txHistoryDesc: 'create_market.desc',
     components: { sub: <Text as="span" color={colors.textSecondary} fontWeight="700" /> }
+  },
+  createPool: {
+    title: 'transaction_history.create_pool',
+    desc: 'liquidity.create_pool_tx_desc',
+    txHistoryTitle: 'transaction_history.create_pool',
+    txHistoryDesc: 'liquidity.create_pool_tx_desc',
+    components: { sub: <Text as="span" color={colors.textSecondary} fontWeight="700" /> }
   }
 }
 
