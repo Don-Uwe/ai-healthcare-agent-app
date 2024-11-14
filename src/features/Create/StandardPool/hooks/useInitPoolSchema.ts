@@ -69,6 +69,7 @@ export default function useInitPoolSchema({ startTime, baseToken, quoteToken, to
           'is-mint-prgoram-valid',
           (t('error.amm_not_support_2022') || 'Amm V4 pool does not support token 2022') + ' (Quote Mint)',
           function () {
+            if (!isAmmV4) return true
             if (this.parent.quoteToken && this.parent.quoteToken.programId === TOKEN_2022_PROGRAM_ID.toBase58()) {
               return false
             }
@@ -82,6 +83,7 @@ export default function useInitPoolSchema({ startTime, baseToken, quoteToken, to
           'is-mint-prgoram-valid',
           (t('error.amm_not_support_2022') || 'Amm V4 pool does not support token 2022') + ' (Base mint)',
           function () {
+            if (!isAmmV4) return true
             if (this.parent.baseToken && this.parent.baseToken.programId === TOKEN_2022_PROGRAM_ID.toBase58()) {
               return false
             }
