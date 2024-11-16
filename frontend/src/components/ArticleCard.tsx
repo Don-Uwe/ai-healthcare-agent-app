@@ -207,11 +207,7 @@ const ArticleCard = ({item, navigation, success}: ArticleCardProps) => {
                 });
               }}
               style={styles.likeSaveChildContainer}>
-              <FontAwesome
-                name="commenting-o"
-                size={30}
-                color={PRIMARY_COLOR}
-              />
+              <FontAwesome name="comment-o" size={30} color={'#B0BEC5'} />
             </TouchableOpacity>
             {updateSaveStatusMutation.isPending ? (
               <ActivityIndicator size="small" color={PRIMARY_COLOR} />
