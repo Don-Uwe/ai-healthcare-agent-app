@@ -12,9 +12,10 @@ import React from 'react';
 import {fp, hp} from '../helper/Metric';
 import {ArticleCardProps, ArticleData} from '../type';
 import moment from 'moment';
-import {useDispatch, useSelector} from 'react-redux';
+import {useSelector} from 'react-redux';
 import axios from 'axios';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import {useMutation} from '@tanstack/react-query';
 import {
@@ -24,7 +25,7 @@ import {
   UPDATE_VIEW_COUNT,
 } from '../helper/APIUtils';
 import {PRIMARY_COLOR} from '../helper/Theme';
-import { formatCount } from '../helper/Utils';
+import {formatCount} from '../helper/Utils';
 
 const ArticleCard = ({item, navigation, success}: ArticleCardProps) => {
   const {user_token, user_id} = useSelector((state: any) => state.user);
@@ -62,8 +63,6 @@ const ArticleCard = ({item, navigation, success}: ArticleCardProps) => {
       Alert.alert('Internal server error, try again!');
     },
   });
-
-
 
   const updateSaveStatusMutation = useMutation({
     mutationKey: ['update-view-count'],
@@ -172,7 +171,6 @@ const ArticleCard = ({item, navigation, success}: ArticleCardProps) => {
           <Text style={{...styles.footerText, marginBottom: 3}}>
             {item?.viewUsers
               ? item?.viewUsers.length > 1
-
                 ? `${formatCount(item?.viewUsers.length)} views`
                 : `${item?.viewUsers.length} view`
               : '0 view'}
@@ -202,6 +200,19 @@ const ArticleCard = ({item, navigation, success}: ArticleCardProps) => {
               </TouchableOpacity>
             )}
 
+            <TouchableOpacity
+              onPress={() => {
+                navigation.navigate('CommentScreen', {
+                  articleId: item.id,
+                });
+              }}
+              style={styles.likeSaveChildContainer}>
+              <FontAwesome
+                name="commenting-o"
+                size={30}
+                color={PRIMARY_COLOR}
+              />
+            </TouchableOpacity>
             {updateSaveStatusMutation.isPending ? (
               <ActivityIndicator size="small" color={PRIMARY_COLOR} />
             ) : (
@@ -265,6 +276,7 @@ const styles = StyleSheet.create({
   likeSaveContainer: {
     flexDirection: 'row',
     width: '100%',
+    marginTop: 6,
     justifyContent: 'space-between',
   },
 

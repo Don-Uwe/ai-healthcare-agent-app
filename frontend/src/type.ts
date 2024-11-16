@@ -3,10 +3,9 @@ import type {BottomTabScreenProps} from '@react-navigation/bottom-tabs';
 import type {StackScreenProps} from '@react-navigation/stack';
 import {Dispatch, RefObject, SetStateAction} from 'react';
 import {BottomSheetModal} from '@gorhom/bottom-sheet'; // Adjust this import based on your actual BottomSheetModal component
-import { Double } from 'react-native/Libraries/Types/CodegenTypes';
+
 
 export type RootStackParamList = {
-
   SplashScreen: undefined;
   LoginScreen: undefined;
   TabNavigation: undefined;
@@ -35,6 +34,9 @@ export type RootStackParamList = {
   ArticleScreen: {
     articleId: number;
     authorId: string;
+  };
+  CommentScreen: {
+    articleId: number;
   };
   UserProfileScreen: {authorId: string};
   ProfileEditScreen: undefined;
@@ -90,6 +92,11 @@ export type ArticleScreenProp = StackScreenProps<
   RootStackParamList,
   'ArticleScreen'
 >;
+
+export type CommentScreenProp = StackScreenProps<
+  RootStackParamList,
+  'CommentScreen'
+>;
 //StackScreenProps<RootStackParamList, 'UserProfileScreen'>;
 
 export type EditorScreenProp = StackScreenProps<
@@ -104,7 +111,8 @@ export type PreviewScreenProp = StackScreenProps<
 
 export type HomeScreenProps = CompositeScreenProps<
   BottomTabScreenProps<TabParamList, 'Home'>,
-  StackScreenProps<RootStackParamList, 'ArticleScreen'>
+  | StackScreenProps<RootStackParamList, 'ArticleScreen'>
+  | StackScreenProps<RootStackParamList, 'CommentScreen'>
 >;
 
 export type ChatBotScreenProps = BottomTabScreenProps<TabParamList, 'Chatbot'>;

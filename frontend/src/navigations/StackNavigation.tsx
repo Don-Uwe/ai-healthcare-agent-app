@@ -7,6 +7,7 @@ import SignUpScreenFirst from '../screens/auth/SignUpScreenFirst';
 import SignUpScreenSecond from '../screens/auth/SignUpScreenSecond';
 import OtpScreen from '../screens/auth/OtpScreen';
 import NewPasswordScreen from '../screens/auth/NewPasswordScreen';
+import CommentScreen from '../screens/CommentScreen';
 import EditorScreen from '../screens/article/EditorScreen';
 import PreviewScreen from '../screens/article/PreviewScreen';
 import ArticleScreen from '../screens/article/ArticleScreen';
@@ -168,6 +169,27 @@ const StackNavigation = () => {
       <Stack.Screen
         name="ArticleScreen"
         component={ArticleScreen}
+        options={({navigation}) => ({
+          headerShown: true,
+          headerTitle: '',
+          headerTransparent: true,
+          headerBackTitleVisible: false,
+          // eslint-disable-next-line react/no-unstable-nested-components
+          headerLeft: () => (
+            <TouchableOpacity
+              style={styles.headerLeftButton}
+              onPress={() => {
+                navigation.goBack();
+              }}>
+              <FontAwesome6 size={25} name="arrow-left" color="white" />
+            </TouchableOpacity>
+          ),
+        })}
+      />
+
+      <Stack.Screen
+        name="CommentScreen"
+        component={CommentScreen}
         options={({navigation}) => ({
           headerShown: true,
           headerTitle: '',
