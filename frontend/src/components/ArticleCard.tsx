@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   image: {
-    flex: 0.6,
+    flex: 0.8,
     resizeMode: 'cover',
   },
 

@@ -6,6 +6,7 @@ import {
   ScrollView,
   Pressable,
   Alert,
+  Dimensions,
 } from 'react-native';
 import React, {useCallback, useEffect, useState} from 'react';
 import {PRIMARY_COLOR} from '../helper/Theme';
@@ -39,7 +40,7 @@ import {
 import Loader from './Loader';
 
 import {useFocusEffect} from '@react-navigation/native';
-import { formatCount } from '../helper/Utils';
+import {formatCount} from '../helper/Utils';
 
 interface Props {
   onArticleViewed: ({
@@ -476,7 +477,6 @@ const ActivityOverview = ({
 
   const colorList = ['black', 'green', PRIMARY_COLOR];
 
-
   useFocusEffect(
     useCallback(() => {
       if (userState === 0) {
@@ -511,6 +511,31 @@ const ActivityOverview = ({
   ) {
     <Loader />;
   }
+
+  const processData = data => {
+
+    if(!data){
+      return [];
+    }
+    return data.map(item => ({
+      value: Math.round(item.value), // Ensure the value is an integer
+      label: item.date.substring(8),
+    }));
+  };
+
+
+  const screenWidth = Dimensions.get('window').width;
+  const chartWidth = screenWidth - 40; // Make some space for padding
+  const chartSpacing = 0.2; // Adjust the spacing between points
+    
+
+  const getMaxYValue = () => {
+
+    const data = userState === 0
+      ? processData(monthlyReadReport)
+      : processData(monthlyWriteReport);
+    return Math.max(...data.map(item => item.value)) + 1; // Add 1 for padding
+  };
 
   return (
     <ScrollView
@@ -643,29 +668,21 @@ const ActivityOverview = ({
       )}
        */}
       {selectedMonth !== -1 && (
-        <View style={{marginTop: 10}}>
+        <View style={{marginTop: 10, flex:1}}>
           <LineChart
-            data={
-              userState === 0
-                ? monthlyReadReport?.map(item => ({
-                    value: item.value,
-                    label: item.date.substring(8),
-                  }))
-                : monthlyWriteReport?.map(item => ({
-                    value: item.value,
-                    label: item.date.substring(8),
-                  }))
-            }
-            minYValue={0}
-            //minXValue={0}
-
-            // yAxisLabel="Reads"
-            // xAxisLabel="Date"
-            // isAnimated={true}
-            // animationDuration={500}
-            //tooltipTextStyle={{color: 'white'}}
-            //tooltipBackgroundColor="#2980b9"
-            // tooltipStyle={{borderRadius: 5}}
+            data={userState === 0
+              ? processData(monthlyReadReport)
+              : processData(monthlyWriteReport)}
+            //minYValue={0}
+           
+            roundToDigits={0}
+           // maxValue = {getMaxYValue()}
+            stepChart={true}
+            dataPointsColor={PRIMARY_COLOR}
+            //isAnimated={true}
+            //yAxisInterval={1}
+            //yAxisDomain={[0, getMaxYValue()]} 
+            //maxYValue={getMaxYValue()} // Dynamically set max Y value
             areaChart
           />
         </View>
@@ -716,14 +733,11 @@ const ActivityOverview = ({
         <View style={styles.box}>
           <Text style={styles.titleText}> Total Reads</Text>
 
-
           <Text style={styles.valueText}>{readStat?.progress}%</Text>
-
 
           <Progress.Bar
             progress={readStat?.progress ? readStat?.progress : 0}
             width={140}
-
             borderColor={PRIMARY_COLOR}
             borderWidth={1}
             color={
@@ -736,7 +750,6 @@ const ActivityOverview = ({
                 : 'black'
             }
             borderRadius={4}
-
             style={{marginTop: 2}}
           />
         </View>
@@ -745,7 +758,6 @@ const ActivityOverview = ({
           <Text style={styles.titleText}> Total Writes</Text>
 
           <Text style={styles.valueText}>{writeStat?.progress}%</Text>
-
 
           <Progress.Bar
             progress={writeStat?.progress ? writeStat?.progress : 0}
@@ -772,7 +784,6 @@ const ActivityOverview = ({
             {likeViewStat?.likeProgress}%
           </Text>
 
-
           <Progress.Bar
             progress={
               likeViewStat?.likeProgress ? likeViewStat?.likeProgress : 0
@@ -789,7 +800,6 @@ const ActivityOverview = ({
                   : colorList[2]
                 : 'black'
             }
-
             borderRadius={4}
             style={{marginTop: 4}}
           />
@@ -801,7 +811,6 @@ const ActivityOverview = ({
           <Text style={{...styles.valueText, marginStart: 1}}>
             {likeViewStat?.viewProgress}%
           </Text>
-
 
           <Progress.Bar
             progress={
@@ -820,7 +829,6 @@ const ActivityOverview = ({
                 : 'black'
             }
             borderRadius={4}
-
             style={{marginTop: 4}}
           />
         </View>
