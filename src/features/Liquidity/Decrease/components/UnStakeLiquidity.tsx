@@ -81,8 +81,8 @@ export default function UnStakeLiquidity({
   }, [farmList])
 
   useEffect(() => {
-    onStakedChange(deposited)
-  }, [deposited, onStakedChange])
+    onStakedChange(totalDeposited.toString())
+  }, [totalDeposited.toString(), onStakedChange])
 
   const handleClickUnStake = () => {
     onSending()
