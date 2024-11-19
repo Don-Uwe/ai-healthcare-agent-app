@@ -5,12 +5,12 @@ import { useTokenStore, TokenPrice, useAppStore } from '@/store'
 import { solToWSol, WSOLMint, RAYMint, USDCMint, USDTMint, mSOLMint } from '@raydium-io/raydium-sdk-v2'
 import { NATIVE_MINT } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import useSWR from 'swr'
 
 export type { TokenPrice }
 
-const fetcher = (url: string) => {
+const fetcher = ([url]: [url: string, refreshTag?: number]) => {
   return axios.get<{
     [key: string]: number
   }>(url, {
@@ -25,6 +25,8 @@ const prepareFetchList = new Set<string>([
   USDCMint.toBase58(),
   USDTMint.toBase58()
 ])
+
+let fetchRefreshTag = 0
 
 export default function useTokenPrice(props: { mintList: (string | PublicKey | undefined)[]; refreshInterval?: number; timeout?: number }) {
   const { mintList, refreshInterval = 3 * MINUTE_MILLISECONDS, timeout = 800 } = props || {}
@@ -42,7 +44,7 @@ export default function useTokenPrice(props: { mintList: (string | PublicKey | u
   const shouldFetch = startFetch && prepareFetchList.size > 0
 
   const { data, isLoading, error, ...rest } = useSWR(
-    shouldFetch ? `${BASE_HOST}${MINT_PRICE}` + `?mints=${Array.from(prepareFetchList).slice(0, 49).join(',')}` : null,
+    shouldFetch ? [`${BASE_HOST}${MINT_PRICE}` + `?mints=${Array.from(prepareFetchList).slice(0, 49).join(',')}`, fetchRefreshTag] : null,
     fetcher,
     {
       refreshInterval,
@@ -118,16 +120,28 @@ export default function useTokenPrice(props: { mintList: (string | PublicKey | u
     // manual trigger refresh
     const i = window.setInterval(() => {
       if (document.visibilityState === 'hidden') return
+      fetchRefreshTag = Date.now()
       setRefreshTag(Date.now())
     }, refreshInterval)
     return () => clearInterval(i)
   }, [refreshInterval])
+
+  const refreshPrice = useCallback(() => {
+    readyList.forEach((mint) => {
+      prepareFetchList.add(mint)
+    })
+    setTimeout(() => {
+      fetchRefreshTag = Date.now()
+      setRefreshTag(Date.now())
+    }, timeout)
+  }, [readyList, timeout, rest.mutate])
 
   return {
     data: resData,
     isLoading,
     error,
     isEmptyResult,
+    refreshPrice,
     ...rest
   }
 }

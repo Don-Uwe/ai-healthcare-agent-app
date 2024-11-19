@@ -1,6 +1,6 @@
 import ConnectedButton from '@/components/ConnectedButton'
 import { QuestionToolTip } from '@/components/QuestionToolTip'
-import TokenInput, { DEFAULT_SOL_RESERVER } from '@/components/TokenInput'
+import TokenInput, { DEFAULT_SOL_RESERVER, InputActionRef } from '@/components/TokenInput'
 import { useEvent } from '@/hooks/useEvent'
 import { useHover } from '@/hooks/useHover'
 import { useAppStore, useTokenAccountStore, useTokenStore } from '@/store'
@@ -71,9 +71,11 @@ export function SwapPanel({
   const { tokenInfo: unknownTokenA } = useTokenInfo({
     mint: isTokenLoaded && !tokenInput && inputMint ? inputMint : undefined
   })
+  const tokenAActionRef = useRef<InputActionRef>({ refreshPrice: () => {} })
   const { tokenInfo: unknownTokenB } = useTokenInfo({
     mint: isTokenLoaded && !tokenOutput && outputMint ? outputMint : undefined
   })
+  const tokenBActionRef = useRef<InputActionRef>({ refreshPrice: () => {} })
 
   useEffect(() => {
     if (defaultInput) setInputMint(defaultInput)
@@ -256,6 +258,8 @@ export function SwapPanel({
   const handleRefresh = useEvent(() => {
     if (isSending || isHightRiskOpen) return
     mutate()
+    tokenAActionRef.current?.refreshPrice()
+    tokenBActionRef.current?.refreshPrice()
     if (Date.now() - refreshTokenAccTime < 10 * 1000) return
     fetchTokenAccountAct({})
   })
@@ -285,6 +289,7 @@ export function SwapPanel({
           filterFn={inputFilterFn}
           onTokenChange={(token) => handleSelectToken(token, 'input')}
           defaultUnknownToken={unknownTokenA}
+          actionRef={tokenAActionRef}
         />
         <SwapIcon onClick={handleChangeSide} />
         {/* output */}
@@ -299,6 +304,7 @@ export function SwapPanel({
           filterFn={outputFilterFn}
           onTokenChange={(token) => handleSelectToken(token, 'output')}
           defaultUnknownToken={unknownTokenB}
+          actionRef={tokenBActionRef}
         />
       </Flex>
       {/* swap info */}

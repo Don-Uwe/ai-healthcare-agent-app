@@ -14,7 +14,7 @@ import {
 import { ApiV3Token, TokenInfo, SOL_INFO } from '@raydium-io/raydium-sdk-v2'
 import { NumericFormat } from 'react-number-format'
 import Decimal from 'decimal.js'
-import React, { ReactNode, useEffect, useState, useRef, useMemo } from 'react'
+import React, { ReactNode, useEffect, useState, useRef, useMemo, useImperativeHandle, RefObject } from 'react'
 import useTokenPrice from '@/hooks/token/useTokenPrice'
 import { useEvent } from '@/hooks/useEvent'
 import BalanceWalletIcon from '@/icons/misc/BalanceWalletIcon'
@@ -33,6 +33,9 @@ import { TokenListHandles } from './TokenSelectDialog/components/TokenList'
 import useResponsive from '@/hooks/useResponsive'
 
 export const DEFAULT_SOL_RESERVER = 0.01
+export interface InputActionRef {
+  refreshPrice: () => void
+}
 export interface TokenInputProps extends Pick<TokenSelectDialogProps, 'filterFn'> {
   id?: string
   name?: string
@@ -93,6 +96,7 @@ export interface TokenInputProps extends Pick<TokenSelectDialogProps, 'filterFn'
   onFocus?: () => void
 
   defaultUnknownToken?: TokenInfo
+  actionRef?: RefObject<InputActionRef>
 }
 
 /**
@@ -128,7 +132,8 @@ function TokenInput(props: TokenInputProps) {
     topBlockSx,
     ctrSx,
     sx,
-    defaultUnknownToken
+    defaultUnknownToken,
+    actionRef
   } = props
   const { isMobile } = useResponsive()
   const setExtraTokenListAct = useTokenStore((s) => s.setExtraTokenListAct)
@@ -159,7 +164,7 @@ function TokenInput(props: TokenInputProps) {
   // price
   const tokenMap = useTokenStore((s) => s.tokenMap)
   const token = typeof inputToken === 'string' ? tokenMap.get(inputToken) : inputToken
-  const { data: tokenPrice } = useTokenPrice({
+  const { data: tokenPrice, refreshPrice } = useTokenPrice({
     mintList: [token?.address]
   })
   const value = shakeValueDecimal(inputValue, token?.decimals)
@@ -295,6 +300,10 @@ function TokenInput(props: TokenInputProps) {
     if (!defaultUnknownToken) return
     handleSelectToken(defaultUnknownToken)
   }, [defaultUnknownToken?.address])
+
+  useImperativeHandle(actionRef, () => ({
+    refreshPrice
+  }))
 
   return (
     <Box bg={colors.backgroundDark50} position={'relative'} rounded={12} sx={ctrSx}>
