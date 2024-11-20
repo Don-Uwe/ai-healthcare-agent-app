@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   View,
   Text,
@@ -9,10 +9,15 @@ import {
   Alert,
 } from 'react-native';
 import {CommentScreenProp} from '../type';
-import { PRIMARY_COLOR } from '../helper/Theme';
+import {PRIMARY_COLOR} from '../helper/Theme';
+import io, {Socket} from 'socket.io-client';
 
 const CommentScreen = ({navigation, route}: CommentScreenProp) => {
   // State to store the list of comments
+
+  const socket = useRef<Socket | null>(null);
+
+  const [comments1, setComments1] = useState([]);
   const [comments, setComments] = useState([
     {
       id: '1',
@@ -36,6 +41,21 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
       timestamp: '1 day ago',
     },
   ]);
+
+  useEffect(() => {
+    socket.current = io('http://localhost:8080');
+
+    socket.current.on('connect', () => {
+      console.log('Connected to the server');
+    })
+
+    socket.current.on('new-comment',()=>{
+      console.log('New comment received');
+    })
+    socket.current.on('disconnect', () => {
+      console.log('Disconnected from the server');
+    })
+  }, [route.params.articleId]);
 
   const [newComment, setNewComment] = useState('');
 
