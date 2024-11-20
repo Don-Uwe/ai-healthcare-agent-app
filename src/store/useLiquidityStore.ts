@@ -483,7 +483,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
     },
 
     lockCpmmLpAct: async ({ poolInfo, lpAmount, ...txCallback }) => {
-      const { raydium, txVersion, connection } = useAppStore.getState()
+      const { raydium, txVersion, connection, wallet } = useAppStore.getState()
       if (!raydium || !connection) return ''
 
       const { execute, extInfo } = await raydium.cpmm.lockLp({
@@ -491,6 +491,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
         lpAmount,
         withMetadata: true,
         computeBudgetConfig: await getComputeBudgetConfig(),
+        getEphemeralSigners: wallet ? await getEphemeralSigners(wallet) : undefined,
         txVersion
       })
 
@@ -589,21 +590,21 @@ export const useLiquidityStore = createStore<LiquidityStore>(
 
       const r = isCpmm
         ? raydium.cpmm.computePairAmount({
-          ...params,
-          slippage: new Percent(0),
-          epochInfo: (await getEpochInfo())!,
-          poolInfo: params.poolInfo as ApiV3PoolInfoStandardItemCpmm,
-          baseReserve,
-          quoteReserve
-        })
+            ...params,
+            slippage: new Percent(0),
+            epochInfo: (await getEpochInfo())!,
+            poolInfo: params.poolInfo as ApiV3PoolInfoStandardItemCpmm,
+            baseReserve,
+            quoteReserve
+          })
         : raydium.liquidity.computePairAmount({
-          ...params,
-          poolInfo: {
-            ...params.poolInfo,
-            mintAmountA: new Decimal(baseReserve.toString()).div(10 ** pool.mintA.decimals).toNumber(),
-            mintAmountB: new Decimal(quoteReserve.toString()).div(10 ** pool.mintB.decimals).toNumber()
-          } as ApiV3PoolInfoStandardItem
-        })
+            ...params,
+            poolInfo: {
+              ...params.poolInfo,
+              mintAmountA: new Decimal(baseReserve.toString()).div(10 ** pool.mintA.decimals).toNumber(),
+              mintAmountB: new Decimal(quoteReserve.toString()).div(10 ** pool.mintB.decimals).toNumber()
+            } as ApiV3PoolInfoStandardItem
+          })
 
       const outputMint = baseIn ? pool.mintB : pool.mintA
 
@@ -612,23 +613,23 @@ export const useLiquidityStore = createStore<LiquidityStore>(
           r.anotherAmount instanceof TokenAmount
             ? r.anotherAmount.toExact()
             : new Decimal(r.anotherAmount.amount.toString())
-              .div(10 ** outputMint.decimals)
-              .toDecimalPlaces(outputMint.decimals)
-              .toString(),
+                .div(10 ** outputMint.decimals)
+                .toDecimalPlaces(outputMint.decimals)
+                .toString(),
         maxOutput:
           r.maxAnotherAmount instanceof TokenAmount
             ? r.maxAnotherAmount.toExact()
             : new Decimal(r.maxAnotherAmount.amount.toString())
-              .div(10 ** outputMint.decimals)
-              .toDecimalPlaces(outputMint.decimals)
-              .toString(),
+                .div(10 ** outputMint.decimals)
+                .toDecimalPlaces(outputMint.decimals)
+                .toString(),
         minOutput:
           r.minAnotherAmount instanceof TokenAmount
             ? r.minAnotherAmount.toExact()
             : new Decimal(r.minAnotherAmount.amount.toString())
-              .div(10 ** outputMint.decimals)
-              .toDecimalPlaces(outputMint.decimals)
-              .toString(),
+                .div(10 ** outputMint.decimals)
+                .toDecimalPlaces(outputMint.decimals)
+                .toString(),
         liquidity: r.liquidity
       }
     },
