@@ -621,13 +621,14 @@ export const useClmmStore = createStore<ClmmState>(
     },
 
     lockPositionAct: async ({ poolInfo, position, ...txProps }) => {
-      const { raydium, txVersion } = useAppStore.getState()
+      const { raydium, txVersion, wallet } = useAppStore.getState()
       if (!raydium) return ''
       const computeBudgetConfig = await getComputeBudgetConfig()
       const { execute, extInfo } = await raydium.clmm.lockPosition({
         ownerPosition: position,
         txVersion,
-        computeBudgetConfig
+        computeBudgetConfig,
+        getEphemeralSigners: wallet ? await getEphemeralSigners(wallet) : undefined
       })
 
       const meta = getTxMeta({
