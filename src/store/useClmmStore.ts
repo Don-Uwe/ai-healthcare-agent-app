@@ -307,7 +307,8 @@ export const useClmmStore = createStore<ClmmState>(
           otherAmountMax: new BN(otherAmountMax),
           getEphemeralSigners: wallet ? await getEphemeralSigners(wallet) : undefined,
           computeBudgetConfig,
-          txVersion
+          txVersion,
+          nft2022: true
         })
 
         const [amountA, amountB] = base === 'MintA' ? [baseAmount, otherAmountMax] : [otherAmountMax, baseAmount]
