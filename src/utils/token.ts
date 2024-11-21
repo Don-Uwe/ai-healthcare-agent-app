@@ -45,7 +45,7 @@ export const RAY_TOKEN_INFO = {
   chainId: 101,
   address: '4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R',
   programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
-  logoURI: 'https://img.raydium.io/icon/4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R.png',
+  logoURI: 'https://img-v1.raydium.io/icon/4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R.png',
   symbol: 'RAY',
   name: 'Raydium',
   decimals: 6,
@@ -81,8 +81,8 @@ export const filterTokenFn = (list: TokenInfo[], params?: { searchStr?: string; 
     })
     tokenGroup[1] = tokenGroup[1]
       ? sortItems(tokenGroup[1], {
-          sortRules: [{ value: (i) => i.type === 'raydium' }]
-        })
+        sortRules: [{ value: (i) => i.type === 'raydium' }]
+      })
       : tokenGroup[1]
     filteredList = tokenGroup.flat().filter(Boolean)
   }
