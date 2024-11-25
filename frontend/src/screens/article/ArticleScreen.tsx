@@ -236,8 +236,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   document.head.appendChild(style);
 `;
 
-  const contentSource = article?.content?.startsWith('http')
-    ? {uri: article.content}
+  const contentSource = article?.content?.endsWith('html')
+    ? {uri: `${GET_STORAGE_DATA}/${article.content}`}
     : {html: article?.content};
 
   if (isLoading) {

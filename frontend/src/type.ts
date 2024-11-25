@@ -4,7 +4,6 @@ import type {StackScreenProps} from '@react-navigation/stack';
 import {Dispatch, RefObject, SetStateAction} from 'react';
 import {BottomSheetModal} from '@gorhom/bottom-sheet'; // Adjust this import based on your actual BottomSheetModal component
 
-
 export type RootStackParamList = {
   SplashScreen: undefined;
   LoginScreen: undefined;
@@ -334,4 +333,18 @@ export type Podcast = {
 export type AuthData = {
   userId: string;
   token: string | null;
+};
+
+export type Comment = {
+  id: String;
+  articleId: number;
+  userId: String;
+  content: String;
+  createdAt: String;
+  updatedAt: string;
+  parentCommentId: string;
+  replies: Comment[];
+  likedUsers: User[];
+  status: String;
+  isEdited: Boolean;
 };

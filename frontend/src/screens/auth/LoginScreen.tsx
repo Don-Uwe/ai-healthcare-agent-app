@@ -48,7 +48,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
     setSecureTextEntry(!secureTextEntry);
   };
 
-/*
+  /*
   useEffect(() => {
     const backHandler = navigation.addListener('beforeRemove', e => {
       if (!navigation.canGoBack()) {
@@ -70,15 +70,13 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
         {cancelable: true},
       );
     });
-  
+
     // Cleanup the event listener when the component unmounts or when the user logs out
     return () => {
       backHandler.remove();
     };
   }, [navigation]);
   */
-  
-  
 
   const validateAndSubmit = async () => {
     if (validate()) {
@@ -153,7 +151,6 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
           dispatch(setUserId(auth.userId));
           dispatch(setUserToken(auth.token));
           setTimeout(() => {
-
             navigation.reset({
               index: 0,
               routes: [{name: 'TabNavigation'}], // Send user to LoginScreen after logout
@@ -169,6 +166,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
     },
 
     onError: (error: AxiosError) => {
+      console.log('Error', error);
       if (error.response) {
         const errorCode = error.response.status;
         switch (errorCode) {

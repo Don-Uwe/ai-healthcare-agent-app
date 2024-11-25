@@ -1,5 +1,8 @@
-// const BASE_URL = 'http://10.0.2.2:3025/api';
-const BASE_URL = 'http://139.84.174.38/api';
+const BASE_URL = 'http://localhost:8080/api';
+//const BASE_URL = 'http://10.0.2.2:3025/api';
+//const BASE_URL = 'http://139.84.174.38/api';
+
+//const BASE_URL = 'http://139.84.174.38/api';
 const LOGIN_API = `${BASE_URL}/user/login`;
 const REGISTRATION_API = `${BASE_URL}/user/register`;
 const ARTICLE_TAGS_API = '/articles/tags';
@@ -38,8 +41,7 @@ const GET_YEARLY_READ_REPORT = `${BASE_URL}/analytics/yearly-reads/`;
 const GET_MONTHLY_WRITES_REPORT = `${BASE_URL}/analytics/monthly-writes/`;
 const GET_YEARLY_WRITES_REPORT = `${BASE_URL}/analytics/yearly-writes/`;
 
-const VULTR_CHAT_URL = `https://api.vultrinference.com/v1/chat/completions`;
-
+const VULTR_CHAT_URL = 'https://api.vultrinference.com/v1/chat/completions';
 
 export {
   BASE_URL,

@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -10,15 +10,15 @@ import {
 } from 'react-native';
 import {CommentScreenProp} from '../type';
 import {PRIMARY_COLOR} from '../helper/Theme';
-import io, {Socket} from 'socket.io-client';
+import useSocket from '../components/hooks/useSocket';
 
 const CommentScreen = ({navigation, route}: CommentScreenProp) => {
   // State to store the list of comments
 
-  const socket = useRef<Socket | null>(null);
+  const socket = useSocket();
 
-  const [comments1, setComments1] = useState([]);
-  const [comments, setComments] = useState([
+  const [comments, setComments] = useState<Comment>([]);
+  const [comments1, setComments1] = useState([
     {
       id: '1',
       username: 'Alice',
@@ -43,19 +43,51 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
   ]);
 
   useEffect(() => {
-    socket.current = io('http://localhost:8080');
+    // Listen for new comments
+    socket.on('new-comment', data => {
+      if (data.articleId === route.params.articleId) {
+        setComments(prevComments => [data.comment, ...prevComments]);
+      }
+    });
 
-    socket.current.on('connect', () => {
-      console.log('Connected to the server');
-    })
+    // Listen for comment edits
+    socket.on('edit-comment', updatedComment => {
+      setComments(prevComments =>
+        prevComments.map(comment =>
+          comment._id === updatedComment._id ? updatedComment : comment,
+        ),
+      );
+    });
 
-    socket.current.on('new-comment',()=>{
-      console.log('New comment received');
-    })
-    socket.current.on('disconnect', () => {
-      console.log('Disconnected from the server');
-    })
-  }, [route.params.articleId]);
+    // Listen for comment deletions
+    socket.on('delete-comment', data => {
+      if (data.articleId === route.params.articleId) {
+        setComments(prevComments =>
+          prevComments.filter(comment => comment._id !== data.commentId),
+        );
+      }
+    });
+
+    // Listen for replies
+    socket.on('new-reply', data => {
+      if (data.articleId === route.params.articleId) {
+        setComments(prevComments => {
+          return prevComments.map(comment =>
+            comment._id === data.parentCommentId
+              ? {...comment, replies: [...comment.replies, data.reply]}
+              : comment,
+          );
+        });
+      }
+    });
+
+    return () => {
+      socket.off('new-comment');
+      socket.off('edit-comment');
+      socket.off('delete-comment');
+      socket.off('new-reply');
+    };
+  }, [socket, route.params.articleId]);
 
   const [newComment, setNewComment] = useState('');
 
@@ -66,7 +98,7 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
     }
 
     const newCommentObj = {
-      id: (comments.length + 1).toString(),
+      id: (comments1.length + 1).toString(),
       username: 'You', // Can be dynamically set based on the user
       avatar: '🧑‍💻', // Placeholder avatar
       comment: newComment,
@@ -74,7 +106,7 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
     };
 
     // Add the new comment to the state
-    setComments([newCommentObj, ...comments]);
+    setComments1([newCommentObj, ...comments]);
     setNewComment(''); // Clear the input field after submitting
   };
 
@@ -84,7 +116,7 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
 
       {/* Comments List */}
       <FlatList
-        data={comments}
+        data={comments1}
         renderItem={({item}) => (
           <View style={styles.commentContainer}>
             <Text style={styles.avatar}>{item.avatar}</Text>
