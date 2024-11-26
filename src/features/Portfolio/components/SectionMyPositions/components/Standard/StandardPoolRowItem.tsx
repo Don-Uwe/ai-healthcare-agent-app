@@ -126,13 +126,6 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
     })
   })
 
-  let positionStatus = ''
-  if (!stakedFarms.length && pool && pool?.farmOngoingCount > 0) {
-    positionStatus = 'unstaked'
-  } else if (pool?.isRewardEnded && !stakedFarmList.some((f) => f.isOngoing)) {
-    positionStatus = 'ended'
-  }
-
   const debounceSetRewards = useCallback(
     debounce((rewards: Map<string, { mint: ApiV3Token[]; usd: string; amount: string[]; rewardTokenUsd: string[] }>) => {
       setAllPendingRewards((prev) => {
@@ -203,13 +196,20 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
 
   if (!pool) return isLoading ? <Skeleton w="full" height="140px" rounded="lg" /> : null
 
+  let positionStatus = ''
+  if (!stakedFarms.length && pool && (pool?.farmOngoingCount > 0 || pool?.farmUpcomingCount > 0)) {
+    positionStatus = 'unstaked'
+  } else if (pool?.isRewardEnded && !stakedFarmList.some((f) => f.isOngoing) && !totalPending.isZero()) {
+    positionStatus = 'ended'
+  }
+
   const lpAmountUSD = allLpUiAmount.mul(pool.lpPrice ?? 0).toString()
   const [pooledAmountA, pooledAmountB] = [
     allLpUiAmount.mul(baseRatio).mul(0.995).toDecimalPlaces(pool.mintA.decimals, Decimal.ROUND_DOWN).toString(),
     allLpUiAmount.mul(quoteRatio).mul(0.995).toDecimalPlaces(pool.mintB.decimals, Decimal.ROUND_DOWN).toString()
   ]
 
-  const canStake = !unStakeLpBalance.isZero() && stakedFarmList.filter((f) => f.isOngoing).length > 0
+  const canStake = !unStakeLpBalance.isZero() && (pool.farmOngoingCount > 0 || pool.farmUpcomingCount > 0)
 
   const isPartialLiquidityLocked = (lockInfo.length > 0 && !isEmptyLp) || lockInfo.length > 1
   const isAllLiquidityLocked = lockInfo.length > 0 && isEmptyLp

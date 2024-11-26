@@ -177,7 +177,7 @@ export default function AddLiquidity({
         computeAmountRef.current = { base: '', quote: '', minAnother: '' }
       },
       onConfirmed: () => {
-        if (pool.farmOngoingCount > 0) onOpenStakeLp()
+        if (pool.farmOngoingCount > 0 || pool.farmUpcomingCount > 0) onOpenStakeLp()
       },
       onFinally: () => setIsTxSending(false)
     }

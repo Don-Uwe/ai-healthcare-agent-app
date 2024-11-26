@@ -75,9 +75,18 @@ export default function PendingRewards({ pendingReward, positionStatus, rewardIn
               <Box mr={1.5}>
                 <ExclaimationTriangle width="12px" height="12px" />
               </Box>
-              <Text whiteSpace={'break-spaces'} textAlign={'center'}>
-                {positionStandardPoolsStatusTags[positionStatus as keyof typeof positionStandardPoolsStatusTags]}
-              </Text>
+
+              {positionStatus === 'ended' ? (
+                <Tooltip label={t('liquidity.no_active_farm_desc')}>
+                  <Text whiteSpace={'break-spaces'} textAlign={'center'}>
+                    {positionStandardPoolsStatusTags[positionStatus as keyof typeof positionStandardPoolsStatusTags]}
+                  </Text>
+                </Tooltip>
+              ) : (
+                <Text whiteSpace={'break-spaces'} textAlign={'center'}>
+                  {positionStandardPoolsStatusTags[positionStatus as keyof typeof positionStandardPoolsStatusTags]}
+                </Text>
+              )}
             </Badge>
           </Tooltip>
         )}

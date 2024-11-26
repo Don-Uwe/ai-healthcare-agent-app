@@ -319,6 +319,7 @@
     },
     "pool_fee_desc": "This is a {{feeRate}}% fee tier {{type}} liquidity pool",
     "no_active_farm": "There is no active farm for this pool.",
+    "no_active_farm_desc": "Rewards have ended for this farm. You can unstake your LP tokens.",
     "loading_pool": "Loading pool",
     "create_lp": "Create Position",
     "preview_pool": "Preview Pool",

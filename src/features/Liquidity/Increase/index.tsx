@@ -93,7 +93,7 @@ export default function Increase() {
   const stakedData = new Decimal(pool ? lpBasedData.get(pool.lpMint.address)?.totalLpAmount || '0' : '0')
     .div(10 ** (pool?.lpMint.decimals ?? 0))
     .toString()
-  const hasFarmInfo = pool ? pool.farmOngoingCount > 0 || !!farms.find((f) => f.isOngoing) : false
+  const hasFarmInfo = pool ? pool.farmOngoingCount > 0 || pool.farmUpcomingCount > 0 || !!farms.find((f) => f.isOngoing) : false
 
   increaseTabOptions[1].disabled = !hasFarmInfo
   increaseTabOptions[1].tooltipProps = !hasFarmInfo ? { label: t('liquidity.no_active_farm'), hasArrow: false } : undefined
