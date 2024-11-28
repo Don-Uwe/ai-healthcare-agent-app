@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import {CommentScreenProp} from '../type';
 import {PRIMARY_COLOR} from '../helper/Theme';
-import useSocket from '../components/hooks/useSocket';
+import useSocket from '../../hooks/useSocket';
 
 const CommentScreen = ({navigation, route}: CommentScreenProp) => {
   // State to store the list of comments
