@@ -378,12 +378,13 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
               ...b,
               tickLowerRpcData: pool ? clmmTickAddressData[getTickArrayAddress({ pool, tickNumber: b.tickLower }).toBase58()] : undefined,
               tickUpperRpcData: pool ? clmmTickAddressData[getTickArrayAddress({ pool, tickNumber: b.tickUpper }).toBase58()] : undefined,
+              tickSlot,
               updateClmmPendingYield
             }))
           ]
         })
       ),
-    [clmmBalanceInfo, clmmTickAddressData]
+    [clmmBalanceInfo, clmmTickAddressData, tickSlot]
   )
 
   useEffect(

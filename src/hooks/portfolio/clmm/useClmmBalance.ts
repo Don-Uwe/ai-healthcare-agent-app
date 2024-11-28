@@ -21,7 +21,7 @@ import ToPublicKey from '@/utils/publicKey'
 import logMessage from '@/utils/log'
 import { getPdaIdCache } from '@/utils/pool/pdaCache'
 
-export type ClmmPosition = ReturnType<typeof PositionInfoLayout.decode> & { key?: string }
+export type ClmmPosition = ReturnType<typeof PositionInfoLayout.decode> & { key?: string; slot: number }
 export type ClmmDataMap = Map<string, ClmmPosition[]>
 
 let lastRefreshTag = initTokenAccountSate.refreshClmmPositionTag
@@ -179,10 +179,19 @@ export default function useClmmBalance({
         positionMap.set(poolId, [
           {
             ...position,
-            key: allPositionKey[idx]
+            key: allPositionKey[idx],
+            slot: data[0]?.context.slot ?? 0
           }
         ])
-      else positionMap.set(poolId, [...Array.from(positionMap.get(poolId)!), position])
+      else
+        positionMap.set(poolId, [
+          ...Array.from(positionMap.get(poolId)!),
+          {
+            ...position,
+            key: allPositionKey[idx],
+            slot: data[0]?.context.slot ?? 0
+          }
+        ])
     })
     return [positionMap, lockInfo]
   }, [data, allPositionKey, lockPositionInfo])

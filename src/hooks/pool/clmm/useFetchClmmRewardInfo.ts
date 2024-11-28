@@ -22,7 +22,7 @@ import { addAccChangeCbk, removeAccChangeCbk } from '@/hooks/app/useTokenAccount
 interface Props {
   shouldFetch?: boolean
   poolInfo?: ApiV3PoolInfoConcentratedItem
-  position: ReturnType<typeof PositionInfoLayout.decode>
+  position: ReturnType<typeof PositionInfoLayout.decode> & { slot?: number; tickSlot?: number }
   initRpcPoolData?: RpcPoolData
   subscribe?: boolean
   tickLowerPrefetchData?: AccountInfo<Buffer> | null
@@ -65,7 +65,7 @@ export default function useFetchClmmRewardInfo({
   const [tickLowerData, tickUpperData] = [tickLowerPrefetchData || data?.data?.value[0], tickUpperPrefetchData || data?.data?.value[1]]
 
   useEffect(() => {
-    if (!tickLowerData || !tickUpperData || !rpcPoolData || !poolInfo) return
+    if (!tickLowerData || !tickUpperData || !rpcPoolData || !poolInfo || (position.tickSlot || 0) < (position.slot || 0)) return
     const tickArrayLower = TickArrayLayout.decode(tickLowerData.data)
     const tickArrayUpper = TickArrayLayout.decode(tickUpperData.data)
     const tickLowerState = tickArrayLower.ticks[TickUtils.getTickOffsetInArray(position.tickLower, rpcPoolData.tickSpacing)]
@@ -108,7 +108,7 @@ export default function useFetchClmmRewardInfo({
     )
 
     setIsEmptyReward(rewardInfos.filter((r) => r.gt(BN_ZERO)).length <= 0 && !tokenFeeAmountA.gt(BN_ZERO) && !tokenFeeAmountB.gt(BN_ZERO))
-  }, [tickLowerData, tickUpperData, rpcPoolData, tokenPrices])
+  }, [tickLowerData, tickUpperData, rpcPoolData, tokenPrices, position.tickSlot])
 
   useEffect(() => {
     addAccChangeCbk(data.mutate)

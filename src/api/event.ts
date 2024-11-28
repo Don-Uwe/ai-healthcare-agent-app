@@ -1,6 +1,7 @@
 import { parseUserAgent } from 'react-device-detect'
 import axios from './axios'
 import { useAppStore } from '@/store/useAppStore'
+import { isLocal } from '@/utils/common'
 
 interface EventTypeConnectWallet {
   walletName: string
@@ -11,6 +12,7 @@ interface EventTypeConnectWallet {
 }
 
 export const sendWalletEvent = async (props: EventTypeConnectWallet) => {
+  if (isLocal()) return
   try {
     const deviceInfo = parseUserAgent(window.navigator.userAgent)
     const deviceType = deviceInfo.device.type || 'pc'
