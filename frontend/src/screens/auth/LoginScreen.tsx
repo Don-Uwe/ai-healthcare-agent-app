@@ -392,7 +392,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
           <TouchableOpacity
             style={styles.forgotPasswordContainer}
             onPress={() => {
-              console.log('Forgot Password Click');
+              //console.log('Forgot Password Click');
               setEmailInputVisible(!emailInputVisible);
             }}>
             <Text style={styles.forgotPasswordText}>Forgot Password?</Text>

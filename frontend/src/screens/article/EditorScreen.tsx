@@ -33,7 +33,7 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
         <TouchableOpacity
           style={styles.preview_button}
           onPress={() => {
-            console.log('Preview button pressed');
+          //  console.log('Preview button pressed');
             if (article.length > 20) {
               console.log('Preview Screen');
               navigation.navigate('PreviewScreen', {
@@ -103,7 +103,7 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
       // Upload the image here and collect the url, then store it to the RichText
       //await RichText.current?.insertImage(str);
     } else {
-      console.log('No image selected');
+      //console.log('No image selected');
     }
   }
 

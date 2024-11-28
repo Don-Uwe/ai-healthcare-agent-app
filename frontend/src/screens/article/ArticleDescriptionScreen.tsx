@@ -29,7 +29,7 @@ const ArticleDescriptionScreen = ({navigation}) => {
   const [selectedGenres, setSelectedGenres] = useState<Category[]>([]);
   const {categories} = useSelector((state: any) => state.article);
   const [imageUtils, setImageUtils] = useState('');
-  console.log(categories);
+ // console.log(categories);
   const handleGenrePress = (genre: Category) => {
     if (isSelected(genre)) {
       setSelectedGenres(selectedGenres.filter(item => item.id !== genre.id));
@@ -79,7 +79,7 @@ const ArticleDescriptionScreen = ({navigation}) => {
 
     launchImageLibrary(options, (response: ImagePickerResponse) => {
       if (response.didCancel) {
-        console.log('User cancelled image picker');
+        //console.log('User cancelled image picker');
       } else if (response.errorMessage) {
         console.log('ImagePicker Error: ', response.errorMessage);
       } else if (response.assets) {

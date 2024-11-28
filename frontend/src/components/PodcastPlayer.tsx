@@ -59,7 +59,7 @@ const PodcastPlayer = ({}) => {
       try {
         await Tts.setDefaultLanguage(availableVoices[0].language);
       } catch (err) {
-        console.log(`setDefaultLanguage error `, err);
+        //console.log(`setDefaultLanguage error `, err);
       }
       await Tts.setDefaultVoice(availableVoices[0].id); // Set default voice
       Tts.setDefaultRate(defaultrate, true); // Set default speech rate
@@ -97,7 +97,7 @@ const PodcastPlayer = ({}) => {
   const handlePlay = () => {
     if (isPlaying) {
       // If currently playing, stop the speech and clear the interval
-      console.log('paused');
+      //console.log('paused');
       Tts.stop(); // Stop the text-to-speech
       clearInterval(sliderInterval.current); // Clear the interval used for updating position
     } else {

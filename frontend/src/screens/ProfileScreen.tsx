@@ -23,7 +23,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
   //const fallback_profile = require('../assets/avatar.jpg');
   //const user_fallback_profile = Image.resolveAssetSource(fallback_profile).uri;
 
-  console.log('user fallback profile', user_token);
+  // console.log('user fallback profile', user_token);
 
   const {
     data: user,
@@ -39,7 +39,6 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
       });
       return response.data.profile as User;
     },
-    
   });
 
   const onArticleViewed = ({
@@ -84,8 +83,8 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
       return res.data.article as ArticleData;
     },
     onSuccess: async data => {
-      console.log('Article Id', articleId);
-      console.log('Author Id', authorId);
+      //  console.log('Article Id', articleId);
+      //  console.log('Author Id', authorId);
 
       navigation.navigate('ArticleScreen', {
         articleId: Number(articleId),
@@ -94,7 +93,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
     },
 
     onError: error => {
-      console.log('Update View Count Error', error);
+      // console.log('Update View Count Error', error);
       Alert.alert('Internal server error, try again!');
     },
   });

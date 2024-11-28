@@ -260,7 +260,7 @@ export const retrieveItem = async (key: string) => {
 export const storeItem = async (key: string, value: string) => {
   try {
     await AsyncStorage.setItem(key, value);
-    console.log(`Value saved for key : ${key}`, value);
+    // console.log(`Value saved for key : ${key}`, value);
   } catch (e) {
     // saving error
     console.log('Async Storage Data error', e);
@@ -535,20 +535,21 @@ export const KEYS = {
   USER_ID: 'USER_ID',
   USER_TOKEN: 'USER_TOKEN',
   USER_TOKEN_EXPIRY_DATE: 'USER_TOKEN_EXPIRY_DATE',
-  VULTR_CHAT_MODEL:'zephyr-7b-beta-f32',
-  VULTR_COLLECTION:'care_companion'
+  VULTR_CHAT_MODEL: 'zephyr-7b-beta-f32',
+  VULTR_COLLECTION: 'care_companion',
 };
 
 export const VULTR_CHAT_ROLES = {
-  'user': 'user',
-  'system':'system',
-  'assistant':'assistant'
+  user: 'user',
+  system: 'system',
+  assistant: 'assistant',
 };
 export const VULTR_CHAT_PROFILE_AVTARS = {
-   'user':'',
-   'system':'',
-   'assistant':'https://static.vecteezy.com/system/resources/previews/026/309/247/non_2x/robot-chat-or-chat-bot-logo-modern-conversation-automatic-technology-logo-design-template-vector.jpg'
-}
+  user: '',
+  system: '',
+  assistant:
+    'https://static.vecteezy.com/system/resources/previews/026/309/247/non_2x/robot-chat-or-chat-bot-logo-modern-conversation-automatic-technology-logo-design-template-vector.jpg',
+};
 export const createHTMLStructure = (
   title: string,
   body: string,

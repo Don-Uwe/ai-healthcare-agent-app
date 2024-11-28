@@ -34,8 +34,8 @@ const StackNavigation = () => {
           ?.name;
       const currTab = nav?.getState().routes[nav?.getState()?.index || 0]?.name;
 
-      console.log('Current Route', currentRoute);
-      console.log('Current Route', currTab);
+      //console.log('Current Route', currentRoute);
+      //console.log('Current Route', currTab);
       if (
         currentRoute === 'TabNavigation' ||
         currentRoute === 'LoginScreen' ||

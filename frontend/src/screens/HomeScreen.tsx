@@ -84,7 +84,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       selectedTags === undefined ||
       (selectedTags && selectedTags.length === 0)
     ) {
-      console.log('Category Data', categoryData);
+      //console.log('Category Data', categoryData);
       dispatch(
         setSelectedTags({
           selectedTags: categoryData.map(category => category.name),
@@ -179,8 +179,8 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     }
 
     let filtered = articleData;
-    console.log('sort type', sortType);
-    console.log('Filtered before', filtered);
+    //console.log('sort type', sortType);
+    //console.log('Filtered before', filtered);
     if (selectedTags.length > 0) {
       filtered = filtered.filter(article =>
         selectedTags.some(tag =>
@@ -188,7 +188,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         ),
       );
     }
-    console.log('Filtered before sort', filtered);
+   // console.log('Filtered before sort', filtered);
     if (sortType === 'recent' && filtered.length > 1) {
       filtered = filtered.sort(
         (a, b) =>
@@ -202,7 +202,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     } else if (sortType === 'popular' && filtered.length > 1) {
       filtered.sort((a, b) => b.viewCount - a.viewCount);
     }
-    console.log('Filtered', filtered);
+    //console.log('Filtered', filtered);
     //console.log('Article Data', articleData);
     dispatch(setFilteredArticles({filteredArticles: filtered}));
   };
@@ -225,7 +225,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           },
         });
 
-        console.log('Article Response', response);
+        //console.log('Article Response', response);
         let d = response.data.articles as ArticleData[];
         updateArticles(d);
         return response.data.articles as ArticleData[];
@@ -241,7 +241,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     setRefreshing(false);
   };
   const handleSearch = (textInput: string) => {
-    console.log('Search Input', textInput);
+    //console.log('Search Input', textInput);
     if (textInput === '' || articleData === undefined) {
       dispatch(setSearchedArticles({searchedArticles: []}));
       dispatch(setSearchMode({searchMode: false}));

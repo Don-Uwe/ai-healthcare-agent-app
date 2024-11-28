@@ -109,8 +109,8 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
       return res.data.article as ArticleData;
     },
     onSuccess: async data => {
-      console.log('Article Id', articleId);
-      console.log('Author Id', authorId);
+      //console.log('Article Id', articleId);
+      //console.log('Author Id', authorId);
 
       navigation.navigate('ArticleScreen', {
         articleId: Number(articleId),
@@ -201,8 +201,8 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
       <TouchableOpacity
         style={styles.headerLeftButtonEditorScreen}
         onPress={() => {
-          console.log('States', navigation.getState());
-          console.log('Can go back', navigation.canGoBack());
+         // console.log('States', navigation.getState());
+         // console.log('Can go back', navigation.canGoBack());
           navigation.goBack();
         }}>
         <FontAwesome6 size={25} name="arrow-left" color="white" />

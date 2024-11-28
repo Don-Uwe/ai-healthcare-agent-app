@@ -443,7 +443,7 @@ const ProfileEditScreen = ({navigation}) => {
             );
         }
       } else {
-        console.log('Password Update Error', err);
+       // console.log('Password Update Error', err);
         Alert.alert(
           'Password Update Failed',
           'Network error. Please check your connection.',
@@ -453,7 +453,7 @@ const ProfileEditScreen = ({navigation}) => {
   });
   useEffect(() => {
     if (user) {
-      console.log(user);
+      //console.log(user);
       setUserProfileImage(
         user.Profile_image ? `${GET_STORAGE_DATA}/${user.Profile_image}` : '',
       );
@@ -535,7 +535,7 @@ const ProfileEditScreen = ({navigation}) => {
       Alert.alert('Validation Error', errorMessage);
       return;
     }
-    console.log('donee');
+    //console.log('donee');
     userConatctDetailsMutation.mutate();
   };
   const handleSubmitProfessionalDetails = () => {
@@ -544,7 +544,7 @@ const ProfileEditScreen = ({navigation}) => {
       Alert.alert('Validation Error', errorMessage);
       return;
     }
-    console.log('donee');
+    //console.log('donee');
     userProfessionalDetailsMutation.mutate();
   };
   const handleSubmitPassword = () => {
@@ -592,7 +592,7 @@ const ProfileEditScreen = ({navigation}) => {
 
     launchImageLibrary(options, async (response: ImagePickerResponse) => {
       if (response.didCancel) {
-        console.log('User cancelled image picker');
+        //console.log('User cancelled image picker');
       } else if (response.errorMessage) {
         console.log('ImagePicker Error: ', response.errorMessage);
       } else if (response.assets) {
@@ -639,7 +639,7 @@ const ProfileEditScreen = ({navigation}) => {
               );
             })
             .catch(err => {
-              console.log(err);
+              //console.log(err);
               Alert.alert('Error', 'Could not resize the image.');
             });
         }

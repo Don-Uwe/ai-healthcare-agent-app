@@ -29,7 +29,7 @@ import {formatCount} from '../helper/Utils';
 
 const ArticleCard = ({item, navigation, success}: ArticleCardProps) => {
   const {user_token, user_id} = useSelector((state: any) => state.user);
-  console.log('Image Utils', item?.imageUtils[0]);
+  //console.log('Image Utils', item?.imageUtils[0]);
   const updateViewCountMutation = useMutation({
     mutationKey: ['update-view-count'],
     mutationFn: async () => {
@@ -59,7 +59,7 @@ const ArticleCard = ({item, navigation, success}: ArticleCardProps) => {
     },
 
     onError: error => {
-      console.log('Update View Count Error', error);
+      //console.log('Update View Count Error', error);
       Alert.alert('Internal server error, try again!');
     },
   });
@@ -90,7 +90,7 @@ const ArticleCard = ({item, navigation, success}: ArticleCardProps) => {
     },
 
     onError: error => {
-      console.log('Update View Count Error', error);
+      //console.log('Update View Count Error', error);
       Alert.alert('Internal server error, try again!');
     },
   });
@@ -125,7 +125,7 @@ const ArticleCard = ({item, navigation, success}: ArticleCardProps) => {
 
     onError: err => {
       Alert.alert('Try Again!');
-      console.log('Like Error', err);
+      //console.log('Like Error', err);
     },
   });
 

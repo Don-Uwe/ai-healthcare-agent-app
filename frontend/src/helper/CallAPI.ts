@@ -58,7 +58,7 @@ export function postMethodCall(url: string, params: any): Promise<any> {
       .then(response => response.json())
       .then(responseJson => {
         resolve(responseJson);
-        console.log('Response JSON', responseJson);
+        //console.log('Response JSON', responseJson);
       })
       .catch(er => {
         error(er);
@@ -87,7 +87,7 @@ export function getMethodCallwithToken(
       })
       .catch(er => {
         error(er);
-        console.log('Get Method Error', er);
+        //console.log('Get Method Error', er);
       });
   });
 }
@@ -109,7 +109,7 @@ export function getMethodCall(url: string): Promise<any> {
       })
       .catch(er => {
         error(er);
-        console.log('Get Method Error', er);
+        //console.log('Get Method Error', er);
       });
   });
 }

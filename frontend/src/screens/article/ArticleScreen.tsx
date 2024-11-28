@@ -34,8 +34,7 @@ import Loader from '../../components/Loader';
 import {setArticle} from '../../store/articleSlice';
 import Snackbar from 'react-native-snackbar';
 
-import { formatCount } from '../../helper/Utils';
-
+import {formatCount} from '../../helper/Utils';
 
 const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const insets = useSafeAreaInsets();
@@ -63,7 +62,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     },
   });
 
-  console.log('View Users', article?.viewUsers);
+  // console.log('View Users', article?.viewUsers);
 
   const handleLike = () => {
     if (article) {
@@ -191,7 +190,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     },
   });
 
-  console.log('author id', authorId);
+  // console.log('author id', authorId);
   const {data: authorFollowers, refetch: refetchFollowers} = useQuery({
     queryKey: ['authorFollowers'],
     queryFn: async () => {
@@ -219,7 +218,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
           },
         },
       );
-      console.log('Response', response);
+      //console.log('Response', response);
       return response.data.profile_image as string;
     },
   });
@@ -253,7 +252,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
             offset = e.nativeEvent.contentOffset.y;
           if (windowHeight + offset >= height) {
             //ScrollEnd,
-            console.log('ScrollEnd');
+             console.log('ScrollEnd');
             if (article && !readEventSave) {
               updateReadEventMutation.mutate();
             }
@@ -302,7 +301,6 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
             <Text style={{...styles.viewText, marginBottom: 10}}>
               {article && article?.viewUsers.length
                 ? article.viewUsers.length > 1
-
                   ? `${formatCount(article.viewUsers.length)} views`
                   : `${article.viewUsers.length} view`
                 : '0 view'}

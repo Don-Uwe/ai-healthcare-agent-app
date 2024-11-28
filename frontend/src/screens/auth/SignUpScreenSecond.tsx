@@ -150,7 +150,7 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
             );
         }
       } else {
-        console.log('Email Verification error', error);
+       // console.log('Email Verification error', error);
         Alert.alert('Error', 'Please try again');
       }
     },

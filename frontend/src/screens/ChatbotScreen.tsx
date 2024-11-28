@@ -177,7 +177,7 @@ const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
       );
     },
     onError: (error: AxiosError) => {
-      console.log('Error', error);
+      //console.log('Error', error);
       if (error.response) {
         const statusCode = error.response.status;
         switch (statusCode) {

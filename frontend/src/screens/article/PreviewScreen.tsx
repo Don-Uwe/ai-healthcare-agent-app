@@ -21,7 +21,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
   const {user_token} = useSelector((state: any) => state.user);
 
   const {uploadImage, loading} = useUploadImage();
-  console.log(selectedGenres);
+ // console.log(selectedGenres);
 
   React.useEffect(() => {
     navigation.setOptions({
@@ -58,6 +58,8 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
 
     // Resize and confirm for all images before uploading
     try {
+
+      
       const confirmation = await new Promise(resolve => {
         Alert.alert(
           'Create Post',
@@ -151,7 +153,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
     },
     onError: error => {
       console.log('Article post Error', error);
-      console.log(error);
+     // console.log(error);
 
       Alert.alert('Failed to upload your post');
     },

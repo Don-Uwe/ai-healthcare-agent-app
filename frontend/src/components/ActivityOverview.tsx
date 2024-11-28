@@ -134,7 +134,7 @@ const ActivityOverview = ({
         let url = others
           ? `${GET_MONTHLY_READ_REPORT}?userId=${userId}&month=${selectedMonth}`
           : `${GET_MONTHLY_READ_REPORT}?userId=${user_id}&month=${selectedMonth}`;
-        console.log('URL', url);
+       // console.log('URL', url);
         const response = await axios.get(url, {
           headers: {
             Authorization: `Bearer ${user_token}`,
@@ -188,7 +188,7 @@ const ActivityOverview = ({
         let url = others
           ? `${GET_MONTHLY_WRITES_REPORT}?userId=${userId}&month=${selectedMonth}`
           : `${GET_MONTHLY_WRITES_REPORT}?userId=${user_id}&month=${selectedMonth}`;
-        console.log('URL', url);
+       // console.log('URL', url);
         const response = await axios.get(url, {
           headers: {
             Authorization: `Bearer ${user_token}`,
@@ -376,7 +376,7 @@ const ActivityOverview = ({
             Authorization: `Bearer ${user_token}`,
           },
         });
-        console.log('Like View Data', response.data);
+       // console.log('Like View Data', response.data);
 
         return response.data as UserStatus;
       } catch (err) {
@@ -421,7 +421,7 @@ const ActivityOverview = ({
             Authorization: `Bearer ${user_token}`,
           },
         });
-        console.log('READ Data', response.data);
+        //console.log('READ Data', response.data);
 
         return response.data as ReadStatus;
       } catch (err) {
@@ -466,7 +466,7 @@ const ActivityOverview = ({
             Authorization: `Bearer ${user_token}`,
           },
         });
-        console.log('Write Data', response.data);
+       // console.log('Write Data', response.data);
 
         return response.data as WriteStatus;
       } catch (err) {
