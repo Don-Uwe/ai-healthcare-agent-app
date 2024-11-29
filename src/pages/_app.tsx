@@ -17,7 +17,7 @@ import { GoogleAnalytics } from '@next/third-parties/google'
 
 const DynamicProviders = dynamic(() => import('@/provider').then((mod) => mod.Providers))
 const DynamicContent = dynamic(() => import('@/components/Content'))
-const DynamicAppNavLayout = dynamic(() => import('@/components/AppLayout/AppNavLayout'))
+const DynamicAppNavLayout = dynamic(() => import('@/components/AppLayout/AppNavLayout'), { ssr: false })
 
 const CONTENT_ONLY_PATH = ['/', '404', '/moonpay']
 const OVERFLOW_HIDDEN_PATH = ['/liquidity-pools']
