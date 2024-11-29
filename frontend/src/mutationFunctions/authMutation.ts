@@ -6,29 +6,26 @@ import {
   CHANGE_PASSWORD_API,
   CHECK_OTP,
   LOGIN_API,
+  REGISTRATION_API,
   RESEND_VERIFICATION,
   SEND_OTP,
   USER_LOGOUT,
+  VERIFICATION_MAIL_API,
 } from '../helper/APIUtils';
 import {KEYS, storeItem} from '../helper/Utils';
+import {Contactdetail, User} from '../type';
 
 // Constants for the API endpoints (you should define them somewhere globally)
 
 // Interfaces
 interface AuthData {
   userId: string;
-  token: string;
-}
-
-interface User {
-  _id: string;
-  refreshToken: string;
+  token?: string;
 }
 
 interface LoginMutationProps {
   email: string;
   password: string;
-  // navigation: any;
   success: (userId: string, token: string) => void;
   error: () => void;
 }
@@ -372,3 +369,157 @@ export const useVerifyOtpMutation = ({
     },
   });
 };
+
+// Register Mutaion for normal user
+export const useRegisterMutation = ({
+  user_name,
+  user_handle,
+  email,
+  password,
+  isDoctor,
+  profile_url,
+  specialization,
+  qualification,
+  Years_of_experience,
+  contact_detail,
+  success,
+  error,
+}: {
+  user_name: string;
+  user_handle: string;
+  email: string;
+  password: string;
+  isDoctor: boolean;
+  profile_url?: string;
+  specialization?: string;
+  qualification?: string;
+  Years_of_experience?: string;
+  contact_detail?: Contactdetail;
+  success: () => void;
+  // error: () => void;
+}) => {
+  return useMutation({
+    mutationKey: ['user-registration'],
+    mutationFn: async () => {
+      const res = await axios.post(REGISTRATION_API, {
+        user_name: user_name,
+        user_handle: user_handle,
+        email: email,
+        password: password,
+        isDoctor: isDoctor,
+        Profile_image: profile_url,
+        specialization: specialization,
+        qualification: qualification,
+        Years_of_experience: Years_of_experience,
+        contact_detail: contact_detail,
+      });
+      return res.data.token as string;
+    },
+    onSuccess: () => {
+      //setToken(data);
+      //setVerifiedModalVisible(true);
+      success();
+    },
+
+    onError: (err: AxiosError) => {
+      console.log(err.message);
+      if (err.response) {
+        const statusCode = err.response.status;
+        switch (statusCode) {
+          case 400:
+            const errorData = err.message;
+            console.log('Error message', errorData);
+            Alert.alert('Registration failed', 'Please try again');
+            break;
+          case 409:
+            Alert.alert(
+              'Registration failed',
+              'Email or user handle already exists',
+            );
+            break;
+          case 500:
+            Alert.alert(
+              'Registration failed',
+              'Internal server error. Please try again later.',
+            );
+            break;
+          default:
+            Alert.alert(
+              'Registration failed',
+              'Something went wrong. Please try again later.',
+            );
+        }
+      } else {
+        console.log('General User Registration Error', err);
+        Alert.alert('Registration failed', 'Please try again');
+      }
+    },
+  });
+};
+
+// Verify Mail
+export const useVerifyMail = ({
+  email,
+  token,
+  success,
+}: {
+  email: string;
+  token: string;
+  success: () => void;
+}) => {
+  return useMutation({
+    mutationKey: ['send-verification-mail'],
+    mutationFn: async () => {
+      const res = await axios.post(VERIFICATION_MAIL_API, {
+        email: email,
+        token: token,
+      });
+
+      return res.data.message as string;
+    },
+
+    onSuccess: data => {
+      //setVerifyBtntxt(data);
+      //Alert.alert('Verification Email Sent');
+      //navigation.navigate('LoginScreen');
+      success();
+    },
+    onError: (error: AxiosError) => {
+      if (error.response) {
+        const statusCode = error.response.status;
+        switch (statusCode) {
+          case 400:
+            if (error.message === 'Email and token are required') {
+              Alert.alert('Error', 'Email and token are required');
+            } else if (error.message === 'User not found or already verified') {
+              Alert.alert('Error', 'User not found or already verified');
+            } else {
+              Alert.alert('Error', 'Please provide all required fields');
+            }
+            break;
+          case 429:
+            Alert.alert(
+              'Error',
+              'Verification email already sent. Please try again after 1 hour.',
+            );
+            break;
+          case 500:
+            Alert.alert(
+              'Error',
+              'Internal server error. Please try again later.',
+            );
+            break;
+          default:
+            Alert.alert(
+              'Error',
+              'Something went wrong. Please try again later.',
+            );
+        }
+      } else {
+        // console.log('Email Verification error', error);
+        Alert.alert('Error', 'Please try again');
+      }
+    },
+  });
+};
+
