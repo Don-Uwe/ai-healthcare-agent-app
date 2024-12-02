@@ -196,8 +196,9 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
 
   if (!pool) return isLoading ? <Skeleton w="full" height="140px" rounded="lg" /> : null
 
+  const hasFarm = pool?.farmOngoingCount > 0 || pool?.farmUpcomingCount > 0
   let positionStatus = ''
-  if (!stakedFarms.length && pool && (pool?.farmOngoingCount > 0 || pool?.farmUpcomingCount > 0)) {
+  if (!stakedFarms.length && pool && hasFarm) {
     positionStatus = 'unstaked'
   } else if (pool?.isRewardEnded && !stakedFarmList.some((f) => f.isOngoing) && !totalPending.isZero()) {
     positionStatus = 'ended'
@@ -498,7 +499,7 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
                 lockData={lockInfo[0]}
                 onHarvest={handleClaimModalOpen}
               />
-            ) : (
+            ) : hasFarm ? (
               <PendingRewards
                 pendingReward={totalPending.toString()}
                 rewardInfo={pendingRewardsInfo}
@@ -506,7 +507,7 @@ export default function StandardPoolRowItem({ pool, isLoading, position, stakedF
                 isLoading={isHarvesting}
                 onHarvest={handleHarvest}
               />
-            )}
+            ) : null}
           </GridItem>
 
           <GridItem area="acts" ml={['unset', 'auto']}>
