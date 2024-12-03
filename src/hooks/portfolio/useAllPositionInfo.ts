@@ -323,7 +323,9 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
     if (tab === 'concentrated' && rewardState.concentrated.isReady) {
       const noneZeroPos = { ...clmmRecord }
       Object.keys(noneZeroPos).forEach((key) => {
-        const readyList = noneZeroPos[key].filter((p) => (zeroClmmPos ? !zeroClmmPos.has(p.nftMint.toBase58()) : true))
+        const readyList = noneZeroPos[key].filter(
+          (p) => !p.liquidity.isZero() && (zeroClmmPos ? !zeroClmmPos.has(p.nftMint.toBase58()) : true)
+        )
         if (!readyList.length) {
           delete noneZeroPos[key]
           return
