@@ -41,7 +41,12 @@ export interface FarmStore {
   ) => Promise<{ txIds: string[]; buildData?: MultiTxBuildData | MultiTxV0BuildData }>
 
   withdrawFarmAct: (
-    params: { farmInfo: FormatFarmInfoOut | ApiStakePool; amount: string; userAuxiliaryLedgers?: string[] } & TxCallbackProps
+    params: {
+      farmInfo: FormatFarmInfoOut | ApiStakePool
+      deposited?: BN
+      amount: string
+      userAuxiliaryLedgers?: string[]
+    } & TxCallbackProps
   ) => Promise<string>
   depositFarmAct: (
     params: { farmInfo: FormatFarmInfoOut | ApiStakePool; amount: string; userAuxiliaryLedgers?: string[] } & TxCallbackProps
@@ -141,12 +146,13 @@ export const useFarmStore = createStore<FarmStore>(
       return { txIds: [], buildData: data }
     },
 
-    withdrawFarmAct: async ({ farmInfo, amount, userAuxiliaryLedgers, onSent, onError, onFinally }) => {
+    withdrawFarmAct: async ({ farmInfo, deposited, amount, userAuxiliaryLedgers, onSent, onError, onFinally }) => {
       const { raydium, txVersion } = useAppStore.getState()
       if (!raydium) return ''
       const computeBudgetConfig = await getComputeBudgetConfig()
       const { execute } = await raydium.farm.withdraw({
         farmInfo,
+        deposited,
         amount: new BN(new Decimal(amount).mul(10 ** farmInfo.lpMint.decimals).toFixed(0)),
         userAuxiliaryLedgers,
         computeBudgetConfig,

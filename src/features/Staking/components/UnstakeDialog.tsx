@@ -9,6 +9,7 @@ import { ApiStakePool } from '@raydium-io/raydium-sdk-v2'
 import Decimal from 'decimal.js'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { BN } from 'bn.js'
 
 interface Props {
   isOpen: boolean
@@ -43,6 +44,7 @@ export default function UnstakeDialog({ isOpen, onClose, depositedAmount, userAu
 
     withdrawFarmAct({
       farmInfo: pool,
+      deposited: new BN(new Decimal(depositedAmount).mul(10 ** pool.lpMint.decimals).toFixed(0)),
       amount: value,
       userAuxiliaryLedgers,
       onFinally: () => {

@@ -26,6 +26,7 @@ import shallow from 'zustand/shallow'
 import { useEvent } from '@/hooks/useEvent'
 import { FarmPositionInfo } from '@/hooks/portfolio/farm/useFarmPositions'
 import { PublicKey } from '@solana/web3.js'
+import { BN } from 'bn.js'
 
 export default function StakingPoolItem({ pool, apiVaultData }: { pool: ApiStakePool; apiVaultData?: FarmPositionInfo }) {
   const { t } = useTranslation()
@@ -74,6 +75,10 @@ export default function StakingPoolItem({ pool, apiVaultData }: { pool: ApiStake
     onHarvesting()
     withdrawFarmAct({
       farmInfo: pool,
+      deposited:
+        userAuxiliaryLedgers && !ataBalance.hasDeposited
+          ? new BN(new Decimal(v1Balance.deposited).mul(10 ** pool.lpMint.decimals).toFixed(0))
+          : undefined,
       amount: '0',
       userAuxiliaryLedgers,
       onConfirmed: v1Balance.hasDeposited ? v1Balance.mutate : undefined,
