@@ -8,7 +8,7 @@ import {
   UPDATE_USER_GENERAL_DETAILS,
   UPDATE_USER_PASSWORD,
   UPDATE_USER_PROFESSIONAL_DETAILS,
-} from '../helper/APIUtils';
+} from '../APIUtils';
 
 export const useUpdateUserGeneralDetails = ({
   username,

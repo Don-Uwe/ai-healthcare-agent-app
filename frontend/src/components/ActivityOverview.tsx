@@ -149,13 +149,6 @@ const ActivityOverview = ({
     enabled: !!(user_token && selectedMonth !== -1 && (userId || !others)),
   });
 
-  // GET MONTHLY WRITE REPORT
-
-  //let url = others
-  // ? `${GET_MONTHLY_WRITES_REPORT}${userId}?month=${selectedMonth}`
-  // : `${GET_MONTHLY_WRITES_REPORT}${user_id}?month=${selectedMonth}`;
-  //console.log('URL', url);
-  // console.log('USER TOKEN', user_token)
 
   const {
     data: monthlyWriteReport,

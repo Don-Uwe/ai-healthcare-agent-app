@@ -17,7 +17,7 @@ import ArticleCard from '../components/ArticleCard';
 import HomeScreenHeader from '../components/HomeScreenHeader';
 import {ArticleData, Category, CategoryType, HomeScreenProps} from '../type';
 import axios from 'axios';
-import {ARTICLE_TAGS_API, BASE_URL} from '../helper/APIUtils';
+import {ARTICLE_TAGS_API, EC2_BASE_URL} from '../helper/APIUtils';
 import FilterModal from '../components/FilterModal';
 import {BottomSheetModal} from '@gorhom/bottom-sheet';
 import {useQuery} from '@tanstack/react-query';
@@ -73,7 +73,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       return;
     }
     const {data: categoryData} = await axios.get(
-      `${BASE_URL + ARTICLE_TAGS_API}`,
+      `${EC2_BASE_URL + ARTICLE_TAGS_API}`,
       {
         headers: {
           Authorization: `Bearer ${user_token}`,
@@ -219,7 +219,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         if (user_token === '') {
           throw new Error('No token found');
         }
-        const response = await axios.get(`${BASE_URL}/articles`, {
+        const response = await axios.get(`${EC2_BASE_URL}/articles`, {
           headers: {
             Authorization: `Bearer ${user_token}`,
           },

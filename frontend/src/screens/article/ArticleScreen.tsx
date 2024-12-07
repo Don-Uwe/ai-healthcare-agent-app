@@ -21,7 +21,7 @@ import {useSelector} from 'react-redux';
 import WebView from 'react-native-webview';
 import {hp} from '../../helper/Metric';
 import {
-  BASE_URL,
+  EC2_BASE_URL,
   FOLLOW_USER,
   GET_ARTICLE_BY_ID,
   GET_PROFILE_IMAGE_BY_ID,
@@ -195,7 +195,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     queryKey: ['authorFollowers'],
     queryFn: async () => {
       const response = await axios.get(
-        `${BASE_URL}/user/${authorId}/followers`,
+        `${EC2_BASE_URL}/user/${authorId}/followers`,
         {
           headers: {
             Authorization: `Bearer ${user_token}`,

@@ -262,7 +262,7 @@ export const storeItem = async (key: string, value: string) => {
     await AsyncStorage.setItem(key, value);
     // console.log(`Value saved for key : ${key}`, value);
   } catch (e) {
-    // saving error
+   
     console.log('Async Storage Data error', e);
   }
 };
