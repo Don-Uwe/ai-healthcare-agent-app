@@ -5,4 +5,7 @@
             <certificates src="system" />
         </trust-anchors>
     </base-config>
+      <domain-config cleartextTrafficPermitted="true">
+        <domain>51.20.1.81</domain>
+    </domain-config>
 </network-security-config>

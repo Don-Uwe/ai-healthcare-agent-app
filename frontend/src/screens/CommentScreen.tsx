@@ -10,39 +10,24 @@ import {
 } from 'react-native';
 import {CommentScreenProp} from '../type';
 import {PRIMARY_COLOR} from '../helper/Theme';
-import useSocket from '../../hooks/useSocket';
+import io from 'socket.io-client';
+import {Comment} from '../type';
+import { useSelector } from 'react-redux';
 
 const CommentScreen = ({navigation, route}: CommentScreenProp) => {
-  // State to store the list of comments
-
-  const socket = useSocket();
-
-  const [comments, setComments] = useState<Comment>([]);
-  const [comments1, setComments1] = useState([
-    {
-      id: '1',
-      username: 'Alice',
-      avatar: '👩‍💻',
-      comment: 'Love this piece! Very inspiring!',
-      timestamp: '2 hours ago',
-    },
-    {
-      id: '2',
-      username: 'Bob',
-      avatar: '👨‍🎨',
-      comment: 'Amazing work, keep it up!',
-      timestamp: '4 hours ago',
-    },
-    {
-      id: '3',
-      username: 'Charlie',
-      avatar: '👩‍🎤',
-      comment: 'I could feel the emotion in your words!',
-      timestamp: '1 day ago',
-    },
-  ]);
-
+  const socket = io('http://51.20.1.81:8081');
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [newComment, setNewComment] = useState('');
+  const {user_id} = useSelector((state: any) => state.user);
   useEffect(() => {
+    socket.emit('fetch-comments', {articleId: route.params.articleId});
+
+    socket.on('comments-loaded', data => {
+      if (data.articleId === route.params.articleId) {
+        setComments(data.comments);
+      }
+    });
+
     // Listen for new comments
     socket.on('new-comment', data => {
       if (data.articleId === route.params.articleId) {
@@ -50,25 +35,7 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
       }
     });
 
-    // Listen for comment edits
-    socket.on('edit-comment', updatedComment => {
-      setComments(prevComments =>
-        prevComments.map(comment =>
-          comment._id === updatedComment._id ? updatedComment : comment,
-        ),
-      );
-    });
-
-    // Listen for comment deletions
-    socket.on('delete-comment', data => {
-      if (data.articleId === route.params.articleId) {
-        setComments(prevComments =>
-          prevComments.filter(comment => comment._id !== data.commentId),
-        );
-      }
-    });
-
-    // Listen for replies
+    // Listen for new replies
     socket.on('new-reply', data => {
       if (data.articleId === route.params.articleId) {
         setComments(prevComments => {
@@ -81,15 +48,24 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
       }
     });
 
+    // Listen for parent comment updates (e.g., when replies are added)
+    socket.on('update-parent-comment', data => {
+      setComments(prevComments => {
+        return prevComments.map(comment =>
+          comment._id === data.parentCommentId
+            ? {...comment, ...data.parentComment} // update parent comment
+            : comment,
+        );
+      });
+    });
+
     return () => {
+      socket.off('comments-loaded');
       socket.off('new-comment');
-      socket.off('edit-comment');
-      socket.off('delete-comment');
       socket.off('new-reply');
+      socket.off('update-parent-comment');
     };
   }, [socket, route.params.articleId]);
-
-  const [newComment, setNewComment] = useState('');
 
   const handleCommentSubmit = () => {
     if (!newComment.trim()) {
@@ -98,15 +74,29 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
     }
 
     const newCommentObj = {
-      id: (comments1.length + 1).toString(),
-      username: 'You', // Can be dynamically set based on the user
-      avatar: '🧑‍💻', // Placeholder avatar
-      comment: newComment,
-      timestamp: 'Just now', // This can be dynamically generated with a timestamp function
+      userId: user_id,
+      articleId: route.params.articleId,
+      content: newComment,
+      parentCommentId: null,
     };
 
-    // Add the new comment to the state
-    setComments1([newCommentObj, ...comments]);
+    /*
+    const newCommentObj = {
+      _id: String(comments.length + 1), // Generate a new id for the comment
+      userId: {user_handle: 'You'}, // Placeholder for username
+      avatar: '🧑‍💻', // Placeholder for avatar
+      content: newComment,
+      timestamp: new Date().toLocaleString(), // dynamic timestamp
+      replies: [],
+    };
+    */
+
+    // Emit the new comment to the backend via socket
+    socket.emit('new-comment', {
+      comment: newCommentObj,
+      articleId: route.params.articleId,
+    });
+
     setNewComment(''); // Clear the input field after submitting
   };
 
@@ -116,18 +106,34 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
 
       {/* Comments List */}
       <FlatList
-        data={comments1}
+        data={comments}
         renderItem={({item}) => (
           <View style={styles.commentContainer}>
-            <Text style={styles.avatar}>{item.avatar}</Text>
+            <Text style={styles.avatar}>🧑‍💻</Text>
             <View style={styles.commentContent}>
-              <Text style={styles.username}>{item.username}</Text>
-              <Text style={styles.comment}>{item.comment}</Text>
-              <Text style={styles.timestamp}>{item.timestamp}</Text>
+              <Text style={styles.username}>Author</Text>
+              <Text style={styles.comment}>{item.content}</Text>
+              <Text style={styles.timestamp}>{item.createdAt}</Text>
+
+              {/* Render replies if they exist */}
+              {item.replies && item.replies.length > 0 && (
+                <FlatList
+                  data={item.replies}
+                  renderItem={({item: reply}) => (
+                    <View style={styles.replyContainer}>
+                      <Text style={styles.replyText}>
+                        Reply: {reply.content}
+                      </Text>
+                    </View>
+                  )}
+                  keyExtractor={item => item._id}
+                  //style={styles.repliesList}
+                />
+              )}
             </View>
           </View>
         )}
-        keyExtractor={item => item.id}
+        keyExtractor={item => item._id} // Change from 'id' to '_id' for consistency
         style={styles.commentsList}
       />
 
@@ -195,6 +201,15 @@ const styles = StyleSheet.create({
   timestamp: {
     fontSize: 12,
     color: '#888',
+  },
+  replyContainer: {
+    marginLeft: 20,
+    marginTop: 10,
+  },
+  replyText: {
+    fontSize: 14,
+    color: '#555',
+    fontStyle: 'italic',
   },
   textInput: {
     height: 100,

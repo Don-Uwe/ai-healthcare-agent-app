@@ -137,6 +137,8 @@ export type ArticleCardProps = {
   success: () => void;
 };
 
+
+
 export type ProfileHeaderProps = {
   isDoctor: boolean;
   username: string;
