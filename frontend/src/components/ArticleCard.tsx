@@ -202,8 +202,9 @@ const ArticleCard = ({item, navigation, success}: ArticleCardProps) => {
 
             <TouchableOpacity
               onPress={() => {
+                //console.log("item", item);
                 navigation.navigate('CommentScreen', {
-                  articleId: item.id,
+                  articleId: item._id,
                 });
               }}
               style={styles.likeSaveChildContainer}>

@@ -12,17 +12,22 @@ import {CommentScreenProp} from '../type';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import io from 'socket.io-client';
 import {Comment} from '../type';
-import { useSelector } from 'react-redux';
+import {useSelector} from 'react-redux';
 
 const CommentScreen = ({navigation, route}: CommentScreenProp) => {
   const socket = io('http://51.20.1.81:8081');
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const {user_id} = useSelector((state: any) => state.user);
+  const {articledId} = route.params;
+
+  console.log('articleid', articledId);
   useEffect(() => {
+    console.log('Fetching comments for articleId:', route.params.articleId);
     socket.emit('fetch-comments', {articleId: route.params.articleId});
 
     socket.on('comments-loaded', data => {
+      console.log('comment', data);
       if (data.articleId === route.params.articleId) {
         setComments(data.comments);
       }
@@ -67,6 +72,7 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
     };
   }, [socket, route.params.articleId]);
 
+  console.log('com', comments);
   const handleCommentSubmit = () => {
     if (!newComment.trim()) {
       Alert.alert('Please enter a comment before submitting.');
