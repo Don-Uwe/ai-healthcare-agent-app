@@ -5,6 +5,7 @@ import dayjs from 'dayjs'
 import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 import { useTranslation } from 'react-i18next'
 import { TFunction } from 'i18next'
+import { TOKEN_2022_PROGRAM_ID } from '@solana/spl-token'
 
 interface Props {
   onlineCurrentDate: number
@@ -35,7 +36,9 @@ const schema = (t: TFunction<'translation', undefined, 'translation'>) =>
       .test('is-amount-valid', t('error.insufficient_sub_balance') ?? '', function (val) {
         return new Decimal(this.parent.balance).gte(val || '0')
       }),
-    mint: yup.mixed().test('is-mint-valid', t('error.select_reward_token') ?? '', function (val) {
+    mint: yup.mixed().test('is-mint-valid', t('error.select_reward_token') ?? '', function (val: ApiV3Token) {
+      if (this.parent.checkMint && val && val.programId === TOKEN_2022_PROGRAM_ID.toBase58())
+        return this.createError({ message: t('error.farm_not_support_2022') || 'Farm does not support token 2022' })
       return this.parent.checkMint ? !!val : true
     })
   })

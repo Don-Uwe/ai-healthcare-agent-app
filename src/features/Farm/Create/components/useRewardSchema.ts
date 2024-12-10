@@ -1,8 +1,12 @@
 import * as yup from 'yup'
 import Decimal from 'decimal.js'
 import dayjs from 'dayjs'
+import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
+import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
+import { useTranslation } from 'react-i18next'
 
 export default function useRewardSchema() {
+  const { t } = useTranslation()
   return yup.object().shape({
     speed: yup.mixed().test('is-amount-enough', 'Emission rewards is lower than min required', function () {
       const minBoundary =
@@ -33,6 +37,11 @@ export default function useRewardSchema() {
       if (new Decimal(val || 0).lte(0)) return this.createError({ message: 'input token amount' })
       return new Decimal(this.parent.balance || 0).gte(val || 0)
     }),
-    token: yup.mixed().required('Select reward token')
+    token: yup
+      .mixed()
+      .required('Select reward token')
+      .test('is-token-valid', t('error.farm_not_support_2022') || 'Farm does not support token 2022', function (val: ApiV3Token) {
+        return val.programId === TOKEN_PROGRAM_ID.toBase58()
+      })
   })
 }

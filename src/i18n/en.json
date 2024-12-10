@@ -616,7 +616,8 @@
     "swap_slippage_error_title": "Swap failed due to slippage error!",
     "swap_slippage_error_desc": "Slippage has exceeded user settings.\nTry again or adjust your slippage tolerance.",
     "initial_liquidity_low": "Initial liquidity is too low, try increasing the amount.",
-    "amm_not_support_2022": "Amm V4 pool does not support token 2022"
+    "amm_not_support_2022": "Amm V4 pool does not support token 2022",
+    "farm_not_support_2022": "Farm does not support token 2022"
   },
   "input": {
     "max_button": "Max",
