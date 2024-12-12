@@ -90,7 +90,7 @@ export default function SelectWalletModal({ wallets, isOpen, onSelectWallet, onC
                 <Image src={phantomWallet?.adapter.icon} w={100} h={100} />
               </Flex>
               <Flex justify="center" textAlign="center" mt={6}>
-                <Link href="https://phantom.app" isExternal>
+                <Link href="https://phantom.com" isExternal>
                   <Button fontWeight="medium" gap={1}>
                     {t('wallet_connect_panel.install_phantom')}
                     <ExternalLink cursor="pointer" width="14" height="14" color={colors.buttonSolidText} />
@@ -326,7 +326,7 @@ function WalletItem({
           <QuestionToolTip
             label={
               <Trans i18nKey="wallet_connect_panel.auto_confirm_tip">
-                <Link href="https://phantom.app/learn/blog/auto-confirm" isExternal></Link>
+                <Link href="https://phantom.com/learn/blog/auto-confirm" isExternal></Link>
               </Trans>
             }
             iconProps={{ color: colors.textPurple }}
