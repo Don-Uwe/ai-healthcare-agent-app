@@ -1,7 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Box, Flex, Grid, GridItem, HStack, Heading, Link, Skeleton, Text, VStack, useDisclosure } from '@chakra-ui/react'
-import { ApiV3PoolInfoConcentratedItem, FormatFarmInfoOutV6, TokenInfo, solToWSol, solToWSolToken } from '@raydium-io/raydium-sdk-v2'
+import {
+  ApiV3PoolInfoConcentratedItem,
+  FormatFarmInfoOutV6,
+  TokenInfo,
+  solToWSol,
+  solToWSolToken,
+  FarmStateV6,
+  FARM_PROGRAM_ID_V6
+} from '@raydium-io/raydium-sdk-v2'
 import { PublicKey } from '@solana/web3.js'
 import { useRouter } from 'next/router'
 import shallow from 'zustand/shallow'
@@ -26,6 +34,9 @@ import FarmInfoItem from './components/FarmInfoItem'
 import ExistFarmingRewards from './components/FarmingRewards'
 import NewRewards from './components/NewRewards'
 import { EditReward, farmV6RewardToEditReward, poolRewardToEditReward } from './util'
+import useFetchRpcClmmInfo from '@/hooks/pool/clmm/useFetchRpcClmmInfo'
+import useFetchFarmInfoByRpc from '@/hooks/farm/useFetchFarmInfoByRpc'
+import { BN } from 'bn.js'
 
 interface QueryParams {
   farmId?: string
@@ -40,7 +51,12 @@ export default function FarmEdit() {
   const { farmId, clmmId } = (query || {}) as QueryParams
   const [remainRewardsCount, setRemainRewardsCount] = useState(0)
   const editFarmRewardsAct = useFarmStore((s) => s.editFarmRewardsAct)
-  const [rewardWhiteListMints, setRewardsAct] = useClmmStore((s) => [s.rewardWhiteListMints, s.setRewardsAct], shallow)
+  const withdrawCreatorFarmRewardAct = useFarmStore((s) => s.withdrawCreatorFarmRewardAct)
+  const [rewardWhiteListMints, setRewardsAct, collectRewardAct] = useClmmStore(
+    (s) => [s.rewardWhiteListMints, s.setRewardsAct, s.collectRewardAct],
+    shallow
+  )
+  const [owner, chainTimeOffset] = useAppStore((s) => [s.publicKey, s.chainTimeOffset], shallow)
   const { isOpen: isSending, onOpen: onSending, onClose: offSending } = useDisclosure()
   const {
     isOpen: isAddAnotherRewardDialogOpen,
@@ -48,7 +64,6 @@ export default function FarmEdit() {
     onOpen: onOpenAddAnotherRewardDialog
   } = useDisclosure()
 
-  const chainTimeOffset = useAppStore((s) => s.chainTimeOffset)
   const onlineCurrentDate = Date.now() + chainTimeOffset
 
   const { formattedData, isLoading: isFarmLoading } = useFetchFarmInfoById<FormatFarmInfoOutV6>({
@@ -65,6 +80,34 @@ export default function FarmEdit() {
     () => new Set([...rewardWhiteListMints.map((pub) => pub.toBase58()), clmmData?.mintA.address, clmmData?.mintB.address]),
     [rewardWhiteListMints, clmmData?.id]
   )
+
+  const { data: rpcFarm } = useFetchFarmInfoByRpc({
+    shouldFetch: !!farmData && farmData.programId === FARM_PROGRAM_ID_V6.toBase58(),
+    farmInfo: farmData
+      ? {
+          programId: farmData.programId,
+          id: farmData.id
+        }
+      : undefined
+  })
+
+  const farmV6OwnerRemainingRewards =
+    owner && rpcFarm && (rpcFarm as FarmStateV6)?.creator.equals(owner)
+      ? ((rpcFarm?.rewardInfos || []) as FarmStateV6['rewardInfos'])
+          .filter((r) => !r.rewardEndTime.isZero() && r.rewardEndTime.toNumber() * 1000 < onlineCurrentDate)
+          .filter((r) => r.totalReward.sub(r.totalRewardEmissioned).gt(new BN(0)))
+          .map((r) => ({
+            hasRemaining: true,
+            mint: r.rewardMint.toBase58(),
+            remaining: r.totalReward.sub(r.totalRewardEmissioned).toString()
+          }))
+      : []
+
+  const { ownerRemainingRewards } = useFetchRpcClmmInfo({
+    shouldFetch: !!clmmData,
+    id: clmmId,
+    apiPoolInfo: clmmData
+  })
 
   const isLoading = isFarmLoading || isPoolLoading
   const hasData = (farmId && !!farmData) || (clmmId && clmmData)
@@ -189,6 +232,11 @@ export default function FarmEdit() {
     return !existedTokens.has(solToWSol(token.address).toString()) && isClmmRewardValid
   })
 
+  const handleClaimRemainingReward = useEvent(async ({ mint }: { mint: string }) => {
+    if (farmData) withdrawCreatorFarmRewardAct({ farmInfo: farmData as any, withdrawMint: new PublicKey(mint) })
+    else if (clmmData) collectRewardAct({ poolInfo: clmmData, rewardMint: new PublicKey(mint) })
+  })
+
   if (!isLoading) {
     if (!hasData) return <div>{t('edit_farm.loading_text_no_farm')}</div>
     if (!isValidData) return <div>{t('edit_farm.loading_text_farm_not_editable')}</div>
@@ -305,12 +353,15 @@ export default function FarmEdit() {
                 actionRef={editedRewardRef}
                 onUpdate={handleUpdate}
                 rewards={rewardData}
+                ownerRemainingRewards={rpcFarm ? farmV6OwnerRemainingRewards : ownerRemainingRewards}
                 farmTVL={farmTVL}
                 isEcosystem={!!farmData}
+                onClaimRemaining={handleClaimRemainingReward}
               />
               <NewRewards
                 actionRef={newRewardRef}
                 farmTVL={farmTVL}
+                isEcosystem={!!farmData}
                 onCheckRemaining={handleCheckRemainRewardsCount}
                 tokenFilterFn={tokenFilterFn}
               />

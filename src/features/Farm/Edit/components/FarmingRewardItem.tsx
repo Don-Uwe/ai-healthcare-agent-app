@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Badge, Box, Button, Flex, Grid, GridItem, HStack, SimpleGrid, Tag, Text, VStack, useDisclosure } from '@chakra-ui/react'
-import { TokenInfo } from '@raydium-io/raydium-sdk-v2'
+import { FormatFarmInfoOutV6, TokenInfo } from '@raydium-io/raydium-sdk-v2'
 
 import TokenAvatar from '@/components/TokenAvatar'
 import { useEvent } from '@/hooks/useEvent'
@@ -14,19 +14,24 @@ import AddMoreRewardDialog from './AddMoreRewardDialog'
 import AdjustRewardDialog from './AdjustRewardDialog'
 import { wSolToSolString } from '@/utils/token'
 import { useTranslation } from 'react-i18next'
+import Decimal from 'decimal.js'
 
 export default function ExistFarmingRewardItem({
   reward,
+  remainingReward,
   farmTVL,
   isEcosystem,
   onRewardUpdate,
-  tokenFilterFn
+  tokenFilterFn,
+  onClaimRemaining
 }: {
   reward: EditReward
+  remainingReward?: { hasRemaining: boolean; mint: string; remaining: string }
   farmTVL?: number
-  isEcosystem?: boolean
+  isEcosystem: boolean
   tokenFilterFn?: (token: TokenInfo, escapeExistMint?: string) => boolean
   onRewardUpdate: (mint: string, reward?: EditReward, orgReward?: EditReward) => void
+  onClaimRemaining?: (props: { mint: string }) => void
 }) {
   const { t } = useTranslation()
   const chainTimeOffset = useAppStore((s) => s.chainTimeOffset)
@@ -77,14 +82,18 @@ export default function ExistFarmingRewardItem({
   const isEcoSystemAddMore = isEcosystem && isIn72hrPeriod
 
   const canAddMoreRewards = reward.endTime - onlineCurrentDate <= 1000 * DAY_SECONDS * 3
-  const claimableRewardAmount: string | undefined = undefined // wait for api
+  const remainingRewardAmount = new Decimal(remainingReward?.remaining || 0).div(10 ** reward.mint.decimals)
+  const claimableRewardAmount: string | undefined =
+    onClaimRemaining && (isEcosystem ? isRewardEnded : canAddMoreRewards) && remainingReward && remainingRewardAmount.gt(0)
+      ? remainingRewardAmount.toString()
+      : undefined
 
   const { isOpen: isAdjustRewardDialogOpen, onOpen: onOpenAdjustRewardDialog, onClose: onCloseAdjustRewardDialog } = useDisclosure()
   const { isOpen: isAddMoreRewardDialogOpen, onOpen: onOpenAddMoreRewardDialog, onClose: onCloseAddMoreRewardDialog } = useDisclosure()
   const { isOpen: isEditDialogOpen, onOpen: onOpenEditDialog, onClose: onCloseEditDialog } = useDisclosure()
 
-  const onClaim = () => {
-    // handle claim reward
+  const onClaim = async () => {
+    onClaimRemaining?.({ mint: reward.mint.address })
   }
 
   const onReset = useEvent(() => {
@@ -242,7 +251,7 @@ export default function ExistFarmingRewardItem({
             <HStack>
               <Text>{t('edit_farm.claim_unemmitted_rewards')}</Text>
               <Text color={colors.textSecondary} fontSize={'xs'}>
-                {formatCurrency(claimableRewardAmount, { decimalPlaces: 2 })} {wSolToSolString(rewardToken.symbol)}
+                {formatCurrency(claimableRewardAmount, { decimalPlaces: reward.mint.decimals })} {wSolToSolString(rewardToken.symbol)}
               </Text>
             </HStack>
           </Button>

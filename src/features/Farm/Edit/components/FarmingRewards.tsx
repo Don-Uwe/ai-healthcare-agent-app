@@ -8,12 +8,22 @@ export type ActionRef = { getData: () => EditReward[] } | null
 interface Props {
   farmTVL?: number
   rewards: EditReward[]
+  ownerRemainingRewards: { hasRemaining: boolean; mint: string; remaining: string }[]
   onUpdate: () => void
   actionRef?: RefObject<{ getRewards: () => EditReward[] }>
-  isEcosystem?: boolean
+  isEcosystem: boolean
+  onClaimRemaining: (props: { mint: string }) => void
 }
 
-export default function ExistFarmingRewards({ rewards, isEcosystem, farmTVL, onUpdate, actionRef }: Props) {
+export default function ExistFarmingRewards({
+  rewards,
+  ownerRemainingRewards,
+  isEcosystem,
+  farmTVL,
+  onClaimRemaining,
+  onUpdate,
+  actionRef
+}: Props) {
   const [editedRewards, setEditedRewards] = useState<Map<string, EditReward>>(new Map())
   const handleEditedRewardUpdate = useEvent((mint: string, reward?: EditReward, _?: EditReward) => {
     if (reward) {
@@ -44,8 +54,10 @@ export default function ExistFarmingRewards({ rewards, isEcosystem, farmTVL, onU
             key={rewardToken.address}
             onRewardUpdate={handleEditedRewardUpdate}
             reward={reward}
+            remainingReward={ownerRemainingRewards.find((r) => r.mint === rewardToken.address)}
             farmTVL={farmTVL}
             isEcosystem={isEcosystem}
+            onClaimRemaining={onClaimRemaining}
           />
         )
       })}

@@ -116,6 +116,12 @@ interface ClmmState {
       onCloseToast?: () => void
     } & TxCallbackPropsGeneric<ClmmLockAddress>
   ) => Promise<string>
+  collectRewardAct: (
+    props: {
+      poolInfo: ApiV3PoolInfoConcentratedItem
+      rewardMint: PublicKey
+    } & TxCallbackProps
+  ) => Promise<string>
   harvestLockPositionAct: (
     props: {
       lockData: ClmmLockInfo['']['']
@@ -619,6 +625,44 @@ export const useClmmStore = createStore<ClmmState>(
         txProps.onFinally?.()
         return ''
       }
+    },
+
+    collectRewardAct: async ({ poolInfo, rewardMint, ...txProps }) => {
+      const { raydium, txVersion } = useAppStore.getState()
+      if (!raydium) return ''
+      const computeBudgetConfig = await getComputeBudgetConfig()
+      const { execute } = await raydium.clmm.collectReward({
+        ownerInfo: { useSOLBalance: true },
+        poolInfo,
+        rewardMint,
+        txVersion,
+        computeBudgetConfig
+      })
+
+      const meta = getTxMeta({
+        action: 'harvest',
+        values: {}
+      })
+
+      return execute()
+        .then(({ txId, signedTx }) => {
+          txStatusSubject.next({
+            txId,
+            ...meta,
+            signedTx,
+            mintInfo: [poolInfo.mintA, poolInfo.mintB],
+            ...txProps
+          })
+          return txId
+        })
+        .catch((e) => {
+          txProps.onError?.()
+          toastSubject.next({ txError: e, ...meta })
+          return ''
+        })
+        .finally(() => {
+          txProps.onFinally?.()
+        })
     },
 
     lockPositionAct: async ({ poolInfo, position, ...txProps }) => {

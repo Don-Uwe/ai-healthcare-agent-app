@@ -51,6 +51,7 @@ export interface FarmStore {
   depositFarmAct: (
     params: { farmInfo: FormatFarmInfoOut | ApiStakePool; amount: string; userAuxiliaryLedgers?: string[] } & TxCallbackProps
   ) => Promise<string>
+  withdrawCreatorFarmRewardAct: (params: { farmInfo: FormatFarmInfoOut; withdrawMint: PublicKey } & TxCallbackProps) => Promise<string>
   createFarmAct: (
     params: { poolInfo: ApiV3PoolInfoStandardItem; rewardInfos: FarmRewardInfo[] } & TxCallbackProps<CreateFarmExtInfo>
   ) => Promise<string>
@@ -199,6 +200,45 @@ export const useFarmStore = createStore<FarmStore>(
             amount: formatLocaleStr(amount, farmInfo.lpMint.decimals),
             symbol: `${transformSymbol(farmInfo.symbolMints)}${farmInfo.symbolMints.length > 1 ? ' LP' : ''}`
           }
+        })
+
+        return execute()
+          .then(({ txId, signedTx }) => {
+            txStatusSubject.next({ txId, ...meta, signedTx, onSent, onError })
+            get().refreshFarmAct()
+            return txId
+          })
+          .catch((e) => {
+            onError?.()
+            toastSubject.next({ ...meta, txError: e })
+            return ''
+          })
+          .finally(() => onFinally?.())
+      } catch (e: any) {
+        toastSubject.next({
+          status: 'error',
+          title: 'error',
+          detail: e.message
+        })
+        onError?.()
+        onFinally?.()
+        return ''
+      }
+    },
+    withdrawCreatorFarmRewardAct: async ({ farmInfo, withdrawMint, onSent, onError, onFinally }) => {
+      const { raydium, txVersion } = useAppStore.getState()
+      if (!raydium) return ''
+      try {
+        const computeBudgetConfig = await getComputeBudgetConfig()
+        const { execute } = await raydium.farm.withdrawFarmReward({
+          farmInfo,
+          withdrawMint,
+          txVersion,
+          computeBudgetConfig
+        })
+        const meta = getTxMeta({
+          action: 'harvest',
+          values: {}
         })
 
         return execute()

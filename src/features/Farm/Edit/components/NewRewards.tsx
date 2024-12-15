@@ -7,12 +7,13 @@ export type ActionRef = { getData: () => EditReward[]; addNewReward: (reward: Ed
 
 interface Props {
   farmTVL?: number
+  isEcosystem: boolean
   onCheckRemaining: () => void
   tokenFilterFn: (token: TokenInfo) => boolean
   actionRef?: RefObject<{ getRewards: () => EditReward[]; addNewReward: (reward: EditReward) => void }>
 }
 
-export default function NewRewards({ farmTVL, tokenFilterFn, onCheckRemaining, actionRef }: Props) {
+export default function NewRewards({ farmTVL, isEcosystem, tokenFilterFn, onCheckRemaining, actionRef }: Props) {
   const [newRewards, setNewRewards] = useState<Map<string, EditReward>>(new Map())
   const handleNewRewardUpdate = useCallback((mint: string, reward?: EditReward, orgReward?: EditReward) => {
     if (reward)
@@ -51,6 +52,7 @@ export default function NewRewards({ farmTVL, tokenFilterFn, onCheckRemaining, a
             reward={reward[1]}
             farmTVL={farmTVL}
             tokenFilterFn={tokenFilterFn}
+            isEcosystem={isEcosystem}
           />
         )
       })}
