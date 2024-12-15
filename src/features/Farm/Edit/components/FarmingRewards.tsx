@@ -1,6 +1,7 @@
 import { useState, useImperativeHandle, RefObject } from 'react'
 import ExistFarmingRewardItem from './FarmingRewardItem'
 import { useEvent } from '@/hooks/useEvent'
+import { TxCallbackProps } from '@/types/tx'
 import { EditReward } from '../util'
 
 export type ActionRef = { getData: () => EditReward[] } | null
@@ -12,7 +13,7 @@ interface Props {
   onUpdate: () => void
   actionRef?: RefObject<{ getRewards: () => EditReward[] }>
   isEcosystem: boolean
-  onClaimRemaining: (props: { mint: string }) => void
+  onClaimRemaining: (props: { mint: string } & TxCallbackProps) => void
 }
 
 export default function ExistFarmingRewards({

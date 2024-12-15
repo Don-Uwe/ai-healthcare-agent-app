@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Badge, Box, Button, Flex, Grid, GridItem, HStack, SimpleGrid, Tag, Text, VStack, useDisclosure } from '@chakra-ui/react'
-import { FormatFarmInfoOutV6, TokenInfo } from '@raydium-io/raydium-sdk-v2'
+import { TokenInfo } from '@raydium-io/raydium-sdk-v2'
 
 import TokenAvatar from '@/components/TokenAvatar'
 import { useEvent } from '@/hooks/useEvent'
@@ -13,6 +13,7 @@ import { EditReward, FarmStatus, getRewardMeta } from '../util'
 import AddMoreRewardDialog from './AddMoreRewardDialog'
 import AdjustRewardDialog from './AdjustRewardDialog'
 import { wSolToSolString } from '@/utils/token'
+import { TxCallbackProps } from '@/types/tx'
 import { useTranslation } from 'react-i18next'
 import Decimal from 'decimal.js'
 
@@ -31,9 +32,10 @@ export default function ExistFarmingRewardItem({
   isEcosystem: boolean
   tokenFilterFn?: (token: TokenInfo, escapeExistMint?: string) => boolean
   onRewardUpdate: (mint: string, reward?: EditReward, orgReward?: EditReward) => void
-  onClaimRemaining?: (props: { mint: string }) => void
+  onClaimRemaining?: (props: { mint: string } & TxCallbackProps) => void
 }) {
   const { t } = useTranslation()
+  const { isOpen, onOpen, onClose } = useDisclosure()
   const chainTimeOffset = useAppStore((s) => s.chainTimeOffset)
   const onlineCurrentDate = Date.now() + chainTimeOffset
 
@@ -93,7 +95,8 @@ export default function ExistFarmingRewardItem({
   const { isOpen: isEditDialogOpen, onOpen: onOpenEditDialog, onClose: onCloseEditDialog } = useDisclosure()
 
   const onClaim = async () => {
-    onClaimRemaining?.({ mint: reward.mint.address })
+    onOpen()
+    onClaimRemaining?.({ mint: reward.mint.address, onError: onClose, onFinally: onClose })
   }
 
   const onReset = useEvent(() => {
@@ -247,7 +250,7 @@ export default function ExistFarmingRewardItem({
       {/* action buttons */}
       <HStack justify="end" flexWrap="wrap" mb="2">
         {claimableRewardAmount && (
-          <Button variant="outline" size="sm" onClick={onClaim}>
+          <Button variant="outline" size="sm" isLoading={isOpen} onClick={onClaim}>
             <HStack>
               <Text>{t('edit_farm.claim_unemmitted_rewards')}</Text>
               <Text color={colors.textSecondary} fontSize={'xs'}>

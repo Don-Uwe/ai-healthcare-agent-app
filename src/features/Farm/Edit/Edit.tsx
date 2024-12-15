@@ -36,6 +36,7 @@ import NewRewards from './components/NewRewards'
 import { EditReward, farmV6RewardToEditReward, poolRewardToEditReward } from './util'
 import useFetchRpcClmmInfo from '@/hooks/pool/clmm/useFetchRpcClmmInfo'
 import useFetchFarmInfoByRpc from '@/hooks/farm/useFetchFarmInfoByRpc'
+import { TxCallbackProps } from '@/types/tx'
 import { BN } from 'bn.js'
 
 interface QueryParams {
@@ -81,7 +82,7 @@ export default function FarmEdit() {
     [rewardWhiteListMints, clmmData?.id]
   )
 
-  const { data: rpcFarm } = useFetchFarmInfoByRpc({
+  const { data: rpcFarm, farmMutate } = useFetchFarmInfoByRpc({
     shouldFetch: !!farmData && farmData.programId === FARM_PROGRAM_ID_V6.toBase58(),
     farmInfo: farmData
       ? {
@@ -103,7 +104,7 @@ export default function FarmEdit() {
           }))
       : []
 
-  const { ownerRemainingRewards } = useFetchRpcClmmInfo({
+  const { ownerRemainingRewards, mutate: mutateClmmInfo } = useFetchRpcClmmInfo({
     shouldFetch: !!clmmData,
     id: clmmId,
     apiPoolInfo: clmmData
@@ -232,9 +233,27 @@ export default function FarmEdit() {
     return !existedTokens.has(solToWSol(token.address).toString()) && isClmmRewardValid
   })
 
-  const handleClaimRemainingReward = useEvent(async ({ mint }: { mint: string }) => {
-    if (farmData) withdrawCreatorFarmRewardAct({ farmInfo: farmData as any, withdrawMint: new PublicKey(mint) })
-    else if (clmmData) collectRewardAct({ poolInfo: clmmData, rewardMint: new PublicKey(mint) })
+  const handleClaimRemainingReward = useEvent(async ({ mint, ...rest }: { mint: string } & TxCallbackProps) => {
+    if (farmData)
+      withdrawCreatorFarmRewardAct({
+        farmInfo: farmData as any,
+        withdrawMint: new PublicKey(mint),
+        ...rest,
+        onConfirmed: () => {
+          rest.onConfirmed?.()
+          farmMutate()
+        }
+      })
+    else if (clmmData)
+      collectRewardAct({
+        poolInfo: clmmData,
+        rewardMint: new PublicKey(mint),
+        ...rest,
+        onConfirmed: () => {
+          rest.onConfirmed?.()
+          mutateClmmInfo()
+        }
+      })
   })
 
   if (!isLoading) {

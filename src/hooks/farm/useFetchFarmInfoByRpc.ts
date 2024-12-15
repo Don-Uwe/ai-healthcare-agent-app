@@ -66,6 +66,7 @@ export default function useFetchFarmInfoByRpc(props: {
 
   return {
     data: cacheData || decodedData,
+    farmMutate,
     refresh,
     ...rest
   }
