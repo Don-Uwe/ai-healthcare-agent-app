@@ -312,7 +312,7 @@ export const useClmmStore = createStore<ClmmState>(
           baseAmount: new BN(baseAmount),
           otherAmountMax: new BN(otherAmountMax),
           getEphemeralSigners: wallet ? await getEphemeralSigners(wallet) : undefined,
-          computeBudgetConfig,
+          computeBudgetConfig: createPoolBuildData ? undefined : computeBudgetConfig,
           txVersion,
           nft2022: true
         })
@@ -349,13 +349,12 @@ export const useClmmStore = createStore<ClmmState>(
             action: 'createPool',
             values: {}
           })
-          const { execute, transactions } =
-            txVersion === TxVersion.LEGACY
-              ? await createPoolBuildData.builder.buildMultiTx({ extraPreBuildData: [buildData as TxBuildData<Record<string, any>>] })
-              : await createPoolBuildData.builder.buildV0MultiTx({
-                  extraPreBuildData: [buildData as TxV0BuildData<Record<string, any>>],
-                  buildProps: { recentBlockhash: (buildData.transaction as VersionedTransaction).message.recentBlockhash }
-                })
+          createPoolBuildData.builder.addInstruction({
+            ...buildData.builder.AllTxData
+          })
+          createPoolBuildData.builder.addCustomComputeBudget(computeBudgetConfig)
+
+          const { transactions, execute } = await createPoolBuildData.builder.sizeCheckBuildV0()
 
           const txLength = transactions.length
           const { toastId, processedId, handler } = getDefaultToastData({
