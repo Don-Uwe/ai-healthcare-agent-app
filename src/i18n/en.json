@@ -75,7 +75,13 @@
     "refresh": "Refresh",
     "update_later": "Update later",
     "note": "Note:",
-    "got_it": "Got it"
+    "got_it": "Got it",
+    "tax": "Tax",
+    "token_2022_assets": "Token2022 Asset",
+    "token_2022_assets_desc": "This token uses the Token2022 Program, which provides a set of token extensions to be enabled by the token creator.",
+    "trade_with_caution": "Please trade with caution",
+    "transfer_fee": "Transfer Fee",
+    "max_transfer_fee": "Max Transfer Fee"
   },
   "button": {
     "deposit": "Deposit",

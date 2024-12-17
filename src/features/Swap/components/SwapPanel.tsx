@@ -5,15 +5,26 @@ import { useEvent } from '@/hooks/useEvent'
 import { useHover } from '@/hooks/useHover'
 import { useAppStore, useTokenAccountStore, useTokenStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
-import { Box, Button, Collapse, Flex, HStack, SimpleGrid, Text, useDisclosure, CircularProgress } from '@chakra-ui/react'
-import { ApiV3Token, RAYMint, SOL_INFO, TokenInfo } from '@raydium-io/raydium-sdk-v2'
+import {
+  Box,
+  Button,
+  Collapse,
+  Flex,
+  HStack,
+  SimpleGrid,
+  Text,
+  useDisclosure,
+  CircularProgress,
+  Tooltip as ChakraTip
+} from '@chakra-ui/react'
+import { ApiV3Token, RAYMint, SOL_INFO, TokenInfo, TransferFeeDataBaseType } from '@raydium-io/raydium-sdk-v2'
 import { PublicKey } from '@solana/web3.js'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import shallow from 'zustand/shallow'
 import CircleInfo from '@/icons/misc/CircleInfo'
 import { getSwapPairCache, setSwapPairCache } from '../util'
-import { urlToMint, mintToUrl, isSolWSol, getMintPriority } from '@/utils/token'
+import { urlToMint, mintToUrl, isSolWSol, getMintPriority, getMintSymbol } from '@/utils/token'
 import { SwapInfoBoard } from './SwapInfoBoard'
 import SwapButtonTwoTurnIcon from '@/icons/misc/SwapButtonTwoTurnIcon'
 import SwapButtonOneTurnIcon from '@/icons/misc/SwapButtonOneTurnIcon'
@@ -27,10 +38,12 @@ import WarningIcon from '@/icons/misc/WarningIcon'
 import dayjs from 'dayjs'
 import { NATIVE_MINT } from '@solana/spl-token'
 import { Trans } from 'react-i18next'
-import { formatToRawLocaleStr } from '@/utils/numberish/formatter'
-import { isValidPublicKey } from '@/utils/publicKey'
+import { formatCurrency, formatToRawLocaleStr } from '@/utils/numberish/formatter'
+import ToPublicKey, { isValidPublicKey } from '@/utils/publicKey'
 import useTokenInfo from '@/hooks/token/useTokenInfo'
 import { debounce } from '@/utils/functionMethods'
+import QuestionCircleIcon from '@/icons/misc/QuestionCircleIcon'
+import Tooltip from '@/components/Tooltip'
 
 export function SwapPanel({
   onInputMintChange,
@@ -76,6 +89,30 @@ export function SwapPanel({
     mint: isTokenLoaded && !tokenOutput && outputMint ? outputMint : undefined
   })
   const tokenBActionRef = useRef<InputActionRef>({ refreshPrice: () => {} })
+
+  const { tokenInfo: inputInfo } = useTokenInfo(
+    tokenInput?.type === 'jupiter'
+      ? {
+          mint: tokenInput.address,
+          programId: ToPublicKey(tokenInput.programId),
+          skipTokenMap: true
+        }
+      : {}
+  )
+
+  const { tokenInfo: outputInfo } = useTokenInfo(
+    tokenOutput?.type === 'jupiter'
+      ? {
+          mint: tokenOutput.address,
+          programId: ToPublicKey(tokenOutput.programId),
+          skipTokenMap: true
+        }
+      : {}
+  )
+  const [inputFeeConfig, outputFeeConfig] = [
+    tokenInput?.extensions.feeConfig || inputInfo?.extensions.feeConfig,
+    tokenOutput?.extensions.feeConfig || outputInfo?.extensions.feeConfig
+  ]
 
   useEffect(() => {
     if (defaultInput) setInputMint(defaultInput)
@@ -368,6 +405,48 @@ export function SwapPanel({
           />
         </Flex>
       )}
+      {inputFeeConfig || outputFeeConfig ? (
+        <Flex mb="4">
+          {inputFeeConfig && tokenInput ? (
+            <Tooltip
+              contentBoxProps={{ sx: { width: 'fit-content' } }}
+              label={<TransferFeeTip feeConfig={inputFeeConfig} token={tokenInput!} />}
+            >
+              <Box
+                fontSize="xs"
+                mt="4"
+                bg={colors.backgroundTransparent10}
+                borderColor={colors.primary}
+                color={colors.primary}
+                borderWidth="1px"
+                px="1"
+                borderRadius="4px"
+              >
+                {getMintSymbol({ mint: tokenInput })} ({inputFeeConfig.newerTransferFee.transferFeeBasisPoints / 100}% {t('common.tax')})
+              </Box>
+            </Tooltip>
+          ) : null}
+
+          {outputFeeConfig && tokenOutput ? (
+            <Tooltip
+              contentBoxProps={{ sx: { width: 'fit-content' } }}
+              label={<TransferFeeTip feeConfig={outputFeeConfig} token={tokenOutput!} />}
+            >
+              <Box
+                fontSize="xs"
+                bg={colors.backgroundTransparent10}
+                borderColor={colors.primary}
+                color={colors.primary}
+                borderWidth="1px"
+                px="1"
+                borderRadius="4px"
+              >
+                {getMintSymbol({ mint: tokenOutput })} ({outputFeeConfig.newerTransferFee.transferFeeBasisPoints / 100}% {t('common.tax')})
+              </Box>
+            </Tooltip>
+          ) : null}
+        </Flex>
+      ) : null}
       <ConnectedButton
         isDisabled={new Decimal(amountIn || 0).isZero() || !!swapError || needPriceUpdatedAlert || swapDisabled}
         isLoading={isComputing || isSending}
@@ -428,4 +507,64 @@ function SwapIcon(props: { onClick?: () => void }) {
 
 function Progress() {
   return <CircularProgress isIndeterminate size="16px" />
+}
+
+function TransferFeeTip({ feeConfig, token }: { feeConfig: TransferFeeDataBaseType; token: TokenInfo }) {
+  const { t } = useTranslation()
+  return (
+    <>
+      <Text color={colors.text02} fontWeight="500" mb="1">
+        {t('common.token_2022_assets')}
+      </Text>
+      <Text color={colors.primary}>{t('common.token_2022_assets_desc')}</Text>
+      <Text color={colors.semanticWarning} fontWeight="500">
+        {t('common.trade_with_caution')}
+      </Text>
+      <Box
+        mt="2"
+        position="relative"
+        bg={colors.backgroundTransparent07}
+        borderWidth="1px"
+        borderStyle="solid"
+        borderColor={colors.backgroundTransparent12}
+        rounded="md"
+        px={4}
+        pt={1.5}
+        pb={2}
+      >
+        <Flex flexDir={['column', 'row']} justifyContent="space-between" gap={[0, 2]}>
+          <Flex alignItems="center" gap="0.5">
+            <Text whiteSpace="nowrap" wordBreak={'keep-all'}>
+              {t('common.transfer_fee')}
+            </Text>
+            <ChakraTip label="Transfer fee tip">
+              <QuestionCircleIcon />
+            </ChakraTip>
+          </Flex>
+          <Text color={colors.text02}>{feeConfig.newerTransferFee.transferFeeBasisPoints / 100}%</Text>
+        </Flex>
+        <Flex flexDir={['column', 'row']} justifyContent="space-between" gap={[0, 2]}>
+          <Flex alignItems="center" gap="0.5">
+            <Text whiteSpace="nowrap" wordBreak={'keep-all'}>
+              {t('common.max_transfer_fee')}
+            </Text>
+            <ChakraTip label="Max Transfer fee tip">
+              <QuestionCircleIcon />
+            </ChakraTip>
+          </Flex>
+          <Text color={colors.text02}>
+            {formatCurrency(
+              new Decimal(feeConfig.newerTransferFee.maximumFee)
+                .div(10 ** token.decimals)
+                .toDecimalPlaces(token.decimals)
+                .toString(),
+              { decimalPlaces: token.decimals }
+            )}
+            &nbsp;
+            {token.symbol}
+          </Text>
+        </Flex>
+      </Box>
+    </>
+  )
 }
