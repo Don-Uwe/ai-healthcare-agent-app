@@ -406,7 +406,7 @@ export function SwapPanel({
         </Flex>
       )}
       {inputFeeConfig || outputFeeConfig ? (
-        <Flex mb="4">
+        <Flex mt="-1" mb="4">
           {inputFeeConfig && tokenInput ? (
             <Tooltip
               contentBoxProps={{ sx: { width: 'fit-content' } }}
@@ -414,7 +414,6 @@ export function SwapPanel({
             >
               <Box
                 fontSize="xs"
-                mt="4"
                 bg={colors.backgroundTransparent10}
                 borderColor={colors.primary}
                 color={colors.primary}
