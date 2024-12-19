@@ -188,7 +188,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         ),
       );
     }
-   // console.log('Filtered before sort', filtered);
+    // console.log('Filtered before sort', filtered);
     if (sortType === 'recent' && filtered.length > 1) {
       filtered = filtered.sort(
         (a, b) =>
@@ -264,7 +264,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   if (isError || !articleData || articleData.length === 0) {
     return <Text style={styles.message}>No Article Found</Text>;
   }
-  
+
   if (isLoading) {
     return <Loader />;
   }
@@ -274,6 +274,9 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       <HomeScreenHeader
         handlePresentModalPress={handlePresentModalPress}
         onTextInputChange={handleSearch}
+        onNotificationClick={() => {
+          navigation.navigate('NotificationScreen');
+        }}
       />
       <FilterModal
         bottomSheetModalRef={bottomSheetModalRef}

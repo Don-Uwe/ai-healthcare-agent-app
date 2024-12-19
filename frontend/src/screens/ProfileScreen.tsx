@@ -281,6 +281,14 @@ const styles = StyleSheet.create({
   flatListContentContainer: {
     paddingHorizontal: 16,
   },
+
+  profileImage: {
+    height: 130,
+    width: 130,
+    borderRadius: 100,
+    objectFit: 'cover',
+    resizeMode: 'contain',
+  },
   indicatorStyle: {
     backgroundColor: 'white',
   },

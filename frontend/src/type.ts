@@ -37,6 +37,7 @@ export type RootStackParamList = {
   CommentScreen: {
     articleId: number;
   };
+  NotificationScreen: undefined;
   UserProfileScreen: {authorId: string};
   ProfileEditScreen: undefined;
   LogoutScreen: {profile_image: string; username: string};
@@ -96,6 +97,11 @@ export type CommentScreenProp = StackScreenProps<
   RootStackParamList,
   'CommentScreen'
 >;
+
+export type NotificationScreenProp = StackScreenProps<
+  RootStackParamList,
+  'NotificationScreen'
+>;
 //StackScreenProps<RootStackParamList, 'UserProfileScreen'>;
 
 export type EditorScreenProp = StackScreenProps<
@@ -112,6 +118,7 @@ export type HomeScreenProps = CompositeScreenProps<
   BottomTabScreenProps<TabParamList, 'Home'>,
   | StackScreenProps<RootStackParamList, 'ArticleScreen'>
   | StackScreenProps<RootStackParamList, 'CommentScreen'>
+  | StackScreenProps<RootStackParamList, 'NotificationScreen'>
 >;
 
 export type ChatBotScreenProps = BottomTabScreenProps<TabParamList, 'Chatbot'>;
@@ -126,6 +133,7 @@ export type ProfileScreenProps = CompositeScreenProps<
 export type HomeScreenHeaderProps = {
   handlePresentModalPress: () => void;
   onTextInputChange: (textInput: string) => void;
+  onNotificationClick: () => void;
 };
 
 export type ArticleCardProps = {
@@ -136,8 +144,6 @@ export type ArticleCardProps = {
     | UserProfileScreenProp['navigation'];
   success: () => void;
 };
-
-
 
 export type ProfileHeaderProps = {
   isDoctor: boolean;
@@ -338,15 +344,16 @@ export type AuthData = {
 };
 
 export type Comment = {
-  id: String;
+  _id: string;
+  id: string;
   articleId: number;
-  userId: String;
-  content: String;
-  createdAt: String;
+  userId: User;
+  content: string;
+  createdAt: string;
   updatedAt: string;
   parentCommentId: string;
   replies: Comment[];
-  likedUsers: User[];
-  status: String;
+  likedUsers: string[];
+  status: string;
   isEdited: Boolean;
 };

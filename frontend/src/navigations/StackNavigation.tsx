@@ -8,6 +8,7 @@ import SignUpScreenSecond from '../screens/auth/SignUpScreenSecond';
 import OtpScreen from '../screens/auth/OtpScreen';
 import NewPasswordScreen from '../screens/auth/NewPasswordScreen';
 import CommentScreen from '../screens/CommentScreen';
+import NotificationScreen from '../screens/NotificationScreen';
 import EditorScreen from '../screens/article/EditorScreen';
 import PreviewScreen from '../screens/article/PreviewScreen';
 import ArticleScreen from '../screens/article/ArticleScreen';
@@ -198,11 +199,32 @@ const StackNavigation = () => {
           // eslint-disable-next-line react/no-unstable-nested-components
           headerLeft: () => (
             <TouchableOpacity
-              style={styles.headerLeftButton}
+              style={styles.headerLeftButtonCommentScreen}
               onPress={() => {
                 navigation.goBack();
               }}>
-              <FontAwesome6 size={25} name="arrow-left" color="white" />
+              <FontAwesome6 size={25} name="arrow-left" color={PRIMARY_COLOR} />
+            </TouchableOpacity>
+          ),
+        })}
+      />
+
+      <Stack.Screen
+        name="NotificationScreen"
+        component={NotificationScreen}
+        options={({navigation}) => ({
+          headerShown: true,
+          headerTitle: '',
+          headerTransparent: true,
+          headerBackTitleVisible: false,
+          // eslint-disable-next-line react/no-unstable-nested-components
+          headerLeft: () => (
+            <TouchableOpacity
+              style={styles.headerLeftButtonCommentScreen}
+              onPress={() => {
+                navigation.goBack();
+              }}>
+              <FontAwesome6 size={25} name="arrow-left" color={PRIMARY_COLOR} />
             </TouchableOpacity>
           ),
         })}
@@ -284,6 +306,13 @@ const styles = StyleSheet.create({
     marginLeft: 15,
     paddingHorizontal: 8,
     paddingVertical: 6,
+  },
+
+  headerLeftButtonCommentScreen: {
+    marginLeft: 15,
+    paddingHorizontal: 6,
+    paddingVertical: 6,
+    marginTop: 0,
   },
   profileScreenHeaderLeftButton: {
     marginLeft: 15,

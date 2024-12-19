@@ -13,28 +13,40 @@ import {PRIMARY_COLOR} from '../helper/Theme';
 import io from 'socket.io-client';
 import {Comment} from '../type';
 import {useSelector} from 'react-redux';
+import CommentItem from '../components/CommentItem';
 
 const CommentScreen = ({navigation, route}: CommentScreenProp) => {
-  const socket = io('http://51.20.1.81:8081');
+  const socket = io('http://51.20.1.81:8082');
+  //const socket = useSocket();
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const {user_id} = useSelector((state: any) => state.user);
-  const {articledId} = route.params;
+  const [selectedCommentId, setSelectedCommentId] = useState<string>('');
+  const [editMode, setEditMode] = useState<Boolean>(false);
+  const [editCommentId, setEditCommentId] = useState<string | null>(null);
 
-  console.log('articleid', articledId);
   useEffect(() => {
-    console.log('Fetching comments for articleId:', route.params.articleId);
+    //console.log('Fetching comments for articleId:', route.params.articleId);
     socket.emit('fetch-comments', {articleId: route.params.articleId});
 
-    socket.on('comments-loaded', data => {
-      console.log('comment', data);
+    socket.on('connect', () => {
+      console.log('connection established');
+    });
+
+    socket.on('error', () => {
+      console.log('connection error');
+    });
+
+    socket.on('fetch-comments', data => {
+      console.log('comment loaded');
       if (data.articleId === route.params.articleId) {
         setComments(data.comments);
       }
     });
 
     // Listen for new comments
-    socket.on('new-comment', data => {
+    socket.on('comment', data => {
+      console.log('new comment loaded', data);
       if (data.articleId === route.params.articleId) {
         setComments(prevComments => [data.comment, ...prevComments]);
       }
@@ -53,57 +65,122 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
       }
     });
 
-    // Listen for parent comment updates (e.g., when replies are added)
-    socket.on('update-parent-comment', data => {
+    // Listen to edit comment updates (e.g., when replies are added)
+    socket.on('edit-comment', data => {
       setComments(prevComments => {
         return prevComments.map(comment =>
-          comment._id === data.parentCommentId
-            ? {...comment, ...data.parentComment} // update parent comment
+          comment._id === data._id
+            ? {...comment, ...data} // update the comment with new data
             : comment,
         );
       });
     });
 
+    // Listen to like and dislike comment
+    socket.on('like-comment', data => {
+      setComments(prevComments => {
+        return prevComments.map(comment =>
+          comment._id === data._id ? {...comment, ...data} : comment,
+        );
+      });
+    });
+
+    socket.on('delete-comment', data => {
+      setComments(prevComments =>
+        prevComments.filter(comment => comment.id !== data.commentId),
+      );
+    });
+
     return () => {
-      socket.off('comments-loaded');
-      socket.off('new-comment');
+      socket.off('fetch-comments');
+      socket.off('comment');
       socket.off('new-reply');
-      socket.off('update-parent-comment');
+      socket.off('edit-comment');
+      socket.off('delete-comment');
+      socket.off('like-comment');
     };
   }, [socket, route.params.articleId]);
 
-  console.log('com', comments);
+  const handleEditAction = (comment: Comment) => {
+    setNewComment(comment.content);
+    setEditMode(true);
+    setEditCommentId(comment._id);
+  };
+
+  const handleDeleteAction = (comment: Comment) => {
+    //commentId, articleId, userId
+    Alert.alert(
+      'Alert',
+      'Are you sure you want to delete this comment.',
+      [
+        {
+          text: 'Cancel',
+          onPress: () => console.log('Cancel Pressed'),
+          style: 'cancel',
+        },
+        {
+          text: 'OK',
+          onPress: () => {
+            socket.emit('delete-comment', {
+              commentId: comment._id,
+              articleId: route.params.articleId,
+              userId: user_id,
+            });
+          },
+        },
+      ],
+      {cancelable: false},
+    );
+  };
+
+  const handleLikeAction = (comment: Comment) => {
+    socket.emit('like-comment', {
+      commentId: comment._id,
+      articleId: route.params.articleId,
+      userId: user_id,
+    });
+  };
+
   const handleCommentSubmit = () => {
     if (!newComment.trim()) {
       Alert.alert('Please enter a comment before submitting.');
       return;
     }
 
-    const newCommentObj = {
-      userId: user_id,
-      articleId: route.params.articleId,
-      content: newComment,
-      parentCommentId: null,
-    };
+    if (editMode) {
+      if (editCommentId) {
+        console.log('Edit Comment Id', editCommentId);
+        console.log('Edit Comment ', newComment);
+        console.log('Article Id', route.params.articleId);
+        console.log('User Id', user_id);
 
-    /*
-    const newCommentObj = {
-      _id: String(comments.length + 1), // Generate a new id for the comment
-      userId: {user_handle: 'You'}, // Placeholder for username
-      avatar: '🧑‍💻', // Placeholder for avatar
-      content: newComment,
-      timestamp: new Date().toLocaleString(), // dynamic timestamp
-      replies: [],
-    };
-    */
+        socket.emit('edit-comment', {
+          commentId: editCommentId,
+          content: newComment,
+          articleId: route.params.articleId,
+          userId: user_id,
+        });
 
-    // Emit the new comment to the backend via socket
-    socket.emit('new-comment', {
-      comment: newCommentObj,
-      articleId: route.params.articleId,
-    });
+        setNewComment('');
+        setEditCommentId(null);
+        setEditMode(false);
+      } else {
+        Alert.alert('Error: Comment Not Found');
+      }
+    } else {
+      const newCommentObj = {
+        userId: user_id,
+        articleId: route.params.articleId,
+        content: newComment,
+        parentCommentId: null,
+      };
 
-    setNewComment(''); // Clear the input field after submitting
+      console.log('Comment emitting', newCommentObj);
+      // Emit the new comment to the backend via socket
+      socket.emit('comment', newCommentObj);
+
+      setNewComment(''); // Clear the input field after submitting
+    }
   };
 
   return (
@@ -114,32 +191,17 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
       <FlatList
         data={comments}
         renderItem={({item}) => (
-          <View style={styles.commentContainer}>
-            <Text style={styles.avatar}>🧑‍💻</Text>
-            <View style={styles.commentContent}>
-              <Text style={styles.username}>Author</Text>
-              <Text style={styles.comment}>{item.content}</Text>
-              <Text style={styles.timestamp}>{item.createdAt}</Text>
-
-              {/* Render replies if they exist */}
-              {item.replies && item.replies.length > 0 && (
-                <FlatList
-                  data={item.replies}
-                  renderItem={({item: reply}) => (
-                    <View style={styles.replyContainer}>
-                      <Text style={styles.replyText}>
-                        Reply: {reply.content}
-                      </Text>
-                    </View>
-                  )}
-                  keyExtractor={item => item._id}
-                  //style={styles.repliesList}
-                />
-              )}
-            </View>
-          </View>
+          <CommentItem
+            item={item}
+            isSelected={selectedCommentId === item._id}
+            userId={user_id}
+            setSelectedCommentId={setSelectedCommentId}
+            handleEditAction={handleEditAction}
+            deleteAction={handleDeleteAction}
+            handleLikeAction={handleLikeAction}
+          />
         )}
-        keyExtractor={item => item._id} // Change from 'id' to '_id' for consistency
+        keyExtractor={item => item._id}
         style={styles.commentsList}
       />
 
@@ -165,7 +227,7 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    padding: 10,
     backgroundColor: '#F9F9F9',
   },
   header: {
@@ -190,6 +252,15 @@ const styles = StyleSheet.create({
     fontSize: 30,
     marginRight: 10,
     alignSelf: 'center',
+  },
+
+  profileImage: {
+    height: 60,
+    width: 60,
+    borderRadius: 30,
+    objectFit: 'cover',
+    resizeMode: 'contain',
+    marginHorizontal: 4,
   },
   commentContent: {
     flex: 1,

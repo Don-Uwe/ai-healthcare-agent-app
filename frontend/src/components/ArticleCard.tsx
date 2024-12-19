@@ -15,7 +15,7 @@ import moment from 'moment';
 import {useSelector} from 'react-redux';
 import axios from 'axios';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import {useMutation} from '@tanstack/react-query';
 import {
@@ -26,9 +26,25 @@ import {
 } from '../helper/APIUtils';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import {formatCount} from '../helper/Utils';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
+import ArticleFloatingMenu from './ArticleFloatingMenu';
 
 const ArticleCard = ({item, navigation, success}: ArticleCardProps) => {
   const {user_token, user_id} = useSelector((state: any) => state.user);
+
+  const width = useSharedValue(0);
+  const yValue = useSharedValue(60);
+
+  const menuStyle = useAnimatedStyle(() => {
+    return {
+      width: width.value,
+      transform: [{translateY: yValue.value}],
+    };
+  });
   //console.log('Image Utils', item?.imageUtils[0]);
   const updateViewCountMutation = useMutation({
     mutationKey: ['update-view-count'],
@@ -129,13 +145,73 @@ const ArticleCard = ({item, navigation, success}: ArticleCardProps) => {
     },
   });
 
+  const handleAnimation = () => {
+    if (width.value === 0) {
+      width.value = withTiming(300, {duration: 300});
+      yValue.value = withTiming(-1, {duration: 300});
+    } else {
+      width.value = withTiming(0, {duration: 300});
+      yValue.value = withTiming(100, {duration: 300});
+    }
+  };
+
   return (
     <Pressable
       onPress={() => {
         // handle onPress
+        width.value = withTiming(0, {duration: 300});
+        yValue.value = withTiming(100, {duration: 300});
         updateViewCountMutation.mutate();
       }}>
       <View style={styles.cardContainer}>
+        {/* Share Icon */}
+        <Animated.View style={[menuStyle, styles.shareIconContainer]}>
+          <ArticleFloatingMenu
+            items={[
+              {
+                name: 'Share this post',
+                action: () => {
+                  Alert.alert('Share Clicked');
+                },
+                icon: 'sharealt',
+              },
+              {
+                name: 'Repost in your feed',
+                action: () => {
+                  Alert.alert('Repost Clicked');
+                },
+                icon: 'retweet',
+              },
+              {
+                name: 'Download as pdf',
+                action: () => {
+                  Alert.alert('Download Clicked');
+                },
+                icon: 'download',
+              },
+              {
+                name: 'Request to edit',
+                action: () => {
+                  Alert.alert('Edit Clicked');
+                },
+                icon: 'edit',
+              },
+            ]}
+          />
+        </Animated.View>
+
+        <TouchableOpacity
+          style={styles.shareIconContainer}
+          onPress={() => {
+            /* Handle share action */
+            handleAnimation();
+          }}>
+          <IonIcons
+            name="share-social-outline"
+            size={26}
+            color={PRIMARY_COLOR}
+          />
+        </TouchableOpacity>
         {/* image */}
         {item?.imageUtils[0] && item?.imageUtils[0].length !== 0 ? (
           <Image
@@ -159,9 +235,7 @@ const ArticleCard = ({item, navigation, success}: ArticleCardProps) => {
             {item?.tags.map(tag => tag.name).join(' | ')}
           </Text>
           <Text style={styles.title}>{item?.title}</Text>
-          {/* description */}
-          {/**  <Text style={styles.description}>{item?.description}</Text> */}
-          {/* displaying the categories, author name, and last updated date */}
+
           {updateViewCountMutation.isPending && (
             <ActivityIndicator size="small" color={PRIMARY_COLOR} />
           )}
@@ -186,6 +260,8 @@ const ArticleCard = ({item, navigation, success}: ArticleCardProps) => {
             ) : (
               <TouchableOpacity
                 onPress={() => {
+                  width.value = withTiming(0, {duration: 300});
+                  yValue.value = withTiming(100, {duration: 300});
                   updateLikeMutation.mutate();
                 }}
                 style={styles.likeSaveChildContainer}>
@@ -208,13 +284,20 @@ const ArticleCard = ({item, navigation, success}: ArticleCardProps) => {
                 });
               }}
               style={styles.likeSaveChildContainer}>
-              <FontAwesome name="comment-o" size={30} color={'#B0BEC5'} />
+              <MaterialCommunityIcon
+                name="comment-outline"
+                size={28}
+                color={'black'}
+              />
             </TouchableOpacity>
+
             {updateSaveStatusMutation.isPending ? (
               <ActivityIndicator size="small" color={PRIMARY_COLOR} />
             ) : (
               <TouchableOpacity
                 onPress={() => {
+                  width.value = withTiming(0, {duration: 300});
+                  yValue.value = withTiming(100, {duration: 300});
                   updateSaveStatusMutation.mutate();
                 }}
                 style={styles.likeSaveChildContainer}>
@@ -318,6 +401,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 4,
+  },
+  shareIconContainer: {
+    position: 'absolute',
+    top: 1, 
+    right: 7, 
+    zIndex: 1, 
   },
   // future card styles
   //   card: {

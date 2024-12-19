@@ -15,14 +15,32 @@ import {HomeScreenHeaderProps} from '../type';
 const HomeScreenHeader = ({
   handlePresentModalPress,
   onTextInputChange,
+  onNotificationClick
 }: HomeScreenHeaderProps) => {
   return (
     <View style={[styles.header]}>
       <View>
         <View style={styles.headerTitleContainer}>
           {/* header title */}
-          <Text style={styles.headerTitle}>Discover</Text>
+
           {/* header subtitle */}
+          <View
+            style={{
+              flexDirection: 'row',
+              flex: 0,
+              justifyContent: 'space-between',
+            }}>
+            <Text style={styles.headerTitle}>Discover</Text>
+
+            <TouchableOpacity onPress={onNotificationClick}>
+              <Ionicon
+                name="notifications"
+                color="white"
+                size={26}
+                style={{marginTop: 7}}
+              />
+            </TouchableOpacity>
+          </View>
           <Text style={styles.headerSubtitle}>
             Retrieve the health data, Provide your valuable insights
           </Text>

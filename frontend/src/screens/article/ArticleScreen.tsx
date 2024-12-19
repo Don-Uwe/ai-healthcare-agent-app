@@ -334,8 +334,9 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
             <WebView
               style={{
                 padding: 7,
-                width: '99%',
-                height: hp(2000),
+                //width: '99%',
+                height: hp(1000),
+               // flex:7,
                 justifyContent: 'center',
                 alignItems: 'center',
               }}
@@ -496,7 +497,7 @@ const styles = StyleSheet.create({
     fontWeight: '400',
   },
   descriptionContainer: {
-    flex: 0,
+    flex: 1,
     marginTop: 10,
   },
 

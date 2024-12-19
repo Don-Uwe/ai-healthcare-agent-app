@@ -5,8 +5,7 @@
  * @format
  */
 
-
-import React from 'react';
+import React, {createContext, useEffect, useState} from 'react';
 import {Platform, StatusBar, useColorScheme, View} from 'react-native';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import {PRIMARY_COLOR} from './src/helper/Theme';
@@ -20,6 +19,19 @@ function App(): React.JSX.Element {
   //const navigation = useNavigation();
   const isDarkMode = useColorScheme() === 'dark';
 
+  /*
+  const [socket, setSocket] = useState<Socket | null>(null);
+
+  const handleSocket = () => {
+    const newSocket = io('http://localhost:8080'); // HTTP didn't work either
+    // newSocket.connect(); //? manual connection didn't work
+    console.log(newSocket.connected); // false
+    setSocket(newSocket);
+  };
+  useEffect(() => {
+    handleSocket();
+  }, [setSocket]);
+*/
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
@@ -27,6 +39,7 @@ function App(): React.JSX.Element {
   const BarStyle = Platform.OS === 'ios' ? 'dark-content' : 'light-content';
   return (
     <QueryClientProvider client={queryClient}>
+      {/* Wrap your app with SocketProvider */}
       <SafeAreaProvider>
         <View
           style={{flex: 1, backgroundColor: backgroundStyle.backgroundColor}}>
@@ -36,11 +49,9 @@ function App(): React.JSX.Element {
               isDarkMode ? backgroundStyle.backgroundColor : PRIMARY_COLOR
             }
           />
-          {
-            <NavigationContainer>
-              <StackNavigation />
-            </NavigationContainer>
-          }
+          <NavigationContainer>
+            <StackNavigation />
+          </NavigationContainer>
         </View>
       </SafeAreaProvider>
     </QueryClientProvider>
