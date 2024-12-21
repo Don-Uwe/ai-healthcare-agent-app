@@ -118,9 +118,13 @@ function useTxStatus() {
           toastSubject.next({
             id: txId,
             title: title || `${t('transaction.title')} ${t('transaction.sent')}`,
-            description: isMultisigWallet
-              ? `${description} ${t('transaction.multisig_wallet_initiation')}`
-              : description || `${explorerUrl}/tx/${txId}`,
+            description: isMultisigWallet ? (
+              <>
+                {description} {t('transaction.multisig_wallet_initiation')}
+              </>
+            ) : (
+              description || `${explorerUrl}/tx/${txId}`
+            ),
             detail: renderDetail(),
             status: status || 'info',
             duration: duration ?? TOAST_DURATION,
@@ -164,8 +168,13 @@ function useTxStatus() {
                   update: true,
                   title: isSlippageError
                     ? t('error.swap_slippage_error_title')
-                    : (isMultisigWallet ? `${title} ${t('transaction.multisig_wallet_initiation')}` : title) +
-                      ` ${t('transaction.failed')}`,
+                    : (isMultisigWallet ? (
+                        <>
+                          {title} {t('transaction.multisig_wallet_initiation')}
+                        </>
+                      ) : (
+                        title
+                      )) + ` ${t('transaction.failed')}`,
                   status: 'error',
                   description: isSlippageError ? t('error.swap_slippage_error_desc') : description || `${explorerUrl}/tx/${txId}`,
                   detail: renderDetail('error'),
@@ -395,8 +404,13 @@ function useTxStatus() {
                       update: true,
                       title: isSlippageError
                         ? t('error.swap_slippage_error_title')
-                        : (isMultisigWallet ? `${title} ${t('transaction.multisig_wallet_initiation')}` : title || t('transaction.title')) +
-                          t('transaction.failed'),
+                        : (isMultisigWallet ? (
+                            <>
+                              {title} {t('transaction.multisig_wallet_initiation')}
+                            </>
+                          ) : (
+                            title || t('transaction.title')
+                          )) + t('transaction.failed'),
                       status: 'error',
                       description: isSlippageError ? t('error.swap_slippage_error_desc') : description,
                       detail: renderDetail(),
