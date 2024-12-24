@@ -27,6 +27,7 @@ import {useDispatch} from 'react-redux';
 import {LOGIN_API, RESEND_VERIFICATION, SEND_OTP} from '../../helper/APIUtils';
 import Loader from '../../components/Loader';
 import {setUserId, setUserToken} from '../../store/UserSlice';
+import messaging from '@react-native-firebase/messaging';
 
 const LoginScreen = ({navigation}: LoginScreenProp) => {
   const inset = useSafeAreaInsets();
@@ -37,6 +38,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
   const [passwordVerify, setPasswordVerify] = useState(false);
   const [email, setEmail] = useState('');
   const [otpMail, setOtpMail] = useState('');
+  const [fcmToken, setFcmToken] = useState<string | null>(null);
   const [emailVerify, setEmailVerify] = useState(false);
   const [output, setOutput] = useState(true);
   const [passwordMessage, setPasswordMessage] = useState(false);
@@ -78,8 +80,32 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
   }, [navigation]);
   */
 
+  async function requestUserPermission() {
+    const authStatus = await messaging().requestPermission();
+    const enabled =
+      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+  
+    if (enabled) {
+      console.log('Authorization status:', authStatus);
+    }
+  }
+
+  async function getFCMToken() {
+    await requestUserPermission(); // Ask for permission (iOS only)
+    const fcmToken = await messaging().getToken();
+    if (fcmToken) {
+      console.log('FCM Token:', fcmToken);
+      setFcmToken(fcmToken);
+    } else {
+      console.log('Failed to get FCM Token');
+      return null;
+    }
+  }
+
   const validateAndSubmit = async () => {
     if (validate()) {
+      await getFCMToken();
       setPasswordMessage(false);
       setEmailMessage(false);
       loginMutation.mutate();
@@ -130,6 +156,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
       const res = await axios.post(LOGIN_API, {
         email: email,
         password: password,
+        fcmToken: fcmToken
       });
 
       return res.data.user as User;
