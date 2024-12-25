@@ -536,7 +536,7 @@ function TransferFeeTip({ feeConfig, token }: { feeConfig: TransferFeeDataBaseTy
             <Text whiteSpace="nowrap" wordBreak={'keep-all'}>
               {t('common.transfer_fee')}
             </Text>
-            <ChakraTip label="Transfer fee tip">
+            <ChakraTip label="A transfer fee derived from the amount of the token being transferred.">
               <QuestionCircleIcon />
             </ChakraTip>
           </Flex>
@@ -547,7 +547,7 @@ function TransferFeeTip({ feeConfig, token }: { feeConfig: TransferFeeDataBaseTy
             <Text whiteSpace="nowrap" wordBreak={'keep-all'}>
               {t('common.max_transfer_fee')}
             </Text>
-            <ChakraTip label="Max Transfer fee tip">
+            <ChakraTip label="Maximum amount for the transfer fee, set by the authority mint.">
               <QuestionCircleIcon />
             </ChakraTip>
           </Flex>
