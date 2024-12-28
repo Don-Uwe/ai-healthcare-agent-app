@@ -3,7 +3,7 @@ import {Alert, StyleSheet, Text, View} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {WebView} from 'react-native-webview';
 import {PRIMARY_COLOR} from '../../helper/Theme';
-import {PreviewScreenProp, User} from '../../type';
+import {ArticleData, PreviewScreenProp, User} from '../../type';
 import {createHTMLStructure} from '../../helper/Utils';
 import {useMutation, useQuery} from '@tanstack/react-query';
 import ImageResizer from '@bam.tech/react-native-image-resizer';
@@ -13,15 +13,18 @@ import Loader from '../../components/Loader';
 import {GET_IMAGE, GET_PROFILE_API, POST_ARTICLE} from '../../helper/APIUtils';
 import {useSelector} from 'react-redux';
 import useUploadImage from '../../../hooks/useUploadImage';
+import io from 'socket.io-client';
 
 export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
   const {article, title, authorName, selectedGenres, localImages} =
     route.params;
+
+  const socket = io('http://51.20.1.81:8084');
   const webViewRef = useRef<WebView>(null);
   const {user_token} = useSelector((state: any) => state.user);
 
   const {uploadImage, loading} = useUploadImage();
- // console.log(selectedGenres);
+  // console.log(selectedGenres);
 
   React.useEffect(() => {
     navigation.setOptions({
@@ -58,8 +61,6 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
 
     // Resize and confirm for all images before uploading
     try {
-
-      
       const confirmation = await new Promise(resolve => {
         Alert.alert(
           'Create Post',
@@ -144,16 +145,26 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
         },
       );
       // console.log(article);
-      return response.data as any;
+      return response.data.newArticle as ArticleData;
     },
 
-    onSuccess: () => {
+    onSuccess: data => {
+      socket.emit('notification', {
+        type: 'openPost',
+        postId: data._id,
+        authorId: user?._id,
+        message: {
+          title: `${user?.user_handle} posted a new article`,
+          body: title,
+        },
+      });
       Alert.alert('Article added sucessfully');
+
       navigation.navigate('TabNavigation');
     },
     onError: error => {
       console.log('Article post Error', error);
-     // console.log(error);
+      // console.log(error);
 
       Alert.alert('Failed to upload your post');
     },

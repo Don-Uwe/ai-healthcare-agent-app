@@ -1,5 +1,12 @@
 import React from 'react';
-import {View, Image, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import {
+  View,
+  Image,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+} from 'react-native';
 import {Comment} from '../type';
 import {GET_STORAGE_DATA} from '../helper/APIUtils';
 import moment from 'moment';
@@ -12,6 +19,7 @@ import Animated, {
 import ArticleFloatingMenu from './ArticleFloatingMenu';
 import Entypo from 'react-native-vector-icons/Entypo';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import {PRIMARY_COLOR} from '../helper/Theme';
 
 export default function CommentItem({
   item,
@@ -21,6 +29,7 @@ export default function CommentItem({
   handleEditAction,
   deleteAction,
   handleLikeAction,
+  commentLikeLoading,
 }: {
   item: Comment;
   isSelected: Boolean;
@@ -29,6 +38,7 @@ export default function CommentItem({
   handleEditAction: (comment: Comment) => void;
   deleteAction: (comment: Comment) => void;
   handleLikeAction: (comment: Comment) => void;
+  commentLikeLoading: Boolean;
 }) {
   const width = useSharedValue(0);
   const yValue = useSharedValue(60);
@@ -150,21 +160,26 @@ export default function CommentItem({
             padding: 2,
             // mrginStart: 6,
           }}>
-          <TouchableOpacity
-            //style={styles.shareIconContainer}
-            onPress={() => {
-              /* Handle Like action */
-              width.value = withTiming(0, {duration: 300});
-              yValue.value = withTiming(100, {duration: 300});
-              handleLikeAction(item);
-            }}>
-            {item.likedUsers.length > 0 &&
-            item.likedUsers.some(id => id === userId) ? (
-              <AntDesign name="like1" size={19} color={'black'} />
-            ) : (
-              <AntDesign name="like2" size={19} color={'black'} />
-            )}
-          </TouchableOpacity>
+          {commentLikeLoading && isSelected ? (
+            <ActivityIndicator size="small" color={PRIMARY_COLOR} />
+          ) : (
+            <TouchableOpacity
+              //style={styles.shareIconContainer}
+              onPress={() => {
+                /* Handle Like action */
+                width.value = withTiming(0, {duration: 300});
+                yValue.value = withTiming(100, {duration: 300});
+                setSelectedCommentId(item._id);
+                handleLikeAction(item);
+              }}>
+              {item.likedUsers.length > 0 &&
+              item.likedUsers.some(id => id === userId) ? (
+                <AntDesign name="like1" size={19} color={'black'} />
+              ) : (
+                <AntDesign name="like2" size={19} color={'black'} />
+              )}
+            </TouchableOpacity>
+          )}
 
           <Text style={styles.likeCount}>{item.likedUsers.length}</Text>
         </View>
@@ -187,12 +202,12 @@ const styles = StyleSheet.create({
   },
 
   profileImage: {
-    height: 60,
-    width: 60,
+    height: 50,
+    width: 50,
     borderRadius: 30,
     objectFit: 'cover',
     resizeMode: 'contain',
-    marginHorizontal: 4,
+    marginHorizontal: 6,
   },
   commentContent: {
     flex: 1,
@@ -203,7 +218,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   comment: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#555',
     marginVertical: 3,
   },

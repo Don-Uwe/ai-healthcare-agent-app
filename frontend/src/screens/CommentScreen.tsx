@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   View,
   Text,
@@ -13,17 +13,21 @@ import {PRIMARY_COLOR} from '../helper/Theme';
 import io from 'socket.io-client';
 import {Comment} from '../type';
 import {useSelector} from 'react-redux';
+import Loader from '../components/Loader';
 import CommentItem from '../components/CommentItem';
 
 const CommentScreen = ({navigation, route}: CommentScreenProp) => {
-  const socket = io('http://51.20.1.81:8082');
+  const socket = io('http://51.20.1.81:8084');
   //const socket = useSocket();
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
+  const flatListRef = useRef<FlatList<Comment>>(null);
   const {user_id} = useSelector((state: any) => state.user);
   const [selectedCommentId, setSelectedCommentId] = useState<string>('');
   const [editMode, setEditMode] = useState<Boolean>(false);
   const [editCommentId, setEditCommentId] = useState<string | null>(null);
+  const [commentLoading, setCommentLoading] = useState<Boolean>(false);
+  const [commentLikeLoading, setCommentLikeLoading] = useState<Boolean>(false);
 
   useEffect(() => {
     //console.log('Fetching comments for articleId:', route.params.articleId);
@@ -31,6 +35,14 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
 
     socket.on('connect', () => {
       console.log('connection established');
+    });
+
+    socket.on('comment-processing', (data: boolean) => {
+      setCommentLoading(data);
+    });
+
+    socket.on('like-comment-processing', (data: boolean) => {
+      setCommentLikeLoading(data);
     });
 
     socket.on('error', () => {
@@ -48,7 +60,15 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
     socket.on('comment', data => {
       console.log('new comment loaded', data);
       if (data.articleId === route.params.articleId) {
-        setComments(prevComments => [data.comment, ...prevComments]);
+        setComments(prevComments => {
+          const newComments = [data.comment, ...prevComments];
+          // Scroll to the first index after adding the new comment
+          if (flatListRef.current) {
+            flatListRef?.current.scrollToIndex({index: 0, animated: true});
+          }
+
+          return newComments;
+        });
       }
     });
 
@@ -183,12 +203,17 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
     }
   };
 
+  if (commentLoading) {
+    return <Loader />;
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.header}>💬 Leave a Feedback</Text>
 
       {/* Comments List */}
       <FlatList
+        ref={flatListRef}
         data={comments}
         renderItem={({item}) => (
           <CommentItem
@@ -199,6 +224,7 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
             handleEditAction={handleEditAction}
             deleteAction={handleDeleteAction}
             handleLikeAction={handleLikeAction}
+            commentLikeLoading={commentLikeLoading}
           />
         )}
         keyExtractor={item => item._id}

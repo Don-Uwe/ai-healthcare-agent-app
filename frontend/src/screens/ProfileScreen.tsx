@@ -20,6 +20,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [articleId, setArticleId] = useState<number>();
   const [authorId, setAuthorId] = useState<string>('');
+  const [selectedCardId, setSelectedCardId] = useState<string>('');
   //const fallback_profile = require('../assets/avatar.jpg');
   //const user_fallback_profile = Image.resolveAssetSource(fallback_profile).uri;
 
@@ -139,7 +140,13 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
   const renderItem = useCallback(
     ({item}: {item: ArticleData}) => {
       return (
-        <ArticleCard item={item} navigation={navigation} success={onRefresh} />
+        <ArticleCard
+          item={item}
+          isSelected={selectedCardId === item._id}
+          setSelectedCardId={setSelectedCardId}
+          navigation={navigation}
+          success={onRefresh}
+        />
       );
     },
     [navigation, onRefresh],

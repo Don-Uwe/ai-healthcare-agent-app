@@ -39,6 +39,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [sortingType, setSortingType] = useState<string>('');
   const [loading, setLoading] = useState(true);
+  const [selectedCardId, setSelectedCardId] = useState<string>('');
   const [selectCategoryList, setSelectCategoryList] = useState<
     CategoryType['name'][]
   >([]);
@@ -137,12 +138,18 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     setSelectedCategory(category);
   };
 
-  const renderItem = useCallback(({item}: {item: ArticleData}) => {
+  const renderItem = ({item}: {item: ArticleData}) => {
     return (
-      <ArticleCard item={item} navigation={navigation} success={onRefresh} />
+      <ArticleCard
+        item={item}
+        isSelected={selectedCardId === item._id}
+        setSelectedCardId={setSelectedCardId}
+        navigation={navigation}
+        success={onRefresh}
+      />
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  };
 
   const handleFilterReset = () => {
     // Update Redux State Variables

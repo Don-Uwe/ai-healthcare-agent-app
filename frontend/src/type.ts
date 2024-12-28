@@ -143,6 +143,8 @@ export type ArticleCardProps = {
     | ProfileScreenProps['navigation']
     | UserProfileScreenProp['navigation'];
   success: () => void;
+  isSelected: Boolean;
+  setSelectedCardId: (id: string) => void;
 };
 
 export type ProfileHeaderProps = {
