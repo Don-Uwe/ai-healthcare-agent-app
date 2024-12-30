@@ -68,7 +68,7 @@ const ArticleCard = ({
       const result = await Share.open({
         title: item.title,
         message: `${item.title} : Check out this awesome post on UltimateHealth app!`,
-        url: 'https://drive.google.com/file/d/1eLjfzveJ8oXe_KALbBU-qzwx4mAhkaEC/view',
+        url: 'https://drive.google.com/file/d/16ykvN1AJ3ucOLI_rqMQZ8EENLA6EpFBQ/view?usp=sharing',
         subject: 'React Native Post',
       });
       console.log(result);
