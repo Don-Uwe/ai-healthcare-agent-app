@@ -13,13 +13,18 @@ import Loader from '../../components/Loader';
 import {GET_IMAGE, GET_PROFILE_API, POST_ARTICLE} from '../../helper/APIUtils';
 import {useSelector} from 'react-redux';
 import useUploadImage from '../../../hooks/useUploadImage';
-import io from 'socket.io-client';
+
+import {useSocket} from '../../../SocketContext';
+//import io from 'socket.io-client';
+
 
 export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
   const {article, title, authorName, selectedGenres, localImages} =
     route.params;
 
-  const socket = io('http://51.20.1.81:8084');
+  //const socket = io('http://51.20.1.81:8084');
+  const socket = useSocket();
+
   const webViewRef = useRef<WebView>(null);
   const {user_token} = useSelector((state: any) => state.user);
 

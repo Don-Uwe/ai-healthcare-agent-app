@@ -214,8 +214,9 @@ const StackNavigation = () => {
         component={NotificationScreen}
         options={({navigation}) => ({
           headerShown: true,
-          headerTitle: '',
+          headerTitle: 'Notifications',
           headerTransparent: true,
+          headerTitleAlign: 'center',
           headerBackTitleVisible: false,
           // eslint-disable-next-line react/no-unstable-nested-components
           headerLeft: () => (
@@ -310,6 +311,7 @@ const styles = StyleSheet.create({
 
   headerLeftButtonCommentScreen: {
     marginLeft: 15,
+    backgroundColor:"#ffffff",
     paddingHorizontal: 6,
     paddingVertical: 6,
     marginTop: 0,

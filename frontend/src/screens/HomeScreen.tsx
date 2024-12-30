@@ -129,6 +129,29 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     return () => {};
   }, []);
 
+  const {data: unreadCount, refetch: refetchUnreadCount} = useQuery({
+    queryKey: ['get-unread-notifications-count'],
+    queryFn: async () => {
+      try {
+        if (user_token === '') {
+          throw new Error('No token found');
+        }
+        const response = await axios.get(
+          `${EC2_BASE_URL}/notification/unread-count`,
+          {
+            headers: {
+              Authorization: `Bearer ${user_token}`,
+            },
+          },
+        );
+
+        // console.log('Notification Response', response);
+        return response.data.unreadCount as number;
+      } catch (err) {
+        console.error('Error fetching articles:', err);
+      }
+    },
+  });
   const handleNoteIconClick = () => {
     //navigation.navigate('EditorScreen');
     navigation.navigate('ArticleDescriptionScreen');
@@ -148,7 +171,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         success={onRefresh}
       />
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   };
 
   const handleFilterReset = () => {
@@ -245,6 +267,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const onRefresh = () => {
     setRefreshing(true);
     refetch();
+    refetchUnreadCount();
     setRefreshing(false);
   };
   const handleSearch = (textInput: string) => {
@@ -284,6 +307,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         onNotificationClick={() => {
           navigation.navigate('NotificationScreen');
         }}
+        unreadCount={unreadCount ? unreadCount : 0}
       />
       <FilterModal
         bottomSheetModalRef={bottomSheetModalRef}

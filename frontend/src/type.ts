@@ -134,6 +134,7 @@ export type HomeScreenHeaderProps = {
   handlePresentModalPress: () => void;
   onTextInputChange: (textInput: string) => void;
   onNotificationClick: () => void;
+  unreadCount: number
 };
 
 export type ArticleCardProps = {
@@ -147,6 +148,14 @@ export type ArticleCardProps = {
   setSelectedCardId: (id: string) => void;
 };
 
+export type Notification = {
+  _id: string;
+  userId: string;
+  title: string;
+  message: string;
+  read: boolean;
+  timestamp: string;
+};
 export type ProfileHeaderProps = {
   isDoctor: boolean;
   username: string;

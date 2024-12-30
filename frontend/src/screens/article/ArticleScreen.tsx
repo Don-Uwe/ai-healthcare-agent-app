@@ -34,8 +34,11 @@ import {
 import axios from 'axios';
 import Loader from '../../components/Loader';
 import Snackbar from 'react-native-snackbar';
-import io from 'socket.io-client';
+
+//import io from 'socket.io-client';
+
 import {formatCount} from '../../helper/Utils';
+import {useSocket} from '../../../SocketContext';
 
 const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const insets = useSafeAreaInsets();
@@ -43,7 +46,9 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const {user_id, user_token} = useSelector((state: any) => state.user);
   const [readEventSave, setReadEventSave] = useState(false);
   //const [webViewHeight, setWebViewHeight] = useState(0);
-  const socket = io('http://51.20.1.81:8084');
+  //const socket = io('http://51.20.1.81:8084');
+  const socket = useSocket();
+
   const webViewRef = useRef<WebView>(null);
 
   useEffect(() => {

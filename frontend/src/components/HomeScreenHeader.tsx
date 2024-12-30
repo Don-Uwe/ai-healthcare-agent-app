@@ -11,12 +11,19 @@ import Ionicon from 'react-native-vector-icons/Ionicons';
 import {fp, wp} from '../helper/Metric';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import {HomeScreenHeaderProps} from '../type';
+import {useQuery} from '@tanstack/react-query';
+import axios from 'axios';
+import {EC2_BASE_URL} from '../helper/APIUtils';
+import {useSelector} from 'react-redux';
 
 const HomeScreenHeader = ({
   handlePresentModalPress,
   onTextInputChange,
-  onNotificationClick
+  onNotificationClick,
+  unreadCount,
 }: HomeScreenHeaderProps) => {
+  // Get unread notification count api integration
+
   return (
     <View style={[styles.header]}>
       <View>
@@ -33,12 +40,41 @@ const HomeScreenHeader = ({
             <Text style={styles.headerTitle}>Discover</Text>
 
             <TouchableOpacity onPress={onNotificationClick}>
-              <Ionicon
-                name="notifications"
-                color="white"
-                size={26}
-                style={{marginTop: 7}}
-              />
+              <View style={{position: 'relative'}}>
+                <Ionicon
+                  name="notifications"
+                  color="white"
+                  size={30}
+                  style={{marginTop: 7}}
+                />
+
+                {/* Red dot */}
+                {unreadCount > 0 && (
+                  <View
+                    style={{
+                      position: 'absolute',
+                      top: 6,
+                      right: 2,
+                      width: 15,
+                      height: 15,
+                      borderRadius: 8,
+                      backgroundColor: 'red',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    {/* Optionally show the unread count */}
+                    <Text
+                      style={{
+                        color: 'white',
+                        fontSize: 11,
+                        fontWeight: 'bold',
+                        textAlign: 'center',
+                      }}>
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </Text>
+                  </View>
+                )}
+              </View>
             </TouchableOpacity>
           </View>
           <Text style={styles.headerSubtitle}>

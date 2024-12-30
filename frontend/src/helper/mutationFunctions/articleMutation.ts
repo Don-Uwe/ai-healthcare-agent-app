@@ -10,8 +10,8 @@ import {
   LIKE_ARTICLE,
   UPDATE_READ_EVENT,
   POST_ARTICLE,
-} from '../helper/APIUtils';
-import {ArticleData} from '../type';
+} from '../APIUtils';
+import {ArticleData} from '../../type';
 
 interface MutationOptions {
   user_token: string;
