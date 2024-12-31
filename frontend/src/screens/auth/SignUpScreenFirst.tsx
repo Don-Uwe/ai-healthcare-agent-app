@@ -20,7 +20,11 @@ import {SignUpScreenFirstProp, UserDetail} from '../../type';
 import {useMutation} from '@tanstack/react-query';
 import axios, {AxiosError} from 'axios';
 import Snackbar from 'react-native-snackbar';
-import {REGISTRATION_API, VERIFICATION_MAIL_API} from '../../helper/APIUtils';
+import {
+  CHECK_USER_HANDLE,
+  REGISTRATION_API,
+  VERIFICATION_MAIL_API,
+} from '../../helper/APIUtils';
 import EmailVerifiedModal from '../../components/VerifiedModal';
 import ImageResizer from '@bam.tech/react-native-image-resizer';
 import Loader from '../../components/Loader';
@@ -42,9 +46,11 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
   const [role, setRole] = useState('');
   const [verifyBtntext, setVerifyBtntxt] = useState('Request Verification');
   const [verifiedModalVisible, setVerifiedModalVisible] = useState(false);
+  const [isHandleAvailable, setIsHandleAvailable] = useState(true);
   const [token, setToken] = useState('');
   const [isFocus, setIsFocus] = useState(false);
   const [isSecureEntry, setIsSecureEntry] = useState(true);
+  const [error, setError] = useState('');
 
   const selectImage = async () => {
     const options: ImageLibraryOptions = {
@@ -53,7 +59,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
 
     launchImageLibrary(options, async (response: ImagePickerResponse) => {
       if (response.didCancel) {
-       // console.log('User cancelled image picker');
+        // console.log('User cancelled image picker');
       } else if (response.errorMessage) {
         console.log('ImagePicker Error: ', response.errorMessage);
       } else if (response.assets) {
@@ -78,6 +84,36 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
         }
       }
     });
+  };
+
+  const checkUserHandleAvailability = async handle => {
+    try {
+      const response = await axios.post(CHECK_USER_HANDLE, {
+        userHandle: username,
+      });
+      if (response.data.status === true) {
+        setIsHandleAvailable(true);
+        console.log('User Handle ', isHandleAvailable);
+      } else {
+        setIsHandleAvailable(false);
+        console.log('User Handle ', isHandleAvailable);
+        setError(response.data.error); // Show the error message
+      }
+    } catch (err) {
+      console.error('Error checking user handle:', err);
+      setError('An error occurred while checking the user handle.');
+    }
+  };
+
+  const handleUserHandleChange = text => {
+    setUsername(text);
+    if (text.length > 2) {
+      // Check if the user handle is available every time the user types
+      checkUserHandleAvailability(text);
+    } else {
+      setIsHandleAvailable(true);
+      setError('');
+    }
   };
 
   const userRegisterMutation = useMutation({
@@ -206,6 +242,9 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
     }
   };
   const handleSubmit = () => {
+    if (!isHandleAvailable) {
+      return;
+    }
     if (!name || !username || !email || !password || !role) {
       Alert.alert('Please fill in all fields');
       return;
@@ -226,7 +265,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
         user_handle: username,
         email: email,
         password: password,
-        profile_image: user_profile_image
+        profile_image: user_profile_image,
       };
       navigation.navigate('SignUpScreenSecond', {
         user: detail,
@@ -331,14 +370,18 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
               </View>
             </View>
 
+            {!isHandleAvailable && (
+              <Text style={styles.error}>User handle is already in use.</Text>
+            )}
             <View style={styles.field}>
               <TextInput
                 style={styles.input}
                 placeholder="User Handle"
-                onChangeText={setUsername}
                 value={username}
+                onChangeText={handleUserHandleChange}
               />
-              <View style={styles.inputIcon}>
+
+              <View style={styles.inputIcon2}>
                 <Icon name="person" size={20} color="#000" />
               </View>
             </View>
@@ -466,10 +509,20 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     fontSize: 15,
   },
+  error: {
+    color: 'red',
+    fontSize: 14,
+    marginBottom: 10,
+  },
   inputIcon: {
     position: 'absolute',
     right: 14,
     top: 12,
+  },
+  inputIcon2: {
+    position: 'absolute',
+    right: 14,
+    top: 8,
   },
   button: {
     backgroundColor: '#0CAFFF',

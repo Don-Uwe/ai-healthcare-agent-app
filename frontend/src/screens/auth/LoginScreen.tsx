@@ -85,7 +85,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
     const enabled =
       authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
       authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-  
+
     if (enabled) {
       console.log('Authorization status:', authStatus);
     }
@@ -156,7 +156,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
       const res = await axios.post(LOGIN_API, {
         email: email,
         password: password,
-        fcmToken: fcmToken
+        fcmToken: fcmToken,
       });
 
       return res.data.user as User;
@@ -458,12 +458,14 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
             or
           </Text>
           <View style={styles.createAccountContainer}>
-            <TouchableOpacity>
+            <TouchableOpacity
+              style={{...styles.loginButton, backgroundColor: '#FF0000'}}>
               <Text
                 style={[
                   styles.createAccountText,
                   {
-                    color: isDarkMode ? 'white' : 'black',
+                    // color: isDarkMode ? 'white' : 'black',
+                    color: 'white',
                   },
                 ]}
                 onPress={() => {

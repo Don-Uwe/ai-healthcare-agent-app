@@ -40,6 +40,7 @@ import Entypo from 'react-native-vector-icons/Entypo';
 import Share from 'react-native-share';
 import RNFS from 'react-native-fs';
 import RNHTMLtoPDF from 'react-native-html-to-pdf';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import {useSocket} from '../../SocketContext';
 
 const ArticleCard = ({
@@ -48,6 +49,7 @@ const ArticleCard = ({
   isSelected,
   setSelectedCardId,
   success,
+  handleRepostAction,
 }: ArticleCardProps) => {
   const {user_token, user_id} = useSelector((state: any) => state.user);
 
@@ -323,7 +325,8 @@ const ArticleCard = ({
                 {
                   name: 'Repost in your feed',
                   action: () => {
-                    Alert.alert('Repost Clicked');
+                    //Alert.alert('Repost Clicked');
+                    handleRepostAction(item);
                   },
                   icon: 'retweet',
                 },
@@ -419,9 +422,9 @@ const ArticleCard = ({
                 }}
                 style={styles.likeSaveChildContainer}>
                 {item.likedUsers.includes(user_id) ? (
-                  <AntDesign name="heart" size={26} color={PRIMARY_COLOR} />
+                  <AntDesign name="heart" size={24} color={PRIMARY_COLOR} />
                 ) : (
-                  <AntDesign name="hearto" size={26} color={'black'} />
+                  <AntDesign name="hearto" size={24} color={'black'} />
                 )}
                 <Text style={{...styles.title, marginStart: 3}}>
                   {formatCount(item.likedUsers.length)}
@@ -439,11 +442,29 @@ const ArticleCard = ({
               style={styles.likeSaveChildContainer}>
               <MaterialCommunityIcon
                 name="comment-outline"
-                size={28}
+                size={24}
                 color={'black'}
               />
             </TouchableOpacity>
 
+            {updateLikeMutation.isPending ? (
+              <ActivityIndicator size="small" color={PRIMARY_COLOR} />
+            ) : (
+              <TouchableOpacity
+                onPress={() => {
+                  width.value = withTiming(0, {duration: 300});
+                  yValue.value = withTiming(100, {duration: 300});
+                  //updateLikeMutation.mutate();
+                  handleRepostAction(item);
+                }}
+                style={styles.likeSaveChildContainer}>
+                <FontAwesome5 name="retweet" size={22} color={'black'} />
+
+                <Text style={{...styles.title, marginStart: 3}}>
+                  {formatCount(item.repostUsers.length)}
+                </Text>
+              </TouchableOpacity>
+            )}
             {updateSaveStatusMutation.isPending ? (
               <ActivityIndicator size="small" color={PRIMARY_COLOR} />
             ) : (
@@ -455,9 +476,9 @@ const ArticleCard = ({
                 }}
                 style={styles.likeSaveChildContainer}>
                 {item.savedUsers.includes(user_id) ? (
-                  <IonIcons name="bookmark" size={26} color={PRIMARY_COLOR} />
+                  <IonIcons name="bookmark" size={24} color={PRIMARY_COLOR} />
                 ) : (
-                  <IonIcons name="bookmark-outline" size={26} color={'black'} />
+                  <IonIcons name="bookmark-outline" size={24} color={'black'} />
                 )}
               </TouchableOpacity>
             )}

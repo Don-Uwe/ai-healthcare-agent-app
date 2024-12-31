@@ -17,10 +17,10 @@ import ArticleCard from '../components/ArticleCard';
 import HomeScreenHeader from '../components/HomeScreenHeader';
 import {ArticleData, Category, CategoryType, HomeScreenProps} from '../type';
 import axios from 'axios';
-import {ARTICLE_TAGS_API, EC2_BASE_URL} from '../helper/APIUtils';
+import {ARTICLE_TAGS_API, EC2_BASE_URL, REPOST_ARTICLE} from '../helper/APIUtils';
 import FilterModal from '../components/FilterModal';
 import {BottomSheetModal} from '@gorhom/bottom-sheet';
-import {useQuery} from '@tanstack/react-query';
+import {useMutation, useQuery} from '@tanstack/react-query';
 import {useSelector, useDispatch} from 'react-redux';
 import Loader from '../components/Loader';
 import {
@@ -31,6 +31,7 @@ import {
   setSortType,
   setTags,
 } from '../store/articleSlice';
+import Snackbar from 'react-native-snackbar';
 
 // Here The purpose of using Redux is to maintain filter state throughout the app session. globally
 const HomeScreen = ({navigation}: HomeScreenProps) => {
@@ -161,6 +162,55 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     setSelectedCategory(category);
   };
 
+  const handleRepostAction = (item: ArticleData) => {
+    repostMutation.mutate({
+      articleId: Number(item._id),
+    });
+  };
+
+  const repostMutation = useMutation({
+    mutationKey: ['repost-user-article'],
+    mutationFn: async ({
+      articleId,
+    }: // authorId,
+    {
+      articleId: number;
+      //  authorId: string;
+    }) => {
+      if (user_token === '') {
+        Alert.alert('No token found');
+        return;
+      }
+      const res = await axios.post(
+        REPOST_ARTICLE,
+        {
+          articleId: articleId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user_token}`,
+          },
+        },
+      );
+
+      return res.data as any;
+    },
+    onSuccess: () => {
+      refetch();
+      Snackbar.show({
+        text: 'Article reposted in your feed',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+
+      // Emit notification
+    },
+
+    onError: error => {
+      console.log('Repost Error', error);
+      Alert.alert('Internal server error, try again!');
+    },
+  });
+  
   const renderItem = ({item}: {item: ArticleData}) => {
     return (
       <ArticleCard
@@ -169,6 +219,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         setSelectedCardId={setSelectedCardId}
         navigation={navigation}
         success={onRefresh}
+        handleRepostAction={handleRepostAction}
       />
     );
   };

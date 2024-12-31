@@ -134,7 +134,7 @@ export type HomeScreenHeaderProps = {
   handlePresentModalPress: () => void;
   onTextInputChange: (textInput: string) => void;
   onNotificationClick: () => void;
-  unreadCount: number
+  unreadCount: number;
 };
 
 export type ArticleCardProps = {
@@ -146,6 +146,7 @@ export type ArticleCardProps = {
   success: () => void;
   isSelected: Boolean;
   setSelectedCardId: (id: string) => void;
+  handleRepostAction: (item: ArticleData) => void;
 };
 
 export type Notification = {
@@ -267,6 +268,7 @@ export type ArticleData = {
   imageUtils: string[];
   viewCount: number;
   viewUsers: User[];
+  repostUsers: string[];
   likeCount: number;
   likedUsers: User[];
   savedUsers: string[];
@@ -328,6 +330,7 @@ export type User = {
   readArticles: any[];
   savedArticles: ArticleData[];
   articles: ArticleData[];
+  repostArticles: ArticleData[];
   specialization: string | null;
   user_handle: string;
   user_id: string;

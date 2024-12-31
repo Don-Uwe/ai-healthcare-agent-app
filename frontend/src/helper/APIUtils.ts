@@ -43,6 +43,9 @@ const GET_YEARLY_WRITES_REPORT = `${EC2_BASE_URL}/analytics/yearly-writes/`;
 
 const VULTR_CHAT_URL = 'https://api.vultrinference.com/v1/chat/completions';
 
+const REPOST_ARTICLE = `${EC2_BASE_URL}/article/repost`;
+const CHECK_USER_HANDLE = `${EC2_BASE_URL}/user/check-user-handle`;
+
 export {
   EC2_BASE_URL,
   LOGIN_API,
@@ -82,4 +85,6 @@ export {
   GET_YEARLY_READ_REPORT,
   GET_YEARLY_WRITES_REPORT,
   VULTR_CHAT_URL,
+  REPOST_ARTICLE,
+  CHECK_USER_HANDLE
 };

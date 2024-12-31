@@ -15,19 +15,25 @@ import {useSelector} from 'react-redux';
 import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import ProfileHeader from '../components/ProfileHeader';
-import {GET_PROFILE_API, UPDATE_VIEW_COUNT} from '../helper/APIUtils';
+import {
+  GET_PROFILE_API,
+  REPOST_ARTICLE,
+  UPDATE_VIEW_COUNT,
+} from '../helper/APIUtils';
 import {ArticleData, UserProfileScreenProp, User} from '../type';
 import {useMutation, useQuery} from '@tanstack/react-query';
 import axios from 'axios';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import Loader from '../components/Loader';
 import {useFocusEffect} from '@react-navigation/native';
+import Snackbar from 'react-native-snackbar';
 
 const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   const {user_token} = useSelector((state: any) => state.user);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const {authorId} = route.params;
   const [articleId, setArticleId] = useState<number>();
+  const [selectedCardId, setSelectedCardId] = useState<string>('');
   //const [authorId, setAuthorId] = useState<string>('');
 
   const {
@@ -67,6 +73,12 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   //const bottomBarHeight = useBottomTabBarHeight();
   const insets = useSafeAreaInsets();
 
+  const handleRepostAction = (item: ArticleData) => {
+    repostMutation.mutate({
+      articleId: Number(item._id),
+    });
+  };
+
   const onArticleViewed = ({
     articleId,
     authorId,
@@ -81,6 +93,50 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
       articleId: Number(articleId),
     });
   };
+
+  const repostMutation = useMutation({
+    mutationKey: ['repost-user-article'],
+    mutationFn: async ({
+      articleId,
+    }: // authorId,
+    {
+      articleId: number;
+      //  authorId: string;
+    }) => {
+      if (user_token === '') {
+        Alert.alert('No token found');
+        return;
+      }
+      const res = await axios.post(
+        REPOST_ARTICLE,
+        {
+          articleId: articleId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user_token}`,
+          },
+        },
+      );
+
+      return res.data as any;
+    },
+    onSuccess: () => {
+      //refetch();
+      Snackbar.show({
+        text: 'Article reposted in your feed',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+
+      // Emit notification
+    },
+
+    onError: error => {
+      console.log('Repost Error', error);
+      Alert.alert('Internal server error, try again!');
+    },
+  });
+
   const updateViewCountMutation = useMutation({
     mutationKey: ['update-view-count-user-profile'],
     mutationFn: async ({
@@ -132,17 +188,25 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
 
   useFocusEffect(
     useCallback(() => {
+      console.log('Current authorId:', authorId); // Check if authorId changes
       refetch();
-    }, [refetch]),
+    }, [refetch, authorId]), // Ensure authorId is a stable value
   );
 
   const renderItem = useCallback(
     ({item}: {item: ArticleData}) => {
       return (
-        <ArticleCard item={item} navigation={navigation} success={onRefresh} />
+        <ArticleCard
+          item={item}
+          navigation={navigation}
+          success={onRefresh}
+          isSelected={selectedCardId.toString() === item._id.toString()}
+          setSelectedCardId={setSelectedCardId}
+          handleRepostAction={handleRepostAction}
+        />
       );
     },
-    [navigation, onRefresh],
+    [navigation, onRefresh, selectedCardId],
   );
 
   const renderHeader = () => {
@@ -201,8 +265,8 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
       <TouchableOpacity
         style={styles.headerLeftButtonEditorScreen}
         onPress={() => {
-         // console.log('States', navigation.getState());
-         // console.log('Can go back', navigation.canGoBack());
+          // console.log('States', navigation.getState());
+          // console.log('Can go back', navigation.canGoBack());
           navigation.goBack();
         }}>
         <FontAwesome6 size={25} name="arrow-left" color="white" />
@@ -222,7 +286,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
                 onArticleViewed={onArticleViewed}
                 others={true}
                 userId={user?._id}
-                articlePosted={user.articles ? user.articles.length : 0}
+                articlePosted={user?.articles ? user.articles.length : 0}
               />
             </Tabs.ScrollView>
           </Tabs.Tab>
@@ -230,6 +294,25 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
           <Tabs.Tab name="User Articles">
             <Tabs.FlatList
               data={user !== undefined ? user.articles : []}
+              renderItem={renderItem}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={[
+                styles.flatListContentContainer,
+                {paddingBottom: 15},
+              ]}
+              keyExtractor={item => item?._id}
+              refreshing={refreshing}
+              ListEmptyComponent={
+                <View style={styles.emptyContainer}>
+                  <Text style={styles.message}>No Article Found</Text>
+                </View>
+              }
+            />
+          </Tabs.Tab>
+
+          <Tabs.Tab name="Reposts">
+            <Tabs.FlatList
+              data={user !== undefined ? user.repostArticles : []}
               renderItem={renderItem}
               showsVerticalScrollIndicator={false}
               contentContainerStyle={[

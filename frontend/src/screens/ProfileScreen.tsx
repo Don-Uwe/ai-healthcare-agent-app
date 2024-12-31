@@ -8,12 +8,13 @@ import {useSelector} from 'react-redux';
 import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import ProfileHeader from '../components/ProfileHeader';
-import {GET_PROFILE_API, UPDATE_VIEW_COUNT} from '../helper/APIUtils';
+import {GET_PROFILE_API, REPOST_ARTICLE, UPDATE_VIEW_COUNT} from '../helper/APIUtils';
 import {ArticleData, ProfileScreenProps, User} from '../type';
 import {useMutation, useQuery} from '@tanstack/react-query';
 import axios from 'axios';
 import Loader from '../components/Loader';
 import {useFocusEffect} from '@react-navigation/native';
+import Snackbar from 'react-native-snackbar';
 
 const ProfileScreen = ({navigation}: ProfileScreenProps) => {
   const {user_id, user_token} = useSelector((state: any) => state.user);
@@ -137,6 +138,54 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
     }, [refetch]),
   );
 
+  const handleRepostAction = (item: ArticleData) => {
+    repostMutation.mutate({
+      articleId: Number(item._id),
+    });
+  };
+
+  const repostMutation = useMutation({
+    mutationKey: ['repost-user-article'],
+    mutationFn: async ({
+      articleId,
+    }: // authorId,
+    {
+      articleId: number;
+      //  authorId: string;
+    }) => {
+      if (user_token === '') {
+        Alert.alert('No token found');
+        return;
+      }
+      const res = await axios.post(
+        REPOST_ARTICLE,
+        {
+          articleId: articleId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user_token}`,
+          },
+        },
+      );
+
+      return res.data as any;
+    },
+    onSuccess: () => {
+      refetch();
+      Snackbar.show({
+        text: 'Article reposted in your feed',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+
+      // Emit notification
+    },
+
+    onError: error => {
+      console.log('Repost Error', error);
+      Alert.alert('Internal server error, try again!');
+    },
+  });
   const renderItem = useCallback(
     ({item}: {item: ArticleData}) => {
       return (
@@ -146,10 +195,11 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
           setSelectedCardId={setSelectedCardId}
           navigation={navigation}
           success={onRefresh}
+          handleRepostAction={handleRepostAction}
         />
       );
     },
-    [navigation, onRefresh],
+    [navigation, selectedCardId, onRefresh],
   );
 
   const renderHeader = () => {
@@ -211,7 +261,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
           renderTabBar={renderTabBar}
           containerStyle={styles.tabsContainer}>
           {/* Tab 1 */}
-          <Tabs.Tab name="My Insights">
+          <Tabs.Tab name="Insight">
             <Tabs.ScrollView
               automaticallyAdjustContentInsets={true}
               contentInsetAdjustmentBehavior="always"
@@ -224,7 +274,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
             </Tabs.ScrollView>
           </Tabs.Tab>
           {/* Tab 2 */}
-          <Tabs.Tab name="My Articles">
+          <Tabs.Tab name="Articles">
             <Tabs.FlatList
               data={user !== undefined ? user.articles : []}
               renderItem={renderItem}
@@ -242,8 +292,27 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
               }
             />
           </Tabs.Tab>
+
+          <Tabs.Tab name="Reposts">
+            <Tabs.FlatList
+              data={user !== undefined ? user.repostArticles : []}
+              renderItem={renderItem}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={[
+                styles.flatListContentContainer,
+                {paddingBottom: bottomBarHeight + 15},
+              ]}
+              keyExtractor={item => item?._id}
+              refreshing={refreshing}
+              ListEmptyComponent={
+                <View style={styles.emptyContainer}>
+                  <Text style={styles.message}>No Article Found</Text>
+                </View>
+              }
+            />
+          </Tabs.Tab>
           {/* Tab 3 */}
-          <Tabs.Tab name="Saved Articles">
+          <Tabs.Tab name="Saved">
             <Tabs.FlatList
               data={user !== undefined ? user.savedArticles : []}
               renderItem={renderItem}

@@ -445,11 +445,11 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
         <View style={styles.authorContainer}>
           <TouchableOpacity
             onPress={() => {
-              if (article && article?.authorId) {
-                navigation.navigate('UserProfileScreen', {
-                  authorId: article?.authorId,
-                });
-              }
+              //  if (article && article?.authorId) {
+              // navigation.navigate('UserProfileScreen', {
+              //  authorId: authorId,
+              // });
+              // }
             }}>
             {profile_image && profile_image !== '' ? (
               <Image
