@@ -118,6 +118,8 @@ function App(): React.JSX.Element {
       navigationContainerRef.current.navigate('NotificationScreen');
     } else if (data?.action === 'userFollow') {
       navigationContainerRef.current.navigate('NotificationScreen');
+    }else{
+      navigationContainerRef.current.navigate('NotificationScreen')
     }
   };
 

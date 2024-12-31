@@ -355,6 +355,7 @@ export type Podcast = {
 export type AuthData = {
   userId: string;
   token: string | null;
+  user_handle: string | null;
 };
 
 export type Comment = {

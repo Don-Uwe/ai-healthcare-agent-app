@@ -5,6 +5,7 @@ const userSlice = createSlice({
   initialState: {
     user_id: '',
     user_token: '',
+    user_handle: '',
   },
 
   reducers: {
@@ -15,6 +16,9 @@ const userSlice = createSlice({
     setUserToken(state, action) {
       state.user_token = action.payload;
     },
+    setUserHandle(state, action) {
+      state.user_handle = action.payload;
+    },
     resetUserState(state) {
       state.user_id = '';
       state.user_token = '';
@@ -22,6 +26,7 @@ const userSlice = createSlice({
   },
 });
 
-export const {setUserId, setUserToken, resetUserState} = userSlice.actions;
+export const {setUserId, setUserToken, setUserHandle, resetUserState} =
+  userSlice.actions;
 
 export default userSlice.reducer;

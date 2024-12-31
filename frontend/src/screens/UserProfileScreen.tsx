@@ -27,15 +27,17 @@ import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import Loader from '../components/Loader';
 import {useFocusEffect} from '@react-navigation/native';
 import Snackbar from 'react-native-snackbar';
+import {useSocket} from '../../SocketContext';
 
 const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
-  const {user_token} = useSelector((state: any) => state.user);
+  const {user_id, user_handle, user_token} = useSelector((state: any) => state.user);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const {authorId} = route.params;
   const [articleId, setArticleId] = useState<number>();
   const [selectedCardId, setSelectedCardId] = useState<string>('');
+  const [repostItem, setRepostItem] = useState<ArticleData | null>(null);
   //const [authorId, setAuthorId] = useState<string>('');
-
+  const socket = useSocket();
   const {
     data: user,
     refetch,
@@ -74,6 +76,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   const insets = useSafeAreaInsets();
 
   const handleRepostAction = (item: ArticleData) => {
+    setRepostItem(item);
     repostMutation.mutate({
       articleId: Number(item._id),
     });
@@ -129,6 +132,23 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
       });
 
       // Emit notification
+      if (repostItem) {
+        //emitNotification(repostItem);
+        socket.emit('notification', {
+          type: 'repost',
+          userId: user_id,
+          authorId: repostItem.authorId,
+          postId: repostItem._id,
+          message: {
+            title: `${user_handle} reposted`,
+            body: `${repostItem.title}`
+          },
+          authorMessage: {
+            title: `${user_handle} reposted your article`,
+            body: `${repostItem.title}`
+          }
+        });
+      }
     },
 
     onError: error => {

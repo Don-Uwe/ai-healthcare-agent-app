@@ -8,20 +8,29 @@ import {useSelector} from 'react-redux';
 import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import ProfileHeader from '../components/ProfileHeader';
-import {GET_PROFILE_API, REPOST_ARTICLE, UPDATE_VIEW_COUNT} from '../helper/APIUtils';
+import {
+  GET_PROFILE_API,
+  REPOST_ARTICLE,
+  UPDATE_VIEW_COUNT,
+} from '../helper/APIUtils';
 import {ArticleData, ProfileScreenProps, User} from '../type';
 import {useMutation, useQuery} from '@tanstack/react-query';
 import axios from 'axios';
 import Loader from '../components/Loader';
 import {useFocusEffect} from '@react-navigation/native';
 import Snackbar from 'react-native-snackbar';
+import {useSocket} from '../../SocketContext';
 
 const ProfileScreen = ({navigation}: ProfileScreenProps) => {
-  const {user_id, user_token} = useSelector((state: any) => state.user);
+  const {user_handle, user_id, user_token} = useSelector(
+    (state: any) => state.user,
+  );
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [articleId, setArticleId] = useState<number>();
   const [authorId, setAuthorId] = useState<string>('');
   const [selectedCardId, setSelectedCardId] = useState<string>('');
+  const [repostItem, setRepostItem] = useState<ArticleData | null>(null);
+  const socket = useSocket();
   //const fallback_profile = require('../assets/avatar.jpg');
   //const user_fallback_profile = Image.resolveAssetSource(fallback_profile).uri;
 
@@ -139,6 +148,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
   );
 
   const handleRepostAction = (item: ArticleData) => {
+    setRepostItem(item);
     repostMutation.mutate({
       articleId: Number(item._id),
     });
@@ -177,6 +187,24 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
         text: 'Article reposted in your feed',
         duration: Snackbar.LENGTH_SHORT,
       });
+
+      if (repostItem) {
+        //emitNotification(repostItem);
+        socket.emit('notification', {
+          type: 'repost',
+          userId: user_id,
+          authorId: repostItem.authorId,
+          postId: repostItem._id,
+          message: {
+            title: `${user_handle} reposted`,
+            body: `${repostItem.title}`,
+          },
+          authorMessage: {
+            title: `${user_handle} reposted your article`,
+            body: `${repostItem.title}`,
+          },
+        });
+      }
 
       // Emit notification
     },

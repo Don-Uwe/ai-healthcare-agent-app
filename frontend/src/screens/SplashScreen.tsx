@@ -4,7 +4,7 @@ import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import {SplashScreenProp, User} from '../type';
 import {clearStorage, KEYS, retrieveItem} from '../helper/Utils';
 import {useDispatch} from 'react-redux';
-import {setUserId, setUserToken} from '../store/UserSlice';
+import {setUserHandle, setUserId, setUserToken} from '../store/UserSlice';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import axios, {AxiosError} from 'axios';
 import {GET_PROFILE_API} from '../helper/APIUtils';
@@ -66,14 +66,21 @@ const SplashScreen = ({navigation}: SplashScreenProp) => {
       const userId = await retrieveItem(KEYS.USER_ID);
       //console.log('User Id', userId);
       const user = await retrieveItem(KEYS.USER_TOKEN);
+      const user_handle = await retrieveItem(KEYS.USER_HANDLE);
       const expiryDate = await retrieveItem(KEYS.USER_TOKEN_EXPIRY_DATE);
-      if (user && expiryDate && !isDateMoreThanSevenDaysOld(expiryDate)) {
+      if (
+        user_handle &&
+        user &&
+        expiryDate &&
+        !isDateMoreThanSevenDaysOld(expiryDate)
+      ) {
         // check if token blacklisted or not, later more than 7 days check will remove no need
 
         await getUserData(user);
 
         dispatch(setUserId(userId));
         dispatch(setUserToken(user));
+        dispatch(setUserHandle(user_handle));
 
         navigation.reset({
           index: 0,
@@ -88,6 +95,7 @@ const SplashScreen = ({navigation}: SplashScreenProp) => {
       }
     } catch (error) {
       console.error('Error retrieving user data from storage', error);
+      await clearStorage();
       // navigation.navigate('LoginScreen'); // Navigate to LoginPage if there's an error
       navigation.reset({
         index: 0,

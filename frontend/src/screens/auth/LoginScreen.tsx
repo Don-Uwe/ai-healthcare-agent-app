@@ -26,7 +26,7 @@ import axios, {AxiosError} from 'axios';
 import {useDispatch} from 'react-redux';
 import {LOGIN_API, RESEND_VERIFICATION, SEND_OTP} from '../../helper/APIUtils';
 import Loader from '../../components/Loader';
-import {setUserId, setUserToken} from '../../store/UserSlice';
+import {setUserHandle, setUserId, setUserToken} from '../../store/UserSlice';
 import messaging from '@react-native-firebase/messaging';
 
 const LoginScreen = ({navigation}: LoginScreenProp) => {
@@ -166,9 +166,11 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
       const auth: AuthData = {
         userId: data._id,
         token: data?.refreshToken,
+        user_handle: data?.user_handle
       };
       try {
         await storeItem(KEYS.USER_ID, auth.userId.toString());
+        await storeItem(KEYS.USER_HANDLE, data?.user_handle);
         if (auth.token) {
           await storeItem(KEYS.USER_TOKEN, auth.token.toString());
           await storeItem(
@@ -177,6 +179,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
           );
           dispatch(setUserId(auth.userId));
           dispatch(setUserToken(auth.token));
+          dispatch(setUserHandle(auth.user_handle));
           setTimeout(() => {
             navigation.reset({
               index: 0,

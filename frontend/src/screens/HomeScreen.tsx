@@ -2,10 +2,8 @@ import {
   SafeAreaView,
   StyleSheet,
   View,
-  BackHandler,
   Alert,
   Text,
-  Image,
   TouchableOpacity,
   FlatList,
   ScrollView,
@@ -17,7 +15,11 @@ import ArticleCard from '../components/ArticleCard';
 import HomeScreenHeader from '../components/HomeScreenHeader';
 import {ArticleData, Category, CategoryType, HomeScreenProps} from '../type';
 import axios from 'axios';
-import {ARTICLE_TAGS_API, EC2_BASE_URL, REPOST_ARTICLE} from '../helper/APIUtils';
+import {
+  ARTICLE_TAGS_API,
+  EC2_BASE_URL,
+  REPOST_ARTICLE,
+} from '../helper/APIUtils';
 import FilterModal from '../components/FilterModal';
 import {BottomSheetModal} from '@gorhom/bottom-sheet';
 import {useMutation, useQuery} from '@tanstack/react-query';
@@ -32,6 +34,7 @@ import {
   setTags,
 } from '../store/articleSlice';
 import Snackbar from 'react-native-snackbar';
+import {useSocket} from '../../SocketContext';
 
 // Here The purpose of using Redux is to maintain filter state throughout the app session. globally
 const HomeScreen = ({navigation}: HomeScreenProps) => {
@@ -39,8 +42,9 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const [articleCategories, setArticleCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [sortingType, setSortingType] = useState<string>('');
-  const [loading, setLoading] = useState(true);
+  //const [loading, setLoading] = useState(true);
   const [selectedCardId, setSelectedCardId] = useState<string>('');
+  const [repostItem, setRepostItem] = useState<ArticleData | null>(null);
   const [selectCategoryList, setSelectCategoryList] = useState<
     CategoryType['name'][]
   >([]);
@@ -51,8 +55,11 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     selectedTags,
     sortType,
   } = useSelector((state: any) => state.article);
-  const {user_token} = useSelector((state: any) => state.user);
+  const {user_id, user_token, user_handle} = useSelector(
+    (state: any) => state.user,
+  );
   const [refreshing, setRefreshing] = useState(false);
+  const socket = useSocket();
 
   const handleCategorySelection = (category: CategoryType['name']) => {
     // Update Redux State
@@ -163,6 +170,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   };
 
   const handleRepostAction = (item: ArticleData) => {
+    setRepostItem(item);
     repostMutation.mutate({
       articleId: Number(item._id),
     });
@@ -203,6 +211,28 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       });
 
       // Emit notification
+
+      if (repostItem) {
+        //emitNotification(repostItem);
+
+        const body = {
+          type: 'repost',
+          userId: user_id,
+          authorId: repostItem.authorId,
+          postId: repostItem._id,
+          message: {
+            title: `${user_handle} reposted`,
+            body: `${repostItem.title}`,
+          },
+          authorMessage: {
+            title: `${user_handle} reposted your article`,
+            body: `${repostItem.title}`,
+          },
+        };
+
+        console.log('notification body', body);
+        socket.emit('notification', body);
+      }
     },
 
     onError: error => {
@@ -210,7 +240,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       Alert.alert('Internal server error, try again!');
     },
   });
-  
+
   const renderItem = ({item}: {item: ArticleData}) => {
     return (
       <ArticleCard

@@ -1,6 +1,8 @@
 import NetInfo from '@react-native-community/netinfo';
-import {Article, Category, CategoryType, Podcast} from '../type';
+import {Article, ArticleData, Category, CategoryType, Podcast} from '../type';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useSocket} from '../../SocketContext';
+
 
 export const checkInternetConnection = (
   callback: (isConnected: boolean) => void,
@@ -33,6 +35,8 @@ export const Categories: CategoryType[] = [
   {id: 9, name: 'Psychiatry'},
   {id: 10, name: 'Pulmonology'},
 ];
+
+/*
 
 export const articles: Article[] = [
   {
@@ -164,6 +168,8 @@ export const articles: Article[] = [
   },
 ];
 
+*/
+
 export const podcast: Podcast[] = [
   {
     title: 'Health Matters',
@@ -262,7 +268,6 @@ export const storeItem = async (key: string, value: string) => {
     await AsyncStorage.setItem(key, value);
     // console.log(`Value saved for key : ${key}`, value);
   } catch (e) {
-   
     console.log('Async Storage Data error', e);
   }
 };
@@ -537,6 +542,7 @@ export const KEYS = {
   USER_TOKEN_EXPIRY_DATE: 'USER_TOKEN_EXPIRY_DATE',
   VULTR_CHAT_MODEL: 'zephyr-7b-beta-f32',
   VULTR_COLLECTION: 'care_companion',
+  USER_HANDLE: 'USER_HANDLE'
 };
 
 export const VULTR_CHAT_ROLES = {
