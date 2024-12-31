@@ -70,7 +70,8 @@ const ArticleCard = ({
       const result = await Share.open({
         title: item.title,
         message: `${item.title} : Check out this awesome post on UltimateHealth app!`,
-        url: 'https://drive.google.com/file/d/16ykvN1AJ3ucOLI_rqMQZ8EENLA6EpFBQ/view?usp=sharing',
+        // Most Recent APK: 0.5.0
+        url: 'https://drive.google.com/file/d/1MFcGPnz4BDkKryLu-qNE2iLHl3Wb4_Jq/view?usp=sharing',
         subject: 'React Native Post',
       });
       console.log(result);
@@ -90,7 +91,7 @@ const ArticleCard = ({
     refetch,
     isLoading,
   } = useQuery({
-    queryKey: ['get-user-profile'],
+    queryKey: ['get-my-profile'],
     queryFn: async () => {
       const response = await axios.get(`${GET_PROFILE_API}`, {
         headers: {

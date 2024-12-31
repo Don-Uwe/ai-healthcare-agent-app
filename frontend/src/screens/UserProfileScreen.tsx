@@ -1,22 +1,14 @@
-import {
-  StyleSheet,
-  View,
-  BackHandler,
-  Text,
-  Alert,
-  TouchableOpacity,
-} from 'react-native';
-import React, {useCallback, useEffect, useState} from 'react';
+import {StyleSheet, View, Text, Alert, TouchableOpacity} from 'react-native';
+import React, {useCallback, useState} from 'react';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import ActivityOverview from '../components/ActivityOverview';
 import {Tabs, MaterialTabBar} from 'react-native-collapsible-tab-view';
 import ArticleCard from '../components/ArticleCard';
 import {useSelector} from 'react-redux';
-import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import ProfileHeader from '../components/ProfileHeader';
 import {
-  GET_PROFILE_API,
+  EC2_BASE_URL,
   REPOST_ARTICLE,
   UPDATE_VIEW_COUNT,
 } from '../helper/APIUtils';
@@ -30,7 +22,9 @@ import Snackbar from 'react-native-snackbar';
 import {useSocket} from '../../SocketContext';
 
 const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
-  const {user_id, user_handle, user_token} = useSelector((state: any) => state.user);
+  const {user_id, user_handle, user_token} = useSelector(
+    (state: any) => state.user,
+  );
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const {authorId} = route.params;
   const [articleId, setArticleId] = useState<number>();
@@ -45,14 +39,19 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   } = useQuery({
     queryKey: ['get-user-profile'],
     queryFn: async () => {
-      const response = await axios.get(`${GET_PROFILE_API}/${authorId}`, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
+      const response = await axios.get(
+        `${EC2_BASE_URL}/user/getuserprofile/${authorId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${user_token}`,
+          },
         },
-      });
+      );
       return response.data.profile as User;
     },
   });
+
+  //console.log('User', user);
   /*
   useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', e => {
@@ -141,12 +140,12 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
           postId: repostItem._id,
           message: {
             title: `${user_handle} reposted`,
-            body: `${repostItem.title}`
+            body: `${repostItem.title}`,
           },
           authorMessage: {
             title: `${user_handle} reposted your article`,
-            body: `${repostItem.title}`
-          }
+            body: `${repostItem.title}`,
+          },
         });
       }
     },

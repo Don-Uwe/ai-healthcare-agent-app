@@ -215,9 +215,17 @@ const StackNavigation = () => {
         options={({navigation}) => ({
           headerShown: true,
           headerTitle: 'Notifications',
-          headerTransparent: true,
+          //headerTransparent: true,
           headerTitleAlign: 'center',
           headerBackTitleVisible: false,
+          headerStyle: {
+            elevation: 4, // Elevation for Android
+            // backgroundColor:'red',
+            shadowColor: '#000', // Shadow color for iOS
+            shadowOffset: {width: 0, height: 2}, // Shadow offset for iOS
+            shadowOpacity: 0.25, // Shadow opacity for iOS
+            shadowRadius: 3.5, // Shadow radius for iOS
+          },
           // eslint-disable-next-line react/no-unstable-nested-components
           headerLeft: () => (
             <TouchableOpacity
@@ -311,7 +319,7 @@ const styles = StyleSheet.create({
 
   headerLeftButtonCommentScreen: {
     marginLeft: 15,
-    backgroundColor:"#ffffff",
+    backgroundColor: '#ffffff',
     paddingHorizontal: 6,
     paddingVertical: 6,
     marginTop: 0,

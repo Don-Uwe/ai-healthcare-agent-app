@@ -446,10 +446,9 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
           <TouchableOpacity
             onPress={() => {
               //  if (article && article?.authorId) {
-              // navigation.navigate('UserProfileScreen', {
-              //  authorId: authorId,
-              // });
-              // }
+              navigation.navigate('UserProfileScreen', {
+                authorId: authorId,
+              });
             }}>
             {profile_image && profile_image !== '' ? (
               <Image
