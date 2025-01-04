@@ -41,6 +41,9 @@ axiosInstance.interceptors.response.use(
     const { config, response = {} } = error
     const { status } = response
     const { url } = config
+
+    console.error(`axios request error: ${url}, status:${status || error.code}, msg:${response.message || error.message}`)
+
     if (!isSkipLogs(url)) {
       try {
         updateReqHistory({
