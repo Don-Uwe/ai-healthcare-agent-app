@@ -207,7 +207,7 @@ export const useCreateMarketStore = createStore<CreateMarketState>(
         })
         .catch((e) => {
           txProps.onError?.()
-          toastSubject.next({ txError: e })
+          toastSubject.next({ txError: e, ...meta })
           return { txId: [], marketId: '' }
         })
         .finally(txProps.onFinally)
@@ -324,7 +324,7 @@ export const useCreateMarketStore = createStore<CreateMarketState>(
         })
         .catch((e) => {
           txProps.onError?.()
-          toastSubject.next({ txError: e })
+          toastSubject.next({ txError: e, ...meta })
           return { txId: [], marketId: '' }
         })
         .finally(() => txProps.onFinally?.(extInfo.address))

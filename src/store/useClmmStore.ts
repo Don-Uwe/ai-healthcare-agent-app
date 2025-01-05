@@ -793,7 +793,7 @@ export const useClmmStore = createStore<ClmmState>(
             })
             .catch((e) => {
               txProps.onError?.()
-              toastSubject.next({ txError: e })
+              toastSubject.next({ txError: e, ...meta })
               return ''
             })
             .finally(txProps.onFinally)
@@ -818,7 +818,7 @@ export const useClmmStore = createStore<ClmmState>(
             })
             .catch((e) => {
               txProps.onError?.()
-              toastSubject.next({ txError: e })
+              toastSubject.next({ txError: e, ...meta })
               return ''
             })
             .finally(txProps.onFinally)
@@ -842,7 +842,7 @@ export const useClmmStore = createStore<ClmmState>(
         })
         .catch((e) => {
           txProps.onError?.()
-          toastSubject.next({ txError: e })
+          toastSubject.next({ txError: e, ...meta })
           return ''
         })
         .finally(txProps.onFinally)
@@ -881,7 +881,7 @@ export const useClmmStore = createStore<ClmmState>(
               return { txId, buildData }
             })
             .catch((e) => {
-              toastSubject.next({ txError: e })
+              toastSubject.next({ txError: e, ...meta })
               return { txId: '' }
             })
         }
@@ -920,7 +920,7 @@ export const useClmmStore = createStore<ClmmState>(
           return txId
         })
         .catch((e) => {
-          toastSubject.next({ txError: e })
+          toastSubject.next({ txError: e, ...meta })
           onError?.()
           return ''
         })

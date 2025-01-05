@@ -408,7 +408,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
         })
         .catch((e) => {
           onError?.()
-          toastSubject.next({ txError: e })
+          toastSubject.next({ txError: e, ...meta })
           return ''
         })
         .finally(onFinally)
@@ -522,7 +522,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
         })
         .catch((e) => {
           txCallback.onError?.()
-          toastSubject.next({ txError: e })
+          toastSubject.next({ txError: e, ...meta })
           return ''
         })
         .finally(() => txCallback.onFinally?.(extInfo as CpmmLockExtInfo))
@@ -564,7 +564,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
         })
         .catch((e) => {
           txCallback.onError?.()
-          toastSubject.next({ txError: e })
+          toastSubject.next({ txError: e, ...meta })
           return ''
         })
         .finally(txCallback.onFinally)

@@ -92,7 +92,7 @@ function useGlobalToast() {
                   ...toastConfig,
                   ...data,
                   title: data.title ? `${data.title} ${t('transaction.failed')}` : t('transaction.failed'),
-                  description: errorMsg,
+                  description: errorMsg || data.description,
                   status: 'error'
                 }}
                 id={props.id!}

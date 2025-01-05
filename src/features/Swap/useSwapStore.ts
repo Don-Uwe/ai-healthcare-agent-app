@@ -132,7 +132,7 @@ export const useSwapStore = createStore<SwapStore>(
 
         const swapTransactions = data || []
         const allTxBuf = swapTransactions.map((tx) => Buffer.from(tx.transaction, 'base64'))
-        const allTx = allTxBuf.map((txBuf) => (isV0Tx ? VersionedTransaction.deserialize(txBuf) : Transaction.from(txBuf)))
+        const allTx = allTxBuf.map((txBuf) => (isV0Tx ? VersionedTransaction.deserialize(txBuf as any) : Transaction.from(txBuf)))
 
         const signedTxs = await signAllTransactions(allTx)
 
@@ -244,7 +244,8 @@ export const useSwapStore = createStore<SwapStore>(
         checkSendTx()
       } catch (e: any) {
         txProps.onError?.()
-        if (e.message !== 'tx failed') toastSubject.next({ txError: e })
+        if (e.message !== 'tx failed')
+          toastSubject.next({ txError: typeof e === 'string' ? new Error(e) : e, title: 'Swap', description: 'Send transaction failed' })
       } finally {
         txProps.onFinally?.()
       }
@@ -291,7 +292,7 @@ export const useSwapStore = createStore<SwapStore>(
           return txId
         })
         .catch((e) => {
-          toastSubject.next({ txError: e })
+          toastSubject.next({ txError: e, title: 'Wrap Sol' })
           return ''
         })
     }

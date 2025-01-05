@@ -361,7 +361,7 @@ export const useTokenAccountStore = createStore<TokenAccountStore>(
           txProps.onSent?.()
         })
         .catch((e) => {
-          toastSubject.next({ txError: e })
+          toastSubject.next({ txError: e, title: 'Migrate ATA' })
           txProps.onError?.()
         })
         .finally(txProps.onFinally)
