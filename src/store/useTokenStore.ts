@@ -123,7 +123,7 @@ export const useTokenStore = createStore<TokenStore>(
           })
           .map((t) => {
             if (t.type === 'jupiter') {
-              const newInfo = { ...t, logoURI: t.logoURI ? `https://wsrv.nl/?w=48&h=48&url=${t.logoURI}` : t.logoURI }
+              const newInfo = { ...t, logoURI: t.logoURI ? `https://wsrv.nl/?fit=cover&w=48&h=48&url=${t.logoURI}` : t.logoURI }
               tokenMap.set(t.address, newInfo)
               return newInfo
             }
