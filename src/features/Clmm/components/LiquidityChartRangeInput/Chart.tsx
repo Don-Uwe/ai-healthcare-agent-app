@@ -49,7 +49,7 @@ export function Chart({
 
   xScaleRef.current = [current * zoomLevels.initialMin, current * zoomLevels.initialMax]
 
-  const handleResetZoom = useCallback(() => onBrushDomainChange(xScaleRef.current, 'reset'), [])
+  const handleResetZoom = useCallback(() => onBrushDomainChange(xScaleRef.current, 'reset', ''), [])
 
   const { xScale, yScale } = useMemo(() => {
     const scales = {
@@ -99,14 +99,14 @@ export function Chart({
 
   useEffect(() => {
     if (!brushDomain) {
-      onBrushDomainChange(xScale.domain() as [number, number], undefined)
+      onBrushDomainChange(xScale.domain() as [number, number], undefined, '')
     }
   }, [brushDomain, onBrushDomainChange, xScale])
 
   const onClickArrow = useEvent((side: 'left' | 'right') => {
     const scale = xScale.domain()
     const gap = (scale[1] - scale[0]) / 20
-    onBrushDomainChange(side === 'left' ? [scale[0] + gap, brushDomain![1]] : [brushDomain![0], scale[1] - gap], 'handle')
+    onBrushDomainChange(side === 'left' ? [scale[0] + gap, brushDomain![1]] : [brushDomain![0], scale[1] - gap], 'handle', side)
   })
 
   return (

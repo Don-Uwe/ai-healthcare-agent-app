@@ -72,7 +72,7 @@ export const Brush = ({
   interactive: boolean
   brushLabelValue: (d: 'w' | 'e', x: number) => string
   brushExtent: [number, number]
-  onBrushDomainChange: (extent: [number, number], mode: string | undefined) => void
+  onBrushDomainChange: (extent: [number, number], mode: string | undefined, side: string) => void
   onClickArrow: (side: 'left' | 'right') => void
   innerWidth: number
   innerHeight: number
@@ -102,7 +102,8 @@ export const Brush = ({
       setLocalBrushExtent(scaled)
       // avoid infinite render loop by checking for change
       if (type === 'end' && !compare(brushExtent, scaled, xScale)) {
-        onBrushDomainChange(scaled, mode)
+        const side = scaled[0] !== brushExtent[0] && scaled[1] !== brushExtent[1] ? '' : scaled[0] !== brushExtent[0] ? 'left' : 'right'
+        onBrushDomainChange(scaled, mode, side)
       }
     },
     [xScale, brushExtent, onBrushDomainChange]

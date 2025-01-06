@@ -117,8 +117,8 @@ export default function LiquidityChartRangeInput({
   priceUpper?: number | string
   timePriceMin?: number
   timePriceMax?: number
-  onLeftRangeInput?: (typedValue: string) => void
-  onRightRangeInput?: (typedValue: string) => void
+  onLeftRangeInput?: (typedValue: string, skip?: boolean) => void
+  onRightRangeInput?: (typedValue: string, skip?: boolean) => void
   interactive: boolean
   baseIn: boolean
   autoZoom?: boolean
@@ -135,10 +135,9 @@ export default function LiquidityChartRangeInput({
   const { isLoading, error, formattedData } = useDensityChartData({ poolId, baseIn })
 
   const onBrushDomainChangeEnded = useCallback(
-    (domain: [number, number], mode: string | undefined) => {
+    (domain: [number, number], mode: string | undefined, side: string) => {
       let leftRangeValue = Number(domain[0])
       const rightRangeValue = Number(domain[1])
-
       if (leftRangeValue <= 0) {
         leftRangeValue = 1 / 10 ** 6
       }
@@ -146,14 +145,14 @@ export default function LiquidityChartRangeInput({
       // batch(() => {
       // simulate user input for auto-formatting and other validations
       if ((mode === 'drag' || mode === 'handle' || mode === 'reset') && leftRangeValue > 0) {
-        onLeftRangeInput?.(leftRangeValue.toFixed(20))
+        onLeftRangeInput?.(leftRangeValue.toFixed(20), side === 'right')
       }
 
       if ((mode === 'drag' || mode === 'handle' || mode === 'reset') && rightRangeValue > 0) {
         // todo: remove this check. Upper bound for large numbers
         // sometimes fails to parse to tick.
         if (rightRangeValue < 1e35) {
-          onRightRangeInput?.(rightRangeValue.toFixed(20))
+          onRightRangeInput?.(rightRangeValue.toFixed(20), side === 'left')
         }
       }
       // })
