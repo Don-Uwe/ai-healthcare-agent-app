@@ -21,6 +21,26 @@ export const sendWalletEvent = async (props: EventTypeConnectWallet) => {
       deviceType
     })
   } catch {
-    console.log('send event error')
+    console.log('send wallet event error')
+  }
+}
+
+interface EventTypeNetworkError {
+  url: string
+  errorMsg: string
+}
+
+export const sendNetworkEvent = async (props: EventTypeNetworkError) => {
+  if (isLocal()) return
+  try {
+    const deviceInfo = parseUserAgent(window.navigator.userAgent)
+    const deviceType = deviceInfo.device.type || 'pc'
+    axios.post(`${useAppStore.getState().urlConfigs.MONITOR_BASE_HOST}/event`, {
+      type: 'networkError',
+      deviceType,
+      ...props
+    })
+  } catch {
+    console.log('send network event error')
   }
 }
