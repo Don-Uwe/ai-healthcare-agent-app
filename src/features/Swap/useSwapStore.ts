@@ -77,7 +77,7 @@ export const useSwapStore = createStore<SwapStore>(
       try {
         const tokenMap = useTokenStore.getState().tokenMap
         const [inputToken, outputToken] = [tokenMap.get(swapResponse.data.inputMint)!, tokenMap.get(swapResponse.data.outputMint)!]
-        const [isInputSol, isOutputSol] = [isSolWSol(swapResponse.data.inputMint), isSolWSol(swapResponse.data.outputMint)]
+        const [isInputSol, isOutputSol] = [wrapSol && isSolWSol(swapResponse.data.inputMint), isSolWSol(swapResponse.data.outputMint)]
 
         const inputTokenAcc = await raydium.account.getCreatedTokenAccount({
           programId: new PublicKey(inputToken.programId ?? TOKEN_PROGRAM_ID),
