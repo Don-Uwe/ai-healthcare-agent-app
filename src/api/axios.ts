@@ -44,10 +44,11 @@ axiosInstance.interceptors.response.use(
     const { url } = config
 
     console.error(`axios request error: ${url}, status:${status || error.code}, msg:${response.message || error.message}`)
-    sendNetworkEvent({
-      url,
-      errorMsg: response.message || error.message
-    })
+    if (!url.includes('monitor'))
+      sendNetworkEvent({
+        url,
+        errorMsg: response.message || error.message
+      })
     if (!isSkipLogs(url)) {
       try {
         updateReqHistory({

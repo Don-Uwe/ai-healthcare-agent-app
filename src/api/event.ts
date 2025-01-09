@@ -16,10 +16,14 @@ export const sendWalletEvent = async (props: EventTypeConnectWallet) => {
   try {
     const deviceInfo = parseUserAgent(window.navigator.userAgent)
     const deviceType = deviceInfo.device.type || 'pc'
-    axios.post(`${useAppStore.getState().urlConfigs.MONITOR_BASE_HOST}/event`, {
-      ...props,
-      deviceType
-    })
+    axios.post(
+      `${useAppStore.getState().urlConfigs.MONITOR_BASE_HOST}/event`,
+      {
+        ...props,
+        deviceType
+      },
+      { skipError: true }
+    )
   } catch {
     console.log('send wallet event error')
   }
@@ -35,11 +39,15 @@ export const sendNetworkEvent = async (props: EventTypeNetworkError) => {
   try {
     const deviceInfo = parseUserAgent(window.navigator.userAgent)
     const deviceType = deviceInfo.device.type || 'pc'
-    axios.post(`${useAppStore.getState().urlConfigs.MONITOR_BASE_HOST}/event`, {
-      type: 'networkError',
-      deviceType,
-      ...props
-    })
+    axios.post(
+      `${useAppStore.getState().urlConfigs.MONITOR_BASE_HOST}/event`,
+      {
+        type: 'networkError',
+        deviceType,
+        ...props
+      },
+      { skipError: true }
+    )
   } catch {
     console.log('send network event error')
   }
