@@ -56,7 +56,7 @@ export function MobileBottomNavbar() {
         isActive={isPortfolioActive}
       />
       <BottomNavbarItem
-        href="https://perp.raydium.io"
+        href="https://perps.raydium.io"
         text={t('perpetuals.title')}
         icon={(colorMode) => <PerpetualsPageThumbnailIcon colorMode={colorMode} isActive={false} />}
         isActive={false}
@@ -89,11 +89,12 @@ function BottomNavbarItem({
   const { colorMode } = useColorMode()
   const isDark = colorMode === 'dark'
   const content = (
-    <VStack spacing={0}>
+    <VStack spacing={'6px'}>
       <Box>{shrinkToValue(icon, [colorMode])}</Box>
       <Text
         color={isActive ? (isDark ? colors.textPrimary : colors.secondary) : colors.textSecondary}
         fontSize="9px"
+        lineHeight="12px"
         fontWeight={isActive ? 500 : 400}
       >
         {text}
