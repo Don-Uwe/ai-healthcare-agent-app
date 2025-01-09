@@ -6,6 +6,7 @@ import { ReactNode } from 'react'
 import LiquidityPageThumbnailIcon from '@/icons/pageNavigation/LiquidityPageThumbnailIcon'
 import MorePageThumbnailIcon from '@/icons/pageNavigation/MoreThumbnailIcon'
 import PortfolioPageThumbnailIcon from '@/icons/pageNavigation/PortfolioPageThumbnailIcon'
+import PerpetualsPageThumbnailIcon from '@/icons/pageNavigation/PerpetualsPageThumbnailIcon'
 import SwapPageThumbnailIcon from '@/icons/pageNavigation/SwapPageThumbnailIcon'
 import { colors } from '@/theme/cssVariables'
 import { NavMoreButtonMenuPanel } from './components/NavMoreButtonMenuPanel'
@@ -54,6 +55,12 @@ export function MobileBottomNavbar() {
         icon={(colorMode) => <PortfolioPageThumbnailIcon colorMode={colorMode} isActive={isPortfolioActive} />}
         isActive={isPortfolioActive}
       />
+      <BottomNavbarItem
+        href="https://perp.raydium.io"
+        text={t('perpetuals.title')}
+        icon={(colorMode) => <PerpetualsPageThumbnailIcon colorMode={colorMode} isActive={false} />}
+        isActive={false}
+      />
       <Menu size="lg" placement="top-end" offset={[0, 30]} /* make menu popup higher */>
         <MenuButton as="div">
           <BottomNavbarItem
@@ -86,7 +93,7 @@ function BottomNavbarItem({
       <Box>{shrinkToValue(icon, [colorMode])}</Box>
       <Text
         color={isActive ? (isDark ? colors.textPrimary : colors.secondary) : colors.textSecondary}
-        fontSize="xs"
+        fontSize="9px"
         fontWeight={isActive ? 500 : 400}
       >
         {text}

@@ -100,6 +100,7 @@ function AppNavLayout({
             <RouteLink href="/swap" isActive={pathname === '/swap'} title={t('swap.title')} />
             <RouteLink href="/liquidity-pools" isActive={pathname.includes('/liquidity')} title={t('liquidity.title')} />
             <RouteLink href="/portfolio" isActive={pathname === '/portfolio'} title={t('portfolio.title')} />
+            <RouteLink href="https://perp.raydium.io" isActive={false} title={t('perpetuals.title')} />
             <Menu size="lg">
               <MenuButton fontSize={'lg'} px={4} py={2}>
                 <Flex

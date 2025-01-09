@@ -855,5 +855,8 @@
   },
   "bridge": {
     "title": "Bridge"
+  },
+  "perpetuals": {
+    "title": "Perpetuals"
   }
 }
