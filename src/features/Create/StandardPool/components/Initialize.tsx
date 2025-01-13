@@ -432,7 +432,7 @@ export default function Initialize({ isAmmV4 }: { isAmmV4: boolean }) {
         <HStack color={colors.semanticWarning}>
           <Text fontWeight="medium" fontSize="sm" my="-2">
             {isAmmV4
-              ? t('create_standard_pool.pool_creation_fee_note', { subject: '~0.7' })
+              ? t('create_standard_pool.pool_creation_fee_note', { subject: '~0.45' })
               : t('create_standard_pool.pool_creation_fee_note', { subject: '~0.2' })}
           </Text>
           <QuestionToolTip
