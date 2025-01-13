@@ -776,7 +776,7 @@
     "initial_price_tooltip": "Initial price is set by the ratio of tokens deposited for initial liquidity. If the token is already trading on Raydium, initial price will be auto-filled with the current price.",
     "pool_creation_fee_note": "Note: A creation fee of {{subject}} SOL is required for new pools.",
     "pool_creation_fee_tooltip": "A pool creation fee of 0.15 SOL is currently reserved to support front and backend infrastructure. Approximately 0.05 SOL is required for program account creation and network fees.",
-    "pool_ammv4_creation_fee_tooltip": "A pool creation fee of 0.40 SOL is currently reserved to support front and backend infrastructure. Approximately 0.3 SOL is required for OpenBook Market rent and program account creation.",
+    "pool_ammv4_creation_fee_tooltip": "A pool creation fee of 0.15 SOL is currently reserved to support front and backend infrastructure. Approximately 0.3 SOL is required for OpenBook Market rent and program account creation.",
     "custom": "Custom",
     "start_now": "Start Now",
     "current_price_tooltip": "This is the current price of an existing pool on Raydium. You can still enter a different initial price but be aware this may lead to arbitrage if the price difference is large."
