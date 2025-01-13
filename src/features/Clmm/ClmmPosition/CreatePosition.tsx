@@ -272,6 +272,7 @@ export default function CreatePosition() {
   })
 
   const handleRightRangeBlur = useEvent((val: string, skip?: boolean) => {
+    console.log(123123123, val, skip)
     if (val === '' || skip) return
     if (new Decimal(tickPriceRef.current.priceUpper || 0).toDecimalPlaces(new Decimal(val).decimalPlaces()).eq(val)) return
     const r = getPriceAndTick({ pool: currentPool, price: val, baseIn })

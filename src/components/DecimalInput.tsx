@@ -31,7 +31,7 @@ interface Props {
   onClick?: (e: MouseEvent<HTMLInputElement>) => void
   onChange?: (val: string, valNumber: number, side?: string) => void
   onFormikChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
-  onBlur?: (val: string, side?: string) => void
+  onBlur?: (val: string) => void
   onFocus?: (side?: string) => void
   onKeyDown?: (e: KeyboardEvent<HTMLInputElement>) => void
 }
@@ -83,7 +83,7 @@ function DecimalInput(props: Props) {
   )
 
   const handleBlur = useCallback(() => {
-    setTimeout(() => onBlur?.(valRef.current, side), 0)
+    setTimeout(() => onBlur?.(valRef.current), 0)
   }, [onBlur, side])
 
   const handleParseVal = useCallback(
