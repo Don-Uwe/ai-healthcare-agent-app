@@ -8,7 +8,6 @@ import PanelCard from '@/components/PanelCard'
 import Tabs from '@/components/Tabs'
 import Button from '@/components/Button'
 import HorizontalSwitchSmallIcon from '@/icons/misc/HorizontalSwitchSmallIcon'
-import { DatePick, HourPick, MinutePick } from '@/components/DateTimePicker'
 import EditIcon from '@/icons/misc/EditIcon'
 import { QuestionToolTip } from '@/components/QuestionToolTip'
 
@@ -22,8 +21,6 @@ import { TickData } from './type'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
-import { usePopper } from 'react-popper'
-import FocusTrap from 'focus-trap-react'
 import { Side } from '@/features/Clmm/components/RangeInput'
 import { Desktop, Mobile } from '@/components/MobileDesktop'
 import { useEvent } from '@/hooks/useEvent'
@@ -53,7 +50,6 @@ interface Props {
   initState?: {
     currentPrice?: string
     priceRange?: [string, string]
-    startTime?: number
   }
   token1: ApiV3Token
   token2: ApiV3Token
@@ -63,7 +59,7 @@ interface Props {
   baseIn: boolean
   completed: boolean
   onPriceChange: (props: { price: string }) => void
-  onConfirm: (props: { price: string; startTime?: number; isFullRange?: boolean } & Required<TickData>) => void
+  onConfirm: (props: { price: string; isFullRange?: boolean } & Required<TickData>) => void
   onEdit: (step: number) => void
   onSwitchBase: (baseIn: boolean) => void
 }
@@ -88,23 +84,12 @@ export default function SetPriceAndRange({
   const [rangeMode, setRangeMode] = useState<'full' | 'custom'>('full')
   const [currentPrice, setCurrentPrice] = useState<string>(initState?.currentPrice || '')
   const [priceRange, setPriceRange] = useState<[string, string]>(initState?.priceRange || ['', ''])
-  const [startDate, setStartDate] = useState<Date | undefined>()
-  const [startDateMode, setStartDateMode] = useState<'now' | 'custom'>('now')
   const switchRef = useRef(false)
   const focusMintARef = useRef(true)
   const priceRangeRef = useRef(priceRange)
   const hasInitPriceRange = !!initState?.priceRange?.[0] && !!initState?.priceRange?.[1]
   priceRangeRef.current = priceRange
   const isFullRange = rangeMode === 'full'
-  const isStartNow = startDateMode === 'now'
-
-  const [isPopperOpen, setIsPopperOpen] = useState(false)
-  const popperRef = useRef<HTMLDivElement>(null)
-  const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null)
-  const popper = usePopper(popperRef.current, popperElement, {
-    placement: 'top-start'
-  })
-  const closePopper = () => setIsPopperOpen(false)
 
   const handleFocus = useEvent((isMintA: boolean) => {
     focusMintARef.current = isMintA
@@ -112,7 +97,6 @@ export default function SetPriceAndRange({
 
   const error = usePriceRangeValidate({
     focusMintA: focusMintARef.current,
-    startTime: startDate ? startDate.valueOf() : dayjs().add(1, 'h').valueOf(),
     currentPrice,
     priceRange: isFullRange ? ['1', '100'] : priceRange
   })
@@ -466,103 +450,6 @@ export default function SetPriceAndRange({
         </SimpleGrid>
       )}
 
-      <Text variant="title" mb="2" userSelect="none">
-        {t('field.start_time')}
-      </Text>
-      <Tabs
-        w="full"
-        mb="3"
-        tabListSX={{ display: 'flex' }}
-        tabItemSX={{ flex: 1 }}
-        variant="squarePanelDark"
-        value={startDateMode}
-        onChange={(val) => {
-          setStartDateMode(val)
-          if (val === 'now') setStartDate(undefined)
-          else setStartDate(dayjs().add(10, 'minutes').toDate())
-        }}
-        items={[
-          {
-            value: 'now',
-            label: t('clmm.start_now')
-          },
-          {
-            value: 'custom',
-            label: t('clmm.custom')
-          }
-        ]}
-      />
-      {isStartNow ? null : (
-        <div ref={popperRef}>
-          <DecimalInput
-            postFixInField
-            readonly
-            onClick={() => setIsPopperOpen(true)}
-            variant="filledDark"
-            value={dayjs(startDate).format('YYYY/MM/DD')}
-            ctrSx={{ bg: colors.backgroundDark, borderRadius: 'xl', pr: '14px', py: '6px' }}
-            inputGroupSx={{ w: 'fit-content', bg: colors.backgroundDark, alignItems: 'center', borderRadius: 'xl' }}
-            inputSx={{ pl: '4px', fontWeight: 500, fontSize: ['md', 'xl'] }}
-            postfix={
-              <Text variant="label" size="sm" whiteSpace="nowrap" fontSize="xl" color={colors.textSecondary}>
-                {dayjs(startDate).utc().format('HH:mm (UTC)')}
-              </Text>
-            }
-          />
-          {isPopperOpen && (
-            <FocusTrap
-              active
-              focusTrapOptions={{
-                initialFocus: false,
-                allowOutsideClick: true,
-                clickOutsideDeactivates: true,
-                onDeactivate: closePopper
-              }}
-            >
-              <Box
-                tabIndex={-1}
-                style={{
-                  ...popper.styles.popper,
-                  zIndex: 3
-                }}
-                className="dialog-sheet"
-                {...popper.attributes.popper}
-                ref={setPopperElement}
-                role="dialog"
-                aria-label="DayPicker calendar"
-                bg={colors.backgroundDark}
-                rounded={'xl'}
-              >
-                <DatePick
-                  initialFocus={isPopperOpen}
-                  mode="single"
-                  selected={startDate || new Date()}
-                  onSelect={(val) =>
-                    setStartDate((preVal) => dayjs(val).set('hour', dayjs(preVal).hour()).set('minute', dayjs(preVal).minute()).toDate())
-                  }
-                />
-                <Flex>
-                  <HourPick
-                    sx={{ w: '100%', borderRadius: '0', fontSize: 'md', px: '20px' }}
-                    value={dayjs(startDate).hour()}
-                    onChange={(h) => setStartDate((val) => dayjs(val).set('h', h).toDate())}
-                  />
-                  <MinutePick
-                    sx={{ w: '100%', borderRadius: '0', fontSize: 'md', px: '20px' }}
-                    value={dayjs(startDate).minute()}
-                    onChange={(m) => setStartDate((val) => dayjs(val).set('m', m).toDate())}
-                  />
-                </Flex>
-                <Flex px="10px" justifyContent="flex-end" borderRadius="0 0 10px 10px">
-                  <Button variant="outline" size="sm" onClick={closePopper}>
-                    {t('button.confirm')}
-                  </Button>
-                </Flex>
-              </Box>
-            </FocusTrap>
-          )}
-        </div>
-      )}
       <Button
         mt="4"
         isDisabled={!!error}
@@ -574,8 +461,7 @@ export default function SetPriceAndRange({
             priceUpper: dataSource.priceUpper!,
             tickLower: dataSource.tickLower!,
             tickUpper: dataSource.tickUpper!,
-            startTime: startDate ? dayjs(startDate).valueOf() / 1000 : undefined,
-            isFullRange: isFullRange
+            isFullRange
           })
         }}
       >

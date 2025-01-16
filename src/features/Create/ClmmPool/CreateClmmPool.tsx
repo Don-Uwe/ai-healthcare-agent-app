@@ -47,7 +47,6 @@ export default function CreateClmmPool() {
     token1?: ApiV3Token
     token2?: ApiV3Token
     config?: ApiClmmConfigInfo
-    startTime?: number
     price: string
     tickLower?: number
     tickUpper?: number
@@ -107,15 +106,7 @@ export default function CreateClmmPool() {
   )
 
   const handleStep2Confirm = useEvent(
-    (props: {
-      price: string
-      tickLower: number
-      tickUpper: number
-      priceLower: string
-      priceUpper: string
-      startTime?: number
-      isFullRange?: boolean
-    }) => {
+    (props: { price: string; tickLower: number; tickUpper: number; priceLower: string; priceUpper: string; isFullRange?: boolean }) => {
       stepsRef.current?.goToNext()
       currentCreateInfo.current = {
         ...currentCreateInfo.current,
@@ -152,13 +143,12 @@ export default function CreateClmmPool() {
   const handleCreateAndOpen = useEvent(
     exhaustCall(async () => {
       setIsTxSending(true)
-      const { token1, token2, config, price, startTime } = currentCreateInfo.current
+      const { token1, token2, config, price } = currentCreateInfo.current
       const { buildData } = await createClmmPool({
         config: config!,
         token1: token1!,
         token2: token2!,
         price,
-        startTime,
         forerunCreate: true
       })
 
@@ -282,10 +272,7 @@ export default function CreateClmmPool() {
               <SetPriceAndRange
                 initState={{
                   currentPrice: createPoolData?.extInfo.mockPoolInfo.price.toString() || currentCreateInfo.current.price,
-                  priceRange: [currentCreateInfo.current.priceLower || '', currentCreateInfo.current.priceUpper || ''],
-                  startTime: createPoolData
-                    ? Number(createPoolData.extInfo.mockPoolInfo.openTime) * 1000
-                    : currentCreateInfo.current.startTime
+                  priceRange: [currentCreateInfo.current.priceLower || '', currentCreateInfo.current.priceUpper || '']
                 }}
                 completed={step > 1}
                 token1={currentCreateInfo.current.token1!}

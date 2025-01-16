@@ -137,7 +137,6 @@ interface ClmmState {
     token1: ApiV3Token
     token2: ApiV3Token
     price: string
-    startTime?: number
     execute?: boolean
     forerunCreate?: boolean
     getObserveState?: boolean
@@ -848,8 +847,8 @@ export const useClmmStore = createStore<ClmmState>(
         .finally(txProps.onFinally)
     },
 
-    createClmmPool: async ({ token1, token2, config, price, startTime, execute, forerunCreate, getObserveState }) => {
-      const { raydium, publicKey, txVersion, chainTimeOffset, programIdConfig } = useAppStore.getState()
+    createClmmPool: async ({ token1, token2, config, price, execute, forerunCreate, getObserveState }) => {
+      const { raydium, publicKey, txVersion, programIdConfig } = useAppStore.getState()
       if (!raydium || !publicKey) {
         toastSubject.next({ noRpc: true })
         return { txId: '' }
@@ -862,7 +861,6 @@ export const useClmmStore = createStore<ClmmState>(
           mint2: { ...token2, address: token2.address },
           ammConfig: { ...config, id: new PublicKey(config.id), fundOwner: '', description: '' },
           initialPrice: new Decimal(price),
-          startTime: new BN(startTime || Math.floor((Date.now() + chainTimeOffset) / 1000)),
           computeBudgetConfig,
           forerunCreate,
           getObserveState,

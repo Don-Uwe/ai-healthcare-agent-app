@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { ApiClmmConfigInfo, TokenInfo } from '@raydium-io/raydium-sdk-v2'
 import * as yup from 'yup'
-import dayjs from 'dayjs'
 import { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 
@@ -60,10 +59,6 @@ export default function useValidate(props: Props) {
 
 const priceRangeSchema = (t: TFunction<'translation', undefined, 'translation'>) =>
   yup.object().shape({
-    startTime: yup.number().test('is-startTime-valid', 'invalid starttime', (value: any) => {
-      if (value && dayjs(value).isAfter(Date.now())) return true
-      return false
-    }),
     minPrice: numberSchema(t('error.enter_min_price')).test(
       'is-minPrice-valid',
       t('error.invalid_min_price') as string,
@@ -83,7 +78,7 @@ const priceRangeSchema = (t: TFunction<'translation', undefined, 'translation'>)
     currentPrice: numberSchema(t('error.enter_current_price'))
   })
 
-export function usePriceRangeValidate(props: { startTime: number; currentPrice: string; priceRange: string[]; focusMintA: boolean }) {
+export function usePriceRangeValidate(props: { currentPrice: string; priceRange: string[]; focusMintA: boolean }) {
   const [error, setError] = useState<string | undefined>()
   const { t } = useTranslation()
 
