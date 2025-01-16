@@ -1,8 +1,8 @@
 import { useEffect, ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { SignatureResult, Context, VersionedTransaction, Transaction } from '@solana/web3.js'
+import { SignatureResult, Context, VersionedTransaction, Transaction, TransactionError } from '@solana/web3.js'
 import { Flex, Box } from '@chakra-ui/react'
-import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
+import { ApiV3Token, TxVersion } from '@raydium-io/raydium-sdk-v2'
 import { Subject } from 'rxjs'
 
 import { useAppStore } from '@/store/useAppStore'
@@ -17,6 +17,7 @@ import CircleInfo from '@/icons/misc/CircleInfo'
 import { ToastStatus } from '@/types/tx'
 import { isSwapSlippageError } from '@/utils/tx/swapError'
 import retryTx, { cancelRetryTx } from './retryTx'
+import { useTokenAccountStore } from '@/store'
 
 export interface TxMeta {
   title?: string | ReactNode
@@ -62,6 +63,7 @@ export const multiTxStatusSubject = new Subject<
 >()
 
 export const TOAST_DURATION = 2 * 60 * 1000
+const LOOP_TX_STATUS_INTERVAL = 2000
 const subscribeMap = new Map<string, any>()
 const txStatus: Record<string, ToastStatus> = {}
 
@@ -149,81 +151,100 @@ function useTxStatus() {
 
           let isTxOnChain = false
           let timeout = 0
+          let intervalId = 0
+          let intervalCount = 0
 
-          const subId = connection.onSignature(
-            txId,
-            (signatureResult, context) => {
-              cancelRetryTx(txId)
-              isTxOnChain = true
-              clearTimeout(timeout)
-              subscribeMap.delete(txId)
-              if (signatureResult.err) {
-                onError?.(signatureResult, context)
-                // update toast status to error
-                if (hideResultToast) return
-                const isSlippageError = isSwap && isSwapSlippageError(signatureResult)
+          const cbk = (signatureResult: SignatureResult, context: Context) => {
+            isTxOnChain = true
+            window.clearInterval(intervalId)
+            cancelRetryTx(txId)
+            clearTimeout(timeout)
+            subscribeMap.delete(txId)
+            if (signatureResult.err) {
+              onError?.(signatureResult, context)
+              // update toast status to error
+              if (hideResultToast) return
+              const isSlippageError = isSwap && isSwapSlippageError(signatureResult)
 
-                toastSubject.next({
-                  id: txId,
-                  update: true,
-                  title: isSlippageError
-                    ? t('error.swap_slippage_error_title')
-                    : (isMultisigWallet ? (
-                        <>
-                          {title} {t('transaction.multisig_wallet_initiation')}
-                        </>
-                      ) : (
-                        title
-                      )) + ` ${t('transaction.failed')}`,
-                  status: 'error',
-                  description: isSlippageError ? t('error.swap_slippage_error_desc') : description || `${explorerUrl}/tx/${txId}`,
-                  detail: renderDetail('error'),
-                  onClose
-                })
+              toastSubject.next({
+                id: txId,
+                update: true,
+                title: isSlippageError
+                  ? t('error.swap_slippage_error_title')
+                  : (isMultisigWallet ? (
+                      <>
+                        {title} {t('transaction.multisig_wallet_initiation')}
+                      </>
+                    ) : (
+                      title
+                    )) + ` ${t('transaction.failed')}`,
+                status: 'error',
+                description: isSlippageError ? t('error.swap_slippage_error_desc') : description || `${explorerUrl}/tx/${txId}`,
+                detail: renderDetail('error'),
+                onClose
+              })
 
-                setTxRecord({
-                  status: 'error',
-                  title: txHistoryTitle || 'transaction.title',
-                  description: txHistoryDesc || '',
-                  txId,
-                  owner,
-                  mintInfo,
-                  txValues,
-                  isMultiSig: isMultisigWallet
-                })
-              } else {
-                onConfirmed?.(signatureResult, context)
-                if (hideResultToast) return
-                // update toast status to success
-                toastSubject.next({
-                  id: txId,
-                  update: true,
-                  title: isMultisigWallet
-                    ? t('transaction.multisig_wallet_initiated')
-                    : `${title || t('transaction.title')} ${t('transaction.confirmed')}`,
-                  description: isMultisigWallet ? t('transaction.multisig_wallet_desc') : description || `${explorerUrl}/tx/${txId}`,
-                  detail: renderDetail('success'),
-                  status: 'success',
-                  onClose
-                })
+              setTxRecord({
+                status: 'error',
+                title: txHistoryTitle || 'transaction.title',
+                description: txHistoryDesc || '',
+                txId,
+                owner,
+                mintInfo,
+                txValues,
+                isMultiSig: isMultisigWallet
+              })
+            } else {
+              onConfirmed?.(signatureResult, context)
+              if (hideResultToast) return
+              // update toast status to success
+              toastSubject.next({
+                id: txId,
+                update: true,
+                title: isMultisigWallet
+                  ? t('transaction.multisig_wallet_initiated')
+                  : `${title || t('transaction.title')} ${t('transaction.confirmed')}`,
+                description: isMultisigWallet ? t('transaction.multisig_wallet_desc') : description || `${explorerUrl}/tx/${txId}`,
+                detail: renderDetail('success'),
+                status: 'success',
+                onClose
+              })
 
-                setTxRecord({
-                  status: 'success',
-                  title: txHistoryTitle || 'transaction.title',
-                  description: txHistoryDesc || '',
-                  txId,
-                  owner,
-                  mintInfo,
-                  txValues,
-                  isMultiSig: isMultisigWallet
-                })
-              }
-            },
-            'confirmed'
-          )
+              setTxRecord({
+                status: 'success',
+                title: txHistoryTitle || 'transaction.title',
+                description: txHistoryDesc || '',
+                txId,
+                owner,
+                mintInfo,
+                txValues,
+                isMultiSig: isMultisigWallet
+              })
+            }
+          }
 
+          const subId = connection.onSignature(txId, cbk, 'confirmed')
           subscribeMap.set(txId, subId)
           connection.getSignatureStatuses([txId])
+
+          intervalId = window.setInterval(async () => {
+            if (intervalCount++ > TOAST_DURATION / LOOP_TX_STATUS_INTERVAL || isTxOnChain) {
+              window.clearInterval(intervalId)
+              return
+            }
+            try {
+              const r = await connection.getTransaction(txId, { commitment: 'confirmed', maxSupportedTransactionVersion: TxVersion.V0 })
+              if (r) {
+                console.log('tx status from getTransaction')
+                cbk({ err: r.meta?.err || null }, { slot: r.slot })
+                window.clearInterval(intervalId)
+                useTokenAccountStore.getState().fetchTokenAccountAct({ commitment: useAppStore.getState().commitment })
+              }
+            } catch (e) {
+              console.error('getTransaction timeout:', e)
+              window.clearInterval(intervalId)
+            }
+          }, LOOP_TX_STATUS_INTERVAL)
 
           if (signedTx) retryTx({ id: txId, tx: signedTx })
 
@@ -386,100 +407,124 @@ function useTxStatus() {
           }
           subscribeMap.set(toastId, isTxOnChain)
 
-          if (!skipWatchSignature)
+          if (!skipWatchSignature) {
             subTxIds.forEach(({ txId, signedTx }) => {
               if (subscribeMap.has(txId)) return
-              const subId = connection.onSignature(
-                txId,
-                (signatureResult, context) => {
-                  cancelRetryTx(txId)
-                  subscribeMap.delete(txId)
-                  txStatus[txId] = signatureResult.err ? 'error' : 'success'
-                  if (signatureResult.err) {
-                    subscribeMap.set(toastId, true)
-                    const isSlippageError = isSwap && isSwapSlippageError(signatureResult)
 
-                    toastSubject.next({
-                      id: toastId,
-                      update: true,
-                      title: isSlippageError
-                        ? t('error.swap_slippage_error_title')
-                        : (isMultisigWallet ? (
-                            <>
-                              {title} {t('transaction.multisig_wallet_initiation')}
-                            </>
-                          ) : (
-                            title || t('transaction.title')
-                          )) + t('transaction.failed'),
-                      status: 'error',
-                      description: isSlippageError ? t('error.swap_slippage_error_desc') : description,
-                      detail: renderDetail(),
-                      onClose
-                    })
+              let intervalId = 0
+              let intervalCount = 0
 
-                    onError?.(signatureResult, context)
-                    setTxRecord({
-                      status: 'error',
-                      title: txHistoryTitle || 'transaction.failed',
-                      description: txHistoryDesc,
-                      txId: toastId,
-                      owner,
-                      mintInfo,
-                      txValues,
-                      subTx: subTxIds.map(({ txId: tx, txHistoryTitle }) => ({
-                        txId: tx,
-                        name: txHistoryTitle || '',
-                        status: txId === tx ? 'error' : 'success',
-                        date: Date.now()
-                      })),
-                      isMultiSig: isMultisigWallet
-                    })
-                  } else {
-                    const allTxStatus = Object.values(txStatus)
-                    const isAllSent = allTxStatus.length === subTxIds.length
-                    const isAllSuccess = isAllSent && allTxStatus.filter((s) => s === 'success').length === subTxIds.length
-                    subscribeMap.set(toastId, isAllSuccess)
-                    // update toast status to success
-                    toastSubject.next({
-                      id: toastId,
-                      update: true,
-                      title: isMultisigWallet
-                        ? t('transaction.multisig_wallet_initiated')
-                        : title
-                        ? `${title} ${t('transaction.confirmed')}`
-                        : `${t('transaction.title')} ${t('transaction.confirmed')}`,
-                      description,
-                      detail: renderDetail(),
-                      status: isAllSuccess ? 'success' : 'info',
-                      onClose
-                    })
+              const cbk = (signatureResult: SignatureResult, context: Context) => {
+                txStatus[txId] = signatureResult.err ? 'error' : 'success'
+                window.clearInterval(intervalId)
+                cancelRetryTx(txId)
+                subscribeMap.delete(txId)
+                if (signatureResult.err) {
+                  subscribeMap.set(toastId, true)
+                  const isSlippageError = isSwap && isSwapSlippageError(signatureResult)
 
-                    if (isAllSent) onSent?.()
+                  toastSubject.next({
+                    id: toastId,
+                    update: true,
+                    title: isSlippageError
+                      ? t('error.swap_slippage_error_title')
+                      : (isMultisigWallet ? (
+                          <>
+                            {title} {t('transaction.multisig_wallet_initiation')}
+                          </>
+                        ) : (
+                          title || t('transaction.title')
+                        )) + t('transaction.failed'),
+                    status: 'error',
+                    description: isSlippageError ? t('error.swap_slippage_error_desc') : description,
+                    detail: renderDetail(),
+                    onClose
+                  })
 
-                    setTxRecord({
-                      status: isAllSuccess ? 'success' : 'info',
-                      title: txHistoryTitle || 'transaction.failed',
-                      description: txHistoryDesc,
-                      txId: toastId,
-                      owner,
-                      mintInfo,
-                      txValues,
-                      subTx: subTxIds.map(({ txId: tx, txHistoryTitle }) => ({
-                        txId: tx,
-                        name: txHistoryTitle || '',
-                        status: 'success',
-                        date: Date.now()
-                      })),
-                      isMultiSig: isMultisigWallet
-                    })
-                  }
-                },
-                'confirmed'
-              )
+                  onError?.(signatureResult, context)
+                  setTxRecord({
+                    status: 'error',
+                    title: txHistoryTitle || 'transaction.failed',
+                    description: txHistoryDesc,
+                    txId: toastId,
+                    owner,
+                    mintInfo,
+                    txValues,
+                    subTx: subTxIds.map(({ txId: tx, txHistoryTitle }) => ({
+                      txId: tx,
+                      name: txHistoryTitle || '',
+                      status: txId === tx ? 'error' : 'success',
+                      date: Date.now()
+                    })),
+                    isMultiSig: isMultisigWallet
+                  })
+                } else {
+                  const allTxStatus = Object.values(txStatus)
+                  const isAllSent = allTxStatus.length === subTxIds.length
+                  const isAllSuccess = isAllSent && allTxStatus.filter((s) => s === 'success').length === subTxIds.length
+                  subscribeMap.set(toastId, isAllSuccess)
+                  // update toast status to success
+                  toastSubject.next({
+                    id: toastId,
+                    update: true,
+                    title: isMultisigWallet
+                      ? t('transaction.multisig_wallet_initiated')
+                      : title
+                      ? `${title} ${t('transaction.confirmed')}`
+                      : `${t('transaction.title')} ${t('transaction.confirmed')}`,
+                    description,
+                    detail: renderDetail(),
+                    status: isAllSuccess ? 'success' : 'info',
+                    onClose
+                  })
+
+                  if (isAllSent) onSent?.()
+
+                  setTxRecord({
+                    status: isAllSuccess ? 'success' : 'info',
+                    title: txHistoryTitle || 'transaction.failed',
+                    description: txHistoryDesc,
+                    txId: toastId,
+                    owner,
+                    mintInfo,
+                    txValues,
+                    subTx: subTxIds.map(({ txId: tx, txHistoryTitle }) => ({
+                      txId: tx,
+                      name: txHistoryTitle || '',
+                      status: 'success',
+                      date: Date.now()
+                    })),
+                    isMultiSig: isMultisigWallet
+                  })
+                }
+              }
+
+              const subId = connection.onSignature(txId, cbk, 'confirmed')
               subscribeMap.set(txId, subId)
               connection.getSignatureStatuses([txId])
+
+              intervalId = window.setInterval(async () => {
+                if (intervalCount++ > TOAST_DURATION / LOOP_TX_STATUS_INTERVAL || txStatus[txId]) {
+                  window.clearInterval(intervalId)
+                  return
+                }
+                try {
+                  const r = await connection.getTransaction(txId, { commitment: 'confirmed', maxSupportedTransactionVersion: TxVersion.V0 })
+                  if (r) {
+                    console.log('tx status from getTransaction:', txId)
+                    cbk({ err: r.meta?.err || null }, { slot: r.slot })
+                    window.clearInterval(intervalId)
+                    useTokenAccountStore.getState().fetchTokenAccountAct({ commitment: useAppStore.getState().commitment })
+                  }
+                } catch (e) {
+                  console.error('getTransaction timeout:', e, txId)
+                  window.clearInterval(intervalId)
+                }
+              }, LOOP_TX_STATUS_INTERVAL)
+
               if (signedTx) retryTx({ tx: signedTx, id: txId })
             })
+          }
         }
       )
 
