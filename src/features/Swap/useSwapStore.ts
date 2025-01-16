@@ -1,6 +1,6 @@
-import { PublicKey, VersionedTransaction, Transaction } from '@solana/web3.js'
+import { PublicKey, VersionedTransaction, Transaction, SignatureResult } from '@solana/web3.js'
 import { TxVersion, txToBase64, SOL_INFO } from '@raydium-io/raydium-sdk-v2'
-import { createStore, useAppStore, useTokenStore } from '@/store'
+import { createStore, useAppStore, useTokenAccountStore, useTokenStore } from '@/store'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
 import { txStatusSubject, TOAST_DURATION } from '@/hooks/toast/useTxStatus'
 import { ApiSwapV1OutSuccess } from './type'
@@ -196,33 +196,56 @@ export const useSwapStore = createStore<SwapStore>(
             return
           }
           let timeout = 0
-          const subId = connection.onSignature(
-            txId,
-            (signatureResult) => {
-              timeout && window.clearTimeout(timeout)
-              const targetTxIdx = processedId.findIndex((tx) => tx.txId === txId)
-              if (targetTxIdx > -1) processedId[targetTxIdx].status = signatureResult.err ? 'error' : 'success'
-              handleMultiTxRetry(processedId)
-              const isSlippageError = isSwapSlippageError(signatureResult)
-              handleMultiTxToast({
-                toastId,
-                processedId: processedId.map((p) => ({ ...p, status: p.status === 'sent' ? 'info' : p.status })),
-                txLength,
-                meta: {
-                  ...swapMeta,
-                  title: isSlippageError ? i18n.t('error.error.swap_slippage_error_title')! : swapMeta.title,
-                  description: isSlippageError ? i18n.t('error.error.swap_slippage_error_desc')! : swapMeta.description
-                },
-                isSwap: true,
-                handler,
-                getSubTxTitle,
-                onCloseToast
-              })
-              if (!signatureResult.err) checkSendTx()
-            },
-            'processed'
-          )
+          let intervalId = 0
+          let intervalCount = 0
+
+          const cbk = (signatureResult: SignatureResult) => {
+            window.clearTimeout(timeout)
+            window.clearInterval(intervalId)
+            const targetTxIdx = processedId.findIndex((tx) => tx.txId === txId)
+            if (targetTxIdx > -1) processedId[targetTxIdx].status = signatureResult.err ? 'error' : 'success'
+            handleMultiTxRetry(processedId)
+            const isSlippageError = isSwapSlippageError(signatureResult)
+            handleMultiTxToast({
+              toastId,
+              processedId: processedId.map((p) => ({ ...p, status: p.status === 'sent' ? 'info' : p.status })),
+              txLength,
+              meta: {
+                ...swapMeta,
+                title: isSlippageError ? i18n.t('error.error.swap_slippage_error_title')! : swapMeta.title,
+                description: isSlippageError ? i18n.t('error.error.swap_slippage_error_desc')! : swapMeta.description
+              },
+              isSwap: true,
+              handler,
+              getSubTxTitle,
+              onCloseToast
+            })
+            if (!signatureResult.err) checkSendTx()
+          }
+
+          const subId = connection.onSignature(txId, cbk, 'processed')
           connection.getSignatureStatuses([txId])
+
+          intervalId = window.setInterval(async () => {
+            const targetTxIdx = processedId.findIndex((tx) => tx.txId === txId)
+            if (intervalCount++ > TOAST_DURATION / 2000 || processedId[targetTxIdx].status !== 'sent') {
+              window.clearInterval(intervalId)
+              return
+            }
+            try {
+              const r = await connection.getTransaction(txId, { commitment: 'confirmed', maxSupportedTransactionVersion: TxVersion.V0 })
+              if (r) {
+                console.log('tx status from getTransaction:', txId)
+                cbk({ err: r.meta?.err || null })
+                window.clearInterval(intervalId)
+                useTokenAccountStore.getState().fetchTokenAccountAct({ commitment: useAppStore.getState().commitment })
+              }
+            } catch (e) {
+              console.error('getTransaction timeout:', e, txId)
+              window.clearInterval(intervalId)
+            }
+          }, 2000)
+
           handleMultiTxRetry(processedId)
           handleMultiTxToast({
             toastId,

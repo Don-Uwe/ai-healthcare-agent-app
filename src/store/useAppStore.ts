@@ -185,6 +185,7 @@ export const useAppStore = createStore<AppState>(
         jupTokenType,
         logRequests: !isDev,
         disableFeatureCheck: true,
+        loopMultiTxStatus: true,
         blockhashCommitment: 'finalized'
       })
       useTokenStore.getState().extraLoadedTokenList.forEach((t) => {
