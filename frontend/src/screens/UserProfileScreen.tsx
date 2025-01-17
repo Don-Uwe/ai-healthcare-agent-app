@@ -22,11 +22,12 @@ import Snackbar from 'react-native-snackbar';
 import {useSocket} from '../../SocketContext';
 
 const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
+  const {authorId, author_handle} = route.params;
   const {user_id, user_handle, user_token} = useSelector(
     (state: any) => state.user,
   );
   const [refreshing, setRefreshing] = useState<boolean>(false);
-  const {authorId} = route.params;
+
   const [articleId, setArticleId] = useState<number>();
   const [selectedCardId, setSelectedCardId] = useState<string>('');
   const [repostItem, setRepostItem] = useState<ArticleData | null>(null);
@@ -39,14 +40,20 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   } = useQuery({
     queryKey: ['get-user-profile'],
     queryFn: async () => {
-      const response = await axios.get(
-        `${EC2_BASE_URL}/user/getuserprofile/${authorId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
+      let url: string;
+      if (authorId) {
+        url = `${EC2_BASE_URL}/user/getuserprofile?id=${authorId}`;
+      } else if (author_handle) {
+        url = `${EC2_BASE_URL}/user/getuserprofile?handle=${author_handle}`;
+      } else {
+        url = `${EC2_BASE_URL}/user/getuserprofile?id=${user_id}`;
+      }
+      console.log('User token', user_token);
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${user_token}`,
         },
-      );
+      });
       return response.data.profile as User;
     },
   });
@@ -212,6 +219,14 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
     }, [refetch, authorId]), // Ensure authorId is a stable value
   );
 
+  const handleReportAction = (item: ArticleData) => {
+    navigation.navigate('ReportScreen', {
+      articleId: item._id,
+      authorId: item.authorId,
+      commentId: null
+    });
+  };
+
   const renderItem = useCallback(
     ({item}: {item: ArticleData}) => {
       return (
@@ -222,6 +237,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
           isSelected={selectedCardId.toString() === item._id.toString()}
           setSelectedCardId={setSelectedCardId}
           handleRepostAction={handleRepostAction}
+          handleReportAction={handleReportAction}
         />
       );
     },

@@ -50,6 +50,7 @@ const ArticleCard = ({
   setSelectedCardId,
   success,
   handleRepostAction,
+  handleReportAction,
 }: ArticleCardProps) => {
   const {user_token, user_id} = useSelector((state: any) => state.user);
 
@@ -186,12 +187,12 @@ const ArticleCard = ({
 
   const handleAnimation = () => {
     if (width.value === 0) {
-      width.value = withTiming(300, {duration: 300});
-      yValue.value = withTiming(-1, {duration: 300});
+      width.value = withTiming(250, {duration: 250});
+      yValue.value = withTiming(-1, {duration: 250});
       setSelectedCardId(item._id);
     } else {
-      width.value = withTiming(0, {duration: 300});
-      yValue.value = withTiming(100, {duration: 300});
+      width.value = withTiming(0, {duration: 250});
+      yValue.value = withTiming(100, {duration: 250});
       setSelectedCardId('');
     }
   };
@@ -301,9 +302,10 @@ const ArticleCard = ({
     <Pressable
       onPress={() => {
         // handle onPress
-        width.value = withTiming(0, {duration: 300});
-        yValue.value = withTiming(100, {duration: 300});
+        width.value = withTiming(0, {duration: 250});
+        yValue.value = withTiming(100, {duration: 250});
         //updateViewCountMutation.mutate();
+        setSelectedCardId('');
         navigation.navigate('ArticleScreen', {
           articleId: Number(item._id),
           authorId: item.authorId,
@@ -323,14 +325,7 @@ const ArticleCard = ({
                   },
                   icon: 'sharealt',
                 },
-                {
-                  name: 'Repost in your feed',
-                  action: () => {
-                    //Alert.alert('Repost Clicked');
-                    handleRepostAction(item);
-                  },
-                  icon: 'retweet',
-                },
+
                 {
                   name: 'Download as pdf',
                   action: () => {
@@ -358,6 +353,15 @@ const ArticleCard = ({
                     }
                   },
                   icon: 'edit',
+                },
+
+                {
+                  name: 'Report this post',
+                  action: () => {
+                    handleReportAction(item)
+                    handleAnimation();
+                  },
+                  icon: 'infocirlce',
                 },
               ]}
             />
@@ -417,8 +421,8 @@ const ArticleCard = ({
             ) : (
               <TouchableOpacity
                 onPress={() => {
-                  width.value = withTiming(0, {duration: 300});
-                  yValue.value = withTiming(100, {duration: 300});
+                  width.value = withTiming(0, {duration: 250});
+                  yValue.value = withTiming(100, {duration: 250});
                   updateLikeMutation.mutate();
                 }}
                 style={styles.likeSaveChildContainer}>
@@ -438,6 +442,9 @@ const ArticleCard = ({
                 //console.log("item", item);
                 navigation.navigate('CommentScreen', {
                   articleId: item._id,
+                  mentionedUsers: item.mentionedUsers
+                    ? item.mentionedUsers
+                    : [],
                 });
               }}
               style={styles.likeSaveChildContainer}>
@@ -448,31 +455,28 @@ const ArticleCard = ({
               />
             </TouchableOpacity>
 
-            {updateLikeMutation.isPending ? (
-              <ActivityIndicator size="small" color={PRIMARY_COLOR} />
-            ) : (
-              <TouchableOpacity
-                onPress={() => {
-                  width.value = withTiming(0, {duration: 300});
-                  yValue.value = withTiming(100, {duration: 300});
-                  //updateLikeMutation.mutate();
-                  handleRepostAction(item);
-                }}
-                style={styles.likeSaveChildContainer}>
-                <FontAwesome5 name="retweet" size={22} color={'black'} />
+            <TouchableOpacity
+              onPress={() => {
+                width.value = withTiming(0, {duration: 300});
+                yValue.value = withTiming(100, {duration: 300});
+                //updateLikeMutation.mutate();
+                handleRepostAction(item);
+              }}
+              style={styles.likeSaveChildContainer}>
+              <FontAwesome5 name="retweet" size={22} color={'black'} />
 
-                <Text style={{...styles.title, marginStart: 3}}>
-                  {formatCount(item.repostUsers.length)}
-                </Text>
-              </TouchableOpacity>
-            )}
+              <Text style={{...styles.title, marginStart: 3}}>
+                {formatCount(item.repostUsers.length)}
+              </Text>
+            </TouchableOpacity>
+
             {updateSaveStatusMutation.isPending ? (
               <ActivityIndicator size="small" color={PRIMARY_COLOR} />
             ) : (
               <TouchableOpacity
                 onPress={() => {
-                  width.value = withTiming(0, {duration: 300});
-                  yValue.value = withTiming(100, {duration: 300});
+                  width.value = withTiming(0, {duration: 250});
+                  yValue.value = withTiming(100, {duration: 250});
                   updateSaveStatusMutation.mutate();
                 }}
                 style={styles.likeSaveChildContainer}>
@@ -514,7 +518,7 @@ const styles = StyleSheet.create({
   cardContainer: {
     flex: 0,
     width: '100%',
-    maxHeight: 360,
+    maxHeight: 390,
     backgroundColor: '#E6E6E6',
     flexDirection: 'row',
     marginVertical: 14,

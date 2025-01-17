@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     backgroundColor: 'white',
     borderRadius: 8,
-    padding: 8,
+    padding: 6,
     elevation: 5,
     shadowColor: 'black',
     shadowOpacity: 0.1,
@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
   arrow: {
     position: 'absolute',
     top: -10, 
-    left: '50%',
+    left: '30%',
     marginLeft: -10, 
     width: 0,
     height: 0,

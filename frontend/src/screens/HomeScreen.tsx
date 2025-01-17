@@ -35,6 +35,7 @@ import {
 } from '../store/articleSlice';
 import Snackbar from 'react-native-snackbar';
 import {useSocket} from '../../SocketContext';
+import { useFocusEffect } from '@react-navigation/native';
 
 // Here The purpose of using Redux is to maintain filter state throughout the app session. globally
 const HomeScreen = ({navigation}: HomeScreenProps) => {
@@ -60,6 +61,8 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   );
   const [refreshing, setRefreshing] = useState(false);
   const socket = useSocket();
+
+  console.log('User Token', user_token);
 
   const handleCategorySelection = (category: CategoryType['name']) => {
     // Update Redux State
@@ -160,6 +163,12 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       }
     },
   });
+
+  useFocusEffect(
+    useCallback(() => {
+      refetchUnreadCount();
+    }, [refetchUnreadCount])
+  );
   const handleNoteIconClick = () => {
     //navigation.navigate('EditorScreen');
     navigation.navigate('ArticleDescriptionScreen');
@@ -241,6 +250,13 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     },
   });
 
+  const handleReportAction = (item: ArticleData) => {
+    navigation.navigate('ReportScreen', {
+      articleId: item._id,
+      authorId: item.authorId,
+      commentId: null
+    });
+  };
   const renderItem = ({item}: {item: ArticleData}) => {
     return (
       <ArticleCard
@@ -250,6 +266,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         navigation={navigation}
         success={onRefresh}
         handleRepostAction={handleRepostAction}
+        handleReportAction={handleReportAction}
       />
     );
   };

@@ -214,6 +214,13 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
       Alert.alert('Internal server error, try again!');
     },
   });
+  const handleReportAction = (item: ArticleData) => {
+    navigation.navigate('ReportScreen', {
+      articleId: item._id,
+      authorId: item.authorId,
+      commentId: null,
+    });
+  };
   const renderItem = useCallback(
     ({item}: {item: ArticleData}) => {
       return (
@@ -224,6 +231,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
           navigation={navigation}
           success={onRefresh}
           handleRepostAction={handleRepostAction}
+          handleReportAction={handleReportAction}
         />
       );
     },

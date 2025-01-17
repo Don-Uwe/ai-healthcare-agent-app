@@ -1,14 +1,15 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {FC, useEffect, useRef, useState} from 'react';
 import {
   View,
   Text,
-  TextInput,
+  Image,
   TouchableOpacity,
   StyleSheet,
   FlatList,
   Alert,
+  Pressable,
 } from 'react-native';
-import {CommentScreenProp} from '../type';
+import {CommentScreenProp, User} from '../type';
 import {PRIMARY_COLOR} from '../helper/Theme';
 //import io from 'socket.io-client';
 import {Comment} from '../type';
@@ -16,11 +17,17 @@ import {useSelector} from 'react-redux';
 import Loader from '../components/Loader';
 import CommentItem from '../components/CommentItem';
 import {useSocket} from '../../SocketContext';
+import {
+  MentionInput,
+  MentionSuggestionsProps,
+  replaceMentionValues,
+} from 'react-native-controlled-mentions';
+import {GET_STORAGE_DATA} from '../helper/APIUtils';
 
 const CommentScreen = ({navigation, route}: CommentScreenProp) => {
   //const socket = io('http://51.20.1.81:8084');
   const socket = useSocket();
-
+  const {articleId, mentionedUsers} = route.params;
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const flatListRef = useRef<FlatList<Comment>>(null);
@@ -30,7 +37,70 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
   const [editCommentId, setEditCommentId] = useState<string | null>(null);
   const [commentLoading, setCommentLoading] = useState<Boolean>(false);
   const [commentLikeLoading, setCommentLikeLoading] = useState<Boolean>(false);
+  const [mentions, setMentions] = useState<User[]>([]);
 
+  //console.log('Mentioned users', mentionedUsers);
+  const renderSuggestions: FC<MentionSuggestionsProps> = ({
+    keyword,
+    onSuggestionPress,
+  }) => {
+    if (keyword == null) {
+      return null;
+    }
+
+    return (
+      <View>
+        {mentionedUsers
+          .filter(
+            one =>
+              one.user_handle
+                .toLocaleLowerCase()
+                .includes(keyword.toLocaleLowerCase()) ||
+              one.user_name
+                .toLocaleLowerCase()
+                .includes(keyword.toLocaleLowerCase()),
+          )
+          .map(one => (
+            <Pressable
+              key={one._id}
+              onPress={() => {
+                onSuggestionPress({id: one._id, name: one.user_handle});
+                setMentions(prev => [...prev, one]);
+              }}
+              style={{flex: 0, padding: 12, flexDirection: 'row'}}>
+              {one.Profile_image ? (
+                <Image
+                  source={{
+                    uri: one.Profile_image.startsWith('https')
+                      ? one.Profile_image
+                      : `${GET_STORAGE_DATA}/${one.Profile_image}`,
+                  }}
+                  style={[
+                    styles.profileImage2,
+                    !one.Profile_image && {
+                      borderWidth: 0.5,
+                      borderColor: 'black',
+                    },
+                  ]}
+                />
+              ) : (
+                <Image
+                  source={{
+                    uri: 'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
+                  }}
+                  style={[
+                    styles.profileImage2,
+                    {borderWidth: 0.5, borderColor: 'black'},
+                  ]}
+                />
+              )}
+
+              <Text style={styles.username2}>{one.user_handle}</Text>
+            </Pressable>
+          ))}
+      </View>
+    );
+  };
   useEffect(() => {
     //console.log('Fetching comments for articleId:', route.params.articleId);
     socket.emit('fetch-comments', {articleId: route.params.articleId});
@@ -66,7 +136,6 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
           const newComments = [data.comment, ...prevComments];
           // Scroll to the first index after adding the new comment
           if (flatListRef.current && newComments.length > 1) {
-
             flatListRef?.current.scrollToIndex({index: 0, animated: true});
           }
 
@@ -109,9 +178,14 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
     });
 
     socket.on('delete-comment', data => {
+      //console.log('Delete Comment Data', data);
+
+      //console.log('Comments Length before', comments.length);
       setComments(prevComments =>
-        prevComments.filter(comment => comment.id !== data.commentId),
+        prevComments.filter(comment => comment._id !== data.commentId),
       );
+
+      //console.log('Comments Length', comments.length);
     });
 
     return () => {
@@ -128,6 +202,13 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
     setNewComment(comment.content);
     setEditMode(true);
     setEditCommentId(comment._id);
+  };
+
+  const handleMentionClick = (user_handle: string) => {
+    //console.log('user handle', user_handle);
+    navigation.navigate('UserProfileScreen', {
+      author_handle: user_handle.substring(1),
+    });
   };
 
   const handleDeleteAction = (comment: Comment) => {
@@ -194,8 +275,9 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
       const newCommentObj = {
         userId: user_id,
         articleId: route.params.articleId,
-        content: newComment,
+        content: replaceMentionValues(newComment, ({name}) => `@${name}`),
         parentCommentId: null,
+        mentionedUsers: mentions,
       };
 
       console.log('Comment emitting', newCommentObj);
@@ -206,6 +288,13 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
     }
   };
 
+  const handleReportAction = (commentId: string, authorId: string) => {
+    navigation.navigate('ReportScreen', {
+      articleId: articleId.toString(),
+      authorId: authorId,
+      commentId: commentId,
+    });
+  };
   if (commentLoading) {
     return <Loader />;
   }
@@ -228,20 +317,28 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
             deleteAction={handleDeleteAction}
             handleLikeAction={handleLikeAction}
             commentLikeLoading={commentLikeLoading}
+            handleMentionClick={handleMentionClick}
+            handleReportAction={handleReportAction}
           />
         )}
         keyExtractor={item => item._id}
         style={styles.commentsList}
       />
 
-      {/* New Comment Input */}
-      <TextInput
+      <MentionInput
+        value={newComment}
+        onChange={setNewComment}
         style={styles.textInput}
         placeholder="Add a comment..."
-        multiline
-        value={newComment}
-        onChangeText={setNewComment}
+        partTypes={[
+          {
+            trigger: '@', // Should be a single character like '@' or '#'
+            renderSuggestions,
+            textStyle: {fontWeight: 'bold', color: 'blue'}, // The mention style in the input
+          },
+        ]}
       />
+      {/* New Comment Input */}
 
       {/* Submit Button */}
       <TouchableOpacity
@@ -282,7 +379,12 @@ const styles = StyleSheet.create({
     marginRight: 10,
     alignSelf: 'center',
   },
-
+  username: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginEnd: 4, // Small gap between user handle and content
+  },
   profileImage: {
     height: 60,
     width: 60,
@@ -291,13 +393,23 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
     marginHorizontal: 4,
   },
+
+  profileImage2: {
+    height: 30,
+    width: 30,
+    borderRadius: 15,
+    objectFit: 'cover',
+    resizeMode: 'contain',
+    marginHorizontal: 4,
+  },
   commentContent: {
     flex: 1,
   },
-  username: {
-    fontSize: 16,
+  username2: {
+    fontSize: 12,
     fontWeight: 'bold',
     color: '#333',
+    alignSelf: 'center',
   },
   comment: {
     fontSize: 14,
@@ -342,3 +454,6 @@ const styles = StyleSheet.create({
 });
 
 export default CommentScreen;
+function useQuery(arg0: {}) {
+  throw new Error('Function not implemented.');
+}
