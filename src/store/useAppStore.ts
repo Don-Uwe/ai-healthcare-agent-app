@@ -155,7 +155,7 @@ const appInitState = {
   priorityLevel: PriorityLevel.Turbo,
   priorityMode: PriorityMode.MaxCap,
   feeConfig: {},
-  transactionFee: '0.005'
+  transactionFee: '0.01'
 }
 
 let rpcLoading = false
