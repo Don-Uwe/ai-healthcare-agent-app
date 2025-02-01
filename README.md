@@ -5,7 +5,7 @@
 <h2> The project aims to create a comprehensive and respectful knowledge resource. To achieve this, it will consist of two apps: one for administrators who can monitor and manage user activity, and another for users who contribute content. The focus is on ensuring that all content, including text and images, adhere to high standards of respect and quality.</h2>
 <h3 align="center">    
  
-[![Typing SVG](https://readme-typing-svg.herokuapp.com?font=Roboto&size=22&duration=4995&pause=1000&color=F7F7F7&random=false&width=431&height=58&lines=Trusted+Source+for+Reliable+Health+Insights)](https://git.io/typing-svg)
+[![Typing SVG](https://readme-typing-svg.herokuapp.com?font=Roboto&size=22&duration=4995&pause=1000&color=006400&random=false&width=431&height=58&lines=Trusted+Source+for+Reliable+Health+Insights)](https://git.io/typing-svg)
 </h3>
 
 <br/>
