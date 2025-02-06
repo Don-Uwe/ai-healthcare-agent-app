@@ -43,10 +43,30 @@ const ClmmMyPositionTabContent = memo(
       return data
     }, [clmmBalanceInfo, formattedDataMap])
 
-    const { dataMap } = useFetchMultipleRpcClmmInfo({
+    const {
+      dataMap,
+      slot: poolSlot,
+      mutate
+    } = useFetchMultipleRpcClmmInfo({
       idList: Array.from(clmmBalanceInfo.keys()),
       refreshTag
     })
+
+    const balance = Array.from(clmmBalanceInfo.values())[0]?.[0] || {}
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const positionSlot = Math.max(balance.slot ?? 0, balance.tickSlot ?? 0)
+
+    useEffect(() => {
+      if (poolSlot >= positionSlot || poolSlot === 0) return
+      const timerId = window.setTimeout(() => {
+        mutate()
+      }, 500)
+
+      return () => {
+        clearTimeout(timerId)
+      }
+    }, [poolSlot, positionSlot, mutate])
 
     useEffect(() => {
       return () => openCache.clear()

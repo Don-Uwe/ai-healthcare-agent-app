@@ -16,7 +16,7 @@ type PoolData = ReturnType<typeof PoolInfoLayout.decode> & {
 
 const fetcher = ([connection, publicKeyList]: [Connection, string[]]) => {
   logMessage('rpc: get multiple clmm info')
-  return connection.getMultipleAccountsInfo(
+  return connection.getMultipleAccountsInfoAndContext(
     publicKeyList.map((publicKey) => ToPublicKey(publicKey)),
     { commitment: useAppStore.getState().commitment }
   )
@@ -44,13 +44,12 @@ export default function useFetchMultipleRpcClmmInfo(props: {
     }
   )
   const isEmptyResult = shouldFetch && readyIdList.length > 0 && !isLoading && !(data && !error)
-
   useEffect(() => {
     if (data) {
       const resData: PoolData[] = []
       const resDataMap: { [key: string]: PoolData } = {}
 
-      data.forEach((d, idx) => {
+      data.value.flat().forEach((d, idx) => {
         if (!d) return
         const layoutAccountInfo = PoolInfoLayout.decode(d.data)
         const currentPrice = SqrtPriceMath.sqrtPriceX64ToPrice(
@@ -72,6 +71,7 @@ export default function useFetchMultipleRpcClmmInfo(props: {
   }, [data, readyIdList])
 
   return {
+    slot: data?.context.slot ?? 0,
     data: poolData,
     dataMap: poolDataMap,
     isLoading,

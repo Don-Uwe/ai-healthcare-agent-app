@@ -470,7 +470,8 @@ export const useClmmStore = createStore<ClmmState>(
           ownerPosition: position,
           ownerInfo: {
             useSOLBalance: true,
-            closePosition: !position.liquidity.eq(new BN(liquidity)) ? false : closePosition ?? position.liquidity.eq(new BN(liquidity))
+            closePosition:
+              !position.liquidity.eq(new BN(liquidity)) || harvest ? false : closePosition ?? position.liquidity.eq(new BN(liquidity))
           },
           liquidity: new BN(liquidity),
           amountMinA: _amountMinA.sub(feeA),
