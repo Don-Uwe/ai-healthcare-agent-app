@@ -14,6 +14,7 @@ interface RecordProps {
   txValues?: Record<string, any>
   time: number
   isMultiSig?: boolean
+  cleanLocalStorage?: boolean
 }
 export const setTxRecord = (props: Omit<RecordProps, 'time'>): boolean => {
   if (!isClient()) return false
@@ -29,23 +30,40 @@ export const setTxRecord = (props: Omit<RecordProps, 'time'>): boolean => {
   }
 
   try {
-    const foundIdx = storageData.findIndex((data) => data.txId === props.txId)
-    if (foundIdx > -1) {
-      storageData[foundIdx] = {
-        ...props,
-        mintInfo: props.mintInfo || [],
-        time: Date.now()
-      }
-    } else {
-      storageData.push({
-        ...props,
-        mintInfo: props.mintInfo || [],
-        time: Date.now()
-      })
+    // if tx data > 1.5 MB || set up clean
+    if (props.cleanLocalStorage || new Blob([raw]).size > 1024 * 1024 * 1.5) {
+      storageData = storageData.slice(Math.floor(storageData.length / 4), storageData.length)
+      console.log('clean tx storage data done!')
     }
+  } catch {
+    console.error('clean tx storage data error')
+  }
+
+  const foundIdx = storageData.findIndex((data) => data.txId === props.txId)
+  if (foundIdx > -1) {
+    storageData[foundIdx] = {
+      ...props,
+      mintInfo: props.mintInfo || [],
+      time: Date.now()
+    }
+  } else {
+    storageData.push({
+      ...props,
+      mintInfo: props.mintInfo || [],
+      time: Date.now()
+    })
+  }
+
+  try {
     localStorage.setItem(HISTORY_KEY, JSON.stringify(storageData))
     return true
-  } catch {
+  } catch (err: any) {
+    if (err.message.includes('exceeded the quota') && !props.cleanLocalStorage) {
+      setTxRecord({
+        ...props,
+        cleanLocalStorage: true
+      })
+    }
     return false
   }
 }
