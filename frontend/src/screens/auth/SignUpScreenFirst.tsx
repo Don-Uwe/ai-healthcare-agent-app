@@ -46,7 +46,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
   const [role, setRole] = useState('');
   const [verifyBtntext, setVerifyBtntxt] = useState('Request Verification');
   const [verifiedModalVisible, setVerifiedModalVisible] = useState(false);
-  const [isHandleAvailable, setIsHandleAvailable] = useState(true);
+  const [isHandleAvailable, setIsHandleAvailable] = useState(false);
   const [token, setToken] = useState('');
   const [isFocus, setIsFocus] = useState(false);
   const [isSecureEntry, setIsSecureEntry] = useState(true);
@@ -326,25 +326,32 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <TouchableOpacity
-        style={{flex: 0, backgroundColor: PRIMARY_COLOR}}
-        onPress={() => {
-          navigation.navigate('LoginScreen');
-        }}>
-        <AntIcon name="arrowleft" size={30} color="white" />
-      </TouchableOpacity>
-      <View style={styles.header}>
-        <Text style={styles.title}>He who has health has hope and he</Text>
-        <Text style={styles.title}>who has hope has everything.</Text>
-        <Text style={styles.subtitle}> ~ Arabian Proverb.</Text>
-      </View>
+    <ScrollView style={styles.container}>
+      <SafeAreaView>
+        <TouchableOpacity
+          style={{flex: 1, marginStart: 10, marginTop: 6}}
+          onPress={() => {
+            navigation.navigate('LoginScreen');
+          }}>
+          <AntIcon name="arrowleft" size={30} color="black" />
+        </TouchableOpacity>
+        {
+          <View style={styles.header}>
+            <Text style={styles.title}>He who has health has hope and he</Text>
+            <Text style={styles.title}>who has hope has everything.</Text>
+            <Text style={styles.subtitle}> ~ Arabian Proverb.</Text>
+          </View>
+        }
 
-      <View style={styles.footer}>
         <ScrollView>
           <TouchableOpacity onPress={selectImage} style={styles.iconContainer}>
             {user_profile_image === '' ? (
-              <Icon name="person-add" size={70} color="#0CAFFF" />
+              <Icon
+                name="person-add"
+                size={54}
+                color="#ffffff"
+                style={{transform: [{scaleX: -1}]}}
+              />
             ) : (
               <Image
                 style={{
@@ -370,7 +377,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
               </View>
             </View>
 
-            {!isHandleAvailable && (
+            {isHandleAvailable && (
               <Text style={styles.error}>User handle is already in use.</Text>
             )}
             <View style={styles.field}>
@@ -454,9 +461,9 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
             message={verifyBtntext}
           />
         </ScrollView>
-      </View>
-    </SafeAreaView>
-  );
+      </SafeAreaView>
+    </ScrollView>
+  )
 };
 
 const styles = StyleSheet.create({
@@ -466,10 +473,10 @@ const styles = StyleSheet.create({
   },
   header: {
     width: '100%',
-    height: hp(25),
-    paddingTop: 4,
+    height: hp(10),
+    paddingTop: 5,
     alignItems: 'center',
-    backgroundColor: PRIMARY_COLOR,
+   // backgroundColor: PRIMARY_COLOR,
   },
   footer: {
     flex: 1,
@@ -482,25 +489,33 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: '600',
+    color: '#000',
   },
   subtitle: {
     fontSize: 16,
-    color: '#fff',
+    color: '#000',
     textAlign: 'center',
-    marginTop: 10,
+    marginTop: 4,
   },
   iconContainer: {
     alignSelf: 'center',
-    marginTop: 20,
+    alignItems:"center",
+    justifyContent:"center",
+    marginTop: hp(3),
+    marginBottom:10,
+    height: hp(11),
+    width: hp(11),
+    borderRadius:hp(5.5),
+    marginLeft:10,
+    backgroundColor:PRIMARY_COLOR
   },
   form: {
-    padding: 10,
+    padding: 16,
   },
   field: {},
   input: {
-    height: 40,
+    height: hp(7),
     //width:'98%',
     borderColor: '#0CAFFF',
     borderWidth: 1,
@@ -527,16 +542,16 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: '#0CAFFF',
     padding: 10,
-    borderRadius: 40,
+    borderRadius: 10,
     alignItems: 'center',
     alignSelf: 'center',
     marginTop: 20,
-    width: '90%',
+    width: '100%',
   },
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 20,
+    fontSize: 18,
   },
   dropdown: {
     height: 40,
