@@ -6,12 +6,16 @@ import {
   TextInput,
   TouchableOpacity,
   StatusBar,
-  BackHandler,
   Alert,
   useColorScheme,
+  ScrollView,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
-import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
+import React, {useState} from 'react';
+import {
+  ON_PRIMARY_COLOR,
+  PRIMARY_COLOR,
+  BUTTON_COLOR,
+} from '../../helper/Theme';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {fp, hp, wp} from '../../helper/Metric';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
@@ -19,7 +23,7 @@ import {Colors} from 'react-native/Libraries/NewAppScreen';
 import {KEYS, storeItem} from '../../helper/Utils';
 import EmailInputModal from '../../components/EmailInputModal';
 import Icon from 'react-native-vector-icons/Ionicons';
-import Entypo from 'react-native-vector-icons/Entypo';
+
 import {AuthData, LoginScreenProp, User} from '../../type';
 import {useMutation} from '@tanstack/react-query';
 import axios, {AxiosError} from 'axios';
@@ -166,7 +170,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
       const auth: AuthData = {
         userId: data._id,
         token: data?.refreshToken,
-        user_handle: data?.user_handle
+        user_handle: data?.user_handle,
       };
       try {
         await storeItem(KEYS.USER_ID, auth.userId.toString());
@@ -324,10 +328,10 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
     return <Loader />;
   }
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <StatusBar
         barStyle={isDarkMode ? 'dark-content' : 'light-content'}
-        backgroundColor={PRIMARY_COLOR}
+        backgroundColor={BUTTON_COLOR}
       />
       <View style={[styles.innercontainer, {paddingTop: inset.top}]}>
         <View style={styles.logoContainer}>
@@ -337,9 +341,6 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
             style={styles.logo}
           />
           {/* brand text container */}
-          <View style={{marginTop: wp(2)}}>
-            <Text style={styles.brandText}>Ultimate Health</Text>
-          </View>
         </View>
         {/* login form */}
         <View
@@ -348,6 +349,12 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
             {backgroundColor: isDarkMode ? Colors.darker : 'white'},
           ]}>
           {/* email input */}
+          <Text style={styles.inputLabelTxt}>Email</Text>
+          {emailMessage ? (
+            <Text style={{color: 'red'}}>Please Enter a Valid Email</Text>
+          ) : (
+            <Text style={{color: 'red'}} />
+          )}
           <View style={styles.input}>
             <TextInput
               onChange={e => handleEmail(e)}
@@ -355,7 +362,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
               autoCorrect={false}
               clearButtonMode="while-editing"
               keyboardType="email-address"
-              placeholder="Enter your mail id"
+              //placeholder="Enter your mail id"
               placeholderTextColor="#948585"
               style={[
                 styles.inputControl,
@@ -365,12 +372,15 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
                 },
               ]}
             />
-            {emailMessage ? (
-              <Text style={{color: 'red'}}>Please Enter a Valid Email</Text>
-            ) : (
-              <Text style={{color: 'red'}} />
-            )}
           </View>
+          <Text style={styles.inputLabelTxt}>Password</Text>
+          {passwordMessage ? (
+            <Text style={{color: 'red'}}>
+              Password must be 6 Characters Longs
+            </Text>
+          ) : (
+            <Text style={{color: 'red'}} />
+          )}
           <View style={styles.input}>
             <View style={styles.passwordContainer}>
               <TextInput
@@ -378,7 +388,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
                 autoCorrect={false}
                 clearButtonMode="while-editing"
                 keyboardType="ascii-capable"
-                placeholder="Password"
+                //placeholder="Password"
                 placeholderTextColor="#948585"
                 secureTextEntry={secureTextEntry}
                 style={[
@@ -411,22 +421,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
                 )}
               </TouchableOpacity>
             </View>
-            {passwordMessage ? (
-              <Text style={{color: 'red'}}>
-                Password must be 6 Characters Longs
-              </Text>
-            ) : (
-              <Text style={{color: 'red'}} />
-            )}
           </View>
-          <TouchableOpacity
-            style={styles.forgotPasswordContainer}
-            onPress={() => {
-              //console.log('Forgot Password Click');
-              setEmailInputVisible(!emailInputVisible);
-            }}>
-            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-          </TouchableOpacity>
 
           <View style={styles.loginButtonContainer}>
             <TouchableOpacity
@@ -449,41 +444,43 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
             visible={emailInputVisible}
             backButtonClick={handleEmailInputBack}
             onDismiss={() => setEmailInputVisible(false)}
+            isRequestVerification={false}
+            onRequestVerification={() => {}}
           />
 
-          <Text
-            style={{
-              fontSize: 20,
-              fontFamily: '600',
-              marginBottom: 4,
-              alignSelf: 'center',
+          <TouchableOpacity
+            style={styles.createAccountContainer}
+            onPress={() => {
+              navigation.navigate('SignUpScreenFirst');
             }}>
-            or
-          </Text>
-          <View style={styles.createAccountContainer}>
-            <TouchableOpacity
-              style={{...styles.loginButton, backgroundColor: '#FF0000'}}>
+            <View style={{...styles.loginButton, backgroundColor: '#F5f5f5'}}>
               <Text
                 style={[
                   styles.createAccountText,
                   {
                     // color: isDarkMode ? 'white' : 'black',
-                    color: 'white',
+                    color: 'black',
                   },
-                ]}
-                onPress={() => {
-                  navigation.navigate('SignUpScreenFirst');
-                }}>
-                Create new account
+                ]}>
+                Sign up
               </Text>
-            </TouchableOpacity>
-          </View>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.forgotPasswordContainer}
+            onPress={() => {
+              //console.log('Forgot Password Click');
+              setEmailInputVisible(!emailInputVisible);
+            }}>
+            <Text style={styles.inputLabelTxt}>Forgot Password?</Text>
+          </TouchableOpacity>
 
           <View style={styles.loginButtonContainer}>
             <TouchableOpacity
-              style={{...styles.loginButton, backgroundColor: '#DE3163'}}
+              style={{...styles.loginButton}}
               onPress={() => {
-                //validateAndSubmit();
+                // validateAndSubmit();
                 if (email === '') {
                   Alert.alert('Please enter your mail id');
                   return;
@@ -495,7 +492,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
           </View>
         </View>
       </View>
-    </View>
+    </ScrollView>
     // <DropDownComponent data={Categories} />
   );
 };
@@ -505,78 +502,96 @@ export default LoginScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#ffffff',
   },
   innercontainer: {
     flex: 1,
-    backgroundColor: PRIMARY_COLOR,
+    //  backgroundColor: PRIMARY_COLOR,
   },
   logoContainer: {
     flex: 0,
     width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: hp(3),
+    //marginBottom: hp(3),
     marginTop: hp(2),
     flexDirection: 'column',
     marginHorizontal: 18,
     marginLeft: wp(2),
   },
   logo: {
-    height: hp(10),
+    height: hp(16),
     width: wp(20),
-    borderRadius: 100,
+    borderRadius: 70,
     resizeMode: 'cover',
   },
   brandText: {
-    color: 'white',
-    fontSize: fp(6),
+    color: 'black',
+    fontSize: fp(4),
     fontFamily: 'Lobster-Regular',
+    fontWeight: '600',
+    alignSelf: 'center',
   },
   formContainer: {
     flex: 1,
-    marginTop: 10,
-    borderWidth: 10,
-    borderColor: ON_PRIMARY_COLOR,
-    borderTopRightRadius: wp(2),
-    borderTopLeftRadius: wp(26),
-    paddingHorizontal: wp(8),
-    paddingTop: hp(10),
+    // marginTop: hp(1),
+    // borderWidth: 10,
+    // borderColor: ON_PRIMARY_COLOR,
+    // borderTopRightRadius: wp(2),
+    //borderTopLeftRadius: wp(26),
+    paddingHorizontal: wp(5.5),
+    paddingTop: hp(3),
     flexDirection: 'column',
   },
   input: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     marginBottom: hp(2),
-    justifyContent: 'flex-start',
+    height: hp(6),
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 6,
+    backgroundColor: '#f5f5f5',
+    borderColor: '#99ccff',
   },
   inputLabel: {
-    fontSize: fp(4),
+    fontSize: fp(5),
     fontWeight: '600',
-    color: '#948585',
+    color: '#ffffff',
+    marginBottom: hp(1),
+  },
+
+  inputLabelTxt: {
+    fontSize: fp(4),
+    fontWeight: '500',
+    color: PRIMARY_COLOR,
+    //marginLeft: hp(1),
     marginBottom: hp(1),
   },
 
   inputControl: {
-    borderBottomWidth: 1,
+    // borderWidth: 1,
     width: '100%',
     paddingRight: 40,
     fontSize: fp(4),
     fontWeight: '500',
+    alignItems: 'center',
     height: hp(5),
   },
   forgotPasswordContainer: {
-    alignItems: 'flex-end',
+    alignItems: 'flex-start',
     marginVertical: 2,
   },
-  forgotPasswordText: {color: '	#000080', fontWeight: '600', marginBottom: 6},
+  forgotPasswordText: {color: '	#000000', fontWeight: '700', marginBottom: 6},
   loginButtonContainer: {marginVertical: hp(2)},
   loginButton: {
     backgroundColor: PRIMARY_COLOR,
-    paddingVertical: hp(1.2),
-    paddingHorizontal: wp(10),
+    paddingVertical: hp(1.3),
+    paddingHorizontal: wp(1.3),
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 20,
-    width: '96%',
+    borderRadius: 8,
+    width: '100%',
   },
   loginText: {
     fontSize: fp(5),

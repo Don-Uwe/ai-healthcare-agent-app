@@ -1,7 +1,6 @@
 import NetInfo from '@react-native-community/netinfo';
-import {Article, ArticleData, Category, CategoryType, Podcast} from '../type';
+import {Category, CategoryType, Podcast} from '../type';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useSocket} from '../../SocketContext';
 
 
 export const checkInternetConnection = (
@@ -273,7 +272,6 @@ export const storeItem = async (key: string, value: string) => {
 };
 
 // Async storage remove item
-
 export const removeItem = async key => {
   try {
     await AsyncStorage.removeItem(key);
