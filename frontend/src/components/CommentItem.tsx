@@ -30,6 +30,8 @@ export default function CommentItem({
   deleteAction,
   handleLikeAction,
   commentLikeLoading,
+  handleMentionClick,
+  handleReportAction,
 }: {
   item: Comment;
   isSelected: Boolean;
@@ -39,6 +41,8 @@ export default function CommentItem({
   deleteAction: (comment: Comment) => void;
   handleLikeAction: (comment: Comment) => void;
   commentLikeLoading: Boolean;
+  handleMentionClick: (user_handle: string) => void; // on mention user handle click view profile
+  handleReportAction: (commentId: string, authorId: string) => void;
 }) {
   const width = useSharedValue(0);
   const yValue = useSharedValue(60);
@@ -65,9 +69,34 @@ export default function CommentItem({
   const formatWithOrdinal = date => {
     return moment(date).format('D MMM, ddd, h:mm a');
   };
+
+  // Function to render mentions and normal text in the same line
+  const renderTextWithMentions = (text: string) => {
+    const regex = /(@\w+)/g; // Match mentions starting with '@'
+    const parts = text.split(regex);
+
+    return parts.map((part, index) => {
+      if (part.match(regex)) {
+        // If it's a mention, style it differently
+
+        return (
+          <TouchableOpacity
+            key={index}
+            onPress={() => {
+              handleMentionClick(part);
+            }}>
+            <Text key={index} style={styles.mention}>
+              {part}
+            </Text>
+          </TouchableOpacity>
+        );
+      }
+      return <Text key={index}>{part}</Text>;
+    });
+  };
+
   return (
     <View style={styles.commentContainer}>
-      {/**** User cannot edit or delete other comments */}
       {userId === item.userId._id && isSelected && (
         <Animated.View style={[menuStyle, styles.shareIconContainer]}>
           <ArticleFloatingMenu
@@ -75,8 +104,6 @@ export default function CommentItem({
               {
                 name: 'Edit',
                 action: () => {
-                  // Alert.alert('Edit Clicked');
-
                   handleEditAction(item);
                   handleAnimation();
                 },
@@ -85,11 +112,18 @@ export default function CommentItem({
               {
                 name: 'Delete',
                 action: () => {
-                  // Alert.alert('Download Clicked');
                   deleteAction(item);
                   handleAnimation();
                 },
                 icon: 'delete',
+              },
+              {
+                name: 'Report',
+                action: () => {
+                  handleReportAction(item._id, item.userId._id);
+                  handleAnimation();
+                },
+                icon: 'infocirlce',
               },
             ]}
           />
@@ -99,10 +133,7 @@ export default function CommentItem({
       {userId === item.userId._id && (
         <TouchableOpacity
           style={styles.shareIconContainer}
-          onPress={() => {
-            /* Handle share action */
-            handleAnimation();
-          }}>
+          onPress={() => handleAnimation()}>
           <Entypo name="dots-three-vertical" size={20} color={'black'} />
         </TouchableOpacity>
       )}
@@ -132,14 +163,9 @@ export default function CommentItem({
           ]}
         />
       )}
-      {/**<Text style={styles.avatar}>🧑‍💻</Text> */}
+
       <View style={styles.commentContent}>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'flex-start',
-            // padding:6,
-          }}>
+        <View style={{flexDirection: 'row', alignItems: 'flex-start'}}>
           <Text style={styles.username}>{item.userId.user_handle}</Text>
           {item.isEdited && (
             <Text style={{...styles.comment, marginStart: 4, marginTop: 2}}>
@@ -148,7 +174,9 @@ export default function CommentItem({
           )}
         </View>
 
-        <Text style={styles.comment}>{item.content}</Text>
+        <Text style={styles.comment}>
+          {renderTextWithMentions(item.content)}
+        </Text>
         <Text style={styles.timestamp}>
           Last updated {formatWithOrdinal(item.updatedAt)}
         </Text>
@@ -158,15 +186,12 @@ export default function CommentItem({
             flexDirection: 'row',
             justifyContent: 'flex-start',
             padding: 2,
-            // mrginStart: 6,
           }}>
           {commentLikeLoading && isSelected ? (
             <ActivityIndicator size="small" color={PRIMARY_COLOR} />
           ) : (
             <TouchableOpacity
-              //style={styles.shareIconContainer}
               onPress={() => {
-                /* Handle Like action */
                 width.value = withTiming(0, {duration: 300});
                 yValue.value = withTiming(100, {duration: 300});
                 setSelectedCommentId(item._id);
@@ -180,27 +205,22 @@ export default function CommentItem({
               )}
             </TouchableOpacity>
           )}
-
           <Text style={styles.likeCount}>{item.likedUsers.length}</Text>
         </View>
       </View>
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   commentContainer: {
     flexDirection: 'row',
-    marginBottom: 15,
+    marginBottom: 40,
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
     paddingBottom: 10,
+    marginTop: 5, // Reduced top margin
   },
-  avatar: {
-    fontSize: 30,
-    marginRight: 10,
-    alignSelf: 'center',
-  },
-
   profileImage: {
     height: 50,
     width: 50,
@@ -216,13 +236,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
+    marginEnd: 4, // Small gap between user handle and content
   },
   comment: {
     fontSize: 15,
     color: '#555',
-    marginVertical: 3,
+    marginVertical: 0, // Remove vertical margin for no extra space
   },
-
   likeCount: {
     fontSize: 14,
     color: '#666',
@@ -233,16 +253,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#888',
   },
-  replyContainer: {
-    marginLeft: 20,
-    marginTop: 10,
+  mention: {
+    color: 'blue', // Mention text color
+    fontWeight: 'bold',
+    paddingTop: 4,
   },
-  replyText: {
-    fontSize: 14,
-    color: '#555',
-    fontStyle: 'italic',
-  },
-
   shareIconContainer: {
     position: 'absolute',
     top: 1,

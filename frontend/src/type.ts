@@ -36,9 +36,19 @@ export type RootStackParamList = {
   };
   CommentScreen: {
     articleId: number;
+    mentionedUsers: User[];
   };
+  ReportScreen: {
+    articleId: string;
+    authorId: string;
+    commentId: string | null;
+  };
+  ReportConfirmationScreen: undefined;
   NotificationScreen: undefined;
-  UserProfileScreen: {authorId: string};
+  UserProfileScreen: {
+    authorId: string | undefined;
+    author_handle: string | undefined;
+  };
   ProfileEditScreen: undefined;
   LogoutScreen: {profile_image: string; username: string};
   //ChatbotScreen: undefined;
@@ -69,7 +79,8 @@ export type NewPasswordScreenProp = StackScreenProps<
 
 export type UserProfileScreenProp =
   | StackScreenProps<RootStackParamList, 'UserProfileScreen'>
-  | StackScreenProps<RootStackParamList, 'ArticleScreen'>;
+  | StackScreenProps<RootStackParamList, 'ArticleScreen'>
+  | StackScreenProps<RootStackParamList, 'CommentScreen'>;
 
 export type OtpScreenProp = StackScreenProps<RootStackParamList, 'OtpScreen'>;
 
@@ -98,6 +109,15 @@ export type CommentScreenProp = StackScreenProps<
   'CommentScreen'
 >;
 
+export type ReportScreenProp = StackScreenProps<
+  RootStackParamList,
+  'ReportScreen'
+>;
+
+export type ReportConfirmationScreenProp = StackScreenProps<
+  RootStackParamList,
+  'ReportConfirmationScreen'
+>;
 export type NotificationScreenProp = StackScreenProps<
   RootStackParamList,
   'NotificationScreen'
@@ -147,6 +167,7 @@ export type ArticleCardProps = {
   isSelected: Boolean;
   setSelectedCardId: (id: string) => void;
   handleRepostAction: (item: ArticleData) => void;
+  handleReportAction: (item: ArticleData) => void;
 };
 
 export type Notification = {
@@ -272,6 +293,7 @@ export type ArticleData = {
   likeCount: number;
   likedUsers: User[];
   savedUsers: string[];
+  mentionedUsers: User[];
 };
 
 export type UserStatus = {
@@ -290,6 +312,11 @@ export type MonthStatus = {
   date: string;
   value: number;
 };
+
+export type ReportReason = {
+_id: string;
+reason: string;
+},
 
 export type YearStatus = {
   month: string;

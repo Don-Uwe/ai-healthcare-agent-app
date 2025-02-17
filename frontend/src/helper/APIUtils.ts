@@ -45,6 +45,8 @@ const VULTR_CHAT_URL = 'https://api.vultrinference.com/v1/chat/completions';
 
 const REPOST_ARTICLE = `${EC2_BASE_URL}/article/repost`;
 const CHECK_USER_HANDLE = `${EC2_BASE_URL}/user/check-user-handle`;
+const GET_REPORT_REASONS = `${EC2_BASE_URL}/report/reasons`;
+const SUBMIT_REPORT = `${EC2_BASE_URL}/report/submit`;
 
 export {
   EC2_BASE_URL,
@@ -86,5 +88,7 @@ export {
   GET_YEARLY_WRITES_REPORT,
   VULTR_CHAT_URL,
   REPOST_ARTICLE,
-  CHECK_USER_HANDLE
+  CHECK_USER_HANDLE,
+  GET_REPORT_REASONS,
+  SUBMIT_REPORT
 };
