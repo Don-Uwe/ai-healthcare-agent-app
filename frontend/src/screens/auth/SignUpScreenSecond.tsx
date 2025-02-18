@@ -150,7 +150,7 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
             );
         }
       } else {
-       // console.log('Email Verification error', error);
+        // console.log('Email Verification error', error);
         Alert.alert('Error', 'Please try again');
       }
     },
@@ -251,7 +251,7 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
     return <Loader />;
   }
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <TouchableOpacity
         style={{flex: 0, backgroundColor: PRIMARY_COLOR}}
         onPress={() => {
@@ -260,20 +260,30 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
         <AntIcon name="arrowleft" size={35} color="white" />
       </TouchableOpacity>
 
-      <View style={styles.header}>
+      {/**
+ * <View style={styles.header}>
         <Text style={styles.title}>...let me congratulate on the</Text>
         <Text style={styles.title}>choice of calling which offers a</Text>
         <Text style={styles.title}>combination of intellectual and</Text>
         <Text style={styles.title}>moral interest found in no other</Text>
         <Text style={styles.title}>profession</Text>
-        <Text style={styles.subtitle}> ~ Sir William Olser.</Text>
+        <Text style={styles.subtitle}>...let me congratulate on the choice of calling which offers a
+       combination of intellectual and moral interest found in no other profession ~ Sir William Olser.</Text>
       </View>
+ */}
+
+      <View style={styles.header}>
+        <Text style={styles.subtitle}>
+          ...let me congratulate on the choice of calling which offers a
+          combination of intellectual and moral interest found in no other
+          profession ~ Sir William Olser.
+        </Text>
+      </View>
+
       <View style={styles.footer}>
         <View style={styles.form}>
-          <View style={{alignSelf: 'center', marginBottom: 10}}>
-            {user.profile_image === '' ? (
-              <Icon name="person-add" size={70} color="#0CAFFF" />
-            ) : (
+          {user.profile_image !== '' && (
+            <View style={{alignSelf: 'center', marginBottom: 6}}>
               <Image
                 style={{
                   height: 80,
@@ -283,8 +293,9 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
                 }}
                 source={{uri: user.profile_image}}
               />
-            )}
-          </View>
+            </View>
+          )}
+
           <View style={styles.field}>
             <TextInput
               style={styles.input}
@@ -373,10 +384,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   header: {
-    width: '100%',
-    height: hp(36),
+    width: '90%',
+    height: hp(16),
     paddingTop: 0,
     alignItems: 'center',
     backgroundColor: PRIMARY_COLOR,

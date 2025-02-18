@@ -15,7 +15,7 @@ import {Dropdown} from 'react-native-element-dropdown';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {hp} from '../../helper/Metric';
 import AntIcon from 'react-native-vector-icons/AntDesign';
-import {PRIMARY_COLOR} from '../../helper/Theme';
+import {BUTTON_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
 import {SignUpScreenFirstProp, UserDetail} from '../../type';
 import {useMutation} from '@tanstack/react-query';
 import axios, {AxiosError} from 'axios';
@@ -242,9 +242,9 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
     }
   };
   const handleSubmit = () => {
-    if (!isHandleAvailable) {
-      return;
-    }
+    // if (!isHandleAvailable) {
+    //   return;
+    // }
     if (!name || !username || !email || !password || !role) {
       Alert.alert('Please fill in all fields');
       return;
@@ -267,6 +267,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
         password: password,
         profile_image: user_profile_image,
       };
+      console.log('General');
       navigation.navigate('SignUpScreenSecond', {
         user: detail,
       });
@@ -328,27 +329,35 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
   return (
     <ScrollView style={styles.container}>
       <SafeAreaView>
-        <TouchableOpacity
-          style={{flex: 1, marginStart: 10, marginTop: 6}}
-          onPress={() => {
-            navigation.navigate('LoginScreen');
-          }}>
-          <AntIcon name="arrowleft" size={30} color="black" />
-        </TouchableOpacity>
-        {
+        {/*
           <View style={styles.header}>
             <Text style={styles.title}>He who has health has hope and he</Text>
             <Text style={styles.title}>who has hope has everything.</Text>
             <Text style={styles.subtitle}> ~ Arabian Proverb.</Text>
           </View>
-        }
+
+               <TouchableOpacity
+          style={{alignSelf: 'flex-start'}}
+          onPress={() => {
+            navigation.navigate('LoginScreen');
+          }}>
+          <AntIcon name="arrowleft" size={20} color="black" />
+        </TouchableOpacity>
+          */}
+
+        <View style={styles.header}>
+          <Text style={styles.subtitle}>
+            He who has health has hope and he who has hope has everything.
+          </Text>
+          <Text style={styles.subtitle}> ~ Arabian Proverb.</Text>
+        </View>
 
         <ScrollView>
           <TouchableOpacity onPress={selectImage} style={styles.iconContainer}>
             {user_profile_image === '' ? (
-              <Icon
-                name="person-add"
-                size={54}
+              <AntDesign
+                name="camera"
+                size={33}
                 color="#ffffff"
                 style={{transform: [{scaleX: -1}]}}
               />
@@ -364,6 +373,8 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
               />
             )}
           </TouchableOpacity>
+
+          <Text style={styles.title}>Sign up</Text>
           <View style={styles.form}>
             <View style={styles.field}>
               <TextInput
@@ -463,7 +474,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
         </ScrollView>
       </SafeAreaView>
     </ScrollView>
-  )
+  );
 };
 
 const styles = StyleSheet.create({
@@ -472,11 +483,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   header: {
-    width: '100%',
-    height: hp(10),
-    paddingTop: 5,
+    width: '94%',
+    height: hp(14),
+    paddingTop: 0,
     alignItems: 'center',
-   // backgroundColor: PRIMARY_COLOR,
+    justifyContent: 'center',
+    backgroundColor: PRIMARY_COLOR,
+    alignSelf: 'center',
+    borderRadius: 7,
+    marginTop: hp(1),
   },
   footer: {
     flex: 1,
@@ -489,26 +504,30 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: '600',
-    color: '#000',
+    fontWeight: '700',
+    color: PRIMARY_COLOR,
+    textAlign: 'center',
+    textTransform: 'uppercase',
   },
   subtitle: {
     fontSize: 16,
-    color: '#000',
+    color: 'white',
     textAlign: 'center',
     marginTop: 4,
+    fontWeight: '600',
+    //textAlign:"center"
   },
   iconContainer: {
     alignSelf: 'center',
-    alignItems:"center",
-    justifyContent:"center",
-    marginTop: hp(3),
-    marginBottom:10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: hp(2),
+    marginBottom: 10,
     height: hp(11),
     width: hp(11),
-    borderRadius:hp(5.5),
-    marginLeft:10,
-    backgroundColor:PRIMARY_COLOR
+    borderRadius: hp(5.5),
+    marginLeft: 10,
+    backgroundColor: PRIMARY_COLOR,
   },
   form: {
     padding: 16,

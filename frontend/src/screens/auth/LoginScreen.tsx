@@ -341,6 +341,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
             style={styles.logo}
           />
           {/* brand text container */}
+          <Text style={styles.brandText}>Ultimate Health</Text>
         </View>
         {/* login form */}
         <View
@@ -526,9 +527,9 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
   brandText: {
-    color: 'black',
-    fontSize: fp(4),
-    fontFamily: 'Lobster-Regular',
+    color: PRIMARY_COLOR,
+    fontSize: fp(6),
+   // fontFamily: 'Lobster-Regular',
     fontWeight: '600',
     alignSelf: 'center',
   },
@@ -545,7 +546,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flexDirection: 'column',
-    marginBottom: hp(2),
+    marginBottom: hp(1),
     height: hp(6),
     justifyContent: 'center',
     alignItems: 'center',
@@ -558,15 +559,15 @@ const styles = StyleSheet.create({
     fontSize: fp(5),
     fontWeight: '600',
     color: '#ffffff',
-    marginBottom: hp(1),
+    marginBottom: hp(0),
   },
 
   inputLabelTxt: {
     fontSize: fp(4),
     fontWeight: '500',
-    color: PRIMARY_COLOR,
+    color: BUTTON_COLOR,
     //marginLeft: hp(1),
-    marginBottom: hp(1),
+    marginBottom: hp(0),
   },
 
   inputControl: {
