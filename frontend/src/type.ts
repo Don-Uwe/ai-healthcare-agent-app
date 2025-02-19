@@ -257,6 +257,7 @@ export type EmailInputModalProp = {
   callback: (email: string) => void;
   backButtonClick: () => void;
   onDismiss: () => void;
+  isRequestVerification:boolean;
 };
 
 export type Category = {

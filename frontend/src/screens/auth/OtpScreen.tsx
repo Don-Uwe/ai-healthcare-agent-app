@@ -9,7 +9,7 @@ import {
   KeyboardAvoidingView,
   Alert,
 } from 'react-native';
-import {PRIMARY_COLOR} from '../../helper/Theme';
+import {BUTTON_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
 import {hp} from '../../helper/Metric';
 import Icon from 'react-native-vector-icons/Entypo';
 import AntIcon from 'react-native-vector-icons/AntDesign';
@@ -31,9 +31,9 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
   ];
 
   const config: OTPInputConfig = {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f5f5f5',
     textColor: '#000000',
-    borderColor: '#36454f',
+    borderColor: '#c1c1c1',
     errorColor: 'red',
     focusColor: PRIMARY_COLOR,
   };
@@ -140,15 +140,11 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
         </TouchableOpacity>
 
         <View style={styles.innerContainer}>
-          <Icon
-            name="mail"
-            size={75}
-            color={PRIMARY_COLOR}
-            style={styles.logo}
-          />
-          <Text style={styles.title}>
+          {/**
+             *  <Text style={styles.title}>
             We have sent you OTP to your email address for verification
           </Text>
+             */}
 
           <OTPInput
             codes={codes!}
@@ -157,15 +153,20 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
             refs={refs}
             config={config}
           />
+
+          <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+            <Text style={styles.buttonText}>Verify</Text>
+          </TouchableOpacity>
+
           <TouchableOpacity
             onPress={() => {
               sendOtpMutation.mutate();
             }}
             style={styles.resendContainer}>
-            <Text style={styles.resendText}>Resend OTP?</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-            <Text style={styles.buttonText}>Submit</Text>
+            <Text
+              style={[styles.resendText, {textDecorationLine: 'underline'}]}>
+              Resend OTP?
+            </Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -251,19 +252,20 @@ const styles = StyleSheet.create({
   },
   resendContainer: {
     marginBottom: 20,
-    marginLeft: 'auto',
-    marginRight: '7%',
+    // marginLeft: 'auto',
+    // marginRight: '7%',
   },
   resendText: {
     color: PRIMARY_COLOR,
-    fontWeight: '400',
+    fontWeight: '700',
     fontSize: 14,
+    marginTop: 4,
   },
   button: {
     backgroundColor: PRIMARY_COLOR,
-    padding: 14,
+    padding: 7,
     marginVertical: 10,
-    borderRadius: 18,
+    borderRadius: 1,
     alignItems: 'center',
     width: '70%',
   },

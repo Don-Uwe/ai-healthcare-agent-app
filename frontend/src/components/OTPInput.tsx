@@ -43,7 +43,7 @@ export function OTPInput({
       backgroundColor: config.backgroundColor,
       color: config.textColor,
       borderColor: config.borderColor,
-      borderWidth: 2,
+      borderWidth: 1,
     },
     errorInput: {
       borderColor: config.errorColor,

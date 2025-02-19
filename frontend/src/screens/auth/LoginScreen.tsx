@@ -38,6 +38,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
   const dispatch = useDispatch();
   const isDarkMode = useColorScheme() === 'dark';
   const [emailInputVisible, setEmailInputVisible] = useState(false);
+  const [requestVerificationMode, setRequestVerification] = useState(false);
   const [password, setPassword] = useState('');
   const [passwordVerify, setPasswordVerify] = useState(false);
   const [email, setEmail] = useState('');
@@ -273,9 +274,9 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
 
   const requestVerification = useMutation({
     mutationKey: ['resend-verification-mail'],
-    mutationFn: async () => {
+    mutationFn: async ({email1}: {email1: string}) => {
       const res = await axios.post(RESEND_VERIFICATION, {
-        email: email,
+        email: email1,
       });
 
       return res.data.message as string;
@@ -438,15 +439,20 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
             // eslint-disable-next-line @typescript-eslint/no-shadow
             callback={(email: string) => {
               setOtpMail(email);
-              sendOtpMutation.mutate({
-                email: email,
-              });
+              if (requestVerificationMode) {
+                requestVerification.mutate({
+                  email1: email,
+                });
+              } else {
+                sendOtpMutation.mutate({
+                  email: email,
+                });
+              }
             }}
             visible={emailInputVisible}
             backButtonClick={handleEmailInputBack}
             onDismiss={() => setEmailInputVisible(false)}
-            isRequestVerification={false}
-            onRequestVerification={() => {}}
+            isRequestVerification={requestVerificationMode}
           />
 
           <TouchableOpacity
@@ -472,7 +478,8 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
             style={styles.forgotPasswordContainer}
             onPress={() => {
               //console.log('Forgot Password Click');
-              setEmailInputVisible(!emailInputVisible);
+              setEmailInputVisible(true);
+              setRequestVerification(false);
             }}>
             <Text style={styles.inputLabelTxt}>Forgot Password?</Text>
           </TouchableOpacity>
@@ -482,11 +489,8 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
               style={{...styles.loginButton}}
               onPress={() => {
                 // validateAndSubmit();
-                if (email === '') {
-                  Alert.alert('Please enter your mail id');
-                  return;
-                }
-                requestVerification.mutate();
+                setRequestVerification(true);
+                setEmailInputVisible(true);
               }}>
               <Text style={styles.loginText}>Request Verification</Text>
             </TouchableOpacity>
@@ -529,7 +533,7 @@ const styles = StyleSheet.create({
   brandText: {
     color: PRIMARY_COLOR,
     fontSize: fp(6),
-   // fontFamily: 'Lobster-Regular',
+    // fontFamily: 'Lobster-Regular',
     fontWeight: '600',
     alignSelf: 'center',
   },

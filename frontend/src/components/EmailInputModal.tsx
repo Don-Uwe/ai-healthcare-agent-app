@@ -9,12 +9,14 @@ import {
 } from 'react-native';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import {EmailInputModalProp} from '../type';
+import {hp} from '../helper/Metric';
 
 export default function EmailInputModal({
   visible,
   callback,
   backButtonClick,
   onDismiss,
+  isRequestVerification
 }: EmailInputModalProp) {
   const [modelTitle, setModelTitle] = useState(true);
   const [email, setEmail] = useState('');
@@ -51,14 +53,18 @@ export default function EmailInputModal({
       <View style={styles.overlay}>
         <View style={styles.modalContainer}>
           <Text style={modelTitle ? styles.modalTitle : styles.modalTitleError}>
-            {modelTitle ? 'Enter your email id' : 'Email is not valid'}
+            {modelTitle
+              ? isRequestVerification
+                ? 'Email Verification'
+                : 'Forgot password'
+              : 'Email is not valid'}
           </Text>
           <TextInput
             autoCapitalize="none"
             autoCorrect={false}
             keyboardType="email-address"
             placeholder="Enter your email"
-            placeholderTextColor="#948585"
+            placeholderTextColor="#000000"
             value={email}
             onChangeText={text => {
               setEmail(text);
@@ -67,10 +73,12 @@ export default function EmailInputModal({
             style={modelTitle ? styles.modalInput : styles.modalInputError}
           />
           <TouchableOpacity style={styles.modalButton} onPress={verifyEmail}>
-            <Text style={styles.modalButtonText}>Submit</Text>
+            <Text style={styles.modalButtonText}>
+              {isRequestVerification ? 'Send Verification Link' : 'Send OTP'}
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={styles.modalButton}
+            style={{...styles.modalButton, backgroundColor: PRIMARY_COLOR}}
             onPress={handleBackClick}>
             <Text style={styles.modalButtonText}>Back</Text>
           </TouchableOpacity>
@@ -85,19 +93,24 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent black overlay
     justifyContent: 'center',
+
     alignItems: 'center',
   },
   modalContainer: {
     backgroundColor: 'white',
-    padding: 20,
+    padding: 14,
     borderRadius: 10,
-    marginHorizontal: 20,
-    width: '85%',
+    marginHorizontal: 14,
+    width: '95%',
+    height: hp(45),
+    justifyContent: 'center',
+    // alignItems:"center"
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginVertical: 15,
+    marginVertical: 10,
+    //color:"black"
   },
   modalTitleError: {
     fontSize: 18,
@@ -106,9 +119,10 @@ const styles = StyleSheet.create({
     color: 'red',
   },
   modalInput: {
-    height: 40,
+    height: 47,
     borderColor: PRIMARY_COLOR,
     borderWidth: 1,
+    backgroundColor: '#B6D0E2',
     marginVertical: 10,
     paddingHorizontal: 10,
     borderRadius: 5,
@@ -125,9 +139,13 @@ const styles = StyleSheet.create({
     padding: 10,
     alignItems: 'center',
     marginTop: 10,
+    backgroundColor: '#0F52BA',
+    borderRadius: 7,
+    marginVertical: 10,
   },
   modalButtonText: {
-    color: PRIMARY_COLOR,
-    fontWeight: 'bold',
+    color: 'white',
+    fontWeight: '500',
+    fontSize: 16,
   },
 });
