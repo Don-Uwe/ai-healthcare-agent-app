@@ -67,11 +67,13 @@ export default function MyPositionTabStandard({
     ...lpOnlyList,
     ...Array.from(allLockLp).map((d) => [d[0], EMPTY_FARM_POS] as [string, FarmPositionInfo])
   ]
-  allData.sort((a, b) => {
-    const poolA = allPoolData?.find((p) => p.lpMint.address === (Array.isArray(a) ? a[0] : a.address.toBase58()))
-    const poolB = allPoolData?.find((p) => p.lpMint.address === (Array.isArray(b) ? b[0] : b.address.toBase58()))
-    return (poolB?.tvl || 0) - (poolA?.tvl || 0)
-  })
+
+  if (allData.length < 50)
+    allData.sort((a, b) => {
+      const poolA = allPoolData?.find((p) => p.lpMint.address === (Array.isArray(a) ? a[0] : a.address.toBase58()))
+      const poolB = allPoolData?.find((p) => p.lpMint.address === (Array.isArray(b) ? b[0] : b.address.toBase58()))
+      return (poolB?.tvl || 0) - (poolA?.tvl || 0)
+    })
 
   return (
     <Flex direction="column" gap={4}>

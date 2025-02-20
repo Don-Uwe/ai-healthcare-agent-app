@@ -11,8 +11,23 @@ import { FormattedPoolInfoStandardItem } from './type'
 import { useAppStore } from '@/store'
 import { formatPoolData, poolInfoCache, formatAprData } from './formatter'
 
-const fetcher = ([url]: [url: string]) => axios.get<ApiV3PoolInfoStandardItem[]>(url, { skipError: true })
+const fetcher = async ([url]: [url: string]) => {
+  const [host, query = ''] = url.split('?')
+  const params = new URLSearchParams(query).get('lps')
 
+  const lpList = params?.split(',') || []
+  const chunkSize = 95
+  const keyGroup = []
+  for (let i = 0; i < lpList.length; i += chunkSize) {
+    keyGroup.push(lpList.slice(i, i + chunkSize))
+  }
+
+  const r = await Promise.all(
+    keyGroup.map((list) => axios.get<ApiV3PoolInfoStandardItem[]>(`${host}?lps=${list.join(',')}`, { skipError: true }))
+  )
+
+  return r.map((s) => s.data).flat()
+}
 export default function useFetchPoolByLpMint(
   props: {
     shouldFetch?: boolean
@@ -30,7 +45,7 @@ export default function useFetchPoolByLpMint(
   error?: any
   isEmptyResult: boolean
   isValidating: boolean
-  mutate: KeyedMutator<AxiosResponse<ApiV3PoolInfoStandardItem[], any>>
+  mutate: KeyedMutator<ApiV3PoolInfoStandardItem[]>
 } {
   const { shouldFetch = true, lpMintList = [], refreshInterval = MINUTE_MILLISECONDS * 3, refreshTag, keepPreviousData } = props || {}
   const readyIdList = lpMintList.filter((i) => i && isValidPublicKey(i)) as string[]
@@ -44,7 +59,7 @@ export default function useFetchPoolByLpMint(
     keepPreviousData
   })
 
-  const resData = useMemo(() => data?.data.filter((d) => !!d).map(formatAprData) || [], [data]) as ApiV3PoolInfoStandardItem[]
+  const resData = useMemo(() => data?.filter((d) => !!d).map(formatAprData) || [], [data]) as ApiV3PoolInfoStandardItem[]
   const dataMap = useMemo(() => resData.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}), [resData]) as {
     [key: string]: ApiV3PoolInfoStandardItem
   }
@@ -56,13 +71,13 @@ export default function useFetchPoolByLpMint(
 
   useEffect(() => {
     if (data)
-      data.data.forEach((d) => {
+      data.forEach((d) => {
         if (d) poolInfoCache.set(d.id, d)
       })
   }, [data])
 
   return {
-    data: data?.data.filter((d) => !!d).map(formatAprData) as ApiV3PoolInfoStandardItem[],
+    data: data?.filter((d) => !!d).map(formatAprData) as ApiV3PoolInfoStandardItem[],
     dataMap,
     formattedData,
     formattedDataMap,
