@@ -202,6 +202,8 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
 
     onError: (error: AxiosError) => {
       console.log('Error', error);
+      setPassword('');
+      setEmail('');
       if (error.response) {
         const errorCode = error.response.status;
         switch (errorCode) {

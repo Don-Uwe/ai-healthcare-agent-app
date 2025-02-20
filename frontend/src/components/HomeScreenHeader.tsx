@@ -8,13 +8,10 @@ import {
 import React from 'react';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import Ionicon from 'react-native-vector-icons/Ionicons';
-import {fp, wp} from '../helper/Metric';
-import {PRIMARY_COLOR} from '../helper/Theme';
+import AntDesign from 'react-native-vector-icons/AntDesign';
+import {fp, hp, wp} from '../helper/Metric';
+import {BUTTON_COLOR, ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import {HomeScreenHeaderProps} from '../type';
-import {useQuery} from '@tanstack/react-query';
-import axios from 'axios';
-import {EC2_BASE_URL} from '../helper/APIUtils';
-import {useSelector} from 'react-redux';
 
 const HomeScreenHeader = ({
   handlePresentModalPress,
@@ -37,14 +34,30 @@ const HomeScreenHeader = ({
               flex: 0,
               justifyContent: 'space-between',
             }}>
-            <Text style={styles.headerTitle}>Discover</Text>
-
+            <View style={styles.search}>
+              <View style={styles.searchIcon}>
+                <FeatherIcon color="#778599" name="search" size={20} />
+              </View>
+              <TextInput
+                autoCapitalize="words"
+                autoComplete="name"
+                placeholder="Search articles..."
+                placeholderTextColor="#778599"
+                onChangeText={onTextInputChange}
+                style={styles.searchControl}
+              />
+              <TouchableOpacity
+                style={styles.filterIcon}
+                onPress={handlePresentModalPress}>
+                <AntDesign color="black" name="menu-fold" size={20} />
+              </TouchableOpacity>
+            </View>
             <TouchableOpacity onPress={onNotificationClick}>
               <View style={{position: 'relative'}}>
                 <Ionicon
                   name="notifications"
-                  color="white"
-                  size={30}
+                  color={PRIMARY_COLOR}
+                  size={34}
                   style={{marginTop: 7}}
                 />
 
@@ -77,27 +90,6 @@ const HomeScreenHeader = ({
               </View>
             </TouchableOpacity>
           </View>
-          <Text style={styles.headerSubtitle}>
-            Retrieve the health data, Provide your valuable insights
-          </Text>
-        </View>
-        <View style={styles.search}>
-          <View style={styles.searchIcon}>
-            <FeatherIcon color="#778599" name="search" size={20} />
-          </View>
-          <TextInput
-            autoCapitalize="words"
-            autoComplete="name"
-            placeholder="Search articles..."
-            placeholderTextColor="#778599"
-            onChangeText={onTextInputChange}
-            style={styles.searchControl}
-          />
-          <TouchableOpacity
-            style={styles.filterIcon}
-            onPress={handlePresentModalPress}>
-            <Ionicon color="black" name="filter-sharp" size={28} />
-          </TouchableOpacity>
         </View>
       </View>
     </View>
@@ -111,11 +103,11 @@ const styles = StyleSheet.create({
   header: {
     width: '100%',
     flex: 0,
-    backgroundColor: PRIMARY_COLOR,
+    backgroundColor: ON_PRIMARY_COLOR,
     alignItems: 'center',
-
+    marginTop: hp(2),
     justifyContent: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 19,
     paddingBottom: 10,
   },
   headerTitleContainer: {
@@ -135,13 +127,15 @@ const styles = StyleSheet.create({
     fontFamily: 'monospace',
   },
   search: {
-    position: 'relative',
+    //position: 'relative',
     backgroundColor: 'white',
     borderRadius: 7,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
-    width: '100%',
+    width: '93%',
+    borderWidth: 1,
+    borderColor: PRIMARY_COLOR
   },
   searchIcon: {
     position: 'absolute',

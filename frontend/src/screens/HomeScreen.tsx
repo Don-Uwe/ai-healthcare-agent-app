@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   FlatList,
   ScrollView,
+  Dimensions,
 } from 'react-native';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {PRIMARY_COLOR} from '../helper/Theme';
@@ -35,7 +36,7 @@ import {
 } from '../store/articleSlice';
 import Snackbar from 'react-native-snackbar';
 import {useSocket} from '../../SocketContext';
-import { useFocusEffect } from '@react-navigation/native';
+import {useFocusEffect} from '@react-navigation/native';
 
 // Here The purpose of using Redux is to maintain filter state throughout the app session. globally
 const HomeScreen = ({navigation}: HomeScreenProps) => {
@@ -44,6 +45,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [sortingType, setSortingType] = useState<string>('');
   //const [loading, setLoading] = useState(true);
+  const screenWidth = Dimensions.get('window').width;
   const [selectedCardId, setSelectedCardId] = useState<string>('');
   const [repostItem, setRepostItem] = useState<ArticleData | null>(null);
   const [selectCategoryList, setSelectCategoryList] = useState<
@@ -167,7 +169,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   useFocusEffect(
     useCallback(() => {
       refetchUnreadCount();
-    }, [refetchUnreadCount])
+    }, [refetchUnreadCount]),
   );
   const handleNoteIconClick = () => {
     //navigation.navigate('EditorScreen');
@@ -254,7 +256,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     navigation.navigate('ReportScreen', {
       articleId: item._id,
       authorId: item.authorId,
-      commentId: null
+      commentId: null,
     });
   };
   const renderItem = ({item}: {item: ArticleData}) => {
@@ -418,7 +420,11 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         sortingType={sortingType}
       />
       <View style={styles.buttonContainer}>
-        <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+        <ScrollView
+          horizontal={true}
+          showsHorizontalScrollIndicator={false}
+          //contentContainerStyle={{flex:1}}
+        >
           {selectedTags &&
             selectedTags.length > 0 &&
             !searchMode &&
@@ -428,9 +434,9 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
                 style={{
                   ...styles.button,
                   backgroundColor:
-                    selectedCategory === item ? 'white' : PRIMARY_COLOR,
+                    selectedCategory !== item ? 'white' : PRIMARY_COLOR,
                   borderColor:
-                    selectedCategory === item ? PRIMARY_COLOR : 'white',
+                    selectedCategory !== item ? PRIMARY_COLOR : 'white',
                 }}
                 onPress={() => {
                   handleCategoryClick(item);
@@ -438,7 +444,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
                 <Text
                   style={{
                     ...styles.labelStyle,
-                    color: selectedCategory === item ? 'black' : 'white',
+                    color: selectedCategory !== item ? 'black' : 'white',
                   }}>
                   {item}
                 </Text>
@@ -491,7 +497,7 @@ export default HomeScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: PRIMARY_COLOR,
+    backgroundColor: '#F0F8FF',
     justifyContent: 'center',
     alignItems: 'center',
   },

@@ -8,7 +8,7 @@ import {
   SafeAreaView,
   Alert,
 } from 'react-native';
-import {PRIMARY_COLOR} from '../../helper/Theme';
+import {BUTTON_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
 import feather from 'react-native-vector-icons/Feather';
 import {hp} from '../../helper/Metric';
 import AntIcon from 'react-native-vector-icons/AntDesign';
@@ -150,7 +150,7 @@ export default function NewPasswordScreen({
             />
             <feather.Button
               name={showPassword.new ? 'eye' : 'eye-off'}
-              size={24}
+              size={16}
               color="black"
               backgroundColor="white"
               onPress={() =>
@@ -183,7 +183,7 @@ export default function NewPasswordScreen({
             />
             <feather.Button
               name={showPassword.confirm ? 'eye' : 'eye-off'}
-              size={24}
+              size={16}
               color="black"
               backgroundColor="white"
               onPress={() =>
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     fontWeight: '400',
     fontSize: 16,
-    marginHorizontal: 5,
+    //marginHorizontal: 5,
     width: '80%',
   },
   inputError: {
@@ -243,9 +243,10 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 16,
-    color: '#808080',
+    color: BUTTON_COLOR,
     marginBottom: 8,
     fontWeight: '500',
+
   },
   passwordContainer: {
     flexDirection: 'row',
@@ -253,11 +254,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: PRIMARY_COLOR,
     backgroundColor: 'white',
-    borderRadius: 8,
+    borderRadius: 6,
   },
   input: {
     flex: 1,
-    height: 50,
+    height: 40,
     paddingHorizontal: 10,
     backgroundColor: 'white',
     width: '100%',
@@ -265,11 +266,11 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: PRIMARY_COLOR,
-    padding: 15,
-    borderRadius: 30,
+    padding: 10,
+    borderRadius: 3,
     marginTop: 20,
     alignItems: 'center',
-    width: '40%',
+    width: '92%',
   },
   buttonText: {
     color: 'white',
