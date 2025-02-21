@@ -13,7 +13,7 @@ import {
 import {useSelector} from 'react-redux';
 import {Category} from '../../type';
 import Ionicon from 'react-native-vector-icons/Ionicons';
-import {PRIMARY_COLOR} from '../../helper/Theme';
+import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
 import {
   ImageLibraryOptions,
   ImagePickerResponse,
@@ -232,7 +232,7 @@ const ArticleDescriptionScreen = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: ON_PRIMARY_COLOR,
   },
   form: {
     marginVertical: 24,

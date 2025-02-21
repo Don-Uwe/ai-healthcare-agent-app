@@ -27,7 +27,7 @@ import ArticleDescriptionScreen from '../screens/article/ArticleDescriptionScree
 import ProfileEditScreen from '../screens/ProfileEditScreen';
 import UserProfileScreen from '../screens/UserProfileScreen';
 import {RootStackParamList, TabParamList} from '../type';
-import {PRIMARY_COLOR} from '../helper/Theme';
+import {BUTTON_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import LogoutScreen from '../screens/auth/LogoutScreen';
 import {useNavigation, NavigationProp} from '@react-navigation/native';
 const Stack = createStackNavigator<RootStackParamList>();
@@ -140,7 +140,7 @@ const StackNavigation = () => {
           headerShown: true,
           headerTitle: 'Start Writing',
           headerBackTitleVisible: false,
-          headerTitleStyle: {color: PRIMARY_COLOR},
+          headerTitleStyle: {color: BUTTON_COLOR},
           // eslint-disable-next-line react/no-unstable-nested-components
           headerLeft: () => (
             <TouchableOpacity
@@ -148,7 +148,7 @@ const StackNavigation = () => {
               onPress={() => {
                 navigation.goBack();
               }}>
-              <Ionicon name="chevron-back" size={26} color={PRIMARY_COLOR} />
+              <Ionicon name="arrow-back" size={36} color={BUTTON_COLOR} />
               {/* <FontAwesome6 size={25} name="arrow-left" color="black" /> */}
             </TouchableOpacity>
           ),

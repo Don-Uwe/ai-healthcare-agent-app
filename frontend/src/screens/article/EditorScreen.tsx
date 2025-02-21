@@ -7,14 +7,15 @@ import Entypo from 'react-native-vector-icons/Entypo';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Fontisto from 'react-native-vector-icons/Fontisto';
-import {PRIMARY_COLOR} from '../../helper/Theme';
+import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {EditorScreenProp} from '../../type';
 import {launchImageLibrary} from 'react-native-image-picker';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {hp} from '../../helper/Metric';
 
 // Feature:
-// If you want to discard your post, in that case no post will upload into storage, 
+// If you want to discard your post, in that case no post will upload into storage,
 const EditorScreen = ({navigation, route}: EditorScreenProp) => {
   const insets = useSafeAreaInsets();
   const {title, description, selectedGenres, authorName, imageUtils} =
@@ -33,7 +34,7 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
         <TouchableOpacity
           style={styles.preview_button}
           onPress={() => {
-          //  console.log('Preview button pressed');
+            console.log('Preview button pressed');
             if (article.length > 20) {
               console.log('Preview Screen');
               navigation.navigate('PreviewScreen', {
@@ -46,6 +47,8 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
                 localImages: localImages,
                 htmlImages: htmlImages,
               });
+            } else {
+              Alert.alert('Error', 'Please enter at least 20 characters');
             }
           }}>
           <Fontisto name="preview" size={26} color="black" />
@@ -53,7 +56,6 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
       ),
     });
   }, [navigation, article, title, description, imageUtils, selectedGenres]);
-
 
   React.useEffect(() => {
     if (imageUtils) {
@@ -305,22 +307,23 @@ const styles = StyleSheet.create({
   /*******************************/
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: ON_PRIMARY_COLOR,
   },
   editor: {
-    // backgroundColor: 'black',
+    backgroundColor: ON_PRIMARY_COLOR,
     borderColor: 'black',
-    marginHorizontal: 10,
+    marginHorizontal: 4,
   },
   rich: {
-    minHeight: 300,
+    // minHeight: 700,
     flex: 1,
+    backgroundColor: ON_PRIMARY_COLOR,
   },
   richBar: {
     height: 55,
     backgroundColor: PRIMARY_COLOR,
-    marginTop: 14,
-    marginBottom: 34,
+    marginTop: 0,
+    marginBottom: hp(0.8),
   },
   text: {
     fontWeight: 'bold',

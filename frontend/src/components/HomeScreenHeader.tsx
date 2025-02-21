@@ -58,7 +58,7 @@ const HomeScreenHeader = ({
                   name="notifications"
                   color={PRIMARY_COLOR}
                   size={34}
-                  style={{marginTop: 2}}
+                  //style={{marginTop: 2}}
                 />
 
                 {/* Red dot */}
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   searchControl: {
-    paddingVertical: 8,
+    paddingVertical: 6,
     paddingHorizontal: 12,
     paddingLeft: wp(9),
     paddingRight: wp(9),

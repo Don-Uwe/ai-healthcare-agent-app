@@ -230,7 +230,7 @@ const FilterModal = ({
                   styles.item,
                   {
                     backgroundColor: selectCategoryList.includes(item?.name)
-                      ? PRIMARY_COLOR
+                      ? BUTTON_COLOR
                       : 'white',
                   },
                 ]}
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 10,
     marginBottom: hp(2),
-    backgroundColor: BUTTON_COLOR,
+    backgroundColor: PRIMARY_COLOR,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -372,7 +372,7 @@ const styles = StyleSheet.create({
   footer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     width: '100%',
     padding: 6,
     gap: 9,
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
   item: {
     borderWidth: 0.5,
     borderRadius: 15,
-    paddingVertical: hp(2),
+    paddingVertical: hp(1.2),
     paddingHorizontal: 15,
     marginBottom: 10,
     borderColor: '#C5C6CC',

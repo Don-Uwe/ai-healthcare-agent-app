@@ -8,6 +8,7 @@ import {
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {HomeScreenCategoriesFlatlistProps} from '../type.ts';
 import { BUTTON_COLOR } from '../helper/Theme.ts';
+import { hp } from '../helper/Metric.ts';
 // Main component for the categories modal
 const CategoriesFlatlistModal = ({
   bottomSheetModalRef2,
@@ -139,7 +140,8 @@ const styles = StyleSheet.create({
   item: {
     borderWidth: 0.5,
     borderRadius: 15,
-    paddingVertical: 16,
+    //paddingVertical: 16,
+    paddingVertical: hp(1.2),
     paddingHorizontal: 15,
     marginBottom: 10,
     borderColor: '#C5C6CC',

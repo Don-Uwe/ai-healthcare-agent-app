@@ -11,6 +11,7 @@ import {
 import {Notification} from '../type';
 import {fp, hp} from '../helper/Metric';
 import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { BUTTON_COLOR } from '../helper/Theme';
 
 export default function NotificationItem({
   item,
@@ -66,7 +67,7 @@ export default function NotificationItem({
           <MaterialCommunityIcon
             name="delete-empty-outline"
             size={30}
-            color={'#050301'}
+            color={BUTTON_COLOR}
             style={{alignSelf: 'center'}}
           />
         </TouchableOpacity>
