@@ -58,7 +58,7 @@ const HomeScreenHeader = ({
                   name="notifications"
                   color={PRIMARY_COLOR}
                   size={34}
-                  style={{marginTop: 7}}
+                  style={{marginTop: 2}}
                 />
 
                 {/* Red dot */}

@@ -7,6 +7,7 @@ import {
 } from '@gorhom/bottom-sheet';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {HomeScreenCategoriesFlatlistProps} from '../type.ts';
+import { BUTTON_COLOR } from '../helper/Theme.ts';
 // Main component for the categories modal
 const CategoriesFlatlistModal = ({
   bottomSheetModalRef2,
@@ -37,7 +38,7 @@ const CategoriesFlatlistModal = ({
           styles.item,
           {
             backgroundColor: selectCategoryList.includes(item?.name)
-              ? 'green'
+              ? BUTTON_COLOR
               : 'white',
           },
         ]}

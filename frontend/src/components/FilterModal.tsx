@@ -9,8 +9,9 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import CategoriesFlatlistModal from './CategoriesFlatlistModal';
-import {PRIMARY_COLOR} from '../helper/Theme';
+import {BUTTON_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import {HomeScreenFilterModalProps} from '../type';
+import {hp} from '../helper/Metric';
 
 // Helper function to format date as DD/MM/YYY
 
@@ -99,6 +100,29 @@ const FilterModal = ({
         </View>
 
         <View style={styles.filterContainer}>
+          <View style={styles.footer}>
+            <View style={styles.footerButtonContainer}>
+              <TouchableOpacity
+                style={styles.resetButton}
+                onPress={() => {
+                  setSelectedCategory('');
+                  handleFilterReset();
+                  handleDismissModalPress();
+                }}>
+                <Text style={styles.resetButtonText}>Reset</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.footerButtonContainer}>
+              <TouchableOpacity
+                style={styles.applyButton}
+                onPress={() => {
+                  handleFilterApply();
+                  handleDismissModalPress();
+                }}>
+                <Text style={styles.applyButtonText}>Apply</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
           <View style={styles.input}>
             <Text style={styles.inputLabel}>Sort By</Text>
             {/**
@@ -141,7 +165,7 @@ const FilterModal = ({
                   style={{
                     ...styles.button,
                     backgroundColor:
-                      selectedCategory === item ? 'green' : 'white',
+                      selectedCategory === item ? PRIMARY_COLOR : 'white',
                     borderColor:
                       selectedCategory === item ? 'white' : '#808080',
                   }}
@@ -167,17 +191,20 @@ const FilterModal = ({
               style={styles.categoryButton}
               onPress={handlePresentModalPress}>
               <Text style={styles.inputLabel}>Category</Text>
-              <MaterialIcons
-                name="chevron-right"
-                color={PRIMARY_COLOR}
-                size={36}
-              />
+
+              <View
+                style={{justifyContent: 'flex-start', flexDirection: 'row'}}>
+                <Text style={{...styles.inputLabel, fontSize: 16}}>
+                  See all
+                </Text>
+                <MaterialIcons name="chevron-right" color={'black'} size={25} />
+              </View>
             </TouchableOpacity>
             <View style={styles.categoryListContainer}>
               <FlatList
                 numColumns={4}
                 data={selectCategoryList}
-                showsHorizontalScrollIndicator={false}
+                showsHorizontalScrollIndicator={true}
                 contentContainerStyle={styles.categoryList}
                 renderItem={({item}) => (
                   <TouchableOpacity
@@ -186,43 +213,52 @@ const FilterModal = ({
                     onPress={() => {
                       handleCategorySelection(item);
                     }}>
-                    <Text style={styles.categoryItemText}>{item}</Text>
+                    <Text style={styles.categoryItemText}>{`${
+                      item.length < 5 ? item : item.substring(0, 5)
+                    }..`}</Text>
                   </TouchableOpacity>
                 )}
                 contentInsetAdjustmentBehavior={'always'}
                 extraData={selectCategoryList}
               />
             </View>
+
+            {categories.slice(0, 5).map((item, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  styles.item,
+                  {
+                    backgroundColor: selectCategoryList.includes(item?.name)
+                      ? PRIMARY_COLOR
+                      : 'white',
+                  },
+                ]}
+                onPress={() => {
+                  handleCategorySelection(item?.name);
+                }}>
+                <Text
+                  style={[
+                    styles.itemText,
+                    {
+                      color: selectCategoryList.includes(item?.name)
+                        ? 'white'
+                        : '#1F2024',
+                    },
+                  ]}>
+                  {item?.name}
+                </Text>
+                {selectCategoryList.includes(item?.name) && (
+                  <MaterialIcons name="check" size={26} color={'white'} />
+                )}
+              </TouchableOpacity>
+            ))}
             <CategoriesFlatlistModal
               bottomSheetModalRef2={bottomSheetModalRef2}
               categories={categories}
               handleCategorySelection={handleCategorySelection}
               selectCategoryList={selectCategoryList}
             />
-          </View>
-        </View>
-
-        <View style={styles.footer}>
-          <View style={styles.footerButtonContainer}>
-            <TouchableOpacity
-              style={styles.resetButton}
-              onPress={() => {
-                setSelectedCategory('');
-                handleFilterReset();
-                handleDismissModalPress();
-              }}>
-              <Text style={styles.resetButtonText}>Reset</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.footerButtonContainer}>
-            <TouchableOpacity
-              style={styles.applyButton}
-              onPress={() => {
-                handleFilterApply();
-                handleDismissModalPress();
-              }}>
-              <Text style={styles.applyButtonText}>Apply</Text>
-            </TouchableOpacity>
           </View>
         </View>
       </BottomSheetView>
@@ -318,11 +354,11 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   categoryItem: {
-    borderRadius: 40,
+    borderRadius: 8,
     paddingVertical: 10,
     paddingHorizontal: 10,
-    marginBottom: 10,
-    backgroundColor: 'green',
+    marginBottom: hp(2),
+    backgroundColor: BUTTON_COLOR,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -338,16 +374,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
-    padding: 12,
-    gap: 5,
+    padding: 6,
+    gap: 9,
     marginBottom: 10,
   },
   footerButtonContainer: {
     flex: 1,
   },
   resetButton: {
-    padding: 12,
-    borderRadius: 100,
+    padding: 6,
+    borderRadius: hp(10),
     borderWidth: 1,
     borderColor: PRIMARY_COLOR,
   },
@@ -359,8 +395,8 @@ const styles = StyleSheet.create({
   },
   applyButton: {
     backgroundColor: PRIMARY_COLOR,
-    padding: 12,
-    borderRadius: 100,
+    padding: 10,
+    borderRadius: hp(10),
   },
   applyButtonText: {
     color: 'white',
@@ -371,10 +407,10 @@ const styles = StyleSheet.create({
 
   button: {
     flex: 0,
-    borderRadius: 14,
-    marginHorizontal: 6,
+    borderRadius: 8,
+    marginHorizontal: hp(1),
     marginVertical: 4,
-    padding: 10,
+    padding: hp(1.5),
     borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',
@@ -383,5 +419,20 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     fontSize: 15,
     textTransform: 'capitalize',
+  },
+  item: {
+    borderWidth: 0.5,
+    borderRadius: 15,
+    paddingVertical: hp(2),
+    paddingHorizontal: 15,
+    marginBottom: 10,
+    borderColor: '#C5C6CC',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  itemText: {
+    fontSize: 18,
+    fontWeight: 'regular',
   },
 });

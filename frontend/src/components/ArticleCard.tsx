@@ -27,7 +27,7 @@ import {
   LIKE_ARTICLE,
   SAVE_ARTICLE,
 } from '../helper/APIUtils';
-import {PRIMARY_COLOR} from '../helper/Theme';
+import {BUTTON_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import {formatCount} from '../helper/Utils';
 import Animated, {
   useAnimatedStyle,
@@ -301,10 +301,8 @@ const ArticleCard = ({
   return (
     <Pressable
       onPress={() => {
-        // handle onPress
         width.value = withTiming(0, {duration: 250});
         yValue.value = withTiming(100, {duration: 250});
-        //updateViewCountMutation.mutate();
         setSelectedCardId('');
         navigation.navigate('ArticleScreen', {
           articleId: Number(item._id),
@@ -312,71 +310,7 @@ const ArticleCard = ({
         });
       }}>
       <View style={styles.cardContainer}>
-        {/* Share Icon */}
-        {isSelected && (
-          <Animated.View style={[menuStyle, styles.shareIconContainer]}>
-            <ArticleFloatingMenu
-              items={[
-                {
-                  name: 'Share this post',
-                  action: () => {
-                    handleShare();
-                    handleAnimation();
-                  },
-                  icon: 'sharealt',
-                },
-
-                {
-                  name: 'Download as pdf',
-                  action: () => {
-                    handleAnimation();
-                    if (item?.content?.endsWith('html')) {
-                      console.log(item?.content);
-                      generatePDFFromUrl(
-                        `${GET_STORAGE_DATA}/${item?.content}`,
-                        item?.title,
-                      );
-                    } else {
-                      generatePDF(item?.title, item?.content);
-                    }
-                  },
-                  icon: 'download',
-                },
-                {
-                  name: 'Request to edit',
-                  action: () => {
-                    handleAnimation();
-                    if (item?.content?.endsWith('html')) {
-                      //  generatePDFFromUrl(item?.content, item?.title);
-                    } else {
-                      // generatePDF(item?.title, item?.content);
-                    }
-                  },
-                  icon: 'edit',
-                },
-
-                {
-                  name: 'Report this post',
-                  action: () => {
-                    handleReportAction(item)
-                    handleAnimation();
-                  },
-                  icon: 'infocirlce',
-                },
-              ]}
-            />
-          </Animated.View>
-        )}
-
-        <TouchableOpacity
-          style={styles.shareIconContainer}
-          onPress={() => {
-            /* Handle share action */
-            handleAnimation();
-          }}>
-          <Entypo name="dots-three-vertical" size={20} color={'black'} />
-        </TouchableOpacity>
-        {/* image */}
+        {/* Image Section */}
         {item?.imageUtils[0] && item?.imageUtils[0].length !== 0 ? (
           <Image
             source={{
@@ -394,27 +328,83 @@ const ArticleCard = ({
         )}
 
         <View style={styles.textContainer}>
-          {/* title */}
+          {/* Share Icon */}
+          {isSelected && (
+            <Animated.View style={[menuStyle, styles.shareIconContainer]}>
+              <ArticleFloatingMenu
+                items={[
+                  {
+                    name: 'Share this post',
+                    action: () => {
+                      handleShare();
+                      handleAnimation();
+                    },
+                    icon: 'sharealt',
+                  },
+                  {
+                    name: 'Download as pdf',
+                    action: () => {
+                      handleAnimation();
+                      if (item?.content?.endsWith('html')) {
+                        generatePDFFromUrl(
+                          `${GET_STORAGE_DATA}/${item?.content}`,
+                          item?.title,
+                        );
+                      } else {
+                        generatePDF(item?.title, item?.content);
+                      }
+                    },
+                    icon: 'download',
+                  },
+                  {
+                    name: 'Request to edit',
+                    action: () => {
+                      handleAnimation();
+                    },
+                    icon: 'edit',
+                  },
+                  {
+                    name: 'Report this post',
+                    action: () => {
+                      handleReportAction(item);
+                      handleAnimation();
+                    },
+                    icon: 'infocirlce',
+                  },
+                ]}
+              />
+            </Animated.View>
+          )}
+
+          {/* Icon for more options */}
+          <TouchableOpacity
+            style={styles.shareIconContainer}
+            onPress={() => handleAnimation()}>
+            <Entypo name="dots-three-vertical" size={20} color={'black'} />
+          </TouchableOpacity>
+
+          {/* Title & Footer Text */}
           <Text style={styles.footerText}>
             {item?.tags.map(tag => tag.name).join(' | ')}
           </Text>
           <Text style={styles.title}>{item?.title}</Text>
 
-          <Text style={styles.footerText}>
+          <Text style={styles.footerText1}>
             {item?.authorName} {''}
           </Text>
-          <Text style={{...styles.footerText, marginBottom: 3}}>
+          <Text style={{...styles.footerText1, marginBottom: 3}}>
             {item?.viewUsers
               ? item?.viewUsers.length > 1
                 ? `${formatCount(item?.viewUsers.length)} views`
                 : `${item?.viewUsers.length} view`
               : '0 view'}
           </Text>
-          <Text style={styles.footerText}>
+          <Text style={styles.footerText1}>
             Last updated: {''}
             {moment(new Date(item?.lastUpdated)).format('DD/MM/YYYY')}
           </Text>
 
+          {/* Like, Save, and Comment Actions */}
           <View style={styles.likeSaveContainer}>
             {updateLikeMutation.isPending ? (
               <ActivityIndicator size="small" color={PRIMARY_COLOR} />
@@ -439,7 +429,6 @@ const ArticleCard = ({
 
             <TouchableOpacity
               onPress={() => {
-                //console.log("item", item);
                 navigation.navigate('CommentScreen', {
                   articleId: item._id,
                   mentionedUsers: item.mentionedUsers
@@ -451,7 +440,7 @@ const ArticleCard = ({
               <MaterialCommunityIcon
                 name="comment-outline"
                 size={24}
-                color={'black'}
+                color={PRIMARY_COLOR}
               />
             </TouchableOpacity>
 
@@ -459,13 +448,11 @@ const ArticleCard = ({
               onPress={() => {
                 width.value = withTiming(0, {duration: 300});
                 yValue.value = withTiming(100, {duration: 300});
-                //updateLikeMutation.mutate();
                 handleRepostAction(item);
               }}
               style={styles.likeSaveChildContainer}>
-              <FontAwesome5 name="retweet" size={22} color={'black'} />
-
-              <Text style={{...styles.title, marginStart: 3}}>
+              <FontAwesome5 name="retweet" size={22} color={PRIMARY_COLOR} />
+              <Text style={{...styles.title, marginStart: 3, color:PRIMARY_COLOR}}>
                 {formatCount(item.repostUsers.length)}
               </Text>
             </TouchableOpacity>
@@ -491,6 +478,7 @@ const ArticleCard = ({
         </View>
       </View>
     </Pressable>
+
     // future card
     // <TouchableOpacity style={styles.card}>
     //   <Image source={{uri: item?.imageUtils}} style={styles.image} />
@@ -519,7 +507,7 @@ const styles = StyleSheet.create({
     flex: 0,
     width: '100%',
     maxHeight: 390,
-    backgroundColor: '#E6E6E6',
+    backgroundColor: '#ffffff',
     flexDirection: 'row',
     marginVertical: 14,
     overflow: 'hidden',
@@ -546,13 +534,13 @@ const styles = StyleSheet.create({
     marginVertical: hp(1),
   },
   textContainer: {
-    flex: 0.9,
+    flex: 1,
     backgroundColor: 'white',
     paddingHorizontal: 10,
     paddingVertical: 13,
   },
   title: {
-    fontSize: fp(4.5),
+    fontSize: fp(5.5),
     fontWeight: 'bold',
     color: '#121a26',
     marginBottom: 4,
@@ -567,7 +555,14 @@ const styles = StyleSheet.create({
     fontFamily: 'monospace',
   },
   footerText: {
-    fontSize: fp(3.3),
+    fontSize: fp(3.9),
+    fontWeight: '700',
+    color: BUTTON_COLOR,
+    marginBottom: 3,
+  },
+
+  footerText1: {
+    fontSize: fp(3.5),
     fontWeight: '600',
     color: '#121a26',
     marginBottom: 3,
