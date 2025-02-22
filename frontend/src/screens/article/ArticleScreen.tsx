@@ -39,6 +39,7 @@ import Snackbar from 'react-native-snackbar';
 
 import {formatCount} from '../../helper/Utils';
 import {useSocket} from '../../../SocketContext';
+import CommentScreen from '../CommentScreen';
 
 const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const insets = useSafeAreaInsets();
@@ -400,9 +401,114 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
             <>
               <Text style={styles.titleText}>{article?.title}</Text>
               <View style={styles.avatarsContainer}>
-                <View style={styles.avatar} />
-                <View style={[styles.avatar, styles.avatarOverlap]} />
-                <View style={[styles.avatar, styles.avatarDoubleOverlap]} />
+                <View style={styles.avatar}>
+                  {/** 3rd image will be display here */}
+                  {article?.likedUsers && article?.likedUsers.length >= 3 ? (
+                    <Image
+                      source={{
+                        uri: article?.likedUsers[2].Profile_image.startsWith(
+                          'https',
+                        )
+                          ? article?.likedUsers[2].Profile_image
+                          : `${GET_STORAGE_DATA}/${article?.likedUsers[2].Profile_image}`,
+                      }}
+                      style={[
+                        styles.profileImage,
+                        !article?.likedUsers[2].Profile_image && {
+                          borderWidth: 0.5,
+                          borderColor: 'black',
+                        },
+                      ]}
+                    />
+                  ) : (
+                    <>
+                      {article?.likedUsers &&
+                        article?.likedUsers.length >= 1 && (
+                          <Image
+                            source={{
+                              uri: article?.likedUsers[0].Profile_image.startsWith(
+                                'https',
+                              )
+                                ? article?.likedUsers[0].Profile_image
+                                : `${GET_STORAGE_DATA}/${article?.likedUsers[0].Profile_image}`,
+                            }}
+                            style={[
+                              styles.profileImage,
+                              !article?.likedUsers[0].Profile_image && {
+                                borderWidth: 0.5,
+                                borderColor: 'black',
+                              },
+                            ]}
+                          />
+                        )}
+                    </>
+                  )}
+                </View>
+                <View style={[styles.avatar, styles.avatarOverlap]}>
+                  {/** 2nd image will be display here */}
+
+                  {article?.likedUsers && article?.likedUsers.length >= 2 ? (
+                    <Image
+                      source={{
+                        uri: article?.likedUsers[1].Profile_image.startsWith(
+                          'https',
+                        )
+                          ? article?.likedUsers[1].Profile_image
+                          : `${GET_STORAGE_DATA}/${article?.likedUsers[1].Profile_image}`,
+                      }}
+                      style={[
+                        styles.profileImage,
+                        !article?.likedUsers[1].Profile_image && {
+                          borderWidth: 0.5,
+                          borderColor: 'black',
+                        },
+                      ]}
+                    />
+                  ) : (
+                    <>
+                      {article?.likedUsers &&
+                        article?.likedUsers.length >= 1 && (
+                          <Image
+                            source={{
+                              uri: article?.likedUsers[0].Profile_image.startsWith(
+                                'https',
+                              )
+                                ? article?.likedUsers[0].Profile_image
+                                : `${GET_STORAGE_DATA}/${article?.likedUsers[0].Profile_image}`,
+                            }}
+                            style={[
+                              styles.profileImage,
+                              !article?.likedUsers[0].Profile_image && {
+                                borderWidth: 0.5,
+                                borderColor: 'black',
+                              },
+                            ]}
+                          />
+                        )}
+                    </>
+                  )}
+                </View>
+                <View style={[styles.avatar, styles.avatarDoubleOverlap]}>
+                  {/** 1st Image  will be display here */}
+                  {article?.likedUsers && article?.likedUsers.length >= 1 && (
+                    <Image
+                      source={{
+                        uri: article?.likedUsers[0].Profile_image.startsWith(
+                          'https',
+                        )
+                          ? article?.likedUsers[0].Profile_image
+                          : `${GET_STORAGE_DATA}/${article?.likedUsers[0].Profile_image}`,
+                      }}
+                      style={[
+                        styles.profileImage,
+                        !article?.likedUsers[0].Profile_image && {
+                          borderWidth: 0.5,
+                          borderColor: 'black',
+                        },
+                      ]}
+                    />
+                  )}
+                </View>
                 <View style={[styles.avatar, styles.avatarTripleOverlap]}>
                   <Text style={styles.moreText}>
                     +
@@ -419,7 +525,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
               style={{
                 padding: 7,
                 //width: '99%',
-                height: hp(1000),
+                minHeight: hp(650),
                 // flex:7,
                 justifyContent: 'center',
                 alignItems: 'center',
@@ -431,9 +537,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
               textZoom={100}
             />
           </View>
-        </View>
+        </View>  
       </ScrollView>
-
       <View
         style={[
           styles.footer,
@@ -555,6 +660,14 @@ const styles = StyleSheet.create({
     height: 70,
     marginTop: 10,
   },
+
+  profileImage: {
+    height: 70,
+    width: 70,
+    borderRadius: 100,
+    objectFit: 'cover',
+    resizeMode: 'contain',
+  },
   avatar: {
     height: 70,
     width: 70,
@@ -574,10 +687,12 @@ const styles = StyleSheet.create({
     left: 45,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: PRIMARY_COLOR,
   },
   moreText: {
-    fontSize: 20,
-    fontWeight: '400',
+    fontSize: hp(4),
+    fontWeight: '700',
+    color: 'white',
   },
   descriptionContainer: {
     flex: 1,

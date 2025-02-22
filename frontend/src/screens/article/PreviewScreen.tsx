@@ -17,7 +17,6 @@ import useUploadImage from '../../../hooks/useUploadImage';
 import {useSocket} from '../../../SocketContext';
 //import io from 'socket.io-client';
 
-
 export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
   const {article, title, authorName, selectedGenres, localImages} =
     route.params;
@@ -267,3 +266,5 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
 });
+
+
