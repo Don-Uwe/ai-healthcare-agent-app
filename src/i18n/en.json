@@ -258,6 +258,7 @@
     "show_chart": "Show chart",
     "unwrap_all_wsol": "Unwrapped all WSOL",
     "unwrap_all_wsol_desc": "Unwrapped total {{amount}} WSOL",
+    "unwrap_all_wsol_desc_no_amount": "Unwrapped WSOL to SOL",
     "unwrap_wsol_info": "You have {{amount}} WSOL that you can <sub>Unwrap</sub>",
     "blink_referral_desc": "Copy your custom referral link and earn 1% rewards when it's used on Twitter with Blink!"
   },

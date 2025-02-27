@@ -14,7 +14,7 @@ import { TxCallbackProps } from '@/types/tx'
 import i18n from '@/i18n'
 import { fetchComputePrice } from '@/utils/tx/computeBudget'
 import { trimTailingZero } from '@/utils/numberish/formatter'
-import { getDefaultToastData, handleMultiTxToast } from '@/hooks/toast/multiToastUtil'
+import { getDefaultToastData, handleMultiTxToast, transformProcessData } from '@/hooks/toast/multiToastUtil'
 import { handleMultiTxRetry } from '@/hooks/toast/retryTx'
 import { isSwapSlippageError } from '@/utils/tx/swapError'
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
@@ -277,11 +277,65 @@ export const useSwapStore = createStore<SwapStore>(
 
     unWrapSolAct: async ({ amount, onSent, onError, ...txProps }): Promise<string | undefined> => {
       const raydium = useAppStore.getState().raydium
+      const txVersion = useAppStore.getState().txVersion
       if (!raydium) return
-      const { execute } = await raydium.tradeV2.unWrapWSol({
+      const { execute, builder } = await raydium.tradeV2.unWrapWSol({
         amount
         // computeBudgetConfig: await getComputeBudgetConfig()
       })
+
+      if (builder.allInstructions.length > 12) {
+        const { execute: multiExecute, transactions } =
+          txVersion === TxVersion.LEGACY ? await builder.sizeCheckBuild() : await builder.sizeCheckBuildV0()
+
+        const txLength = transactions.length
+        const { toastId, processedId, handler } = getDefaultToastData({
+          txLength,
+          ...txProps
+        })
+
+        const meta = {
+          title: i18n.t('swap.unwrap_all_wsol'),
+          description: i18n.t('swap.unwrap_all_wsol_desc_no_amount'),
+          txHistoryTitle: 'swap.unwrap_all_wsol',
+          txHistoryDesc: 'swap.unwrap_all_wsol_desc_no_amount',
+          txValues: {}
+        }
+
+        const getSubTxTitle = () => 'swap.unwrap_all_wsol_desc_no_amount'
+        multiExecute({
+          sequentially: true,
+          onTxUpdate: (data) => {
+            handleMultiTxRetry(data)
+            handleMultiTxToast({
+              toastId,
+              processedId: transformProcessData({ processedId, data }),
+              txLength,
+              meta,
+              handler,
+              getSubTxTitle
+            })
+          }
+        })
+          .then(() => {
+            handleMultiTxToast({
+              toastId,
+              processedId: transformProcessData({ processedId, data: [] }),
+              txLength,
+              meta,
+              handler,
+              getSubTxTitle
+            })
+            return { txId: '' }
+          })
+          .catch((e) => {
+            toastSubject.next({ txError: e, ...meta })
+            onError?.()
+            return { txId: '' }
+          })
+
+        return ''
+      }
 
       const values = { amount: trimTailingZero(new Decimal(amount).div(10 ** SOL_INFO.decimals).toFixed(SOL_INFO.decimals)) }
       const meta = {
