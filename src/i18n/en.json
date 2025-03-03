@@ -666,7 +666,7 @@
     "tour_note_title": "How to add more rewards?",
     "tour_note_des_1": "1. Rewards allocated to farms cannot be withdrawn after farming starts.",
     "tour_note_des_2": "2. If you want to increase the reward rate, additional rewards can be added while a farm is still running. The period must be extended by at least 7 days.",
-    "tour_note_des_3": "3. If you want to decrease the rewards rate, this can only be done 72 hours before the end of the current farming period, and the period must be extended by at least 7 days.",
+    "tour_note_des_3": "3. If you want to increase or decrease the emissions rate, you must wait until the current rewards period ends before starting a new period and then adjusting the rewards amount and emissions rate.",
     "title_des": "Before creating a farm, make sure to check the",
     "title_des_link": "detailed guide",
     "subtitle_pool": "Pool",
