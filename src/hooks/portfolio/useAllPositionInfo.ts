@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react'
 import { AccountInfo, PublicKey } from '@solana/web3.js'
-import { FormatFarmInfoOutV6, ApiV3PoolInfoConcentratedItem, ApiV3Token } from '@raydium-io/raydium-sdk-v2'
+import { FormatFarmInfoOutV6, ApiV3PoolInfoConcentratedItem, ApiV3Token, getATAAddress } from '@raydium-io/raydium-sdk-v2'
 
 import useFetchPoolById from '../pool/useFetchPoolById'
 
@@ -16,6 +16,7 @@ import { useFarmStore, useClmmStore, useAppStore } from '@/store'
 import { useEvent } from '../useEvent'
 import { debounce } from '@/utils/functionMethods'
 import Decimal from 'decimal.js'
+import { AccountState, NATIVE_MINT } from '@solana/spl-token'
 
 interface RewardInfo {
   mint: ApiV3Token
@@ -303,10 +304,29 @@ export default function useAllPositionInfo({ shouldFetch = true }: { shouldFetch
     }
 
     if (tab === 'standard' && rewardState.standard.isReady && standardFarmList.length) {
+      const tokenAcc = useTokenAccountStore.getState().tokenAccountRawInfos
+      const wsolMint = NATIVE_MINT.toBase58()
+      const farmInfoList = standardFarmList.filter((farm) => {
+        const hasReward = !!allFarmBalances.find((f) => f.id === farm.id)?.pendingRewards.some((r) => !new Decimal(r || 0).isZero())
+        if (!hasReward) return false
+        const [mintA, mintB] = [farm.symbolMints[0].address, farm.symbolMints[1].address]
+        const accAValid =
+          !mintA ||
+          mintA === wsolMint ||
+          tokenAcc.find((a) => a.accountInfo.mint.toBase58() === mintA)?.accountInfo.state !== AccountState.Frozen
+        const accBValid =
+          !mintB ||
+          mintB === wsolMint ||
+          tokenAcc.find((a) => a.accountInfo.mint.toBase58() === mintB)?.accountInfo.state !== AccountState.Frozen
+        return accAValid && accBValid
+      })
+
+      // farmInfoList: standardFarmList.filter(
+      //   (farm) => !!allFarmBalances.find((f) => f.id === farm.id)?.pendingRewards.some((r) => !new Decimal(r || 0).isZero())
+      // ),
+
       await harvestAllFarmAct({
-        farmInfoList: standardFarmList.filter(
-          (farm) => !!allFarmBalances.find((f) => f.id === farm.id)?.pendingRewards.some((r) => !new Decimal(r || 0).isZero())
-        ),
+        farmInfoList,
         onConfirmed: handleRefreshFarm
       })
     }
