@@ -60,7 +60,8 @@ export default function PoolListItemAprDetailPopoverContent({
                 </Box>
               </Flex>
               {aprData.rewards.map(({ apr, mint }, idx) => {
-                if (weeklyRewards[idx].amount === '0') return null
+                const reward = weeklyRewards.find((r) => r.token.address === mint.address)
+                if (!reward || reward.amount === '0') return null
                 return (
                   <Flex w="full" gap={4} key={`reward-${mint?.symbol}-${idx}`} justify="space-between" align="center">
                     <Flex fontSize={sizes.textXS} fontWeight="normal" color={colors.textSecondary} justify="flex-start" align="center">

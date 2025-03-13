@@ -1,5 +1,5 @@
 import { PublicKey } from '@solana/web3.js'
-import { ApiV3PoolInfoItem, TickUtils, ApiV3PoolInfoConcentratedItem, ApiV3PoolInfoCountItem } from '@raydium-io/raydium-sdk-v2'
+import { ApiV3PoolInfoItem, TickUtils, ApiV3PoolInfoConcentratedItem } from '@raydium-io/raydium-sdk-v2'
 import { getPoolName } from '@/features/Pools/util'
 import { wSolToSolString } from '@/utils/token'
 import { toTotalPercent } from '@/utils/numberish/toPercentString'
@@ -31,6 +31,9 @@ export const formatAprData = (data: ApiV3PoolInfoItem): ApiV3PoolInfoItem => {
   }
 }
 
+// if reward expired more than 10 days, do not display
+const isRewardValid = (time?: number) => !time || Date.now() - time * 1000 < 864000000
+
 export function formatPoolData(pool: ApiV3PoolInfoItem): FormattedPoolInfoItem {
   const allApr: TimeAprData = Object.values(AprKey).reduce(
     (acc, cur) => {
@@ -44,7 +47,7 @@ export function formatPoolData(pool: ApiV3PoolInfoItem): FormattedPoolInfoItem {
             isTradingFee: true
           },
           ...aprData.rewardApr
-            .filter((_, idx) => !!pool.rewardDefaultInfos[idx])
+            .filter((_, idx) => !!pool.rewardDefaultInfos[idx] && isRewardValid(pool.rewardDefaultInfos[idx].endTime))
             .map((r, idx) => ({
               apr: r,
               percent: toTotalPercent(r, aprData.apr ?? 0),
@@ -60,54 +63,58 @@ export function formatPoolData(pool: ApiV3PoolInfoItem): FormattedPoolInfoItem {
     }
   )
 
-  const weeklyRewards = pool.rewardDefaultInfos.map((r) => {
-    const amount = new Decimal(r.perSecond || 0).mul(60 * 60 * 24 * 7).div(10 ** r.mint.decimals)
-    return {
-      orgAmount: amount.toString(),
-      amount: trimTrailZero(amount.toFixed(r.mint.decimals)) as string,
-      token: r.mint,
-      startTime: r.startTime,
-      endTime: r.endTime
-    }
-  })
-  const formattedRewardInfos = pool.rewardDefaultInfos.map((r) => {
-    const apr = allApr[AprKey.Day].find((data) => data.token?.address === r.mint.address)?.apr || 0
-    const now = dayjs(Date.now() + useAppStore.getState().chainTimeOffset)
-    const openTime = r.startTime ? dayjs(r.startTime * 1000) : now
-    const endTime = r.endTime ? dayjs(r.endTime * 1000) : now
-    const totalRewards = new Decimal(r.perSecond || 0)
-      .mul(endTime.diff(openTime, 'seconds'))
-      .div(10 ** r.mint.decimals)
-      .toString()
-    const ongoing = openTime.isBefore(now, 'seconds') && endTime.isAfter(now, 'seconds')
-    const ended = endTime.isBefore(now, 'seconds') || r.perSecond <= 0
-    const unEmitRewards = new Decimal(Math.max(endTime.diff(now, 'seconds'), 0))
-      .mul(r.perSecond || 0)
-      .div(10 ** r.mint.decimals)
-      .toString()
-
-    return {
-      ...r,
-      apr,
-      startTime: openTime.valueOf(),
-      endTime: endTime.valueOf(),
-      weekly: new Decimal(r.perSecond || 0)
-        .mul(60 * 60 * 24 * 7)
-        .div(10 ** r.mint.decimals)
-        .toString(),
-      periodString: `${openTime.format('YYYY/MM/DD')} - ${endTime.format('YYYY/MM/DD')}`,
-      periodDays: endTime.diff(openTime, 'days'),
-      unEmit: unEmitRewards,
-      totalRewards,
-      upcoming: r.startTime ? openTime.isBefore(now) : false,
-      ongoing,
-      ended,
-      mint: {
-        ...r.mint,
-        symbol: getMintSymbol({ mint: r.mint, transformSol: true })
+  const weeklyRewards = pool.rewardDefaultInfos
+    .filter((r) => isRewardValid(r.endTime))
+    .map((r) => {
+      const amount = new Decimal(r.perSecond || 0).mul(60 * 60 * 24 * 7).div(10 ** r.mint.decimals)
+      return {
+        orgAmount: amount.toString(),
+        amount: trimTrailZero(amount.toFixed(r.mint.decimals)) as string,
+        token: r.mint,
+        startTime: r.startTime,
+        endTime: r.endTime
       }
-    }
-  })
+    })
+  const formattedRewardInfos = pool.rewardDefaultInfos
+    .filter((r) => isRewardValid(r.endTime))
+    .map((r) => {
+      const apr = allApr[AprKey.Day].find((data) => data.token?.address === r.mint.address)?.apr || 0
+      const now = dayjs(Date.now() + useAppStore.getState().chainTimeOffset)
+      const openTime = r.startTime ? dayjs(r.startTime * 1000) : now
+      const endTime = r.endTime ? dayjs(r.endTime * 1000) : now
+      const totalRewards = new Decimal(r.perSecond || 0)
+        .mul(endTime.diff(openTime, 'seconds'))
+        .div(10 ** r.mint.decimals)
+        .toString()
+      const ongoing = openTime.isBefore(now, 'seconds') && endTime.isAfter(now, 'seconds')
+      const ended = endTime.isBefore(now, 'seconds') || r.perSecond <= 0
+      const unEmitRewards = new Decimal(Math.max(endTime.diff(now, 'seconds'), 0))
+        .mul(r.perSecond || 0)
+        .div(10 ** r.mint.decimals)
+        .toString()
+
+      return {
+        ...r,
+        apr,
+        startTime: openTime.valueOf(),
+        endTime: endTime.valueOf(),
+        weekly: new Decimal(r.perSecond || 0)
+          .mul(60 * 60 * 24 * 7)
+          .div(10 ** r.mint.decimals)
+          .toString(),
+        periodString: `${openTime.format('YYYY/MM/DD')} - ${endTime.format('YYYY/MM/DD')}`,
+        periodDays: endTime.diff(openTime, 'days'),
+        unEmit: unEmitRewards,
+        totalRewards,
+        upcoming: r.startTime ? openTime.isBefore(now) : false,
+        ongoing,
+        ended,
+        mint: {
+          ...r.mint,
+          symbol: getMintSymbol({ mint: r.mint, transformSol: true })
+        }
+      }
+    })
 
   const poolDecimals = Math.max(pool.mintA.decimals, pool.mintB.decimals)
   const recommendDecimal = (val: number | string | Decimal) => {
