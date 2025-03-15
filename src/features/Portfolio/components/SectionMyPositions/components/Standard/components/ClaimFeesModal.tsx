@@ -138,9 +138,9 @@ export default function ClaimFeesModal({
               harvestLockCpmmLpAct({
                 poolInfo: poolInfo as unknown as ApiV3PoolInfoStandardItemCpmm,
                 nftMint: new PublicKey(lockData.nftMint),
-                lpFeeAmount: new BN(new Decimal(lockData.positionInfo.unclaimedFee.lp).mul(10 ** poolInfo.lpMint.decimals).toFixed(0)).mul(
-                  new BN(percent).div(new BN(100))
-                ),
+                lpFeeAmount: new BN(new Decimal(lockData.positionInfo.unclaimedFee.lp).mul(10 ** poolInfo.lpMint.decimals).toFixed(0))
+                  .mul(new BN(percent))
+                  .div(new BN(100)),
                 onSent: () => {
                   setIsSending(false)
                   setPercent(100)
