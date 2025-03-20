@@ -5736,10 +5736,10 @@
     eventemitter3 "^5.0.1"
     uuid "^9.0.0"
 
-"@solflare-wallet/wallet-adapter@^1.0.3":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@solflare-wallet/wallet-adapter/-/wallet-adapter-1.0.3.tgz#8d3b49a99702287f557fdc0d26856bdd30cd9149"
-  integrity sha512-wtATkqdxlnebMqW6Nysp7xIR63oSqtGxZ+rCjcXxsbLencCN5MLULchRlcIQAQWRK0KmHC66G8wsJV2v7xrDUQ==
+"@solflare-wallet/wallet-adapter@^1.0.4":
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/@solflare-wallet/wallet-adapter/-/wallet-adapter-1.0.4.tgz#bd5e6b8934c817c8999e1444f6448a34002487e0"
+  integrity sha512-ko1SIgHnzR552P03Ndm7RQoSWv7RGUvgSB5jRiwLjk3Vj3shdAa8x1V/z233DoLIHlgi8JyemcrZUJsEttYgqg==
   dependencies:
     "@solana/wallet-standard-chains" "^1.1.0"
     "@solana/wallet-standard-features" "^1.0.1"
