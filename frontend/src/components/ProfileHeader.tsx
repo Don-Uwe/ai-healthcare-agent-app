@@ -10,9 +10,10 @@ import {
 } from 'react-native';
 import React from 'react';
 import EllipseSvg from '../assets/svg/EllipseSvg';
-import {PRIMARY_COLOR} from '../helper/Theme';
+import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Feather from 'react-native-vector-icons/Feather';
 import {fp, hp, wp} from '../helper/Metric';
 import {ProfileHeaderProps} from '../type';
@@ -24,8 +25,6 @@ const ProfileHeader = ({
   username,
   userhandle,
   profileImg,
-  articlesPosted,
-  articlesSaved,
   userPhoneNumber,
   userEmailID,
   specialization,
@@ -35,6 +34,11 @@ const ProfileHeader = ({
   other,
   followers,
   followings,
+  onFollowerPress,
+  onFollowingPress,
+  isFollowing,
+  onFollowClick,
+  onOverviewClick,
 }: ProfileHeaderProps) => {
   const handleCall = phone => {
     let phoneNumber = phone;
@@ -101,27 +105,58 @@ const ProfileHeader = ({
               </TouchableOpacity>
             )}
           </View>
+        ) : other ? (
+          // <TouchableOpacity
+          //   style={styles.editProfileButton}
+          //   onPress={() => {
+          //     navigation.navigate('ProfileEditScreen');
+          //   }}>
+          //   <Text style={styles.editProfileButtonText}>Edit Profile</Text>
+          // </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              navigation.navigate('ProfileEditScreen');
+            }}>
+            <View style={styles.btnSM}>
+              <MaterialIcons name="edit" size={20} color="black" />
+              <Text style={styles.btnSMText}>Edit Profile</Text>
+            </View>
+          </TouchableOpacity>
         ) : (
-          other && (
-            // <TouchableOpacity
-            //   style={styles.editProfileButton}
-            //   onPress={() => {
-            //     navigation.navigate('ProfileEditScreen');
-            //   }}>
-            //   <Text style={styles.editProfileButtonText}>Edit Profile</Text>
-            // </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => {
-                navigation.navigate('ProfileEditScreen');
-              }}
-              style={{marginVertical: 10}}>
-              <View style={styles.btnSM}>
-                <MaterialIcons name="edit" size={20} color="black" />
-                <Text style={styles.btnSMText}>Edit Profile</Text>
-              </View>
-            </TouchableOpacity>
-          )
+          <TouchableOpacity onPress={onFollowClick}>
+            <View
+              style={{
+                ...styles.btnSM,
+                backgroundColor: isFollowing ? PRIMARY_COLOR : '#fff',
+              }}>
+              <MaterialIcons
+                name="person"
+                size={20}
+                color={isFollowing ? '#fff' : 'black'}
+              />
+              <Text
+                style={{
+                  ...styles.btnSMText,
+                  color: isFollowing ? '#fff' : 'black',
+                }}>
+                {isFollowing ? 'Following' : 'Follow'}
+              </Text>
+            </View>
+          </TouchableOpacity>
         )}
+        <TouchableOpacity onPress={onOverviewClick}>
+          {other && (
+            <View style={styles.btnSM}>
+              <MaterialCommunityIcon
+                name="view-dashboard"
+                size={20}
+                color="black"
+              />
+              <Text style={styles.btnSMText}>Overview</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+
         <TouchableOpacity
           onPress={() => {
             navigation.navigate('LogoutScreen', {
@@ -136,57 +171,41 @@ const ProfileHeader = ({
             </View>
           )}
         </TouchableOpacity>
-        <View style={styles.infoContainer}>
-          {isDoctor ? (
-            <>
-              <View style={styles.infoBlock}>
-                <Text style={[styles.infoText, {color: PRIMARY_COLOR}]}>
-                  {specialization}
-                </Text>
-                <Text style={styles.infoLabel}>Specialization</Text>
-              </View>
-              <View style={styles.infoBlock}>
-                <Text style={[styles.infoText, {color: PRIMARY_COLOR}]}>
-                  {qualification}
-                </Text>
-                <Text style={styles.infoLabel}>Qualification</Text>
-              </View>
-            </>
-          ) : (
-            <>
-              <View style={styles.infoBlock}>
-                <Text style={[styles.infoText, {color: PRIMARY_COLOR}]}>
-                  {articlesPosted}
-                </Text>
-                <Text style={styles.infoLabel}>Articles</Text>
-              </View>
-              {other && (
-                <View style={styles.infoBlock}>
-                  <Text style={[styles.infoText, {color: PRIMARY_COLOR}]}>
-                    {articlesSaved}
-                  </Text>
-                  <Text style={styles.infoLabel}>Saved</Text>
-                </View>
-              )}
-              {!other && (
-                <View style={styles.infoBlock}>
-                  <Text style={[styles.infoText, {color: PRIMARY_COLOR}]}>
-                    {followers}
-                  </Text>
-                  <Text style={styles.infoLabel}>Followers</Text>
-                </View>
-              )}
 
-              {!other && (
-                <View style={styles.infoBlock}>
-                  <Text style={[styles.infoText, {color: PRIMARY_COLOR}]}>
-                    {followings}
-                  </Text>
-                  <Text style={styles.infoLabel}>Followings</Text>
-                </View>
-              )}
-            </>
-          )}
+        {isDoctor && (
+          <View style={styles.infoContainer}>
+            <View style={styles.infoBlock}>
+              <Text style={[styles.infoText, {color: PRIMARY_COLOR}]}>
+                {specialization}
+              </Text>
+              <Text style={styles.infoLabel}>Specialization</Text>
+            </View>
+            <View style={styles.infoBlock}>
+              <Text style={[styles.infoText, {color: PRIMARY_COLOR}]}>
+                {qualification}
+              </Text>
+              <Text style={styles.infoLabel}>Qualification</Text>
+            </View>
+          </View>
+        )}
+        <View style={styles.infoContainer}>
+          <TouchableOpacity onPress={onFollowerPress} style={styles.infoBlock}>
+            <Text style={[styles.infoText, {color: PRIMARY_COLOR}]}>
+              {followers}
+            </Text>
+            <Text style={styles.infoLabel}>
+              {followers > 1 ? 'Followers' : 'Follower'}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={onFollowingPress} style={styles.infoBlock}>
+            <Text style={[styles.infoText, {color: PRIMARY_COLOR}]}>
+              {followings}
+            </Text>
+            <Text style={styles.infoLabel}>
+              {followings > 1 ? 'Followings' : 'Following'}
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
     </View>
@@ -197,7 +216,8 @@ export default ProfileHeader;
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 20,
+    //marginBottom: 20,
+    backgroundColor: ON_PRIMARY_COLOR,
   },
   ellipseSvg: {
     position: 'absolute',
@@ -207,6 +227,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: hp(12),
+    // backgroundColor: ON_PRIMARY_COLOR
   },
   profileImage: {
     height: 130,
@@ -266,9 +287,10 @@ const styles = StyleSheet.create({
   infoContainer: {
     width: wp(100),
     flexDirection: 'row',
+    //numRows: 2,
     alignItems: 'center',
     justifyContent: 'space-evenly',
-    marginTop: 10,
+    marginVertical: 10,
   },
   infoBlock: {
     alignItems: 'center',
@@ -288,6 +310,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 8,
     paddingVertical: 8,
+    marginVertical: 8,
     paddingHorizontal: 16,
     borderWidth: 1,
     backgroundColor: '#fff',

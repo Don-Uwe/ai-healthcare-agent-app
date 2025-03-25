@@ -12,12 +12,14 @@ import {PRIMARY_COLOR} from './src/helper/Theme';
 import {NavigationContainer} from '@react-navigation/native';
 import StackNavigation from './src/navigations/StackNavigation';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
+import {addEventListener} from '@react-native-community/netinfo';
+import {setConnected} from './src/store/NetworkSlice';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import messaging from '@react-native-firebase/messaging';
 import PushNotification from 'react-native-push-notification';
 
 import {SocketProvider} from './SocketContext';
-
+import {useDispatch} from 'react-redux';
 
 const queryClient = new QueryClient();
 function App(): React.JSX.Element {
@@ -28,6 +30,7 @@ function App(): React.JSX.Element {
 
   const BarStyle = Platform.OS === 'ios' ? 'dark-content' : 'light-content';
   const navigationContainerRef = useRef();
+  const dispatch = useDispatch();
 
   useEffect(() => {
     PushNotification.configure({
@@ -87,6 +90,12 @@ function App(): React.JSX.Element {
 
     // On app open
 
+    const unsubscribe1 = addEventListener(state => {
+      console.log('Connection type', state.type);
+      console.log('Is connected?', state.isConnected);
+      /** Dispatch use a reducer to update the value in store */
+      dispatch(setConnected(state.isConnected));
+    });
     const onOpenApp = messaging().onNotificationOpenedApp(remoteMessage => {
       console.log('Notification caused app to open:', remoteMessage);
       const data = remoteMessage.data;
@@ -95,6 +104,7 @@ function App(): React.JSX.Element {
 
     return () => {
       unsubscribe();
+      unsubscribe1();
       onOpenApp();
     };
   }, []);
@@ -118,8 +128,8 @@ function App(): React.JSX.Element {
       navigationContainerRef.current.navigate('NotificationScreen');
     } else if (data?.action === 'userFollow') {
       navigationContainerRef.current.navigate('NotificationScreen');
-    }else{
-      navigationContainerRef.current.navigate('NotificationScreen')
+    } else {
+      navigationContainerRef.current.navigate('NotificationScreen');
     }
   };
 
@@ -141,7 +151,6 @@ function App(): React.JSX.Element {
           </View>
         </SafeAreaProvider>
       </SocketProvider>
-
     </QueryClientProvider>
   );
 }

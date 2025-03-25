@@ -10,7 +10,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
-import {PRIMARY_COLOR} from '../helper/Theme';
+import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import {hp} from '../helper/Metric';
 import GeneralTab from '../components/GeneralTab';
 import ContactTab from '../components/ContactTab';
@@ -756,11 +756,11 @@ const ProfileEditScreen = ({navigation}) => {
 const styles = StyleSheet.create({
   safeAreaView: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: ON_PRIMARY_COLOR,
   },
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: ON_PRIMARY_COLOR,
     paddingHorizontal: 16,
   },
   contentContainer: {
@@ -796,7 +796,8 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    //backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: ON_PRIMARY_COLOR,
     position: 'absolute',
     height: '100%',
     width: '100%',

@@ -7,7 +7,7 @@ import {
   View,
 } from 'react-native';
 import React, {useEffect} from 'react';
-import {PRIMARY_COLOR} from '../helper/Theme';
+import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import NotificationItem from '../components/NotificationItem';
 import {useSelector} from 'react-redux';
 import {useMutation, useQuery} from '@tanstack/react-query';
@@ -194,7 +194,7 @@ export default NotificationScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: ON_PRIMARY_COLOR,
     justifyContent: 'center',
     //marginTop: 16,
   },

@@ -117,8 +117,8 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
       setCommentLikeLoading(data);
     });
 
-    socket.on('error', () => {
-      console.log('connection error');
+    socket.on('error', (data) => {
+      console.log('connection error', data);
     });
 
     socket.on('fetch-comments', data => {
@@ -454,6 +454,4 @@ const styles = StyleSheet.create({
 });
 
 export default CommentScreen;
-function useQuery(arg0: {}) {
-  throw new Error('Function not implemented.');
-}
+

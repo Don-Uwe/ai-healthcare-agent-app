@@ -18,8 +18,11 @@ export type RootStackParamList = {
     description: string;
     selectedGenres: Category[];
     imageUtils: string;
+    articleData: ArticleData | null | undefined;
   };
-  ArticleDescriptionScreen: undefined;
+  ArticleDescriptionScreen: {
+    article: ArticleData | null | undefined;
+  };
   PreviewScreen: {
     article: string;
     title: string;
@@ -29,10 +32,25 @@ export type RootStackParamList = {
     selectedGenres: Category[];
     localImages: string[];
     htmlImages: string[];
+    articleData: ArticleData | null | undefined;
   };
   ArticleScreen: {
     articleId: number;
     authorId: string;
+  };
+  ReviewScreen: {
+    articleId: number;
+    authorId: string;
+  };
+  OverviewScreen: {
+    articles: ArticleData[];
+  };
+  ConversationScreen: undefined;
+  FollowerScreen: {
+    followers: User[];
+  };
+  FollowingScreen: {
+    followings: User[];
   };
   CommentScreen: {
     articleId: number;
@@ -94,6 +112,11 @@ export type SignUpScreenSecondProp = StackScreenProps<
   'SignUpScreenSecond'
 >;
 
+export type ArticleDescriptionProp = StackScreenProps<
+  RootStackParamList,
+  'ArticleDescriptionScreen'
+>;
+
 export type LoginScreenProp = StackScreenProps<
   RootStackParamList,
   'LoginScreen'
@@ -102,6 +125,11 @@ export type LoginScreenProp = StackScreenProps<
 export type ArticleScreenProp = StackScreenProps<
   RootStackParamList,
   'ArticleScreen'
+>;
+
+export type ReviewScreenProp = StackScreenProps<
+  RootStackParamList,
+  'ReviewScreen'
 >;
 
 export type CommentScreenProp = StackScreenProps<
@@ -142,6 +170,22 @@ export type HomeScreenProps = CompositeScreenProps<
 >;
 
 export type ChatBotScreenProps = BottomTabScreenProps<TabParamList, 'Chatbot'>;
+export type OverviewScreenProps = StackScreenProps<
+  RootStackParamList,
+  'OverviewScreen'
+>;
+export type ConversationScreenProps = StackScreenProps<
+  RootStackParamList,
+  'ConversationScreen'
+>;
+export type FollowerScreenProps = StackScreenProps<
+  RootStackParamList,
+  'FollowerScreen'
+>;
+export type FollowingScreenProps = StackScreenProps<
+  RootStackParamList,
+  'FollowingScreen'
+>;
 
 export type PodcastScreenProps = BottomTabScreenProps<TabParamList, 'Podcasts'>;
 export type ProfileScreenProps = CompositeScreenProps<
@@ -170,6 +214,13 @@ export type ArticleCardProps = {
   handleReportAction: (item: ArticleData) => void;
 };
 
+export type ReviewCardProps = {
+  item: ArticleData;
+  onclick: (item: ArticleData) => void;
+  isSelected: Boolean;
+  setSelectedCardId: (id: string) => void;
+};
+
 export type Notification = {
   _id: string;
   userId: string;
@@ -196,6 +247,11 @@ export type ProfileHeaderProps = {
     | UserProfileScreenProp['navigation'];
   followers: number;
   followings: number;
+  onFollowerPress: () => void;
+  onFollowingPress: () => void;
+  isFollowing: boolean | undefined;
+  onFollowClick: () => void;
+  onOverviewClick: () => void;
 };
 
 export type HomeScreenFilterModalProps = {
@@ -257,7 +313,7 @@ export type EmailInputModalProp = {
   callback: (email: string) => void;
   backButtonClick: () => void;
   onDismiss: () => void;
-  isRequestVerification:boolean;
+  isRequestVerification: boolean;
 };
 
 export type Category = {
@@ -282,6 +338,7 @@ export type ArticleData = {
   _id: string;
   title: string;
   authorName: string;
+  description: string;
   authorId: string;
   content: string;
   summary: string;
@@ -295,6 +352,10 @@ export type ArticleData = {
   likedUsers: User[];
   savedUsers: string[];
   mentionedUsers: User[];
+  assigned_date: string | null;
+  discardReason: string;
+  status: string;
+  reviewer_id: string | null | undefined;
 };
 
 export type UserStatus = {
@@ -315,9 +376,9 @@ export type MonthStatus = {
 };
 
 export type ReportReason = {
-_id: string;
-reason: string;
-},
+  _id: string;
+  reason: string;
+};
 
 export type YearStatus = {
   month: string;
@@ -399,4 +460,6 @@ export type Comment = {
   likedUsers: string[];
   status: string;
   isEdited: Boolean;
+  isReview: Boolean;
+  isNote: Boolean;
 };

@@ -65,6 +65,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const socket = useSocket();
 
   console.log('User Token', user_token);
+  console.log('User Id', user_id);
 
   const handleCategorySelection = (category: CategoryType['name']) => {
     // Update Redux State
@@ -173,7 +174,9 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   );
   const handleNoteIconClick = () => {
     //navigation.navigate('EditorScreen');
-    navigation.navigate('ArticleDescriptionScreen');
+    navigation.navigate('ArticleDescriptionScreen',{
+      article: null
+    });
   };
 
   const handleCategoryClick = (category: string) => {

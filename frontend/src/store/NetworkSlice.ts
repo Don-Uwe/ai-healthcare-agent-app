@@ -1,21 +1,17 @@
-import { createSlice } from '@reduxjs/toolkit';
+import {createSlice} from '@reduxjs/toolkit';
 
-const networkSlice = createSlice(
-   {
-    name:'Network',
-    initialState: {
-        isConnected: true,
-     },
+const networkSlice = createSlice({
+  name: 'Network',
+  initialState: {
+    isConnected: true,
+  },
 
-    reducers:{
+  reducers: {
+    setConnected: (state, action) => {
+      state.isConnected = action.payload;
+    },
+  },
+});
 
-        setConnected: (state,action)=>{
-            state.isConnected = action.payload
-        },
-        
-    }
-   }
-)
-
-export const {setConnected} = networkSlice.actions
-export default networkSlice.reducer
+export const {setConnected} = networkSlice.actions;
+export default networkSlice.reducer;

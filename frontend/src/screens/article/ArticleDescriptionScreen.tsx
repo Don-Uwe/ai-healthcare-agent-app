@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 // import {hp} from '../../helper/Metric';
 import {useSelector} from 'react-redux';
-import {Category} from '../../type';
+import {ArticleDescriptionProp, Category} from '../../type';
 import Ionicon from 'react-native-vector-icons/Ionicons';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
 import {
@@ -22,14 +22,33 @@ import {
 import ImageResizer from '@bam.tech/react-native-image-resizer';
 import {hp} from '../../helper/Metric';
 
-const ArticleDescriptionScreen = ({navigation}) => {
+const ArticleDescriptionScreen = ({
+  navigation,
+  route,
+}: ArticleDescriptionProp) => {
+  const {article} = route.params;
   const [title, setTitle] = useState('');
   const [authorName, setAuthorName] = useState('');
   const [description, setDescription] = useState('');
   const [selectedGenres, setSelectedGenres] = useState<Category[]>([]);
   const {categories} = useSelector((state: any) => state.article);
   const [imageUtils, setImageUtils] = useState('');
- // console.log(categories);
+  // console.log(categories);
+
+  /** Set Initial Value */
+  useEffect(() => {
+    if (article) {
+      setTitle(article.title);
+      setAuthorName(article.authorName);
+      setDescription(article.description);
+      setSelectedGenres(article.tags);
+      setImageUtils(
+        article.imageUtils && article.imageUtils.length > 0
+          ? article.imageUtils[0]
+          : '',
+      );
+    }
+  }, []);
   const handleGenrePress = (genre: Category) => {
     if (isSelected(genre)) {
       setSelectedGenres(selectedGenres.filter(item => item.id !== genre.id));
@@ -68,6 +87,7 @@ const ArticleDescriptionScreen = ({navigation}) => {
       description: description,
       selectedGenres: selectedGenres,
       imageUtils: imageUtils,
+      articleData: article
     });
   };
 

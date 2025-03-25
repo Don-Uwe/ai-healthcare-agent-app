@@ -9,7 +9,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import CategoriesFlatlistModal from './CategoriesFlatlistModal';
-import {BUTTON_COLOR, PRIMARY_COLOR} from '../helper/Theme';
+import {BUTTON_COLOR, ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import {HomeScreenFilterModalProps} from '../type';
 import {hp} from '../helper/Metric';
 
@@ -86,7 +86,11 @@ const FilterModal = ({
       backdropComponent={renderBackdrop}
       snapPoints={snapPoints}
       stackBehavior="push"
-      style={{zIndex: -1, marginTop: insets.top}}>
+      style={{
+        zIndex: -1,
+        marginTop: insets.top,
+        backgroundColor: ON_PRIMARY_COLOR,
+      }}>
       <BottomSheetView style={styles.contentContainer}>
         <View style={styles.header}>
           <View style={styles.headerRight}>
@@ -274,6 +278,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     width: '100%',
+    backgroundColor: ON_PRIMARY_COLOR
   },
   title: {
     fontSize: 18,
@@ -421,7 +426,7 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize',
   },
   item: {
-    borderWidth: 0.5,
+    borderWidth: 0.2,
     borderRadius: 15,
     paddingVertical: hp(1.2),
     paddingHorizontal: 15,

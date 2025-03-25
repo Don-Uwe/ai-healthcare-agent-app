@@ -9,6 +9,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import ProfileHeader from '../components/ProfileHeader';
 import {
   EC2_BASE_URL,
+  FOLLOW_USER,
   REPOST_ARTICLE,
   UPDATE_VIEW_COUNT,
 } from '../helper/APIUtils';
@@ -31,6 +32,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   const [articleId, setArticleId] = useState<number>();
   const [selectedCardId, setSelectedCardId] = useState<string>('');
   const [repostItem, setRepostItem] = useState<ArticleData | null>(null);
+
   //const [authorId, setAuthorId] = useState<string>('');
   const socket = useSocket();
   const {
@@ -223,7 +225,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
     navigation.navigate('ReportScreen', {
       articleId: item._id,
       authorId: item.authorId,
-      commentId: null
+      commentId: null,
     });
   };
 
@@ -243,6 +245,71 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
     },
     [navigation, onRefresh, selectedCardId],
   );
+
+  const onFollowerClick = () => {
+    if (user && user.followers.length > 0) {
+      navigation.navigate('FollowerScreen', {followers: user.followers});
+    }
+  };
+
+  const onFollowingClick = () => {
+    if (user && user.followings.length > 0) {
+      navigation.navigate('FollowingScreen', {followings: user.followings});
+    }
+  };
+
+  const handleFollow = () => {
+    updateFollowMutation.mutate();
+  };
+
+  const updateFollowMutation = useMutation({
+    mutationKey: ['update-follow-status'],
+
+    mutationFn: async () => {
+      if (!user_token || user_token === '') {
+        Alert.alert('No token found');
+        return;
+      }
+      const res = await axios.post(
+        FOLLOW_USER,
+        {
+          followUserId: authorId,
+          //user_id: user_id,
+          //articleId: articleId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user_token}`,
+          },
+        },
+      );
+      return res.data.followStatus as boolean;
+    },
+
+    onSuccess: data => {
+      //console.log('follow success');
+      if (data) {
+        socket.emit('notification', {
+          type: 'userFollow',
+          userId: authorId,
+          message: {
+            title: `${user_handle ? user_handle : 'Someone'} has followed you`,
+            body: '',
+          },
+        });
+      }
+
+      refetch();
+      // refetchFollowers();
+      // refetchProfile();
+    },
+
+    onError: err => {
+      console.log('Update Follow mutation error', err);
+      Alert.alert('Try Again!');
+      //console.log('Follow Error', err);
+    },
+  });
 
   const renderHeader = () => {
     if (user === undefined) {
@@ -269,6 +336,15 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
         other={false}
         followers={user ? user.followers.length : 0}
         followings={user ? user.followings.length : 0}
+        onFollowerPress={onFollowerClick}
+        onFollowingPress={onFollowingClick}
+        isFollowing={
+          user && user.followers.some(follower => follower._id === user_id)
+            ? true
+            : false
+        }
+        onFollowClick={handleFollow}
+        onOverviewClick={() => {}}
       />
     );
   };

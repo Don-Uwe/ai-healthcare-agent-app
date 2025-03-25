@@ -1,10 +1,10 @@
-import {StyleSheet, View, BackHandler, Text, Alert, Image} from 'react-native';
-import React, {useCallback, useEffect, useState} from 'react';
-import {PRIMARY_COLOR} from '../helper/Theme';
+import {StyleSheet, View, Text, Alert} from 'react-native';
+import React, {useCallback, useState} from 'react';
+import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import ActivityOverview from '../components/ActivityOverview';
 import {Tabs, MaterialTabBar} from 'react-native-collapsible-tab-view';
 import ArticleCard from '../components/ArticleCard';
-import {useSelector} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import ProfileHeader from '../components/ProfileHeader';
@@ -20,6 +20,8 @@ import Loader from '../components/Loader';
 import {useFocusEffect} from '@react-navigation/native';
 import Snackbar from 'react-native-snackbar';
 import {useSocket} from '../../SocketContext';
+import {setUserHandle} from '../store/UserSlice';
+import {StatusEnum} from '../helper/Utils';
 
 const ProfileScreen = ({navigation}: ProfileScreenProps) => {
   const {user_handle, user_id, user_token} = useSelector(
@@ -31,6 +33,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
   const [selectedCardId, setSelectedCardId] = useState<string>('');
   const [repostItem, setRepostItem] = useState<ArticleData | null>(null);
   const socket = useSocket();
+  const dispatch = useDispatch();
   //const fallback_profile = require('../assets/avatar.jpg');
   //const user_fallback_profile = Image.resolveAssetSource(fallback_profile).uri;
 
@@ -52,6 +55,9 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
     },
   });
 
+  if (user) {
+    dispatch(setUserHandle(user.user_handle));
+  }
   const onArticleViewed = ({
     articleId,
     authorId,
@@ -238,6 +244,18 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
     [navigation, selectedCardId, onRefresh],
   );
 
+  const onFollowerClick = () => {
+    if (user && user.followers.length > 0) {
+      navigation.navigate('FollowerScreen', {followers: user.followers});
+    }
+  };
+
+  const onFollowingClick = () => {
+    if (user && user.followings.length > 0) {
+      navigation.navigate('FollowingScreen', {followings: user.followings});
+    }
+  };
+
   const renderHeader = () => {
     if (user === undefined) {
       return null;
@@ -261,8 +279,17 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
         qualification={user.qualification || ''}
         navigation={navigation}
         other={true}
-        followers={user ? user.followerCount : 0}
-        followings={user ? user.followingCount : 0}
+        followers={user ? user.followers.length : 0}
+        followings={user ? user.followings.length : 0}
+        onFollowerPress={onFollowerClick}
+        onFollowingPress={onFollowingClick}
+        isFollowing={false}
+        onFollowClick={() => {}}
+        onOverviewClick={() => {
+          if (user) {
+            navigation.navigate('OverviewScreen', {articles: user.articles});
+          }
+        }}
       />
     );
   };
@@ -312,7 +339,13 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
           {/* Tab 2 */}
           <Tabs.Tab name="Articles">
             <Tabs.FlatList
-              data={user !== undefined ? user.articles : []}
+              data={
+                user !== undefined
+                  ? user.articles.filter(
+                      article => article.status === StatusEnum.PUBLISHED,
+                    )
+                  : []
+              }
               renderItem={renderItem}
               showsVerticalScrollIndicator={false}
               contentContainerStyle={[
@@ -381,14 +414,16 @@ const styles = StyleSheet.create({
   },
   innerContainer: {
     flex: 1,
+    backgroundColor: ON_PRIMARY_COLOR,
   },
   tabsContainer: {
-    backgroundColor: 'white',
+    backgroundColor: ON_PRIMARY_COLOR,
     overflow: 'hidden',
   },
   scrollViewContentContainer: {
     paddingHorizontal: 16,
     marginTop: 16,
+    backgroundColor: ON_PRIMARY_COLOR,
   },
   flatListContentContainer: {
     paddingHorizontal: 16,
@@ -405,7 +440,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   tabBarStyle: {
-    backgroundColor: 'white',
+    backgroundColor: ON_PRIMARY_COLOR,
   },
   labelStyle: {
     fontWeight: '600',

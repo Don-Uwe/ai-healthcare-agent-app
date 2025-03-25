@@ -345,7 +345,7 @@ const ArticleCard = ({
                     name: 'Download as pdf',
                     action: () => {
                       handleAnimation();
-                      if (item?.content?.endsWith('html')) {
+                      if (item?.content?.endsWith('.html')) {
                         generatePDFFromUrl(
                           `${GET_STORAGE_DATA}/${item?.content}`,
                           item?.title,

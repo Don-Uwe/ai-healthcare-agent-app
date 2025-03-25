@@ -32,6 +32,7 @@ export default function CommentItem({
   commentLikeLoading,
   handleMentionClick,
   handleReportAction,
+  isFromArticle,
 }: {
   item: Comment;
   isSelected: Boolean;
@@ -43,6 +44,7 @@ export default function CommentItem({
   commentLikeLoading: Boolean;
   handleMentionClick: (user_handle: string) => void; // on mention user handle click view profile
   handleReportAction: (commentId: string, authorId: string) => void;
+  isFromArticle: boolean | undefined;
 }) {
   const width = useSharedValue(0);
   const yValue = useSharedValue(60);
@@ -97,46 +99,47 @@ export default function CommentItem({
 
   return (
     <View style={styles.commentContainer}>
-      {userId === item.userId._id && isSelected && (
-        <Animated.View style={[menuStyle, styles.shareIconContainer]}>
-          <ArticleFloatingMenu
-            items={[
-              {
-                name: 'Edit',
-                action: () => {
-                  handleEditAction(item);
-                  handleAnimation();
-                },
-                icon: 'edit',
+      <Animated.View style={[menuStyle, styles.shareIconContainer]}>
+        <ArticleFloatingMenu
+          items={[
+            {
+              name: 'Report',
+              action: () => {
+                handleReportAction(item._id, item.userId._id);
+                handleAnimation();
               },
-              {
-                name: 'Delete',
-                action: () => {
-                  deleteAction(item);
-                  handleAnimation();
-                },
-                icon: 'delete',
-              },
-              {
-                name: 'Report',
-                action: () => {
-                  handleReportAction(item._id, item.userId._id);
-                  handleAnimation();
-                },
-                icon: 'infocirlce',
-              },
-            ]}
-          />
-        </Animated.View>
-      )}
+              icon: 'infocirlce',
+            },
+            ...(userId === item.userId._id && isSelected && !isFromArticle
+              ? [
+                  {
+                    name: 'Edit',
+                    action: () => {
+                      handleEditAction(item);
+                      handleAnimation();
+                    },
+                    icon: 'edit',
+                  },
+                  {
+                    name: 'Delete',
+                    action: () => {
+                      deleteAction(item);
+                      handleAnimation();
+                    },
+                    icon: 'delete',
+                  },
+                ]
+              : []),
+          ]}
+        />
+      </Animated.View>
 
-      {userId === item.userId._id && (
-        <TouchableOpacity
-          style={styles.shareIconContainer}
-          onPress={() => handleAnimation()}>
-          <Entypo name="dots-three-vertical" size={20} color={'black'} />
-        </TouchableOpacity>
-      )}
+      <TouchableOpacity
+        style={styles.shareIconContainer}
+        onPress={() => handleAnimation()}>
+        <Entypo name="dots-three-vertical" size={20} color={'black'} />
+      </TouchableOpacity>
+
       {item.userId && item.userId.Profile_image ? (
         <Image
           source={{

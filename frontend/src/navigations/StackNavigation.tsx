@@ -30,6 +30,11 @@ import {RootStackParamList, TabParamList} from '../type';
 import {BUTTON_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import LogoutScreen from '../screens/auth/LogoutScreen';
 import {useNavigation, NavigationProp} from '@react-navigation/native';
+import OverviewScreen from '../screens/overview/OverviewScreen';
+import ConversationScreen from '../screens/overview/ConversationScreen';
+import FollowerScreen from '../screens/overview/FollowerScreen';
+import FollowingScreen from '../screens/overview/FollowingScreen';
+import ReviewScreen from '../screens/overview/ReviewScreen';
 const Stack = createStackNavigator<RootStackParamList>();
 
 const StackNavigation = () => {
@@ -197,6 +202,27 @@ const StackNavigation = () => {
       />
 
       <Stack.Screen
+        name="ReviewScreen"
+        component={ReviewScreen}
+        options={({navigation}) => ({
+          headerShown: true,
+          headerTitle: '',
+          headerTransparent: true,
+          headerBackTitleVisible: false,
+          // eslint-disable-next-line react/no-unstable-nested-components
+          headerLeft: () => (
+            <TouchableOpacity
+              style={styles.headerLeftButton}
+              onPress={() => {
+                navigation.goBack();
+              }}>
+              <FontAwesome6 size={25} name="arrow-left" color="white" />
+            </TouchableOpacity>
+          ),
+        })}
+      />
+
+      <Stack.Screen
         name="CommentScreen"
         component={CommentScreen}
         options={({navigation}) => ({
@@ -312,6 +338,103 @@ const StackNavigation = () => {
         options={{
           headerShown: false,
         }}
+      />
+
+      <Stack.Screen
+        name="OverviewScreen"
+        component={OverviewScreen}
+        options={({navigation}) => ({
+          headerShown: false,
+          headerTitle: 'Overview',
+          //headerTransparent: true,
+          headerTitleAlign: 'center',
+          headerBackTitleVisible: false,
+          headerStyle: {
+            elevation: 4, // Elevation for Android
+            // backgroundColor:'red',
+            shadowColor: '#000', // Shadow color for iOS
+            shadowOffset: {width: 0, height: 2}, // Shadow offset for iOS
+            shadowOpacity: 0.25, // Shadow opacity for iOS
+            shadowRadius: 3.5, // Shadow radius for iOS
+          },
+          // eslint-disable-next-line react/no-unstable-nested-components
+          headerLeft: () => (
+            <TouchableOpacity
+              style={styles.headerLeftButtonCommentScreen}
+              onPress={() => {
+                navigation.goBack();
+              }}>
+              <FontAwesome6 size={25} name="arrow-left" color={PRIMARY_COLOR} />
+            </TouchableOpacity>
+          ),
+        })}
+      />
+
+      <Stack.Screen
+        name="ConversationScreen"
+        component={ConversationScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+
+      <Stack.Screen
+        name="FollowerScreen"
+        component={FollowerScreen}
+        options={({navigation}) => ({
+          headerShown: true,
+          headerTitle: 'Followers',
+          //headerTransparent: true,
+          headerTitleAlign: 'center',
+          headerBackTitleVisible: false,
+          headerStyle: {
+            elevation: 4, // Elevation for Android
+            // backgroundColor:'red',
+            shadowColor: '#000', // Shadow color for iOS
+            shadowOffset: {width: 0, height: 2}, // Shadow offset for iOS
+            shadowOpacity: 0.25, // Shadow opacity for iOS
+            shadowRadius: 3.5, // Shadow radius for iOS
+          },
+          // eslint-disable-next-line react/no-unstable-nested-components
+          headerLeft: () => (
+            <TouchableOpacity
+              style={styles.headerLeftButtonCommentScreen}
+              onPress={() => {
+                navigation.goBack();
+              }}>
+              <FontAwesome6 size={25} name="arrow-left" color={PRIMARY_COLOR} />
+            </TouchableOpacity>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="FollowingScreen"
+        component={FollowingScreen}
+        options={({navigation}) => ({
+          headerShown: true,
+          headerTitle: 'Followings',
+          //headerTransparent: true,
+          headerTitleAlign: 'center',
+          headerBackTitleVisible: false,
+          headerStyle: {
+            elevation: 4, // Elevation for Android
+            // backgroundColor:'red',
+            shadowColor: '#000', // Shadow color for iOS
+            shadowOffset: {width: 0, height: 2}, // Shadow offset for iOS
+            shadowOpacity: 0.25, // Shadow opacity for iOS
+            shadowRadius: 3.5, // Shadow radius for iOS
+          },
+          // eslint-disable-next-line react/no-unstable-nested-components
+          headerLeft: () => (
+            <TouchableOpacity
+              style={styles.headerLeftButtonCommentScreen}
+              onPress={() => {
+                navigation.goBack();
+              }}>
+              <FontAwesome6 size={25} name="arrow-left" color={PRIMARY_COLOR} />
+            </TouchableOpacity>
+          ),
+        })}
       />
       <Stack.Screen
         name="ProfileEditScreen"

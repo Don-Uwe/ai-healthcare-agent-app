@@ -1,5 +1,5 @@
 /* eslint-disable react/no-unstable-nested-components */
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {StyleSheet, Text, ScrollView, Alert} from 'react-native';
 import {actions, RichEditor, RichToolbar} from 'react-native-pell-rich-editor';
 import Feather from 'react-native-vector-icons/Feather';
@@ -18,8 +18,14 @@ import {hp} from '../../helper/Metric';
 // If you want to discard your post, in that case no post will upload into storage,
 const EditorScreen = ({navigation, route}: EditorScreenProp) => {
   const insets = useSafeAreaInsets();
-  const {title, description, selectedGenres, authorName, imageUtils} =
-    route.params;
+  const {
+    title,
+    description,
+    selectedGenres,
+    authorName,
+    imageUtils,
+    articleData,
+  } = route.params;
   //const video = require('../../assets/play-button.png'); //icon for Addvideo
   const RichText = useRef(); //reference to the RichEditor component
   const [article, setArticle] = useState('');
@@ -46,6 +52,7 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
                 selectedGenres: selectedGenres,
                 localImages: localImages,
                 htmlImages: htmlImages,
+                articleData: articleData,
               });
             } else {
               Alert.alert('Error', 'Please enter at least 20 characters');
@@ -55,7 +62,18 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
         </TouchableOpacity>
       ),
     });
-  }, [navigation, article, title, description, imageUtils, selectedGenres]);
+  }, [
+    navigation,
+    article,
+    title,
+    description,
+    imageUtils,
+    selectedGenres,
+    authorName,
+    localImages,
+    htmlImages,
+    articleData,
+  ]);
 
   React.useEffect(() => {
     if (imageUtils) {
@@ -73,6 +91,13 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
       // );
     });
   }
+
+  useEffect(() => {
+    if (articleData) {
+      console.log('Content 2', articleData.content);
+      setArticle(articleData.content);
+    }
+  }, []);
 
   // Callback after height change
   function handleHeightChange(_height) {
@@ -191,61 +216,74 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
         onPressAddImage={onPressAddImage}
         iconSize={30}
         actions={[
-          // 'insertVideo',
-          'insertImage',
-          // ...defaultActions,
+          // Text Formatting Actions
+          actions.setBold,
+          actions.setItalic,
+          actions.setUnderline,
           actions.setStrikethrough,
-          actions.alignLeft,
-          actions.alignCenter,
-          actions.alignRight,
-          actions.undo,
-          actions.redo,
+
+          // Heading Actions
           actions.heading1,
           actions.heading2,
           actions.heading3,
           actions.heading4,
           actions.heading5,
           actions.heading6,
+
+          // Alignment Actions
+          actions.alignLeft,
+          actions.alignCenter,
+          actions.alignRight,
+
+          // List Actions
+          actions.insertBulletsList,
+          actions.insertOrderedList,
+
+          // Insert Actions
+          actions.insertLink,
+          actions.insertImage,
+          //actions.insertHTML,
+          actions.table,
+
+          // Undo/Redo Actions
+          actions.undo,
+          actions.redo,
+
+          // Blockquote Action
           actions.blockquote,
-          actions.insertHTML,
         ]}
-        // map icons for self made actions
         iconMap={{
+          // Custom Icons for Text Formatting Actions
           [actions.setStrikethrough]: ({tintColor}) => (
             <FontAwesome name="strikethrough" color={tintColor} size={26} />
           ),
+
+          // Custom Icons for Alignment Actions
           [actions.alignLeft]: ({tintColor}) => (
             <Feather name="align-left" color={tintColor} size={35} />
           ),
-
-          [actions.blockquote]: ({tintColor}) => (
-            <Entypo name="quote" color={tintColor} size={35} />
-          ),
-
-          [actions.undo]: ({tintColor}) => (
-            <IonIcon name="arrow-undo" color={tintColor} size={35} />
-          ),
-
-          [actions.redo]: ({tintColor}) => (
-            <IonIcon name="arrow-redo" color={tintColor} size={35} />
-          ),
-
           [actions.alignCenter]: ({tintColor}) => (
             <Feather name="align-center" color={tintColor} size={35} />
           ),
-
           [actions.alignRight]: ({tintColor}) => (
             <Feather name="align-right" color={tintColor} size={35} />
           ),
 
+          // Custom Icons for Undo/Redo Actions
+          [actions.undo]: ({tintColor}) => (
+            <IonIcon name="arrow-undo" color={tintColor} size={35} />
+          ),
+          [actions.redo]: ({tintColor}) => (
+            <IonIcon name="arrow-redo" color={tintColor} size={35} />
+          ),
+
+          // Custom Icons for Heading Actions
           [actions.heading1]: ({tintColor}) => (
             <Text style={[styles.tib, {color: tintColor}]}>H1</Text>
           ),
-
           [actions.heading2]: ({tintColor}) => (
             <Text style={[styles.tib, {color: tintColor}]}>H2</Text>
           ),
-
           [actions.heading3]: ({tintColor}) => (
             <Text style={[styles.tib, {color: tintColor}]}>H3</Text>
           ),
@@ -255,28 +293,34 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
           [actions.heading5]: ({tintColor}) => (
             <Text style={[styles.tib, {color: tintColor}]}>H5</Text>
           ),
-
           [actions.heading6]: ({tintColor}) => (
             <Text style={[styles.tib, {color: tintColor}]}>H6</Text>
           ),
 
-          // ['insertVideo']: video,
-          ['insertImage']: ({tintColor}) => (
-            <Entypo name="image" color={tintColor} size={26} />
+          // Custom Icon for Image Insertion
+          [actions.insertImage]: ({tintColor}) => (
+            <Entypo name="image" color={tintColor} size={29} />
+          ),
+
+          // Custom Icon for Blockquote Action
+          [actions.blockquote]: ({tintColor}) => (
+            <Entypo name="quote" color={tintColor} size={35} />
           ),
         }}
-        // insertVideo={insertVideo}
         insertImage={onPressAddImage}
       />
+
       <RichEditor
         disabled={false}
         containerStyle={styles.editor}
         ref={RichText}
         style={styles.rich}
         placeholder={'Start Writing Here'}
+        initialContentHTML={article}
         onChange={text => setArticle(text)}
         editorInitializedCallback={editorInitializedCallback}
         onHeightChange={handleHeightChange}
+        initialHeight={600}
       />
 
       {/**
@@ -315,7 +359,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   rich: {
-    // minHeight: 700,
+    //minHeight: 700,
     flex: 1,
     backgroundColor: ON_PRIMARY_COLOR,
   },
@@ -336,6 +380,8 @@ const styles = StyleSheet.create({
   },
   tib: {
     textAlign: 'center',
+    fontSize: 22,
+    fontWeight: '600',
     color: '#515156',
   },
 

@@ -14,7 +14,7 @@ const useUploadImage = () => {
       let type = match ? `image/${match[1]}` : `image`;
 
       const formData = new FormData();
-      formData.append('recFile', {uri, name: filename, type});
+      formData.append('file', {uri, name: filename, type});
 
       const response = await axios.post(UPLOAD_STORAGE, formData, {
         headers: {

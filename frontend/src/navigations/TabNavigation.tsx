@@ -13,6 +13,8 @@ import {View} from 'react-native';
 import {TabParamList} from '../type';
 import ChatbotScreen from '../screens/ChatbotScreen';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
+import BotScreen from '../screens/BotScreen';
+import {BUTTON_COLOR} from '../helper/Theme';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 const TabNavigation = () => {
@@ -66,20 +68,24 @@ const TabNavigation = () => {
       />
       <Tab.Screen
         name="Chatbot"
-        component={ChatbotScreen}
+        component={BotScreen}
         options={({navigation}) => ({
           headerTitleAlign: 'center',
           title: 'Chatbot',
           headerShown: true,
           headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: BUTTON_COLOR,
+          },
+          headerTintColor: 'white',
           headerShadowVisible: false,
           tabBarHideOnKeyboard: true,
           headerLeft: () => (
             <TouchableOpacity
               style={{
                 marginLeft: 15,
-                height: 40,
-                width: 40,
+                height: 35,
+                width: 35,
                 borderRadius: 50,
                 alignItems: 'center',
                 justifyContent: 'center',

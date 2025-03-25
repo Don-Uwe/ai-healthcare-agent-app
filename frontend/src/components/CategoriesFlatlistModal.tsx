@@ -7,7 +7,7 @@ import {
 } from '@gorhom/bottom-sheet';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {HomeScreenCategoriesFlatlistProps} from '../type.ts';
-import { BUTTON_COLOR } from '../helper/Theme.ts';
+import { BUTTON_COLOR, ON_PRIMARY_COLOR } from '../helper/Theme.ts';
 import { hp } from '../helper/Metric.ts';
 // Main component for the categories modal
 const CategoriesFlatlistModal = ({
@@ -76,7 +76,8 @@ const CategoriesFlatlistModal = ({
       snapPoints={snapPoints}
       index={1}
       backdropComponent={renderBackdrop}
-      enablePanDownToClose={true}>
+      enablePanDownToClose={true}
+      style={{backgroundColor: ON_PRIMARY_COLOR}}>
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <TouchableOpacity
