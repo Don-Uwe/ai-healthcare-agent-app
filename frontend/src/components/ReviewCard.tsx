@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 import React from 'react';
 import {fp, hp} from '../helper/Metric';
-import {ArticleCardProps, ReviewCardProps} from '../type';
+import {ReviewCardProps} from '../type';
 import moment from 'moment';
 import {BUTTON_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import {formatCount, StatusEnum} from '../helper/Utils';

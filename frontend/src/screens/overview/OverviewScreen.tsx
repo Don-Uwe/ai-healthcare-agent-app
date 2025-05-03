@@ -7,12 +7,13 @@ import {
   BUTTON_COLOR,
 } from '../../helper/Theme';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {ArticleData, OverviewScreenProps} from '../../type';
+import {ArticleData, EditRequest, OverviewScreenProps} from '../../type';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {StatusEnum} from '../../helper/Utils';
 import {FAB} from 'react-native-paper';
 import {hp} from '../../helper/Metric';
 import ArticleWorkSpace from './ArticleWorkSpace';
+import ImprovementWorkspace from './ImprovementWorkspace';
 
 export default function OverviewScreen({
   navigation,
@@ -44,6 +45,8 @@ export default function OverviewScreen({
       }
     }
   };
+
+  const handleImprovementClick = (item: EditRequest) => {};
   const renderTabBar = props => {
     return (
       <MaterialTabBar
@@ -72,9 +75,10 @@ export default function OverviewScreen({
           </Tabs.Tab>
 
           <Tabs.Tab name="Improvements">
-            <View />
+            <ImprovementWorkspace
+              handleImprovementClick={handleImprovementClick}
+            />
           </Tabs.Tab>
-
         </Tabs.Container>
       </View>
       <FAB
