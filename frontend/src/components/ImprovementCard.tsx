@@ -13,9 +13,9 @@ import {BUTTON_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import {StatusEnum} from '../helper/Utils';
 //import io from 'socket.io-client';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import WebView from 'react-native-webview';
 
 const ImprovementCard = ({item, onNavigate}: ImprovementCardProps) => {
-
   const backgroundColor =
     item?.status === StatusEnum.PUBLISHED
       ? 'green'
@@ -43,11 +43,15 @@ const ImprovementCard = ({item, onNavigate}: ImprovementCardProps) => {
             }>{`Article Title: ${item?.article?.title}`}</Text>
 
           <Text style={styles.title}>{'Request Reason: '}</Text>
-          <Text style={styles.description}>{`${
-            item?.edit_reason.length <= 100
-              ? item?.edit_reason
-              : item?.edit_reason.substring(0, 100)
-          }...`}</Text>
+
+          <View style={{height: 50, marginBottom: 10}}>
+            <WebView
+              originWhitelist={['*']}
+              source={{html: `${item?.edit_reason}`}}
+              style={{flex: 1}}
+              scrollEnabled={true}
+            />
+          </View>
 
           <Text style={styles.footerText1}>
             Last updated: {''}
