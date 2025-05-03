@@ -7,11 +7,9 @@ import {
   TouchableOpacity,
   View,
   ScrollView,
-  Alert,
   FlatList,
-  Pressable,
 } from 'react-native';
-import React, {FC, useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {
   BUTTON_COLOR,
@@ -39,18 +37,9 @@ import axios from 'axios';
 
 import {useSocket} from '../../../SocketContext';
 //import CommentScreen from '../CommentScreen';
-import {
-  MentionSuggestionsProps,
-  replaceMentionValues,
-} from 'react-native-controlled-mentions';
-import CommentItem from '../../components/CommentItem';
 import {setUserHandle} from '../../store/UserSlice';
 import {actions, RichEditor, RichToolbar} from 'react-native-pell-rich-editor';
-import {
-  createFeebackHTMLStructure,
-  createHTMLStructure,
-  StatusEnum,
-} from '../../helper/Utils';
+import {createFeebackHTMLStructure, StatusEnum} from '../../helper/Utils';
 import ReviewItem from '../../components/ReviewItem';
 
 const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
@@ -65,14 +54,9 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
   const dispatch = useDispatch();
 
   const [comments, setComments] = useState<Comment[]>([]);
-  const [newComment, setNewComment] = useState('');
+
   const flatListRef = useRef<FlatList<Comment>>(null);
-  const [selectedCommentId, setSelectedCommentId] = useState<string>('');
-  const [editMode, setEditMode] = useState<Boolean>(false);
-  const [editCommentId, setEditCommentId] = useState<string | null>(null);
-  const [commentLoading, setCommentLoading] = useState<Boolean>(false);
-  const [commentLikeLoading, setCommentLikeLoading] = useState<Boolean>(false);
-  const [mentions, setMentions] = useState<User[]>([]);
+ 
 
   const webViewRef = useRef<WebView>(null);
 
@@ -766,7 +750,7 @@ const styles = StyleSheet.create({
   },
   richBar: {
     height: 45,
-    backgroundColor: BUTTON_COLOR,
+    backgroundColor: PRIMARY_COLOR,
     marginTop: 0,
     marginBottom: hp(0.8),
   },

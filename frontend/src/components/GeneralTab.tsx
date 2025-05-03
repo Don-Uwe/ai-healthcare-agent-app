@@ -170,8 +170,6 @@ const styles = StyleSheet.create({
   },
   aboutInput: {
     height: 150,
-    // justifyContent: 'flex-start',
-    // alignItems: 'flex-start',
     backgroundColor: '#fff',
     paddingHorizontal: 16,
     paddingVertical: 16,

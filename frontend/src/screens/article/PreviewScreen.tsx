@@ -97,6 +97,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
         } else {
           // Resize the image and handle the upload
           const resizedImageUri = await resizeImage(localImage);
+
           uploadedUrl = await uploadImage(resizedImageUri?.uri);
         }
 

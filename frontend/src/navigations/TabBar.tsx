@@ -91,7 +91,7 @@ const TabBar = ({state, descriptors, navigation}: any) => {
                 )}
                 {label === 'Chatbot' && (
                   <Image
-                    source={{uri: VULTR_CHAT_PROFILE_AVTARS.assistant}} // Make sure the source is valid
+                    source={{uri: VULTR_CHAT_PROFILE_AVTARS.assistant}} 
                     style={{
                       width: 50,
                       height: 50,

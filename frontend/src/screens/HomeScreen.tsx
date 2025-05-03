@@ -115,31 +115,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
 
   useEffect(() => {
     getAllCategories();
-    /*
-    const unsubscribe = navigation.addListener('beforeRemove', e => {
-
-      if (!navigation.canGoBack()) {
-        // If there's no back stack, prevent the alert
-        return;
-      }
-      e.preventDefault();
-      Alert.alert(
-        'Warning',
-        'Do you want to exit',
-        [
-          {text: 'No', onPress: () => null},
-          {
-            text: 'Yes',
-            onPress: () => {
-              BackHandler.exitApp()
-            },
-          },
-        ],
-        {cancelable: true},
-      );
-    });
-    return unsubscribe;
-    */
+   
     return () => {};
   }, []);
 

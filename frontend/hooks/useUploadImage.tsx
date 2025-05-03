@@ -11,10 +11,13 @@ const useUploadImage = () => {
       // Extract filename and type
       let filename: string = uri.split('/').pop() || 'image';
       let match = /\.(\w+)$/.exec(filename);
-      let type = match ? `image/${match[1]}` : `image`;
+      let type = match ? `image/${match[1]}` : 'image';
 
       const formData = new FormData();
-      formData.append('file', {uri, name: filename, type});
+      // formData.append('file', {uri, name: filename, type});
+
+      formData.append('file', uri);
+
 
       const response = await axios.post(UPLOAD_STORAGE, formData, {
         headers: {

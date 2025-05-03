@@ -11,7 +11,7 @@ import {
 import {Notification} from '../type';
 import {fp, hp} from '../helper/Metric';
 import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { BUTTON_COLOR } from '../helper/Theme';
+import {BUTTON_COLOR} from '../helper/Theme';
 
 export default function NotificationItem({
   item,
@@ -20,7 +20,6 @@ export default function NotificationItem({
   item: Notification;
   handleDeleteAction: (item: Notification) => void;
 }) {
-
   return (
     <Pressable
       onPress={() => {
