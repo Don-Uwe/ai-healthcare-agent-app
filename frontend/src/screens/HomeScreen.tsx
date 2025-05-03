@@ -241,11 +241,15 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       articleId: string;
       reason: string;
     }) => {
+      //console.log('Article Id', articleId);
+      // console.log('Reason', reason);
+      // console.log('URL', REQUEST_EDIT);
+
       const res = await axios.post(
         REQUEST_EDIT,
         {
           article_id: articleId,
-          reason: reason,
+          edit_reason: reason,
         },
         {
           headers: {
@@ -257,10 +261,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       return res.data.message as string;
     },
     onSuccess: data => {
-      Snackbar.show({
-        text: data,
-        duration: Snackbar.LENGTH_SHORT,
-      });
+      Alert.alert(data);
     },
     onError: err => {
       console.log(err);

@@ -117,8 +117,8 @@ export default function Editor({
         style={[styles.richBar]}
         editor={RichText}
         disabled={false}
-        iconTint={'white'}
-        selectedIconTint={'black'}
+        iconTint={'black'}
+        selectedIconTint={PRIMARY_COLOR}
         disabledIconTint={'purple'}
         iconSize={30}
         actions={[
@@ -190,7 +190,7 @@ export default function Editor({
         containerStyle={styles.editor}
         ref={RichText}
         style={styles.rich}
-        placeholder={'Leave your note'}
+        placeholder={'Reason for improvement'}
         initialContentHTML={feedback}
         onChange={text => setFeedback(text)}
         editorInitializedCallback={editorInitializedCallback}
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
   },
   richBar: {
     height: 40,
-    backgroundColor: 'red',
+    backgroundColor: ON_PRIMARY_COLOR,
     marginTop: 0,
     marginBottom: hp(0.8),
   },

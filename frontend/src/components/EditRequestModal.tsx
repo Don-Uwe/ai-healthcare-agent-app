@@ -2,7 +2,6 @@ import {View, Text, StyleSheet, Modal, TouchableOpacity} from 'react-native';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import {hp, wp} from '../helper/Metric';
 import Ionicon from 'react-native-vector-icons/Ionicons';
-import {useState} from 'react';
 import Editor from './Editor';
 
 export default function EditRequestModal({
@@ -24,7 +23,7 @@ export default function EditRequestModal({
       <View style={styles.overlay}>
         <View style={styles.modalContainer}>
           <View style={styles.header}>
-            <Text style={styles.modalTitle}>Discard Article</Text>
+            <Text style={styles.modalTitle}>Improvement Reason</Text>
             <TouchableOpacity onPress={dismiss}>
               <Ionicon name="close" size={30} color="white" />
             </TouchableOpacity>
@@ -46,7 +45,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
-
     alignItems: 'center',
   },
   modalContainer: {
@@ -62,7 +60,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    backgroundColor: 'red',
+    backgroundColor: PRIMARY_COLOR,
     padding: wp(3),
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,

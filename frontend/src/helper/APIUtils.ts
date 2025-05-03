@@ -49,6 +49,7 @@ const GET_REPORT_REASONS = `${EC2_BASE_URL}/report/reasons`;
 const SUBMIT_REPORT = `${EC2_BASE_URL}/report/submit`;
 const SUBMIT_SUGGESTED_CHANGES = `${EC2_BASE_URL}/admin/submit-suggested-changes`;
 const REQUEST_EDIT = `${EC2_BASE_URL}/article/submit-edit-request`;
+const GET_ALL_ARTICLES_FOR_USER = `${EC2_BASE_URL}/user-articles`;
 
 export {
   EC2_BASE_URL,
@@ -95,4 +96,5 @@ export {
   SUBMIT_REPORT,
   SUBMIT_SUGGESTED_CHANGES,
   REQUEST_EDIT,
+  GET_ALL_ARTICLES_FOR_USER
 };

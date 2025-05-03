@@ -52,7 +52,7 @@ const ArticleCard = ({
   success,
   handleRepostAction,
   handleReportAction,
-  handleEditRequestAction
+  handleEditRequestAction,
 }: ArticleCardProps) => {
   const {user_token, user_id} = useSelector((state: any) => state.user);
 
@@ -364,6 +364,7 @@ const ArticleCard = ({
                     name: 'Request to edit',
                     action: () => {
                       setRequestModalVisible(true);
+                      console.log('modal visible', requestModalVisible);
                       handleAnimation();
                     },
                     icon: 'edit',

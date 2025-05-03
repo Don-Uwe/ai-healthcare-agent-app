@@ -163,6 +163,7 @@ export default function OverviewScreen({
               }
             />
           </Tabs.Tab>
+
           <Tabs.Tab name={discardLabel}>
             <Tabs.FlatList
               data={
@@ -185,6 +186,7 @@ export default function OverviewScreen({
               }
             />
           </Tabs.Tab>
+          
         </Tabs.Container>
       </View>
       <FAB

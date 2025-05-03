@@ -152,7 +152,7 @@ const ProfileHeader = ({
                 size={20}
                 color="black"
               />
-              <Text style={styles.btnSMText}>Overview</Text>
+              <Text style={styles.btnSMText}>Your Workspace</Text>
             </View>
           )}
         </TouchableOpacity>
