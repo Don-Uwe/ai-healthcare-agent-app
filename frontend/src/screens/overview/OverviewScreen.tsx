@@ -1,5 +1,5 @@
-import React, {useCallback, useState} from 'react';
-import {View, Text, StyleSheet, Alert} from 'react-native';
+import React from 'react';
+import {View, StyleSheet, Alert} from 'react-native';
 import {MaterialTabBar, Tabs} from 'react-native-collapsible-tab-view';
 import {
   PRIMARY_COLOR,
@@ -11,8 +11,8 @@ import {ArticleData, OverviewScreenProps} from '../../type';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {StatusEnum} from '../../helper/Utils';
 import {FAB} from 'react-native-paper';
-import ReviewCard from '../../components/ReviewCard';
 import {hp} from '../../helper/Metric';
+import ArticleWorkSpace from './ArticleWorkSpace';
 
 export default function OverviewScreen({
   navigation,
@@ -20,51 +20,6 @@ export default function OverviewScreen({
 }: OverviewScreenProps) {
   //const bottomBarHeight = useBottomTabBarHeight();
   const insets = useSafeAreaInsets();
-  const [refreshing, setRefreshing] = useState<boolean>(false);
-  const articles = route.params.articles;
-  const [selectedCardId, setSelectedCardId] = useState<string>('');
-  const progressLabel = `Progress (${
-    articles
-      ? articles.filter(
-          a =>
-            a.status === StatusEnum.AWAITING_USER ||
-            a.status === StatusEnum.REVIEW_PENDING ||
-            a.status === StatusEnum.IN_PROGRESS ||
-            a.status === StatusEnum.UNASSIGNED,
-        ).length
-      : 0
-  })`;
-  const publishedLabel = `Published (${
-    articles
-      ? articles.filter(a => a.status === StatusEnum.PUBLISHED).length
-      : 0
-  })`;
-
-  const discardLabel = `Discarded (${
-    articles
-      ? articles.filter(a => a.status === StatusEnum.DISCARDED).length
-      : 0
-  })`;
-
-  const onRefresh = () => {
-    //setRefreshing(true);
-    // refetch();
-    setRefreshing(false);
-  };
-
-  const renderItem = useCallback(
-    ({item}: {item: ArticleData}) => {
-      return (
-        <ReviewCard
-          item={item}
-          isSelected={selectedCardId === item._id}
-          setSelectedCardId={setSelectedCardId}
-          onclick={handleClickAction}
-        />
-      );
-    },
-    [navigation, onRefresh],
-  );
 
   const handleClickAction = (item: ArticleData) => {
     if (item?.status === StatusEnum.PUBLISHED) {
@@ -112,81 +67,14 @@ export default function OverviewScreen({
           {/* Tab 1 */}
 
           {/* Tab 2 */}
-          <Tabs.Tab name={publishedLabel}>
-            <Tabs.FlatList
-              data={
-                articles
-                  ? articles.filter(a => a.status === StatusEnum.PUBLISHED)
-                  : []
-              }
-              renderItem={renderItem}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={[
-                styles.flatListContentContainer,
-                {paddingBottom: 15},
-              ]}
-              keyExtractor={item => item?._id}
-              refreshing={refreshing}
-              ListEmptyComponent={
-                <View style={styles.emptyContainer}>
-                  <Text style={styles.message}>No Article Found</Text>
-                </View>
-              }
-            />
+          <Tabs.Tab name="Articles">
+            <ArticleWorkSpace handleClickAction={handleClickAction} />
           </Tabs.Tab>
 
-          <Tabs.Tab name={progressLabel}>
-            <Tabs.FlatList
-              data={
-                articles
-                  ? articles.filter(
-                      a =>
-                        a.status === StatusEnum.AWAITING_USER ||
-                        a.status === StatusEnum.REVIEW_PENDING ||
-                        a.status === StatusEnum.IN_PROGRESS ||
-                        a.status === StatusEnum.UNASSIGNED,
-                    )
-                  : []
-              }
-              renderItem={renderItem}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={[
-                styles.flatListContentContainer,
-                {paddingBottom: 15},
-              ]}
-              keyExtractor={item => item?._id}
-              refreshing={refreshing}
-              ListEmptyComponent={
-                <View style={styles.emptyContainer}>
-                  <Text style={styles.message}>No Article Found</Text>
-                </View>
-              }
-            />
+          <Tabs.Tab name="Improvements">
+            <View />
           </Tabs.Tab>
 
-          <Tabs.Tab name={discardLabel}>
-            <Tabs.FlatList
-              data={
-                articles
-                  ? articles.filter(a => a.status === StatusEnum.DISCARDED)
-                  : []
-              }
-              renderItem={renderItem}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={[
-                styles.flatListContentContainer,
-                {paddingBottom: 15},
-              ]}
-              keyExtractor={item => item?._id}
-              refreshing={refreshing}
-              ListEmptyComponent={
-                <View style={styles.emptyContainer}>
-                  <Text style={styles.message}>No Article Found</Text>
-                </View>
-              }
-            />
-          </Tabs.Tab>
-          
         </Tabs.Container>
       </View>
       <FAB
@@ -243,7 +131,7 @@ const styles = StyleSheet.create({
   },
   labelStyle: {
     fontWeight: '600',
-    fontSize: 14.6,
+    fontSize: 16,
     color: 'black',
     textTransform: 'capitalize',
   },
