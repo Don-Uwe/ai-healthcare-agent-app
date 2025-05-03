@@ -212,6 +212,11 @@ export type ArticleCardProps = {
   setSelectedCardId: (id: string) => void;
   handleRepostAction: (item: ArticleData) => void;
   handleReportAction: (item: ArticleData) => void;
+  handleEditRequestAction: (
+    item: ArticleData,
+    index: number,
+    reason: string,
+  ) => void;
 };
 
 export type ReviewCardProps = {

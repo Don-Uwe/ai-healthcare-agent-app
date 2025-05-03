@@ -20,6 +20,7 @@ import {
   ARTICLE_TAGS_API,
   EC2_BASE_URL,
   REPOST_ARTICLE,
+  REQUEST_EDIT,
 } from '../helper/APIUtils';
 import FilterModal from '../components/FilterModal';
 import {BottomSheetModal} from '@gorhom/bottom-sheet';
@@ -115,7 +116,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
 
   useEffect(() => {
     getAllCategories();
-   
+
     return () => {};
   }, []);
 
@@ -150,8 +151,8 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   );
   const handleNoteIconClick = () => {
     //navigation.navigate('EditorScreen');
-    navigation.navigate('ArticleDescriptionScreen',{
-      article: null
+    navigation.navigate('ArticleDescriptionScreen', {
+      article: null,
     });
   };
 
@@ -231,6 +232,42 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     },
   });
 
+  const submitEditRequestMutation = useMutation({
+    mutationKey: ['submit-edit-request'],
+    mutationFn: async ({
+      articleId,
+      reason,
+    }: {
+      articleId: string;
+      reason: string;
+    }) => {
+      const res = await axios.post(
+        REQUEST_EDIT,
+        {
+          article_id: articleId,
+          reason: reason,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user_token}`,
+          },
+        },
+      );
+
+      return res.data.message as string;
+    },
+    onSuccess: data => {
+      Snackbar.show({
+        text: data,
+        duration: Snackbar.LENGTH_SHORT,
+      });
+    },
+    onError: err => {
+      console.log(err);
+      Alert.alert('Try again');
+    },
+  });
+
   const handleReportAction = (item: ArticleData) => {
     navigation.navigate('ReportScreen', {
       articleId: item._id,
@@ -248,6 +285,13 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         success={onRefresh}
         handleRepostAction={handleRepostAction}
         handleReportAction={handleReportAction}
+        handleEditRequestAction={(item, index, reason) => {
+          // submitRequest
+          submitEditRequestMutation.mutate({
+            articleId: item._id,
+            reason: reason,
+          });
+        }}
       />
     );
   };
@@ -374,7 +418,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     return <Text style={styles.message}>No Article Found</Text>;
   }
 
-  if (isLoading) {
+  if (isLoading || submitEditRequestMutation.isPending) {
     return <Loader />;
   }
 

@@ -11,6 +11,7 @@ import {
   EC2_BASE_URL,
   FOLLOW_USER,
   REPOST_ARTICLE,
+  REQUEST_EDIT,
   UPDATE_VIEW_COUNT,
 } from '../helper/APIUtils';
 import {ArticleData, UserProfileScreenProp, User} from '../type';
@@ -229,6 +230,42 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
     });
   };
 
+  const submitEditRequestMutation = useMutation({
+    mutationKey: ['submit-edit-request-user'],
+    mutationFn: async ({
+      articleId,
+      reason,
+    }: {
+      articleId: string;
+      reason: string;
+    }) => {
+      const res = await axios.post(
+        REQUEST_EDIT,
+        {
+          article_id: articleId,
+          reason: reason,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user_token}`,
+          },
+        },
+      );
+
+      return res.data.message as string;
+    },
+    onSuccess: data => {
+      Snackbar.show({
+        text: data,
+        duration: Snackbar.LENGTH_SHORT,
+      });
+    },
+    onError: err => {
+      console.log(err);
+      Alert.alert('Try again');
+    },
+  });
+
   const renderItem = useCallback(
     ({item}: {item: ArticleData}) => {
       return (
@@ -240,6 +277,12 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
           setSelectedCardId={setSelectedCardId}
           handleRepostAction={handleRepostAction}
           handleReportAction={handleReportAction}
+          handleEditRequestAction={(item, index, reason) => {
+            submitEditRequestMutation.mutate({
+              articleId: item._id,
+              reason: reason,
+            });
+          }}
         />
       );
     },
@@ -363,7 +406,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
     );
   };
 
-  if (isLoading) {
+  if (isLoading || submitEditRequestMutation.isPending) {
     return (
       <View style={styles.loadingContainer}>
         <Loader />

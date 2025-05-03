@@ -10,7 +10,7 @@ import {
   Platform,
   NativeModules,
 } from 'react-native';
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {fp, hp} from '../helper/Metric';
 import {ArticleCardProps, ArticleData, User} from '../type';
 import moment from 'moment';
@@ -42,6 +42,7 @@ import RNFS from 'react-native-fs';
 import RNHTMLtoPDF from 'react-native-html-to-pdf';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import {useSocket} from '../../SocketContext';
+import EditRequestModal from './EditRequestModal';
 
 const ArticleCard = ({
   item,
@@ -51,6 +52,7 @@ const ArticleCard = ({
   success,
   handleRepostAction,
   handleReportAction,
+  handleEditRequestAction
 }: ArticleCardProps) => {
   const {user_token, user_id} = useSelector((state: any) => state.user);
 
@@ -58,6 +60,8 @@ const ArticleCard = ({
   const socket = useSocket();
   const width = useSharedValue(0);
   const yValue = useSharedValue(60);
+  const [requestModalVisible, setRequestModalVisible] =
+    useState<boolean>(false);
 
   const menuStyle = useAnimatedStyle(() => {
     return {
@@ -359,6 +363,7 @@ const ArticleCard = ({
                   {
                     name: 'Request to edit',
                     action: () => {
+                      setRequestModalVisible(true);
                       handleAnimation();
                     },
                     icon: 'edit',
@@ -403,6 +408,18 @@ const ArticleCard = ({
             Last updated: {''}
             {moment(new Date(item?.lastUpdated)).format('DD/MM/YYYY')}
           </Text>
+
+          <EditRequestModal
+            visible={requestModalVisible}
+            callback={(reason: string) => {
+              //onclick(item, 1, reason);
+              handleEditRequestAction(item, 1, reason);
+              setRequestModalVisible(false);
+            }}
+            dismiss={() => {
+              setRequestModalVisible(false);
+            }}
+          />
 
           {/* Like, Save, and Comment Actions */}
           <View style={styles.likeSaveContainer}>
@@ -452,7 +469,8 @@ const ArticleCard = ({
               }}
               style={styles.likeSaveChildContainer}>
               <FontAwesome5 name="retweet" size={22} color={PRIMARY_COLOR} />
-              <Text style={{...styles.title, marginStart: 3, color:PRIMARY_COLOR}}>
+              <Text
+                style={{...styles.title, marginStart: 3, color: PRIMARY_COLOR}}>
                 {formatCount(item.repostUsers.length)}
               </Text>
             </TouchableOpacity>

@@ -48,6 +48,7 @@ const CHECK_USER_HANDLE = `${EC2_BASE_URL}/user/check-user-handle`;
 const GET_REPORT_REASONS = `${EC2_BASE_URL}/report/reasons`;
 const SUBMIT_REPORT = `${EC2_BASE_URL}/report/submit`;
 const SUBMIT_SUGGESTED_CHANGES = `${EC2_BASE_URL}/admin/submit-suggested-changes`;
+const REQUEST_EDIT = `${EC2_BASE_URL}/article/submit-edit-request`;
 
 export {
   EC2_BASE_URL,
@@ -92,5 +93,6 @@ export {
   CHECK_USER_HANDLE,
   GET_REPORT_REASONS,
   SUBMIT_REPORT,
-  SUBMIT_SUGGESTED_CHANGES
+  SUBMIT_SUGGESTED_CHANGES,
+  REQUEST_EDIT,
 };

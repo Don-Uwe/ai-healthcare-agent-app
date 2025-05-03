@@ -237,6 +237,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
           success={onRefresh}
           handleRepostAction={handleRepostAction}
           handleReportAction={handleReportAction}
+          handleEditRequestAction={() => {}}
         />
       );
     },
