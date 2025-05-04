@@ -287,7 +287,8 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
         onFollowClick={() => {}}
         onOverviewClick={() => {
           if (user) {
-            navigation.navigate('OverviewScreen', {articles: user.articles});
+            //navigation.navigate('OverviewScreen', {articles: user.articles});
+            navigation.navigate('OverviewScreen');
           }
         }}
       />

@@ -38,9 +38,9 @@ import {actions, RichEditor, RichToolbar} from 'react-native-pell-rich-editor';
 import {createFeebackHTMLStructure, StatusEnum} from '../../helper/Utils';
 import ReviewItem from '../../components/ReviewItem';
 
-const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
+const ImprovementReviewScreen = ({navigation, route}: ReviewScreenProp) => {
   const insets = useSafeAreaInsets();
-  const {articleId, authorId} = route.params;
+  const {articleId, authorId} = route.params; // requestId
   const {user_token} = useSelector((state: any) => state.user);
   const RichText = useRef();
   const [feedback, setFeedback] = useState('');
@@ -60,14 +60,9 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
   }
 
   function editorInitializedCallback() {
-    RichText.current?.registerToolbar(function (_items) {
-      // items contain all the actions that are currently active
-      // console.log(
-      //   'Toolbar click, selected items (insert end callback):',
-      //   items,
-      // );
-    });
+    RichText.current?.registerToolbar(function (_items) {});
   }
+  // editrequest
   const {data: article} = useQuery({
     queryKey: ['get-article-by-id'],
     queryFn: async () => {
@@ -137,113 +132,6 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
       socket.off('error');
     };
   }, [socket, route.params.articleId]);
-
-  /*
-  const commentTests = [
-    {
-      _id: '1',
-      id: '1',
-      articleId: 101,
-      userId: {_id: 'u1', name: 'Author', email: 'author@example.com'},
-      content:
-        '<h4>Thank you for your feedback! I will make the changes you suggested.</h4>',
-      createdAt: '2025-03-20T10:00:00Z',
-      updatedAt: '2025-03-20T10:00:00Z',
-      parentCommentId: '',
-      replies: [],
-      likedUsers: [],
-      status: 'published',
-      isEdited: false,
-      isReview: false,
-      isNote: false,
-    },
-    {
-      _id: '2',
-      id: '2',
-      articleId: 101,
-      userId: {_id: 'u2', name: 'Moderator', email: 'moderator@example.com'},
-      content:
-        '<h4>The article looks good, but there are a few areas that need clarification regarding your <strong>main argument</strong> in the second section.</h4>',
-      createdAt: '2025-03-20T10:15:00Z',
-      updatedAt: '2025-03-20T10:15:00Z',
-      parentCommentId: '',
-      replies: [],
-      likedUsers: [],
-      status: 'review',
-      isEdited: false,
-      isReview: true,
-      isNote: false,
-    },
-    {
-      _id: '3',
-      id: '3',
-      articleId: 101,
-      userId: {_id: 'u1', name: 'Author', email: 'author@example.com'},
-      content:
-        '<h4>I see, I will rework that section to make my argument clearer. I’ll also provide more <em>evidence</em> to support my points.</h4>',
-      createdAt: '2025-03-20T10:30:00Z',
-      updatedAt: '2025-03-20T10:30:00Z',
-      parentCommentId: '2',
-      replies: [],
-      likedUsers: [],
-      status: 'published',
-      isEdited: false,
-      isReview: false,
-      isNote: false,
-    },
-    {
-      _id: '4',
-      id: '4',
-      articleId: 101,
-      userId: {_id: 'u2', name: 'Moderator', email: 'moderator@example.com'},
-      content:
-        '<h4>Great! Make sure to provide more context on the <strong>statistics</strong> you used. The readers might need additional clarification on how the data supports your claim.</h4>',
-      createdAt: '2025-03-20T10:45:00Z',
-      updatedAt: '2025-03-20T10:45:00Z',
-      parentCommentId: '3',
-      replies: [],
-      likedUsers: [],
-      status: 'review',
-      isEdited: false,
-      isReview: true,
-      isNote: false,
-    },
-    {
-      _id: '5',
-      id: '5',
-      articleId: 101,
-      userId: {_id: 'u1', name: 'Author', email: 'author@example.com'},
-      content:
-        '<h4>Understood! I’ll work on providing more context for the statistics. Thanks again for the constructive feedback.</h4>',
-      createdAt: '2025-03-20T11:00:00Z',
-      updatedAt: '2025-03-20T11:00:00Z',
-      parentCommentId: '4',
-      replies: [],
-      likedUsers: [],
-      status: 'published',
-      isEdited: false,
-      isReview: false,
-      isNote: false,
-    },
-    {
-      _id: '6',
-      id: '6',
-      articleId: 101,
-      userId: {_id: 'u2', name: 'Moderator', email: 'moderator@example.com'},
-      content:
-        "<h4>You're welcome! Once you make those changes, the article will be much clearer. Looking forward to seeing the updated version!</h4>",
-      createdAt: '2025-03-20T11:15:00Z',
-      updatedAt: '2025-03-20T11:15:00Z',
-      parentCommentId: '5',
-      replies: [],
-      likedUsers: [],
-      status: 'review',
-      isEdited: false,
-      isReview: true,
-      isNote: false,
-    },
-  ];
-  */
 
   useEffect(() => {
     if (article) {
@@ -474,8 +362,7 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
             </View>
           )}
 
-          {
-            /**
+        {/**
              * {article?.reviewer_id === null ? (
           <View style={{padding: wp(6), marginTop: hp(4.5)}}>
             <Text style={{...styles.authorName, marginBottom: 5}}>
@@ -487,14 +374,12 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
             ))}
           </View>
         )
-             */
-          } 
-          <View style={{padding: wp(6), marginTop: hp(4.5)}}>
-            {comments?.map((item, index) => (
-              <ReviewItem key={index} item={item} />
-            ))}
-          </View>
-        
+             */}
+        <View style={{padding: wp(6), marginTop: hp(4.5)}}>
+          {comments?.map((item, index) => (
+            <ReviewItem key={index} item={item} />
+          ))}
+        </View>
       </ScrollView>
       <View
         style={[
@@ -545,7 +430,7 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
     </View>
   );
 };
-export default ReviewScreen;
+export default ImprovementReviewScreen;
 
 const styles = StyleSheet.create({
   container: {

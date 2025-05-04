@@ -89,6 +89,8 @@ export default function ImprovementWorkspace({
     [handleImprovementClick],
   );
 
+ 
+
   if (isLoading) {
     return <Loader />;
   }

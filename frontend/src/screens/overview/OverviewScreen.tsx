@@ -15,10 +15,7 @@ import {hp} from '../../helper/Metric';
 import ArticleWorkSpace from './ArticleWorkSpace';
 import ImprovementWorkspace from './ImprovementWorkspace';
 
-export default function OverviewScreen({
-  navigation,
-  route,
-}: OverviewScreenProps) {
+export default function OverviewScreen({navigation}: OverviewScreenProps) {
   //const bottomBarHeight = useBottomTabBarHeight();
   const insets = useSafeAreaInsets();
 

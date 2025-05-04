@@ -42,9 +42,7 @@ export type RootStackParamList = {
     articleId: number;
     authorId: string;
   };
-  OverviewScreen: {
-    articles: ArticleData[];
-  };
+  OverviewScreen: undefined;
   ConversationScreen: undefined;
   FollowerScreen: {
     followers: User[];
