@@ -44,12 +44,8 @@ export type RootStackParamList = {
   };
   OverviewScreen: undefined;
   ConversationScreen: undefined;
-  FollowerScreen: {
-    followers: User[];
-  };
-  FollowingScreen: {
-    followings: User[];
-  };
+  FollowerScreen: undefined;
+  FollowingScreen: undefined;
   CommentScreen: {
     articleId: number;
     mentionedUsers: User[];

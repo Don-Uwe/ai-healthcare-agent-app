@@ -51,6 +51,8 @@ const SUBMIT_SUGGESTED_CHANGES = `${EC2_BASE_URL}/admin/submit-suggested-changes
 const REQUEST_EDIT = `${EC2_BASE_URL}/article/submit-edit-request`;
 const GET_ALL_ARTICLES_FOR_USER = `${EC2_BASE_URL}/user-articles`;
 const GET_ALL_IMPROVEMENTS_FOR_USER = `${EC2_BASE_URL}/article/improvements`;
+const GET_FOLLOWERS = `${EC2_BASE_URL}/user/followers`;
+const GET_FOLLOWINGS = `${EC2_BASE_URL}/user/followings`;
 
 export {
   EC2_BASE_URL,
@@ -98,5 +100,7 @@ export {
   SUBMIT_SUGGESTED_CHANGES,
   REQUEST_EDIT,
   GET_ALL_ARTICLES_FOR_USER,
-  GET_ALL_IMPROVEMENTS_FOR_USER
+  GET_ALL_IMPROVEMENTS_FOR_USER,
+  GET_FOLLOWERS,
+  GET_FOLLOWINGS
 };

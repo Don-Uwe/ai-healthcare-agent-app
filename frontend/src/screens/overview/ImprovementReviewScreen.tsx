@@ -40,7 +40,7 @@ import ReviewItem from '../../components/ReviewItem';
 
 const ImprovementReviewScreen = ({navigation, route}: ReviewScreenProp) => {
   const insets = useSafeAreaInsets();
-  const {articleId, authorId} = route.params; // requestId
+  const {requestId, authorId} = route.params; // requestId
   const {user_token} = useSelector((state: any) => state.user);
   const RichText = useRef();
   const [feedback, setFeedback] = useState('');
@@ -63,8 +63,8 @@ const ImprovementReviewScreen = ({navigation, route}: ReviewScreenProp) => {
     RichText.current?.registerToolbar(function (_items) {});
   }
   // editrequest
-  const {data: article} = useQuery({
-    queryKey: ['get-article-by-id'],
+  const {data: improvement} = useQuery({
+    queryKey: ['get-improvement-by-id'],
     queryFn: async () => {
       const response = await axios.get(`${GET_ARTICLE_BY_ID}/${articleId}`, {
         headers: {

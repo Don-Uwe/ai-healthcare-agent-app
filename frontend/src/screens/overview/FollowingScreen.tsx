@@ -8,78 +8,95 @@ import {
   Platform,
   Pressable,
 } from 'react-native';
-import {FollowingScreenProps} from '../../type';
+import {FollowingScreenProps, User} from '../../type';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
-import {GET_STORAGE_DATA} from '../../helper/APIUtils';
+import {GET_FOLLOWINGS, GET_STORAGE_DATA} from '../../helper/APIUtils';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useSelector} from 'react-redux';
+import {useQuery} from '@tanstack/react-query';
+import axios from 'axios';
 
-export default function FollowingScreen({
-  navigation,
-  route,
-}: FollowingScreenProps) {
+export default function FollowingScreen({navigation}: FollowingScreenProps) {
   const insets = useSafeAreaInsets();
-  const followings = route.params.followings;
-  const {user_id} = useSelector((state: any) => state.user);
+  //const followings = route.params.followings;
+
+  const {user_id, user_token} = useSelector((state: any) => state.user);
+
+  const {
+    data: followings,
+    refetch,
+    isLoading,
+  } = useQuery({
+    queryKey: ['get-user-followings'],
+    queryFn: async () => {
+      const response = await axios.get(GET_FOLLOWINGS, {
+        headers: {
+          Authorization: `Bearer ${user_token}`,
+        },
+      });
+      return response.data as User[];
+    },
+  });
 
   return (
     <View style={styles.container}>
-      {followings.length === 0 && (
+      {followings && followings.length === 0 && (
         <View style={styles.emptyContainer}>
           <Text style={styles.message}>No following user found</Text>
         </View>
       )}
-      {followings.map((follower, index) => (
-        <View
-          key={index}
-          style={[
-            styles.footer,
-            {
-              paddingBottom:
-                Platform.OS === 'ios' ? insets.bottom : insets.bottom + 20,
-            },
-          ]}>
-          <View style={styles.authorContainer}>
-            <TouchableOpacity
-              onPress={() => {
-                navigation.navigate('UserProfileScreen', {
-                  authorId: follower._id,
-                  author_handle: undefined,
-                });
-              }}>
-              {follower.Profile_image && follower.Profile_image !== '' ? (
-                <Image
-                  source={{
-                    uri: follower.Profile_image.startsWith('http')
-                      ? follower.Profile_image
-                      : `${GET_STORAGE_DATA}/${follower.Profile_image}`,
-                  }}
-                  style={styles.authorImage}
-                />
-              ) : (
-                <Image
-                  source={{
-                    uri: 'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-                  }}
-                  style={styles.authorImage}
-                />
-              )}
-            </TouchableOpacity>
-            <View>
-              <Text style={styles.authorName}>
-                {follower ? follower?.user_name : ''}
-              </Text>
-              <Text style={styles.authorFollowers}>
-                {follower.followers
-                  ? follower.followers.length > 1
-                    ? `${follower.followers.length} followers`
-                    : `${follower.followers.length} follower`
-                  : '0 follower'}
-              </Text>
+      {followings &&
+        followings.map((follower, index) => (
+          <View
+            key={index}
+            style={[
+              styles.footer,
+              {
+                paddingBottom:
+                  Platform.OS === 'ios' ? insets.bottom : insets.bottom + 20,
+              },
+            ]}>
+            <View style={styles.authorContainer}>
+              <TouchableOpacity
+                onPress={() => {
+                  navigation.navigate('UserProfileScreen', {
+                    authorId: follower._id,
+                    author_handle: undefined,
+                  });
+                }}>
+                {follower.Profile_image && follower.Profile_image !== '' ? (
+                  <Image
+                    source={{
+                      uri: follower.Profile_image.startsWith('http')
+                        ? follower.Profile_image
+                        : `${GET_STORAGE_DATA}/${follower.Profile_image}`,
+                    }}
+                    style={styles.authorImage}
+                  />
+                ) : (
+                  <Image
+                    source={{
+                      uri: 'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
+                    }}
+                    style={styles.authorImage}
+                  />
+                )}
+              </TouchableOpacity>
+              <View>
+                <Text style={styles.authorName}>
+                  {follower ? follower?.user_name : ''}
+                </Text>
+                <Text style={styles.authorFollowers}>
+                  {follower.followers
+                    ? follower.followers.length > 1
+                      ? `${follower.followers.length} followers`
+                      : `${follower.followers.length} follower`
+                    : '0 follower'}
+                </Text>
+              </View>
             </View>
-          </View>
 
-          {/**
+            {/**
              *
              * {follower && user_id !== follower._id && (
             <>
@@ -102,16 +119,16 @@ export default function FollowingScreen({
           )}
              */}
 
-          {follower &&
-            user_id !== follower._id &&
-            follower.followers &&
-            follower.followers.includes(user_id) && (
-              <Pressable style={styles.followButton}>
-                <Text style={styles.followButtonText}>Following</Text>
-              </Pressable>
-            )}
-        </View>
-      ))}
+            {follower &&
+              user_id !== follower._id &&
+              follower.followers &&
+              follower.followers.includes(user_id) && (
+                <Pressable style={styles.followButton}>
+                  <Text style={styles.followButtonText}>Following</Text>
+                </Pressable>
+              )}
+          </View>
+        ))}
     </View>
   );
 }
