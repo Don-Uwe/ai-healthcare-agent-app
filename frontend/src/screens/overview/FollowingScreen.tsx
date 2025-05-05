@@ -34,9 +34,12 @@ export default function FollowingScreen({navigation}: FollowingScreenProps) {
           Authorization: `Bearer ${user_token}`,
         },
       });
-      return response.data as User[];
+      console.log('Response', response.data.followers);
+      return response.data.followers as User[];
     },
   });
+
+ 
 
   return (
     <View style={styles.container}>

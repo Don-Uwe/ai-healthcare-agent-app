@@ -35,6 +35,7 @@ import ConversationScreen from '../screens/overview/ConversationScreen';
 import FollowerScreen from '../screens/overview/FollowerScreen';
 import FollowingScreen from '../screens/overview/FollowingScreen';
 import ReviewScreen from '../screens/overview/ReviewScreen';
+import ImprovementReviewScreen from '../screens/overview/ImprovementReviewScreen';
 const Stack = createStackNavigator<RootStackParamList>();
 
 const StackNavigation = () => {
@@ -204,6 +205,27 @@ const StackNavigation = () => {
       <Stack.Screen
         name="ReviewScreen"
         component={ReviewScreen}
+        options={({navigation}) => ({
+          headerShown: true,
+          headerTitle: '',
+          headerTransparent: true,
+          headerBackTitleVisible: false,
+          // eslint-disable-next-line react/no-unstable-nested-components
+          headerLeft: () => (
+            <TouchableOpacity
+              style={styles.headerLeftButton}
+              onPress={() => {
+                navigation.goBack();
+              }}>
+              <FontAwesome6 size={25} name="arrow-left" color="white" />
+            </TouchableOpacity>
+          ),
+        })}
+      />
+
+      <Stack.Screen
+        name="ImprovementReviewScreen"
+        component={ImprovementReviewScreen}
         options={({navigation}) => ({
           headerShown: true,
           headerTitle: '',

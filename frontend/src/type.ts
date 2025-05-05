@@ -42,6 +42,10 @@ export type RootStackParamList = {
     articleId: number;
     authorId: string;
   };
+  ImprovementReviewScreen:{
+    requestId: string;
+    authorId: string;
+  }
   OverviewScreen: undefined;
   ConversationScreen: undefined;
   FollowerScreen: undefined;
@@ -124,6 +128,11 @@ export type ArticleScreenProp = StackScreenProps<
 export type ReviewScreenProp = StackScreenProps<
   RootStackParamList,
   'ReviewScreen'
+>;
+
+export type ImpvReviewScreenProp = StackScreenProps<
+  RootStackParamList,
+  'ImprovementReviewScreen'
 >;
 
 export type CommentScreenProp = StackScreenProps<

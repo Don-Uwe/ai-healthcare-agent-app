@@ -53,6 +53,7 @@ const GET_ALL_ARTICLES_FOR_USER = `${EC2_BASE_URL}/user-articles`;
 const GET_ALL_IMPROVEMENTS_FOR_USER = `${EC2_BASE_URL}/article/improvements`;
 const GET_FOLLOWERS = `${EC2_BASE_URL}/user/followers`;
 const GET_FOLLOWINGS = `${EC2_BASE_URL}/user/followings`;
+const GET_IMPROVEMENT_BY_ID = `${EC2_BASE_URL}/get-improvement`;
 
 export {
   EC2_BASE_URL,
@@ -102,5 +103,6 @@ export {
   GET_ALL_ARTICLES_FOR_USER,
   GET_ALL_IMPROVEMENTS_FOR_USER,
   GET_FOLLOWERS,
-  GET_FOLLOWINGS
+  GET_FOLLOWINGS,
+  GET_IMPROVEMENT_BY_ID
 };

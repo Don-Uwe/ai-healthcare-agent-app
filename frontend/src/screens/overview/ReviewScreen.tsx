@@ -109,26 +109,26 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
     });
 
     socket.on('review-comments', data => {
-      console.log('comment loaded');
-      if (data.articleId === route.params.articleId) {
-        setComments(data.comments);
-      }
+      console.log('comment loaded', data);
+      //if (data.articleId === route.params.articleId) {
+      setComments(data);
+      // }
     });
 
     // Listen for new comments
     socket.on('new-feedback', data => {
       console.log('new comment loaded', data);
-      if (data.articleId === route.params.articleId) {
-        setComments(prevComments => {
-          const newComments = [data.comment, ...prevComments];
-          // Scroll to the first index after adding the new comment
-          if (flatListRef.current && newComments.length > 1) {
-            flatListRef?.current.scrollToIndex({index: 0, animated: true});
-          }
+      //if (data.articleId === route.params.articleId) {
+      setComments(prevComments => {
+        const newComments = [data, ...prevComments];
+        // Scroll to the first index after adding the new comment
+        if (flatListRef.current && newComments.length > 1) {
+          flatListRef?.current.scrollToIndex({index: 0, animated: true});
+        }
 
-          return newComments;
-        });
-      }
+        return newComments;
+      });
+      // }
     });
 
     return () => {
@@ -474,8 +474,7 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
             </View>
           )}
 
-          {
-            /**
+        {/**
              * {article?.reviewer_id === null ? (
           <View style={{padding: wp(6), marginTop: hp(4.5)}}>
             <Text style={{...styles.authorName, marginBottom: 5}}>
@@ -487,14 +486,12 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
             ))}
           </View>
         )
-             */
-          } 
-          <View style={{padding: wp(6), marginTop: hp(4.5)}}>
-            {comments?.map((item, index) => (
-              <ReviewItem key={index} item={item} />
-            ))}
-          </View>
-        
+             */}
+        <View style={{padding: wp(6), marginTop: hp(4.5)}}>
+          {comments?.map((item, index) => (
+            <ReviewItem key={index} item={item} />
+          ))}
+        </View>
       </ScrollView>
       <View
         style={[

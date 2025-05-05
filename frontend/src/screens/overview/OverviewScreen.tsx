@@ -43,7 +43,18 @@ export default function OverviewScreen({navigation}: OverviewScreenProps) {
     }
   };
 
-  const handleImprovementClick = (item: EditRequest) => {};
+  const handleImprovementClick = (item: EditRequest) => {
+    if (item?.status === StatusEnum.UNASSIGNED) {
+      Alert.alert('Your request is waiting for review');
+    } else if (item?.status === StatusEnum.DISCARDED) {
+      Alert.alert('Your request has not been approved');
+    } else {
+      navigation.navigate('ImprovementReviewScreen', {
+        requestId: item._id,
+        authorId: item.article.authorId, // although we don't need to send author id
+      });
+    }
+  };
   const renderTabBar = props => {
     return (
       <MaterialTabBar

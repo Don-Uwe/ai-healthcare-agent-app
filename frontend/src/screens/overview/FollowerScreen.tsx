@@ -33,7 +33,7 @@ export default function FollowerScreen({navigation}: FollowerScreenProps) {
           Authorization: `Bearer ${user_token}`,
         },
       });
-      return response.data as User[];
+      return response.data.followers as User[];
     },
   });
   return (

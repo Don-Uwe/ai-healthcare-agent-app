@@ -14,7 +14,13 @@ import {useQuery} from '@tanstack/react-query';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {ArticleData, ReviewScreenProp, User} from '../../type';
+import {
+  ArticleData,
+  EditRequest,
+  ImpvReviewScreenProp,
+  ReviewScreenProp,
+  User,
+} from '../../type';
 import Feather from 'react-native-vector-icons/Feather';
 import Entypo from 'react-native-vector-icons/Entypo';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -24,6 +30,7 @@ import WebView from 'react-native-webview';
 import {hp, wp} from '../../helper/Metric';
 import {
   GET_ARTICLE_BY_ID,
+  GET_IMPROVEMENT_BY_ID,
   GET_PROFILE_API,
   GET_STORAGE_DATA,
 } from '../../helper/APIUtils';
@@ -38,7 +45,7 @@ import {actions, RichEditor, RichToolbar} from 'react-native-pell-rich-editor';
 import {createFeebackHTMLStructure, StatusEnum} from '../../helper/Utils';
 import ReviewItem from '../../components/ReviewItem';
 
-const ImprovementReviewScreen = ({navigation, route}: ReviewScreenProp) => {
+const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
   const insets = useSafeAreaInsets();
   const {requestId, authorId} = route.params; // requestId
   const {user_token} = useSelector((state: any) => state.user);
@@ -66,13 +73,16 @@ const ImprovementReviewScreen = ({navigation, route}: ReviewScreenProp) => {
   const {data: improvement} = useQuery({
     queryKey: ['get-improvement-by-id'],
     queryFn: async () => {
-      const response = await axios.get(`${GET_ARTICLE_BY_ID}/${articleId}`, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
+      const response = await axios.get(
+        `${GET_IMPROVEMENT_BY_ID}/${requestId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${user_token}`,
+          },
         },
-      });
+      );
 
-      return response.data.article as ArticleData;
+      return response.data as EditRequest;
     },
   });
 
@@ -93,7 +103,7 @@ const ImprovementReviewScreen = ({navigation, route}: ReviewScreenProp) => {
   }
 
   useEffect(() => {
-    socket.emit('load-review-comments', {articleId: route.params.articleId});
+    socket.emit('load-review-comments', {requestId: route.params.requestId});
 
     socket.on('connect', () => {
       console.log('connection established');
@@ -104,26 +114,24 @@ const ImprovementReviewScreen = ({navigation, route}: ReviewScreenProp) => {
     });
 
     socket.on('review-comments', data => {
-      console.log('comment loaded');
-      if (data.articleId === route.params.articleId) {
-        setComments(data.comments);
-      }
+      console.log('comment loaded', data);
+      setComments(data);
     });
 
     // Listen for new comments
     socket.on('new-feedback', data => {
       console.log('new comment loaded', data);
-      if (data.articleId === route.params.articleId) {
-        setComments(prevComments => {
-          const newComments = [data.comment, ...prevComments];
-          // Scroll to the first index after adding the new comment
-          if (flatListRef.current && newComments.length > 1) {
-            flatListRef?.current.scrollToIndex({index: 0, animated: true});
-          }
+      // if (data.articleId === route.params.articleId) {
+      setComments(prevComments => {
+        const newComments = [data, ...prevComments];
+        // Scroll to the first index after adding the new comment
+        if (flatListRef.current && newComments.length > 1) {
+          flatListRef?.current.scrollToIndex({index: 0, animated: true});
+        }
 
-          return newComments;
-        });
-      }
+        return newComments;
+      });
+      //}
     });
 
     return () => {
@@ -131,13 +139,17 @@ const ImprovementReviewScreen = ({navigation, route}: ReviewScreenProp) => {
       socket.off('new-feedback');
       socket.off('error');
     };
-  }, [socket, route.params.articleId]);
+  }, [socket, route.params.requestId]);
 
   useEffect(() => {
-    if (article) {
-      let source = article?.content?.endsWith('.html')
-        ? {uri: `${GET_STORAGE_DATA}/${article.content}`}
-        : {html: article?.content};
+    if (improvement && improvement.article) {
+      let source = improvement.edited_content
+        ? improvement?.edited_content?.endsWith('.html')
+          ? {uri: `${GET_STORAGE_DATA}/${improvement.edited_content}`}
+          : {html: improvement?.edited_content}
+        : improvement?.article.content?.endsWith('.html')
+        ? {uri: `${GET_STORAGE_DATA}/${improvement?.article.content}`}
+        : {html: improvement?.article.content};
 
       const fetchContentLength = async () => {
         const length = await getContentLength(source);
@@ -149,7 +161,7 @@ const ImprovementReviewScreen = ({navigation, route}: ReviewScreenProp) => {
 
       fetchContentLength();
     }
-  }, [article]);
+  }, [improvement]);
 
   // console.log('author id', authorId);
 
@@ -165,9 +177,17 @@ const ImprovementReviewScreen = ({navigation, route}: ReviewScreenProp) => {
     document.head.appendChild(style);
   `;
 
-  const contentSource = article?.content?.endsWith('.html')
-    ? {uri: `${GET_STORAGE_DATA}/${article.content}`}
-    : {html: article?.content};
+  let contentSource = {html: '<p>No text found</p>'};
+
+  if (improvement && improvement.article) {
+    contentSource = improvement.edited_content
+      ? improvement?.edited_content?.endsWith('.html')
+        ? {uri: `${GET_STORAGE_DATA}/${improvement.edited_content}`}
+        : {html: improvement?.edited_content}
+      : improvement?.article.content?.endsWith('.html')
+      ? {uri: `${GET_STORAGE_DATA}/${improvement?.article.content}`}
+      : {html: improvement?.article.content};
+  }
 
   const getContentLength = async contentSource => {
     if (contentSource.uri) {
@@ -191,9 +211,12 @@ const ImprovementReviewScreen = ({navigation, route}: ReviewScreenProp) => {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.imageContainer}>
-          {article && article?.imageUtils && article?.imageUtils.length > 0 ? (
+          {improvement &&
+          improvement.article &&
+          improvement.article?.imageUtils &&
+          improvement.article?.imageUtils.length > 0 ? (
             <Image
-              source={{uri: article?.imageUtils[0]}}
+              source={{uri: improvement.article?.imageUtils[0]}}
               style={styles.image}
             />
           ) : (
@@ -203,11 +226,11 @@ const ImprovementReviewScreen = ({navigation, route}: ReviewScreenProp) => {
             />
           )}
 
-          {article?.status !== StatusEnum.DISCARDED && (
+          {improvement?.status !== StatusEnum.DISCARDED && (
             <TouchableOpacity
               onPress={() => {
                 navigation.navigate('ArticleDescriptionScreen', {
-                  article: article,
+                  article: improvement?.article,
                 });
               }}
               style={[
@@ -221,15 +244,17 @@ const ImprovementReviewScreen = ({navigation, route}: ReviewScreenProp) => {
           )}
         </View>
         <View style={styles.contentContainer}>
-          {article && article?.tags && (
+          {improvement?.article && improvement?.article?.tags && (
             <Text style={styles.categoryText}>
-              {article.tags.map(tag => tag.name).join(' | ')}
+              {improvement?.article.tags.map(tag => tag.name).join(' | ')}
             </Text>
           )}
 
-          {article && (
+          {improvement?.article && (
             <>
-              <Text style={styles.titleText}>{article?.title}</Text>
+              <Text style={styles.titleText}>
+                {improvement?.article?.title}
+              </Text>
             </>
           )}
           <View style={styles.descriptionContainer}>
@@ -250,117 +275,116 @@ const ImprovementReviewScreen = ({navigation, route}: ReviewScreenProp) => {
             />
           </View>
         </View>
-        {article?.status !== StatusEnum.DISCARDED &&
-          article?.reviewer_id !== null && (
-            <View style={styles.inputContainer}>
-              <RichToolbar
-                style={[styles.richBar]}
-                editor={RichText}
-                disabled={false}
-                iconTint={'white'}
-                selectedIconTint={'black'}
-                disabledIconTint={'purple'}
-                iconSize={30}
-                actions={[
-                  actions.setBold,
-                  actions.setItalic,
-                  actions.setUnderline,
-                  actions.setStrikethrough,
-                  actions.heading1,
-                  actions.heading2,
-                  actions.heading3,
-                  actions.heading4,
-                  actions.heading5,
-                  actions.heading6,
-                  actions.alignLeft,
-                  actions.alignCenter,
-                  actions.alignRight,
-                  actions.insertBulletsList,
-                  actions.insertOrderedList,
-                  actions.insertLink,
-                  actions.table,
-                  actions.undo,
-                  actions.redo,
-                  actions.blockquote,
-                ]}
-                iconMap={{
-                  [actions.setStrikethrough]: ({tintColor}) => (
-                    <FontAwesome
-                      name="strikethrough"
-                      color={tintColor}
-                      size={26}
-                    />
-                  ),
-                  [actions.alignLeft]: ({tintColor}) => (
-                    <Feather name="align-left" color={tintColor} size={35} />
-                  ),
-                  [actions.alignCenter]: ({tintColor}) => (
-                    <Feather name="align-center" color={tintColor} size={35} />
-                  ),
-                  [actions.alignRight]: ({tintColor}) => (
-                    <Feather name="align-right" color={tintColor} size={35} />
-                  ),
-                  [actions.undo]: ({tintColor}) => (
-                    <Ionicons name="arrow-undo" color={tintColor} size={35} />
-                  ),
-                  [actions.redo]: ({tintColor}) => (
-                    <Ionicons name="arrow-redo" color={tintColor} size={35} />
-                  ),
-                  [actions.heading1]: ({tintColor}) => (
-                    <Text style={[styles.tib, {color: tintColor}]}>H1</Text>
-                  ),
-                  [actions.heading2]: ({tintColor}) => (
-                    <Text style={[styles.tib, {color: tintColor}]}>H2</Text>
-                  ),
-                  [actions.heading3]: ({tintColor}) => (
-                    <Text style={[styles.tib, {color: tintColor}]}>H3</Text>
-                  ),
-                  [actions.heading4]: ({tintColor}) => (
-                    <Text style={[styles.tib, {color: tintColor}]}>H4</Text>
-                  ),
-                  [actions.heading5]: ({tintColor}) => (
-                    <Text style={[styles.tib, {color: tintColor}]}>H5</Text>
-                  ),
-                  [actions.heading6]: ({tintColor}) => (
-                    <Text style={[styles.tib, {color: tintColor}]}>H6</Text>
-                  ),
-                  [actions.blockquote]: ({tintColor}) => (
-                    <Entypo name="quote" color={tintColor} size={35} />
-                  ),
-                }}
-              />
-              <RichEditor
-                disabled={false}
-                containerStyle={styles.editor}
-                ref={RichText}
-                style={styles.rich}
-                placeholder={'Start conversation with admin'}
-                initialContentHTML={feedback}
-                onChange={text => setFeedback(text)}
-                editorInitializedCallback={editorInitializedCallback}
-                onHeightChange={handleHeightChange}
-                initialHeight={300}
-              />
+        {improvement?.status !== StatusEnum.DISCARDED && (
+          <View style={styles.inputContainer}>
+            <RichToolbar
+              style={[styles.richBar]}
+              editor={RichText}
+              disabled={false}
+              iconTint={'white'}
+              selectedIconTint={'black'}
+              disabledIconTint={'purple'}
+              iconSize={30}
+              actions={[
+                actions.setBold,
+                actions.setItalic,
+                actions.setUnderline,
+                actions.setStrikethrough,
+                actions.heading1,
+                actions.heading2,
+                actions.heading3,
+                actions.heading4,
+                actions.heading5,
+                actions.heading6,
+                actions.alignLeft,
+                actions.alignCenter,
+                actions.alignRight,
+                actions.insertBulletsList,
+                actions.insertOrderedList,
+                actions.insertLink,
+                actions.table,
+                actions.undo,
+                actions.redo,
+                actions.blockquote,
+              ]}
+              iconMap={{
+                [actions.setStrikethrough]: ({tintColor}) => (
+                  <FontAwesome
+                    name="strikethrough"
+                    color={tintColor}
+                    size={26}
+                  />
+                ),
+                [actions.alignLeft]: ({tintColor}) => (
+                  <Feather name="align-left" color={tintColor} size={35} />
+                ),
+                [actions.alignCenter]: ({tintColor}) => (
+                  <Feather name="align-center" color={tintColor} size={35} />
+                ),
+                [actions.alignRight]: ({tintColor}) => (
+                  <Feather name="align-right" color={tintColor} size={35} />
+                ),
+                [actions.undo]: ({tintColor}) => (
+                  <Ionicons name="arrow-undo" color={tintColor} size={35} />
+                ),
+                [actions.redo]: ({tintColor}) => (
+                  <Ionicons name="arrow-redo" color={tintColor} size={35} />
+                ),
+                [actions.heading1]: ({tintColor}) => (
+                  <Text style={[styles.tib, {color: tintColor}]}>H1</Text>
+                ),
+                [actions.heading2]: ({tintColor}) => (
+                  <Text style={[styles.tib, {color: tintColor}]}>H2</Text>
+                ),
+                [actions.heading3]: ({tintColor}) => (
+                  <Text style={[styles.tib, {color: tintColor}]}>H3</Text>
+                ),
+                [actions.heading4]: ({tintColor}) => (
+                  <Text style={[styles.tib, {color: tintColor}]}>H4</Text>
+                ),
+                [actions.heading5]: ({tintColor}) => (
+                  <Text style={[styles.tib, {color: tintColor}]}>H5</Text>
+                ),
+                [actions.heading6]: ({tintColor}) => (
+                  <Text style={[styles.tib, {color: tintColor}]}>H6</Text>
+                ),
+                [actions.blockquote]: ({tintColor}) => (
+                  <Entypo name="quote" color={tintColor} size={35} />
+                ),
+              }}
+            />
+            <RichEditor
+              disabled={false}
+              containerStyle={styles.editor}
+              ref={RichText}
+              style={styles.rich}
+              placeholder={'Start conversation with admin'}
+              initialContentHTML={feedback}
+              onChange={text => setFeedback(text)}
+              editorInitializedCallback={editorInitializedCallback}
+              onHeightChange={handleHeightChange}
+              initialHeight={300}
+            />
 
-              {feedback.length > 0 && (
-                <TouchableOpacity
-                  style={styles.submitButton}
-                  onPress={() => {
-                    // emit socket event for feedback
-                    const ans = createFeebackHTMLStructure(feedback);
-                    socket.emit('add-review-comment', {
-                      articleId: article?._id,
-                      reviewer_id: article?.reviewer_id,
-                      feedback: ans,
-                      isReview: false,
-                      isNote: true,
-                    });
-                  }}>
-                  <Text style={styles.submitButtonText}>Post</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          )}
+            {feedback.length > 0 && (
+              <TouchableOpacity
+                style={styles.submitButton}
+                onPress={() => {
+                  // emit socket event for feedback
+                  const ans = createFeebackHTMLStructure(feedback);
+                  socket.emit('add-review-comment', {
+                    requestId: improvement?._id,
+                    reviewer_id: improvement?.reviewer_id,
+                    feedback: ans,
+                    isReview: false,
+                    isNote: true,
+                  });
+                }}>
+                <Text style={styles.submitButtonText}>Post</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
 
         {/**
              * {article?.reviewer_id === null ? (
