@@ -24,7 +24,10 @@ const ImprovementCard = ({item, onNavigate}: ImprovementCardProps) => {
       : BUTTON_COLOR;
 
   return (
-    <Pressable>
+    <Pressable
+      onPress={() => {
+        onNavigate(item);
+      }}>
       <View style={styles.cardContainer}>
         {/* Image Section */}
 

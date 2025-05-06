@@ -26,7 +26,7 @@ const ArticleDescriptionScreen = ({
   navigation,
   route,
 }: ArticleDescriptionProp) => {
-  const {article} = route.params;
+  const {article, requestId} = route.params;
   const [title, setTitle] = useState('');
   const [authorName, setAuthorName] = useState('');
   const [description, setDescription] = useState('');
@@ -87,7 +87,8 @@ const ArticleDescriptionScreen = ({
       description: description,
       selectedGenres: selectedGenres,
       imageUtils: imageUtils,
-      articleData: article
+      articleData: article,
+      requestId: requestId
     });
   };
 

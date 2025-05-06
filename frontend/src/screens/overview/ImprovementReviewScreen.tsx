@@ -48,7 +48,7 @@ import ReviewItem from '../../components/ReviewItem';
 const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
   const insets = useSafeAreaInsets();
   const {requestId, authorId} = route.params; // requestId
-  const {user_token} = useSelector((state: any) => state.user);
+  const {user_token, user_handle} = useSelector((state: any) => state.user);
   const RichText = useRef();
   const [feedback, setFeedback] = useState('');
   const [webviewHeight, setWebViewHeight] = useState(0);
@@ -229,9 +229,17 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
           {improvement?.status !== StatusEnum.DISCARDED && (
             <TouchableOpacity
               onPress={() => {
-                navigation.navigate('ArticleDescriptionScreen', {
-                  article: improvement?.article,
-                });
+                if (improvement && improvement.article) {
+                  navigation.navigate('EditorScreen', {
+                    title: improvement?.article.title,
+                    description: improvement?.article.description,
+                    selectedGenres: improvement?.article.tags,
+                    imageUtils: improvement?.article.imageUtils[0],
+                    articleData: improvement?.article,
+                    requestId: improvement?._id,
+                    authorName: user_handle
+                  });
+                }
               }}
               style={[
                 styles.likeButton,

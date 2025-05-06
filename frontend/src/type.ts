@@ -19,6 +19,7 @@ export type RootStackParamList = {
     selectedGenres: Category[];
     imageUtils: string;
     articleData: ArticleData | null | undefined;
+    requestId: string | undefined;
   };
   ArticleDescriptionScreen: {
     article: ArticleData | null | undefined;
@@ -33,6 +34,7 @@ export type RootStackParamList = {
     localImages: string[];
     htmlImages: string[];
     articleData: ArticleData | null | undefined;
+    requestId: string | undefined;
   };
   ArticleScreen: {
     articleId: number;

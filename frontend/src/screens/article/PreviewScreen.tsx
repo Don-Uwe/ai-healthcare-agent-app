@@ -14,6 +14,7 @@ import {
   GET_IMAGE,
   GET_PROFILE_API,
   POST_ARTICLE,
+  SUBMIT_IMPROVEMENT,
   SUBMIT_SUGGESTED_CHANGES,
   UPLOAD_STORAGE,
 } from '../../helper/APIUtils';
@@ -32,6 +33,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
     selectedGenres,
     localImages,
     articleData,
+    requestId,
   } = route.params;
 
   //const socket = io('http://51.20.1.81:8084');
@@ -113,8 +115,12 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
         }
       }
 
+      // Submit Improvement
+      if (requestId) {
+        submitImprovementMutation.mutate({edited_content: finalArticle});
+      }
       // Submit changes or create a new post
-      if (articleData) {
+      else if (articleData) {
         // Submit suggested changes
         submitChangesMutation.mutate({article: finalArticle, image: imageUtil});
       } else {
@@ -291,6 +297,39 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
     },
   });
 
+  // Submit Improvement
+  const submitImprovementMutation = useMutation({
+    mutationKey: ['submiit-improvemeny-key'],
+    mutationFn: async ({edited_content}: {edited_content: string}) => {
+      const response = await axios.post(
+        SUBMIT_IMPROVEMENT,
+        {
+          requestId: requestId,
+          edited_content: edited_content,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user_token}`,
+          },
+        },
+      );
+      // console.log(article);
+      return response.data.newArticle as ArticleData;
+    },
+
+    onSuccess: data => {
+      Alert.alert('Changes submitted for review');
+
+      navigation.navigate('TabNavigation');
+    },
+    onError: error => {
+      console.log('Article post Error', error);
+      // console.log(error);
+
+      Alert.alert('Failed to upload your post');
+    },
+  });
+
   const createAndUploadHtmlFile = async () => {
     const filePath = `${RNFS.DocumentDirectoryPath}/${title.substring(
       0,
@@ -327,6 +366,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
   if (
     createPostMutation.isPending ||
     submitChangesMutation.isPending ||
+    submitImprovementMutation.isPending ||
     loading
   ) {
     return <Loader />;

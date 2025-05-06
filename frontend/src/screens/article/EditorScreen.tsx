@@ -25,6 +25,7 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
     authorName,
     imageUtils,
     articleData,
+    requestId,
   } = route.params;
   //const video = require('../../assets/play-button.png'); //icon for Addvideo
   const RichText = useRef(); //reference to the RichEditor component
@@ -53,6 +54,7 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
                 localImages: localImages,
                 htmlImages: htmlImages,
                 articleData: articleData,
+                requestId: requestId
               });
             } else {
               Alert.alert('Error', 'Please enter at least 20 characters');
