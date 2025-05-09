@@ -53,6 +53,7 @@ const GET_ALL_ARTICLES_FOR_USER = `${EC2_BASE_URL}/user-articles`;
 const GET_ALL_IMPROVEMENTS_FOR_USER = `${EC2_BASE_URL}/article/improvements`;
 const GET_FOLLOWERS = `${EC2_BASE_URL}/user/followers`;
 const GET_FOLLOWINGS = `${EC2_BASE_URL}/user/followings`;
+const GET_SOCIALS = `${EC2_BASE_URL}/user/socials`;
 const GET_IMPROVEMENT_BY_ID = `${EC2_BASE_URL}/get-improvement`;
 const SUBMIT_IMPROVEMENT = `${EC2_BASE_URL}/article/submit-improvement`;
 
@@ -106,5 +107,6 @@ export {
   GET_FOLLOWERS,
   GET_FOLLOWINGS,
   GET_IMPROVEMENT_BY_ID,
-  SUBMIT_IMPROVEMENT
+  SUBMIT_IMPROVEMENT,
+  GET_SOCIALS
 };

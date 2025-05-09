@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {
   View,
   Text,
@@ -8,28 +8,37 @@ import {
   Platform,
   Pressable,
 } from 'react-native';
-import {FollowingScreenProps, User} from '../../type';
-import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
-import {GET_FOLLOWINGS, GET_STORAGE_DATA} from '../../helper/APIUtils';
+import {SocialScreenProps, User} from './type';
+import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from './helper/Theme';
+import {GET_SOCIALS, GET_STORAGE_DATA} from './helper/APIUtils';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useSelector} from 'react-redux';
 import {useQuery} from '@tanstack/react-query';
 import axios from 'axios';
 
-export default function FollowingScreen({navigation}: FollowingScreenProps) {
+export default function Socialcreen({navigation, route}: SocialScreenProps) {
   const insets = useSafeAreaInsets();
-  //const followings = route.params.followings;
+  //const socials = route.params.socials;
+  const type = route.params.type;
 
   const {user_id, user_token} = useSelector((state: any) => state.user);
 
+  useEffect(() => {
+    navigation.setOptions({
+      headerTitle:
+        type == 1 ? 'Follower' : type == 2 ? 'Followings' : 'Contributors',
+      headerTitleAlign: 'center',
+    });
+  }, [navigation, type]);
+
   const {
-    data: followings,
+    data: socials,
     refetch,
     isLoading,
   } = useQuery({
-    queryKey: ['get-user-followings'],
+    queryKey: ['get-user-socials'],
     queryFn: async () => {
-      const response = await axios.get(GET_FOLLOWINGS, {
+      const response = await axios.get(`${GET_SOCIALS}?type=${type}`, {
         headers: {
           Authorization: `Bearer ${user_token}`,
         },
@@ -39,17 +48,15 @@ export default function FollowingScreen({navigation}: FollowingScreenProps) {
     },
   });
 
- 
-
   return (
     <View style={styles.container}>
-      {followings && followings.length === 0 && (
+      {socials && socials.length === 0 && (
         <View style={styles.emptyContainer}>
           <Text style={styles.message}>No following user found</Text>
         </View>
       )}
-      {followings &&
-        followings.map((follower, index) => (
+      {socials &&
+        socials.map((follower, index) => (
           <View
             key={index}
             style={[

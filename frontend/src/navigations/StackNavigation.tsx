@@ -32,10 +32,10 @@ import LogoutScreen from '../screens/auth/LogoutScreen';
 import {useNavigation, NavigationProp} from '@react-navigation/native';
 import OverviewScreen from '../screens/overview/OverviewScreen';
 import ConversationScreen from '../screens/overview/ConversationScreen';
-import FollowerScreen from '../screens/overview/FollowerScreen';
-import FollowingScreen from '../screens/overview/FollowingScreen';
+import Socialcreen from '../SocialScreen';
 import ReviewScreen from '../screens/overview/ReviewScreen';
 import ImprovementReviewScreen from '../screens/overview/ImprovementReviewScreen';
+import SocialScreen from '../SocialScreen';
 const Stack = createStackNavigator<RootStackParamList>();
 
 const StackNavigation = () => {
@@ -401,13 +401,13 @@ const StackNavigation = () => {
       />
 
       <Stack.Screen
-        name="FollowerScreen"
-        component={FollowerScreen}
+        name="SocialScreen"
+        component={SocialScreen}
         options={({navigation}) => ({
           headerShown: true,
-          headerTitle: 'Followers',
+          // headerTitle: 'Followers',
           //headerTransparent: true,
-          headerTitleAlign: 'center',
+          //headerTitleAlign: 'center',
           headerBackTitleVisible: false,
           headerStyle: {
             elevation: 4, // Elevation for Android
@@ -429,35 +429,7 @@ const StackNavigation = () => {
           ),
         })}
       />
-      <Stack.Screen
-        name="FollowingScreen"
-        component={FollowingScreen}
-        options={({navigation}) => ({
-          headerShown: true,
-          headerTitle: 'Followings',
-          //headerTransparent: true,
-          headerTitleAlign: 'center',
-          headerBackTitleVisible: false,
-          headerStyle: {
-            elevation: 4, // Elevation for Android
-            // backgroundColor:'red',
-            shadowColor: '#000', // Shadow color for iOS
-            shadowOffset: {width: 0, height: 2}, // Shadow offset for iOS
-            shadowOpacity: 0.25, // Shadow opacity for iOS
-            shadowRadius: 3.5, // Shadow radius for iOS
-          },
-          // eslint-disable-next-line react/no-unstable-nested-components
-          headerLeft: () => (
-            <TouchableOpacity
-              style={styles.headerLeftButtonCommentScreen}
-              onPress={() => {
-                navigation.goBack();
-              }}>
-              <FontAwesome6 size={25} name="arrow-left" color={PRIMARY_COLOR} />
-            </TouchableOpacity>
-          ),
-        })}
-      />
+   
       <Stack.Screen
         name="ProfileEditScreen"
         component={ProfileEditScreen}

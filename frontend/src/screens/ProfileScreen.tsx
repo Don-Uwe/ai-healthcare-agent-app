@@ -246,13 +246,17 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
 
   const onFollowerClick = () => {
     if (user && user.followers.length > 0) {
-      navigation.navigate('FollowerScreen');
+      navigation.navigate('SocialScreen',{
+        type: 1
+      });
     }
   };
 
   const onFollowingClick = () => {
     if (user && user.followings.length > 0) {
-      navigation.navigate('FollowingScreen');
+      navigation.navigate('SocialScreen',{
+        type: 2
+      });
     }
   };
 

@@ -50,8 +50,9 @@ export type RootStackParamList = {
   }
   OverviewScreen: undefined;
   ConversationScreen: undefined;
-  FollowerScreen: undefined;
-  FollowingScreen: undefined;
+  SocialScreen: {
+    type: number;
+  }
   CommentScreen: {
     articleId: number;
     mentionedUsers: User[];
@@ -183,13 +184,10 @@ export type ConversationScreenProps = StackScreenProps<
   RootStackParamList,
   'ConversationScreen'
 >;
-export type FollowerScreenProps = StackScreenProps<
+
+export type SocialScreenProps = StackScreenProps<
   RootStackParamList,
-  'FollowerScreen'
->;
-export type FollowingScreenProps = StackScreenProps<
-  RootStackParamList,
-  'FollowingScreen'
+  'SocialScreen'
 >;
 
 export type PodcastScreenProps = BottomTabScreenProps<TabParamList, 'Podcasts'>;
@@ -366,6 +364,7 @@ export type ArticleData = {
   discardReason: string;
   status: string;
   reviewer_id: string | null | undefined;
+  contributors: User[]
 };
 
 export type UserStatus = {

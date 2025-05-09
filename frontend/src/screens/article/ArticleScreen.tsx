@@ -924,6 +924,16 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
                   : `${authorFollowers.length} follower`
                 : '0 follower'}
             </Text>
+            {
+              article && article.contributors && article.contributors.length > 0 &&(
+                <TouchableOpacity onPress={()=>{
+
+                }}>
+                  <Text style={styles.contributorTextStyle}>See all contributors</Text>
+                </TouchableOpacity>
+              )
+            }
+            
           </View>
         </View>
         {article &&
@@ -1133,4 +1143,10 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
+  contributorTextStyle:{
+    fontWeight:"500",
+    color: PRIMARY_COLOR,
+    marginTop: hp(0.5),
+    fontSize: 14,
+  }
 });
