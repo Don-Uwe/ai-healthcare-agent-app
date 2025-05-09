@@ -20,7 +20,7 @@ import Loader from '../components/Loader';
 import {useFocusEffect} from '@react-navigation/native';
 import Snackbar from 'react-native-snackbar';
 import {useSocket} from '../../SocketContext';
-import {setUserHandle} from '../store/UserSlice';
+import {setSocialUserId, setUserHandle} from '../store/UserSlice';
 import {StatusEnum} from '../helper/Utils';
 
 const ProfileScreen = ({navigation}: ProfileScreenProps) => {
@@ -246,16 +246,20 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
 
   const onFollowerClick = () => {
     if (user && user.followers.length > 0) {
-      navigation.navigate('SocialScreen',{
-        type: 1
+      dispatch(setSocialUserId(''));
+      navigation.navigate('SocialScreen', {
+        type: 1,
+        articleId: undefined,
       });
     }
   };
 
   const onFollowingClick = () => {
     if (user && user.followings.length > 0) {
-      navigation.navigate('SocialScreen',{
-        type: 2
+      dispatch(setSocialUserId(''));
+      navigation.navigate('SocialScreen', {
+        type: 2,
+        articleId: undefined,
       });
     }
   };
@@ -295,6 +299,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
             navigation.navigate('OverviewScreen');
           }
         }}
+        improvementPublished={user ? user.improvements.length : 0}
       />
     );
   };
@@ -321,6 +326,8 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
     );
   }
 
+  
+
   return (
     <View style={styles.container}>
       <View style={[styles.innerContainer, {paddingTop: insets.top}]}>
@@ -342,7 +349,9 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
             </Tabs.ScrollView>
           </Tabs.Tab>
           {/* Tab 2 */}
-          <Tabs.Tab name="Articles">
+       {
+        /**
+         *    <Tabs.Tab name="Articles">
             <Tabs.FlatList
               data={
                 user !== undefined
@@ -366,8 +375,10 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
               }
             />
           </Tabs.Tab>
+         */
+       }
 
-          <Tabs.Tab name="Reposts">
+          <Tabs.Tab name={`Reposts (${user?.repostArticles.length})`}>
             <Tabs.FlatList
               data={user !== undefined ? user.repostArticles : []}
               renderItem={renderItem}
@@ -386,7 +397,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
             />
           </Tabs.Tab>
           {/* Tab 3 */}
-          <Tabs.Tab name="Saved">
+          <Tabs.Tab name={`Saved(${user?.savedArticles.length})`}>
             <Tabs.FlatList
               data={user !== undefined ? user.savedArticles : []}
               renderItem={renderItem}
@@ -449,7 +460,7 @@ const styles = StyleSheet.create({
   },
   labelStyle: {
     fontWeight: '600',
-    fontSize: 14,
+    fontSize: 15,
     color: 'black',
     textTransform: 'capitalize',
   },

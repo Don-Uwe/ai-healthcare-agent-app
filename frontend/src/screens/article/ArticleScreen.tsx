@@ -43,7 +43,7 @@ import {useSocket} from '../../../SocketContext';
 //import CommentScreen from '../CommentScreen';
 import Tts from 'react-native-tts';
 import CommentItem from '../../components/CommentItem';
-import {setUserHandle} from '../../store/UserSlice';
+import {setSocialUserId, setUserHandle} from '../../store/UserSlice';
 
 const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const insets = useSafeAreaInsets();
@@ -927,7 +927,11 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
             {
               article && article.contributors && article.contributors.length > 0 &&(
                 <TouchableOpacity onPress={()=>{
-
+                   dispatch(setSocialUserId(''));
+                 navigation.navigate('SocialScreen',{
+                  type: 3,
+                  articleId: Number(article?._id)
+                 })
                 }}>
                   <Text style={styles.contributorTextStyle}>See all contributors</Text>
                 </TouchableOpacity>

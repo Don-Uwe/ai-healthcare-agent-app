@@ -44,15 +44,16 @@ export type RootStackParamList = {
     articleId: number;
     authorId: string;
   };
-  ImprovementReviewScreen:{
+  ImprovementReviewScreen: {
     requestId: string;
     authorId: string;
-  }
+  };
   OverviewScreen: undefined;
   ConversationScreen: undefined;
   SocialScreen: {
     type: number;
-  }
+    articleId: number | undefined;
+  };
   CommentScreen: {
     articleId: number;
     mentionedUsers: User[];
@@ -260,6 +261,7 @@ export type ProfileHeaderProps = {
   isFollowing: boolean | undefined;
   onFollowClick: () => void;
   onOverviewClick: () => void;
+  improvementPublished: number;
 };
 
 export type HomeScreenFilterModalProps = {
@@ -364,7 +366,7 @@ export type ArticleData = {
   discardReason: string;
   status: string;
   reviewer_id: string | null | undefined;
-  contributors: User[]
+  contributors: User[];
 };
 
 export type UserStatus = {
@@ -435,6 +437,7 @@ export type User = {
   user_name: string;
   verificationToken: null;
   refreshToken: null;
+  improvements: string[]
 };
 
 export type Contactdetail = {

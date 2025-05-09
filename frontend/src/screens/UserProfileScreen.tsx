@@ -4,7 +4,7 @@ import {PRIMARY_COLOR} from '../helper/Theme';
 import ActivityOverview from '../components/ActivityOverview';
 import {Tabs, MaterialTabBar} from 'react-native-collapsible-tab-view';
 import ArticleCard from '../components/ArticleCard';
-import {useSelector} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import ProfileHeader from '../components/ProfileHeader';
 import {
@@ -22,12 +22,14 @@ import Loader from '../components/Loader';
 import {useFocusEffect} from '@react-navigation/native';
 import Snackbar from 'react-native-snackbar';
 import {useSocket} from '../../SocketContext';
+import {setSocialUserId} from '../store/UserSlice';
 
 const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   const {authorId, author_handle} = route.params;
   const {user_id, user_handle, user_token} = useSelector(
     (state: any) => state.user,
   );
+  const dispatch = useDispatch();
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
   const [articleId, setArticleId] = useState<number>();
@@ -291,16 +293,20 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
 
   const onFollowerClick = () => {
     if (user && user.followers.length > 0) {
+      dispatch(setSocialUserId(user._id));
       navigation.navigate('SocialScreen', {
-        type: 1
+        type: 1,
+        articleId: undefined,
       });
     }
   };
 
   const onFollowingClick = () => {
     if (user && user.followings.length > 0) {
+      dispatch(setSocialUserId(user._id));
       navigation.navigate('SocialScreen', {
-        type: 2
+        type: 2,
+        articleId: undefined,
       });
     }
   };
@@ -392,6 +398,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
         }
         onFollowClick={handleFollow}
         onOverviewClick={() => {}}
+        improvementPublished={user ? user.improvements.length : 0}
       />
     );
   };

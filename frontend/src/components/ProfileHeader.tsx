@@ -37,8 +37,10 @@ const ProfileHeader = ({
   onFollowerPress,
   onFollowingPress,
   isFollowing,
+  articlesPosted,
   onFollowClick,
   onOverviewClick,
+  improvementPublished,
 }: ProfileHeaderProps) => {
   const handleCall = phone => {
     let phoneNumber = phone;
@@ -207,6 +209,23 @@ const ProfileHeader = ({
             </Text>
           </TouchableOpacity>
         </View>
+        <View style={styles.infoContainer}>
+          <TouchableOpacity onPress={onOverviewClick} style={styles.infoBlock}>
+            <Text style={[styles.infoText2, {color: PRIMARY_COLOR}]}>
+              {improvementPublished > 1
+                ? `${improvementPublished} Improvements`
+                : `${improvementPublished} Improvement`}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={onOverviewClick} style={styles.infoBlock}>
+            <Text style={[styles.infoText2, {color: PRIMARY_COLOR}]}>
+              {articlesPosted > 1
+                ? `${articlesPosted} Articles`
+                : `${articlesPosted} Article`}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -221,12 +240,12 @@ const styles = StyleSheet.create({
   },
   ellipseSvg: {
     position: 'absolute',
-    top: -2,
+    top: -1,
   },
   contentContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: hp(12),
+    marginTop: hp(5),
     // backgroundColor: ON_PRIMARY_COLOR
   },
   profileImage: {
@@ -298,6 +317,10 @@ const styles = StyleSheet.create({
   infoText: {
     fontSize: 22,
     fontWeight: 'bold',
+  },
+  infoText2: {
+    fontSize: 19,
+    fontWeight: '600',
   },
   infoLabel: {
     fontSize: 18,

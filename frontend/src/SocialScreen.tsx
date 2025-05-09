@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -6,22 +6,28 @@ import {
   TouchableOpacity,
   Image,
   Platform,
-  Pressable,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import {SocialScreenProps, User} from './type';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from './helper/Theme';
-import {GET_SOCIALS, GET_STORAGE_DATA} from './helper/APIUtils';
+import {FOLLOW_USER, GET_SOCIALS, GET_STORAGE_DATA} from './helper/APIUtils';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useSelector} from 'react-redux';
-import {useQuery} from '@tanstack/react-query';
+import {useMutation, useQuery} from '@tanstack/react-query';
 import axios from 'axios';
+import {useSocket} from '../SocketContext';
 
 export default function Socialcreen({navigation, route}: SocialScreenProps) {
   const insets = useSafeAreaInsets();
   //const socials = route.params.socials;
-  const type = route.params.type;
+  const {type, articleId} = route.params;
+  const socket = useSocket();
+  const [userid, setUserId] = useState<string>('');
 
-  const {user_id, user_token} = useSelector((state: any) => state.user);
+  const {user_id, user_token, user_handle, social_user_id} = useSelector(
+    (state: any) => state.user,
+  );
 
   useEffect(() => {
     navigation.setOptions({
@@ -38,13 +44,64 @@ export default function Socialcreen({navigation, route}: SocialScreenProps) {
   } = useQuery({
     queryKey: ['get-user-socials'],
     queryFn: async () => {
-      const response = await axios.get(`${GET_SOCIALS}?type=${type}`, {
+      let url = articleId
+        ? `${GET_SOCIALS}?type=${type}&articleId=${articleId}`
+        : `${GET_SOCIALS}?type=${type}`;
+
+      url = social_user_id ? `${url}&social_user_id=${social_user_id}` : url;
+
+      const response = await axios.get(url, {
         headers: {
           Authorization: `Bearer ${user_token}`,
         },
       });
       console.log('Response', response.data.followers);
       return response.data.followers as User[];
+    },
+  });
+
+  const updateFollowMutation = useMutation({
+    mutationKey: ['update-follow-status'],
+
+    mutationFn: async (userid: string) => {
+      if (!user_token || user_token === '') {
+        Alert.alert('No token found');
+        return;
+      }
+      const res = await axios.post(
+        FOLLOW_USER,
+        {
+          followUserId: userid,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user_token}`,
+          },
+        },
+      );
+      return res.data.followStatus as boolean;
+    },
+
+    onSuccess: data => {
+      //console.log('follow success');
+      if (data) {
+        socket.emit('notification', {
+          type: 'userFollow',
+          userId: userid,
+          message: {
+            title: `${user_handle} has followed you`,
+            body: '',
+          },
+        });
+      }
+      refetch();
+      // refetchProfile();
+    },
+
+    onError: err => {
+      console.log('Update Follow mutation error', err);
+      Alert.alert('Try Again!');
+      //console.log('Follow Error', err);
     },
   });
 
@@ -106,37 +163,27 @@ export default function Socialcreen({navigation, route}: SocialScreenProps) {
               </View>
             </View>
 
-            {/**
-             *
-             * {follower && user_id !== follower._id && (
-            <>
-              {updateFollowMutation.isPending && authorId === follower._id ? (
-                <ActivityIndicator size={40} color={PRIMARY_COLOR} />
-              ) : (
-                <TouchableOpacity
-                  style={styles.followButton}
-                  onPress={() => {
-                    handleFollow(follower._id);
-                  }}>
-                  <Text style={styles.followButtonText}>
-                    {follower.followers && follower.followers.includes(user_id)
-                      ? 'Following'
-                      : 'Follow'}
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </>
-          )}
-             */}
-
-            {follower &&
-              user_id !== follower._id &&
-              follower.followers &&
-              follower.followers.includes(user_id) && (
-                <Pressable style={styles.followButton}>
-                  <Text style={styles.followButtonText}>Following</Text>
-                </Pressable>
-              )}
+            {follower && user_id !== follower._id && (
+              <>
+                {updateFollowMutation.isPending ? (
+                  <ActivityIndicator size={40} color={PRIMARY_COLOR} />
+                ) : (
+                  <TouchableOpacity
+                    style={styles.followButton}
+                    onPress={() => {
+                      setUserId(follower._id);
+                      updateFollowMutation.mutate(follower._id);
+                    }}>
+                    <Text style={styles.followButtonText}>
+                      {follower.followers &&
+                      follower.followers.includes(user_id)
+                        ? 'Following'
+                        : 'Follow'}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </>
+            )}
           </View>
         ))}
     </View>
