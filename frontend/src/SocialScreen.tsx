@@ -48,7 +48,10 @@ export default function Socialcreen({navigation, route}: SocialScreenProps) {
         ? `${GET_SOCIALS}?type=${type}&articleId=${articleId}`
         : `${GET_SOCIALS}?type=${type}`;
 
-      url = social_user_id ? `${url}&social_user_id=${social_user_id}` : url;
+      url =
+        social_user_id && social_user_id !== ''
+          ? `${url}&social_user_id=${social_user_id}`
+          : url;
 
       const response = await axios.get(url, {
         headers: {
