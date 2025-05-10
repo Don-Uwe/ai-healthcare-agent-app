@@ -14,7 +14,7 @@ import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from './helper/Theme';
 import {FOLLOW_USER, GET_SOCIALS, GET_STORAGE_DATA} from './helper/APIUtils';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useSelector} from 'react-redux';
-import {useMutation, useQuery} from '@tanstack/react-query';
+import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import axios from 'axios';
 import {useSocket} from '../SocketContext';
 
@@ -24,12 +24,13 @@ export default function Socialcreen({navigation, route}: SocialScreenProps) {
   const {type, articleId} = route.params;
   const socket = useSocket();
   const [userid, setUserId] = useState<string>('');
-
+  const queryClient = useQueryClient();
   const {user_id, user_token, user_handle, social_user_id} = useSelector(
     (state: any) => state.user,
   );
 
   useEffect(() => {
+    queryClient.invalidateQueries({queryKey: ['get-user-socials']});
     navigation.setOptions({
       headerTitle:
         type == 1 ? 'Follower' : type == 2 ? 'Followings' : 'Contributors',
