@@ -53,7 +53,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
       } else {
         url = `${EC2_BASE_URL}/user/getuserprofile?id=${user_id}`;
       }
-      console.log('User token', user_token);
+      // console.log('User token', user_token);
       const response = await axios.get(url, {
         headers: {
           Authorization: `Bearer ${user_token}`,
@@ -214,6 +214,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   const onRefresh = () => {
     setRefreshing(true);
     refetch();
+
     setRefreshing(false);
   };
 
@@ -293,20 +294,22 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
 
   const onFollowerClick = () => {
     if (user && user.followers.length > 0) {
-      dispatch(setSocialUserId(user._id));
+      // dispatch(setSocialUserId(user._id));
       navigation.navigate('SocialScreen', {
         type: 1,
         articleId: undefined,
+        social_user_id: user._id,
       });
     }
   };
 
   const onFollowingClick = () => {
     if (user && user.followings.length > 0) {
-      dispatch(setSocialUserId(user._id));
+      // dispatch(setSocialUserId(user._id));
       navigation.navigate('SocialScreen', {
         type: 2,
         articleId: undefined,
+        social_user_id: user._id,
       });
     }
   };
@@ -352,7 +355,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
         });
       }
 
-      refetch();
+      onRefresh();
       // refetchFollowers();
       // refetchProfile();
     },
@@ -392,7 +395,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
         onFollowerPress={onFollowerClick}
         onFollowingPress={onFollowingClick}
         isFollowing={
-          user && user.followers.some(follower => follower._id === user_id)
+          user && user.followers.some(follower => follower === user_id)
             ? true
             : false
         }

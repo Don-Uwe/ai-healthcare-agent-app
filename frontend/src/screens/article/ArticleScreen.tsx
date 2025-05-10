@@ -190,7 +190,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
           },
         });
       }
-      refetchFollowers();
+      refetch();
       // refetchProfile();
     },
 
@@ -468,21 +468,6 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   };
 
   // console.log('author id', authorId);
-  const {data: authorFollowers, refetch: refetchFollowers} = useQuery({
-    queryKey: ['authorFollowers'],
-    queryFn: async () => {
-      const response = await axios.get(
-        `${EC2_BASE_URL}/user/${authorId}/followers`,
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-
-      return response.data.followers as string[];
-    },
-  });
 
   const {data: profile_image} = useQuery({
     queryKey: ['author_profile_image'],
@@ -918,19 +903,20 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
               {article ? article?.authorName : ''}
             </Text>
             <Text style={styles.authorFollowers}>
-              {authorFollowers
-                ? authorFollowers.length > 1
-                  ? `${authorFollowers.length} followers`
-                  : `${authorFollowers.length} follower`
+              {article?.authorId.followers
+                ? article?.authorId.followers.length > 1
+                  ? `${article?.authorId.followers.length} followers`
+                  : `${article?.authorId.followers.length} follower`
                 : '0 follower'}
             </Text>
             {
               article && article.contributors && article.contributors.length > 0 &&(
                 <TouchableOpacity onPress={()=>{
-                   dispatch(setSocialUserId(''));
+                //   dispatch(setSocialUserId(''));
                  navigation.navigate('SocialScreen',{
                   type: 3,
-                  articleId: Number(article?._id)
+                  articleId: Number(article?._id),
+                  social_user_id: undefined
                  })
                 }}>
                   <Text style={styles.contributorTextStyle}>See all contributors</Text>
@@ -941,7 +927,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
           </View>
         </View>
         {article &&
-          user_id !== article.authorId &&
+          user_id !== article.authorId._id &&
           (updateFollowMutation.isPending ? (
             <ActivityIndicator size={40} color={PRIMARY_COLOR} />
           ) : (
@@ -949,7 +935,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
               style={styles.followButton}
               onPress={handleFollow}>
               <Text style={styles.followButtonText}>
-                {authorFollowers && authorFollowers.includes(user_id)
+                {article.authorId.followers && article.authorId.followers.includes(user_id)
                   ? 'Following'
                   : 'Follow'}
               </Text>

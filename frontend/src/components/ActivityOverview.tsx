@@ -501,10 +501,12 @@ const ActivityOverview = ({
       return [];
     }
 
+    /*
     console.log('data', data.map(item => ({
       value: item.value, // Ensure the value is an integer
       label: item.date.substring(8),
     })));
+    */
     return data.map(item => ({
       value: item.value, // Ensure the value is an integer
       label: item.date.substring(8),

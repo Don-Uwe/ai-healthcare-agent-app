@@ -9,34 +9,26 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import {SocialScreenProps, User} from './type';
-import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from './helper/Theme';
-import {FOLLOW_USER, GET_SOCIALS, GET_STORAGE_DATA} from './helper/APIUtils';
+import {SocialScreenProps, User} from '../type';
+import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
+import {FOLLOW_USER, GET_SOCIALS, GET_STORAGE_DATA} from '../helper/APIUtils';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useSelector} from 'react-redux';
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import axios from 'axios';
-import {useSocket} from '../SocketContext';
+import {useSocket} from '../../SocketContext';
+import Loader from '../components/Loader';
 
 export default function Socialcreen({navigation, route}: SocialScreenProps) {
   const insets = useSafeAreaInsets();
   //const socials = route.params.socials;
-  const {type, articleId} = route.params;
+  const {type, articleId, social_user_id} = route.params;
   const socket = useSocket();
   const [userid, setUserId] = useState<string>('');
   const queryClient = useQueryClient();
-  const {user_id, user_token, user_handle, social_user_id} = useSelector(
+  const {user_id, user_token, user_handle} = useSelector(
     (state: any) => state.user,
   );
-
-  useEffect(() => {
-    queryClient.invalidateQueries({queryKey: ['get-user-socials']});
-    navigation.setOptions({
-      headerTitle:
-        type == 1 ? 'Follower' : type == 2 ? 'Followings' : 'Contributors',
-      headerTitleAlign: 'center',
-    });
-  }, [navigation, type]);
 
   const {
     data: socials,
@@ -49,10 +41,14 @@ export default function Socialcreen({navigation, route}: SocialScreenProps) {
         ? `${GET_SOCIALS}?type=${type}&articleId=${articleId}`
         : `${GET_SOCIALS}?type=${type}`;
 
+      console.log('Social User Id', social_user_id);
+
       url =
         social_user_id && social_user_id !== ''
           ? `${url}&social_user_id=${social_user_id}`
           : url;
+
+      console.log('Request Url', url);
 
       const response = await axios.get(url, {
         headers: {
@@ -63,6 +59,15 @@ export default function Socialcreen({navigation, route}: SocialScreenProps) {
       return response.data.followers as User[];
     },
   });
+
+  useEffect(() => {
+    queryClient.invalidateQueries({queryKey: ['get-user-socials']});
+    navigation.setOptions({
+      headerTitle:
+        type == 1 ? 'Follower' : type == 2 ? 'Followings' : 'Contributors',
+      headerTitleAlign: 'center',
+    });
+  }, [navigation, queryClient, type]);
 
   const updateFollowMutation = useMutation({
     mutationKey: ['update-follow-status'],
@@ -108,6 +113,10 @@ export default function Socialcreen({navigation, route}: SocialScreenProps) {
       //console.log('Follow Error', err);
     },
   });
+
+  if (isLoading) {
+    return <Loader />;
+  }
 
   return (
     <View style={styles.container}>

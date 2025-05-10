@@ -53,6 +53,7 @@ export type RootStackParamList = {
   SocialScreen: {
     type: number;
     articleId: number | undefined;
+    social_user_id: string | undefined;
   };
   CommentScreen: {
     articleId: number;
@@ -349,7 +350,7 @@ export type ArticleData = {
   title: string;
   authorName: string;
   description: string;
-  authorId: string;
+  authorId: User | string;
   content: string;
   summary: string;
   tags: Category[];

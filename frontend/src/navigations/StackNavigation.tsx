@@ -32,16 +32,16 @@ import LogoutScreen from '../screens/auth/LogoutScreen';
 import {useNavigation, NavigationProp} from '@react-navigation/native';
 import OverviewScreen from '../screens/overview/OverviewScreen';
 import ConversationScreen from '../screens/overview/ConversationScreen';
-import Socialcreen from '../SocialScreen';
 import ReviewScreen from '../screens/overview/ReviewScreen';
 import ImprovementReviewScreen from '../screens/overview/ImprovementReviewScreen';
-import SocialScreen from '../SocialScreen';
+import SocialScreen from '../screens/SocialScreen';
+import {useQueryClient} from '@tanstack/react-query';
 const Stack = createStackNavigator<RootStackParamList>();
 
 const StackNavigation = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const nav = useNavigation<NavigationProp<TabParamList>>();
-
+  const queryClient = useQueryClient();
   useEffect(() => {
     const backAction = () => {
       const currentRoute =
@@ -257,6 +257,7 @@ const StackNavigation = () => {
             <TouchableOpacity
               style={styles.headerLeftButtonCommentScreen}
               onPress={() => {
+                queryClient.invalidateQueries({queryKey: ['get-user-socials']});
                 navigation.goBack();
               }}>
               <FontAwesome6 size={25} name="arrow-left" color={PRIMARY_COLOR} />
@@ -429,7 +430,7 @@ const StackNavigation = () => {
           ),
         })}
       />
-   
+
       <Stack.Screen
         name="ProfileEditScreen"
         component={ProfileEditScreen}

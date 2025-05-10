@@ -246,20 +246,22 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
 
   const onFollowerClick = () => {
     if (user && user.followers.length > 0) {
-      dispatch(setSocialUserId(''));
+      //dispatch(setSocialUserId(''));
       navigation.navigate('SocialScreen', {
         type: 1,
         articleId: undefined,
+        social_user_id: undefined,
       });
     }
   };
 
   const onFollowingClick = () => {
     if (user && user.followings.length > 0) {
-      dispatch(setSocialUserId(''));
+      // dispatch(setSocialUserId(''));
       navigation.navigate('SocialScreen', {
         type: 2,
         articleId: undefined,
+        social_user_id: undefined,
       });
     }
   };
@@ -326,8 +328,6 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
     );
   }
 
-  
-
   return (
     <View style={styles.container}>
       <View style={[styles.innerContainer, {paddingTop: insets.top}]}>
@@ -349,8 +349,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
             </Tabs.ScrollView>
           </Tabs.Tab>
           {/* Tab 2 */}
-       {
-        /**
+          {/**
          *    <Tabs.Tab name="Articles">
             <Tabs.FlatList
               data={
@@ -375,8 +374,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
               }
             />
           </Tabs.Tab>
-         */
-       }
+         */}
 
           <Tabs.Tab name={`Reposts (${user?.repostArticles.length})`}>
             <Tabs.FlatList
