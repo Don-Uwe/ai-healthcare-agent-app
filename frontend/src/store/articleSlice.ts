@@ -8,6 +8,7 @@ export type ArticleState = {
   sortType: 'recent' | 'popular' | 'oldest' | '';
   searchMode: boolean;
   article: ArticleData;
+  articleContent: string;
   categories: Category[];
 }
 
@@ -30,6 +31,7 @@ const initialState: ArticleState = {
     viewCount: 0
   },
   categories: [],
+  articleContent:"";
 };
 const articleSlice = createSlice({
   name: 'article',

@@ -13,6 +13,7 @@ import {EditorScreenProp} from '../../type';
 import {launchImageLibrary} from 'react-native-image-picker';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {hp} from '../../helper/Metric';
+import {GET_STORAGE_DATA} from '../../helper/APIUtils';
 
 // Feature:
 // If you want to discard your post, in that case no post will upload into storage,
@@ -54,7 +55,7 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
                 localImages: localImages,
                 htmlImages: htmlImages,
                 articleData: articleData,
-                requestId: requestId
+                requestId: requestId,
               });
             } else {
               Alert.alert('Error', 'Please enter at least 20 characters');
@@ -95,11 +96,43 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
   }
 
   useEffect(() => {
-    if (articleData) {
-      console.log('Content 2', articleData.content);
-      setArticle(articleData.content);
+    const loadArticle = async () => {
+      if (!articleData) {
+        return;
+      }
+
+      //setLoading(true);
+      //setError(null);
+
+      try {
+        if (articleData.content.endsWith('.html')) {
+          const content = await getContent(articleData.content);
+          //console.log('Fetched content:', content);
+          setArticle(content);
+        } else {
+          setArticle(articleData.content);
+        }
+      } catch (err) {
+        console.error('Failed to load article:', err);
+        //setError('Failed to load article');
+      } finally {
+        //setLoading(false);
+      }
+    };
+
+    loadArticle();
+  }, [articleData]);
+
+  const getContent = async content => {
+    try {
+      const response = await fetch(`${GET_STORAGE_DATA}/${content}`);
+      const text = await response.text();
+      return text;
+    } catch (error) {
+      // console.error('Error fetching URI:', error);
+      return content;
     }
-  }, []);
+  };
 
   // Callback after height change
   function handleHeightChange(_height) {
