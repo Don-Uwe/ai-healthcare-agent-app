@@ -31,7 +31,7 @@ const initialState: ArticleState = {
     viewCount: 0
   },
   categories: [],
-  articleContent:"";
+  articleContent:""
 };
 const articleSlice = createSlice({
   name: 'article',
