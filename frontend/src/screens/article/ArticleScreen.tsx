@@ -22,7 +22,6 @@ import {useDispatch, useSelector} from 'react-redux';
 import WebView from 'react-native-webview';
 import {hp, wp} from '../../helper/Metric';
 import {
-  EC2_BASE_URL,
   FOLLOW_USER,
   GET_ARTICLE_BY_ID,
   GET_PROFILE_API,

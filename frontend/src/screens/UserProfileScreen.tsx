@@ -7,8 +7,8 @@ import ArticleCard from '../components/ArticleCard';
 import {useDispatch, useSelector} from 'react-redux';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import ProfileHeader from '../components/ProfileHeader';
+import Config from 'react-native-config';
 import {
-  EC2_BASE_URL,
   FOLLOW_USER,
   REPOST_ARTICLE,
   REQUEST_EDIT,
@@ -47,11 +47,11 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
     queryFn: async () => {
       let url: string;
       if (authorId) {
-        url = `${EC2_BASE_URL}/user/getuserprofile?id=${authorId}`;
+        url = `${Config.BASE_URL}/user/getuserprofile?id=${authorId}`;
       } else if (author_handle) {
-        url = `${EC2_BASE_URL}/user/getuserprofile?handle=${author_handle}`;
+        url = `${Config.BASE_URL}/user/getuserprofile?handle=${author_handle}`;
       } else {
-        url = `${EC2_BASE_URL}/user/getuserprofile?id=${user_id}`;
+        url = `${Config.BASE_URL}/user/getuserprofile?id=${user_id}`;
       }
       // console.log('User token', user_token);
       const response = await axios.get(url, {

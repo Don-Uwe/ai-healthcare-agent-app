@@ -18,7 +18,6 @@ import {ArticleData, Category, CategoryType, HomeScreenProps} from '../type';
 import axios from 'axios';
 import {
   ARTICLE_TAGS_API,
-  EC2_BASE_URL,
   REPOST_ARTICLE,
   REQUEST_EDIT,
 } from '../helper/APIUtils';
@@ -27,6 +26,7 @@ import {BottomSheetModal} from '@gorhom/bottom-sheet';
 import {useMutation, useQuery} from '@tanstack/react-query';
 import {useSelector, useDispatch} from 'react-redux';
 import Loader from '../components/Loader';
+import Config from 'react-native-config';
 import {
   setFilteredArticles,
   setSearchedArticles,
@@ -67,6 +67,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
 
   console.log('User Token', user_token);
   console.log('User Id', user_id);
+  console.log('BASE URL', Config.BASE_URL);
 
   const handleCategorySelection = (category: CategoryType['name']) => {
     // Update Redux State
@@ -89,7 +90,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       return;
     }
     const {data: categoryData} = await axios.get(
-      `${EC2_BASE_URL + ARTICLE_TAGS_API}`,
+      `${Config.BASE_URL + ARTICLE_TAGS_API}`,
       {
         headers: {
           Authorization: `Bearer ${user_token}`,
@@ -128,7 +129,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           throw new Error('No token found');
         }
         const response = await axios.get(
-          `${EC2_BASE_URL}/notification/unread-count`,
+          `${Config.BASE_URL}/notification/unread-count`,
           {
             headers: {
               Authorization: `Bearer ${user_token}`,
@@ -372,13 +373,15 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         if (user_token === '') {
           throw new Error('No token found');
         }
-        const response = await axios.get(`${EC2_BASE_URL}/articles`, {
+
+        //console.log('ARTICLE URL', `${Config.BASE_URL}/articles`);
+        const response = await axios.get(`${Config.BASE_URL}/articles`, {
           headers: {
             Authorization: `Bearer ${user_token}`,
           },
         });
 
-        //console.log('Article Response', response);
+        console.log('Article Response', response);
         let d = response.data.articles as ArticleData[];
         updateArticles(d);
         return response.data.articles as ArticleData[];

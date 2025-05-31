@@ -1,20 +1,6 @@
-import {
-  StyleSheet,
-  Text,
-  View,
-  BackHandler,
-  Alert,
-  TouchableOpacity,
-  FlatList,
-  Dimensions,
-} from 'react-native';
-import React, {useEffect} from 'react';
+import {StyleSheet, Text, View} from 'react-native';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import {useHeaderHeight} from '@react-navigation/elements';
-import PodcastCard from '../components/PodcastCard';
-import PodcastPlayer from '../components/PodcastPlayer';
-import {podcast} from '../helper/Utils';
-import {hp} from '../helper/Metric';
 import {PodcastScreenProps} from '../type';
 
 // PodcastsScreen component displays the list of podcasts and includes a PodcastPlayer

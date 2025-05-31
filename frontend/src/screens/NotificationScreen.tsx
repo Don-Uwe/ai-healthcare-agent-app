@@ -12,7 +12,7 @@ import NotificationItem from '../components/NotificationItem';
 import {useSelector} from 'react-redux';
 import {useMutation, useQuery} from '@tanstack/react-query';
 import axios from 'axios';
-import {EC2_BASE_URL, SAVE_ARTICLE} from '../helper/APIUtils';
+import Config from 'react-native-config';
 import {Notification} from '../type';
 import Loader from '../components/Loader';
 import Snackbar from 'react-native-snackbar';
@@ -38,7 +38,7 @@ const NotificationScreen = ({navigation}) => {
         if (user_token === '') {
           throw new Error('No token found');
         }
-        const response = await axios.get(`${EC2_BASE_URL}/notifications`, {
+        const response = await axios.get(`${Config.BASE_URL}/notifications`, {
           headers: {
             Authorization: `Bearer ${user_token}`,
           },
@@ -61,7 +61,7 @@ const NotificationScreen = ({navigation}) => {
         return;
       }
       const res = await axios.put(
-        `${EC2_BASE_URL}/notifications/mark-as-read`,
+        `${Config.BASE_URL}/notifications/mark-as-read`,
         {},
         {
           headers: {
@@ -98,7 +98,7 @@ const NotificationScreen = ({navigation}) => {
         return;
       }
       const res = await axios.delete(
-        `${EC2_BASE_URL}/notification/${id}`,
+        `${Config.BASE_URL}/notification/${id}`,
 
         {
           headers: {

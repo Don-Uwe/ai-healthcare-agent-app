@@ -32,6 +32,7 @@
     "react-native": "0.74.1",
     "react-native-asset": "^2.1.1",
     "react-native-collapsible-tab-view": "^8.0.0",
+    "react-native-config": "^1.5.5",
     "react-native-controlled-mentions": "^2.2.5",
     "react-native-element-dropdown": "^2.12.0",
     "react-native-fs": "^2.20.0",
