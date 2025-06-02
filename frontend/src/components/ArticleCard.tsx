@@ -311,6 +311,7 @@ const ArticleCard = ({
         navigation.navigate('ArticleScreen', {
           articleId: Number(item._id),
           authorId: item.authorId,
+          recordId: item.pb_recordId
         });
       }}>
       <View style={styles.cardContainer}>

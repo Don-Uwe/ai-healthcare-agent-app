@@ -41,7 +41,7 @@ export default function Socialcreen({navigation, route}: SocialScreenProps) {
         ? `${GET_SOCIALS}?type=${type}&articleId=${articleId}`
         : `${GET_SOCIALS}?type=${type}`;
 
-      console.log('Social User Id', social_user_id);
+     // console.log('Social User Id', url);
 
       url =
         social_user_id && social_user_id !== ''

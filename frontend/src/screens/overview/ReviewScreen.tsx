@@ -24,6 +24,7 @@ import WebView from 'react-native-webview';
 import {hp, wp} from '../../helper/Metric';
 import {
   GET_ARTICLE_BY_ID,
+  GET_ARTICLE_CONTENT,
   GET_PROFILE_API,
   GET_STORAGE_DATA,
 } from '../../helper/APIUtils';
@@ -40,7 +41,7 @@ import ReviewItem from '../../components/ReviewItem';
 
 const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
   const insets = useSafeAreaInsets();
-  const {articleId, authorId} = route.params;
+  const {articleId, authorId, recordId} = route.params;
   const {user_token} = useSelector((state: any) => state.user);
   const RichText = useRef();
   const [feedback, setFeedback] = useState('');
@@ -93,6 +94,20 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
     },
   });
 
+  const {data: htmlContent} = useQuery({
+    queryKey: ['get-article-content'],
+    queryFn: async () => {
+      const response = await axios.get(`${GET_ARTICLE_CONTENT}/${recordId}`, {
+        headers: {
+          Authorization: `Bearer ${user_token}`,
+        },
+      });
+      return response.data.htmlContent as string;
+    },
+  });
+
+  const noDataHtml = '<p>No Data found</p>';
+
   if (user) {
     dispatch(setUserHandle(user.user_handle));
   }
@@ -138,115 +153,13 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
     };
   }, [socket, route.params.articleId]);
 
-  /*
-  const commentTests = [
-    {
-      _id: '1',
-      id: '1',
-      articleId: 101,
-      userId: {_id: 'u1', name: 'Author', email: 'author@example.com'},
-      content:
-        '<h4>Thank you for your feedback! I will make the changes you suggested.</h4>',
-      createdAt: '2025-03-20T10:00:00Z',
-      updatedAt: '2025-03-20T10:00:00Z',
-      parentCommentId: '',
-      replies: [],
-      likedUsers: [],
-      status: 'published',
-      isEdited: false,
-      isReview: false,
-      isNote: false,
-    },
-    {
-      _id: '2',
-      id: '2',
-      articleId: 101,
-      userId: {_id: 'u2', name: 'Moderator', email: 'moderator@example.com'},
-      content:
-        '<h4>The article looks good, but there are a few areas that need clarification regarding your <strong>main argument</strong> in the second section.</h4>',
-      createdAt: '2025-03-20T10:15:00Z',
-      updatedAt: '2025-03-20T10:15:00Z',
-      parentCommentId: '',
-      replies: [],
-      likedUsers: [],
-      status: 'review',
-      isEdited: false,
-      isReview: true,
-      isNote: false,
-    },
-    {
-      _id: '3',
-      id: '3',
-      articleId: 101,
-      userId: {_id: 'u1', name: 'Author', email: 'author@example.com'},
-      content:
-        '<h4>I see, I will rework that section to make my argument clearer. I’ll also provide more <em>evidence</em> to support my points.</h4>',
-      createdAt: '2025-03-20T10:30:00Z',
-      updatedAt: '2025-03-20T10:30:00Z',
-      parentCommentId: '2',
-      replies: [],
-      likedUsers: [],
-      status: 'published',
-      isEdited: false,
-      isReview: false,
-      isNote: false,
-    },
-    {
-      _id: '4',
-      id: '4',
-      articleId: 101,
-      userId: {_id: 'u2', name: 'Moderator', email: 'moderator@example.com'},
-      content:
-        '<h4>Great! Make sure to provide more context on the <strong>statistics</strong> you used. The readers might need additional clarification on how the data supports your claim.</h4>',
-      createdAt: '2025-03-20T10:45:00Z',
-      updatedAt: '2025-03-20T10:45:00Z',
-      parentCommentId: '3',
-      replies: [],
-      likedUsers: [],
-      status: 'review',
-      isEdited: false,
-      isReview: true,
-      isNote: false,
-    },
-    {
-      _id: '5',
-      id: '5',
-      articleId: 101,
-      userId: {_id: 'u1', name: 'Author', email: 'author@example.com'},
-      content:
-        '<h4>Understood! I’ll work on providing more context for the statistics. Thanks again for the constructive feedback.</h4>',
-      createdAt: '2025-03-20T11:00:00Z',
-      updatedAt: '2025-03-20T11:00:00Z',
-      parentCommentId: '4',
-      replies: [],
-      likedUsers: [],
-      status: 'published',
-      isEdited: false,
-      isReview: false,
-      isNote: false,
-    },
-    {
-      _id: '6',
-      id: '6',
-      articleId: 101,
-      userId: {_id: 'u2', name: 'Moderator', email: 'moderator@example.com'},
-      content:
-        "<h4>You're welcome! Once you make those changes, the article will be much clearer. Looking forward to seeing the updated version!</h4>",
-      createdAt: '2025-03-20T11:15:00Z',
-      updatedAt: '2025-03-20T11:15:00Z',
-      parentCommentId: '5',
-      replies: [],
-      likedUsers: [],
-      status: 'review',
-      isEdited: false,
-      isReview: true,
-      isNote: false,
-    },
-  ];
-  */
+ 
 
   useEffect(() => {
-    if (article) {
+    if (htmlContent) {
+      setWebViewHeight(htmlContent.length);
+
+      /*
       let source = article?.content?.endsWith('.html')
         ? {uri: `${GET_STORAGE_DATA}/${article.content}`}
         : {html: article?.content};
@@ -260,8 +173,11 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
       };
 
       fetchContentLength();
+      */
+    } else {
+      setWebViewHeight(noDataHtml.length);
     }
-  }, [article]);
+  }, [htmlContent]);
 
   // console.log('author id', authorId);
 
@@ -277,10 +193,11 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
     document.head.appendChild(style);
   `;
 
-  const contentSource = article?.content?.endsWith('.html')
-    ? {uri: `${GET_STORAGE_DATA}/${article.content}`}
-    : {html: article?.content};
+  //const contentSource = article?.content?.endsWith('.html')
+  //   ? {uri: `${GET_STORAGE_DATA}/${article.content}`}
+  //   : {html: article?.content};
 
+  /*
   const getContentLength = async contentSource => {
     if (contentSource.uri) {
       try {
@@ -296,6 +213,7 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
     }
     return 0; // Return 0 if no valid content source
   };
+  */
 
   return (
     <View style={styles.container}>
@@ -357,7 +275,7 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
               ref={webViewRef}
               originWhitelist={['*']}
               injectedJavaScript={cssCode}
-              source={contentSource}
+              source={{html: htmlContent ? htmlContent : noDataHtml}}
               textZoom={100}
             />
           </View>

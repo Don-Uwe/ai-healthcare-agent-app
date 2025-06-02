@@ -24,6 +24,7 @@ import {hp, wp} from '../../helper/Metric';
 import {
   FOLLOW_USER,
   GET_ARTICLE_BY_ID,
+  GET_ARTICLE_CONTENT,
   GET_PROFILE_API,
   GET_PROFILE_IMAGE_BY_ID,
   GET_STORAGE_DATA,
@@ -42,15 +43,14 @@ import {useSocket} from '../../../SocketContext';
 //import CommentScreen from '../CommentScreen';
 import Tts from 'react-native-tts';
 import CommentItem from '../../components/CommentItem';
-import {setSocialUserId, setUserHandle} from '../../store/UserSlice';
+import {setUserHandle} from '../../store/UserSlice';
 
 const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const insets = useSafeAreaInsets();
-  const {articleId, authorId} = route.params;
+  const {articleId, authorId, recordId} = route.params;
   const {user_id, user_token} = useSelector((state: any) => state.user);
   const [readEventSave, setReadEventSave] = useState(false);
-  //const [webViewHeight, setWebViewHeight] = useState(0);
-  //const socket = io('http://51.20.1.81:8084');
+
   const socket = useSocket();
   const dispatch = useDispatch();
 
@@ -106,6 +106,23 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
       return response.data.profile as User;
     },
   });
+
+  console.log('Recordid', recordId);
+  const {data: htmlContent} = useQuery({
+    queryKey: ['get-publish-article-content'],
+    queryFn: async () => {
+      const response = await axios.get(`${GET_ARTICLE_CONTENT}/${recordId}`, {
+        headers: {
+          Authorization: `Bearer ${user_token}`,
+        },
+      });
+
+      console.log('HTML RES', response.data);
+      return response.data.htmlContent as string;
+    },
+  });
+
+  const noDataHtml = '<p>No Data found</p>';
 
   if (user) {
     dispatch(setUserHandle(user.user_handle));
@@ -221,7 +238,6 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
         },
       );
 
-      //  console.log('Response', );
       return res.data.data as {
         article: ArticleData;
         likeStatus: boolean;
@@ -252,6 +268,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
       console.log('Like Error', err);
     },
   });
+
+  //  console.log('Response', article?.authorId.followers);
 
   const updateReadEventMutation = useMutation({
     mutationKey: ['update-read-event-status'],
@@ -395,7 +413,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   }, [socket, route.params.articleId]);
 
   useEffect(() => {
-    if (article) {
+    if (htmlContent) {
+      /*
       let source = article?.content?.endsWith('.html')
         ? {uri: `${GET_STORAGE_DATA}/${article.content}`}
         : {html: article?.content};
@@ -408,11 +427,15 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
       };
 
       fetchContentLength();
+      */
+      setWebViewHeight(htmlContent.length);
+    } else {
+      setWebViewHeight(noDataHtml.length);
     }
-  }, [article]);
+  }, [htmlContent]);
 
   const handleEditAction = (comment: Comment) => {
-    setNewComment(comment.content);
+    // setNewComment(comment.content);
     // setEditMode(true);
     //setEditCommentId(comment._id);
   };
@@ -484,8 +507,6 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     },
   });
 
-
-
   async function convertHtmlToPlainText(html: string) {
     // Remove inline styles
     var modifiedHtml = html.replace(/ style="[^"]*"/g, '');
@@ -554,11 +575,13 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   document.head.appendChild(style);
 `;
 
-  const contentSource = article?.content?.endsWith('.html')
-    ? {uri: `${GET_STORAGE_DATA}/${article.content}`}
-    : {html: article?.content};
+  // const contentSource = article?.content?.endsWith('.html')
+  //  ? {uri: `${GET_STORAGE_DATA}/${article.content}`}
+  //  : {html: article?.content};
 
   // Function to get the content length based on the type of content (URI or HTML)
+
+  /*
   const getContentLength = async contentSource => {
     if (contentSource.uri) {
       try {
@@ -574,6 +597,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     }
     return 0; // Return 0 if no valid content source
   };
+  */
 
   if (isLoading) {
     return <Loader />;
@@ -588,7 +612,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
             offset = e.nativeEvent.contentOffset.y;
           if (windowHeight + offset >= height) {
             //ScrollEnd,
-            console.log('ScrollEnd');
+            // console.log('ScrollEnd');
             if (article && !readEventSave) {
               updateReadEventMutation.mutate();
             }
@@ -838,7 +862,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
               ref={webViewRef}
               originWhitelist={['*']}
               injectedJavaScript={cssCode}
-              source={contentSource}
+              source={{html: htmlContent ? htmlContent : noDataHtml}}
               textZoom={100}
             />
           </View>
@@ -908,21 +932,23 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
                   : `${article?.authorId.followers.length} follower`
                 : '0 follower'}
             </Text>
-            {
-              article && article.contributors && article.contributors.length > 0 &&(
-                <TouchableOpacity onPress={()=>{
-                //   dispatch(setSocialUserId(''));
-                 navigation.navigate('SocialScreen',{
-                  type: 3,
-                  articleId: Number(article?._id),
-                  social_user_id: undefined
-                 })
-                }}>
-                  <Text style={styles.contributorTextStyle}>See all contributors</Text>
+            {article &&
+              article.contributors &&
+              article.contributors.length > 0 && (
+                <TouchableOpacity
+                  onPress={() => {
+                    //   dispatch(setSocialUserId(''));
+                    navigation.navigate('SocialScreen', {
+                      type: 3,
+                      articleId: Number(article?._id),
+                      social_user_id: undefined,
+                    });
+                  }}>
+                  <Text style={styles.contributorTextStyle}>
+                    See all contributors
+                  </Text>
                 </TouchableOpacity>
-              )
-            }
-            
+              )}
           </View>
         </View>
         {article &&
@@ -934,7 +960,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
               style={styles.followButton}
               onPress={handleFollow}>
               <Text style={styles.followButtonText}>
-                {article.authorId.followers && article.authorId.followers.includes(user_id)
+                {article.authorId.followers &&
+                article.authorId.followers.some(user => user._id === user_id)
                   ? 'Following'
                   : 'Follow'}
               </Text>
@@ -1132,10 +1159,10 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
-  contributorTextStyle:{
-    fontWeight:"500",
+  contributorTextStyle: {
+    fontWeight: '500',
     color: PRIMARY_COLOR,
     marginTop: hp(0.5),
     fontSize: 14,
-  }
+  },
 });

@@ -39,10 +39,12 @@ export type RootStackParamList = {
   ArticleScreen: {
     articleId: number;
     authorId: string;
+    recordId: string;
   };
   ReviewScreen: {
     articleId: number;
     authorId: string;
+    recordId: string;
   };
   ImprovementReviewScreen: {
     requestId: string;
@@ -368,6 +370,7 @@ export type ArticleData = {
   status: string;
   reviewer_id: string | null | undefined;
   contributors: User[];
+  pb_recordId: string;
 };
 
 export type UserStatus = {

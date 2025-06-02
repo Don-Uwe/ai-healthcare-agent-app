@@ -1,5 +1,6 @@
 import React, {createContext, useContext, useState, useEffect} from 'react';
 import io, {Socket} from 'socket.io-client';
+import Config from 'react-native-config';
 
 const SocketContext = createContext<Socket | null>(null);
 
@@ -14,7 +15,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
 
   useEffect(() => {
     // Initialize the socket connection
-    const socketConnection = io('http://51.20.1.81:8084');
+    const socketConnection = io(`${Config.SOCKET_URL}`);
     setSocket(socketConnection);
 
     // Cleanup on unmount

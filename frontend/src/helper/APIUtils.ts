@@ -38,6 +38,8 @@ const GET_MONTHLY_WRITES_REPORT = `${Config.BASE_URL}/analytics/monthly-writes/`
 const GET_YEARLY_WRITES_REPORT = `${Config.BASE_URL}/analytics/yearly-writes/`;
 
 const VULTR_CHAT_URL = 'https://api.vultrinference.com/v1/chat/completions';
+const GET_ARTICLE_CONTENT = `${Config.BASE_URL}/articles/get-article-content`;
+const GET_IMPROVEMENT_CONTENT = `${Config.BASE_URL}/articles/get-improve-content`;
 
 const REPOST_ARTICLE = `${Config.BASE_URL}/article/repost`;
 const CHECK_USER_HANDLE = `${Config.BASE_URL}/user/check-user-handle`;
@@ -104,4 +106,6 @@ export {
   GET_IMPROVEMENT_BY_ID,
   SUBMIT_IMPROVEMENT,
   GET_SOCIALS,
+  GET_ARTICLE_CONTENT,
+  GET_IMPROVEMENT_CONTENT
 };
