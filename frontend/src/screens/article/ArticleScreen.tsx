@@ -44,6 +44,8 @@ import {useSocket} from '../../../SocketContext';
 import Tts from 'react-native-tts';
 import CommentItem from '../../components/CommentItem';
 import {setUserHandle} from '../../store/UserSlice';
+import {io} from 'socket.io-client';
+import Config from 'react-native-config';
 
 const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const insets = useSafeAreaInsets();
@@ -51,7 +53,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const {user_id, user_token} = useSelector((state: any) => state.user);
   const [readEventSave, setReadEventSave] = useState(false);
 
-  const socket = useSocket();
+  const socket = io(`${Config.SOCKET_URL}`);
   const dispatch = useDispatch();
 
   const [comments, setComments] = useState<Comment[]>([]);
@@ -107,7 +109,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     },
   });
 
-  console.log('Recordid', recordId);
+  //console.log('Recordid', recordId);
   const {data: htmlContent} = useQuery({
     queryKey: ['get-publish-article-content'],
     queryFn: async () => {
@@ -117,7 +119,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
         },
       });
 
-      console.log('HTML RES', response.data);
+      //console.log('HTML RES', response.data);
       return response.data.htmlContent as string;
     },
   });
@@ -527,10 +529,10 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     // Tts.requestInstallData();
     Tts.setDefaultPitch(0.6);
 
-    if (content.endsWith('.html')) {
-      const response = await fetch(`${GET_STORAGE_DATA}/${content}`);
-      content = await response.text();
-    }
+    //if (content.endsWith('.html')) {
+    //const response = await fetch(`${GET_STORAGE_DATA}/${content}`);
+    // content = await response.text();
+    //}
 
     const res = await convertHtmlToPlainText(content);
 
@@ -602,6 +604,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   if (isLoading) {
     return <Loader />;
   }
+
+  console.log('Comment', comments);
   return (
     <View style={styles.container}>
       <ScrollView
@@ -663,8 +667,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
               if (!speechingMode) {
                 // setCartoonModalVisible(true);
                 // prepareSection();
-                if (article) {
-                  speakSection('en-US', article?.content);
+                if (htmlContent) {
+                  speakSection('en-US', htmlContent);
                 }
               } else {
                 Tts.stop();
@@ -854,7 +858,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
               style={{
                 padding: 7,
                 //width: '99%',
-                minHeight: webviewHeight + 1500,
+                minHeight: webviewHeight - 2500,
                 // flex:7,
                 justifyContent: 'center',
                 alignItems: 'center',

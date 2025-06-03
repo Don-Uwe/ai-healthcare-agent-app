@@ -46,9 +46,11 @@ interface Props {
   onArticleViewed: ({
     articleId,
     authorId,
+    recordId,
   }: {
     articleId: number;
     authorId: string;
+    recordId: string;
   }) => void;
   userId?: string;
   others: boolean;
@@ -862,6 +864,7 @@ const ActivityOverview = ({
                 onArticleViewed({
                   articleId: Number(item._id),
                   authorId: item.authorId,
+                  recordId: item.pb_recordId,
                 });
               }}
             >

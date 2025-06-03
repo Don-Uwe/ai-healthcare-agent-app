@@ -24,7 +24,7 @@ export default function OverviewScreen({navigation}: OverviewScreenProps) {
       navigation.navigate('ArticleScreen', {
         articleId: Number(item?._id),
         authorId: item?.authorId,
-        
+        recordId: item?.pb_recordId,
       });
     } else {
       // navigate to review screen
@@ -37,7 +37,7 @@ export default function OverviewScreen({navigation}: OverviewScreenProps) {
         navigation.navigate('ReviewScreen', {
           articleId: Number(item?._id),
           authorId: item?.authorId,
-          recordId: item?.pb_recordId
+          recordId: item?.pb_recordId,
         });
       } else {
         Alert.alert("The article is under reviewed, you can't change it now");

@@ -492,6 +492,8 @@ export type EditRequest = {
   created_at: Date;
   discardReason: string;
   last_updated: Date;
+  pb_recordId: string;
+  article_recordId: string;
 };
 
 export type ImprovementCardProps = {

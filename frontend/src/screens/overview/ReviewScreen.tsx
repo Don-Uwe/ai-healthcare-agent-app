@@ -38,6 +38,8 @@ import {setUserHandle} from '../../store/UserSlice';
 import {actions, RichEditor, RichToolbar} from 'react-native-pell-rich-editor';
 import {createFeebackHTMLStructure, StatusEnum} from '../../helper/Utils';
 import ReviewItem from '../../components/ReviewItem';
+import {io} from 'socket.io-client';
+import Config from 'react-native-config';
 
 const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
   const insets = useSafeAreaInsets();
@@ -47,7 +49,7 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
   const [feedback, setFeedback] = useState('');
   const [webviewHeight, setWebViewHeight] = useState(0);
 
-  const socket = useSocket();
+  const socket = io(`${Config.SOCKET_URL}`);
   const dispatch = useDispatch();
 
   const [comments, setComments] = useState<Comment[]>([]);
@@ -152,8 +154,6 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
       socket.off('error');
     };
   }, [socket, route.params.articleId]);
-
- 
 
   useEffect(() => {
     if (htmlContent) {
@@ -267,7 +267,7 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
               style={{
                 padding: 7,
                 //width: '99%',
-                minHeight: webviewHeight,
+                minHeight: webviewHeight - 2500,
                 // flex:7,
                 justifyContent: 'center',
                 alignItems: 'center',

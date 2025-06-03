@@ -9,18 +9,12 @@ import {
   ScrollView,
   FlatList,
 } from 'react-native';
-import React, {useEffect, useRef, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {
-  ArticleData,
-  EditRequest,
-  ImpvReviewScreenProp,
-  ReviewScreenProp,
-  User,
-} from '../../type';
+import {EditRequest, ImpvReviewScreenProp, User} from '../../type';
 import Feather from 'react-native-vector-icons/Feather';
 import Entypo from 'react-native-vector-icons/Entypo';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -29,8 +23,8 @@ import {useDispatch, useSelector} from 'react-redux';
 import WebView from 'react-native-webview';
 import {hp, wp} from '../../helper/Metric';
 import {
-  GET_ARTICLE_BY_ID,
   GET_IMPROVEMENT_BY_ID,
+  GET_IMPROVEMENT_CONTENT,
   GET_PROFILE_API,
   GET_STORAGE_DATA,
 } from '../../helper/APIUtils';
@@ -47,7 +41,7 @@ import ReviewItem from '../../components/ReviewItem';
 
 const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
   const insets = useSafeAreaInsets();
-  const {requestId, authorId} = route.params; // requestId
+  const {requestId, authorId, recordId, articleRecordId} = route.params; // requestId
   const {user_token, user_handle} = useSelector((state: any) => state.user);
   const RichText = useRef();
   const [feedback, setFeedback] = useState('');
@@ -98,6 +92,23 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
     },
   });
 
+  const {data: htmlContent} = useQuery({
+    queryKey: ['get-improvement-content'],
+    queryFn: async () => {
+      const response = await axios.get(
+        `${GET_IMPROVEMENT_CONTENT}/${recordId}?record=${articleRecordId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${user_token}`,
+          },
+        },
+      );
+      return response.data.htmlContent as string;
+    },
+  });
+
+  const noDataHtml = '<p>No Data found</p>';
+
   if (user) {
     dispatch(setUserHandle(user.user_handle));
   }
@@ -142,26 +153,12 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
   }, [socket, route.params.requestId]);
 
   useEffect(() => {
-    if (improvement && improvement.article) {
-      let source = improvement.edited_content
-        ? improvement?.edited_content?.endsWith('.html')
-          ? {uri: `${GET_STORAGE_DATA}/${improvement.edited_content}`}
-          : {html: improvement?.edited_content}
-        : improvement?.article.content?.endsWith('.html')
-        ? {uri: `${GET_STORAGE_DATA}/${improvement?.article.content}`}
-        : {html: improvement?.article.content};
-
-      const fetchContentLength = async () => {
-        const length = await getContentLength(source);
-        console.log('Content Length:', length);
-
-        //setWebViewHeight(length * 1.2); //Add some buffer to the height calculation
-        setWebViewHeight(length);
-      };
-
-      fetchContentLength();
+    if (htmlContent) {
+      setWebViewHeight(htmlContent.length);
+    } else {
+      setWebViewHeight(noDataHtml.length);
     }
-  }, [improvement]);
+  }, [htmlContent]);
 
   // console.log('author id', authorId);
 
@@ -176,34 +173,6 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
     \`;
     document.head.appendChild(style);
   `;
-
-  let contentSource = {html: '<p>No text found</p>'};
-
-  if (improvement && improvement.article) {
-    contentSource = improvement.edited_content
-      ? improvement?.edited_content?.endsWith('.html')
-        ? {uri: `${GET_STORAGE_DATA}/${improvement.edited_content}`}
-        : {html: improvement?.edited_content}
-      : improvement?.article.content?.endsWith('.html')
-      ? {uri: `${GET_STORAGE_DATA}/${improvement?.article.content}`}
-      : {html: improvement?.article.content};
-  }
-
-  const getContentLength = async contentSource => {
-    if (contentSource.uri) {
-      try {
-        const response = await fetch(contentSource.uri);
-        const content = await response.text();
-        return content.length - 4000;
-      } catch (error) {
-        console.error('Error fetching URI:', error);
-        return 0;
-      }
-    } else if (contentSource.html) {
-      return contentSource.html.length;
-    }
-    return 0; // Return 0 if no valid content source
-  };
 
   return (
     <View style={styles.container}>
@@ -237,7 +206,7 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
                     imageUtils: improvement?.article.imageUtils[0],
                     articleData: improvement?.article,
                     requestId: improvement?._id,
-                    authorName: user_handle
+                    authorName: user_handle,
                   });
                 }
               }}
@@ -270,7 +239,7 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
               style={{
                 padding: 7,
                 //width: '99%',
-                minHeight: webviewHeight,
+                minHeight: webviewHeight - 2500,
                 // flex:7,
                 justifyContent: 'center',
                 alignItems: 'center',
@@ -278,7 +247,7 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
               ref={webViewRef}
               originWhitelist={['*']}
               injectedJavaScript={cssCode}
-              source={contentSource}
+              source={{html: htmlContent ? htmlContent : noDataHtml}}
               textZoom={100}
             />
           </View>

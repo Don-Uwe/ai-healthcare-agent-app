@@ -33,6 +33,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
   const [articleId, setArticleId] = useState<number>();
+  const [recordId, setRecordId] = useState<string>('');
   const [selectedCardId, setSelectedCardId] = useState<string>('');
   const [repostItem, setRepostItem] = useState<ArticleData | null>(null);
 
@@ -96,13 +97,15 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   const onArticleViewed = ({
     articleId,
     authorId,
+    recordId
   }: {
     articleId: number;
     authorId: string;
+    recordId: string;
   }) => {
     setArticleId(articleId);
     //setAuthorId(authorId);
-
+    setRecordId(recordId);
     updateViewCountMutation.mutate({
       articleId: Number(articleId),
     });
@@ -202,6 +205,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
       navigation.navigate('ArticleScreen', {
         articleId: Number(articleId),
         authorId: authorId,
+        recordId: recordId
       });
     },
 
