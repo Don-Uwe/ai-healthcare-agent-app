@@ -1,13 +1,18 @@
-import React, {useRef} from 'react';
+import React, {useRef, useState} from 'react';
 import {Alert, StyleSheet, Text, View} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {WebView} from 'react-native-webview';
 import {PRIMARY_COLOR} from '../../helper/Theme';
-import {ArticleData, PreviewScreenProp, User} from '../../type';
+import {
+  ArticleData,
+  PocketBaseResponse,
+  PreviewScreenProp,
+  User,
+} from '../../type';
 import {createHTMLStructure} from '../../helper/Utils';
 import {useMutation, useQuery} from '@tanstack/react-query';
 import ImageResizer from '@bam.tech/react-native-image-resizer';
-import RNFS from 'react-native-fs';
+
 import axios from 'axios';
 import Loader from '../../components/Loader';
 import {
@@ -16,7 +21,7 @@ import {
   POST_ARTICLE,
   SUBMIT_IMPROVEMENT,
   SUBMIT_SUGGESTED_CHANGES,
-  UPLOAD_STORAGE,
+  UPLOAD_ARTICLE_TO_POCKETBASE,
 } from '../../helper/APIUtils';
 import {useSelector} from 'react-redux';
 import useUploadImage from '../../../hooks/useUploadImage';
@@ -37,7 +42,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
   } = route.params;
 
   //const socket = io('http://51.20.1.81:8084');
-  const socket = useSocket();
+  const [imageUtil, setImageUtil] = useState<string>('');
 
   const webViewRef = useRef<WebView>(null);
   const {user_token} = useSelector((state: any) => state.user);
@@ -120,12 +125,12 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
         submitImprovementMutation.mutate({edited_content: finalArticle});
       }
       // Submit changes or create a new post
-      else if (articleData) {
-        // Submit suggested changes
-        submitChangesMutation.mutate({article: finalArticle, image: imageUtil});
-      } else {
+      else {
         // Submit new article
-        createPostMutation.mutate({article: finalArticle, image: imageUtil});
+        setImageUtil(imageUtil);
+        uploadArticleToPocketbase.mutate({
+          htmlContent: finalArticle
+        });
       }
     } catch (err) {
       console.error('Image processing failed:', err);
@@ -174,16 +179,13 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
 
   const createPostMutation = useMutation({
     mutationKey: ['create-post-key'],
-    mutationFn: async ({article, image}: {article: string; image: string}) => {
-      console.log('article data', {
-        title: title,
-        authorName: authorName,
-        authorId: user?._id,
-        content: article,
-        tags: selectedGenres,
-        imageUtils: [image],
-        description: description,
-      });
+    mutationFn: async ({
+      article,
+      recordId,
+    }: {
+      article: string;
+      recordId: string;
+    }) => {
       const response = await axios.post(
         POST_ARTICLE,
         {
@@ -192,8 +194,9 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
           authorId: user?._id,
           content: article,
           tags: selectedGenres,
-          imageUtils: [image],
+          imageUtils: [imageUtil],
           description: description,
+          pb_recordId: recordId,
         },
         {
           headers: {
@@ -233,33 +236,18 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
   // submit suggested changes
 
   const submitChangesMutation = useMutation({
-    mutationKey: ['sumit-post-key'],
-    mutationFn: async ({article, image}: {article: string; image: string}) => {
-      console.log('article data', {
-        title: title,
-        userId: articleData?.authorId,
-        //authorId: user?._id,
-        authorName: authorName,
-        articleId: articleData?._id,
-        content: article,
-        tags: selectedGenres,
-        imageUtils: [image],
-        //aditionalNote: '',
-        description: description,
-      });
+    mutationKey: ['submit-post-key'],
+    mutationFn: async ({article}: {article: string}) => {
       const response = await axios.post(
         SUBMIT_SUGGESTED_CHANGES,
-        //  userId, articleId, content, aditionalNote, title, imageUtils
         {
           title: title,
           userId: articleData?.authorId,
-          //authorId: user?._id,
           authorName: authorName,
           articleId: articleData?._id,
           content: article,
           tags: selectedGenres,
-          imageUtils: [image],
-          //aditionalNote: '',
+          imageUtils: [imageUtil],
           description: description,
         },
         {
@@ -268,23 +256,12 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
           },
         },
       );
-      // console.log(article);
       return response.data.newArticle as ArticleData;
     },
 
     onSuccess: data => {
       // User will not get notified, until the article published
-      /*
-      socket.emit('notification', {
-        type: 'openPost',
-        postId: data._id,
-        authorId: user?._id,
-        message: {
-          title: `${user?.user_handle} posted a new article`,
-          body: title,
-        },
-      });
-      */
+
       Alert.alert('Article updated sucessfully');
 
       navigation.navigate('TabNavigation');
@@ -330,40 +307,53 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
     },
   });
 
-  const createAndUploadHtmlFile = async () => {
-    const filePath = `${RNFS.DocumentDirectoryPath}/${title.substring(
-      0,
-      7,
-    )}.html`;
-
-    try {
-      // Step 1: Create the HTML file
-      await RNFS.writeFile(filePath, article, 'utf8');
-      Alert.alert('Success', `HTML file created at: ${filePath}`);
-
-      // Step 2: Upload the file
-      const formData = new FormData();
-      formData.append('file', {
-        uri: filePath,
-        type: 'text/html', // Change if necessary
-        name: `${title.substring(0, 7)}.html`,
-      });
-
-      const response = await axios.post(UPLOAD_STORAGE, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
+  const uploadArticleToPocketbase = useMutation({
+    mutationKey: ['upload-article-to-pocketbase-key'],
+    mutationFn: async ({htmlContent}: {htmlContent: string}) => {
+      const response = await axios.post(
+        UPLOAD_ARTICLE_TO_POCKETBASE,
+        {
+          title: title,
+          htmlContent: htmlContent,
+          record_id: articleData ? articleData.pb_recordId : null,
         },
-      });
+        {
+          headers: {
+            Authorization: `Bearer ${user_token}`,
+          },
+        },
+      );
+      // console.log(article);
+      return response.data as PocketBaseResponse;
+    },
 
-      Alert.alert('Upload Success', `File uploaded: ${response.data}`);
-    } catch (error) {
-      console.log(error);
-      Alert.alert('Error', `Operation failed: ${error.message}`);
-    }
-  };
+    onSuccess: (data: PocketBaseResponse) => {
+      if (data.html_file) {
+        if (articleData) {
+          submitChangesMutation.mutate({
+            article: data.html_file,
+          });
+        } else {
+          createPostMutation.mutate({
+            article: data.html_file,
+            recordId: data.recordId,
+          });
+        }
+      } else {
+        Alert.alert('Failed to upload your post');
+      }
+    },
+    onError: error => {
+      console.log('Article post Error', error);
+      // console.log(error);
+
+      Alert.alert('Failed to upload your post');
+    },
+  });
 
   // Vultr post
   if (
+    uploadArticleToPocketbase.isPending ||
     createPostMutation.isPending ||
     submitChangesMutation.isPending ||
     submitImprovementMutation.isPending ||

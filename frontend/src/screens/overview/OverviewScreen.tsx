@@ -54,6 +54,8 @@ export default function OverviewScreen({navigation}: OverviewScreenProps) {
       navigation.navigate('ImprovementReviewScreen', {
         requestId: item._id,
         authorId: item.article.authorId, // although we don't need to send author id
+        recordId: item.pb_recordId,
+        articleRecordId: item.article_recordId
       });
     }
   };

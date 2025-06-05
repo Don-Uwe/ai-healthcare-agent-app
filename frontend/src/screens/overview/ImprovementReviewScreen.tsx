@@ -95,14 +95,17 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
   const {data: htmlContent} = useQuery({
     queryKey: ['get-improvement-content'],
     queryFn: async () => {
-      const response = await axios.get(
-        `${GET_IMPROVEMENT_CONTENT}/${recordId}?record=${articleRecordId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
+      let url = '';
+      if (recordId) {
+        url = `${GET_IMPROVEMENT_CONTENT}?articleRecordId=${articleRecordId}`;
+      } else {
+        url = `${GET_IMPROVEMENT_CONTENT}?recordid=${recordId}&articleRecordId=${articleRecordId}`;
+      }
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${user_token}`,
         },
-      );
+      });
       return response.data.htmlContent as string;
     },
   });
@@ -207,6 +210,7 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
                     articleData: improvement?.article,
                     requestId: improvement?._id,
                     authorName: user_handle,
+                    htmlContent: htmlContent? htmlContent: noDataHtml
                   });
                 }
               }}

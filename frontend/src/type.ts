@@ -20,9 +20,11 @@ export type RootStackParamList = {
     imageUtils: string;
     articleData: ArticleData | null | undefined;
     requestId: string | undefined;
+    htmlContent: string | undefined;
   };
   ArticleDescriptionScreen: {
     article: ArticleData | null | undefined;
+    htmlContent: string | undefined;
   };
   PreviewScreen: {
     article: string;
@@ -49,6 +51,8 @@ export type RootStackParamList = {
   ImprovementReviewScreen: {
     requestId: string;
     authorId: string;
+    recordId: string;
+    articleRecordId: string;
   };
   OverviewScreen: undefined;
   ConversationScreen: undefined;
@@ -241,6 +245,12 @@ export type Notification = {
   read: boolean;
   timestamp: string;
 };
+
+export type PocketBaseResponse = {
+  message: string;
+  recordId: string;
+  html_file: string;
+}
 export type ProfileHeaderProps = {
   isDoctor: boolean;
   username: string;
@@ -441,7 +451,7 @@ export type User = {
   user_name: string;
   verificationToken: null;
   refreshToken: null;
-  improvements: string[]
+  improvements: string[];
 };
 
 export type Contactdetail = {

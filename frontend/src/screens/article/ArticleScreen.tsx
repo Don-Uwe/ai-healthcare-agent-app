@@ -605,7 +605,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     return <Loader />;
   }
 
-  console.log('Comment', comments);
+  //console.log('Comment', comments);
   return (
     <View style={styles.container}>
       <ScrollView
@@ -905,6 +905,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
               //  if (article && article?.authorId) {
               navigation.navigate('UserProfileScreen', {
                 authorId: authorId,
+              
               });
             }}>
             {profile_image && profile_image !== '' ? (

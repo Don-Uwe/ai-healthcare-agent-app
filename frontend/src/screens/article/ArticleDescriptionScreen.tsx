@@ -26,7 +26,7 @@ const ArticleDescriptionScreen = ({
   navigation,
   route,
 }: ArticleDescriptionProp) => {
-  const {article, requestId} = route.params;
+  const {article, htmlContent} = route.params;
   const [title, setTitle] = useState('');
   const [authorName, setAuthorName] = useState('');
   const [description, setDescription] = useState('');
@@ -88,7 +88,8 @@ const ArticleDescriptionScreen = ({
       selectedGenres: selectedGenres,
       imageUtils: imageUtils,
       articleData: article,
-      requestId: requestId
+      htmlContent: htmlContent,
+      requestId: undefined
     });
   };
 

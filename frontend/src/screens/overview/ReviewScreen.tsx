@@ -238,6 +238,7 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
               onPress={() => {
                 navigation.navigate('ArticleDescriptionScreen', {
                   article: article,
+                  htmlContent: htmlContent ? htmlContent : noDataHtml,
                 });
               }}
               style={[
