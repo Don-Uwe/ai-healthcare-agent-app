@@ -89,7 +89,8 @@ const ArticleDescriptionScreen = ({
       imageUtils: imageUtils,
       articleData: article,
       htmlContent: htmlContent,
-      requestId: undefined
+      requestId: undefined,
+      pb_record_id: undefined
     });
   };
 

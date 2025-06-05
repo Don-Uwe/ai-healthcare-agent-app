@@ -21,6 +21,8 @@ export type RootStackParamList = {
     articleData: ArticleData | null | undefined;
     requestId: string | undefined;
     htmlContent: string | undefined;
+    pb_record_id: string | undefined;
+    
   };
   ArticleDescriptionScreen: {
     article: ArticleData | null | undefined;
@@ -37,6 +39,7 @@ export type RootStackParamList = {
     htmlImages: string[];
     articleData: ArticleData | null | undefined;
     requestId: string | undefined;
+    pb_record_id: string | undefined;
   };
   ArticleScreen: {
     articleId: number;

@@ -28,6 +28,7 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
     articleData,
     requestId,
     htmlContent,
+    pb_record_id
   } = route.params;
 
   const RichText = useRef();
@@ -56,6 +57,7 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
                 htmlImages: htmlImages,
                 articleData: articleData,
                 requestId: requestId,
+                pb_record_id: pb_record_id
               });
             } else {
               Alert.alert('Error', 'Please enter at least 20 characters');

@@ -22,11 +22,11 @@ import {
   SUBMIT_IMPROVEMENT,
   SUBMIT_SUGGESTED_CHANGES,
   UPLOAD_ARTICLE_TO_POCKETBASE,
+  UPLOAD_IMPROVEMENT_TO_POCKETBASE,
 } from '../../helper/APIUtils';
 import {useSelector} from 'react-redux';
 import useUploadImage from '../../../hooks/useUploadImage';
 
-import {useSocket} from '../../../SocketContext';
 //import io from 'socket.io-client';
 
 export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
@@ -39,13 +39,14 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
     localImages,
     articleData,
     requestId,
+    pb_record_id,
   } = route.params;
 
   //const socket = io('http://51.20.1.81:8084');
   const [imageUtil, setImageUtil] = useState<string>('');
 
   const webViewRef = useRef<WebView>(null);
-  const {user_token} = useSelector((state: any) => state.user);
+  const {user_token, user_id} = useSelector((state: any) => state.user);
 
   const {uploadImage, loading} = useUploadImage();
   // console.log(selectedGenres);
@@ -122,14 +123,16 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
 
       // Submit Improvement
       if (requestId) {
-        submitImprovementMutation.mutate({edited_content: finalArticle});
+        uploadImprovementToPocketbase.mutate({
+          htmlContent: finalArticle,
+        })
       }
       // Submit changes or create a new post
       else {
         // Submit new article
         setImageUtil(imageUtil);
         uploadArticleToPocketbase.mutate({
-          htmlContent: finalArticle
+          htmlContent: finalArticle,
         });
       }
     } catch (err) {
@@ -277,12 +280,19 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
   // Submit Improvement
   const submitImprovementMutation = useMutation({
     mutationKey: ['submiit-improvemeny-key'],
-    mutationFn: async ({edited_content}: {edited_content: string}) => {
+    mutationFn: async ({
+      edited_content,
+      recordId,
+    }: {
+      edited_content: string;
+      recordId: string;
+    }) => {
       const response = await axios.post(
         SUBMIT_IMPROVEMENT,
         {
           requestId: requestId,
           edited_content: edited_content,
+          pb_recordId: recordId,
         },
         {
           headers: {
@@ -351,8 +361,49 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
     },
   });
 
-  // Vultr post
+  const uploadImprovementToPocketbase = useMutation({
+    mutationKey: ['upload-improvement-to-pocketbase-key'],
+    mutationFn: async ({htmlContent}: {htmlContent: string}) => {
+      const response = await axios.post(
+        UPLOAD_IMPROVEMENT_TO_POCKETBASE,
+        {
+          title: title,
+          htmlContent: htmlContent,
+          article_id: articleData ? articleData.pb_recordId : null,
+          record_id: pb_record_id,
+          improvement_id: requestId,
+          user_id: user_id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user_token}`,
+          },
+        },
+      );
+      // console.log(article);
+      return response.data as PocketBaseResponse;
+    },
+
+    onSuccess: (data: PocketBaseResponse) => {
+      if (data.html_file) {
+        submitImprovementMutation.mutate({
+          edited_content: data.html_file,
+          recordId: data.recordId,
+        });
+      } else {
+        Alert.alert('Failed to upload your post');
+      }
+    },
+    onError: error => {
+      console.log('Article post Error', error);
+      // console.log(error);
+
+      Alert.alert('Failed to upload your post');
+    },
+  });
+
   if (
+    uploadImprovementToPocketbase.isPending ||
     uploadArticleToPocketbase.isPending ||
     createPostMutation.isPending ||
     submitChangesMutation.isPending ||

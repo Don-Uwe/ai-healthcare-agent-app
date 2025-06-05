@@ -209,6 +209,7 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
                     imageUtils: improvement?.article.imageUtils[0],
                     articleData: improvement?.article,
                     requestId: improvement?._id,
+                    pb_record_id: improvement?.pb_recordId,
                     authorName: user_handle,
                     htmlContent: htmlContent? htmlContent: noDataHtml
                   });
