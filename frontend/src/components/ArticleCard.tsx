@@ -21,6 +21,7 @@ import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIc
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import {useMutation, useQuery} from '@tanstack/react-query';
 import {
+  GET_ARTICLE_CONTENT,
   GET_IMAGE,
   GET_PROFILE_API,
   GET_STORAGE_DATA,
@@ -201,31 +202,20 @@ const ArticleCard = ({
     }
   };
 
-  const generatePDFFromUrl = async (url: string, title: string) => {
+  const generatePDFFromUrl = async (recordId: string, title: string) => {
     // setLoading(true);
 
     try {
-      const response = await axios.get(url);
-      const htmlContent = response.data;
-      console.log('HTML Content', htmlContent);
-      /*
-      // Create PDF options
-      const options = {
-        html: htmlContent,
-        fileName: `${title.substring(0, 15)}...`,
-        directory: 'Documents',
-      };
+      const response = await axios.get(`${GET_ARTICLE_CONTENT}/${recordId}`, {
+        headers: {
+          Authorization: `Bearer ${user_token}`,
+        },
+      });
 
-      // Convert HTML to PDF
-      const file = await RNHTMLtoPDF.convert(options);
-      console.log('PDF created at:', file.filePath);
-
-      Alert.alert(
-        'PDF created successfully!',
-        `PDF saved at: ${file.filePath}`,
-      );
-      */
-      generatePDF(title, htmlContent);
+      if (response.data.htmlContent) {
+        const htmlContent = response.data.htmlContent;
+        generatePDF(title, htmlContent);
+      }
     } catch (error) {
       console.error('Error generating PDF:', error);
       Alert.alert('Error', 'Something went wrong while creating the PDF.');
@@ -233,75 +223,40 @@ const ArticleCard = ({
   };
 
   const generatePDF = async (title: string, htmlContent: string) => {
-    /*
-    const {RNProcessor: Processor, PSPDFKit} = NativeModules;
-    const configuration = {
-      name: `${title.substring(0, 15)}...`,
-      override: true,
-    };
-    */
     try {
-      let customDirectory;
-      let filePath;
+      const safeTitle = title.substring(0, 15).replace(/[^a-zA-Z0-9]/g, '_');
+      const fileName = `${safeTitle}.pdf`;
 
-      if (Platform.OS === 'android') {
-        customDirectory = `${RNFS.DownloadDirectoryPath}/UltimateHealth/Download`;
-        filePath = `${customDirectory}/${title.substring(0, 15)}...pdf`;
-      } else {
-        customDirectory = RNFS.DocumentDirectoryPath;
-        filePath = `${customDirectory}/${title.substring(0, 15)}...pdf`;
-      }
+      const customDirectory =
+        Platform.OS === 'android'
+          ? RNFS.ExternalDirectoryPath
+          : RNFS.DocumentDirectoryPath;
 
-      // Check if the directory exists, create it if not
+      const filePath = `${customDirectory}/${fileName}`;
+
       const directoryExists = await RNFS.exists(customDirectory);
+
       if (!directoryExists) {
         await RNFS.mkdir(customDirectory);
       }
 
-      // Options for generating the PDF
       const options = {
         html: htmlContent,
-        fileName: title.substring(0, 15), // Clean file name
-        directory: customDirectory, // Custom directory path
+        fileName: safeTitle,
+        directory: '',
       };
 
-      // Generate the PDF
       const file = await RNHTMLtoPDF.convert(options);
-      console.log('PDF created at:', file.filePath);
 
-      // Move the generated PDF to the custom directory (if it's not already saved there)
       await RNFS.moveFile(file.filePath, filePath);
 
-      // Alert to inform the user
-      Alert.alert('PDF created successfully!', `PDF saved at: ${filePath}`);
+      Alert.alert('PDF created successfully!', `Saved at: ${filePath}`);
     } catch (error) {
       console.error('Error generating PDF:', error);
       Alert.alert('Error', 'Something went wrong while creating the PDF.');
     }
   };
 
-  // IOS Specific
-  const extractAsset = async (fileURL, fileName, callBack) => {
-    try {
-      await RNFS.readFile(fileURL, 'base64').then(document => {
-        let mainPath = `${RNFS.MainBundlePath}/${documentName(fileName)}`;
-        RNFS.writeFile(mainPath, document, 'base64')
-          .then(success => {
-            callBack(mainPath);
-          })
-          .catch(e => console.log(e));
-      });
-    } catch (error) {
-      console.log('Error copying file', error);
-    }
-  };
-
-  const documentName = fileName => {
-    if (fileName.toLowerCase().substring(fileName.length - 4) !== '.pdf') {
-      return `${fileName}.pdf`;
-    }
-    return fileName;
-  };
   return (
     <Pressable
       onPress={() => {
@@ -311,7 +266,7 @@ const ArticleCard = ({
         navigation.navigate('ArticleScreen', {
           articleId: Number(item._id),
           authorId: item.authorId,
-          recordId: item.pb_recordId
+          recordId: item.pb_recordId,
         });
       }}>
       <View style={styles.cardContainer}>
@@ -350,14 +305,8 @@ const ArticleCard = ({
                     name: 'Download as pdf',
                     action: () => {
                       handleAnimation();
-                      if (item?.content?.endsWith('.html')) {
-                        generatePDFFromUrl(
-                          `${GET_STORAGE_DATA}/${item?.content}`,
-                          item?.title,
-                        );
-                      } else {
-                        generatePDF(item?.title, item?.content);
-                      }
+
+                      generatePDFFromUrl(item?.pb_recordId, item?.title);
                     },
                     icon: 'download',
                   },

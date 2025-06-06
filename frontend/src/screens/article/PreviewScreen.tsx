@@ -125,7 +125,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
       if (requestId) {
         uploadImprovementToPocketbase.mutate({
           htmlContent: finalArticle,
-        })
+        });
       }
       // Submit changes or create a new post
       else {
@@ -207,7 +207,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
           },
         },
       );
-      // console.log(article);
+      console.log(article);
       return response.data.newArticle as ArticleData;
     },
 
@@ -333,7 +333,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
           },
         },
       );
-      // console.log(article);
+      console.log('Response', response.data);
       return response.data as PocketBaseResponse;
     },
 
@@ -354,7 +354,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
       }
     },
     onError: error => {
-      console.log('Article post Error', error);
+      console.log('Article post Error pb', error.message);
       // console.log(error);
 
       Alert.alert('Failed to upload your post');

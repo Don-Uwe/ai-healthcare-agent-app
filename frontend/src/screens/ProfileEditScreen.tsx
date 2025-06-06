@@ -623,6 +623,7 @@ const ProfileEditScreen = ({navigation}) => {
                     text: 'OK',
                     onPress: async () => {
                       try {
+                        //console.log("Image uri", resizedImageUri.uri);
                         // Upload the resized image
                         const result = await uploadImage(resizedImageUri.uri);
                         // console.log('Image uploaded:', result);
