@@ -414,6 +414,16 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
   }
   return (
     <View style={styles.container}>
+      <View style={styles.aiReviewBox}>
+        <Text style={styles.reviewTitle}>✅ Your Post Is Ready to Review</Text>
+        <Text style={styles.reviewSubtext}>
+          Want to make it even better? Check your post with our AI Assistant’s
+          suggestions.
+        </Text>
+        <TouchableOpacity style={styles.continueButton} onPress={() => {}}>
+          <Text style={styles.continueButtonText}>Continue</Text>
+        </TouchableOpacity>
+      </View>
       <WebView
         style={{
           padding: 20,
@@ -467,5 +477,43 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 5,
+  },
+
+  aiReviewBox: {
+    backgroundColor: '#f0f8ff',
+    padding: 16,
+    margin: 8,
+    borderRadius: 10,
+    borderColor: '#d0e6ff',
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+
+  reviewTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#2c3e50',
+    marginBottom: 6,
+  },
+
+  reviewSubtext: {
+    fontSize: 14,
+    color: '#34495e',
+    textAlign: 'center',
+    marginBottom: 12,
+    fontWeight:"500"
+  },
+
+  continueButton: {
+    backgroundColor: '#1e90ff',
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+
+  continueButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

@@ -54,8 +54,8 @@ const GET_FOLLOWINGS = `${Config.BASE_URL}/user/followings`;
 const GET_SOCIALS = `${Config.BASE_URL}/user/socials`;
 const GET_IMPROVEMENT_BY_ID = `${Config.BASE_URL}/get-improvement`;
 const SUBMIT_IMPROVEMENT = `${Config.BASE_URL}/article/submit-improvement`;
-const UPLOAD_ARTICLE_TO_POCKETBASE = `${Config.BASE_URL}/api/upload-pocketbase/article`
-const UPLOAD_IMPROVEMENT_TO_POCKETBASE = `${Config.BASE_URL}/api/upload-pocketbase/improvement`;
+const UPLOAD_ARTICLE_TO_POCKETBASE = `${Config.BASE_URL}/upload-pocketbase/article`
+const UPLOAD_IMPROVEMENT_TO_POCKETBASE = `${Config.BASE_URL}/upload-pocketbase/improvement`;
 
 export {
   LOGIN_API,
