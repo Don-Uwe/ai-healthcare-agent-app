@@ -5,6 +5,7 @@ import {WebView} from 'react-native-webview';
 import {PRIMARY_COLOR} from '../../helper/Theme';
 import {
   ArticleData,
+  ContentSuggestionResponse,
   PocketBaseResponse,
   PreviewScreenProp,
   User,
@@ -19,13 +20,16 @@ import {
   GET_IMAGE,
   GET_PROFILE_API,
   POST_ARTICLE,
+  RENDER_SUGGESTION,
   SUBMIT_IMPROVEMENT,
   SUBMIT_SUGGESTED_CHANGES,
   UPLOAD_ARTICLE_TO_POCKETBASE,
   UPLOAD_IMPROVEMENT_TO_POCKETBASE,
 } from '../../helper/APIUtils';
-import {useSelector} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import useUploadImage from '../../../hooks/useUploadImage';
+import {setSuggestion} from '../../store/articleSlice';
+import Snackbar from 'react-native-snackbar';
 
 //import io from 'socket.io-client';
 
@@ -47,6 +51,10 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
 
   const webViewRef = useRef<WebView>(null);
   const {user_token, user_id} = useSelector((state: any) => state.user);
+  const {suggestion, suggestionAccepted} = useSelector(
+    (state: any) => state.article,
+  );
+  const dispatch = useDispatch();
 
   const {uploadImage, loading} = useUploadImage();
   // console.log(selectedGenres);
@@ -74,14 +82,15 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
           Authorization: `Bearer ${user_token}`,
         },
       });
-      console.log('User Profile', response.headers);
+      //console.log('User Profile', response.headers);
       // console.log('Respon)
       return response.data.profile as User;
     },
   });
 
   const handlePostSubmit = async () => {
-    let finalArticle = article;
+    let finalArticle =
+      suggestionAccepted && suggestion !== '' ? suggestion : article;
     let imageUtil = '';
 
     // Resize and confirm for all images before uploading
@@ -317,6 +326,48 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
     },
   });
 
+  const renderSuggestionMutation = useMutation({
+    mutationKey: ['render-suggestion-key'],
+    mutationFn: async () => {
+      const response = await axios.post(
+        RENDER_SUGGESTION,
+        {
+          text: article,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user_token}`,
+          },
+        },
+      );
+      return response.data as ContentSuggestionResponse;
+    },
+
+    onSuccess: data => {
+      // User will not get notified, until the article published
+      if (data.full_html) {
+        dispatch(setSuggestion({suggestion: data.suggestion}));
+
+        navigation.navigate('RenderSuggestion', {
+          htmlContent: data.full_html,
+        });
+      } else {
+        Snackbar.show({
+          text: 'Failed to load suggestions, try again!',
+          duration: Snackbar.LENGTH_SHORT,
+        });
+      }
+    },
+    onError: error => {
+      console.log('Article suggestion Error', error);
+
+      Snackbar.show({
+        text: 'Failed to load suggestions, try again!',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+    },
+  });
+
   const uploadArticleToPocketbase = useMutation({
     mutationKey: ['upload-article-to-pocketbase-key'],
     mutationFn: async ({htmlContent}: {htmlContent: string}) => {
@@ -403,6 +454,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
   });
 
   if (
+    renderSuggestionMutation.isPending ||
     uploadImprovementToPocketbase.isPending ||
     uploadArticleToPocketbase.isPending ||
     createPostMutation.isPending ||
@@ -420,7 +472,11 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
           Want to make it even better? Check your post with our AI Assistant’s
           suggestions.
         </Text>
-        <TouchableOpacity style={styles.continueButton} onPress={() => {}}>
+        <TouchableOpacity
+          style={styles.continueButton}
+          onPress={() => {
+            renderSuggestionMutation.mutate();
+          }}>
           <Text style={styles.continueButtonText}>Continue</Text>
         </TouchableOpacity>
       </View>
@@ -501,7 +557,7 @@ const styles = StyleSheet.create({
     color: '#34495e',
     textAlign: 'center',
     marginBottom: 12,
-    fontWeight:"500"
+    fontWeight: '500',
   },
 
   continueButton: {

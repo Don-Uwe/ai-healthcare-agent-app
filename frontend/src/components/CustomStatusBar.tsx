@@ -1,6 +1,6 @@
 import React, {Fragment, ReactNode} from 'react';
 import {SafeAreaView, StatusBar, StatusBarStyle} from 'react-native';
-import {BUTTON_COLOR} from '../helper/Theme';
+import {BUTTON_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 
 interface CustomStatusBarProps {
   children: ReactNode;
@@ -11,9 +11,9 @@ interface CustomStatusBarProps {
 
 const CustomStatusBar: React.FC<CustomStatusBarProps> = ({
   children,
-  statusBgColor = BUTTON_COLOR,
+  statusBgColor = PRIMARY_COLOR,
   barStyle = 'light-content',
-  bgColor = BUTTON_COLOR,
+  bgColor = PRIMARY_COLOR,
 }) => {
   return (
     <Fragment>

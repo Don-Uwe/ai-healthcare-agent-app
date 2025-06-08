@@ -10,6 +10,8 @@ export type ArticleState = {
   article: ArticleData;
   articleContent: string;
   categories: Category[];
+  suggestion: string | '';
+  suggestionAccepted: boolean
 }
 
 const initialState: ArticleState = {
@@ -26,12 +28,27 @@ const initialState: ArticleState = {
     content: '',
     summary: '',
     tags: [],
-    last_updated: '',
+    lastUpdated: '',
     imageUtils: [],
-    viewCount: 0
+    viewCount: 0,
+    description: '',
+    viewUsers: [],
+    repostUsers: [],
+    likeCount: 0,
+    likedUsers: [],
+    savedUsers: [],
+    mentionedUsers: [],
+    assigned_date: null,
+    discardReason: '',
+    status: '',
+    reviewer_id: undefined,
+    contributors: [],
+    pb_recordId: ''
   },
   categories: [],
-  articleContent:""
+  articleContent:"",
+  suggestion:"",
+  suggestionAccepted: false
 };
 const articleSlice = createSlice({
   name: 'article',
@@ -62,6 +79,14 @@ const articleSlice = createSlice({
     },
     setTags(state, action){
       state.categories = action.payload.tags;
+    },
+
+    setSuggestion(state, action){
+      state.suggestion = action.payload.suggestion;
+    },
+
+    setSuggestionAccepted(state, action){
+      state.suggestionAccepted = action.payload.selection;
     }
   },
 });
@@ -73,7 +98,9 @@ export const {
   setSortType,
   setSearchMode,
   setArticle,
-  setTags
+  setTags,
+  setSuggestion,
+  setSuggestionAccepted
 } = articleSlice.actions;
 
 export default articleSlice.reducer;

@@ -36,6 +36,7 @@ import ReviewScreen from '../screens/overview/ReviewScreen';
 import ImprovementReviewScreen from '../screens/overview/ImprovementReviewScreen';
 import SocialScreen from '../screens/SocialScreen';
 import {useQueryClient} from '@tanstack/react-query';
+import RenderSuggestion from '../screens/article/RenderSuggestion';
 const Stack = createStackNavigator<RootStackParamList>();
 
 const StackNavigation = () => {
@@ -164,6 +165,26 @@ const StackNavigation = () => {
       <Stack.Screen
         name="PreviewScreen"
         component={PreviewScreen}
+        options={({navigation}) => ({
+          headerShown: true,
+          headerTitle: '',
+          headerBackTitleVisible: false,
+          // eslint-disable-next-line react/no-unstable-nested-components
+          headerLeft: () => (
+            <TouchableOpacity
+              style={styles.headerLeftButtonEditorScreen}
+              onPress={() => {
+                navigation.goBack();
+              }}>
+              <FontAwesome6 size={25} name="arrow-left" color={PRIMARY_COLOR} />
+            </TouchableOpacity>
+          ),
+        })}
+      />
+
+      <Stack.Screen
+        name="RenderSuggestion"
+        component={RenderSuggestion}
         options={({navigation}) => ({
           headerShown: true,
           headerTitle: '',

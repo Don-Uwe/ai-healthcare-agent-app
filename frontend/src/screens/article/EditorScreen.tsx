@@ -13,7 +13,8 @@ import {EditorScreenProp} from '../../type';
 import {launchImageLibrary} from 'react-native-image-picker';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {hp} from '../../helper/Metric';
-import {GET_STORAGE_DATA} from '../../helper/APIUtils';
+import { useDispatch } from 'react-redux';
+import { setSuggestion, setSuggestionAccepted } from '../../store/articleSlice';
 
 // Feature:
 // If you want to discard your post, in that case no post will upload into storage,
@@ -36,6 +37,7 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
   const [localImages, setLocalImages] = useState<string[]>([]);
   const [htmlImages, setHtmlImages] = useState<string[]>([]);
   const [editorReady, setEditorReady] = useState(false);
+  const dispatch = useDispatch();
 
   React.useEffect(() => {
     navigation.setOptions({
@@ -45,7 +47,9 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
           onPress={() => {
             console.log('Preview button pressed');
             if (article.length > 20) {
-              console.log('Preview Screen');
+              //console.log('Preview Screen');
+              dispatch(setSuggestion({suggestion: ''}));
+              dispatch(setSuggestionAccepted({selection: false}));
               navigation.navigate('PreviewScreen', {
                 article: article,
                 title: title,

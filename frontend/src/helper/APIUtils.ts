@@ -57,6 +57,9 @@ const SUBMIT_IMPROVEMENT = `${Config.BASE_URL}/article/submit-improvement`;
 const UPLOAD_ARTICLE_TO_POCKETBASE = `${Config.BASE_URL}/upload-pocketbase/article`
 const UPLOAD_IMPROVEMENT_TO_POCKETBASE = `${Config.BASE_URL}/upload-pocketbase/improvement`;
 
+/** Content Checker */
+const RENDER_SUGGESTION = `${Config.CONTENT_CHECKER_URL}/grammar/render-suggestions`;
+
 export {
   LOGIN_API,
   REGISTRATION_API,
@@ -111,5 +114,6 @@ export {
   GET_ARTICLE_CONTENT,
   GET_IMPROVEMENT_CONTENT,
   UPLOAD_ARTICLE_TO_POCKETBASE,
-  UPLOAD_IMPROVEMENT_TO_POCKETBASE
+  UPLOAD_IMPROVEMENT_TO_POCKETBASE,
+  RENDER_SUGGESTION
 };

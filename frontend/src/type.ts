@@ -81,6 +81,9 @@ export type RootStackParamList = {
   };
   ProfileEditScreen: undefined;
   LogoutScreen: {profile_image: string; username: string};
+  RenderSuggestion: {
+    htmlContent: string;
+  }
   //ChatbotScreen: undefined;
 };
 
@@ -177,6 +180,11 @@ export type EditorScreenProp = StackScreenProps<
 export type PreviewScreenProp = StackScreenProps<
   RootStackParamList,
   'PreviewScreen'
+>;
+
+export type RenderSuggestionProp = StackScreenProps<
+  RootStackParamList,
+  'RenderSuggestion'
 >;
 
 export type HomeScreenProps = CompositeScreenProps<
@@ -513,3 +521,8 @@ export type ImprovementCardProps = {
   item: EditRequest;
   onNavigate: (item: EditRequest) => void;
 };
+
+export type ContentSuggestionResponse = {
+  full_html: string,
+  suggestion: string,
+}
