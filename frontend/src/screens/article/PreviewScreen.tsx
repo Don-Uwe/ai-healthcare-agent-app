@@ -307,6 +307,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
           requestId: requestId,
           edited_content: edited_content,
           pb_recordId: recordId,
+          imageUtils: imageUtils
         },
         {
           headers: {
