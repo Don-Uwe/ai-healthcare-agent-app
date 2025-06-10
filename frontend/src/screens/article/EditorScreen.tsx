@@ -13,8 +13,8 @@ import {EditorScreenProp} from '../../type';
 import {launchImageLibrary} from 'react-native-image-picker';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {hp} from '../../helper/Metric';
-import { useDispatch } from 'react-redux';
-import { setSuggestion, setSuggestionAccepted } from '../../store/articleSlice';
+import {useDispatch} from 'react-redux';
+import {setSuggestion, setSuggestionAccepted} from '../../store/articleSlice';
 
 // Feature:
 // If you want to discard your post, in that case no post will upload into storage,
@@ -29,7 +29,7 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
     articleData,
     requestId,
     htmlContent,
-    pb_record_id
+    pb_record_id,
   } = route.params;
 
   const RichText = useRef();
@@ -61,7 +61,7 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
                 htmlImages: htmlImages,
                 articleData: articleData,
                 requestId: requestId,
-                pb_record_id: pb_record_id
+                pb_record_id: pb_record_id,
               });
             } else {
               Alert.alert('Error', 'Please enter at least 20 characters');
@@ -362,7 +362,9 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
         containerStyle={styles.editor}
         ref={RichText}
         style={styles.rich}
-        placeholder={'Start Writing Here'}
+        placeholder={
+          'Start Writing Here — outside formatting not acceptable here'
+        }
         initialContentHTML={article}
         onChange={text => setArticle(text)}
         editorInitializedCallback={editorInitializedCallback}

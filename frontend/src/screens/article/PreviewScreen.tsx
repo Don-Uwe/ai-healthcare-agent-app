@@ -46,8 +46,8 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
     pb_record_id,
   } = route.params;
 
-  //const socket = io('http://51.20.1.81:8084');
   const [imageUtil, setImageUtil] = useState<string>('');
+  const [imageUtils, setImageUtils] = useState<string[]>([]);
 
   const webViewRef = useRef<WebView>(null);
   const {user_token, user_id} = useSelector((state: any) => state.user);
@@ -103,12 +103,14 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
         return;
       }
 
+      let resultImages: string[] = [];
+
       // Process each local image
       for (let i = 0; i < localImages.length; i++) {
         const localImage = localImages[i];
 
         let uploadedUrl: string | undefined;
-
+      
         if (localImage.includes('api/getfile')) {
           uploadedUrl = localImage;
         } else {
@@ -123,12 +125,15 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
             ? uploadedUrl
             : `${GET_IMAGE}/${uploadedUrl}`;
         } else {
+          resultImages.push(`${GET_IMAGE}/${uploadedUrl}` || '');
           finalArticle = finalArticle.replace(
             localImage,
             `${GET_IMAGE}/${uploadedUrl}`,
           );
         }
       }
+
+      setImageUtils([imageUtil, ...resultImages]);
 
       // Submit Improvement
       if (requestId) {
@@ -206,7 +211,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
           authorId: user?._id,
           content: article,
           tags: selectedGenres,
-          imageUtils: [imageUtil],
+          imageUtils: imageUtils,
           description: description,
           pb_recordId: recordId,
         },
@@ -259,7 +264,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
           articleId: articleData?._id,
           content: article,
           tags: selectedGenres,
-          imageUtils: [imageUtil],
+          imageUtils: imageUtils,
           description: description,
         },
         {
@@ -329,6 +334,8 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
   const renderSuggestionMutation = useMutation({
     mutationKey: ['render-suggestion-key'],
     mutationFn: async () => {
+
+      console.log("htmlContent", article);
       const response = await axios.post(
         RENDER_SUGGESTION,
         {
