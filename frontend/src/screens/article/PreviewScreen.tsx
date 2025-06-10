@@ -110,7 +110,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
         const localImage = localImages[i];
 
         let uploadedUrl: string | undefined;
-      
+
         if (localImage.includes('api/getfile')) {
           uploadedUrl = localImage;
         } else {
@@ -334,8 +334,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
   const renderSuggestionMutation = useMutation({
     mutationKey: ['render-suggestion-key'],
     mutationFn: async () => {
-
-      console.log("htmlContent", article);
+      // console.log("htmlContent", article);
       const response = await axios.post(
         RENDER_SUGGESTION,
         {
