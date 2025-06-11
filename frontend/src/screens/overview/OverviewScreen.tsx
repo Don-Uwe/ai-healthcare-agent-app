@@ -29,10 +29,13 @@ export default function OverviewScreen({navigation}: OverviewScreenProps) {
     } else {
       // navigate to review screen
       // check item status
-      if (
+      if (item?.status === StatusEnum.DISCARDED) {
+        // eslint-disable-next-line prettier/prettier
+        //continue;
+        return;
+      } else if (
         item?.status === StatusEnum.AWAITING_USER ||
-        item?.status === StatusEnum.UNASSIGNED ||
-        item?.status === StatusEnum.DISCARDED
+        item?.status === StatusEnum.UNASSIGNED
       ) {
         navigation.navigate('ReviewScreen', {
           articleId: Number(item?._id),
@@ -55,7 +58,7 @@ export default function OverviewScreen({navigation}: OverviewScreenProps) {
         requestId: item._id,
         authorId: item.article.authorId, // although we don't need to send author id
         recordId: item.pb_recordId,
-        articleRecordId: item.article_recordId
+        articleRecordId: item.article_recordId,
       });
     }
   };
