@@ -53,6 +53,7 @@ export default function ReportScreen({navigation, route}: ReportScreenProp) {
         Alert.alert('No token found');
         return;
       }
+
       const res = await axios.post(
         SUBMIT_REPORT,
         {
@@ -60,7 +61,7 @@ export default function ReportScreen({navigation, route}: ReportScreenProp) {
           commentId: commentId,
           reportedBy: user_id,
           reasonId: selectedReasonId,
-          authorId: authorId,
+          authorId: authorId._id,
         },
         {
           headers: {

@@ -38,7 +38,7 @@
 <hr>
 
 
-[![Download Latest APK](https://img.shields.io/badge/Download%20APK-blue?style=for-the-badge&logo=android)](https://drive.google.com/file/d/1MFcGPnz4BDkKryLu-qNE2iLHl3Wb4_Jq/view?usp=sharing)
+[![Download Latest APK](https://drive.google.com/file/d/19pRw_TWU4R3wcXjffOPBy1JGBDGnlaEh/view?usp=sharing)
 
 <!------------------------------------------------------------------------FEATURED IN------------------------------------------------------------------------------>
 

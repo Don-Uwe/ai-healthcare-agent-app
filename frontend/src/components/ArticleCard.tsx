@@ -76,7 +76,7 @@ const ArticleCard = ({
       const result = await Share.open({
         title: item.title,
         message: `${item.title} : Check out this awesome post on UltimateHealth app!`,
-        // Most Recent APK: 0.5.0
+        // Most Recent APK: 0.7.4
         url: 'https://drive.google.com/file/d/1MFcGPnz4BDkKryLu-qNE2iLHl3Wb4_Jq/view?usp=sharing',
         subject: 'React Native Post',
       });
