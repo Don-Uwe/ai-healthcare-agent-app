@@ -77,7 +77,7 @@ const ArticleCard = ({
         title: item.title,
         message: `${item.title} : Check out this awesome post on UltimateHealth app!`,
         // Most Recent APK: 0.7.4
-        url: 'https://drive.google.com/file/d/1MFcGPnz4BDkKryLu-qNE2iLHl3Wb4_Jq/view?usp=sharing',
+        url: 'https://drive.google.com/file/d/19pRw_TWU4R3wcXjffOPBy1JGBDGnlaEh/view?usp=sharing',
         subject: 'React Native Post',
       });
       console.log(result);
