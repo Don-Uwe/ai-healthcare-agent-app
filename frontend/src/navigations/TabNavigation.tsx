@@ -14,7 +14,7 @@ import {TabParamList} from '../type';
 import ChatbotScreen from '../screens/ChatbotScreen';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import BotScreen from '../screens/BotScreen';
-import {BUTTON_COLOR} from '../helper/Theme';
+import {BUTTON_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 const TabNavigation = () => {
@@ -40,9 +40,12 @@ const TabNavigation = () => {
         component={PodcastsScreen}
         options={{
           headerShown: true,
+          headerTitle: '🎧 Podcasts',
           headerTransparent: true,
           headerTitleStyle: {
-            color: 'white',
+            fontSize: 23,
+            //fontWeight: 'bold',
+            marginBottom: 12,
           },
           headerRight: () => (
             <View
@@ -53,13 +56,13 @@ const TabNavigation = () => {
                 gap: 10,
               }}>
               <TouchableOpacity>
-                <AntDesign name="search1" color={'white'} size={24} />
+                <AntDesign name="search1" color={'black'} size={27} />
               </TouchableOpacity>
               <TouchableOpacity>
                 <MaterialCommunityIcons
                   name="dots-vertical"
-                  color={'white'}
-                  size={24}
+                  color={'black'}
+                  size={27}
                 />
               </TouchableOpacity>
             </View>

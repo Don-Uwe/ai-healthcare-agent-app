@@ -3,11 +3,24 @@ import React from 'react';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {Podcast} from '../type';
+import {wp} from '../helper/Metric';
 
-// The PodcastCard component receives the podcast details as props
-const PodcastCard = ({title, host, imageUri, likes, duration}: Podcast) => {
-  // Placeholder function for handling the play button press
-  const handlePlayPodcast = () => {};
+interface PodcastProps {
+  title: string;
+  host: string;
+  imageUri: string;
+  likes: number;
+  duration: string;
+  handleClick: () => void;
+}
+const PodcastCard = ({
+  title,
+  host,
+  imageUri,
+  likes,
+  duration,
+  handleClick,
+}: PodcastProps) => {
 
   return (
     // Main container for the podcast card
@@ -24,7 +37,9 @@ const PodcastCard = ({title, host, imageUri, likes, duration}: Podcast) => {
         />
         <View>
           {/* Display the podcast title */}
-          <Text style={styles.title}>{title}</Text>
+          <Text style={styles.title} numberOfLines={3} ellipsizeMode="tail">
+            {title}
+          </Text>
           {/* Display the podcast host */}
           <Text style={styles.host}>{host}</Text>
           <View style={styles.likesContainer}>
@@ -36,11 +51,10 @@ const PodcastCard = ({title, host, imageUri, likes, duration}: Podcast) => {
       </View>
 
       <View style={styles.playContainer}>
-        {/* Play button */}
-        <TouchableOpacity onPress={handlePlayPodcast}>
-          <Feather name="play-circle" size={24} color={'black'} />
+        <TouchableOpacity onPress={handleClick}>
+          <Feather name="chevrons-right" size={24} color={'black'} />
         </TouchableOpacity>
-        {/* Display the podcast duration */}
+
         <Text>{duration}</Text>
       </View>
     </View>
@@ -69,6 +83,8 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 15,
     fontWeight: 'bold',
+    flexShrink: 1,
+    maxWidth: wp(40),
   },
   host: {
     fontSize: 12,

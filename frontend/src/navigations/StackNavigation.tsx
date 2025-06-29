@@ -37,6 +37,7 @@ import ImprovementReviewScreen from '../screens/overview/ImprovementReviewScreen
 import SocialScreen from '../screens/SocialScreen';
 import {useQueryClient} from '@tanstack/react-query';
 import RenderSuggestion from '../screens/article/RenderSuggestion';
+import PodcastDetail from '../screens/PodcastDetail';
 const Stack = createStackNavigator<RootStackParamList>();
 
 const StackNavigation = () => {
@@ -205,6 +206,27 @@ const StackNavigation = () => {
       <Stack.Screen
         name="ArticleScreen"
         component={ArticleScreen}
+        options={({navigation}) => ({
+          headerShown: true,
+          headerTitle: '',
+          headerTransparent: true,
+          headerBackTitleVisible: false,
+          // eslint-disable-next-line react/no-unstable-nested-components
+          headerLeft: () => (
+            <TouchableOpacity
+              style={styles.headerLeftButton}
+              onPress={() => {
+                navigation.goBack();
+              }}>
+              <FontAwesome6 size={25} name="arrow-left" color="white" />
+            </TouchableOpacity>
+          ),
+        })}
+      />
+
+      <Stack.Screen
+        name="PodcastDetail"
+        component={PodcastDetail}
         options={({navigation}) => ({
           headerShown: true,
           headerTitle: '',

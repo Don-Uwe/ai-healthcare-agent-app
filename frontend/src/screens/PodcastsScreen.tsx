@@ -71,33 +71,37 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
 import React, {useEffect, useState} from 'react';
 import {
   View,
-  Text,
   FlatList,
-  TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  Pressable,
 } from 'react-native';
 import axios from 'axios';
-import TrackPlayer from 'react-native-track-player';
+import TrackPlayer, {Capability} from 'react-native-track-player';
+import PodcastCard from '../components/PodcastCard';
+import {ON_PRIMARY_COLOR} from '../helper/Theme';
+import {hp} from '../helper/Metric';
+import {PodcastScreenProps} from '../type';
 
-interface Podcast {
+export interface Podcast {
   trackId: number;
   trackName: string;
   trackViewUrl: string;
   artistName: string;
 }
 
-const PodcastsScreen: React.FC = () => {
+const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
   const [podcasts, setPodcasts] = useState<Podcast[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentTrackId, setCurrentTrackId] = useState<number | null>(null);
+  const [selectedPodcast, setSelectedPodcast] = useState<Podcast>();
 
   useEffect(() => {
     setupPlayer();
     fetchPodcasts();
 
     return () => {
-      TrackPlayer.destroy();
+      TrackPlayer.reset();
     };
   }, []);
 
@@ -110,22 +114,16 @@ const PodcastsScreen: React.FC = () => {
 
     isPlayerInitialized = true;
 
-    /*
     await TrackPlayer.updateOptions({
-      stopWithApp: true,
       capabilities: [
-        TrackPlayer.CAPABILITY_PLAY,
-        TrackPlayer.CAPABILITY_PAUSE,
-        TrackPlayer.CAPABILITY_STOP,
-        TrackPlayer.CAPABILITY_SKIP_TO_NEXT,
-        TrackPlayer.CAPABILITY_SKIP_TO_PREVIOUS,
+        Capability.Play,
+        Capability.Pause,
+        Capability.SkipToNext,
+        Capability.SkipToPrevious,
+        Capability.Stop,
       ],
-      compactCapabilities: [
-        TrackPlayer.CAPABILITY_PLAY,
-        TrackPlayer.CAPABILITY_PAUSE,
-      ],
+      compactCapabilities: [Capability.Play, Capability.Pause],
     });
-    */
   };
 
   const fetchPodcasts = async () => {
@@ -141,8 +139,11 @@ const PodcastsScreen: React.FC = () => {
     }
   };
 
-  const playPodcast = async (podcast: Podcast) => {
-    console.log('enter', podcast);
+  const playPodcast = async () => {
+    if (!selectedPodcast) {
+      return;
+    }
+    /*
     await TrackPlayer.reset();
     await TrackPlayer.add({
       id: podcast.trackId.toString(),
@@ -152,20 +153,39 @@ const PodcastsScreen: React.FC = () => {
     });
     await TrackPlayer.play();
     setCurrentTrackId(podcast.trackId);
+    */
+    navigation.navigate('PodcastDetail', {
+      podcast: {
+        title: selectedPodcast.trackName,
+        host: selectedPodcast.artistName,
+        imageUri: '',
+        likes: 20,
+        duration: '20 mins',
+      },
+    });
   };
 
   const renderItem = ({item}: {item: Podcast}) => (
-    <TouchableOpacity style={styles.item} onPress={() => playPodcast(item)}>
-      <Text style={styles.title}>
-        {item.trackName} {currentTrackId === item.trackId ? '▶️' : ''}
-      </Text>
-      <Text style={styles.artist}>{item.artistName}</Text>
-    </TouchableOpacity>
+    <Pressable
+      onPress={() => {
+        setSelectedPodcast(item)
+        playPodcast();
+      }}>
+      <PodcastCard
+        title={item.trackName}
+        host={item.artistName}
+        likes={20}
+        duration={'20 mins'}
+        handleClick={() => {
+          setSelectedPodcast(item);
+          playPodcast();
+        }}
+      />
+    </Pressable>
   );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>🎧 Podcasts</Text>
       {loading ? (
         <ActivityIndicator size="large" />
       ) : (
@@ -184,9 +204,9 @@ export default PodcastsScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 50,
+    paddingTop: hp(10),
     paddingHorizontal: 16,
-    backgroundColor: '#fff',
+    backgroundColor: ON_PRIMARY_COLOR,
   },
   header: {
     fontSize: 24,

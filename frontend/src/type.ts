@@ -22,7 +22,6 @@ export type RootStackParamList = {
     requestId: string | undefined;
     htmlContent: string | undefined;
     pb_record_id: string | undefined;
-    
   };
   ArticleDescriptionScreen: {
     article: ArticleData | null | undefined;
@@ -83,7 +82,10 @@ export type RootStackParamList = {
   LogoutScreen: {profile_image: string; username: string};
   RenderSuggestion: {
     htmlContent: string;
-  }
+  };
+  PodcastDetail: {
+    podcast: Podcast;
+  };
   //ChatbotScreen: undefined;
 };
 
@@ -142,6 +144,10 @@ export type ArticleScreenProp = StackScreenProps<
   'ArticleScreen'
 >;
 
+export type PodcastDetailScreenProp = StackScreenProps<
+  RootStackParamList,
+  'PodcastDetail'
+>;
 export type ReviewScreenProp = StackScreenProps<
   RootStackParamList,
   'ReviewScreen'
@@ -261,7 +267,7 @@ export type PocketBaseResponse = {
   message: string;
   recordId: string;
   html_file: string;
-}
+};
 export type ProfileHeaderProps = {
   isDoctor: boolean;
   username: string;
@@ -523,6 +529,6 @@ export type ImprovementCardProps = {
 };
 
 export type ContentSuggestionResponse = {
-  full_html: string,
-  suggestion: string,
-}
+  full_html: string;
+  suggestion: string;
+};
