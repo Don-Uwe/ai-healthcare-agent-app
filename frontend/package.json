@@ -57,6 +57,7 @@
     "react-native-snackbar": "^2.8.0",
     "react-native-svg": "^15.4.0",
     "react-native-tab-view": "^3.5.2",
+    "react-native-track-player": "^4.1.1",
     "react-native-tts": "4.1.0",
     "react-native-vector-icons": "^10.1.0",
     "react-native-webview": "^13.10.4",
