@@ -1,17 +1,85 @@
-// PodcastPlayerScreen.js
-
-import {useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {PodcastDetailScreenProp} from '../type';
-import {BUTTON_COLOR, ON_PRIMARY_COLOR} from '../helper/Theme';
+import {BUTTON_COLOR, ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import {hp} from '../helper/Metric';
+import Slider from '@react-native-community/slider';
+import TrackPlayer, {
+  Capability,
+  State,
+  usePlaybackState,
+  useProgress,
+} from 'react-native-track-player';
 
-const PodcastDetail = ({navigation}: PodcastDetailScreenProp) => {
-  const [progress, setProgress] = useState(10);
+const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
+  //const [progress, setProgress] = useState(10);
+  const {podcast, trackId} = route.params;
+  const playbackState = usePlaybackState();
+  const progress = useProgress();
 
-  const handleListenPress = () => {
-    console.log('Listen button pressed');
+  const handleListenPress = async () => {
+    const currentState = await TrackPlayer.getPlaybackState();
+
+    if (currentState.state === State.Playing) {
+      await TrackPlayer.pause();
+    } else if (
+      currentState.state === State.Paused ||
+      currentState.state === State.Ready ||
+      currentState.state === State.Stopped
+    ) {
+      await TrackPlayer.play();
+    }
+  };
+
+  const addTrack = useCallback(async () => {
+    await TrackPlayer.reset();
+    await TrackPlayer.add({
+      id: trackId,
+      url: 'https://commondatastorage.googleapis.com/codeskulptor-assets/Epoq-Lepidoptera.ogg',
+      title: podcast.title,
+      artist: podcast.host,
+    });
+  }, [podcast, trackId]);
+/*
+  const setupPlayer = useCallback(async () => {
+    const currentState = await TrackPlayer.getPlaybackState();
+
+    console.log('Current state', currentState);
+
+    if (currentState.state !== State.None) {
+      return;
+    }
+
+    await TrackPlayer.setupPlayer();
+
+    await TrackPlayer.updateOptions({
+      capabilities: [
+        Capability.Play,
+        Capability.Pause,
+        Capability.SkipToNext,
+        Capability.SkipToPrevious,
+        Capability.Stop,
+      ],
+      compactCapabilities: [Capability.Play, Capability.Pause],
+    });
+
+    await addTrack();
+  }, [addTrack]);
+  */
+
+  useEffect(() => {
+    addTrack();
+
+    return () => {
+      //TrackPlayer.stop();
+    };
+  }, []);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
   return (
@@ -33,8 +101,29 @@ const PodcastDetail = ({navigation}: PodcastDetailScreenProp) => {
         <Text style={styles.metaText}>2.1K Views</Text>
       </View>
 
+      <Slider
+        style={styles.slider}
+        minimumValue={0}
+        maximumValue={progress.duration}
+        value={progress.position}
+        minimumTrackTintColor={PRIMARY_COLOR}
+        maximumTrackTintColor="#ccc"
+        thumbTintColor={PRIMARY_COLOR}
+        onSlidingComplete={async value => {
+          // seek to selected time
+          await TrackPlayer.seekTo(value);
+        }}
+      />
+
+      <View style={styles.timeRow}>
+        <Text style={styles.time}>{formatTime(progress.position)}</Text>
+        <Text style={styles.time}>{formatTime(progress.duration)}</Text>
+      </View>
+
       <TouchableOpacity style={styles.listenButton} onPress={handleListenPress}>
-        <Text style={styles.listenText}>🎧 Listen Now</Text>
+        <Text style={styles.listenText}>
+          {playbackState.state === State.Playing ? '⏸️Pause' : '🎧 Listen Now'}
+        </Text>
       </TouchableOpacity>
 
       <View style={styles.footerOptions}>
@@ -88,16 +177,6 @@ const styles = StyleSheet.create({
     color: '#777',
     marginBottom: 24,
   },
-  slider: {
-    width: '100%',
-    height: 40,
-  },
-  timeRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 4,
-    marginBottom: 24,
-  },
   time: {
     fontSize: 12,
     color: '#777',
@@ -129,5 +208,18 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#666',
     fontWeight: '500',
+  },
+
+  slider: {
+    width: '100%',
+    height: 40,
+    marginTop: 10,
+    marginBottom: 4,
+  },
+  timeRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 4,
+    marginBottom: 16,
   },
 });

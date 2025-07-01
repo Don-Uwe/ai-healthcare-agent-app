@@ -20,6 +20,7 @@ import PushNotification from 'react-native-push-notification';
 
 import {SocketProvider} from './SocketContext';
 import {useDispatch} from 'react-redux';
+import TrackPlayer, { Capability } from 'react-native-track-player';
 
 const queryClient = new QueryClient();
 function App(): React.JSX.Element {
@@ -31,6 +32,31 @@ function App(): React.JSX.Element {
   const BarStyle = Platform.OS === 'ios' ? 'dark-content' : 'light-content';
   const navigationContainerRef = useRef();
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    const init = async () => {
+      try {
+        await TrackPlayer.setupPlayer();
+
+        await TrackPlayer.updateOptions({
+          capabilities: [
+            Capability.Play,
+            Capability.Pause,
+            Capability.SkipToNext,
+            Capability.SkipToPrevious,
+            Capability.Stop,
+          ],
+          compactCapabilities: [Capability.Play, Capability.Pause],
+        });
+
+        console.log(' TrackPlayer initialized once');
+      } catch (e) {
+        console.log(' TrackPlayer already initialized or failed', e);
+      }
+    };
+
+    init();
+  }, []);
 
   useEffect(() => {
     PushNotification.configure({

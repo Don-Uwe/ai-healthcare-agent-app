@@ -85,6 +85,7 @@ export type RootStackParamList = {
   };
   PodcastDetail: {
     podcast: Podcast;
+    trackId: string;
   };
   //ChatbotScreen: undefined;
 };
@@ -215,7 +216,10 @@ export type SocialScreenProps = StackScreenProps<
   'SocialScreen'
 >;
 
-export type PodcastScreenProps = BottomTabScreenProps<TabParamList, 'Podcasts'>;
+export type PodcastScreenProps = CompositeScreenProps<
+  | BottomTabScreenProps<TabParamList, 'Podcasts'>
+  | StackScreenProps<RootStackParamList, 'PodcastDetail'>
+>;
 export type ProfileScreenProps = CompositeScreenProps<
   BottomTabScreenProps<TabParamList, 'Profile'>,
   | StackScreenProps<RootStackParamList, 'ProfileEditScreen'>

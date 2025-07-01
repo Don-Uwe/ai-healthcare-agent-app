@@ -97,14 +97,16 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
   const [selectedPodcast, setSelectedPodcast] = useState<Podcast>();
 
   useEffect(() => {
-    setupPlayer();
+    // setupPlayer();
     fetchPodcasts();
 
     return () => {
-      TrackPlayer.reset();
+      //TrackPlayer.stop();
     };
   }, []);
 
+ 
+  /*
   let isPlayerInitialized = false;
   const setupPlayer = async () => {
     if (isPlayerInitialized) {
@@ -125,6 +127,8 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
       compactCapabilities: [Capability.Play, Capability.Pause],
     });
   };
+  */
+  
 
   const fetchPodcasts = async () => {
     try {
@@ -154,6 +158,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
     await TrackPlayer.play();
     setCurrentTrackId(podcast.trackId);
     */
+    /*
     navigation.navigate('PodcastDetail', {
       podcast: {
         title: selectedPodcast.trackName,
@@ -163,12 +168,23 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
         duration: '20 mins',
       },
     });
+    */
+    navigation.navigate('PodcastDetail', {
+      podcast: {
+        title: selectedPodcast.trackName ?? '',
+        host: selectedPodcast.artistName ?? '',
+        imageUri: '',
+        likes: 20,
+        duration: '20 mins',
+      },
+      trackId: selectedPodcast.trackId,
+    });
   };
 
   const renderItem = ({item}: {item: Podcast}) => (
     <Pressable
       onPress={() => {
-        setSelectedPodcast(item)
+        setSelectedPodcast(item);
         playPodcast();
       }}>
       <PodcastCard
