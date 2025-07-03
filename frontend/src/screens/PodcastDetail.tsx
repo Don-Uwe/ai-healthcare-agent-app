@@ -21,6 +21,10 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   const handleListenPress = async () => {
     const currentState = await TrackPlayer.getPlaybackState();
 
+    console.log('Current state', currentState);
+    console.log('State Playing', State.Playing);
+    console.log('State Ready', State.Ready);
+    console.log('State Stoped', State.Stopped);
     if (currentState.state === State.Playing) {
       await TrackPlayer.pause();
     } else if (
@@ -41,7 +45,7 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
       artist: podcast.host,
     });
   }, [podcast, trackId]);
-/*
+  /*
   const setupPlayer = useCallback(async () => {
     const currentState = await TrackPlayer.getPlaybackState();
 
@@ -120,7 +124,18 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
         <Text style={styles.time}>{formatTime(progress.duration)}</Text>
       </View>
 
-      <TouchableOpacity style={styles.listenButton} onPress={handleListenPress}>
+      {playbackState.state === State.Buffering && (
+        <Text style={styles.bufferingText}>⏳ Buffering... please wait</Text>
+      )}
+
+      <TouchableOpacity
+        style={[
+          styles.listenButton,
+          (playbackState.state === State.Buffering) &&
+            styles.listenButtonDisabled,
+        ]}
+        onPress={handleListenPress}
+        disabled={playbackState.state === State.Buffering}>
         <Text style={styles.listenText}>
           {playbackState.state === State.Playing ? '⏸️Pause' : '🎧 Listen Now'}
         </Text>
@@ -221,5 +236,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 4,
     marginBottom: 16,
+  },
+  bufferingText: {
+    textAlign: 'center',
+    color: '#888',
+    marginBottom: 8,
+    fontStyle: 'italic',
+    fontSize: 14,
+  },
+  listenButtonDisabled: {
+    backgroundColor: '#ccc',
   },
 });
