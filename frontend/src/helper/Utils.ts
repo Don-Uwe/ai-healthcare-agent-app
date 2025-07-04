@@ -31,10 +31,7 @@ export function msToTime(ms: number): string {
 
   const pad = (num: number): string => num.toString().padStart(2, '0');
 
-  let result = `${pad(hours)}:${pad(minutes)}`;
-  if (seconds > 0) {
-    result += `:${pad(seconds)}`;
-  }
+  let result = hours >= 1 ? `${pad(hours)}h:${pad(minutes)}m`: `${pad(minutes)}m:${pad(seconds)}s`;
 
   return result;
 }

@@ -84,22 +84,13 @@ import {PodcastData, PodcastScreenProps} from '../type';
 import {useSelector} from 'react-redux';
 import {useMutation, useQuery} from '@tanstack/react-query';
 import {msToTime} from '../helper/Utils';
-import {GET_ALL_PODCASTS} from '../helper/APIUtils';
+import {GET_ALL_PODCASTS, UPDATE_PODCAST_VIEW_COUNT} from '../helper/APIUtils';
 import PodcastEmptyComponent from '../components/PodcastEmptyComponent';
-
-export interface Podcast {
-  trackId: number;
-  trackName: string;
-  trackViewUrl: string;
-  artistName: string;
-}
+import Snackbar from 'react-native-snackbar';
 
 const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
-
-  const [selectedPodcast, setSelectedPodcast] = useState<PodcastData>();
   const {user_token} = useSelector((state: any) => state.user);
   const [refreshing, setRefreshing] = useState<boolean>(false);
-
 
   const {
     data: podcastData,
@@ -124,36 +115,61 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
     },
   });
 
-
-  const onRefresh = ()=>{
+  const onRefresh = () => {
     setRefreshing(true);
     refetch();
     setRefreshing(false);
-  }
- 
-  const playPodcast = async () => {
-    if (!selectedPodcast) {
-      return;
-    }
-    navigation.navigate('PodcastDetail', {
-      trackId: selectedPodcast._id,
-    });
   };
+
+  const updateViewCountMutation = useMutation({
+    mutationKey:['update-podcast-view-count'],
+    mutationFn: async (podcastId: string)=>{
+
+      console.log('podcast url', UPDATE_PODCAST_VIEW_COUNT);
+      console.log('podcast id', podcastId);
+      console.log('user token', user_token);
+
+      const res = await axios.post(`${UPDATE_PODCAST_VIEW_COUNT}`, {
+        podcast_id: podcastId,
+      },{
+        headers:{
+          Authorization: `Bearer ${user_token}`,
+        },
+      });
+      return res.data.data as PodcastData;
+
+    },
+    onSuccess: (data)=>{
+      navigation.navigate('PodcastDetail',{
+        trackId: data._id,
+      });
+    },
+    onError: (err)=>{
+
+       console.log('Update view count err', err);
+       Snackbar.show({
+         text:"Something went wrong!",
+         duration: Snackbar.LENGTH_SHORT,
+       });
+    },
+  });
+
+ 
+
 
   const renderItem = ({item}: {item: PodcastData}) => (
     <Pressable
       onPress={() => {
-        setSelectedPodcast(item);
-        playPodcast();
+        //playPodcast(item);
+        updateViewCountMutation.mutate(item._id)
       }}>
       <PodcastCard
         title={item.title}
         host={item.user_id.user_name}
-        likes={item.likedUsers.length}
+        views={item.viewUsers.length}
         duration={`${msToTime(item.duration)}`}
         handleClick={() => {
-          setSelectedPodcast(item);
-          playPodcast();
+            updateViewCountMutation.mutate(item._id)
         }}
         imageUri={item.cover_image}
       />
@@ -169,10 +185,9 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
           data={podcastData ? podcastData : []}
           keyExtractor={item => item._id.toString()}
           renderItem={renderItem}
-          ListEmptyComponent={<PodcastEmptyComponent/>}
+          ListEmptyComponent={<PodcastEmptyComponent />}
           refreshing={refreshing}
           onRefresh={onRefresh}
-          
         />
       )}
     </View>
@@ -186,7 +201,8 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: hp(10),
     paddingHorizontal: 16,
-    backgroundColor: ON_PRIMARY_COLOR,
+    //backgroundColor: ON_PRIMARY_COLOR,
+    backgroundColor:'#ffffff'
   },
   header: {
     fontSize: 24,

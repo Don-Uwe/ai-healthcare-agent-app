@@ -1,17 +1,15 @@
 import {StyleSheet, Text, View, Image, TouchableOpacity} from 'react-native';
-import React from 'react';
 import Feather from 'react-native-vector-icons/Feather';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import {Podcast} from '../type';
 import {wp} from '../helper/Metric';
+import { formatCount } from '../helper/Utils';
 
 interface PodcastProps {
   title: string;
   host: string;
   imageUri: string;
-  likes: number;
+  views: number;
   duration: string;
-  handleClick: () => void;
+  handleClick: ()=> void;
 }
 
 
@@ -20,7 +18,7 @@ const PodcastCard = ({
   title,
   host,
   imageUri,
-  likes,
+  views,
   duration,
   handleClick,
 }: PodcastProps) => {
@@ -47,8 +45,8 @@ const PodcastCard = ({
           <Text style={styles.host}>{host}</Text>
           <View style={styles.likesContainer}>
             {/* Display the number of likes with a heart icon */}
-            <Ionicons name="heart" size={20} />
-            <Text>{likes}</Text>
+            {/* <Ionicons name="heart" size={20} /> */}
+            <Text>{views <= 1 ? `${views} view` : `${formatCount(views)} views`}</Text>
           </View>
         </View>
       </View>
@@ -72,7 +70,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginVertical: 10,
-    padding: 7
+    padding: 7,
   },
   imageTextContainer: {
     gap: 10,

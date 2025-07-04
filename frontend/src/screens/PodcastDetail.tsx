@@ -6,6 +6,8 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {PodcastData, PodcastDetailScreenProp} from '../type';
@@ -17,19 +19,22 @@ import TrackPlayer, {
   usePlaybackState,
   useProgress,
 } from 'react-native-track-player';
-import {useQuery} from '@tanstack/react-query';
+import {useMutation, useQuery} from '@tanstack/react-query';
 import axios from 'axios';
-import {GET_IMAGE, GET_PODCAST_DETAILS} from '../helper/APIUtils';
+import {GET_IMAGE, GET_PODCAST_DETAILS, LIKE_PODCAST} from '../helper/APIUtils';
 import {useSelector} from 'react-redux';
 import moment from 'moment';
-import { formatCount } from '../helper/Utils';
+import {formatCount} from '../helper/Utils';
+import Snackbar from 'react-native-snackbar';
+import AntDesign from 'react-native-vector-icons/AntDesign';
+import Share from 'react-native-share';
 
 const PodcastDetail = ({route}: PodcastDetailScreenProp) => {
   //const [progress, setProgress] = useState(10);
   const {trackId} = route.params;
   const playbackState = usePlaybackState();
   const progress = useProgress();
-  const {user_token} = useSelector((state: any) => state.user);
+  const {user_token, user_id} = useSelector((state: any) => state.user);
 
   const handleListenPress = async () => {
     const currentState = await TrackPlayer.getPlaybackState();
@@ -49,9 +54,7 @@ const PodcastDetail = ({route}: PodcastDetailScreenProp) => {
     }
   };
 
-  const {
-    data: podcast,
-  } = useQuery({
+  const {data: podcast, refetch} = useQuery({
     queryKey: ['get-podcast-details'],
     queryFn: async () => {
       try {
@@ -85,18 +88,67 @@ const PodcastDetail = ({route}: PodcastDetailScreenProp) => {
     }
   }, [podcast, trackId]);
 
+  const updateLikeCountMutation = useMutation({
+    mutationKey: ['update-podcast-like-count'],
+    mutationFn: async (podcastId: string) => {
+      const res = await axios.post(
+        `${LIKE_PODCAST}`,
+        {
+          podcast_id: podcastId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user_token}`,
+          },
+        },
+      );
+      return res.data as any;
+    },
+    onSuccess: () => {
+      refetch();
+    },
+    onError: err => {
+      console.log('Update like count err', err);
+      Snackbar.show({
+        text: 'Something went wrong!',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+    },
+  });
+
   useEffect(() => {
     addTrack();
-
-    return () => {
-      //TrackPlayer.stop();
-    };
+    return () => {};
   }, [addTrack]);
 
   const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
+    const hours = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
     const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+
+    if (hours > 0) {
+      return `${hours}:${mins < 10 ? '0' : ''}${mins}:${
+        secs < 10 ? '0' : ''
+      }${secs}`;
+    } else {
+      return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+  };
+//console.log("Podcast liked users", podcast?.likedUsers);
+  const handleShare = async () => {
+    try {
+      const result = await Share.open({
+        title: podcast?.title,
+        message: `${podcast?.title} : Check out this podcast on UltimateHealth app!`,
+        // Most Recent APK: 0.7.4
+        url: 'https://drive.google.com/file/d/19pRw_TWU4R3wcXjffOPBy1JGBDGnlaEh/view?usp=sharing',
+        subject: 'UltimateHealth Post',
+      });
+      console.log(result);
+    } catch (error) {
+      console.log('Error sharing:', error);
+      Alert.alert('Error', 'Something went wrong while sharing.');
+    }
   };
 
   return (
@@ -126,12 +178,14 @@ const PodcastDetail = ({route}: PodcastDetailScreenProp) => {
         <Text style={styles.metaText}>
           {moment(podcast?.updated_at).format('MMMM Do YYYY, h:mm A')}
         </Text>
-       {
-        podcast && (
-           // eslint-disable-next-line react/react-in-jsx-scope
-           <Text style={styles.metaText}>{podcast?.viewUsers.length <=1 ? `${podcast?.viewUsers.length} view`: `${formatCount(podcast?.viewUsers.length ?? 0)} views` }</Text>
-        )
-       }
+        {podcast && (
+          // eslint-disable-next-line react/react-in-jsx-scope
+          <Text style={styles.metaText}>
+            {podcast?.viewUsers.length <= 1
+              ? `${podcast?.viewUsers.length} view`
+              : `${formatCount(podcast?.viewUsers.length ?? 0)} views`}
+          </Text>
+        )}
       </View>
 
       <Slider
@@ -171,13 +225,24 @@ const PodcastDetail = ({route}: PodcastDetailScreenProp) => {
       </TouchableOpacity>
 
       <View style={styles.footerOptions}>
-        <TouchableOpacity>
-          <Ionicons name="heart-outline" size={27} color="#1E1E1E" />
-        </TouchableOpacity>
+        {updateLikeCountMutation.isPending ? (
+          <ActivityIndicator size="small" color={PRIMARY_COLOR} />
+        ) : (
+          <TouchableOpacity
+            onPress={() => {
+              updateLikeCountMutation.mutate(trackId);
+            }}>
+            {podcast?.likedUsers.includes(user_id) ? (
+              <AntDesign name="heart" size={24} color={PRIMARY_COLOR} />
+            ) : (
+              <AntDesign name="hearto" size={24} color={'black'} />
+            )}
+          </TouchableOpacity>
+        )}
         <TouchableOpacity>
           <Ionicons name="download-outline" size={27} color="#1E1E1E" />
         </TouchableOpacity>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={handleShare}>
           <Ionicons name="share-outline" size={27} color="#1E1E1E" />
         </TouchableOpacity>
       </View>
@@ -209,7 +274,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     borderRadius: 26,
     marginBottom: 24,
-    resizeMode:"cover"
+    resizeMode: 'cover',
   },
   episodeTitle: {
     fontSize: 20,
@@ -243,7 +308,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     marginTop: 3,
-    marginBottom:40
+    marginBottom: 40,
   },
   metaInfo: {
     flexDirection: 'row',

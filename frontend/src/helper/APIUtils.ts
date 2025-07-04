@@ -63,6 +63,9 @@ const RENDER_SUGGESTION = `${Config.CONTENT_CHECKER_URL}/grammar/render-suggesti
 /** PODCAST RELATED */
 const GET_ALL_PODCASTS = `${Config.BASE_URL}/podcast/published-podcasts`;
 const GET_PODCAST_DETAILS = `${Config.BASE_URL}/podcast/details`;
+const UPDATE_PODCAST_VIEW_COUNT = `${Config.BASE_URL}/podcast/update-view-count`;
+const LIKE_PODCAST = `${Config.BASE_URL}/podcast/like`;
+
 
 export {
   LOGIN_API,
@@ -122,5 +125,7 @@ export {
   RENDER_SUGGESTION,
   // PODCAST
   GET_ALL_PODCASTS,
-  GET_PODCAST_DETAILS
+  GET_PODCAST_DETAILS,
+  UPDATE_PODCAST_VIEW_COUNT,
+  LIKE_PODCAST,
 };
