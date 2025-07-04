@@ -1,4 +1,4 @@
-import {useCallback, useEffect} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -24,7 +24,7 @@ import axios from 'axios';
 import {GET_IMAGE, GET_PODCAST_DETAILS, LIKE_PODCAST} from '../helper/APIUtils';
 import {useSelector} from 'react-redux';
 import moment from 'moment';
-import {formatCount} from '../helper/Utils';
+import {downloadAudio, formatCount} from '../helper/Utils';
 import Snackbar from 'react-native-snackbar';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Share from 'react-native-share';
@@ -35,6 +35,7 @@ const PodcastDetail = ({route}: PodcastDetailScreenProp) => {
   const playbackState = usePlaybackState();
   const progress = useProgress();
   const {user_token, user_id} = useSelector((state: any) => state.user);
+  const [isLoading, setLoading] = useState<boolean>(false);
 
   const handleListenPress = async () => {
     const currentState = await TrackPlayer.getPlaybackState();
@@ -134,7 +135,7 @@ const PodcastDetail = ({route}: PodcastDetailScreenProp) => {
       return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
     }
   };
-//console.log("Podcast liked users", podcast?.likedUsers);
+  //console.log("Podcast liked users", podcast?.likedUsers);
   const handleShare = async () => {
     try {
       const result = await Share.open({
@@ -239,9 +240,29 @@ const PodcastDetail = ({route}: PodcastDetailScreenProp) => {
             )}
           </TouchableOpacity>
         )}
-        <TouchableOpacity>
-          <Ionicons name="download-outline" size={27} color="#1E1E1E" />
-        </TouchableOpacity>
+        {isLoading ? (
+          <ActivityIndicator size="small" color={PRIMARY_COLOR} />
+        ) : (
+          <TouchableOpacity
+            onPress={async () => {
+              if (podcast) {
+                setLoading(true);
+                const res = await downloadAudio(podcast);
+                setLoading(false);
+                Snackbar.show({
+                  text: res.message,
+                  duration: Snackbar.LENGTH_SHORT,
+                });
+              } else {
+                Snackbar.show({
+                  text: 'Something went wrong! try again',
+                  duration: Snackbar.LENGTH_SHORT,
+                });
+              }
+            }}>
+            <Ionicons name="download-outline" size={27} color="#1E1E1E" />
+          </TouchableOpacity>
+        )}
         <TouchableOpacity onPress={handleShare}>
           <Ionicons name="share-outline" size={27} color="#1E1E1E" />
         </TouchableOpacity>

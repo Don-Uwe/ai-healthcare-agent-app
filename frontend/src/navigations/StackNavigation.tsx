@@ -38,6 +38,8 @@ import SocialScreen from '../screens/SocialScreen';
 import {useQueryClient} from '@tanstack/react-query';
 import RenderSuggestion from '../screens/article/RenderSuggestion';
 import PodcastDetail from '../screens/PodcastDetail';
+import OfflinePodcastList from '../screens/OfflinePodcastList';
+import OfflinePodcastDetail from '../screens/OfflinePodcastDetails';
 const Stack = createStackNavigator<RootStackParamList>();
 
 const StackNavigation = () => {
@@ -169,6 +171,47 @@ const StackNavigation = () => {
         options={({navigation}) => ({
           headerShown: true,
           headerTitle: '',
+          headerBackTitleVisible: false,
+          // eslint-disable-next-line react/no-unstable-nested-components
+          headerLeft: () => (
+            <TouchableOpacity
+              style={styles.headerLeftButtonEditorScreen}
+              onPress={() => {
+                navigation.goBack();
+              }}>
+              <FontAwesome6 size={25} name="arrow-left" color={PRIMARY_COLOR} />
+            </TouchableOpacity>
+          ),
+        })}
+      />
+
+
+      <Stack.Screen
+        name="OfflinePodcastList"
+        component={OfflinePodcastList}
+        options={({navigation}) => ({
+          headerShown: true,
+          headerTitle: 'Downloaded Podcasts',
+          headerBackTitleVisible: false,
+          // eslint-disable-next-line react/no-unstable-nested-components
+          headerLeft: () => (
+            <TouchableOpacity
+              style={styles.headerLeftButtonEditorScreen}
+              onPress={() => {
+                navigation.goBack();
+              }}>
+              <FontAwesome6 size={25} name="arrow-left" color={PRIMARY_COLOR} />
+            </TouchableOpacity>
+          ),
+        })}
+      />
+
+      <Stack.Screen
+        name="OfflinePodcastDetail"
+        component={OfflinePodcastDetail}
+        options={({navigation}) => ({
+          headerShown: true,
+          headerTitle: 'Downloaded Podcasts',
           headerBackTitleVisible: false,
           // eslint-disable-next-line react/no-unstable-nested-components
           headerLeft: () => (

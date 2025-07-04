@@ -86,6 +86,8 @@ export type RootStackParamList = {
   PodcastDetail: {
     trackId: string;
   };
+  OfflinePodcastList: undefined;
+  OfflinePodcastDetail: undefined;
   //ChatbotScreen: undefined;
 };
 
@@ -151,6 +153,15 @@ export type PodcastDetailScreenProp = StackScreenProps<
 export type ReviewScreenProp = StackScreenProps<
   RootStackParamList,
   'ReviewScreen'
+>;
+export type OfflinePodcastListProp = StackScreenProps<
+ RootStackParamList,
+ 'OfflinePodcastList'
+>;
+
+export type OfflinePodcastDetailProp = StackScreenProps<
+ RootStackParamList,
+ 'OfflinePodcastDetail'
 >;
 
 export type ImpvReviewScreenProp = StackScreenProps<

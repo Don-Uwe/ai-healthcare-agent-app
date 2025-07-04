@@ -20,7 +20,8 @@ import PushNotification from 'react-native-push-notification';
 
 import {SocketProvider} from './SocketContext';
 import {useDispatch} from 'react-redux';
-import TrackPlayer, { Capability } from 'react-native-track-player';
+import TrackPlayer, {Capability} from 'react-native-track-player';
+import {cleanUpDownloads} from './src/helper/Utils';
 
 const queryClient = new QueryClient();
 function App(): React.JSX.Element {
@@ -56,6 +57,10 @@ function App(): React.JSX.Element {
     };
 
     init();
+  }, []);
+
+  useEffect(() => {
+    cleanUpDownloads();
   }, []);
 
   useEffect(() => {

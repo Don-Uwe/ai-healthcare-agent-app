@@ -186,7 +186,7 @@ ${body}
 `;
 };
 
-// General purpose podcast app, no need to encrypted download data here, 
+// General purpose podcast app, no need to encrypted download data here,
 // We will ensure that, there will be no copyrighted content, or we can't give access to download
 // copyrighted content, as per ultimatehealth system
 /** Download podcast */
@@ -204,6 +204,15 @@ export const downloadAudio = async (_podcast: PodcastData) => {
         success: false,
       };
     }
+    // check for existing downloads 
+    const isPodcastFound = existingPodcasts.some((d)=> d._id === _podcast._id);
+
+    if(isPodcastFound){
+      return {
+        message: 'File already saved',
+        success: true,
+      };
+    }
     // download the file
     const path = await downloadFile(_podcast.audio_url, _podcast.title);
     if (path) {
@@ -212,11 +221,14 @@ export const downloadAudio = async (_podcast: PodcastData) => {
       }
       existingPodcasts.push({
         ..._podcast,
-       // filePath: `file://${path}`,
+        // filePath: `file://${path}`,
         filePath: path,
         downloadAt: Date.now(),
       });
-      await storeItem('DOWNLOAD_PODCAST_DATA', JSON.stringify(existingPodcasts));
+      await storeItem(
+        'DOWNLOAD_PODCAST_DATA',
+        JSON.stringify(existingPodcasts),
+      );
 
       return {
         message: 'File saved successfully',
@@ -268,9 +280,40 @@ const downloadFile = async (key: string, title: string) => {
   }
 };
 
-export const cleanUpDownloads = async ()=>{
-  // TODO: 
-}
+export const cleanUpDownloads = async () => {
+  const existingPodcastStr = await retrieveItem('DOWNLOAD_PODCAST_DATA');
+  if (!existingPodcastStr) {
+    return;
+  }
+  try {
+    const existingPodcasts = existingPodcastStr
+      ? JSON.parse(existingPodcastStr)
+      : [];
+
+    if (!Array.isArray(existingPodcasts)) {
+      return;
+    }
+    const freshPodcasts = [];
+    const now = Date.now();
+    const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+    for (const item of existingPodcasts) {
+      const age = now - item.downloadAt;
+      if (age > THIRTY_DAYS_MS) {
+        // unlink
+        if (item.filePath && (await RNFS.exists(item.filePath))) {
+          await RNFS.unlink(item.filePath);
+          console.log('Deleted old file:', item.filePath);
+        }
+      } else {
+        freshPodcasts.push(item);
+      }
+    }
+    await storeItem('DOWNLOAD_PODCAST_DATA', JSON.stringify(freshPodcasts));
+    console.log('Cleanup completed. Remaining items:', freshPodcasts.length);
+  } catch (err) {
+    console.log('cleaned up error', err);
+  }
+};
 
 export const createFeebackHTMLStructure = (feedback: string) => {
   return `<!DOCTYPE html>
