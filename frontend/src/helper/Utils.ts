@@ -6,7 +6,7 @@ export const checkInternetConnection = (
   callback: (isConnected: boolean) => void,
 ) => {
   const unsubscribe = NetInfo.addEventListener(state => {
-    return callback(state.isConnected);
+    return callback(state.isConnected ? state.isConnected : false);
   });
 
   return unsubscribe;
@@ -20,6 +20,23 @@ export function formatCount(count: number) {
   } else {
     return Math.floor(count / 1000000) + 'M';
   }
+}
+
+export function msToTime(ms: number): string {
+  let totalSeconds = Math.floor(ms / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  totalSeconds %= 3600;
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+
+  const pad = (num: number): string => num.toString().padStart(2, '0');
+
+  let result = `${pad(hours)}:${pad(minutes)}`;
+  if (seconds > 0) {
+    result += `:${pad(seconds)}`;
+  }
+
+  return result;
 }
 export const Categories: CategoryType[] = [
   {id: 1, name: 'Cardiology'},
@@ -176,6 +193,7 @@ export const articles: Article[] = [
 
 */
 
+/*
 export const podcast: Podcast[] = [
   {
     title: 'Health Matters',
@@ -256,6 +274,7 @@ export const podcast: Podcast[] = [
     duration: '20 min',
   },
 ];
+*/
 
 // Async Storage for get Item
 export const retrieveItem = async (key: string) => {
@@ -666,9 +685,8 @@ ${body}
 `;
 };
 
-export const createFeebackHTMLStructure = (feedback: string)=>{
-  
- return  `<!DOCTYPE html>
+export const createFeebackHTMLStructure = (feedback: string) => {
+  return `<!DOCTYPE html>
 <html>
 <head>
 <style>
@@ -755,4 +773,8 @@ ${feedback}
 <hr>
 </body>
 `;
-}
+};
+
+// utils/formatCount.js
+
+

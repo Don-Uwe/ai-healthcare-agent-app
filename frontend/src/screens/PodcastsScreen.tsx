@@ -68,7 +68,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
   );
   */
 }
-import React, {useEffect, useState} from 'react';
+import {useState} from 'react';
 import {
   View,
   FlatList,
@@ -77,11 +77,15 @@ import {
   Pressable,
 } from 'react-native';
 import axios from 'axios';
-import TrackPlayer, {Capability} from 'react-native-track-player';
 import PodcastCard from '../components/PodcastCard';
 import {ON_PRIMARY_COLOR} from '../helper/Theme';
 import {hp} from '../helper/Metric';
-import {PodcastScreenProps} from '../type';
+import {PodcastData, PodcastScreenProps} from '../type';
+import {useSelector} from 'react-redux';
+import {useMutation, useQuery} from '@tanstack/react-query';
+import {msToTime} from '../helper/Utils';
+import {GET_ALL_PODCASTS} from '../helper/APIUtils';
+import PodcastEmptyComponent from '../components/PodcastEmptyComponent';
 
 export interface Podcast {
   trackId: number;
@@ -91,124 +95,84 @@ export interface Podcast {
 }
 
 const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
-  const [podcasts, setPodcasts] = useState<Podcast[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [currentTrackId, setCurrentTrackId] = useState<number | null>(null);
-  const [selectedPodcast, setSelectedPodcast] = useState<Podcast>();
 
-  useEffect(() => {
-    // setupPlayer();
-    fetchPodcasts();
+  const [selectedPodcast, setSelectedPodcast] = useState<PodcastData>();
+  const {user_token} = useSelector((state: any) => state.user);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
 
-    return () => {
-      //TrackPlayer.stop();
-    };
-  }, []);
 
+  const {
+    data: podcastData,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ['get-all-podcasts'],
+    queryFn: async () => {
+      try {
+        if (user_token === '') {
+          throw new Error('No token found');
+        }
+        const response = await axios.get(`${GET_ALL_PODCASTS}`, {
+          headers: {
+            Authorization: `Bearer ${user_token}`,
+          },
+        });
+        return response.data as PodcastData[];
+      } catch (err) {
+        console.error('Error fetching podcasts:', err);
+      }
+    },
+  });
+
+
+  const onRefresh = ()=>{
+    setRefreshing(true);
+    refetch();
+    setRefreshing(false);
+  }
  
-  /*
-  let isPlayerInitialized = false;
-  const setupPlayer = async () => {
-    if (isPlayerInitialized) {
-      return;
-    }
-    await TrackPlayer.setupPlayer();
-
-    isPlayerInitialized = true;
-
-    await TrackPlayer.updateOptions({
-      capabilities: [
-        Capability.Play,
-        Capability.Pause,
-        Capability.SkipToNext,
-        Capability.SkipToPrevious,
-        Capability.Stop,
-      ],
-      compactCapabilities: [Capability.Play, Capability.Pause],
-    });
-  };
-  */
-  
-
-  const fetchPodcasts = async () => {
-    try {
-      const res = await axios.get(
-        'https://itunes.apple.com/search?media=podcast&term=technology',
-      );
-      setPodcasts(res.data.results);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const playPodcast = async () => {
     if (!selectedPodcast) {
       return;
     }
-    /*
-    await TrackPlayer.reset();
-    await TrackPlayer.add({
-      id: podcast.trackId.toString(),
-      url: 'https://commondatastorage.googleapis.com/codeskulptor-assets/Epoq-Lepidoptera.ogg',
-      title: podcast.trackName,
-      artist: podcast.artistName,
-    });
-    await TrackPlayer.play();
-    setCurrentTrackId(podcast.trackId);
-    */
-    /*
     navigation.navigate('PodcastDetail', {
-      podcast: {
-        title: selectedPodcast.trackName,
-        host: selectedPodcast.artistName,
-        imageUri: '',
-        likes: 20,
-        duration: '20 mins',
-      },
-    });
-    */
-    navigation.navigate('PodcastDetail', {
-      podcast: {
-        title: selectedPodcast.trackName ?? '',
-        host: selectedPodcast.artistName ?? '',
-        imageUri: '',
-        likes: 20,
-        duration: '20 mins',
-      },
-      trackId: selectedPodcast.trackId,
+      trackId: selectedPodcast._id,
     });
   };
 
-  const renderItem = ({item}: {item: Podcast}) => (
+  const renderItem = ({item}: {item: PodcastData}) => (
     <Pressable
       onPress={() => {
         setSelectedPodcast(item);
         playPodcast();
       }}>
       <PodcastCard
-        title={item.trackName}
-        host={item.artistName}
-        likes={20}
-        duration={'20 mins'}
+        title={item.title}
+        host={item.user_id.user_name}
+        likes={item.likedUsers.length}
+        duration={`${msToTime(item.duration)}`}
         handleClick={() => {
           setSelectedPodcast(item);
           playPodcast();
         }}
+        imageUri={item.cover_image}
       />
     </Pressable>
   );
 
   return (
     <View style={styles.container}>
-      {loading ? (
+      {isLoading ? (
         <ActivityIndicator size="large" />
       ) : (
         <FlatList
-          data={podcasts}
-          keyExtractor={item => item.trackId.toString()}
+          data={podcastData ? podcastData : []}
+          keyExtractor={item => item._id.toString()}
           renderItem={renderItem}
+          ListEmptyComponent={<PodcastEmptyComponent/>}
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          
         />
       )}
     </View>

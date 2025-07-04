@@ -13,6 +13,9 @@ interface PodcastProps {
   duration: string;
   handleClick: () => void;
 }
+
+
+
 const PodcastCard = ({
   title,
   host,
@@ -68,7 +71,8 @@ const styles = StyleSheet.create({
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginVertical: 10,
+    padding: 7
   },
   imageTextContainer: {
     gap: 10,
@@ -76,18 +80,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   image: {
-    height: 80,
-    width: 80,
+    height: 90,
+    width: 90,
     borderRadius: 20,
   },
   title: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: 'bold',
     flexShrink: 1,
     maxWidth: wp(40),
   },
   host: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: 'regular',
   },
   likesContainer: {

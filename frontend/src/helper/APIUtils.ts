@@ -60,6 +60,10 @@ const UPLOAD_IMPROVEMENT_TO_POCKETBASE = `${Config.BASE_URL}/upload-pocketbase/i
 /** Content Checker */
 const RENDER_SUGGESTION = `${Config.CONTENT_CHECKER_URL}/grammar/render-suggestions`;
 
+/** PODCAST RELATED */
+const GET_ALL_PODCASTS = `${Config.BASE_URL}/podcast/published-podcasts`;
+const GET_PODCAST_DETAILS = `${Config.BASE_URL}/podcast/details`;
+
 export {
   LOGIN_API,
   REGISTRATION_API,
@@ -115,5 +119,8 @@ export {
   GET_IMPROVEMENT_CONTENT,
   UPLOAD_ARTICLE_TO_POCKETBASE,
   UPLOAD_IMPROVEMENT_TO_POCKETBASE,
-  RENDER_SUGGESTION
+  RENDER_SUGGESTION,
+  // PODCAST
+  GET_ALL_PODCASTS,
+  GET_PODCAST_DETAILS
 };

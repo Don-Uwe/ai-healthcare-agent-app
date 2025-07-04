@@ -84,7 +84,6 @@ export type RootStackParamList = {
     htmlContent: string;
   };
   PodcastDetail: {
-    podcast: Podcast;
     trackId: string;
   };
   //ChatbotScreen: undefined;
@@ -217,7 +216,7 @@ export type SocialScreenProps = StackScreenProps<
 >;
 
 export type PodcastScreenProps = CompositeScreenProps<
-  | BottomTabScreenProps<TabParamList, 'Podcasts'>
+  | BottomTabScreenProps<TabParamList, 'Podcasts'>,
   | StackScreenProps<RootStackParamList, 'PodcastDetail'>
 >;
 export type ProfileScreenProps = CompositeScreenProps<
@@ -404,6 +403,28 @@ export type ArticleData = {
   pb_recordId: string;
 };
 
+export type PodcastData = {
+  _id: string;
+  user_id: User;
+  article_id: number;
+  title: string;
+  description: string;
+  audio_url: string;
+  cover_image: string;
+  duration: number;
+  tags: Category[];
+  likedUsers: User[];
+  savedUsers: User[];
+  viewUsers: User[];
+  discardReason: string;
+  is_removed: boolean;
+  mentionedUsers: User[];
+  reportId: string | null;
+  status: string;
+  admin_id: string | null;
+  updated_at: string
+};
+
 export type UserStatus = {
   totalLikes: number;
   totalViews: number;
@@ -485,7 +506,7 @@ export type Podcast = {
   host: string;
   imageUri: string;
   likes: number;
-  duration: string;
+  duration: number;
 };
 
 export type AuthData = {
