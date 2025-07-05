@@ -5,22 +5,29 @@ import {
   TouchableOpacity,
   Text,
   Image,
+  Alert,
 } from 'react-native';
-import {OfflinePodcastDetailProp} from '../type';
+import {OfflinePodcastDetailProp, PodcastData} from '../type';
 import {hp} from '../helper/Metric';
 import {ON_PRIMARY_COLOR, BUTTON_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import Slider from '@react-native-community/slider';
 import moment from 'moment';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import TrackPlayer, {
   usePlaybackState,
   useProgress,
   State,
 } from 'react-native-track-player';
-import {formatCount} from '../helper/Utils';
+import {formatCount, updateOfflinePodcastLikeStatus} from '../helper/Utils';
 import {useSelector} from 'react-redux';
 import {useCallback, useEffect, useState} from 'react';
+import {useMutation} from '@tanstack/react-query';
+import axios from 'axios';
+import Snackbar from 'react-native-snackbar';
+import {LIKE_PODCAST} from '../helper/APIUtils';
+import Share from 'react-native-share';
 
 export default function OfflinePodcastDetail({
   navigation,
@@ -29,8 +36,10 @@ export default function OfflinePodcastDetail({
   const {podcast} = route.params;
   const playbackState = usePlaybackState();
   const progress = useProgress();
-  const {user_id} = useSelector((state: any) => state.user);
+  const {user_id, user_token} = useSelector((state: any) => state.user);
+  const {isConnected} = useSelector((state: any) => state.network);
   //const [isLoading, setLoading] = useState<boolean>(false);
+  const [currentPodcast, setCurrentPodcast] = useState<PodcastData>(podcast);
 
   const addTrack = useCallback(async () => {
     await TrackPlayer.reset();
@@ -62,6 +71,58 @@ export default function OfflinePodcastDetail({
       await TrackPlayer.play();
     }
   };
+
+  const handleShare = async () => {
+    try {
+      const result = await Share.open({
+        title: podcast?.title,
+        message: `${podcast?.title} : Check out this podcast on UltimateHealth app!`,
+        // Most Recent APK: 0.7.4
+        url: 'https://drive.google.com/file/d/19pRw_TWU4R3wcXjffOPBy1JGBDGnlaEh/view?usp=sharing',
+        subject: 'UltimateHealth Post',
+      });
+      console.log(result);
+    } catch (error) {
+      console.log('Error sharing:', error);
+      Alert.alert('Error', 'Something went wrong while sharing.');
+    }
+  };
+
+  const updateLikeCountMutation = useMutation({
+    mutationKey: ['update-podcast-like-count'],
+    mutationFn: async (podcastId: string) => {
+      const res = await axios.post(
+        `${LIKE_PODCAST}`,
+        {
+          podcast_id: podcastId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user_token}`,
+          },
+        },
+      );
+      return res.data as any;
+    },
+    onSuccess: async data => {
+      if (data.likeStatus === false) {
+        // Update podcast status in storage
+        podcast.likedUsers = podcast.likedUsers.filter(id => id !== user_id);
+        setCurrentPodcast(podcast);
+        await updateOfflinePodcastLikeStatus(podcast);
+      } else {
+        podcast.likedUsers.push(user_id);
+        await updateOfflinePodcastLikeStatus(podcast);
+      }
+    },
+    onError: err => {
+      console.log('Update like count err', err);
+      Snackbar.show({
+        text: 'Something went wrong!',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+    },
+  });
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -145,8 +206,11 @@ export default function OfflinePodcastDetail({
           onPress={() => {
             // updateLikeCountMutation.mutate(trackId);
             // Later will do, after checking connectivity
+            if (isConnected) {
+              updateLikeCountMutation.mutate(podcast._id);
+            }
           }}>
-          {podcast?.likedUsers.includes(user_id) ? (
+          {currentPodcast?.likedUsers.includes(user_id) ? (
             <AntDesign name="heart" size={24} color={PRIMARY_COLOR} />
           ) : (
             <AntDesign name="hearto" size={24} color={'black'} />
@@ -154,14 +218,19 @@ export default function OfflinePodcastDetail({
         </TouchableOpacity>
 
         <View>
-          <Ionicons name="download-outline" size={27} color="#1E1E1E" />
+          <MaterialIcons name="done" size={24} color="green" />
         </View>
 
-        {/**
-           * <TouchableOpacity onPress={handleShare}>
-          <Ionicons name="share-outline" size={27} color="#1E1E1E" />
-        </TouchableOpacity>
-           */}
+        {
+          <TouchableOpacity
+            onPress={() => {
+              if (isConnected) {
+                handleShare();
+              }
+            }}>
+            <Ionicons name="share-outline" size={27} color="#1E1E1E" />
+          </TouchableOpacity>
+        }
       </View>
     </ScrollView>
   );
@@ -173,7 +242,7 @@ const styles = StyleSheet.create({
     backgroundColor: ON_PRIMARY_COLOR,
     padding: 20,
     //justifyContent: 'center',
-    marginTop: hp(2),
+    //marginTop: hp(2),
     // marginBottom: hp(10)
   },
   header: {

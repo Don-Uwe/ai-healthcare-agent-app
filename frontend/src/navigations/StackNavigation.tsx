@@ -193,6 +193,7 @@ const StackNavigation = () => {
           headerShown: true,
           headerTitle: 'Downloaded Podcasts',
           headerBackTitleVisible: false,
+          headerTransparent: true,
           // eslint-disable-next-line react/no-unstable-nested-components
           headerLeft: () => (
             <TouchableOpacity
@@ -213,6 +214,7 @@ const StackNavigation = () => {
           headerShown: true,
           headerTitle: '',
           headerBackTitleVisible: false,
+          headerTransparent: true,
           // eslint-disable-next-line react/no-unstable-nested-components
           headerLeft: () => (
             <TouchableOpacity

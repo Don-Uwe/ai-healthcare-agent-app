@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
     backgroundColor: ON_PRIMARY_COLOR,
     padding: 20,
     //justifyContent: 'center',
-    marginTop: hp(2),
+   // marginTop: hp(2),
     // marginBottom: hp(10)
   },
   header: {

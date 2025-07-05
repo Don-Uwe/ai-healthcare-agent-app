@@ -5,6 +5,7 @@ import {useEffect, useState} from 'react';
 import PodcastCard from '../components/PodcastCard';
 import PodcastEmptyComponent from '../components/PodcastEmptyComponent';
 import { hp } from '../helper/Metric';
+import { ON_PRIMARY_COLOR } from '../helper/Theme';
 
 export default function OfflinePodcastList({
   navigation,
@@ -72,8 +73,8 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: hp(10),
     paddingHorizontal: 16,
-    //backgroundColor: ON_PRIMARY_COLOR,
-    backgroundColor:'#ffffff'
+    backgroundColor: ON_PRIMARY_COLOR,
+   // backgroundColor:'#ffffff'
   },
   header: {
     fontSize: 24,

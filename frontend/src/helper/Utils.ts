@@ -204,10 +204,10 @@ export const downloadAudio = async (_podcast: PodcastData) => {
         success: false,
       };
     }
-    // check for existing downloads 
-    const isPodcastFound = existingPodcasts.some((d)=> d._id === _podcast._id);
+    // check for existing downloads
+    const isPodcastFound = existingPodcasts.some(d => d._id === _podcast._id);
 
-    if(isPodcastFound){
+    if (isPodcastFound) {
       return {
         message: 'File already saved',
         success: true,
@@ -219,12 +219,9 @@ export const downloadAudio = async (_podcast: PodcastData) => {
       if (!Array.isArray(existingPodcasts)) {
         existingPodcasts = [];
       }
-      existingPodcasts.push({
-        ..._podcast,
-        // filePath: `file://${path}`,
-        filePath: path,
-        downloadAt: Date.now(),
-      });
+      _podcast.filePath = path;
+      _podcast.downloadAt = new Date();
+      existingPodcasts.push(_podcast);
       await storeItem(
         'DOWNLOAD_PODCAST_DATA',
         JSON.stringify(existingPodcasts),
@@ -312,6 +309,29 @@ export const cleanUpDownloads = async () => {
     console.log('Cleanup completed. Remaining items:', freshPodcasts.length);
   } catch (err) {
     console.log('cleaned up error', err);
+  }
+};
+
+export const updateOfflinePodcastLikeStatus = async (_podcast: PodcastData) => {
+  const existingPodcastsStr = await retrieveItem('DOWNLOAD_PODCAST_DATA');
+  try {
+    let existingPodcasts = existingPodcastsStr
+      ? JSON.parse(existingPodcastsStr)
+      : [];
+
+    const freshPodcasts: PodcastData[] = [];
+    for (const item of existingPodcasts) {
+      if (item._id === _podcast._id) {
+        freshPodcasts.push(_podcast);
+      } else {
+        freshPodcasts.push(item);
+      }
+    }
+
+    await storeItem('DOWNLOAD_PODCAST_DATA', JSON.stringify(freshPodcasts));
+    console.log('Update completed');
+  } catch (err) {
+    console.log(err);
   }
 };
 

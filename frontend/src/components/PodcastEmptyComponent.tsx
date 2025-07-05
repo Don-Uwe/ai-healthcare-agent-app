@@ -8,7 +8,7 @@ export default function PodcastEmptyComponent() {
         source={require('../assets/podcast_default.jpg')}
         style={styles.image}
       />
-      <Text style={styles.message}>No Article Found</Text>
+      <Text style={styles.message}>No podcast Found</Text>
     </View>
   );
 }

@@ -154,8 +154,6 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
     },
   });
 
- 
-
 
   const renderItem = ({item}: {item: PodcastData}) => (
     <Pressable
