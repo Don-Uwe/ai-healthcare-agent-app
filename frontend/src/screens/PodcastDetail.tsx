@@ -175,6 +175,14 @@ const PodcastDetail = ({route}: PodcastDetailScreenProp) => {
       <Text style={styles.episodeTitle}>{podcast?.title}</Text>
       <Text style={styles.podcastTitle}>{podcast?.description}</Text>
 
+      <View style={styles.tagsContainer}>
+        {podcast?.tags?.map((tag, index) => (
+          <Text key={index} style={styles.tagText}>
+            #{tag.name}
+          </Text>
+        ))}
+      </View>
+
       <View style={styles.metaInfo}>
         <Text style={styles.metaText}>
           {moment(podcast?.updated_at).format('MMMM Do YYYY, h:mm A')}
@@ -279,7 +287,7 @@ const styles = StyleSheet.create({
     backgroundColor: ON_PRIMARY_COLOR,
     padding: 20,
     //justifyContent: 'center',
-   // marginTop: hp(2),
+    // marginTop: hp(2),
     // marginBottom: hp(10)
   },
   header: {
@@ -307,7 +315,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'justify',
     color: '#777',
-    marginBottom: 24,
+    marginBottom: 4,
   },
   time: {
     fontSize: 12,
@@ -364,5 +372,24 @@ const styles = StyleSheet.create({
   },
   listenButtonDisabled: {
     backgroundColor: '#ccc',
+  },
+
+  tagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginVertical: 2,
+    rowGap: 4,
+    columnGap: 8,
+  },
+
+  tagText: {
+    //backgroundColor: '#f0f0f0',
+    color: PRIMARY_COLOR,
+    fontSize: 14,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginRight: 6,
+    marginBottom: 4,
   },
 });

@@ -125,10 +125,6 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
     mutationKey:['update-podcast-view-count'],
     mutationFn: async (podcastId: string)=>{
 
-      console.log('podcast url', UPDATE_PODCAST_VIEW_COUNT);
-      console.log('podcast id', podcastId);
-      console.log('user token', user_token);
-
       const res = await axios.post(`${UPDATE_PODCAST_VIEW_COUNT}`, {
         podcast_id: podcastId,
       },{
@@ -166,6 +162,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
         host={item.user_id.user_name}
         views={item.viewUsers.length}
         duration={`${msToTime(item.duration)}`}
+        tags={item.tags}
         handleClick={() => {
             updateViewCountMutation.mutate(item._id)
         }}

@@ -151,6 +151,14 @@ export default function OfflinePodcastDetail({
       <Text style={styles.episodeTitle}>{podcast?.title}</Text>
       <Text style={styles.podcastTitle}>{podcast?.description}</Text>
 
+      <View style={styles.tagsContainer}>
+        {podcast?.tags?.map((tag, index) => (
+          <Text key={index} style={styles.tagText}>
+            #{tag.name}
+          </Text>
+        ))}
+      </View>
+
       <View style={styles.metaInfo}>
         <Text style={styles.metaText}>
           {moment(podcast?.updated_at).format('MMMM Do YYYY, h:mm A')}
@@ -205,9 +213,13 @@ export default function OfflinePodcastDetail({
         <TouchableOpacity
           onPress={() => {
             // updateLikeCountMutation.mutate(trackId);
-            // Later will do, after checking connectivity
             if (isConnected) {
               updateLikeCountMutation.mutate(podcast._id);
+            } else {
+              Snackbar.show({
+                text: 'You are currently offline',
+                duration: Snackbar.LENGTH_SHORT,
+              });
             }
           }}>
           {currentPodcast?.likedUsers.includes(user_id) ? (
@@ -226,6 +238,11 @@ export default function OfflinePodcastDetail({
             onPress={() => {
               if (isConnected) {
                 handleShare();
+              } else {
+                Snackbar.show({
+                  text: 'You are currently offline',
+                  duration: Snackbar.LENGTH_SHORT,
+                });
               }
             }}>
             <Ionicons name="share-outline" size={27} color="#1E1E1E" />
@@ -270,7 +287,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'justify',
     color: '#777',
-    marginBottom: 24,
+    marginBottom: 4,
   },
   time: {
     fontSize: 12,
@@ -327,5 +344,23 @@ const styles = StyleSheet.create({
   },
   listenButtonDisabled: {
     backgroundColor: '#ccc',
+  },
+  tagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginVertical: 2,
+    rowGap: 4,
+    columnGap: 8,
+  },
+
+  tagText: {
+    //backgroundColor: '#f0f0f0',
+    color: PRIMARY_COLOR,
+    fontSize: 15,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginRight: 6,
+    marginBottom: 4,
   },
 });

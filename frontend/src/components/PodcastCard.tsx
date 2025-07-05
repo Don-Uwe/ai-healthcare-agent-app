@@ -1,18 +1,19 @@
 import {StyleSheet, Text, View, Image, TouchableOpacity} from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import {wp} from '../helper/Metric';
-import { formatCount } from '../helper/Utils';
+import {hp, wp} from '../helper/Metric';
+import {formatCount} from '../helper/Utils';
+import {Category} from '../type';
+import {PRIMARY_COLOR} from '../helper/Theme';
 
 interface PodcastProps {
   title: string;
   host: string;
   imageUri: string;
   views: number;
+  tags: Category[];
   duration: string;
-  handleClick: ()=> void;
+  handleClick: () => void;
 }
-
-
 
 const PodcastCard = ({
   title,
@@ -20,9 +21,9 @@ const PodcastCard = ({
   imageUri,
   views,
   duration,
+  tags,
   handleClick,
 }: PodcastProps) => {
-
   return (
     // Main container for the podcast card
     <View style={styles.container}>
@@ -30,9 +31,10 @@ const PodcastCard = ({
         {/* Display the podcast image */}
         <Image
           source={{
-            uri: imageUri && imageUri !== ''
-              ? imageUri
-              : 'https://t3.ftcdn.net/jpg/05/10/75/30/360_F_510753092_f4AOmCJAczuGgRLCmHxmowga2tC9VYQP.jpg',
+            uri:
+              imageUri && imageUri !== ''
+                ? imageUri
+                : 'https://t3.ftcdn.net/jpg/05/10/75/30/360_F_510753092_f4AOmCJAczuGgRLCmHxmowga2tC9VYQP.jpg',
           }}
           style={styles.image}
         />
@@ -43,10 +45,20 @@ const PodcastCard = ({
           </Text>
           {/* Display the podcast host */}
           <Text style={styles.host}>{host}</Text>
+
+          <View style={styles.tagsContainer}>
+            {tags?.map((tag, index) => (
+              <Text key={index} style={styles.tagText}>
+                #{tag.name}
+              </Text>
+            ))}
+          </View>
           <View style={styles.likesContainer}>
             {/* Display the number of likes with a heart icon */}
             {/* <Ionicons name="heart" size={20} /> */}
-            <Text>{views <= 1 ? `${views} view` : `${formatCount(views)} views`}</Text>
+            <Text>
+              {views <= 1 ? `${views} view` : `${formatCount(views)} views`}
+            </Text>
           </View>
         </View>
       </View>
@@ -56,7 +68,7 @@ const PodcastCard = ({
           <Feather name="chevrons-right" size={24} color={'black'} />
         </TouchableOpacity>
 
-        <Text>{duration}</Text>
+        <Text style={styles.durationText}>{duration}</Text>
       </View>
     </View>
   );
@@ -73,13 +85,13 @@ const styles = StyleSheet.create({
     padding: 7,
   },
   imageTextContainer: {
-    gap: 10,
+    flex: 1,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    gap: 12,
   },
   image: {
-    height: 90,
-    width: 90,
+    height: hp(16),
+    width: wp(29),
     borderRadius: 20,
   },
   title: {
@@ -96,13 +108,38 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 2,
-    marginTop: 5,
+    marginTop: 1,
   },
   playContainer: {
-    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 5,
+    minWidth: 60,
+    marginLeft: 12,
+    bottom: hp(4),
+  },
+  tagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 6,
+    rowGap: 4,
+    columnGap: 8,
+  },
+
+  tagText: {
+    backgroundColor: '#f0f0f0',
+    color: PRIMARY_COLOR,
+    fontSize: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginRight: 6,
+    marginBottom: 4,
+  },
+  durationText: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 4,
+    textAlign: 'center',
   },
 });
 

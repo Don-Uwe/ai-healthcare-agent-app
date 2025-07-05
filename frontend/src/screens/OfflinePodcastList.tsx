@@ -49,6 +49,7 @@ export default function OfflinePodcastList({
         host={item.user_id.user_name}
         views={item.viewUsers.length}
         duration={`${msToTime(item.duration)}`}
+        tags ={item.tags}
         handleClick={() => {
         navigateToDetail(item);
         }}
