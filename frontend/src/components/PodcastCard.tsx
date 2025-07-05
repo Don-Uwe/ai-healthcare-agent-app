@@ -30,7 +30,7 @@ const PodcastCard = ({
         {/* Display the podcast image */}
         <Image
           source={{
-            uri: imageUri
+            uri: imageUri && imageUri !== ''
               ? imageUri
               : 'https://t3.ftcdn.net/jpg/05/10/75/30/360_F_510753092_f4AOmCJAczuGgRLCmHxmowga2tC9VYQP.jpg',
           }}

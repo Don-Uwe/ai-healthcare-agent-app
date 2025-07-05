@@ -211,7 +211,7 @@ const StackNavigation = () => {
         component={OfflinePodcastDetail}
         options={({navigation}) => ({
           headerShown: true,
-          headerTitle: 'Downloaded Podcasts',
+          headerTitle: '',
           headerBackTitleVisible: false,
           // eslint-disable-next-line react/no-unstable-nested-components
           headerLeft: () => (

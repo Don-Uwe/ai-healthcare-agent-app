@@ -5,6 +5,7 @@ import {Dispatch, RefObject, SetStateAction} from 'react';
 import {BottomSheetModal} from '@gorhom/bottom-sheet'; // Adjust this import based on your actual BottomSheetModal component
 
 export type RootStackParamList = {
+  navigate(arg0: string): unknown;
   SplashScreen: undefined;
   LoginScreen: undefined;
   TabNavigation: undefined;
@@ -87,7 +88,9 @@ export type RootStackParamList = {
     trackId: string;
   };
   OfflinePodcastList: undefined;
-  OfflinePodcastDetail: undefined;
+  OfflinePodcastDetail: {
+    podcast: PodcastData
+  };
   //ChatbotScreen: undefined;
 };
 
@@ -433,8 +436,11 @@ export type PodcastData = {
   reportId: string | null;
   status: string;
   admin_id: string | null;
-  updated_at: string
+  updated_at: string;
+  filePath: string | undefined,
+  downloadAt: Date| null,
 };
+
 
 export type UserStatus = {
   totalLikes: number;

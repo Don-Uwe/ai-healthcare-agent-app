@@ -22,6 +22,7 @@ import {SocketProvider} from './SocketContext';
 import {useDispatch} from 'react-redux';
 import TrackPlayer, {Capability} from 'react-native-track-player';
 import {cleanUpDownloads} from './src/helper/Utils';
+import { Provider as PaperProvider } from 'react-native-paper';
 
 const queryClient = new QueryClient();
 function App(): React.JSX.Element {
@@ -57,6 +58,9 @@ function App(): React.JSX.Element {
     };
 
     init();
+    return ()=>{
+       TrackPlayer.stop();
+    }
   }, []);
 
   useEffect(() => {
@@ -168,6 +172,7 @@ function App(): React.JSX.Element {
     <QueryClientProvider client={queryClient}>
       <SocketProvider>
         <SafeAreaProvider>
+          <PaperProvider>
           <View
             style={{flex: 1, backgroundColor: backgroundStyle.backgroundColor}}>
             <StatusBar
@@ -180,6 +185,7 @@ function App(): React.JSX.Element {
               <StackNavigation />
             </NavigationContainer>
           </View>
+          </PaperProvider>
         </SafeAreaProvider>
       </SocketProvider>
     </QueryClientProvider>
