@@ -6,6 +6,8 @@ import {
   Text,
   Image,
   Alert,
+  Platform,
+  ActivityIndicator,
 } from 'react-native';
 import {OfflinePodcastDetailProp, PodcastData} from '../type';
 import {hp} from '../helper/Metric';
@@ -26,19 +28,23 @@ import {useCallback, useEffect, useState} from 'react';
 import {useMutation} from '@tanstack/react-query';
 import axios from 'axios';
 import Snackbar from 'react-native-snackbar';
-import {LIKE_PODCAST} from '../helper/APIUtils';
+import {GET_STORAGE_DATA, LIKE_PODCAST} from '../helper/APIUtils';
 import Share from 'react-native-share';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 export default function OfflinePodcastDetail({
   navigation,
   route,
 }: OfflinePodcastDetailProp) {
   const {podcast} = route.params;
+  const insets = useSafeAreaInsets();
   const playbackState = usePlaybackState();
   const progress = useProgress();
   const {user_id, user_token} = useSelector((state: any) => state.user);
   const {isConnected} = useSelector((state: any) => state.network);
   //const [isLoading, setLoading] = useState<boolean>(false);
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [currentPodcast, setCurrentPodcast] = useState<PodcastData>(podcast);
 
   const addTrack = useCallback(async () => {
@@ -81,7 +87,7 @@ export default function OfflinePodcastDetail({
         url: 'https://drive.google.com/file/d/19pRw_TWU4R3wcXjffOPBy1JGBDGnlaEh/view?usp=sharing',
         subject: 'UltimateHealth Post',
       });
-      console.log(result);
+      //console.log(result);
     } catch (error) {
       console.log('Error sharing:', error);
       Alert.alert('Error', 'Something went wrong while sharing.');
@@ -139,8 +145,6 @@ export default function OfflinePodcastDetail({
   };
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.header}>Podcast Details</Text>
-
       <Image
         source={{
           uri: 'https://t3.ftcdn.net/jpg/05/10/75/30/360_F_510753092_f4AOmCJAczuGgRLCmHxmowga2tC9VYQP.jpg',
@@ -148,8 +152,139 @@ export default function OfflinePodcastDetail({
         style={styles.podcastImage}
       />
 
+      <View
+        style={[
+          styles.footer,
+          {
+            paddingBottom:
+              Platform.OS === 'ios' ? insets.bottom : insets.bottom + 20,
+          },
+        ]}>
+        <View style={styles.authorContainer}>
+          <TouchableOpacity
+            onPress={() => {
+              //  if (article && article?.authorId) {
+              //navigation.navigate('UserProfileScreen', {
+              //  authorId: authorId,
+              // });
+            }}>
+            {podcast?.user_id.Profile_image && isConnected ? (
+              <Image
+                source={{
+                  uri: podcast?.user_id.Profile_image.startsWith('http')
+                    ? `${podcast?.user_id.Profile_image}`
+                    : `${GET_STORAGE_DATA}/${podcast?.user_id.Profile_image}`,
+                }}
+                style={styles.authorImage}
+              />
+            ) : isConnected ? (
+              <Image
+                source={{
+                  uri: 'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
+                }}
+                style={styles.authorImage}
+              />
+            ) : (
+              <View style={styles.iconContainer}>
+                <Icon name="person" size={40} color="#555" />
+              </View>
+            )}
+          </TouchableOpacity>
+          <View>
+            <Text style={styles.authorName}>
+              {podcast ? podcast?.user_id.user_name : ''}
+            </Text>
+            <Text style={styles.authorFollowers}>
+              {podcast?.user_id.followers
+                ? podcast?.user_id.followers.length > 1
+                  ? `${podcast?.user_id.followers.length} followers`
+                  : `${podcast?.user_id.followers.length} follower`
+                : '0 follower'}
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.footerOptions}>
+        <TouchableOpacity
+          style={styles.footerItem}
+          onPress={() => {
+            if (isConnected) {
+              updateLikeCountMutation.mutate(podcast._id);
+            } else {
+              Snackbar.show({
+                text: 'You are currently offline',
+                duration: Snackbar.LENGTH_SHORT,
+              });
+            }
+          }}>
+          {currentPodcast?.likedUsers.includes(user_id) ? (
+            <AntDesign name="heart" size={24} color={PRIMARY_COLOR} />
+          ) : (
+            <AntDesign name="hearto" size={24} color={'black'} />
+          )}
+          <Text style={styles.likeCount}>
+            {currentPodcast?.likedUsers?.length
+              ? formatCount(currentPodcast?.likedUsers?.length)
+              : 0}
+          </Text>
+        </TouchableOpacity>
+
+        <View>
+          <MaterialIcons name="done" size={24} color="green" />
+        </View>
+        <TouchableOpacity
+            style={styles.footerItem}
+            onPress={() => {
+              if (isConnected) {
+               // handleDiscussion(); // You need to define this
+              } else {
+                Snackbar.show({
+                  text: 'You are currently offline',
+                  duration: Snackbar.LENGTH_SHORT,
+                });
+              }
+            }}>
+            <Ionicons name="chatbubble-outline" size={24} color="#1E1E1E" />
+            <Text style={styles.likeCount}>
+              {podcast?.commentCount ? formatCount(podcast?.commentCount) : 0}
+            </Text>
+          </TouchableOpacity>
+
+        {
+          <TouchableOpacity
+            onPress={() => {
+              if (isConnected) {
+                handleShare();
+              } else {
+                Snackbar.show({
+                  text: 'You are currently offline',
+                  duration: Snackbar.LENGTH_SHORT,
+                });
+              }
+            }}>
+            <Ionicons name="share-outline" size={27} color="#1E1E1E" />
+          </TouchableOpacity>
+        }
+      </View>
       <Text style={styles.episodeTitle}>{podcast?.title}</Text>
-      <Text style={styles.podcastTitle}>{podcast?.description}</Text>
+      <View>
+        <Text
+          style={styles.podcastTitle}
+          numberOfLines={isExpanded ? undefined : 3}
+          ellipsizeMode="tail">
+          {podcast?.description}
+        </Text>
+        {podcast &&
+          podcast.description &&
+          podcast?.description?.length > 100 && (
+            <TouchableOpacity onPress={() => setIsExpanded(!isExpanded)}>
+              <Text style={styles.readMoreText}>
+                {isExpanded ? 'Read Less ' : 'Read More '}
+              </Text>
+            </TouchableOpacity>
+          )}
+      </View>
 
       <View style={styles.tagsContainer}>
         {podcast?.tags?.map((tag, index) => (
@@ -208,47 +343,6 @@ export default function OfflinePodcastDetail({
           {playbackState.state === State.Playing ? '⏸️Pause' : '🎧 Listen Now'}
         </Text>
       </TouchableOpacity>
-
-      <View style={styles.footerOptions}>
-        <TouchableOpacity
-          onPress={() => {
-            // updateLikeCountMutation.mutate(trackId);
-            if (isConnected) {
-              updateLikeCountMutation.mutate(podcast._id);
-            } else {
-              Snackbar.show({
-                text: 'You are currently offline',
-                duration: Snackbar.LENGTH_SHORT,
-              });
-            }
-          }}>
-          {currentPodcast?.likedUsers.includes(user_id) ? (
-            <AntDesign name="heart" size={24} color={PRIMARY_COLOR} />
-          ) : (
-            <AntDesign name="hearto" size={24} color={'black'} />
-          )}
-        </TouchableOpacity>
-
-        <View>
-          <MaterialIcons name="done" size={24} color="green" />
-        </View>
-
-        {
-          <TouchableOpacity
-            onPress={() => {
-              if (isConnected) {
-                handleShare();
-              } else {
-                Snackbar.show({
-                  text: 'You are currently offline',
-                  duration: Snackbar.LENGTH_SHORT,
-                });
-              }
-            }}>
-            <Ionicons name="share-outline" size={27} color="#1E1E1E" />
-          </TouchableOpacity>
-        }
-      </View>
     </ScrollView>
   );
 }
@@ -257,110 +351,174 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: ON_PRIMARY_COLOR,
-    padding: 20,
-    //justifyContent: 'center',
-    //marginTop: hp(2),
-    // marginBottom: hp(10)
+    paddingHorizontal: 12,
+    paddingTop: Platform.OS === 'android' ? 12 : 0,
   },
   header: {
-    fontSize: 18,
+    fontSize: 20,
     textAlign: 'center',
     marginBottom: 6,
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#444',
   },
   podcastImage: {
-    width: 350,
-    height: 150,
+    width: '100%',
+    height: 160,
     alignSelf: 'center',
-    borderRadius: 26,
-    marginBottom: 24,
+    borderRadius: hp(2),
+    marginBottom: 12,
     resizeMode: 'cover',
   },
   episodeTitle: {
-    fontSize: 20,
+    fontSize: 19,
     fontWeight: 'bold',
     textAlign: 'center',
     color: '#1E1E1E',
+    marginBottom: 8,
+    paddingHorizontal: 6,
   },
   podcastTitle: {
     fontSize: 16,
     textAlign: 'justify',
-    color: '#777',
-    marginBottom: 4,
+    color: '#555',
+    marginBottom: 2,
+    paddingHorizontal: 6,
   },
-  time: {
-    fontSize: 12,
-    color: '#777',
+  readMoreText: {
+    color: '#007AFF',
+    marginTop: 2,
+    fontSize: 15,
+    fontWeight: '500',
+    paddingHorizontal: 6,
   },
-  listenButton: {
-    backgroundColor: BUTTON_COLOR,
-    paddingVertical: 14,
-    borderRadius: 30,
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  listenText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  footerOptions: {
+  tagsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 3,
-    marginBottom: 40,
+    flexWrap: 'wrap',
+    gap: 6,
+    marginVertical: 6,
+    paddingHorizontal: 6,
+  },
+  tagText: {
+    color: PRIMARY_COLOR,
+    fontSize: 15,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
+    backgroundColor: '#F0F0F0',
   },
   metaInfo: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 20,
-    paddingHorizontal: 4,
+    paddingHorizontal: 6,
+    marginBottom: 10,
   },
   metaText: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#666',
     fontWeight: '500',
   },
-
   slider: {
     width: '100%',
-    height: 40,
-    marginTop: 10,
-    marginBottom: 4,
+    height: 36,
+    marginTop: 6,
+    marginBottom: 2,
   },
   timeRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 4,
-    marginBottom: 16,
+    marginBottom: 12,
+  },
+  time: {
+    fontSize: 13,
+    color: '#777',
   },
   bufferingText: {
     textAlign: 'center',
     color: '#888',
-    marginBottom: 8,
+    marginBottom: 6,
     fontStyle: 'italic',
     fontSize: 14,
+  },
+  listenButton: {
+    backgroundColor: BUTTON_COLOR,
+    paddingVertical: 14,
+    borderRadius: 24,
+    alignItems: 'center',
+    marginVertical: 16,
   },
   listenButtonDisabled: {
     backgroundColor: '#ccc',
   },
-  tagsContainer: {
+  listenText: {
+    color: '#fff',
+    fontSize: 17,
+    fontWeight: '600',
+  },
+  footerOptions: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginVertical: 2,
-    rowGap: 4,
-    columnGap: 8,
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 12,
+    paddingHorizontal: 12,
+  },
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderTopWidth: 1,
+    borderTopColor: '#E0E0E0',
+    paddingTop: 12,
+    paddingBottom: 16,
+    paddingHorizontal: 12,
+    marginTop: 16,
+    gap: 10,
+  },
+  authorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+  },
+  authorImage: {
+    height: 45,
+    width: 45,
+    borderRadius: 45,
+  },
+  authorName: {
+    fontWeight: '700',
+    fontSize: 15,
+  },
+  authorFollowers: {
+    fontWeight: '400',
+    fontSize: 13,
+  },
+  followButton: {
+    backgroundColor: PRIMARY_COLOR,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    paddingVertical: 8,
+  },
+  followButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  iconContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 10,
+  },
+  footerItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 10,
   },
 
-  tagText: {
-    //backgroundColor: '#f0f0f0',
-    color: PRIMARY_COLOR,
-    fontSize: 15,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginRight: 6,
-    marginBottom: 4,
+  likeCount: {
+    marginLeft: 4,
+    fontSize: 14,
+    color: '#333',
   },
 });

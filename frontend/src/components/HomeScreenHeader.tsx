@@ -66,11 +66,11 @@ const HomeScreenHeader = ({
                   <View
                     style={{
                       position: 'absolute',
-                      top: 6,
+                      top: 1,
                       right: 2,
-                      width: 15,
-                      height: 15,
-                      borderRadius: 8,
+                      width: 18,
+                      height: 18,
+                      borderRadius: 9,
                       backgroundColor: 'red',
                       justifyContent: 'center',
                       alignItems: 'center',

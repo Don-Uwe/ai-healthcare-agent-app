@@ -59,7 +59,7 @@ function App(): React.JSX.Element {
 
     init();
     return ()=>{
-       TrackPlayer.stop();
+       TrackPlayer.reset();
     }
   }, []);
 

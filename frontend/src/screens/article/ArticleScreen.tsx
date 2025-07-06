@@ -71,12 +71,12 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     updateViewCountMutation.mutate();
 
     // Tts.requestInstallData();
-    const subscription = Tts.addEventListener('Tts-finish', event => {
-      finishEvent();
-    });
+   // const subscription = Tts.addEventListener('Tts-finish', event => {
+      //finishEvent();
+    //});
     return () => {
       Tts.stop();
-      subscription;
+     // subscription;
     };
   }, []);
 
@@ -325,11 +325,11 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
       console.log('connection established');
     });
 
-    socket.on('comment-processing', (data: boolean) => {
+    socket.on('comment-processing', () => {
       // setCommentLoading(data);
     });
 
-    socket.on('like-comment-processing', (data: boolean) => {
+    socket.on('like-comment-processing', () => {
       //  setCommentLikeLoading(data);
     });
 
@@ -436,15 +436,16 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     }
   }, [htmlContent]);
 
-  const handleEditAction = (comment: Comment) => {
+  //const handleEditAction = (comment: Comment) => {
     // setNewComment(comment.content);
     // setEditMode(true);
     //setEditCommentId(comment._id);
-  };
+  //};
 
   const handleMentionClick = (user_handle: string) => {
     //console.log('user handle', user_handle);
     navigation.navigate('UserProfileScreen', {
+      authorId: '',
       author_handle: user_handle.substring(1),
     });
   };
@@ -880,7 +881,9 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
               isSelected={selectedCommentId === item._id}
               userId={user_id}
               setSelectedCommentId={setSelectedCommentId}
-              handleEditAction={handleEditAction}
+              handleEditAction={()=>{
+                //handleEditAction
+              }}
               deleteAction={handleDeleteAction}
               handleLikeAction={handleLikeAction}
               commentLikeLoading={commentLikeLoading}
