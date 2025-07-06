@@ -1,4 +1,4 @@
-import React, {FC, useEffect, useRef, useState} from 'react';
+import {FC, useEffect, useRef, useState} from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
   Alert,
   Pressable,
 } from 'react-native';
-import {CommentScreenProp, User} from '../type';
+import {PodcastDiscussionProp, User} from '../type';
 import {PRIMARY_COLOR} from '../helper/Theme';
 //import io from 'socket.io-client';
 import {Comment} from '../type';
@@ -24,10 +24,9 @@ import {
 } from 'react-native-controlled-mentions';
 import {GET_STORAGE_DATA} from '../helper/APIUtils';
 
-const CommentScreen = ({navigation, route}: CommentScreenProp) => {
-  //const socket = io('http://51.20.1.81:8084');
+const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
   const socket = useSocket();
-  const {articleId, mentionedUsers} = route.params;
+  const {podcastId, mentionedUsers} = route.params;
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const flatListRef = useRef<FlatList<Comment>>(null);
@@ -39,7 +38,6 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
   const [commentLikeLoading, setCommentLikeLoading] = useState<Boolean>(false);
   const [mentions, setMentions] = useState<User[]>([]);
 
-  //console.log('Mentioned users', mentionedUsers);
   const renderSuggestions: FC<MentionSuggestionsProps> = ({
     keyword,
     onSuggestionPress,
@@ -103,7 +101,7 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
   };
   useEffect(() => {
     //console.log('Fetching comments for articleId:', route.params.articleId);
-    socket.emit('fetch-comments', {articleId: route.params.articleId});
+    socket.emit('fetch-comments', {podcastId: route.params.podcastId});
 
     socket.on('connect', () => {
       console.log('connection established');
@@ -123,18 +121,17 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
 
     socket.on('fetch-comments', data => {
       console.log('comment loaded');
-      if (data.articleId === route.params.articleId) {
+      if (data.podcastId === route.params.podcastId) {
         setComments(data.comments);
       }
     });
 
     // Listen for new comments
     socket.on('comment', data => {
-      console.log('new comment loaded', data);
-      if (data.articleId === route.params.articleId) {
+      //console.log('new comment loaded', data);
+      if (data.podcastId === route.params.podcastId) {
         setComments(prevComments => {
           const newComments = [data.comment, ...prevComments];
-          // Scroll to the first index after adding the new comment
           if (flatListRef.current && newComments.length > 1) {
             flatListRef?.current.scrollToIndex({index: 0, animated: true});
           }
@@ -146,7 +143,7 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
 
     // Listen for new replies
     socket.on('new-reply', data => {
-      if (data.articleId === route.params.articleId) {
+      if (data.podcastId === route.params.podcastId) {
         setComments(prevComments => {
           return prevComments.map(comment =>
             comment._id === data.parentCommentId
@@ -178,9 +175,6 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
     });
 
     socket.on('delete-comment', data => {
-      //console.log('Delete Comment Data', data);
-
-      //console.log('Comments Length before', comments.length);
       setComments(prevComments =>
         prevComments.filter(comment => comment._id !== data.commentId),
       );
@@ -196,7 +190,7 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
       socket.off('delete-comment');
       socket.off('like-comment');
     };
-  }, [socket, route.params.articleId]);
+  }, [socket, route.params.podcastId]);
 
   const handleEditAction = (comment: Comment) => {
     setNewComment(comment.content);
@@ -206,9 +200,9 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
 
   const handleMentionClick = (user_handle: string) => {
     //console.log('user handle', user_handle);
-    navigation.navigate('UserProfileScreen', {
-      author_handle: user_handle.substring(1),
-    });
+    //navigation.navigate('UserProfileScreen', {
+    //  author_handle: user_handle.substring(1),
+    //});
   };
 
   const handleDeleteAction = (comment: Comment) => {
@@ -227,7 +221,7 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
           onPress: () => {
             socket.emit('delete-comment', {
               commentId: comment._id,
-              articleId: route.params.articleId,
+              podcastId: route.params.podcastId,
               userId: user_id,
             });
           },
@@ -240,7 +234,7 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
   const handleLikeAction = (comment: Comment) => {
     socket.emit('like-comment', {
       commentId: comment._id,
-      articleId: route.params.articleId,
+      podcastId: route.params.podcastId,
       userId: user_id,
     });
   };
@@ -255,13 +249,13 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
       if (editCommentId) {
         console.log('Edit Comment Id', editCommentId);
         console.log('Edit Comment ', newComment);
-        console.log('Article Id', route.params.articleId);
+        console.log('Podcast Id', route.params.podcastId);
         console.log('User Id', user_id);
 
         socket.emit('edit-comment', {
           commentId: editCommentId,
           content: newComment,
-          articleId: route.params.articleId,
+          podcastId: route.params.podcastId,
           userId: user_id,
         });
 
@@ -274,7 +268,7 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
     } else {
       const newCommentObj = {
         userId: user_id,
-        articleId: route.params.articleId,
+        podcastId: route.params.podcastId,
         content: replaceMentionValues(newComment, ({name}) => `@${name}`),
         parentCommentId: null,
         mentionedUsers: mentions,
@@ -290,10 +284,10 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
 
   const handleReportAction = (commentId: string, authorId: string) => {
     navigation.navigate('ReportScreen', {
-      articleId: articleId.toString(),
+      articleId: '',
       authorId: authorId,
       commentId: commentId,
-      podcastId: null,
+      podcastId: podcastId
     });
   };
   if (commentLoading) {
@@ -302,7 +296,7 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>💬 Leave a Feedback</Text>
+      <Text style={styles.header}>💬 Start Discussion</Text>
 
       {/* Comments List */}
       <FlatList
@@ -335,7 +329,7 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
           {
             trigger: '@', // Should be a single character like '@' or '#'
             renderSuggestions,
-            textStyle: {fontWeight: 'bold', color: 'blue'}, // The mention style in the input
+            textStyle: {fontWeight: 'bold', color: 'blue'},
           },
         ]}
       />
@@ -454,5 +448,6 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CommentScreen;
+export default PodcastDiscussion;
+
 

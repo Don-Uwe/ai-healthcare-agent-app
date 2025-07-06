@@ -40,6 +40,7 @@ import RenderSuggestion from '../screens/article/RenderSuggestion';
 import PodcastDetail from '../screens/PodcastDetail';
 import OfflinePodcastList from '../screens/OfflinePodcastList';
 import OfflinePodcastDetail from '../screens/OfflinePodcastDetails';
+import PodcastDiscussion from '../screens/PodcastDiscussion';
 const Stack = createStackNavigator<RootStackParamList>();
 
 const StackNavigation = () => {
@@ -335,6 +336,28 @@ const StackNavigation = () => {
       <Stack.Screen
         name="CommentScreen"
         component={CommentScreen}
+        options={({navigation}) => ({
+          headerShown: true,
+          headerTitle: '',
+          headerTransparent: true,
+          headerBackTitleVisible: false,
+          // eslint-disable-next-line react/no-unstable-nested-components
+          headerLeft: () => (
+            <TouchableOpacity
+              style={styles.headerLeftButtonCommentScreen}
+              onPress={() => {
+                queryClient.invalidateQueries({queryKey: ['get-user-socials']});
+                navigation.goBack();
+              }}>
+              <FontAwesome6 size={25} name="arrow-left" color={PRIMARY_COLOR} />
+            </TouchableOpacity>
+          ),
+        })}
+      />
+
+      <Stack.Screen
+        name="PodcastDiscussion"
+        component={PodcastDiscussion}
         options={({navigation}) => ({
           headerShown: true,
           headerTitle: '',

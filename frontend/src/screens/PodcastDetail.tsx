@@ -36,7 +36,7 @@ import Share from 'react-native-share';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {hp} from '../helper/Metric';
 
-const PodcastDetail = ({route}: PodcastDetailScreenProp) => {
+const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   //const [progress, setProgress] = useState(10);
   const insets = useSafeAreaInsets();
   const {trackId} = route.params;
@@ -280,7 +280,12 @@ const PodcastDetail = ({route}: PodcastDetailScreenProp) => {
             style={styles.footerItem}
             onPress={() => {
               if (isConnected) {
-               // handleDiscussion(); // You need to define this
+                if (podcast) {
+                  navigation.navigate('PodcastDiscussion', {
+                    podcastId: podcast?._id,
+                    mentionedUsers: podcast?.mentionedUsers,
+                  });
+                }
               } else {
                 Snackbar.show({
                   text: 'You are currently offline',

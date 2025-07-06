@@ -489,6 +489,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
       articleId: articleId.toString(),
       authorId: authorId,
       commentId: commentId,
+      podcastId: null
     });
   };
 

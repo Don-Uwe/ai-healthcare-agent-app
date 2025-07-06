@@ -19,7 +19,7 @@ import {hp, wp} from '../../helper/Metric';
 import {PRIMARY_COLOR} from '../../helper/Theme';
 
 export default function ReportScreen({navigation, route}: ReportScreenProp) {
-  const {articleId, commentId, authorId} = route.params;
+  const {articleId, commentId, authorId, podcastId} = route.params;
   const {user_token, user_id} = useSelector((state: any) => state.user);
   const [selectedReasonId, setSelectedReasonId] = useState<String>('');
 
@@ -57,11 +57,12 @@ export default function ReportScreen({navigation, route}: ReportScreenProp) {
       const res = await axios.post(
         SUBMIT_REPORT,
         {
-          articleId: articleId,
+          articleId: podcastId? null: articleId,
+          podcastId: podcastId,
           commentId: commentId,
           reportedBy: user_id,
           reasonId: selectedReasonId,
-          authorId: authorId._id,
+          authorId: authorId,
         },
         {
           headers: {

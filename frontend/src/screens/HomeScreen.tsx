@@ -273,8 +273,9 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const handleReportAction = (item: ArticleData) => {
     navigation.navigate('ReportScreen', {
       articleId: item._id,
-      authorId: item.authorId,
+      authorId: item.authorId as string,
       commentId: null,
+      podcastId: null,
     });
   };
   const renderItem = ({item}: {item: ArticleData}) => {

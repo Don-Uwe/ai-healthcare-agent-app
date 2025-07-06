@@ -68,10 +68,15 @@ export type RootStackParamList = {
     articleId: number;
     mentionedUsers: User[];
   };
+  PodcastDiscussion:{
+    podcastId: string;
+    mentionedUsers: User[];
+  }
   ReportScreen: {
     articleId: string;
     authorId: string;
     commentId: string | null;
+    podcastId: string | null;
   };
   ReportConfirmationScreen: undefined;
   NotificationScreen: undefined;
@@ -176,6 +181,11 @@ export type CommentScreenProp = StackScreenProps<
   RootStackParamList,
   'CommentScreen'
 >;
+export type PodcastDiscussionProp = StackScreenProps<
+  RootStackParamList,
+  'PodcastDiscussion'
+>;
+
 
 export type ReportScreenProp = StackScreenProps<
   RootStackParamList,
