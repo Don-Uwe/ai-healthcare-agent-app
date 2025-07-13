@@ -1,20 +1,22 @@
 import {createSlice} from '@reduxjs/toolkit';
-import {ArticleData, Category} from '../type';
+import {ArticleData, Category, Podcast} from '../type';
 
-export type ArticleState = {
+export type DataState = {
   filteredArticles: ArticleData[];
   searchedArticles: ArticleData[];
   selectedTags: string[];
   sortType: 'recent' | 'popular' | 'oldest' | '';
   searchMode: boolean;
   article: ArticleData;
+  podcasts: Podcast[];
   articleContent: string;
-  categories: Category[];
-  suggestion: string | '';
-  suggestionAccepted: boolean
+  categories: Category[];  // All categories data
+  suggestion: string | ''; // Suggestions for the user article before submit
+  suggestionAccepted: boolean; // Suggestions acceptance state in article preview screen before post
+  selectedPodcastCategories: string[]; // Selected podcast category for filter
 }
 
-const initialState: ArticleState = {
+const initialState: DataState = {
   filteredArticles: [],
   searchedArticles: [],
   selectedTags: [],
@@ -48,10 +50,12 @@ const initialState: ArticleState = {
   categories: [],
   articleContent:"",
   suggestion:"",
-  suggestionAccepted: false
+  suggestionAccepted: false,
+  selectedPodcastCategories:[],
+  podcasts:[]
 };
-const articleSlice = createSlice({
-  name: 'article',
+const dataSlice = createSlice({
+  name: 'data',
   initialState,
   reducers: {
     setFilteredArticles(state, action) {
@@ -87,6 +91,13 @@ const articleSlice = createSlice({
 
     setSuggestionAccepted(state, action){
       state.suggestionAccepted = action.payload.selection;
+    },
+    setSelectePodcastCategories(state, action){
+      state.selectedPodcastCategories = action.payload;
+    },
+
+    setPodcasts(state,action){
+      state.podcasts = action.payload;
     }
   },
 });
@@ -100,7 +111,9 @@ export const {
   setArticle,
   setTags,
   setSuggestion,
-  setSuggestionAccepted
-} = articleSlice.actions;
+  setSuggestionAccepted,
+  setSelectePodcastCategories,
+  setPodcasts,
+} = dataSlice.actions;
 
-export default articleSlice.reducer;
+export default dataSlice.reducer;

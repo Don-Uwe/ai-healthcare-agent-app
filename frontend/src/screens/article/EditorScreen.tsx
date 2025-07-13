@@ -14,7 +14,7 @@ import {launchImageLibrary} from 'react-native-image-picker';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {hp} from '../../helper/Metric';
 import {useDispatch} from 'react-redux';
-import {setSuggestion, setSuggestionAccepted} from '../../store/articleSlice';
+import {setSuggestion, setSuggestionAccepted} from '../../store/dataSlice';
 
 // Feature:
 // If you want to discard your post, in that case no post will upload into storage,

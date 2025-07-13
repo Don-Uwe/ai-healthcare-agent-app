@@ -1,5 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Menu, Divider } from 'react-native-paper';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
@@ -9,6 +9,9 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { RootStackParamList } from '../type';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { ON_PRIMARY_COLOR } from '../helper/Theme';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import FilterModal from './FilterModal';
+import { useSelector } from 'react-redux';
 
 interface Props {
  onClick: ()=> void;
@@ -17,8 +20,15 @@ const HeaderRightMenu = ({onClick}:Props) => {
   const [visible, setVisible] = useState(false);
   const openMenu = () => setVisible(true);
   const closeMenu = () => setVisible(false);
+  const {categories} = useSelector((state:any)=> state.data);
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const [sortingType, setSortingType] = useState<string>('');
+  const [selectCategoryList, setSelectedCategoryList] = useState<string[]>([]);
 
+  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+  const handlePresentModalPress = useCallback(() => {
+    bottomSheetModalRef.current?.present();
+  }, []);
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={onClick} style={styles.iconWrapper}>
@@ -61,12 +71,30 @@ const HeaderRightMenu = ({onClick}:Props) => {
           onPress={() => {
             closeMenu();
             // navigation.navigate('Filter');
+            handlePresentModalPress();
           }}
           title="Filter"
           leadingIcon={() => <Feather name="filter" size={18} color="#555" />}
           titleStyle={styles.menuItem}
         />
       </Menu>
+
+           <FilterModal
+              bottomSheetModalRef={bottomSheetModalRef}
+              categories={categories} // will fetch from redux
+              handleCategorySelection={()=>{
+                // To be implemented
+              }} 
+              selectCategoryList={selectCategoryList}
+              handleFilterReset={()=>{
+                // To be implemented
+              }}
+              handleFilterApply={()=>{
+                // To be implemented
+              }}
+              setSortingType={setSortingType}
+              sortingType={sortingType}
+            />
     </View>
   );
 };

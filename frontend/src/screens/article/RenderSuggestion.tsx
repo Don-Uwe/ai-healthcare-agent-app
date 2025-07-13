@@ -4,7 +4,7 @@ import WebView from 'react-native-webview';
 import {createHTMLStructure} from '../../helper/Utils';
 import {useRef} from 'react';
 import {useDispatch} from 'react-redux';
-import {setSuggestionAccepted} from '../../store/articleSlice';
+import {setSuggestionAccepted} from '../../store/dataSlice';
 
 export default function RenderSuggestion({
   navigation,

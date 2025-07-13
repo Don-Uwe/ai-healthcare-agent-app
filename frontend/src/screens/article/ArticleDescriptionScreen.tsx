@@ -31,7 +31,7 @@ const ArticleDescriptionScreen = ({
   const [authorName, setAuthorName] = useState('');
   const [description, setDescription] = useState('');
   const [selectedGenres, setSelectedGenres] = useState<Category[]>([]);
-  const {categories} = useSelector((state: any) => state.article);
+  const {categories} = useSelector((state: any) => state.data);
   const [imageUtils, setImageUtils] = useState('');
   // console.log(categories);
 

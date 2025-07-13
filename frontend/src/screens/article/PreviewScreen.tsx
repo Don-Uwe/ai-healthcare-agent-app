@@ -28,7 +28,7 @@ import {
 } from '../../helper/APIUtils';
 import {useDispatch, useSelector} from 'react-redux';
 import useUploadImage from '../../../hooks/useUploadImage';
-import {setSuggestion} from '../../store/articleSlice';
+import {setSuggestion} from '../../store/dataSlice';
 import Snackbar from 'react-native-snackbar';
 
 //import io from 'socket.io-client';
@@ -52,7 +52,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
   const webViewRef = useRef<WebView>(null);
   const {user_token, user_id} = useSelector((state: any) => state.user);
   const {suggestion, suggestionAccepted} = useSelector(
-    (state: any) => state.article,
+    (state: any) => state.data,
   );
   const dispatch = useDispatch();
 

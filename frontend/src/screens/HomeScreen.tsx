@@ -34,7 +34,7 @@ import {
   setSelectedTags,
   setSortType,
   setTags,
-} from '../store/articleSlice';
+} from '../store/dataSlice';
 import Snackbar from 'react-native-snackbar';
 import {useSocket} from '../../SocketContext';
 import {useFocusEffect} from '@react-navigation/native';
@@ -58,7 +58,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     searchMode,
     selectedTags,
     sortType,
-  } = useSelector((state: any) => state.article);
+  } = useSelector((state: any) => state.data);
   const {user_id, user_token, user_handle} = useSelector(
     (state: any) => state.user,
   );

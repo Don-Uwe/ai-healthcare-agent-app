@@ -78,19 +78,22 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import PodcastCard from '../components/PodcastCard';
-import {ON_PRIMARY_COLOR} from '../helper/Theme';
 import {hp} from '../helper/Metric';
 import {PodcastData, PodcastScreenProps} from '../type';
-import {useSelector} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import {useMutation, useQuery} from '@tanstack/react-query';
 import {msToTime} from '../helper/Utils';
 import {GET_ALL_PODCASTS, UPDATE_PODCAST_VIEW_COUNT} from '../helper/APIUtils';
 import PodcastEmptyComponent from '../components/PodcastEmptyComponent';
 import Snackbar from 'react-native-snackbar';
+import { setPodcasts } from '../store/dataSlice';
 
 const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
+  const dispatch = useDispatch();
   const {user_token} = useSelector((state: any) => state.user);
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const {podcasts} = useSelector((state: any)=> state.data);
+  
 
   const {
     data: podcastData,
@@ -108,7 +111,9 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
             Authorization: `Bearer ${user_token}`,
           },
         });
-        return response.data as PodcastData[];
+        const d = response.data as PodcastData[];
+        dispatch(setPodcasts(d));
+        return d;
       } catch (err) {
         console.error('Error fetching podcasts:', err);
       }
@@ -122,40 +127,40 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
   };
 
   const updateViewCountMutation = useMutation({
-    mutationKey:['update-podcast-view-count'],
-    mutationFn: async (podcastId: string)=>{
-
-      const res = await axios.post(`${UPDATE_PODCAST_VIEW_COUNT}`, {
-        podcast_id: podcastId,
-      },{
-        headers:{
-          Authorization: `Bearer ${user_token}`,
+    mutationKey: ['update-podcast-view-count'],
+    mutationFn: async (podcastId: string) => {
+      const res = await axios.post(
+        `${UPDATE_PODCAST_VIEW_COUNT}`,
+        {
+          podcast_id: podcastId,
         },
-      });
+        {
+          headers: {
+            Authorization: `Bearer ${user_token}`,
+          },
+        },
+      );
       return res.data.data as PodcastData;
-
     },
-    onSuccess: (data)=>{
-      navigation.navigate('PodcastDetail',{
+    onSuccess: data => {
+      navigation.navigate('PodcastDetail', {
         trackId: data._id,
       });
     },
-    onError: (err)=>{
-
-       console.log('Update view count err', err);
-       Snackbar.show({
-         text:"Something went wrong!",
-         duration: Snackbar.LENGTH_SHORT,
-       });
+    onError: err => {
+      console.log('Update view count err', err);
+      Snackbar.show({
+        text: 'Something went wrong!',
+        duration: Snackbar.LENGTH_SHORT,
+      });
     },
   });
-
 
   const renderItem = ({item}: {item: PodcastData}) => (
     <Pressable
       onPress={() => {
         //playPodcast(item);
-        updateViewCountMutation.mutate(item._id)
+        updateViewCountMutation.mutate(item._id);
       }}>
       <PodcastCard
         title={item.title}
@@ -164,12 +169,14 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
         duration={`${msToTime(item.duration)}`}
         tags={item.tags}
         handleClick={() => {
-            updateViewCountMutation.mutate(item._id)
+          updateViewCountMutation.mutate(item._id);
         }}
         imageUri={item.cover_image}
       />
     </Pressable>
   );
+
+  
 
   return (
     <View style={styles.container}>
@@ -177,7 +184,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
         <ActivityIndicator size="large" />
       ) : (
         <FlatList
-          data={podcastData ? podcastData : []}
+          data={podcasts? podcasts : []}
           keyExtractor={item => item._id.toString()}
           renderItem={renderItem}
           ListEmptyComponent={<PodcastEmptyComponent />}
@@ -197,7 +204,7 @@ const styles = StyleSheet.create({
     paddingTop: hp(10),
     paddingHorizontal: 16,
     //backgroundColor: ON_PRIMARY_COLOR,
-    backgroundColor:'#ffffff'
+    backgroundColor: '#ffffff',
   },
   header: {
     fontSize: 24,
