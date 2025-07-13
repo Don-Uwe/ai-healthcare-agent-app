@@ -1,11 +1,13 @@
 import {FlatList, Pressable, View, StyleSheet} from 'react-native';
 import {OfflinePodcastListProp, PodcastData} from '../type';
-import {msToTime, retrieveItem} from '../helper/Utils';
+import {deleteFromDownloads, msToTime, retrieveItem} from '../helper/Utils';
 import {useEffect, useState} from 'react';
 import PodcastCard from '../components/PodcastCard';
 import PodcastEmptyComponent from '../components/PodcastEmptyComponent';
 import { hp } from '../helper/Metric';
 import { ON_PRIMARY_COLOR } from '../helper/Theme';
+import Snackbar from 'react-native-snackbar';
+import { useMutation } from '@tanstack/react-query';
 
 export default function OfflinePodcastList({
   navigation,
@@ -38,6 +40,22 @@ export default function OfflinePodcastList({
     });
   }
 
+  /*
+  const reportPodcastMutation = useMutation({
+    mutationKey:['report-podcast'],
+    mutationFn: async (podcast_id: string)=>{
+
+    },
+    onSuccess: async (data)=>{
+
+    },
+
+    onError: async (err)=>{
+
+    }
+  })
+    */
+
   const renderItem = ({item}: {item: any}) => (
     <Pressable
       onPress={() => {
@@ -53,8 +71,21 @@ export default function OfflinePodcastList({
         tags ={item.tags}
         downloaded={true}
         display={true}
-        downLoadAudio={()=>{
+        downLoadAudio={async ()=>{
           // delete from downloads
+          const res = await deleteFromDownloads(item);
+
+          if(res){
+            Snackbar.show({
+              text:"Podcast has been removed from offline",
+              duration: Snackbar.LENGTH_SHORT
+            });
+          }else{
+             Snackbar.show({
+              text:"Failed to removed podcast from offline",
+              duration: Snackbar.LENGTH_SHORT
+            });
+          }
         }}
         handleClick={() => {
         navigateToDetail(item);

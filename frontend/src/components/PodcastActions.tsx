@@ -29,8 +29,15 @@ const ActionItem = ({
   </TouchableOpacity>
 );
 
+interface Props {
+   onShare: ()=> void;
+   onReport: ()=> void;
+   onDownload: ()=> void;
+   onSave: ()=> void;
+   downloaded: boolean;
+}
 const PodcastActions = React.forwardRef(
-  ({ onShare, onReport, onDownload, onSave }: any, ref: any) => {
+  ({ onShare, onReport, onDownload, onSave, downloaded }: Props, ref: any) => {
     const snapPoints = useMemo(() => ['40%'], []);
 
     const handleAction = (action: () => void) => {
@@ -61,7 +68,7 @@ const PodcastActions = React.forwardRef(
         <BottomSheetView style={styles.sheetContent}>
           <ActionItem icon="share" label="Share" onPress={() => handleAction(onShare)} />
           <ActionItem icon="flag" label="Report" onPress={() => handleAction(onReport)} />
-          <ActionItem icon="file-download" label="Download" onPress={() => handleAction(onDownload)} />
+          <ActionItem icon="file-download" label={downloaded ? 'Remove from downloads' : 'Download'} onPress={() => handleAction(onDownload)} />
           <ActionItem icon="playlist-add" label="Save to Playlist" onPress={() => handleAction(onSave)} />
         </BottomSheetView>
       </BottomSheetModal>

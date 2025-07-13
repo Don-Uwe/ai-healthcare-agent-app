@@ -312,6 +312,42 @@ export const cleanUpDownloads = async () => {
   }
 };
 
+export const deleteFromDownloads = async (_podcast:PodcastData)=>{
+
+  const existingPodcastStr = await retrieveItem('DOWNLOAD_PODCAST_DATA');
+  if (!existingPodcastStr) {
+    return;
+  }
+  try {
+    const existingPodcasts = existingPodcastStr
+      ? JSON.parse(existingPodcastStr)
+      : [];
+
+    if (!Array.isArray(existingPodcasts)) {
+      return;
+    }
+    const freshPodcasts = [];
+ 
+    for (const item of existingPodcasts) {
+      if (item._id === _podcast._id) {
+        // unlink
+        if (item.filePath && (await RNFS.exists(item.filePath))) {
+          await RNFS.unlink(item.filePath);
+          console.log('Deleted old file:', item.filePath);
+        }
+      } else {
+        freshPodcasts.push(item);
+      }
+    }
+    await storeItem('DOWNLOAD_PODCAST_DATA', JSON.stringify(freshPodcasts));
+    console.log('Cleanup completed. Remaining items:', freshPodcasts.length);
+    return true;
+  } catch (err) {
+    console.log('cleaned up error', err);
+    return false;
+  }
+}
+
 export const updateOfflinePodcastLikeStatus = async (_podcast: PodcastData) => {
   const existingPodcastsStr = await retrieveItem('DOWNLOAD_PODCAST_DATA');
   try {
