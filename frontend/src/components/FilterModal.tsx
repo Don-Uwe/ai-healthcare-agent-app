@@ -214,12 +214,12 @@ const FilterModal = ({
                 renderItem={({item}) => (
                   <TouchableOpacity
                     style={styles.categoryItem}
-                    key={item}
+                    key={item.id}
                     onPress={() => {
                       handleCategorySelection(item);
                     }}>
                     <Text style={styles.categoryItemText}>{`${
-                      item.length < 5 ? item : item.substring(0, 5)
+                      item.name.length < 5 ? item : item.name.substring(0, 5)
                     }..`}</Text>
                   </TouchableOpacity>
                 )}
@@ -234,26 +234,26 @@ const FilterModal = ({
                 style={[
                   styles.item,
                   {
-                    backgroundColor: selectCategoryList.includes(item?.name)
+                    backgroundColor: selectCategoryList.some(i=> i.id === item?.id)
                       ? BUTTON_COLOR
                       : 'white',
                   },
                 ]}
                 onPress={() => {
-                  handleCategorySelection(item?.name);
+                  handleCategorySelection(item);
                 }}>
                 <Text
                   style={[
                     styles.itemText,
                     {
-                      color: selectCategoryList.includes(item?.name)
+                      color: selectCategoryList.some(i=> i.id === item?.id)
                         ? 'white'
                         : '#1F2024',
                     },
                   ]}>
                   {item?.name}
                 </Text>
-                {selectCategoryList.includes(item?.name) && (
+                {selectCategoryList.some(i=> i.id === item?.id) && (
                   <MaterialIcons name="check" size={26} color={'white'} />
                 )}
               </TouchableOpacity>

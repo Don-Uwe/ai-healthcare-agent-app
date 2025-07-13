@@ -93,10 +93,8 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
   const {user_token} = useSelector((state: any) => state.user);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const {podcasts} = useSelector((state: any)=> state.data);
-  
 
   const {
-    data: podcastData,
     isLoading,
     refetch,
   } = useQuery({
@@ -176,7 +174,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
     </Pressable>
   );
 
-  
+
 
   return (
     <View style={styles.container}>
@@ -184,7 +182,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
         <ActivityIndicator size="large" />
       ) : (
         <FlatList
-          data={podcasts? podcasts : []}
+          data={podcasts ? podcasts : []}
           keyExtractor={item => item._id.toString()}
           renderItem={renderItem}
           ListEmptyComponent={<PodcastEmptyComponent />}

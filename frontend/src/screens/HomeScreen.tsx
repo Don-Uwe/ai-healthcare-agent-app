@@ -50,7 +50,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const [selectedCardId, setSelectedCardId] = useState<string>('');
   const [repostItem, setRepostItem] = useState<ArticleData | null>(null);
   const [selectCategoryList, setSelectCategoryList] = useState<
-    CategoryType['name'][]
+    Category[]
   >([]);
   const {
     filteredArticles,
@@ -69,11 +69,11 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   console.log('User Id', user_id);
   console.log('BASE URL', Config.BASE_URL);
 
-  const handleCategorySelection = (category: CategoryType['name']) => {
+  const handleCategorySelection = (category: CategoryType) => {
     // Update Redux State
     setSelectCategoryList(prevList => {
-      const updatedList = prevList.includes(category)
-        ? prevList.filter(item => item !== category)
+      const updatedList = prevList.some(p=> p.id === category.id)
+        ? prevList.filter(item => item.id !== category.id)
         : [...prevList, category];
       return updatedList;
     });

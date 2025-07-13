@@ -40,19 +40,19 @@ const CategoriesFlatlistModal = ({
         style={[
           styles.item,
           {
-            backgroundColor: selectCategoryList.includes(item?.name)
+            backgroundColor: selectCategoryList.some(i=> i.id === item?.id)
               ? BUTTON_COLOR
               : 'white',
           },
         ]}
         onPress={() => {
-          handleCategorySelection(item?.name);
+          handleCategorySelection(item);
         }}>
         <Text
           style={[
             styles.itemText,
             {
-              color: selectCategoryList.includes(item?.name)
+              color: selectCategoryList.some(i=> i.id === item?.id)
                 ? 'white'
                 : '#1F2024',
             },

@@ -330,20 +330,20 @@ export type ProfileHeaderProps = {
 
 export type HomeScreenFilterModalProps = {
   bottomSheetModalRef: RefObject<BottomSheetModal>;
-  categories: CategoryType[];
-  handleCategorySelection: (category: CategoryType['name']) => void;
-  selectCategoryList: CategoryType['name'][];
+  categories: Category[];
+  handleCategorySelection: (category: Category) => void;
+  selectCategoryList: Category[];
   handleFilterReset: () => void;
-  handleFilterApply: () => void; // Replace `any` with the actual filter type if available
+  handleFilterApply: () => void;
   setSortingType: (selectedType: string) => void;
   sortingType: string | '';
 };
 
 export type HomeScreenCategoriesFlatlistProps = {
   bottomSheetModalRef2: RefObject<BottomSheetModal>;
-  categories: CategoryType[];
-  handleCategorySelection: (category: CategoryType['name']) => void;
-  selectCategoryList: CategoryType['name'][];
+  categories: Category[];
+  handleCategorySelection: (category: Category) => void;
+  selectCategoryList: Category[];
 };
 
 export type ProfileEditGeneralTab = {

@@ -66,6 +66,7 @@ const GET_PODCAST_DETAILS = `${Config.BASE_URL}/podcast/details`;
 const UPDATE_PODCAST_VIEW_COUNT = `${Config.BASE_URL}/podcast/update-view-count`;
 const LIKE_PODCAST = `${Config.BASE_URL}/podcast/like`;
 const SEARCH_PODCAST = `${Config.BASE_URL}/podcast/search`;
+const FILTER_PODCAST = `${Config.BASE_URL}/podcast/filter`;
 
 
 export {
@@ -130,4 +131,5 @@ export {
   UPDATE_PODCAST_VIEW_COUNT,
   LIKE_PODCAST,
   SEARCH_PODCAST,
+  FILTER_PODCAST,
 };

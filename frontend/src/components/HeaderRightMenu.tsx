@@ -6,12 +6,17 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Feather from 'react-native-vector-icons/Feather';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import { RootStackParamList } from '../type';
+import { Category, CategoryType, PodcastData, RootStackParamList } from '../type';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { ON_PRIMARY_COLOR } from '../helper/Theme';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import FilterModal from './FilterModal';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { useMutation } from '@tanstack/react-query';
+import axios from 'axios';
+import { FILTER_PODCAST } from '../helper/APIUtils';
+import { setPodcasts, setSelectedTags } from '../store/dataSlice';
+import Snackbar from 'react-native-snackbar';
 
 interface Props {
  onClick: ()=> void;
@@ -21,14 +26,75 @@ const HeaderRightMenu = ({onClick}:Props) => {
   const openMenu = () => setVisible(true);
   const closeMenu = () => setVisible(false);
   const {categories} = useSelector((state:any)=> state.data);
+  const {user_token} = useSelector((state:any)=> state.user);
+  const {isConnected} = useSelector((state: any)=> state.network);
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const [sortingType, setSortingType] = useState<string>('');
-  const [selectCategoryList, setSelectedCategoryList] = useState<string[]>([]);
+  const dispatch = useDispatch();
+  const [selectCategoryList, setSelectedCategoryList] = useState<Category[]>([]);
+
 
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const handlePresentModalPress = useCallback(() => {
     bottomSheetModalRef.current?.present();
   }, []);
+
+  const updateFilterMutation = useMutation({
+    mutationKey:['apply-filter-on-podcast'],
+    mutationFn: async ()=>{
+
+     // console.log('Send data', {
+      //  tags: selectCategoryList.map(item=> item._id),
+      //  sortType: sortingType === 'oldest' ? 0 : -1,
+      //});
+
+     // console.log('URL', FILTER_PODCAST);
+      //console.log('Token', user_token);
+      
+      const res = await axios.post(FILTER_PODCAST, {
+        tags: selectCategoryList.map(item=> item._id),
+        sortType: sortingType === 'oldest' ? 0 : -1,
+      },
+      {
+        headers:{
+          Authorization :`Bearer ${user_token}`,
+        },
+      });
+
+      return res.data as PodcastData[];
+    },
+    onSuccess: (data)=>{
+       dispatch(setPodcasts(data));
+    },
+    onError:(err)=>{
+      console.log('err', err);
+      Snackbar.show({
+        text:'You are in offline',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+    },
+  });
+
+   const handleCategorySelection = (category: CategoryType) => {
+    // Update Redux State
+    setSelectedCategoryList(prevList => {
+      const updatedList = prevList.some(p=> p.id === category.id)
+        ? prevList.filter(item => item.id !== category.id)
+        : [...prevList, category];
+      return updatedList;
+    });
+  };
+
+   const handleFilterReset = () => {
+      // Update Redux State Variables
+      setSelectedCategoryList([]);
+      setSortingType('');
+      //dispatch(
+       // setSelectedTags({
+       //   selectedTags: categories.map(category => category.name),
+       // }),
+      //);
+    };
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={onClick} style={styles.iconWrapper}>
@@ -82,15 +148,22 @@ const HeaderRightMenu = ({onClick}:Props) => {
            <FilterModal
               bottomSheetModalRef={bottomSheetModalRef}
               categories={categories} // will fetch from redux
-              handleCategorySelection={()=>{
-                // To be implemented
-              }} 
+              handleCategorySelection={handleCategorySelection}
               selectCategoryList={selectCategoryList}
-              handleFilterReset={()=>{
-                // To be implemented
-              }}
+              handleFilterReset={handleFilterReset}
               handleFilterApply={()=>{
-                // To be implemented
+                if(isConnected){
+                  if(selectCategoryList.length > 0){
+                     updateFilterMutation.mutate();
+                  }
+
+                }else{
+                  // filter existing podcasts (later), at the time of paginatiom
+                  Snackbar.show({
+                    text: 'You are offline',
+                    duration: Snackbar.LENGTH_SHORT,
+                  });
+                }
               }}
               setSortingType={setSortingType}
               sortingType={sortingType}
