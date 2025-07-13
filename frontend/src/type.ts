@@ -96,6 +96,7 @@ export type RootStackParamList = {
   OfflinePodcastDetail: {
     podcast: PodcastData
   };
+  PodcastSearch: undefined
   //ChatbotScreen: undefined;
 };
 
@@ -162,6 +163,12 @@ export type ReviewScreenProp = StackScreenProps<
   RootStackParamList,
   'ReviewScreen'
 >;
+
+export type PodcastSearchProp = StackScreenProps<
+ RootStackParamList,
+ 'PodcastSearch'
+>;
+
 export type OfflinePodcastListProp = StackScreenProps<
  RootStackParamList,
  'OfflinePodcastList'
