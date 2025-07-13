@@ -45,11 +45,17 @@ export default function OfflinePodcastList({
         navigateToDetail(item);
       }}>
       <PodcastCard
+       id= {item._id}
         title={item.title}
         host={item.user_id.user_name}
         views={item.viewUsers.length}
         duration={`${msToTime(item.duration)}`}
         tags ={item.tags}
+        downloaded={true}
+        display={true}
+        downLoadAudio={()=>{
+          // delete from downloads
+        }}
         handleClick={() => {
         navigateToDetail(item);
         }}

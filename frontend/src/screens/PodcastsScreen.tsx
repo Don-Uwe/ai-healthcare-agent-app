@@ -82,7 +82,7 @@ import {hp} from '../helper/Metric';
 import {PodcastData, PodcastScreenProps} from '../type';
 import {useDispatch, useSelector} from 'react-redux';
 import {useMutation, useQuery} from '@tanstack/react-query';
-import {msToTime} from '../helper/Utils';
+import {downloadAudio, msToTime} from '../helper/Utils';
 import {GET_ALL_PODCASTS, UPDATE_PODCAST_VIEW_COUNT} from '../helper/APIUtils';
 import PodcastEmptyComponent from '../components/PodcastEmptyComponent';
 import Snackbar from 'react-native-snackbar';
@@ -161,11 +161,17 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
         updateViewCountMutation.mutate(item._id);
       }}>
       <PodcastCard
+       id= {item._id}
         title={item.title}
         host={item.user_id.user_name}
         views={item.viewUsers.length}
         duration={`${msToTime(item.duration)}`}
         tags={item.tags}
+        downloaded={false}
+        display={true}
+        downLoadAudio={async ()=>{
+          await downloadAudio(item);
+        }}
         handleClick={() => {
           updateViewCountMutation.mutate(item._id);
         }}

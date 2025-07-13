@@ -4,8 +4,16 @@ import {hp, wp} from '../helper/Metric';
 import {formatCount} from '../helper/Utils';
 import {Category} from '../type';
 import {PRIMARY_COLOR} from '../helper/Theme';
+import Entypo from 'react-native-vector-icons/Entypo';
+import {useRef} from 'react';
+import {BottomSheetModal} from '@gorhom/bottom-sheet';
+import PodcastActions from './PodcastActions';
+import Share from 'react-native-share';
 
 interface PodcastProps {
+  id: string;
+  downloaded: boolean;
+  display: boolean;
   title: string;
   host: string;
   imageUri: string;
@@ -13,9 +21,11 @@ interface PodcastProps {
   tags: Category[];
   duration: string;
   handleClick: () => void;
+  downLoadAudio: () => void;
 }
 
 const PodcastCard = ({
+  id,
   title,
   host,
   imageUri,
@@ -23,7 +33,29 @@ const PodcastCard = ({
   duration,
   tags,
   handleClick,
+  downLoadAudio,
+  downloaded,
+  display,
 }: PodcastProps) => {
+  const sheetRef = useRef<BottomSheetModal>(null);
+
+  const handleOpenSheet = () => sheetRef.current?.present();
+
+   const handleShare = async () => {
+    try {
+      const result = await Share.open({
+        title: title,
+        message: `${title} : Check out this podcast on UltimateHealth app!`,
+        // Most Recent APK: 0.7.4
+        url: 'https://drive.google.com/file/d/19pRw_TWU4R3wcXjffOPBy1JGBDGnlaEh/view?usp=sharing',
+        subject: 'UltimateHealth Post',
+      });
+      console.log(result);
+    } catch (error) {
+      console.log('Error sharing:', error);
+      Alert.alert('Error', 'Something went wrong while sharing.');
+    }
+  };
   return (
     // Main container for the podcast card
     <View style={styles.container}>
@@ -70,6 +102,23 @@ const PodcastCard = ({
 
         <Text style={styles.durationText}>{duration}</Text>
       </View>
+
+      {display && (
+        <TouchableOpacity
+          style={styles.shareIconContainer}
+          onPress={() => handleOpenSheet()}>
+          <Entypo name="dots-three-vertical" size={18} color={'black'} />
+        </TouchableOpacity>
+      )}
+
+      <PodcastActions
+        ref={sheetRef}
+        downloaded={downloaded}
+        onShare={handleShare}
+        onReport={() => console.log('Report')}
+        onDownload={downLoadAudio}
+        onSave={() => console.log('Save')}
+      />
     </View>
   );
 };
@@ -115,7 +164,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     minWidth: 60,
     marginLeft: 12,
-    bottom: hp(4),
+    bottom: hp(2),
   },
   tagsContainer: {
     flexDirection: 'row',
@@ -140,6 +189,12 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 4,
     textAlign: 'center',
+  },
+  shareIconContainer: {
+    position: 'absolute',
+    top: 1,
+    right: 1,
+    zIndex: 1,
   },
 });
 
