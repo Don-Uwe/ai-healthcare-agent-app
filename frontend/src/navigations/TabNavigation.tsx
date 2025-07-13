@@ -32,24 +32,25 @@ const TabNavigation = () => {
           },
         }}
       />
-      <Tab.Screen
-        name="Podcasts"
-        component={PodcastsScreen}
-        options={{
-          headerShown: true,
-          headerTitle: '🎧 Podcasts',
-          headerTransparent: true,
-          headerTitleStyle: {
-            fontSize: 23,
-            //fontWeight: 'bold',
-            marginBottom: 12,
-          },
-          headerRight: () => (
+     <Tab.Screen
+  name="Podcasts"
+  component={PodcastsScreen}
+  options={({ navigation }) => ({
+    headerShown: true,
+    headerTitle: '🎧 Podcasts',
+    headerTransparent: true,
+    headerTitleStyle: {
+      fontSize: 23,
+      marginBottom: 12,
+    },
+    headerRight: () => (
+      <HeaderRightMenu onClick={()=>{
+        navigation.navigate('PodcastSearch');
+      }} />
+    ),
+  })}
+/>
 
-           <HeaderRightMenu/>
-          ),
-        }}
-      />
       <Tab.Screen
         name="Chatbot"
         component={BotScreen}

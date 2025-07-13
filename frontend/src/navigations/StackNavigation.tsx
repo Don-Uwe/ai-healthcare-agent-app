@@ -41,6 +41,7 @@ import PodcastDetail from '../screens/PodcastDetail';
 import OfflinePodcastList from '../screens/OfflinePodcastList';
 import OfflinePodcastDetail from '../screens/OfflinePodcastDetails';
 import PodcastDiscussion from '../screens/PodcastDiscussion';
+import PodcastSearch from '../screens/PodcastSearch';
 const Stack = createStackNavigator<RootStackParamList>();
 
 const StackNavigation = () => {
@@ -164,6 +165,12 @@ const StackNavigation = () => {
             </TouchableOpacity>
           ),
         })}
+      />
+
+       <Stack.Screen
+        name="PodcastSearch"
+        component={PodcastSearch}
+        options={{headerShown: false}}
       />
 
       <Stack.Screen

@@ -10,7 +10,10 @@ import { RootStackParamList } from '../type';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { ON_PRIMARY_COLOR } from '../helper/Theme';
 
-const HeaderRightMenu = () => {
+interface Props {
+ onClick: ()=> void;
+}
+const HeaderRightMenu = ({onClick}:Props) => {
   const [visible, setVisible] = useState(false);
   const openMenu = () => setVisible(true);
   const closeMenu = () => setVisible(false);
@@ -18,7 +21,7 @@ const HeaderRightMenu = () => {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={() => {}} style={styles.iconWrapper}>
+      <TouchableOpacity onPress={onClick} style={styles.iconWrapper}>
         <AntDesign name="search1" color="#333" size={24} />
       </TouchableOpacity>
 
