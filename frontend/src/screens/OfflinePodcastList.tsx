@@ -7,7 +7,6 @@ import PodcastEmptyComponent from '../components/PodcastEmptyComponent';
 import { hp } from '../helper/Metric';
 import { ON_PRIMARY_COLOR } from '../helper/Theme';
 import Snackbar from 'react-native-snackbar';
-import { useMutation } from '@tanstack/react-query';
 
 export default function OfflinePodcastList({
   navigation,
@@ -17,14 +16,14 @@ export default function OfflinePodcastList({
   useEffect(() => {
     loadPodcasts();
     return ()=>{
-      
-    }
+
+    };
   }, []);
 
   const loadPodcasts = async () => {
     try {
       const podCastStr = await retrieveItem('DOWNLOAD_PODCAST_DATA');
-      if (!podCastStr) return;
+      if (!podCastStr) {return;}
       const data = JSON.parse(podCastStr);
 
       if (!Array.isArray(data)) {
@@ -36,9 +35,9 @@ export default function OfflinePodcastList({
 
   const navigateToDetail = (podcast: PodcastData)=>{
     navigation.navigate('OfflinePodcastDetail', {
-        podcast: podcast
+        podcast: podcast,
     });
-  }
+  };
 
   /*
   const reportPodcastMutation = useMutation({
@@ -77,13 +76,13 @@ export default function OfflinePodcastList({
 
           if(res){
             Snackbar.show({
-              text:"Podcast has been removed from offline",
-              duration: Snackbar.LENGTH_SHORT
+              text:'Podcast has been removed from offline',
+              duration: Snackbar.LENGTH_SHORT,
             });
           }else{
              Snackbar.show({
-              text:"Failed to removed podcast from offline",
-              duration: Snackbar.LENGTH_SHORT
+              text:'Failed to removed podcast from offline',
+              duration: Snackbar.LENGTH_SHORT,
             });
           }
         }}
@@ -133,5 +132,5 @@ const styles = StyleSheet.create({
     color: '#666',
   },
 
-  
+
 });
