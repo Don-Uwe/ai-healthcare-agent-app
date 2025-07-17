@@ -1,3 +1,4 @@
+import React from 'react';
 import {FlatList, Pressable, View, StyleSheet} from 'react-native';
 import {OfflinePodcastListProp, PodcastData} from '../type';
 import {deleteFromDownloads, msToTime, retrieveItem} from '../helper/Utils';
@@ -7,11 +8,13 @@ import PodcastEmptyComponent from '../components/PodcastEmptyComponent';
 import { hp } from '../helper/Metric';
 import { ON_PRIMARY_COLOR } from '../helper/Theme';
 import Snackbar from 'react-native-snackbar';
+import { useSelector } from 'react-redux';
 
 export default function OfflinePodcastList({
   navigation,
 }: OfflinePodcastListProp) {
   const [podcasts, setPodcasts] = useState<any[]>([]);
+  const {user_id} = useSelector((state: any) => state.user);
 
   useEffect(() => {
     loadPodcasts();
@@ -36,6 +39,15 @@ export default function OfflinePodcastList({
   const navigateToDetail = (podcast: PodcastData)=>{
     navigation.navigate('OfflinePodcastDetail', {
         podcast: podcast,
+    });
+  };
+
+   const navigateToReport = podcastId => {
+    navigation.navigate('ReportScreen', {
+      articleId: '',
+      authorId: user_id,
+      commentId: null,
+      podcastId: podcastId,
     });
   };
 
@@ -90,6 +102,9 @@ export default function OfflinePodcastList({
         navigateToDetail(item);
         }}
         imageUri={''}
+        handleReport={()=>{
+          navigateToReport(item._id);
+        }}
       />
     </Pressable>
   );

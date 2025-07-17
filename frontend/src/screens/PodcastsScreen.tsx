@@ -68,7 +68,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
   );
   */
 }
-import {useState} from 'react';
+import React, {useState} from 'react';
 import {
   View,
   FlatList,
@@ -86,18 +86,15 @@ import {downloadAudio, msToTime} from '../helper/Utils';
 import {GET_ALL_PODCASTS, UPDATE_PODCAST_VIEW_COUNT} from '../helper/APIUtils';
 import PodcastEmptyComponent from '../components/PodcastEmptyComponent';
 import Snackbar from 'react-native-snackbar';
-import { setPodcasts } from '../store/dataSlice';
+import {setPodcasts} from '../store/dataSlice';
 
 const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
   const dispatch = useDispatch();
-  const {user_token} = useSelector((state: any) => state.user);
+  const {user_token, user_id} = useSelector((state: any) => state.user);
   const [refreshing, setRefreshing] = useState<boolean>(false);
-  const {podcasts} = useSelector((state: any)=> state.data);
+  const {podcasts} = useSelector((state: any) => state.data);
 
-  const {
-    isLoading,
-    refetch,
-  } = useQuery({
+  const {isLoading, refetch} = useQuery({
     queryKey: ['get-all-podcasts'],
     queryFn: async () => {
       try {
@@ -124,6 +121,14 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
     setRefreshing(false);
   };
 
+  const navigateToReport = podcastId => {
+    navigation.navigate('ReportScreen', {
+      articleId: '',
+      authorId: user_id,
+      commentId: null,
+      podcastId: podcastId,
+    });
+  };
   const updateViewCountMutation = useMutation({
     mutationKey: ['update-podcast-view-count'],
     mutationFn: async (podcastId: string) => {
@@ -161,7 +166,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
         updateViewCountMutation.mutate(item._id);
       }}>
       <PodcastCard
-       id= {item._id}
+        id={item._id}
         title={item.title}
         host={item.user_id.user_name}
         views={item.viewUsers.length}
@@ -169,18 +174,19 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
         tags={item.tags}
         downloaded={false}
         display={true}
-        downLoadAudio={async ()=>{
+        downLoadAudio={async () => {
           await downloadAudio(item);
         }}
         handleClick={() => {
           updateViewCountMutation.mutate(item._id);
         }}
         imageUri={item.cover_image}
+        handleReport={()=>{
+          navigateToReport(item._id);
+        }}
       />
     </Pressable>
   );
-
-
 
   return (
     <View style={styles.container}>

@@ -1,3 +1,4 @@
+import React from 'react';
 import {useCallback, useEffect, useState} from 'react';
 import {
   View,
@@ -336,7 +337,7 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
             {moment(podcast?.updated_at).format('MMMM Do YYYY, h:mm A')}
           </Text>
           {podcast && (
-            // eslint-disable-next-line react/react-in-jsx-scope
+
             <Text style={styles.metaText}>
               {podcast?.viewUsers.length <= 1
                 ? `${podcast?.viewUsers.length} view`

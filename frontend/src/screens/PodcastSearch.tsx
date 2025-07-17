@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import React, {useState} from 'react';
 import {
   Pressable,
   View,
@@ -91,12 +91,15 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
         display={false}
         downloaded={false}
         downLoadAudio={()=>{
-          
+
         }}
         handleClick={() => {
           updateViewCountMutation.mutate(item._id);
         }}
         imageUri={item.cover_image}
+        handleReport={()=>{
+
+        }}
       />
     </Pressable>
   );

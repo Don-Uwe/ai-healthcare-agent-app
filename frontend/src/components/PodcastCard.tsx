@@ -1,4 +1,5 @@
-import {StyleSheet, Text, View, Image, TouchableOpacity} from 'react-native';
+import React from 'react';
+import {StyleSheet, Text, View, Image, TouchableOpacity, Alert} from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import {hp, wp} from '../helper/Metric';
 import {formatCount} from '../helper/Utils';
@@ -22,10 +23,10 @@ interface PodcastProps {
   duration: string;
   handleClick: () => void;
   downLoadAudio: () => void;
+  handleReport: () => void;
 }
 
 const PodcastCard = ({
-  id,
   title,
   host,
   imageUri,
@@ -34,6 +35,7 @@ const PodcastCard = ({
   tags,
   handleClick,
   downLoadAudio,
+  handleReport,
   downloaded,
   display,
 }: PodcastProps) => {
@@ -115,7 +117,7 @@ const PodcastCard = ({
         ref={sheetRef}
         downloaded={downloaded}
         onShare={handleShare}
-        onReport={() => console.log('Report')}
+        onReport={handleReport}
         onDownload={downLoadAudio}
         onSave={() => console.log('Save')}
       />
