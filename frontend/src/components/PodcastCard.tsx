@@ -24,6 +24,7 @@ interface PodcastProps {
   handleClick: () => void;
   downLoadAudio: () => void;
   handleReport: () => void;
+  plalylistAct: ()=> void;
 }
 
 const PodcastCard = ({
@@ -38,6 +39,7 @@ const PodcastCard = ({
   handleReport,
   downloaded,
   display,
+  plalylistAct,
 }: PodcastProps) => {
   const sheetRef = useRef<BottomSheetModal>(null);
 
@@ -119,7 +121,7 @@ const PodcastCard = ({
         onShare={handleShare}
         onReport={handleReport}
         onDownload={downLoadAudio}
-        onSave={() => console.log('Save')}
+        onSave={plalylistAct}
       />
     </View>
   );

@@ -41,6 +41,7 @@ const PodcastActions = React.forwardRef(
     const snapPoints = useMemo(() => ['40%'], []);
 
     const handleAction = (action: () => void) => {
+      console.log('click')
       action();
       ref?.current?.dismiss();
     };

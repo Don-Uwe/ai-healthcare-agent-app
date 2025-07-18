@@ -100,6 +100,9 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
         handleReport={()=>{
 
         }}
+        plalylistAct={()=>{
+          
+        }}
       />
     </Pressable>
   );

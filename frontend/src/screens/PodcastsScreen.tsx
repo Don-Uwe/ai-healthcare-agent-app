@@ -87,12 +87,22 @@ import {GET_ALL_PODCASTS, UPDATE_PODCAST_VIEW_COUNT} from '../helper/APIUtils';
 import PodcastEmptyComponent from '../components/PodcastEmptyComponent';
 import Snackbar from 'react-native-snackbar';
 import {setPodcasts} from '../store/dataSlice';
+import CreatePlaylist from '../components/CreatePlaylist';
 
 const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
   const dispatch = useDispatch();
   const {user_token, user_id} = useSelector((state: any) => state.user);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const {podcasts} = useSelector((state: any) => state.data);
+  const [playlistModalOpen, setPlaylistModalOpen] = useState<boolean>(false);
+  const [playlistIds, setPlaylistIds] = useState<string[]>([]);
+
+  const openPlaylist = ()=>{
+    setPlaylistModalOpen(true);
+  };
+  const closePlaylist = ()=>{
+    setPlaylistModalOpen(false);
+  };
 
   const {isLoading, refetch} = useQuery({
     queryKey: ['get-all-podcasts'],
@@ -184,6 +194,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
         handleReport={()=>{
           navigateToReport(item._id);
         }}
+        plalylistAct={openPlaylist}
       />
     </Pressable>
   );
@@ -202,6 +213,12 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
           onRefresh={onRefresh}
         />
       )}
+
+      <CreatePlaylist
+        visible={playlistModalOpen}
+        dismiss={closePlaylist}
+        podcast_ids={playlistIds}
+      />
     </View>
   );
 };
