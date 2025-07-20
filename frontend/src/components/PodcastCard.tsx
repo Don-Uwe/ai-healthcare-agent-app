@@ -25,8 +25,6 @@ interface PodcastProps {
   downLoadAudio: () => void;
   handleReport: () => void;
   playlistAct: (id: string)=> void;
-  onSelect: (podcastId: string)=>void;
-  onClear: ()=> void;
 }
 
 const PodcastCard = ({
@@ -43,13 +41,11 @@ const PodcastCard = ({
   downloaded,
   display,
  playlistAct,
-  onSelect,
-  onClear,
 }: PodcastProps) => {
   const sheetRef = useRef<BottomSheetModal>(null);
 
   const handleOpenSheet = () => {
-    onSelect(id);
+   // onSelect(id);
     sheetRef.current?.present();
   };
 
@@ -133,7 +129,6 @@ const PodcastCard = ({
 
          playlistAct(id);
         }}
-        onClear={onClear}
       />
     </View>
   );

@@ -86,7 +86,7 @@ import {downloadAudio, msToTime} from '../helper/Utils';
 import {GET_ALL_PODCASTS, UPDATE_PODCAST_VIEW_COUNT} from '../helper/APIUtils';
 import PodcastEmptyComponent from '../components/PodcastEmptyComponent';
 import Snackbar from 'react-native-snackbar';
-import {setAddPlaylistId, setPodcasts} from '../store/dataSlice';
+import {setaddedPodcastId, setPodcasts} from '../store/dataSlice';
 import CreatePlaylist from '../components/CreatePlaylist';
 import { ON_PRIMARY_COLOR } from '../helper/Theme';
 
@@ -96,20 +96,20 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const {podcasts} = useSelector((state: any) => state.data);
   const [playlistModalOpen, setPlaylistModalOpen] = useState<boolean>(false);
-  const [playlistIds, setPlaylistIds] = useState<string[]>([]);
+ // const [playlistIds, setPlaylistIds] = useState<string[]>([]);
 
   const openPlaylist = (id: string)=>{
 
-    setPlaylistIds([id]);
-    dispatch(setAddPlaylistId(id));
-     console.log('playlist ids', playlistIds);
+   // setPlaylistIds([id]);
+    dispatch(setaddedPodcastId(id));
+    // console.log('playlist ids', playlistIds);
     setPlaylistModalOpen(true);
 
   };
   const closePlaylist = ()=>{
     setPlaylistModalOpen(false);
-    setPlaylistIds([]);
-    dispatch(setAddPlaylistId(''));
+   // setPlaylistIds([]);
+    dispatch(setaddedPodcastId(''));
   };
 
   const {isLoading, refetch} = useQuery({
@@ -133,14 +133,6 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
     },
   });
 
-  const onSelect = (podcastId: string)=>{
-   console.log('onselect called');
-    setPlaylistIds([podcastId]);
-  };
-
-  const onClear = ()=>{
-    setPlaylistIds([]);
-  };
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -212,8 +204,6 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
           navigateToReport(item._id);
         }}
        playlistAct={openPlaylist}
-        onSelect={onSelect}
-        onClear={onClear}
       />
     </Pressable>
   );
@@ -236,7 +226,6 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
       <CreatePlaylist
         visible={playlistModalOpen}
         dismiss={closePlaylist}
-        podcast_ids={playlistIds}
       />
     </View>
   );

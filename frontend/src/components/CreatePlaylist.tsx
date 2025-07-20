@@ -8,39 +8,62 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import {useMutation, useQuery} from '@tanstack/react-query';
 import {useSelector} from 'react-redux';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import axios from 'axios';
 import {
-  ADD_TO_PLAYLIST,
-  CREATE_PLAYLIST,
   GET_PLAYLIST,
+  UPDATE_PODCAST_PLAYLIST,
 } from '../helper/APIUtils';
 import Entypo from 'react-native-vector-icons/Entypo';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Feather from 'react-native-vector-icons/Feather';
 import {PlayList} from '../type';
 import Snackbar from 'react-native-snackbar';
+import NoInternet from './NoInternet';
 
 interface Props {
-  podcast_ids: string[];
+  //podcast_ids: string[];
   visible: boolean;
   dismiss: () => void;
 }
-export default function CreatePlaylist({podcast_ids, visible, dismiss}: Props) {
+export default function CreatePlaylist({visible, dismiss}: Props) {
   const {user_token} = useSelector((state: any) => state.user);
-  const [selectedPlaylistId, setSelectedPlaylistId] = useState<string>('');
-  const [creatingNew, setCreatingNew] = useState<boolean>(false);
+  // const [selectedPlaylistId, setSelectedPlaylistId] = useState<string>('');
   const [inputValue, setInputValue] = useState<string>('');
-  const {addPlaylistId} = useSelector((state:any)=> state.data);
+  const {addedPodcastId} = useSelector((state: any) => state.data);
+   const {isConnected} = useSelector((state:any)=> state.data);
+  const [addedPlaylistIds, setAddedPlaylistIds] = useState<string[]>([]);
+  const [removePlaylistIds, setRemovePlaylistIds] = useState<string[]>([]);
+ 
 
   const onCheck = (id: string) => {
-    setSelectedPlaylistId(id);
+    // add the playlist id addedPlaylist
+    console.log('on check');
+    if (!addedPlaylistIds.includes(id)) {
+      setAddedPlaylistIds(prev => [...prev, id]);
+    }
+    // Remove the playlist id from remove playlist
+    if (removePlaylistIds.includes(id)) {
+      setRemovePlaylistIds(prev => prev.filter(it => it !== id));
+    }
+  };
+  const onClear = (id: string) => {
+    // Add the playlist id to remove playlist id
+    console.log('on clear');
+    if (!removePlaylistIds.includes(id)) {
+      setRemovePlaylistIds(prev => [...prev, id]);
+    }
+    // Remove it from added playlist id
+    if (addedPlaylistIds.includes(id)) {
+      setAddedPlaylistIds(prev => prev.filter(it => it !== id));
+    }
   };
 
-  const {data: playlists, isLoading} = useQuery({
+  const {data: playlists} = useQuery({
     queryKey: ['get-my-playlists'],
     queryFn: async () => {
       const res = await axios.get(GET_PLAYLIST, {
@@ -53,6 +76,7 @@ export default function CreatePlaylist({podcast_ids, visible, dismiss}: Props) {
   });
 
   //console.log('podcast_ids', podcast_ids);
+  /*
   // Add Playlist Mutation
   const addPlaylistMutation = useMutation({
     mutationKey: ['add-playlist-mutation'],
@@ -60,7 +84,7 @@ export default function CreatePlaylist({podcast_ids, visible, dismiss}: Props) {
       const res = await axios.post(
         ADD_TO_PLAYLIST,
         {
-          podcast_id: addPlaylistId,
+          podcast_id: addedPodcastId,
           playlist_id: selectedPlaylistId,
         },
         {
@@ -72,7 +96,7 @@ export default function CreatePlaylist({podcast_ids, visible, dismiss}: Props) {
 
       return res.data.data as PlayList;
     },
-    onSuccess: async data => {
+    onSuccess: async () => {
       Alert.alert('Podcast id added to playlist');
       Snackbar.show({
         text: 'Podcast id added to playlist',
@@ -94,7 +118,7 @@ export default function CreatePlaylist({podcast_ids, visible, dismiss}: Props) {
         CREATE_PLAYLIST,
         {
           name: inputValue,
-          podcast_ids: [addPlaylistId]
+          podcast_ids: [addedPodcastId],
         },
         {
           headers: {
@@ -105,7 +129,7 @@ export default function CreatePlaylist({podcast_ids, visible, dismiss}: Props) {
 
       return res.data.data as PlayList;
     },
-    onSuccess: async data => {
+    onSuccess: async _data => {
       Alert.alert('Podcast id added to playlist');
       Snackbar.show({
         text: 'Podcast added',
@@ -123,7 +147,7 @@ export default function CreatePlaylist({podcast_ids, visible, dismiss}: Props) {
   });
 
   const createPlaylist = () => {
-    console.log('podcast id',podcast_ids);
+    console.log('podcast id', podcast_ids);
     if (!inputValue || inputValue === '') {
       Alert.alert('Playlist name cannot be empty');
       return;
@@ -131,31 +155,78 @@ export default function CreatePlaylist({podcast_ids, visible, dismiss}: Props) {
     createPlaylistMutation.mutate();
   };
 
-  const addToPlaylist = ()=>{
-    console.log('podcast id',podcast_ids);
-    if(!selectedPlaylistId || selectedPlaylistId === '' ){
+  const addToPlaylist = () => {
+    console.log('podcast id', podcast_ids);
+    if (!selectedPlaylistId || selectedPlaylistId === '') {
       Alert.alert('No playlist selected yet');
       return;
     }
     addPlaylistMutation.mutate();
   };
+  */
 
-  const RenderItem = ({item}) => {
+  const updatePlaylistMutation = useMutation({
+    mutationKey: ['update-podcast-playlist'],
+    mutationFn: async () => {
+      const res = await axios.post(
+        UPDATE_PODCAST_PLAYLIST,
+        {
+          addPlaylistIds: addedPlaylistIds,
+          removePlaylistIds: removePlaylistIds,
+          playlist_name: inputValue,
+          podcast_id: addedPodcastId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user_token}`,
+          },
+        },
+      );
+      return res.data as any;
+    },
+    onSuccess: () => {
+      Snackbar.show({
+        text: 'Podcast added',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+      dismiss();
+    },
+    onError: err => {
+      Alert.alert(err.message);
+      //setInputValue('');
+      clear();
+    },
+  });
+
+  const updatePlaylist = () => {
+    updatePlaylistMutation.mutate();
+  };
+
+  const clear = () => {
+    setAddedPlaylistIds([]);
+    setRemovePlaylistIds([]);
+    setInputValue('');
+  };
+
+  const RenderItem = ({item}: {item: PlayList}) => {
     return (
       <View style={styles.itemContainer}>
-        <TouchableOpacity onPress={() => onCheck(item._id)}>
-          {item._id === selectedPlaylistId ? (
-            <FontAwesome name="check-square" size={26} color="green" />
-          ) : (
-            <Feather name="square" size={26} color="black" />
-          )}
-        </TouchableOpacity>
+        {!removePlaylistIds.includes(item._id) && (addedPlaylistIds.includes(item._id) ||
+        item.podcasts.includes(addedPodcastId)) ? (
+          <TouchableOpacity onPress={() => onClear(item._id)}>
+            <FontAwesome name="check-square" size={26} color="#5F9EA0" />
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity onPress={() => onCheck(item._id)}>
+            <Feather name="square" size={26} color="#7393B3" />
+          </TouchableOpacity>
+        )}
 
         <View style={styles.itemTextContainer}>
           <Text style={styles.itemTitle}>{item.title}</Text>
         </View>
 
-        <Entypo name="lock" size={22} color="gray" />
+        <Entypo name="lock" size={22} color="#7393B3" />
       </View>
     );
   };
@@ -166,38 +237,69 @@ export default function CreatePlaylist({podcast_ids, visible, dismiss}: Props) {
       transparent={true}
       style={styles.modal}
       visible={visible}
-      onDismiss={dismiss}>
+      onDismiss={() => {
+        clear();
+        dismiss();
+      }}>
       <View style={styles.overlay} />
 
       <View style={styles.modalContent}>
-        <View style={styles.header}>
+       
+
+       {
+        !isConnected ? (
+          <View>
+             <View style={styles.header}>
           <Text style={styles.headerSubTitle}>Save to</Text>
-          <TouchableOpacity onPress={dismiss}>
+          <TouchableOpacity
+            onPress={() => {
+              clear();
+              dismiss();
+            }}>
             <Text style={styles.headerCloseText}>Close</Text>
           </TouchableOpacity>
         </View>
         {playlists &&
           playlists.map(item => <RenderItem key={item._id} item={item} />)}
 
-        {selectedPlaylistId !== '' && (
-          <TouchableOpacity onPress={addToPlaylist}>
-            <Text>Save</Text>
-          </TouchableOpacity>
-        )}
 
-        <View style={styles.createNewInputContainer}>
           <TextInput
             style={styles.textInput}
-            placeholder="Enter playlist name"
+            placeholder="Enter new playlist name"
             value={inputValue}
             onChangeText={setInputValue}
           />
-          <TouchableOpacity
-            style={styles.addButton}
-            onPress={createPlaylist}>
+          {/**
+           *  <TouchableOpacity style={styles.addButton} onPress={createPlaylist}>
             <Text style={styles.addButtonText}>Add</Text>
           </TouchableOpacity>
-        </View>
+           */}
+  {(addedPlaylistIds.length > 0 || removePlaylistIds.length > 0 || inputValue !== '') && (
+  <>
+    {updatePlaylistMutation.isPending ? (
+      <ActivityIndicator size="small" color={PRIMARY_COLOR} />
+    ) : (
+      <TouchableOpacity
+        style={{
+          ...styles.addButton,
+          justifyContent: 'center',
+          alignItems: 'center',
+          marginTop: 10,
+        }}
+        onPress={updatePlaylist}>
+        <Text style={styles.addButtonText}>Save</Text>
+      </TouchableOpacity>
+    )}
+  </>
+)}
+          </View>
+        ):(
+          <View style={styles.modalContent}>
+            <NoInternet onRetry={()=>{}}/>
+          </View>
+        )
+       }
+       
       </View>
     </Modal>
   );
@@ -210,6 +312,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 5,
   },
   overlay: {
     position: 'absolute',
@@ -219,14 +322,14 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     flex: 1,
-    width: '85%',
+    width: '95%',
     alignSelf: 'center',
     backgroundColor: 'white',
     borderRadius: 10,
     position: 'absolute',
-    top: Dimensions.get('window').height / 2.5,
+    top: Dimensions.get('window').height / 3.2,
     padding: 10,
-    paddingHorizontal: 16,
+    paddingHorizontal: 10,
   },
   header: {
     flexDirection: 'row',
@@ -235,8 +338,8 @@ const styles = StyleSheet.create({
   },
   headerSubTitle: {
     fontSize: 18,
-    color: '#000000',
-    fontWeight: '600',
+    color: '#313131',
+    fontWeight: '500',
   },
 
   headerCloseText: {
@@ -288,10 +391,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginVertical: 6,
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 1},
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowOffset: {width: 0, height: 0.5},
+    //shadowOpacity: 0.1,
+    // shadowRadius: 2,
+    //elevation: 1,
   },
 
   itemTextContainer: {

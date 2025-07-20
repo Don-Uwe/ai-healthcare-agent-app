@@ -457,6 +457,7 @@ export type PodcastData = {
   filePath: string | undefined,
   downloadAt: Date| null,
   commentCount: number|0,
+  //podcasts: string[];
 };
 
 

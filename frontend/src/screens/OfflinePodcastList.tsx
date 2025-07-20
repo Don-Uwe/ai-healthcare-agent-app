@@ -10,7 +10,7 @@ import {ON_PRIMARY_COLOR} from '../helper/Theme';
 import Snackbar from 'react-native-snackbar';
 import {useDispatch, useSelector} from 'react-redux';
 import CreatePlaylist from '../components/CreatePlaylist';
-import { setAddPlaylistId, setRemovePlaylistId } from '../store/dataSlice';
+import { setaddedPodcastId, setRemovePlaylistId } from '../store/dataSlice';
 
 export default function OfflinePodcastList({
   navigation,
@@ -18,28 +18,21 @@ export default function OfflinePodcastList({
   const [podcasts, setPodcasts] = useState<PodcastData[]>([]);
   const {user_id} = useSelector((state: any) => state.user);
   const [playlistModalOpen, setPlaylistModalOpen] = useState<boolean>(false);
-  const [playlistIds, setPlaylistIds] = useState<string[]>([]);
+  //const [playlistIds, setPlaylistIds] = useState<string[]>([]);
   const dispatch = useDispatch();
 
   const openPlaylist = (id: string) => {
-    setPlaylistIds([id]);
+    //setPlaylistIds([id]);
     setPlaylistModalOpen(true);
-    dispatch(setAddPlaylistId(id));
+    dispatch(setaddedPodcastId(id));
   };
   const closePlaylist = () => {
     setPlaylistModalOpen(false);
-    setPlaylistIds([]);
+   // setPlaylistIds([]);
     dispatch(setRemovePlaylistId(''));
   };
 
-  const onSelect = (podcastId: string) => {
-    setPlaylistIds([podcastId]);
-    
-  };
 
-  const onClear = () => {
-    setPlaylistIds([]);
-  };
 
   useEffect(() => {
     loadPodcasts();
@@ -131,8 +124,6 @@ export default function OfflinePodcastList({
           navigateToReport(item._id);
         }}
        playlistAct={openPlaylist}
-        onSelect={onSelect}
-        onClear={onClear}
       />
     </Pressable>
   );
@@ -147,7 +138,6 @@ export default function OfflinePodcastList({
       <CreatePlaylist
         visible={playlistModalOpen}
         dismiss={closePlaylist}
-        podcast_ids={playlistIds}
       />
     </View>
   );
