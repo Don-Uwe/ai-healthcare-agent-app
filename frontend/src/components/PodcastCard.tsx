@@ -24,10 +24,13 @@ interface PodcastProps {
   handleClick: () => void;
   downLoadAudio: () => void;
   handleReport: () => void;
-  plalylistAct: ()=> void;
+  playlistAct: (id: string)=> void;
+  onSelect: (podcastId: string)=>void;
+  onClear: ()=> void;
 }
 
 const PodcastCard = ({
+  id,
   title,
   host,
   imageUri,
@@ -39,11 +42,16 @@ const PodcastCard = ({
   handleReport,
   downloaded,
   display,
-  plalylistAct,
+ playlistAct,
+  onSelect,
+  onClear,
 }: PodcastProps) => {
   const sheetRef = useRef<BottomSheetModal>(null);
 
-  const handleOpenSheet = () => sheetRef.current?.present();
+  const handleOpenSheet = () => {
+    onSelect(id);
+    sheetRef.current?.present();
+  };
 
    const handleShare = async () => {
     try {
@@ -121,7 +129,11 @@ const PodcastCard = ({
         onShare={handleShare}
         onReport={handleReport}
         onDownload={downLoadAudio}
-        onSave={plalylistAct}
+        onSave={()=>{
+
+         playlistAct(id);
+        }}
+        onClear={onClear}
       />
     </View>
   );

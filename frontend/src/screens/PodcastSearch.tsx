@@ -100,9 +100,11 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
         handleReport={()=>{
 
         }}
-        plalylistAct={()=>{
-          
+       playlistAct={()=>{
+
         }}
+        onSelect={()=>{}}
+        onClear={()=>{}}
       />
     </Pressable>
   );

@@ -67,6 +67,9 @@ const UPDATE_PODCAST_VIEW_COUNT = `${Config.BASE_URL}/podcast/update-view-count`
 const LIKE_PODCAST = `${Config.BASE_URL}/podcast/like`;
 const SEARCH_PODCAST = `${Config.BASE_URL}/podcast/search`;
 const FILTER_PODCAST = `${Config.BASE_URL}/podcast/filter`;
+const GET_PLAYLIST = `${Config.BASE_URL}/podcast/get-my-playlists`;
+const CREATE_PLAYLIST = `${Config.BASE_URL}/podcast/create-playlist`;
+const ADD_TO_PLAYLIST = `${Config.BASE_URL}/podcast/add-podcast-form-playlist`;
 
 
 export {
@@ -132,4 +135,7 @@ export {
   LIKE_PODCAST,
   SEARCH_PODCAST,
   FILTER_PODCAST,
+  GET_PLAYLIST,
+  CREATE_PLAYLIST,
+  ADD_TO_PLAYLIST,
 };

@@ -35,14 +35,16 @@ interface Props {
    onDownload: ()=> void;
    onSave: ()=> void;
    downloaded: boolean;
+   onClear: ()=> void;
 }
 const PodcastActions = React.forwardRef(
-  ({ onShare, onReport, onDownload, onSave, downloaded }: Props, ref: any) => {
+  ({ onShare, onReport, onDownload, onSave, downloaded, onClear }: Props, ref: any) => {
     const snapPoints = useMemo(() => ['40%'], []);
 
     const handleAction = (action: () => void) => {
-      console.log('click')
+      console.log('click');
       action();
+      onClear();
       ref?.current?.dismiss();
     };
 

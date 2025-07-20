@@ -14,6 +14,9 @@ export type DataState = {
   suggestion: string | ''; // Suggestions for the user article before submit
   suggestionAccepted: boolean; // Suggestions acceptance state in article preview screen before post
   selectedPodcastCategories: string[]; // Selected podcast category for filter
+  // Add or remove playlist case
+  addPlaylistId: string;
+  removePlaylistId: string;
 }
 
 const initialState: DataState = {
@@ -45,14 +48,16 @@ const initialState: DataState = {
     status: '',
     reviewer_id: undefined,
     contributors: [],
-    pb_recordId: ''
+    pb_recordId: '',
   },
   categories: [],
-  articleContent:"",
-  suggestion:"",
+  articleContent:'',
+  suggestion:'',
   suggestionAccepted: false,
   selectedPodcastCategories:[],
-  podcasts:[]
+  podcasts:[],
+  addPlaylistId:'',
+  removePlaylistId:'',
 };
 const dataSlice = createSlice({
   name: 'data',
@@ -98,7 +103,13 @@ const dataSlice = createSlice({
 
     setPodcasts(state,action){
       state.podcasts = action.payload;
-    }
+    },
+    setAddPlaylistId(state, action){
+      state.addPlaylistId = action.payload;
+    },
+    setRemovePlaylistId(state, action){
+      state.removePlaylistId = action.payload;
+    },
   },
 });
 
@@ -114,6 +125,8 @@ export const {
   setSuggestionAccepted,
   setSelectePodcastCategories,
   setPodcasts,
+  setAddPlaylistId,
+  setRemovePlaylistId,
 } = dataSlice.actions;
 
 export default dataSlice.reducer;

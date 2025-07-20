@@ -592,3 +592,12 @@ export type ContentSuggestionResponse = {
   full_html: string;
   suggestion: string;
 };
+export type PlayList = {
+  _id: string;
+  title: string;
+  user: User | string;
+  podcasts: Podcast[] | string[];
+  created_at: Date;
+  updated_at: Date;
+
+}

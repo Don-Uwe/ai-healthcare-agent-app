@@ -86,8 +86,9 @@ import {downloadAudio, msToTime} from '../helper/Utils';
 import {GET_ALL_PODCASTS, UPDATE_PODCAST_VIEW_COUNT} from '../helper/APIUtils';
 import PodcastEmptyComponent from '../components/PodcastEmptyComponent';
 import Snackbar from 'react-native-snackbar';
-import {setPodcasts} from '../store/dataSlice';
+import {setAddPlaylistId, setPodcasts} from '../store/dataSlice';
 import CreatePlaylist from '../components/CreatePlaylist';
+import { ON_PRIMARY_COLOR } from '../helper/Theme';
 
 const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
   const dispatch = useDispatch();
@@ -97,11 +98,18 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
   const [playlistModalOpen, setPlaylistModalOpen] = useState<boolean>(false);
   const [playlistIds, setPlaylistIds] = useState<string[]>([]);
 
-  const openPlaylist = ()=>{
+  const openPlaylist = (id: string)=>{
+
+    setPlaylistIds([id]);
+    dispatch(setAddPlaylistId(id));
+     console.log('playlist ids', playlistIds);
     setPlaylistModalOpen(true);
+
   };
   const closePlaylist = ()=>{
     setPlaylistModalOpen(false);
+    setPlaylistIds([]);
+    dispatch(setAddPlaylistId(''));
   };
 
   const {isLoading, refetch} = useQuery({
@@ -124,6 +132,15 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
       }
     },
   });
+
+  const onSelect = (podcastId: string)=>{
+   console.log('onselect called');
+    setPlaylistIds([podcastId]);
+  };
+
+  const onClear = ()=>{
+    setPlaylistIds([]);
+  };
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -194,7 +211,9 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
         handleReport={()=>{
           navigateToReport(item._id);
         }}
-        plalylistAct={openPlaylist}
+       playlistAct={openPlaylist}
+        onSelect={onSelect}
+        onClear={onClear}
       />
     </Pressable>
   );
@@ -229,9 +248,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: hp(10),
-    paddingHorizontal: 16,
-    //backgroundColor: ON_PRIMARY_COLOR,
-    backgroundColor: '#ffffff',
+    paddingHorizontal: 12,
+    backgroundColor: ON_PRIMARY_COLOR,
+    //backgroundColor: '#ffffff',
   },
   header: {
     fontSize: 24,
