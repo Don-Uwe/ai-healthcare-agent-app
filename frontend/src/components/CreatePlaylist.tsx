@@ -14,10 +14,7 @@ import {useMutation, useQuery} from '@tanstack/react-query';
 import {useSelector} from 'react-redux';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import axios from 'axios';
-import {
-  GET_PLAYLIST,
-  UPDATE_PODCAST_PLAYLIST,
-} from '../helper/APIUtils';
+import {GET_PLAYLIST, UPDATE_PODCAST_PLAYLIST} from '../helper/APIUtils';
 import Entypo from 'react-native-vector-icons/Entypo';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Feather from 'react-native-vector-icons/Feather';
@@ -35,10 +32,9 @@ export default function CreatePlaylist({visible, dismiss}: Props) {
   // const [selectedPlaylistId, setSelectedPlaylistId] = useState<string>('');
   const [inputValue, setInputValue] = useState<string>('');
   const {addedPodcastId} = useSelector((state: any) => state.data);
-   const {isConnected} = useSelector((state:any)=> state.data);
+  const {isConnected} = useSelector((state: any) => state.data);
   const [addedPlaylistIds, setAddedPlaylistIds] = useState<string[]>([]);
   const [removePlaylistIds, setRemovePlaylistIds] = useState<string[]>([]);
- 
 
   const onCheck = (id: string) => {
     // add the playlist id addedPlaylist
@@ -211,8 +207,9 @@ export default function CreatePlaylist({visible, dismiss}: Props) {
   const RenderItem = ({item}: {item: PlayList}) => {
     return (
       <View style={styles.itemContainer}>
-        {!removePlaylistIds.includes(item._id) && (addedPlaylistIds.includes(item._id) ||
-        item.podcasts.includes(addedPodcastId)) ? (
+        {!removePlaylistIds.includes(item._id) &&
+        (addedPlaylistIds.includes(item._id) ||
+          item.podcasts.includes(addedPodcastId)) ? (
           <TouchableOpacity onPress={() => onClear(item._id)}>
             <FontAwesome name="check-square" size={26} color="#5F9EA0" />
           </TouchableOpacity>
@@ -243,25 +240,20 @@ export default function CreatePlaylist({visible, dismiss}: Props) {
       }}>
       <View style={styles.overlay} />
 
-      <View style={styles.modalContent}>
-       
-
-       {
-        !isConnected ? (
-          <View>
-             <View style={styles.header}>
-          <Text style={styles.headerSubTitle}>Save to</Text>
-          <TouchableOpacity
-            onPress={() => {
-              clear();
-              dismiss();
-            }}>
-            <Text style={styles.headerCloseText}>Close</Text>
-          </TouchableOpacity>
-        </View>
-        {playlists &&
-          playlists.map(item => <RenderItem key={item._id} item={item} />)}
-
+      {!isConnected ? (
+        <View style={styles.modalContent}>
+          <View style={styles.header}>
+            <Text style={styles.headerSubTitle}>Save to</Text>
+            <TouchableOpacity
+              onPress={() => {
+                clear();
+                dismiss();
+              }}>
+              <Text style={styles.headerCloseText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+          {playlists &&
+            playlists.map(item => <RenderItem key={item._id} item={item} />)}
 
           <TextInput
             style={styles.textInput}
@@ -274,33 +266,32 @@ export default function CreatePlaylist({visible, dismiss}: Props) {
             <Text style={styles.addButtonText}>Add</Text>
           </TouchableOpacity>
            */}
-  {(addedPlaylistIds.length > 0 || removePlaylistIds.length > 0 || inputValue !== '') && (
-  <>
-    {updatePlaylistMutation.isPending ? (
-      <ActivityIndicator size="small" color={PRIMARY_COLOR} />
-    ) : (
-      <TouchableOpacity
-        style={{
-          ...styles.addButton,
-          justifyContent: 'center',
-          alignItems: 'center',
-          marginTop: 10,
-        }}
-        onPress={updatePlaylist}>
-        <Text style={styles.addButtonText}>Save</Text>
-      </TouchableOpacity>
-    )}
-  </>
-)}
-          </View>
-        ):(
-          <View style={styles.modalContent}>
-            <NoInternet onRetry={()=>{}}/>
-          </View>
-        )
-       }
-       
-      </View>
+          {(addedPlaylistIds.length > 0 ||
+            removePlaylistIds.length > 0 ||
+            inputValue !== '') && (
+            <>
+              {updatePlaylistMutation.isPending ? (
+                <ActivityIndicator size="small" color={PRIMARY_COLOR} />
+              ) : (
+                <TouchableOpacity
+                  style={{
+                    ...styles.addButton,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginTop: 10,
+                  }}
+                  onPress={updatePlaylist}>
+                  <Text style={styles.addButtonText}>Save</Text>
+                </TouchableOpacity>
+              )}
+            </>
+          )}
+        </View>
+      ) : (
+        <View style={styles.modalContent}>
+          <NoInternet onRetry={() => {dismiss()}} />
+        </View>
+      )}
     </Modal>
   );
 }

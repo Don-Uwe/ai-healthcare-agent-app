@@ -5,15 +5,17 @@ import {PRIMARY_COLOR} from '../helper/Theme';
 
 const NoInternet = ({onRetry}) => {
   return (
-    <View style={styles.container}>
-      <View style={styles.box}>
+    <View style={styles.wrapper}>
+      <View style={styles.container}>
         <Image
           source={require('../assets/no-internet-icon.png')}
           style={styles.image_wifi}
+          resizeMode="contain"
         />
         <Image
           source={require('../assets/cloud-thunder-icon.png')}
           style={styles.image_cloud}
+          resizeMode="contain"
         />
         <Text style={styles.title}>OOOPS !</Text>
         <Text style={styles.subtitle}>
@@ -28,19 +30,19 @@ const NoInternet = ({onRetry}) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
+  wrapper: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    padding: 20,
   },
-  box: {
-    justifyContent: 'center',
-    alignItems: 'center',
+  container: {
+    maxWidth: wp(90),
+    width: '100%',
+    padding: 20,
     backgroundColor: '#fff',
-    margin: 30,
-    padding: 25,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   image_wifi: {
     width: wp(15),
@@ -51,26 +53,28 @@ const styles = StyleSheet.create({
   image_cloud: {
     width: wp(32),
     height: hp(15),
-    marginBottom: 50,
+    marginBottom: 40,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginBottom: 15,
+    textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
     color: '#555',
     textAlign: 'center',
-    marginBottom: 50,
+    marginBottom: 40,
     marginHorizontal: 10,
   },
   button: {
     backgroundColor: PRIMARY_COLOR,
     paddingVertical: 10,
     paddingHorizontal: 20,
-    width: '50%',
+    width: '60%',
     alignItems: 'center',
+    borderRadius: 6,
   },
   buttonText: {
     color: '#fff',
