@@ -8,7 +8,7 @@ import Animated, {
 import Svg, { Path } from 'react-native-svg';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
-const HeartbeatWave = () => {
+const SoundWave = () => {
   const waveOffset = useSharedValue(0);
 
   const animatedProps = useAnimatedProps(() => {
@@ -43,4 +43,4 @@ const HeartbeatWave = () => {
   );
 };
 
-export default HeartbeatWave;
+export default SoundWave;
