@@ -8,7 +8,7 @@ import {
   StyleSheet,
 } from 'react-native';
 //import AudioRecorderPlayer from 'react-native-audio-recorder-player';
-import HeartbeatWave from '../components/HeartBeatWave';
+import SoundWave from '../components/SoundWave';
 import { PodcastRecorderScreenProps } from '../type';
 
 const PodcastRecorder = ({navigation}: PodcastRecorderScreenProps) => {
@@ -59,7 +59,7 @@ const PodcastRecorder = ({navigation}: PodcastRecorderScreenProps) => {
 
       {recording && (
         <View style={styles.waveContainer}>
-          <HeartbeatWave />
+          <SoundWave />
         </View>
       )}
 
