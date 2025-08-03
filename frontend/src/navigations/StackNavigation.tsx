@@ -42,6 +42,7 @@ import OfflinePodcastList from '../screens/OfflinePodcastList';
 import OfflinePodcastDetail from '../screens/OfflinePodcastDetails';
 import PodcastDiscussion from '../screens/PodcastDiscussion';
 import PodcastSearch from '../screens/PodcastSearch';
+import PodcastRecorder from '../screens/PodcastRecorder';
 const Stack = createStackNavigator<RootStackParamList>();
 
 const StackNavigation = () => {
@@ -317,6 +318,12 @@ const StackNavigation = () => {
             </TouchableOpacity>
           ),
         })}
+      />
+
+        <Stack.Screen
+        name="PodcastRecorder"
+        component={PodcastRecorder}
+        options={{headerShown: false}}
       />
 
       <Stack.Screen

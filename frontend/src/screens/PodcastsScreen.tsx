@@ -89,6 +89,7 @@ import Snackbar from 'react-native-snackbar';
 import {setaddedPodcastId, setPodcasts} from '../store/dataSlice';
 import CreatePlaylist from '../components/CreatePlaylist';
 import { ON_PRIMARY_COLOR } from '../helper/Theme';
+import AddIcon from '../components/AddIcon';
 
 const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
   const dispatch = useDispatch();
@@ -223,6 +224,14 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
         />
       )}
 
+
+      <View style={styles.homePlusIconview}>
+        <AddIcon callback={()=>{
+          console.log('Add icon clicked');
+          navigation.navigate('PodcastRecorder');
+        }} />
+      </View>
+
       <CreatePlaylist
         visible={playlistModalOpen}
         dismiss={closePlaylist}
@@ -258,6 +267,12 @@ const styles = StyleSheet.create({
   artist: {
     fontSize: 14,
     color: '#666',
+  },
+   homePlusIconview: {
+    bottom: 100,
+    right: 25,
+    position: 'absolute',
+    zIndex: -2,
   },
 });
 

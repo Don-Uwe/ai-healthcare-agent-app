@@ -96,7 +96,8 @@ export type RootStackParamList = {
   OfflinePodcastDetail: {
     podcast: PodcastData
   };
-  PodcastSearch: undefined
+  PodcastSearch: undefined;
+  PodcastRecorder: undefined;
   //ChatbotScreen: undefined;
 };
 
@@ -255,6 +256,12 @@ export type ProfileScreenProps = CompositeScreenProps<
   | StackScreenProps<RootStackParamList, 'ProfileEditScreen'>
   | StackScreenProps<RootStackParamList, 'ArticleScreen'>
 >;
+
+export type PodcastRecorderScreenProps = StackScreenProps<
+  RootStackParamList,
+  'PodcastRecorder'
+>;
+
 
 export type HomeScreenHeaderProps = {
   handlePresentModalPress: () => void;
