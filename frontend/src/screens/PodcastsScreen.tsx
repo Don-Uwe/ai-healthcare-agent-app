@@ -90,6 +90,10 @@ import {setaddedPodcastId, setPodcasts} from '../store/dataSlice';
 import CreatePlaylist from '../components/CreatePlaylist';
 import { ON_PRIMARY_COLOR } from '../helper/Theme';
 import AddIcon from '../components/AddIcon';
+import { NativeModules, NativeEventEmitter } from 'react-native';
+
+const { WavAudioRecorder } = NativeModules;
+const recorderEvents = new NativeEventEmitter(WavAudioRecorder);
 
 const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
   const dispatch = useDispatch();
