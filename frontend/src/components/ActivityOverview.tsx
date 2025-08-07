@@ -6,13 +6,12 @@ import {
   ScrollView,
   Pressable,
   Alert,
-  Dimensions,
 } from 'react-native';
-import React, {useCallback, useEffect, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
-import * as Progress from 'react-native-progress';
 import {Dropdown} from 'react-native-element-dropdown';
-import {LineChart} from 'react-native-gifted-charts';
+//import {LineChart} from 'react-native-gifted-charts';
+import {LineChart} from 'react-native-chart-kit';
 import {useQuery} from '@tanstack/react-query';
 import moment from 'moment';
 import {fp} from '../helper/Metric';
@@ -60,7 +59,6 @@ const ActivityOverview = ({
   onArticleViewed,
   userId,
   others,
-  articlePosted,
 }: Props) => {
   const [userState, setUserState] = useState<number>(0);
   const {user_token, user_id} = useSelector((state: any) => state.user);
@@ -70,8 +68,6 @@ const ActivityOverview = ({
     new Date().getMonth(),
   );
   const [selectedYear, setSelectedYear] = useState<number>(-1);
-
- 
 
   const monthlyDrops = [
     {label: 'Monthly', value: -1},
@@ -98,7 +94,6 @@ const ActivityOverview = ({
   // GET MONTHLY READ REPORT
   const {
     data: monthlyReadReport,
-    isLoading: isMonthReadReportLoading,
     refetch: refetchMonthReadReport,
   } = useQuery({
     queryKey: ['get-month-read-reports'],
@@ -144,7 +139,6 @@ const ActivityOverview = ({
 
   const {
     data: monthlyWriteReport,
-    isLoading: isMonthWriteReportLoading,
     refetch: refetchMonthWriteReport,
   } = useQuery({
     queryKey: ['get-month-write-reports'],
@@ -191,7 +185,6 @@ const ActivityOverview = ({
   // GET YEARLY READ REPORT
   const {
     data: yearlyReadReport,
-    isLoading: isYearlyReadReportLoading,
     refetch: refetchYearlyReadReport,
   } = useQuery({
     queryKey: ['get-yearly-read-reports'],
@@ -238,7 +231,6 @@ const ActivityOverview = ({
 
   const {
     data: yearlyWriteReport,
-    isLoading: isYearlyWriteReportLoading,
     refetch: refetchYearlyWriteReport,
   } = useQuery({
     queryKey: ['get-yearly-write-reports'],
@@ -287,7 +279,6 @@ const ActivityOverview = ({
   const {
     data: article,
     isLoading: isArticleLoading,
-    refetch: refetchArticles,
   } = useQuery({
     queryKey: ['get-most-viewed-articles'],
     queryFn: async () => {
@@ -329,9 +320,7 @@ const ActivityOverview = ({
   // GET USER STATUS FOR LIKE AND VIEW COUNT
 
   const {
-    data: likeViewStat,
     isLoading: likeViewStatDataLoading,
-    refetch: refetchLikeViewStat,
   } = useQuery({
     queryKey: ['get-like-view-status'],
     queryFn: async () => {
@@ -374,9 +363,7 @@ const ActivityOverview = ({
   // GET TOTAL READ STATUS
 
   const {
-    data: readStat,
     isLoading: readStatDataLoading,
-    refetch: refetchLikeReadStat,
   } = useQuery({
     queryKey: ['get-read-status'],
     queryFn: async () => {
@@ -419,9 +406,7 @@ const ActivityOverview = ({
   // GET TOTAL WRITE STATUS
 
   const {
-    data: writeStat,
     isLoading: writeStatDataLoading,
-    refetch: refetchWriteStat,
   } = useQuery({
     queryKey: ['get-write-status'],
     queryFn: async () => {
@@ -461,7 +446,6 @@ const ActivityOverview = ({
     },
   });
 
-  const colorList = ['black', 'green', PRIMARY_COLOR];
 
   useFocusEffect(
     useCallback(() => {
@@ -470,7 +454,7 @@ const ActivityOverview = ({
       } else {
         refetchMonthWriteReport();
       }
-    }, [userState, selectedMonth]),
+    }, [userState, refetchMonthReadReport, refetchMonthWriteReport]),
   );
   useEffect(() => {
     if (userState === 0) {
@@ -478,7 +462,7 @@ const ActivityOverview = ({
     } else {
       refetchMonthWriteReport();
     }
-  }, [selectedMonth, userState]);
+  }, [refetchMonthReadReport, refetchMonthWriteReport, selectedMonth, userState]);
 
   useEffect(() => {
     // This will run when selectedMonth changes
@@ -487,7 +471,7 @@ const ActivityOverview = ({
     } else {
       refetchYearlyWriteReport();
     }
-  }, [selectedYear, userState]);
+  }, [refetchYearlyReadReport, refetchYearlyWriteReport, selectedYear, userState]);
 
   if (
     isArticleLoading ||
@@ -499,33 +483,37 @@ const ActivityOverview = ({
   }
 
   const processData = data => {
-    if (!data) {
-      return [];
-    }
+   if (!Array.isArray(data) || data.length === 0) {
+    return [0,0,0,0,0,0,0,0,0,0,0,0];
+  }
 
     /*
     console.log('data', data.map(item => ({
       value: item.value, // Ensure the value is an integer
       label: item.date.substring(8),
     })));
-    */
+    
     return data.map(item => ({
       value: item.value, // Ensure the value is an integer
       label: item.date.substring(8),
     }));
+    */
+
+    return data.map(item =>
+      Number.isFinite(Number(item.value)) ? Math.round(Number(item.value)) : 0,
+    );
   };
 
-  const screenWidth = Dimensions.get('window').width;
-  const chartWidth = screenWidth - 40; // Make some space for padding
-  const chartSpacing = 0.2; // Adjust the spacing between points
+  const processLabels = data => {
+    if (!data) {
+      return [];
+    }
 
-  const getMaxYValue = () => {
-    const data =
-      userState === 0
-        ? processData(monthlyReadReport)
-        : processData(monthlyWriteReport);
-    return Math.max(...data.map(item => item.value)) + 1; // Add 1 for padding
+    return data.map(item => item.date?.substring(8) ?? '-');
   };
+
+ // const screenWidth = Dimensions.get('window').width;
+
 
   return (
     <ScrollView
@@ -556,7 +544,7 @@ const ActivityOverview = ({
             setUserState(item.value);
             setIsFocus(false);
           }}
-          placeholder={null}
+          placeholder={undefined}
         />
 
         <Text style={styles.btnText}>
@@ -657,30 +645,108 @@ const ActivityOverview = ({
         </View>
       )}
        */}
-      {selectedMonth !== -1 && (
-        <View style={{marginTop: 10, flex: 1}}>
-          <LineChart
-            data={
-              userState === 0
-                ? processData(monthlyReadReport)
-                : processData(monthlyWriteReport)
-            }
-           // minYValue={0}
 
-            roundToDigits={0}
-            // maxValue = {getMaxYValue()}
-          // stepChart={true}
-            dataPointsColor={PRIMARY_COLOR}
-            //isAnimated={true}
-            //yAxisInterval={1}
-            //yAxisDomain={[0, getMaxYValue()]}
-            //maxYValue={getMaxYValue()} // Dynamically set max Y value
-            areaChart
+      {selectedMonth !== -1 && (
+        <ScrollView horizontal>
+          <LineChart
+            data={{
+              labels:
+                userState === 0
+                  ? processLabels(monthlyReadReport)
+                  : processLabels(monthlyWriteReport),
+
+              datasets: [
+                {
+                  data:
+                    userState === 0
+                      ? processData(monthlyReadReport)
+                      : processData(monthlyWriteReport),
+                  strokeWidth: 1,
+                  color: (opacity = 1) => `rgba(33, 150, 243, ${opacity})`,
+                },
+              ],
+            }}
+            width={Math.max(
+              (userState === 0
+                ? monthlyReadReport? monthlyReadReport?.length : 0
+                : monthlyWriteReport? monthlyWriteReport?.length : 0) * 40,
+              300,
+            )} // Fallback width
+            height={350}
+            chartConfig={{
+              backgroundGradientFrom: ON_PRIMARY_COLOR,
+              backgroundGradientTo: ON_PRIMARY_COLOR,
+              color: (opacity = 1) => `rgba(0,0,0,${opacity})`,
+              labelColor: () => '#999',
+              formatYLabel: y => parseInt(y).toString(),
+              propsForDots: {
+                r: '3',
+                strokeWidth: '2',
+                stroke: PRIMARY_COLOR,
+              },
+            }}
+            bezier
+            withInnerLines={false}
+            style={{
+              marginVertical: 2,
+              borderRadius: 12,
+            }}
           />
-        </View>
+        </ScrollView>
       )}
+
       {selectedYear !== -1 && (
-        <View style={{marginTop: 10}}>
+        <ScrollView horizontal>
+          <LineChart
+            data={{
+              labels:
+                userState === 0
+                  ? processLabels(yearlyReadReport)
+                  : processLabels(yearlyWriteReport),
+
+              datasets: [
+                {
+                  data:
+                    userState === 0
+                      ? processData(yearlyReadReport)
+                      : processData(yearlyWriteReport),
+                  strokeWidth: 1,
+                  color: (opacity = 1) => `rgba(33, 150, 243, ${opacity})`,
+                },
+              ],
+            }}
+            width={Math.max(
+              (userState === 0
+                ? yearlyReadReport? yearlyReadReport?.length : 0
+                : yearlyWriteReport? yearlyWriteReport?.length : 0) * 40,
+              300,
+            )} // Fallback width
+            height={350}
+            chartConfig={{
+              backgroundGradientFrom: ON_PRIMARY_COLOR,
+              backgroundGradientTo: ON_PRIMARY_COLOR,
+              color: (opacity = 1) => `rgba(0,0,0,${opacity})`,
+              labelColor: () => '#999',
+              formatYLabel: y => parseInt(y).toString(),
+              propsForDots: {
+                r: '3',
+                strokeWidth: '2',
+                stroke: PRIMARY_COLOR,
+              },
+            }}
+            bezier
+            withInnerLines={false}
+            style={{
+              marginVertical: 2,
+              borderRadius: 12,
+            }}
+          />
+        </ScrollView>
+      )}
+
+      {
+        /**
+         * <View style={{marginTop: 10}}>
           <LineChart
             data={
               userState === 0
@@ -700,7 +766,8 @@ const ActivityOverview = ({
             areaChart
           />
         </View>
-      )}
+         */
+      }
 
       {/**
          *
@@ -721,11 +788,7 @@ const ActivityOverview = ({
         }}
       />
 
-   
-       
-
-     {
-      /**
+      {/**
        * 
        *  <View style={styles.box}>
           <Text style={styles.titleText}> Total Reads</Text>
@@ -838,79 +901,75 @@ const ActivityOverview = ({
           backgroundColor: '#c1c1c1',
         }}
       />
-       */
-     }
+       */}
 
-{
-  others && (
-    <>
-      <Text
-        style={{
-          ...styles.btnText,
-          marginVertical: 10,
-          fontWeight: '700',
-          fontSize: 17,
-          marginStart: 10,
-        }}
-      >
-        Most viewed articles
-      </Text>
-      {article &&
-        article.map((item, index) => {
-          return (
-            <Pressable
-              key={index}
-              onPress={() => {
-                onArticleViewed({
-                  articleId: Number(item._id),
-                  authorId: item.authorId,
-                  recordId: item.pb_recordId,
-                });
-              }}
-            >
-              <View style={styles.cardContainer}>
-                {item?.imageUtils[0] && item?.imageUtils[0].length !== 0 ? (
-                  <Image
-                    source={{
-                      uri: item?.imageUtils[0].startsWith('http')
-                        ? item?.imageUtils[0]
-                        : `${GET_IMAGE}/${item?.imageUtils[0]}`,
-                    }}
-                    style={styles.image}
-                  />
-                ) : (
-                  <Image
-                    source={require('../assets/article_default.jpg')}
-                    style={styles.image}
-                  />
-                )}
+      {others && (
+        <>
+          <Text
+            style={{
+              ...styles.btnText,
+              marginVertical: 10,
+              fontWeight: '700',
+              fontSize: 17,
+              marginStart: 10,
+            }}>
+            Most viewed articles
+          </Text>
+          {article &&
+            article.map((item, index) => {
+              return (
+                <Pressable
+                  key={index}
+                  onPress={() => {
+                    onArticleViewed({
+                      articleId: Number(item._id),
+                      authorId: item.authorId ?? '',
+                      recordId: item.pb_recordId,
+                    });
+                  }}>
+                  <View style={styles.cardContainer}>
+                    {item?.imageUtils[0] && item?.imageUtils[0].length !== 0 ? (
+                      <Image
+                        source={{
+                          uri: item?.imageUtils[0].startsWith('http')
+                            ? item?.imageUtils[0]
+                            : `${GET_IMAGE}/${item?.imageUtils[0]}`,
+                        }}
+                        style={styles.image}
+                      />
+                    ) : (
+                      <Image
+                        source={require('../assets/article_default.jpg')}
+                        style={styles.image}
+                      />
+                    )}
 
-                <View style={styles.textContainer}>
-                  <Text style={styles.footerText}>
-                    {item?.tags.map(tag => tag.name).join(' | ')}
-                  </Text>
-                  <Text style={styles.title}>{item?.title}</Text>
+                    <View style={styles.textContainer}>
+                      <Text style={styles.footerText}>
+                        {item?.tags.map(tag => tag.name).join(' | ')}
+                      </Text>
+                      <Text style={styles.title}>{item?.title}</Text>
 
-                  <Text style={{ ...styles.footerText, marginBottom: 3 }}>
-                    {item?.viewUsers
-                      ? item?.viewUsers.length > 1
-                        ? `${formatCount(item?.viewUsers.length)} views`
-                        : `${item?.viewUsers.length} view`
-                      : '0 view'}
-                  </Text>
-                  <Text style={styles.footerText}>
-                    Last updated: {''}
-                    {moment(new Date(item?.lastUpdated)).format('DD/MM/YYYY')}
-                  </Text>
-                </View>
-              </View>
-            </Pressable>
-          );
-        })}
-    </>
-  )
-}
-
+                      <Text style={{...styles.footerText, marginBottom: 3}}>
+                        {item?.viewUsers
+                          ? item?.viewUsers.length > 1
+                            ? `${formatCount(item?.viewUsers.length)} views`
+                            : `${item?.viewUsers.length} view`
+                          : '0 view'}
+                      </Text>
+                      <Text style={styles.footerText}>
+                        Last updated: {''}
+                        {moment(new Date(item?.lastUpdated)).format(
+                          'DD/MM/YYYY',
+                        )}
+                      </Text>
+                    </View>
+                  </View>
+                </Pressable>
+              );
+            })}
+        </>
+      )}
     </ScrollView>
   );
 };
