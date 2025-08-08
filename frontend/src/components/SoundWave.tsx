@@ -6,7 +6,7 @@ import Animated, {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated';
-import Svg, { Path } from 'react-native-svg';
+import Svg, { G, Path } from 'react-native-svg';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 const SoundWave = () => {
@@ -44,13 +44,15 @@ const SoundWave = () => {
 
   return (
     <Svg height="60" width="100%" viewBox="0 0 300 60">
-      <AnimatedPath
-        animatedProps={animatedProps}
-        stroke="#38bdf8"
-        strokeWidth="2"
-        fill="none"
-      />
-    </Svg>
+    <G transform="translate(40, 0)"> 
+    <AnimatedPath
+      animatedProps={animatedProps}
+      stroke="#38bdf8"
+      strokeWidth="2"
+      fill="none"
+    />
+  </G>
+</Svg>
   );
 };
 

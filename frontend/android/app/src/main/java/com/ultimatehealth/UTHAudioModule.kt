@@ -48,6 +48,10 @@ class WavAudioRecorderModule(reactContext: ReactApplicationContext) :
 
     override fun getName(): String = "WavAudioRecorder"
 
+    override fun getConstants(): Map<String, Any> {
+    return mapOf("onAudioWaveform" to "onAudioWaveform")
+    }
+
    @ReactMethod
    fun startRecording(promise: Promise) {
     if (isRecording) {
@@ -92,6 +96,14 @@ class WavAudioRecorderModule(reactContext: ReactApplicationContext) :
                     val read = audioRecord!!.read(buffer, 0, buffer.size)
                     if (read > 0) out.write(buffer, 0, read)
 
+                    // To calculate RMS value, for visualization, Audio wave form feature
+                    val max = buffer.maxOrNull()?.toInt() ?: 0
+                    val normalized = (max.toFloat() / Short.MAX_VALUE)
+
+                    val params = Arguments.createMap()
+                    params.putDouble("amplitude", normalized.toDouble())
+
+                    sendEvent("onAudioWaveform", params);
                     val elapsed = SystemClock.elapsedRealtime() - startTime
                     sendEvent("recUpdate", Arguments.createMap().apply {
                         putDouble("elapsedMs", elapsed.toDouble())
@@ -173,7 +185,7 @@ class WavAudioRecorderModule(reactContext: ReactApplicationContext) :
      } catch (e: Exception) {
         Log.e(TAG, " Failed to save WAV: ${e.message}", e)
     }
-}
+  }
 
 
     private fun buildWavHeader(pcmSize: Long): ByteArray {
