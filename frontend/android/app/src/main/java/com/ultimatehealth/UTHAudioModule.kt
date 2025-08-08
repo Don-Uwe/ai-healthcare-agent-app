@@ -3,6 +3,8 @@ package com.ultimatehealth
 import android.Manifest
 import android.content.pm.PackageManager
 import android.media.AudioFormat
+import android.os.Environment
+
 import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.os.SystemClock
@@ -39,54 +41,57 @@ class WavAudioRecorderModule(reactContext: ReactApplicationContext) :
     ) * 2
 
     private var startTime: Long = 0L
-    private val tempPcmFile = File(reactContext.cacheDir, "temp_recording.pcm")
-    private val wavFile = File(reactContext.cacheDir, "recorded_audio.wav")
+    private val uniqueId = System.currentTimeMillis().toString() + "_" + hashCode()
+    private val externalDir = reactApplicationContext.getExternalFilesDir(Environment.DIRECTORY_MUSIC)
+    private val tempPcmFile = File(externalDir, "temp_recording_${uniqueId}.pcm")
+    private val wavFile = File(externalDir, "recorded_audio_${uniqueId}.wav")
 
     override fun getName(): String = "WavAudioRecorder"
 
-    @ReactMethod
-    fun startRecording(promise: Promise) {
-        if (isRecording) {
-            promise.reject("ALREADY_RECORDING", "Recording is already in progress.")
-            return
-        }
+   @ReactMethod
+   fun startRecording(promise: Promise) {
+    if (isRecording) {
+        promise.reject("ALREADY_RECORDING", "Recording is already in progress.")
+        return
+    }
 
-        val activity = reactApplicationContext.currentActivity
+    val activity = reactApplicationContext.currentActivity
 
-        if (activity == null || ActivityCompat.checkSelfPermission(
-                activity,
-                Manifest.permission.RECORD_AUDIO
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            Log.e(TAG, "RECORD_AUDIO permission not granted.")
-            promise.reject("PERMISSION_DENIED", "RECORD_AUDIO permission not granted")
-            return
-        }
-        audioRecord = AudioRecord(
-            MediaRecorder.AudioSource.MIC,
-            sampleRate,
-            AudioFormat.CHANNEL_IN_MONO,
-            AudioFormat.ENCODING_PCM_16BIT,
-            bufferSize
-        )
+    if (activity == null || ActivityCompat.checkSelfPermission(
+            activity,
+            Manifest.permission.RECORD_AUDIO
+        ) != PackageManager.PERMISSION_GRANTED
+    ) {
+        Log.e(TAG, "RECORD_AUDIO permission not granted.")
+        promise.reject("PERMISSION_DENIED", "RECORD_AUDIO permission not granted")
+        return
+    }
 
-        if (audioRecord?.state != AudioRecord.STATE_INITIALIZED) {
-            promise.reject("INIT_ERROR", "AudioRecord initialization failed.")
-            return
-        }
+    audioRecord = AudioRecord(
+        MediaRecorder.AudioSource.MIC,
+        sampleRate,
+        AudioFormat.CHANNEL_IN_MONO,
+        AudioFormat.ENCODING_PCM_16BIT,
+        bufferSize
+    )
 
-        isRecording = true
-        startTime = SystemClock.elapsedRealtime()
-        audioRecord?.startRecording()
+    if (audioRecord?.state != AudioRecord.STATE_INITIALIZED) {
+        promise.reject("INIT_ERROR", "AudioRecord initialization failed.")
+        return
+    }
 
-        recordThread = Thread {
+    isRecording = true
+    startTime = SystemClock.elapsedRealtime()
+    audioRecord?.startRecording()
+
+    recordThread = Thread {
+        try {
             FileOutputStream(tempPcmFile).use { out ->
                 val buffer = ByteArray(bufferSize)
                 while (isRecording) {
                     val read = audioRecord!!.read(buffer, 0, buffer.size)
                     if (read > 0) out.write(buffer, 0, read)
 
-                    //  send metering update
                     val elapsed = SystemClock.elapsedRealtime() - startTime
                     sendEvent("recUpdate", Arguments.createMap().apply {
                         putDouble("elapsedMs", elapsed.toDouble())
@@ -97,42 +102,79 @@ class WavAudioRecorderModule(reactContext: ReactApplicationContext) :
             }
 
             saveAsWav()
+
             sendEvent("recStop", Arguments.createMap().apply {
                 putString("filePath", wavFile.absolutePath)
             })
-        }
 
-        recordThread!!.start()
-        promise.resolve(null)
+        } catch (e: Exception) {
+            Log.e(TAG, "Recording error: ${e.localizedMessage}", e)
+            promise.reject("RECORD_ERROR", e.localizedMessage, e)
+        }
     }
 
-    @ReactMethod
-    fun stopRecording(promise: Promise) {
-        if (!isRecording) {
-            promise.reject("NOT_RECORDING", "No active recording.")
+    recordThread!!.start()
+    promise.resolve(null)
+   }
+
+
+  @ReactMethod
+  fun stopRecording(promise: Promise) {
+    if (!isRecording) {
+        promise.reject("NOT_RECORDING", "No active recording.")
+        return
+    }
+
+    isRecording = false
+
+    try {
+        audioRecord?.apply {
+            stop()
+            release()
+        }
+        audioRecord = null
+
+        // Wait for the recording thread to finish
+        recordThread?.join()
+
+        // Safely return the final file path
+        val result = Arguments.createMap().apply {
+            putString("filePath", wavFile.absolutePath)
+        }
+        promise.resolve(result)
+    } catch (e: Exception) {
+        Log.e(TAG, "Error stopping recording", e)
+        promise.reject("STOP_FAILED", "Failed to stop recording: ${e.message}")
+    }
+}
+
+
+   private fun saveAsWav() {
+    try {
+        val numDataBytes = tempPcmFile.length()
+        if (!tempPcmFile.exists() || numDataBytes <= 0) {
+            Log.e(TAG, " PCM file missing or empty")
             return
         }
 
-        isRecording = false
-        audioRecord?.stop()
-        audioRecord?.release()
-        audioRecord = null
+        Log.d(TAG, "Saving WAV. PCM Size: $numDataBytes")
 
-        recordThread?.join()
-        promise.resolve(Arguments.createMap().apply {
-            putString("filePath", wavFile.absolutePath)
-        })
-    }
-
-    private fun saveAsWav() {
-        val numDataBytes = tempPcmFile.length()
         val header = buildWavHeader(numDataBytes)
+
         FileOutputStream(wavFile).use { wavOut ->
             wavOut.write(header)
             FileInputStream(tempPcmFile).copyTo(wavOut)
+            wavOut.flush()
         }
+
+        Log.d(TAG, "WAV file saved: ${wavFile.absolutePath}, size: ${wavFile.length()}")
         tempPcmFile.delete()
+
+     } catch (e: Exception) {
+        Log.e(TAG, " Failed to save WAV: ${e.message}", e)
     }
+}
+
 
     private fun buildWavHeader(pcmSize: Long): ByteArray {
         val totalSize = pcmSize + 36

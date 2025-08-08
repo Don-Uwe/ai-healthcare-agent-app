@@ -75,6 +75,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   Pressable,
+  TouchableOpacity,
 } from 'react-native';
 import axios from 'axios';
 import PodcastCard from '../components/PodcastCard';
@@ -229,17 +230,26 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
       )}
 
 
-      <View style={styles.homePlusIconview}>
-        <AddIcon callback={()=>{
-          console.log('Add icon clicked');
-          navigation.navigate('PodcastRecorder');
-        }} />
-      </View>
+
+
 
       <CreatePlaylist
         visible={playlistModalOpen}
         dismiss={closePlaylist}
       />
+
+        <TouchableOpacity
+  style={styles.homePlusIconview}
+  onPress={() => {
+    console.log('Add icon clicked');
+    navigation.navigate('PodcastRecorder');
+  }}
+>
+  <AddIcon callback={()=>{
+        console.log('Add icon clicked');
+    navigation.navigate('PodcastRecorder');
+  }}/>
+</TouchableOpacity>
     </View>
   );
 };
@@ -276,7 +286,7 @@ const styles = StyleSheet.create({
     bottom: 100,
     right: 25,
     position: 'absolute',
-    zIndex: -2,
+    zIndex: 10,
   },
 });
 

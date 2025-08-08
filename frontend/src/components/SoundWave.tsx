@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import Animated, {
   Easing,
   useAnimatedProps,
@@ -25,11 +26,21 @@ const SoundWave = () => {
     };
   });
 
+  useEffect(() => {
+    waveOffset.value = withRepeat(
+      withTiming(Math.PI * 2, { duration: 1000, easing: Easing.linear }),
+      -1,
+      false
+    );
+  }, [waveOffset]);
+
+  /*
   waveOffset.value = withRepeat(
     withTiming(Math.PI * 2, {duration: 1000, easing: Easing.linear}),
     -1,
     false,
   );
+  */
 
   return (
     <Svg height="60" width="100%" viewBox="0 0 300 60">
