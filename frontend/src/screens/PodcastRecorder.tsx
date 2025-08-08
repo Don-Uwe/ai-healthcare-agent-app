@@ -13,6 +13,11 @@ import {
 //import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import SoundWave from '../components/SoundWave';
 import {PodcastRecorderScreenProps} from '../type';
+import AmplitudeWave from '../components/AmplitudeWave';
+import {PRIMARY_COLOR } from '../helper/Theme';
+import Svg, { Path, Rect } from 'react-native-svg';
+import MicWave from '../components/MicWave';
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 const {WavAudioRecorder} = NativeModules;
 const AudioModule = NativeModules.WavAudioRecorder;
@@ -25,6 +30,7 @@ const PodcastRecorder = ({navigation}: PodcastRecorderScreenProps) => {
   const [filePath, setFilePath] = useState<string | null>(null);
   const [elapsedMs, setElapsedMs] = useState(0);
   const [amplitudes, setAmplitudes] = useState<number[]>([]);
+  const [currentAmplitude, setCurrentAmplitude] = useState<number>(0);
 
   const recordStartTimeRef = useRef<number | null>(null);
   const timerRef = useRef(null);
@@ -111,17 +117,21 @@ const PodcastRecorder = ({navigation}: PodcastRecorderScreenProps) => {
       'onAudioWaveform',
       event => {
         const amplitude = event.amplitude;
+        setCurrentAmplitude(amplitude);
         //console.log('event',event);
-        setAmplitudes((prev) => {
-          const updated = [...prev, amplitude];
+        const scaled = Math.min(1, amplitude * 6);
+       if(scaled >=1 ){
+         setAmplitudes((prev) => {
+          const updated = [...prev, scaled];
           if (updated.length > 100) {
           // To maintained wave array length 100
             updated.shift(); 
           }
           return updated;
         });
+       }
 
-        console.log('amplitudes', amplitudes);
+        //console.log('amplitudes', amplitudes);
       },
     );
 
@@ -140,11 +150,31 @@ const PodcastRecorder = ({navigation}: PodcastRecorderScreenProps) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Podcast Recorder</Text>
+      <View style={styles.iconContainer}>
+       <View
+      style={{
+        width: 90,
+        height: 90,
+        borderRadius: 45,
+        backgroundColor: PRIMARY_COLOR,
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <Icon name="microphone" size={38} color="white" />
+    </View>
+      </View>
       <Text style={styles.timer}>{recordTime}</Text>
 
       {recording && (
         <View style={styles.waveContainer}>
-          <SoundWave />
+          {
+            amplitudes.length > 0 ? (
+              <AmplitudeWave audioWaves={amplitudes}/>
+            ):(
+              <SoundWave/>
+            )
+          }
         </View>
       )}
 
@@ -188,7 +218,6 @@ const styles = StyleSheet.create({
   waveContainer: {
     height: 80,
     width: '100%',
-    //marginHorizontal:4,
     alignSelf: 'center',
     marginVertical: 16,
   },
@@ -212,5 +241,72 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 14,
     color: '#cbd5e1',
+  },
+  iconContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 16,
+  },
+  micButton: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#1e293b',
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  micButtonActive: {
+    backgroundColor: '#38bdf8',
+  },
+  micOuterCircle: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: '#334155',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  micInnerCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#f8fafc',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  micIcon: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  micBody: {
+    width: 16,
+    height: 28,
+    borderRadius: 8,
+    backgroundColor: '#38bdf8',
+    marginBottom: 2,
+  },
+  micStem: {
+    width: 4,
+    height: 10,
+    borderRadius: 2,
+    backgroundColor: '#38bdf8',
+    marginTop: 2,
+  },
+  micPulse: {
+    position: 'absolute',
+    top: -10,
+    left: -10,
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    borderWidth: 2,
+    borderColor: '#38bdf8',
+    opacity: 0.4,
   },
 });
