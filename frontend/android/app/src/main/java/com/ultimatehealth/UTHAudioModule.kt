@@ -43,6 +43,8 @@ class WavAudioRecorderModule(reactContext: ReactApplicationContext) :
         AudioFormat.ENCODING_PCM_16BIT
     ) * 2
 
+
+
     private var startTime: Long = 0L
     private val uniqueId = System.currentTimeMillis().toString() + "_" + hashCode()
     private val externalDir = reactApplicationContext.getExternalFilesDir(Environment.DIRECTORY_MUSIC)
@@ -91,6 +93,7 @@ class WavAudioRecorderModule(reactContext: ReactApplicationContext) :
     startTime = SystemClock.elapsedRealtime()
     audioRecord?.startRecording()
 
+    /***
     recordThread = Thread {
         try {
             FileOutputStream(tempPcmFile).use { out ->
@@ -134,6 +137,57 @@ class WavAudioRecorderModule(reactContext: ReactApplicationContext) :
             promise.reject("RECORD_ERROR", e.localizedMessage, e)
         }
     }
+    */
+
+    recordThread = Thread {
+          try {
+            FileOutputStream(tempPcmFile).use { out ->
+            val buffer = ByteArray(bufferSize)
+            val shortBuffer = ShortArray(bufferSize / 2)
+            while (isRecording) {
+                val read = audioRecord!!.read(shortBuffer, 0, shortBuffer.size)
+
+                if (read > 0) {
+                    val byteBuf = ByteBuffer.allocate(read * 2)
+                        .order(ByteOrder.LITTLE_ENDIAN)
+                    byteBuf.asShortBuffer().put(shortBuffer, 0, read)
+                    out.write(byteBuf.array())
+
+                    // Calculate RMS amplitude for visualization
+                    var sum = 0.0
+                    for (i in 0 until read) {
+                        sum += shortBuffer[i] * shortBuffer[i]
+                    }
+                    val rms = if (read > 0) Math.sqrt(sum / read) else 0.0
+                    val normalized = rms / Short.MAX_VALUE
+
+                    val params = Arguments.createMap()
+                    params.putDouble("amplitude", normalized)
+
+                    sendEvent("onAudioWaveform", params)
+                }
+
+                val elapsed = SystemClock.elapsedRealtime() - startTime
+                sendEvent("recUpdate", Arguments.createMap().apply {
+                    putDouble("elapsedMs", elapsed.toDouble())
+                })
+
+                Thread.sleep(50)
+            }
+        }
+
+        saveAsWav()
+
+        sendEvent("recStop", Arguments.createMap().apply {
+            putString("filePath", wavFile.absolutePath)
+        })
+
+    } catch (e: Exception) {
+        Log.e(TAG, "Recording error: ${e.localizedMessage}", e)
+        promise.reject("RECORD_ERROR", e.localizedMessage, e)
+    }
+}
+
 
     recordThread!!.start()
     promise.resolve(null)

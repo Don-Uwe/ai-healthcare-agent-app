@@ -12,9 +12,8 @@ import {
   useColorScheme,
   ScrollView,
 } from 'react-native';
-import React, {useState} from 'react';
+import {useState} from 'react';
 import {
-  ON_PRIMARY_COLOR,
   PRIMARY_COLOR,
   BUTTON_COLOR,
 } from '../../helper/Theme';
