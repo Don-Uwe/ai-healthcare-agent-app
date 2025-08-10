@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {
   PermissionsAndroid,
   Platform,
@@ -14,10 +14,11 @@ import {
 import SoundWave from '../components/SoundWave';
 import {PodcastRecorderScreenProps} from '../type';
 import AmplitudeWave from '../components/AmplitudeWave';
-import {PRIMARY_COLOR } from '../helper/Theme';
-import Svg, { Path, Rect } from 'react-native-svg';
+import {PRIMARY_COLOR} from '../helper/Theme';
+import Svg, {Path, Rect} from 'react-native-svg';
 import MicWave from '../components/MicWave';
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import TrackPlayer, {State} from 'react-native-track-player';
 
 const {WavAudioRecorder} = NativeModules;
 const AudioModule = NativeModules.WavAudioRecorder;
@@ -102,6 +103,35 @@ const PodcastRecorder = ({navigation}: PodcastRecorderScreenProps) => {
     }
   };
 
+
+  const addTrack = async () => {
+    const currentState = await TrackPlayer.getPlaybackState();
+
+    if (currentState.state === State.Playing) {
+      await TrackPlayer.pause();
+    } else if (currentState.state === State.Paused) {
+      await TrackPlayer.play();
+    } else {
+      await TrackPlayer.reset();
+      await TrackPlayer.add({
+        id: 'recording',
+        url: filePath ? filePath : '',
+        title: 'Recording',
+        artist: 'You',
+      });
+      await TrackPlayer.play();
+    }
+  };
+
+  const stopPlay = async () => {
+  
+    try {
+      await TrackPlayer.stop();
+    } catch (e) {
+      console.error('Error stopping playback:', e);
+    }
+  };
+
   useEffect(() => {
     const stopSub = DeviceEventEmitter.addListener('recStop', data => {
       console.log('File saved at:', data.filePath);
@@ -120,16 +150,16 @@ const PodcastRecorder = ({navigation}: PodcastRecorderScreenProps) => {
         setCurrentAmplitude(amplitude);
         //console.log('event',event);
         const scaled = Math.min(1, amplitude * 6);
-       if(scaled >=1 ){
-         setAmplitudes((prev) => {
-          const updated = [...prev, scaled];
-          if (updated.length > 100) {
-          // To maintained wave array length 100
-            updated.shift(); 
-          }
-          return updated;
-        });
-       }
+        if (scaled >= 1) {
+          setAmplitudes(prev => {
+            const updated = [...prev, scaled];
+            if (updated.length > 100) {
+              // To maintained wave array length 100
+              updated.shift();
+            }
+            return updated;
+          });
+        }
 
         //console.log('amplitudes', amplitudes);
       },
@@ -151,30 +181,27 @@ const PodcastRecorder = ({navigation}: PodcastRecorderScreenProps) => {
     <View style={styles.container}>
       <Text style={styles.title}>Podcast Recorder</Text>
       <View style={styles.iconContainer}>
-       <View
-      style={{
-        width: 90,
-        height: 90,
-        borderRadius: 45,
-        backgroundColor: PRIMARY_COLOR,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <Icon name="microphone" size={38} color="white" />
-    </View>
+        <View
+          style={{
+            width: 90,
+            height: 90,
+            borderRadius: 45,
+            backgroundColor: PRIMARY_COLOR,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+          <Icon name="microphone" size={38} color="white" />
+        </View>
       </View>
       <Text style={styles.timer}>{recordTime}</Text>
 
       {recording && (
         <View style={styles.waveContainer}>
-          {
-            amplitudes.length > 0 ? (
-              <AmplitudeWave audioWaves={amplitudes}/>
-            ):(
-              <SoundWave/>
-            )
-          }
+          {amplitudes.length > 0 ? (
+            <AmplitudeWave audioWaves={amplitudes} />
+          ) : (
+            <SoundWave />
+          )}
         </View>
       )}
 
@@ -186,8 +213,21 @@ const PodcastRecorder = ({navigation}: PodcastRecorderScreenProps) => {
         </Text>
       </TouchableOpacity>
 
+      {/* Play functionality */}
       {!recording && filePath && (
-        <Text style={styles.pathText}>Saved at: {filePath}</Text>
+        <View style={{alignItems: 'center', marginTop: 32}}>
+          <TouchableOpacity
+            style={[
+              styles.micButton,
+              {backgroundColor: '#38bdf8', marginBottom: 10},
+            ]}
+            onPress={async () => {
+            await addTrack();
+            }}>
+            <Icon name="play" size={38} color="white" />
+          </TouchableOpacity>
+          <Text style={styles.pathText}>Saved at: {filePath}</Text>
+        </View>
       )}
     </View>
   );
@@ -256,7 +296,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     elevation: 4,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.2,
     shadowRadius: 4,
   },

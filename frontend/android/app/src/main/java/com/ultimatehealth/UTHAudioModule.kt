@@ -4,6 +4,9 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.media.AudioFormat
 import android.os.Environment
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+
 
 import android.media.AudioRecord
 import android.media.MediaRecorder
@@ -92,9 +95,16 @@ class WavAudioRecorderModule(reactContext: ReactApplicationContext) :
         try {
             FileOutputStream(tempPcmFile).use { out ->
                 val buffer = ByteArray(bufferSize)
+                val shortBuffer = ShortArray(bufferSize / 2)
                 while (isRecording) {
-                    val read = audioRecord!!.read(buffer, 0, buffer.size)
-                    if (read > 0) out.write(buffer, 0, read)
+                   val read = audioRecord!!.read(shortBuffer, 0, shortBuffer.size)
+                   
+                   if (read > 0) {
+                     val byteBuf = ByteBuffer.allocate(read * 2)
+                                   .order(ByteOrder.LITTLE_ENDIAN)
+                     byteBuf.asShortBuffer().put(shortBuffer, 0, read)
+                     out.write(byteBuf.array())
+                  }
 
                     // To calculate RMS value, for visualization, Audio wave form feature
                     val max = buffer.maxOrNull()?.toInt() ?: 0
@@ -187,49 +197,53 @@ class WavAudioRecorderModule(reactContext: ReactApplicationContext) :
     }
   }
 
+private fun buildWavHeader(pcmSize: Long): ByteArray {
+    val numChannels = 1 
+    val bitsPerSample = 16 
+    val byteDepth = bitsPerSample / 8
+    val byteRate = sampleRate * numChannels * byteDepth
+    val totalSize = pcmSize + 36
 
-    private fun buildWavHeader(pcmSize: Long): ByteArray {
-        val totalSize = pcmSize + 36
-        val byteRate = sampleRate * numChannels * byteDepth
-        val header = ByteArray(44)
+    return ByteArray(44).apply {
+        // "RIFF"
+        this[0] = 'R'.code.toByte(); this[1] = 'I'.code.toByte()
+        this[2] = 'F'.code.toByte(); this[3] = 'F'.code.toByte()
+        putIntLE(4, totalSize.toInt())
 
-        // RIFF header
-        header[0] = 'R'.code.toByte(); header[1] = 'I'.code.toByte()
-        header[2] = 'F'.code.toByte(); header[3] = 'F'.code.toByte()
-        header[4] = (totalSize and 0xff).toByte()
-        header[5] = ((totalSize shr 8) and 0xff).toByte()
-        header[6] = ((totalSize shr 16) and 0xff).toByte()
-        header[7] = ((totalSize shr 24) and 0xff).toByte()
-        header[8] = 'W'.code.toByte(); header[9] = 'A'.code.toByte()
-        header[10] = 'V'.code.toByte(); header[11] = 'E'.code.toByte()
+        // "WAVE"
+        this[8] = 'W'.code.toByte(); this[9] = 'A'.code.toByte()
+        this[10] = 'V'.code.toByte(); this[11] = 'E'.code.toByte()
 
-        // fmt chunk
-        header[12] = 'f'.code.toByte(); header[13] = 'm'.code.toByte()
-        header[14] = 't'.code.toByte(); header[15] = ' '.code.toByte()
-        header[16] = 16; header[17] = 0; header[18] = 0; header[19] = 0
-        header[20] = 1; header[21] = 0 // PCM
-        header[22] = numChannels.toByte(); header[23] = 0
-        header[24] = (sampleRate and 0xff).toByte()
-        header[25] = ((sampleRate shr 8) and 0xff).toByte()
-        header[26] = ((sampleRate shr 16) and 0xff).toByte()
-        header[27] = ((sampleRate shr 24) and 0xff).toByte()
-        header[28] = (byteRate and 0xff).toByte()
-        header[29] = ((byteRate shr 8) and 0xff).toByte()
-        header[30] = ((byteRate shr 16) and 0xff).toByte()
-        header[31] = ((byteRate shr 24) and 0xff).toByte()
-        header[32] = (numChannels * byteDepth).toByte(); header[33] = 0
-        header[34] = (byteDepth * 8).toByte(); header[35] = 0
+        // "fmt "
+        this[12] = 'f'.code.toByte(); this[13] = 'm'.code.toByte()
+        this[14] = 't'.code.toByte(); this[15] = ' '.code.toByte()
+        putIntLE(16, 16) // PCM chunk size
+        putShortLE(20, 1) // PCM format
+        putShortLE(22, numChannels.toShort())
+        putIntLE(24, sampleRate)
+        putIntLE(28, byteRate)
+        putShortLE(32, (numChannels * byteDepth).toShort())
+        putShortLE(34, bitsPerSample.toShort())
 
-        // data chunk
-        header[36] = 'd'.code.toByte(); header[37] = 'a'.code.toByte()
-        header[38] = 't'.code.toByte(); header[39] = 'a'.code.toByte()
-        header[40] = (pcmSize and 0xff).toByte()
-        header[41] = ((pcmSize shr 8) and 0xff).toByte()
-        header[42] = ((pcmSize shr 16) and 0xff).toByte()
-        header[43] = ((pcmSize shr 24) and 0xff).toByte()
-
-        return header
+        // "data"
+        this[36] = 'd'.code.toByte(); this[37] = 'a'.code.toByte()
+        this[38] = 't'.code.toByte(); this[39] = 'a'.code.toByte()
+        putIntLE(40, pcmSize.toInt())
     }
+}
+
+private fun ByteArray.putIntLE(offset: Int, value: Int) {
+    this[offset] = (value and 0xff).toByte()
+    this[offset + 1] = ((value shr 8) and 0xff).toByte()
+    this[offset + 2] = ((value shr 16) and 0xff).toByte()
+    this[offset + 3] = ((value shr 24) and 0xff).toByte()
+}
+
+private fun ByteArray.putShortLE(offset: Int, value: Short) {
+    this[offset] = (value.toInt() and 0xff).toByte()
+    this[offset + 1] = ((value.toInt() shr 8) and 0xff).toByte()
+}
+
 
     private fun sendEvent(name: String, params: WritableMap) {
         reactApplicationContext
