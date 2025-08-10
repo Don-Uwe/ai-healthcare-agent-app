@@ -243,12 +243,12 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
   style={styles.homePlusIconview}
   onPress={() => {
     console.log('Add icon clicked');
-    navigation.navigate('PodcastRecorder');
+    navigation.navigate('PodcastForm');
   }}
 >
   <CreateIcon callback={()=>{
         console.log('Add icon clicked');
-    navigation.navigate('PodcastRecorder');
+    navigation.navigate('PodcastForm');
   }}/>
 </TouchableOpacity>
     </View>

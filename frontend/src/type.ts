@@ -97,7 +97,14 @@ export type RootStackParamList = {
     podcast: PodcastData
   };
   PodcastSearch: undefined;
-  PodcastRecorder: undefined;
+  PodcastForm: undefined;
+  PodcastRecorder: {
+    title: string;
+    description: string;
+    selectedGenres: Category[];
+    imageUtils: string;
+  };
+
   //ChatbotScreen: undefined;
 };
 
@@ -144,6 +151,11 @@ export type SignUpScreenSecondProp = StackScreenProps<
 export type ArticleDescriptionProp = StackScreenProps<
   RootStackParamList,
   'ArticleDescriptionScreen'
+>;
+
+export type PodcastFormProp = StackScreenProps<
+  RootStackParamList,
+  'PodcastForm'
 >;
 
 export type LoginScreenProp = StackScreenProps<

@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useRef, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {
   PermissionsAndroid,
   Platform,
@@ -13,12 +13,10 @@ import {
 //import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import SoundWave from '../components/SoundWave';
 import {PodcastRecorderScreenProps} from '../type';
+import RNFS from 'react-native-fs';
 import AmplitudeWave from '../components/AmplitudeWave';
-import {PRIMARY_COLOR} from '../helper/Theme';
-import Svg, {Path, Rect} from 'react-native-svg';
-import MicWave from '../components/MicWave';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import TrackPlayer, {State} from 'react-native-track-player';
+import TrackPlayer, {State, useProgress} from 'react-native-track-player';
 
 const {WavAudioRecorder} = NativeModules;
 const AudioModule = NativeModules.WavAudioRecorder;
@@ -29,10 +27,10 @@ const PodcastRecorder = ({navigation}: PodcastRecorderScreenProps) => {
 
   const [recordTime, setRecordTime] = useState('00:00:00');
   const [filePath, setFilePath] = useState<string | null>(null);
-  const [elapsedMs, setElapsedMs] = useState(0);
+  //const [elapsedMs, setElapsedMs] = useState(0);
   const [amplitudes, setAmplitudes] = useState<number[]>([]);
-  const [currentAmplitude, setCurrentAmplitude] = useState<number>(0);
-
+  //const [currentAmplitude, setCurrentAmplitude] = useState<number>(0);
+   const progress = useProgress();
   const recordStartTimeRef = useRef<number | null>(null);
   const timerRef = useRef(null);
 
@@ -85,7 +83,7 @@ const PodcastRecorder = ({navigation}: PodcastRecorderScreenProps) => {
       console.log('File path', path);
       setFilePath(path);
       setRecording(true);
-      setElapsedMs(0);
+      //setElapsedMs(0);
       startTimer();
     } catch (e) {
       console.error('Failed to start recording:', e);
@@ -123,6 +121,70 @@ const PodcastRecorder = ({navigation}: PodcastRecorderScreenProps) => {
     }
   };
 
+  // UI State: 'idle' | 'recording' | 'review' | 'playing' | 'paused' | 'uploading'
+  const [uiState, setUiState] = useState<'idle' | 'recording' | 'review' | 'playing' | 'paused' | 'uploading'>('idle');
+  const [uploading, setUploading] = useState(false);
+
+  // Handle transitions
+  const handleStartRecording = async () => {
+    await startRecording();
+    setUiState('recording');
+  };
+
+  const handleStopRecording = async () => {
+    await stopRecording();
+    setUiState('review');
+  };
+
+  const handlePlay = async () => {
+    await addTrack();
+    setUiState('playing');
+  };
+
+  const handlePause = async () => {
+    await TrackPlayer.pause();
+    setUiState('paused');
+  };
+
+  const handleStopPlay = async () => {
+    await stopPlay();
+    setUiState('review');
+  };
+
+  const handleReRecord = async () => {
+
+    if (filePath) {
+    try {
+      const exists = await RNFS.exists(filePath);
+      if (exists) {
+        await RNFS.unlink(filePath);
+        console.log('File deleted:', filePath);
+      }
+    } catch (err) {
+      console.warn('Error deleting file:', err);
+    }
+  }
+    setFilePath(null);
+    // unlink file path
+    setAmplitudes([]);
+    setRecordTime('00:00:00');
+    setUiState('idle');
+  };
+
+  const handleUpload = async () => {
+    setUploading(true);
+    setUiState('uploading');
+    // Simulate upload
+    setTimeout(() => {
+      setUploading(false);
+      setUiState('idle');
+      setFilePath(null);
+      setAmplitudes([]);
+      setRecordTime('00:00:00');
+      // Show success message or navigate
+    }, 2000);
+  };
+
   const stopPlay = async () => {
   
     try {
@@ -140,14 +202,14 @@ const PodcastRecorder = ({navigation}: PodcastRecorderScreenProps) => {
     });
 
     const updateSub = DeviceEventEmitter.addListener('recUpdate', data => {
-      setElapsedMs(Math.floor(data.elapsedMs / 1000));
+      //setElapsedMs(Math.floor(data.elapsedMs / 1000));
     });
 
     const audioWaveSubscription = emitter.addListener(
       'onAudioWaveform',
       event => {
         const amplitude = event.amplitude;
-        setCurrentAmplitude(amplitude);
+       // setCurrentAmplitude(amplitude);
         //console.log('event',event);
         const scaled = Math.min(1, amplitude * 6);
         if (scaled >= 1) {
@@ -179,6 +241,293 @@ const PodcastRecorder = ({navigation}: PodcastRecorderScreenProps) => {
 
   return (
     <View style={styles.container}>
+      <Text style={styles.title}>Podcast Recorder</Text>
+      <View style={styles.iconContainer}>
+      <View
+        style={[
+        styles.micButton,
+        recording && styles.micButtonActive,
+        {marginBottom: 0},
+        ]}>
+        <Icon name="microphone" size={38} color="white" />
+      </View>
+      </View>
+      <Text style={styles.timer}>{recordTime}</Text>
+
+      <View style={styles.waveContainer}>
+      {amplitudes.length > 0 ? (
+        <AmplitudeWave audioWaves={amplitudes} />
+      ) : (
+        <SoundWave />
+      )}
+      </View>
+
+      {/* Action Buttons */}
+      <View style={{flexDirection: 'row', marginTop: 24, gap: 16}}>
+      {/* Record/Stop */}
+      {uiState === 'idle' || uiState === 'review' ? (
+        <TouchableOpacity
+        style={[styles.circularButton, styles.record]}
+        onPress={handleStartRecording}
+        disabled={recording || uploading}>
+        <Icon name="record-circle" size={28} color="white" />
+        <Text style={styles.actionButtonText}>Record</Text>
+        </TouchableOpacity>
+      ) : null}
+      {uiState === 'recording' && (
+        <TouchableOpacity
+        style={[styles.circularButton, styles.stop]}
+        onPress={handleStopRecording}
+        disabled={uploading}>
+        <Icon name="stop-circle" size={28} color="white" />
+        <Text style={styles.actionButtonText}>Stop</Text>
+        </TouchableOpacity>
+      )}
+      {/* Play/Pause/Stop */}
+      {uiState === 'review' && filePath && (
+        <TouchableOpacity
+        style={[styles.circularButton, styles.play]}
+        onPress={handlePlay}
+        disabled={uploading}>
+        <Icon name="play-circle" size={28} color="white" />
+        <Text style={styles.actionButtonText}>Play</Text>
+        </TouchableOpacity>
+      )}
+      {uiState === 'playing' && (
+        <TouchableOpacity
+        style={[styles.circularButton, styles.pause]}
+        onPress={handlePause}
+        disabled={uploading}>
+        <Icon name="pause-circle" size={28} color="white" />
+        <Text style={styles.actionButtonText}>Pause</Text>
+        </TouchableOpacity>
+      )}
+      {uiState === 'paused' && (
+        <TouchableOpacity
+        style={[styles.circularButton, styles.play]}
+        onPress={handlePlay}
+        disabled={uploading}>
+        <Icon name="play-circle" size={28} color="white" />
+        <Text style={styles.actionButtonText}>Resume</Text>
+        </TouchableOpacity>
+      )}
+      {(uiState === 'playing' || uiState === 'paused') && (
+        <TouchableOpacity
+        style={[styles.circularButton, styles.stop]}
+        onPress={handleStopPlay}
+        disabled={uploading}>
+        <Icon name="stop-circle" size={28} color="white" />
+        <Text style={styles.actionButtonText}>Stop</Text>
+        </TouchableOpacity>
+      )}
+      {/* Re-record */}
+      {uiState === 'review' && (
+        <TouchableOpacity
+        style={[styles.circularButton, styles.rerecord]}
+        onPress={handleReRecord}
+        disabled={uploading}>
+        <Icon name="refresh" size={28} color="white" />
+        <Text style={styles.actionButtonText}>Rerecord</Text>
+        </TouchableOpacity>
+      )}
+      {/* Upload */}
+      {uiState === 'review' && filePath && (
+        <TouchableOpacity
+        style={[styles.circularButton, styles.upload]}
+        onPress={handleUpload}
+        disabled={uploading}>
+        <Icon name="cloud-upload" size={28} color="white" />
+        <Text style={styles.actionButtonText}>
+          {uploading ? 'Uploading...' : 'Upload'}
+        </Text>
+        </TouchableOpacity>
+      )}
+      </View>
+
+      {/* File Path */}
+      {filePath && (
+      <Text style={styles.pathText} numberOfLines={1} ellipsizeMode="middle">
+        Saved at: {filePath}
+      </Text>
+      )}
+    </View>
+
+  
+   
+  );
+};
+
+export default PodcastRecorder;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#0f172a',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  title: {
+    fontSize: 28,
+    color: '#f8fafc',
+    marginBottom: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  timer: {
+    fontSize: 42,
+    color: '#38bdf8',
+    marginVertical: 20,
+    fontVariant: ['tabular-nums'],
+    letterSpacing: 1,
+  },
+  waveContainer: {
+    height: 80,
+    width: '100%',
+    alignSelf: 'center',
+    marginVertical: 16,
+  },
+  actionRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 16,
+    marginTop: 24,
+  },
+
+  // Shared circular style
+  circularButton: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+  },
+
+  // Rectangular style for stop/pause
+  rectButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    borderRadius: 12,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+  },
+
+  // Colors
+  record: { backgroundColor: '#16a34a' },
+  stop: { backgroundColor: '#dc2626' },
+  play: { backgroundColor: '#3b82f6' },
+  pause: { backgroundColor: '#f59e0b' },
+  rerecord: { backgroundColor: '#0284c7' },
+  upload: { backgroundColor: '#7c3aed' },
+
+  buttonText: {
+    color: '#f8fafc',
+    fontSize: 12,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginTop: 4,
+  },
+
+  pathText: {
+    marginTop: 20,
+    fontSize: 14,
+    color: '#cbd5e1',
+    textAlign: 'center',
+  },
+
+  // Mic styles
+  iconContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 16,
+  },
+  micButton: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#1e293b',
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+  },
+  micButtonActive: {
+    backgroundColor: '#38bdf8',
+  },
+  micOuterCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#334155',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  micInnerCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#f8fafc',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  micBody: {
+    width: 18,
+    height: 28,
+    borderRadius: 9,
+    backgroundColor: '#38bdf8',
+    marginBottom: 2,
+  },
+  micStem: {
+    width: 4,
+    height: 10,
+    borderRadius: 2,
+    backgroundColor: '#38bdf8',
+    marginTop: 2,
+  },
+  micPulse: {
+    position: 'absolute',
+    top: -15,
+    left: -15,
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    borderWidth: 2,
+    borderColor: '#38bdf8',
+    opacity: 0.4,
+  },
+
+  actionButtonText: {
+  color: '#f8fafc',       
+  fontSize: 10,          
+  fontWeight: '600',
+  textAlign: 'center',
+  //marginTop: 2,
+  letterSpacing: 0.5,
+},
+});
+
+
+
+
+
+/**
+ *  /**
+       *  <View style={styles.container}>
       <Text style={styles.title}>Podcast Recorder</Text>
       <View style={styles.iconContainer}>
         <View
@@ -213,7 +562,7 @@ const PodcastRecorder = ({navigation}: PodcastRecorderScreenProps) => {
         </Text>
       </TouchableOpacity>
 
-      {/* Play functionality */}
+      {/* Play functionality }
       {!recording && filePath && (
         <View style={{alignItems: 'center', marginTop: 32}}>
           <TouchableOpacity
@@ -230,123 +579,5 @@ const PodcastRecorder = ({navigation}: PodcastRecorderScreenProps) => {
         </View>
       )}
     </View>
-  );
-};
-
-export default PodcastRecorder;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0f172a',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  title: {
-    fontSize: 28,
-    color: '#f8fafc',
-    marginBottom: 12,
-    fontWeight: 'bold',
-  },
-  timer: {
-    fontSize: 40,
-    color: '#38bdf8',
-    marginVertical: 20,
-    fontVariant: ['tabular-nums'],
-  },
-  waveContainer: {
-    height: 80,
-    width: '100%',
-    alignSelf: 'center',
-    marginVertical: 16,
-  },
-  button: {
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 12,
-  },
-  record: {
-    backgroundColor: '#16a34a',
-  },
-  stop: {
-    backgroundColor: '#dc2626',
-  },
-  buttonText: {
-    color: '#f8fafc',
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  pathText: {
-    marginTop: 20,
-    fontSize: 14,
-    color: '#cbd5e1',
-  },
-  iconContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginVertical: 16,
-  },
-  micButton: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#1e293b',
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  micButtonActive: {
-    backgroundColor: '#38bdf8',
-  },
-  micOuterCircle: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    backgroundColor: '#334155',
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  micInnerCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#f8fafc',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  micIcon: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  micBody: {
-    width: 16,
-    height: 28,
-    borderRadius: 8,
-    backgroundColor: '#38bdf8',
-    marginBottom: 2,
-  },
-  micStem: {
-    width: 4,
-    height: 10,
-    borderRadius: 2,
-    backgroundColor: '#38bdf8',
-    marginTop: 2,
-  },
-  micPulse: {
-    position: 'absolute',
-    top: -10,
-    left: -10,
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    borderWidth: 2,
-    borderColor: '#38bdf8',
-    opacity: 0.4,
-  },
-});
+       */
+ 

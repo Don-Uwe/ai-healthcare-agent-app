@@ -43,6 +43,7 @@ import OfflinePodcastDetail from '../screens/OfflinePodcastDetails';
 import PodcastDiscussion from '../screens/PodcastDiscussion';
 import PodcastSearch from '../screens/PodcastSearch';
 import PodcastRecorder from '../screens/PodcastRecorder';
+import PodcastForm from '../screens/PodcastForm';
 const Stack = createStackNavigator<RootStackParamList>();
 
 const StackNavigation = () => {
@@ -162,6 +163,28 @@ const StackNavigation = () => {
                 navigation.goBack();
               }}>
               <Ionicon name="arrow-back" size={36} color={BUTTON_COLOR} />
+              {/* <FontAwesome6 size={25} name="arrow-left" color="black" /> */}
+            </TouchableOpacity>
+          ),
+        })}
+      />
+
+      <Stack.Screen
+        name="PodcastForm"
+        component={PodcastForm}
+        options={({navigation}) => ({
+          headerShown: true,
+          headerTitle: 'Start Podcasting',
+          headerBackTitleVisible: false,
+          headerTitleStyle: {color: PRIMARY_COLOR},
+         
+          headerLeft: () => (
+            <TouchableOpacity
+              style={styles.headerLeftButtonEditorScreen}
+              onPress={() => {
+                navigation.goBack();
+              }}>
+              <Ionicon name="arrow-back" size={36} color={PRIMARY_COLOR} />
               {/* <FontAwesome6 size={25} name="arrow-left" color="black" /> */}
             </TouchableOpacity>
           ),
