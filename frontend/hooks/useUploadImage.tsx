@@ -12,7 +12,28 @@ const useUploadImage = () => {
       // Extract filename and type
       let filename: string = uri.split('/').pop() || 'image';
       let match = /\.(\w+)$/.exec(filename);
-      let type = match ? `image/${match[1]}` : 'image';
+      //let type = match ? `image/${match[1]}` : 'image';
+
+      let ext = match ? match[1].toLowerCase() : '';
+      let type = '';
+
+      switch (ext) {
+        case 'mp3':
+          type = 'audio/mpeg';
+          break;
+        case 'wav':
+          type = 'audio/wav';
+          break;
+        case 'jpg':
+        case 'jpeg':
+          type = 'image/jpeg';
+          break;
+        case 'png':
+          type = 'image/png';
+          break;
+        default:
+          type = 'application/octet-stream';
+      }
 
       const formData = new FormData();
       formData.append('file', {uri, name: filename, type});

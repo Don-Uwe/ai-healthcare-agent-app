@@ -9,28 +9,36 @@ import {
   NativeModules,
   DeviceEventEmitter,
   NativeEventEmitter,
+  Alert,
 } from 'react-native';
 //import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import SoundWave from '../components/SoundWave';
 import {PodcastRecorderScreenProps} from '../type';
 import RNFS from 'react-native-fs';
 import AmplitudeWave from '../components/AmplitudeWave';
+import {useMutation} from '@tanstack/react-query';
+import axios from 'axios';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import Snackbar from 'react-native-snackbar';
 import TrackPlayer, {State, useProgress} from 'react-native-track-player';
+import {UPLOAD_PODCAST} from '../helper/APIUtils';
+import useUploadImage from '../../hooks/useUploadImage';
+import ImageResizer from '@bam.tech/react-native-image-resizer';
 
 const {WavAudioRecorder} = NativeModules;
 const AudioModule = NativeModules.WavAudioRecorder;
 const emitter = new NativeEventEmitter(AudioModule);
 
-const PodcastRecorder = ({navigation}: PodcastRecorderScreenProps) => {
+const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
   const [recording, setRecording] = useState(false);
-
+  const {uploadImage, loading} = useUploadImage();
   const [recordTime, setRecordTime] = useState('00:00:00');
+  const {title, description, selectedGenres, imageUtils} = route.params;
   const [filePath, setFilePath] = useState<string | null>(null);
   //const [elapsedMs, setElapsedMs] = useState(0);
   const [amplitudes, setAmplitudes] = useState<number[]>([]);
   //const [currentAmplitude, setCurrentAmplitude] = useState<number>(0);
-   const progress = useProgress();
+  const progress = useProgress();
   const recordStartTimeRef = useRef<number | null>(null);
   const timerRef = useRef(null);
 
@@ -101,7 +109,6 @@ const PodcastRecorder = ({navigation}: PodcastRecorderScreenProps) => {
     }
   };
 
-
   const addTrack = async () => {
     const currentState = await TrackPlayer.getPlaybackState();
 
@@ -122,7 +129,9 @@ const PodcastRecorder = ({navigation}: PodcastRecorderScreenProps) => {
   };
 
   // UI State: 'idle' | 'recording' | 'review' | 'playing' | 'paused' | 'uploading'
-  const [uiState, setUiState] = useState<'idle' | 'recording' | 'review' | 'playing' | 'paused' | 'uploading'>('idle');
+  const [uiState, setUiState] = useState<
+    'idle' | 'recording' | 'review' | 'playing' | 'paused' | 'uploading'
+  >('idle');
   const [uploading, setUploading] = useState(false);
 
   // Handle transitions
@@ -152,18 +161,17 @@ const PodcastRecorder = ({navigation}: PodcastRecorderScreenProps) => {
   };
 
   const handleReRecord = async () => {
-
     if (filePath) {
-    try {
-      const exists = await RNFS.exists(filePath);
-      if (exists) {
-        await RNFS.unlink(filePath);
-        console.log('File deleted:', filePath);
+      try {
+        const exists = await RNFS.exists(filePath);
+        if (exists) {
+          await RNFS.unlink(filePath);
+          console.log('File deleted:', filePath);
+        }
+      } catch (err) {
+        console.warn('Error deleting file:', err);
       }
-    } catch (err) {
-      console.warn('Error deleting file:', err);
     }
-  }
     setFilePath(null);
     // unlink file path
     setAmplitudes([]);
@@ -171,22 +179,31 @@ const PodcastRecorder = ({navigation}: PodcastRecorderScreenProps) => {
     setUiState('idle');
   };
 
+  const unlinkFile = async () => {
+    if (filePath) {
+      try {
+        const exists = await RNFS.exists(filePath);
+        if (exists) {
+          await RNFS.unlink(filePath);
+          console.log('File deleted:', filePath);
+        }
+      } catch (err) {
+        console.warn('Error deleting file:', err);
+      }
+    }
+  }
   const handleUpload = async () => {
-    setUploading(true);
-    setUiState('uploading');
-    // Simulate upload
-    setTimeout(() => {
+  
+  
       setUploading(false);
       setUiState('idle');
       setFilePath(null);
       setAmplitudes([]);
       setRecordTime('00:00:00');
-      // Show success message or navigate
-    }, 2000);
+      await unlinkFile();
   };
 
   const stopPlay = async () => {
-  
     try {
       await TrackPlayer.stop();
     } catch (e) {
@@ -209,7 +226,7 @@ const PodcastRecorder = ({navigation}: PodcastRecorderScreenProps) => {
       'onAudioWaveform',
       event => {
         const amplitude = event.amplitude;
-       // setCurrentAmplitude(amplitude);
+        // setCurrentAmplitude(amplitude);
         //console.log('event',event);
         const scaled = Math.min(1, amplitude * 6);
         if (scaled >= 1) {
@@ -239,121 +256,244 @@ const PodcastRecorder = ({navigation}: PodcastRecorderScreenProps) => {
     };
   }, []);
 
+  const uploadPodcastMutation = useMutation({
+    mutationKey: ['uploadPodcast'],
+    mutationFn: async ({
+      audio_url,
+      cover_image,
+    }: {
+      audio_url: string;
+      cover_image: string;
+    }) => {
+      const response = await axios.post(UPLOAD_PODCAST, {
+        title: title,
+        description: description,
+        tags: selectedGenres,
+        article_id: null,
+        audio_url: audio_url,
+        cover_image: cover_image,
+        duration: progress.duration,
+      });
+
+      return response.data.message as string;
+    },
+    onSuccess: async data => {
+
+      await handleUpload();
+
+      Snackbar.show({
+        text: data,
+        duration: Snackbar.LENGTH_SHORT,
+      });
+      navigation.navigate('TabNavigation');
+    },
+    onError: async error => {
+      // Handle upload error
+      await handleUpload();
+      Snackbar.show({
+        text: 'Upload failed',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+      console.error('Upload error:', error);
+    },
+  });
+
+  const handlePostSubmit = async () => {
+    if (!filePath || !imageUtils) {
+      Alert.alert(
+        'Error',
+        'Please record a podcast and select an image before uploading.',
+      );
+      return;
+    }
+
+    try {
+      // Show confirmation alert
+      const confirmation = await showConfirmationAlert();
+      if (!confirmation) {
+        Alert.alert('Post discarded');
+        await unlinkFile();
+        navigation.navigate('TabNavigation');
+        return;
+      }
+
+      setUploading(true);
+      setUiState('uploading');
+
+      // Resize the image and handle the upload
+      const resizedImageUri = await resizeImage(imageUtils);
+
+      let uploadedUrl = await uploadImage(resizedImageUri?.uri);
+      let audioUrl = await uploadImage(filePath);
+
+      if (uploadedUrl && audioUrl) {
+        // Call the mutation to upload the podcast
+        uploadPodcastMutation.mutate({
+          audio_url: audioUrl,
+          cover_image: uploadedUrl,
+        });
+      } else {
+        Alert.alert('Error', 'Could not upload the podcast. Please try again.');
+      }
+    } catch (err) {
+      console.error('Image processing failed:', err);
+      Alert.alert('Error', 'Could not process the images.');
+    }
+  };
+
+  // Helper function to show confirmation alert
+  const showConfirmationAlert = () => {
+    return new Promise(resolve => {
+      Alert.alert(
+        'Create Podcast',
+        'Please confirm you want to upload this podcast.',
+        [
+          {
+            text: 'Cancel',
+            onPress: () => resolve(false),
+            style: 'cancel',
+          },
+          {
+            text: 'OK',
+            onPress: () => resolve(true),
+          },
+        ],
+        {cancelable: false},
+      );
+    });
+  };
+
+  // Helper function to resize an image
+  const resizeImage = async localImage => {
+    try {
+      const resizedImageUri = await ImageResizer.createResizedImage(
+        localImage,
+        1000, // Width
+        1000, // Height
+        'JPEG', // Format
+        100, // Quality
+      );
+      return resizedImageUri;
+    } catch (err) {
+      console.error('Failed to resize image:', err);
+      // throw new Error('Image resizing failed');
+    }
+  };
+
+//  if(loading || uploadPodcastMutation.isPending)
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Podcast Recorder</Text>
       <View style={styles.iconContainer}>
-      <View
-        style={[
-        styles.micButton,
-        recording && styles.micButtonActive,
-        {marginBottom: 0},
-        ]}>
-        <Icon name="microphone" size={38} color="white" />
-      </View>
+        <View
+          style={[
+            styles.micButton,
+            recording && styles.micButtonActive,
+            {marginBottom: 0},
+          ]}>
+          <Icon name="microphone" size={38} color="white" />
+        </View>
       </View>
       <Text style={styles.timer}>{recordTime}</Text>
 
       <View style={styles.waveContainer}>
-      {amplitudes.length > 0 ? (
-        <AmplitudeWave audioWaves={amplitudes} />
-      ) : (
-        <SoundWave />
-      )}
+        {amplitudes.length > 0 ? (
+          <AmplitudeWave audioWaves={amplitudes} />
+        ) : (
+          <SoundWave />
+        )}
       </View>
 
       {/* Action Buttons */}
       <View style={{flexDirection: 'row', marginTop: 24, gap: 16}}>
-      {/* Record/Stop */}
-      {uiState === 'idle' || uiState === 'review' ? (
-        <TouchableOpacity
-        style={[styles.circularButton, styles.record]}
-        onPress={handleStartRecording}
-        disabled={recording || uploading}>
-        <Icon name="record-circle" size={28} color="white" />
-        <Text style={styles.actionButtonText}>Record</Text>
-        </TouchableOpacity>
-      ) : null}
-      {uiState === 'recording' && (
-        <TouchableOpacity
-        style={[styles.circularButton, styles.stop]}
-        onPress={handleStopRecording}
-        disabled={uploading}>
-        <Icon name="stop-circle" size={28} color="white" />
-        <Text style={styles.actionButtonText}>Stop</Text>
-        </TouchableOpacity>
-      )}
-      {/* Play/Pause/Stop */}
-      {uiState === 'review' && filePath && (
-        <TouchableOpacity
-        style={[styles.circularButton, styles.play]}
-        onPress={handlePlay}
-        disabled={uploading}>
-        <Icon name="play-circle" size={28} color="white" />
-        <Text style={styles.actionButtonText}>Play</Text>
-        </TouchableOpacity>
-      )}
-      {uiState === 'playing' && (
-        <TouchableOpacity
-        style={[styles.circularButton, styles.pause]}
-        onPress={handlePause}
-        disabled={uploading}>
-        <Icon name="pause-circle" size={28} color="white" />
-        <Text style={styles.actionButtonText}>Pause</Text>
-        </TouchableOpacity>
-      )}
-      {uiState === 'paused' && (
-        <TouchableOpacity
-        style={[styles.circularButton, styles.play]}
-        onPress={handlePlay}
-        disabled={uploading}>
-        <Icon name="play-circle" size={28} color="white" />
-        <Text style={styles.actionButtonText}>Resume</Text>
-        </TouchableOpacity>
-      )}
-      {(uiState === 'playing' || uiState === 'paused') && (
-        <TouchableOpacity
-        style={[styles.circularButton, styles.stop]}
-        onPress={handleStopPlay}
-        disabled={uploading}>
-        <Icon name="stop-circle" size={28} color="white" />
-        <Text style={styles.actionButtonText}>Stop</Text>
-        </TouchableOpacity>
-      )}
-      {/* Re-record */}
-      {uiState === 'review' && (
-        <TouchableOpacity
-        style={[styles.circularButton, styles.rerecord]}
-        onPress={handleReRecord}
-        disabled={uploading}>
-        <Icon name="refresh" size={28} color="white" />
-        <Text style={styles.actionButtonText}>Rerecord</Text>
-        </TouchableOpacity>
-      )}
-      {/* Upload */}
-      {uiState === 'review' && filePath && (
-        <TouchableOpacity
-        style={[styles.circularButton, styles.upload]}
-        onPress={handleUpload}
-        disabled={uploading}>
-        <Icon name="cloud-upload" size={28} color="white" />
-        <Text style={styles.actionButtonText}>
-          {uploading ? 'Uploading...' : 'Upload'}
-        </Text>
-        </TouchableOpacity>
-      )}
+        {/* Record/Stop */}
+        {uiState === 'idle' || uiState === 'review' ? (
+          <TouchableOpacity
+            style={[styles.circularButton, styles.record]}
+            onPress={handleStartRecording}
+            disabled={recording || uploading}>
+            <Icon name="record-circle" size={28} color="white" />
+            <Text style={styles.actionButtonText}>Record</Text>
+          </TouchableOpacity>
+        ) : null}
+        {uiState === 'recording' && (
+          <TouchableOpacity
+            style={[styles.circularButton, styles.stop]}
+            onPress={handleStopRecording}
+            disabled={uploading}>
+            <Icon name="stop-circle" size={28} color="white" />
+            <Text style={styles.actionButtonText}>Stop</Text>
+          </TouchableOpacity>
+        )}
+        {/* Play/Pause/Stop */}
+        {uiState === 'review' && filePath && (
+          <TouchableOpacity
+            style={[styles.circularButton, styles.play]}
+            onPress={handlePlay}
+            disabled={uploading}>
+            <Icon name="play-circle" size={28} color="white" />
+            <Text style={styles.actionButtonText}>Play</Text>
+          </TouchableOpacity>
+        )}
+        {uiState === 'playing' && (
+          <TouchableOpacity
+            style={[styles.circularButton, styles.pause]}
+            onPress={handlePause}
+            disabled={uploading}>
+            <Icon name="pause-circle" size={28} color="white" />
+            <Text style={styles.actionButtonText}>Pause</Text>
+          </TouchableOpacity>
+        )}
+        {uiState === 'paused' && (
+          <TouchableOpacity
+            style={[styles.circularButton, styles.play]}
+            onPress={handlePlay}
+            disabled={uploading}>
+            <Icon name="play-circle" size={28} color="white" />
+            <Text style={styles.actionButtonText}>Resume</Text>
+          </TouchableOpacity>
+        )}
+        {(uiState === 'playing' || uiState === 'paused') && (
+          <TouchableOpacity
+            style={[styles.circularButton, styles.stop]}
+            onPress={handleStopPlay}
+            disabled={uploading}>
+            <Icon name="stop-circle" size={28} color="white" />
+            <Text style={styles.actionButtonText}>Stop</Text>
+          </TouchableOpacity>
+        )}
+        {/* Re-record */}
+        {uiState === 'review' && (
+          <TouchableOpacity
+            style={[styles.circularButton, styles.rerecord]}
+            onPress={handleReRecord}
+            disabled={uploading}>
+            <Icon name="refresh" size={28} color="white" />
+            <Text style={styles.actionButtonText}>Rerecord</Text>
+          </TouchableOpacity>
+        )}
+        {/* Upload */}
+        {uiState === 'review' && filePath && (
+          <TouchableOpacity
+            style={[styles.circularButton, styles.upload]}
+            onPress={handlePostSubmit}
+            disabled={uploading}>
+            <Icon name="cloud-upload" size={28} color="white" />
+            <Text style={styles.actionButtonText}>
+              {uploading ? 'Uploading...' : 'Upload'}
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* File Path */}
       {filePath && (
-      <Text style={styles.pathText} numberOfLines={1} ellipsizeMode="middle">
-        Saved at: {filePath}
-      </Text>
+        <Text style={styles.pathText} numberOfLines={1} ellipsizeMode="middle">
+          Saved at: {filePath}
+        </Text>
       )}
     </View>
-
-  
-   
   );
 };
 
@@ -405,7 +545,7 @@ const styles = StyleSheet.create({
     padding: 10,
     elevation: 3,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: {width: 0, height: 1},
     shadowOpacity: 0.2,
     shadowRadius: 3,
   },
@@ -419,18 +559,18 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     elevation: 3,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: {width: 0, height: 1},
     shadowOpacity: 0.2,
     shadowRadius: 3,
   },
 
   // Colors
-  record: { backgroundColor: '#16a34a' },
-  stop: { backgroundColor: '#dc2626' },
-  play: { backgroundColor: '#3b82f6' },
-  pause: { backgroundColor: '#f59e0b' },
-  rerecord: { backgroundColor: '#0284c7' },
-  upload: { backgroundColor: '#7c3aed' },
+  record: {backgroundColor: '#16a34a'},
+  stop: {backgroundColor: '#dc2626'},
+  play: {backgroundColor: '#3b82f6'},
+  pause: {backgroundColor: '#f59e0b'},
+  rerecord: {backgroundColor: '#0284c7'},
+  upload: {backgroundColor: '#7c3aed'},
 
   buttonText: {
     color: '#f8fafc',
@@ -462,7 +602,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     elevation: 6,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: {width: 0, height: 4},
     shadowOpacity: 0.25,
     shadowRadius: 6,
   },
@@ -512,18 +652,14 @@ const styles = StyleSheet.create({
   },
 
   actionButtonText: {
-  color: '#f8fafc',       
-  fontSize: 10,          
-  fontWeight: '600',
-  textAlign: 'center',
-  //marginTop: 2,
-  letterSpacing: 0.5,
-},
+    color: '#f8fafc',
+    fontSize: 10,
+    fontWeight: '600',
+    textAlign: 'center',
+    //marginTop: 2,
+    letterSpacing: 0.5,
+  },
 });
-
-
-
-
 
 /**
  *  /**
@@ -580,4 +716,3 @@ const styles = StyleSheet.create({
       )}
     </View>
        */
- 
