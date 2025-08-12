@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {
   PermissionsAndroid,
   Platform,
@@ -17,6 +17,7 @@ import {PodcastRecorderScreenProps} from '../type';
 import RNFS from 'react-native-fs';
 import AmplitudeWave from '../components/AmplitudeWave';
 import {useMutation} from '@tanstack/react-query';
+import {useSelector} from 'react-redux';
 import axios from 'axios';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Snackbar from 'react-native-snackbar';
@@ -24,6 +25,9 @@ import TrackPlayer, {State, useProgress} from 'react-native-track-player';
 import {UPLOAD_PODCAST} from '../helper/APIUtils';
 import useUploadImage from '../../hooks/useUploadImage';
 import ImageResizer from '@bam.tech/react-native-image-resizer';
+import useUploadAudio from '../../hooks/useUploadAudio';
+import Slider from '@react-native-community/slider';
+import {BUTTON_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 
 const {WavAudioRecorder} = NativeModules;
 const AudioModule = NativeModules.WavAudioRecorder;
@@ -31,11 +35,13 @@ const emitter = new NativeEventEmitter(AudioModule);
 
 const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
   const [recording, setRecording] = useState(false);
-  const {uploadImage, loading} = useUploadImage();
+  const {uploadImage, loading, error: imageError} = useUploadImage();
+  const {uploadAudio, loading: audioLoading, error} = useUploadAudio();
   const [recordTime, setRecordTime] = useState('00:00:00');
   const {title, description, selectedGenres, imageUtils} = route.params;
   const [filePath, setFilePath] = useState<string | null>(null);
   //const [elapsedMs, setElapsedMs] = useState(0);
+  const {user_token, user_id} = useSelector((state: any) => state.user);
   const [amplitudes, setAmplitudes] = useState<number[]>([]);
   //const [currentAmplitude, setCurrentAmplitude] = useState<number>(0);
   const progress = useProgress();
@@ -48,6 +54,20 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
     const minutes = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
     const seconds = String(totalSec % 60).padStart(2, '0');
     return `${hours}:${minutes}:${seconds}`;
+  };
+
+   const formatSecTime = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+
+    if (hours > 0) {
+      return `${hours}:${mins < 10 ? '0' : ''}${mins}:${
+        secs < 10 ? '0' : ''
+      }${secs}`;
+    } else {
+      return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
   };
 
   const startTimer = () => {
@@ -67,7 +87,7 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-    setRecordTime('00:00:00');
+ 
     recordStartTimeRef.current = null;
   };
 
@@ -191,16 +211,14 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
         console.warn('Error deleting file:', err);
       }
     }
-  }
+  };
   const handleUpload = async () => {
-  
-  
-      setUploading(false);
-      setUiState('idle');
-      setFilePath(null);
-      setAmplitudes([]);
-      setRecordTime('00:00:00');
-      await unlinkFile();
+    setUploading(false);
+    setUiState('idle');
+    setFilePath(null);
+    setAmplitudes([]);
+    setRecordTime('00:00:00');
+    await unlinkFile();
   };
 
   const stopPlay = async () => {
@@ -225,6 +243,7 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
     const audioWaveSubscription = emitter.addListener(
       'onAudioWaveform',
       event => {
+        /*
         const amplitude = event.amplitude;
         // setCurrentAmplitude(amplitude);
         //console.log('event',event);
@@ -239,7 +258,7 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
             return updated;
           });
         }
-
+          */
         //console.log('amplitudes', amplitudes);
       },
     );
@@ -265,20 +284,28 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
       audio_url: string;
       cover_image: string;
     }) => {
-      const response = await axios.post(UPLOAD_PODCAST, {
-        title: title,
-        description: description,
-        tags: selectedGenres,
-        article_id: null,
-        audio_url: audio_url,
-        cover_image: cover_image,
-        duration: progress.duration,
-      });
+      const response = await axios.post(
+        UPLOAD_PODCAST,
+        {
+          title: title,
+          description: description,
+          tags: selectedGenres,
+          article_id: null,
+          audio_url: audio_url,
+          cover_image: cover_image,
+          duration: progress.duration,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user_token}`,
+            'Content-Type': 'application/json',
+          },
+        },
+      );
 
       return response.data.message as string;
     },
     onSuccess: async data => {
-
       await handleUpload();
 
       Snackbar.show({
@@ -324,7 +351,7 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
       const resizedImageUri = await resizeImage(imageUtils);
 
       let uploadedUrl = await uploadImage(resizedImageUri?.uri);
-      let audioUrl = await uploadImage(filePath);
+      let audioUrl = await uploadAudio(filePath);
 
       if (uploadedUrl && audioUrl) {
         // Call the mutation to upload the podcast
@@ -338,6 +365,7 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
     } catch (err) {
       console.error('Image processing failed:', err);
       Alert.alert('Error', 'Could not process the images.');
+      await handleUpload();
     }
   };
 
@@ -380,7 +408,13 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
     }
   };
 
-//  if(loading || uploadPodcastMutation.isPending)
+  //  if(loading || uploadPodcastMutation.isPending)
+
+  useEffect(() => {
+    if (error || imageError) {
+      handleUpload();
+    }
+  }, [error, imageError]);
 
   return (
     <View style={styles.container}>
@@ -404,6 +438,30 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
           <SoundWave />
         )}
       </View>
+
+      {(uiState === 'playing' ||
+        uiState === 'paused') && (
+
+            <View style={{width: '100%', alignItems: 'stretch', marginTop: 8, marginBottom: 4}}>
+            <Slider
+              style={styles.slider}
+              minimumValue={0}
+              maximumValue={progress.duration}
+              value={progress.position}
+              minimumTrackTintColor={BUTTON_COLOR}
+              maximumTrackTintColor="#ccc"
+              thumbTintColor={BUTTON_COLOR}
+              onSlidingComplete={async value => {
+              // seek to selected time
+              await TrackPlayer.seekTo(value);
+              }}
+            />
+            <View style={styles.timeRow}>
+              <Text style={styles.time}>{formatSecTime(progress.position)}</Text>
+              <Text style={styles.time}>{formatSecTime(progress.duration)}</Text>
+            </View>
+            </View>
+        )}
 
       {/* Action Buttons */}
       <View style={{flexDirection: 'row', marginTop: 24, gap: 16}}>
@@ -658,6 +716,24 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     //marginTop: 2,
     letterSpacing: 0.5,
+  },
+
+   slider: {
+    width: '100%',
+    height: 36,
+    marginTop: 6,
+    marginBottom: 2,
+  },
+
+   timeRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 4,
+    marginBottom: 12,
+  },
+  time: {
+    fontSize: 13,
+    color: '#777',
   },
 });
 

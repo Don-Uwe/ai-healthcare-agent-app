@@ -15,6 +15,121 @@ export const checkInternetConnection = (
   return unsubscribe;
 };
 
+export const getMimeTypes = (ext: string): string => {
+
+      let type = '';
+
+     switch (ext.toLowerCase()) {
+        case 'mp3':
+            type = 'audio/mpeg';
+            break;
+          case 'wav':
+            type = 'audio/wav';
+            break;
+          case 'x-wav':
+            type = 'audio/x-wav';
+            break;
+          case 'ogg':
+            type = 'audio/ogg';
+            break;
+          case 'opus':
+            type = 'audio/opus';
+            break;
+          case 'aac':
+            type = 'audio/aac';
+            break;
+          case 'x-aac':
+            type = 'audio/x-aac';
+            break;
+          case 'flac':
+            type = 'audio/flac';
+            break;
+          case 'x-flac':
+            type = 'audio/x-flac';
+            break;
+          case 'mp4':
+            type = 'audio/mp4';
+            break;
+          case 'm4a':
+            type = 'audio/x-m4a';
+            break;
+          case 'webm':
+            type = 'audio/webm';
+            break;
+          case 'x-midi':
+            type = 'audio/x-midi';
+            break;
+          case 'amr':
+            type = 'audio/amr';
+            break;
+          case '3gpp':
+            type = 'audio/3gpp';
+            break;
+          case '3gpp2':
+            type = 'audio/3gpp2';
+            break;
+          case 'basic':
+            type = 'audio/basic';
+            break;
+          case 'vnd.wave':
+            type = 'audio/vnd.wave';
+            break;
+          case 'vnd.rn-realaudio':
+            type = 'audio/vnd.rn-realaudio';
+            break;
+          case 'vnd.dts':
+            type = 'audio/vnd.dts';
+            break;
+          case 'vnd.dts.hd':
+            type = 'audio/vnd.dts.hd';
+            break;
+          case 'vnd.digital-winds':
+            type = 'audio/vnd.digital-winds';
+            break;
+          case 'vnd.lucent.voice':
+            type = 'audio/vnd.lucent.voice';
+            break;
+          case 'vnd.ms-playready.media.pya':
+            type = 'audio/vnd.ms-playready.media.pya';
+            break;
+          case 'vnd.nuera.ecelp4800':
+            type = 'audio/vnd.nuera.ecelp4800';
+            break;
+          case 'vnd.nuera.ecelp7470':
+            type = 'audio/vnd.nuera.ecelp7470';
+            break;
+          case 'vnd.nuera.ecelp9600':
+            type = 'audio/vnd.nuera.ecelp9600';
+            break;
+          case 'vnd.sealedmedia.softseal.mpeg':
+            type = 'audio/vnd.sealedmedia.softseal.mpeg';
+            break;
+          case 'x-ms-wma':
+            type = 'audio/x-ms-wma';
+            break;
+          case 'wav':
+            type = 'audio/wav';
+            break;
+          case 'ogg':
+            type = 'audio/ogg';
+          break;
+        case 'aac':
+          type = 'audio/aac';
+          break;
+        case 'flac':
+          type = 'audio/flac';
+          break;
+        case 'm4a':
+          type = 'audio/mp4';
+          break;
+        case 'webm':
+          type = 'audio/webm';
+          break;
+        default:
+          type = 'application/octet-stream';
+      }
+      return type;
+}
 export function formatCount(count: number) {
   if (count < 1000) {
     return count.toString();

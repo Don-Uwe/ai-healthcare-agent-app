@@ -1,62 +1,57 @@
 import {useState} from 'react';
-import axios from 'axios';
 import {UPLOAD_STORAGE} from '../src/helper/APIUtils';
 import {Alert} from 'react-native';
 
 const useUploadImage = () => {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<boolean>(false);
 
   const uploadImage = async (uri: string) => {
+
     try {
       setLoading(true);
       // Extract filename and type
-      let filename: string = uri.split('/').pop() || 'image';
+      let filename: string = uri.split('/').pop() || `image_${Date.now()}`;
       let match = /\.(\w+)$/.exec(filename);
-      //let type = match ? `image/${match[1]}` : 'image';
+      let type = match ? `image/${match[1]}` : 'image';
 
-      let ext = match ? match[1].toLowerCase() : '';
-      let type = '';
-
-      switch (ext) {
-        case 'mp3':
-          type = 'audio/mpeg';
-          break;
-        case 'wav':
-          type = 'audio/wav';
-          break;
-        case 'jpg':
-        case 'jpeg':
-          type = 'image/jpeg';
-          break;
-        case 'png':
-          type = 'image/png';
-          break;
-        default:
-          type = 'application/octet-stream';
-      }
 
       const formData = new FormData();
       formData.append('file', {uri, name: filename, type});
+      console.log("Type:", type);
 
       //formData.append('file', uri);
 
-      const response = await axios.post(UPLOAD_STORAGE, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+      const response = await fetch(UPLOAD_STORAGE, {
+        method: 'POST',
+        
+        body: formData,
       });
-      //  console.log('Image upload res', response.data);
-      return response.data.key as string;
+
+      const data = await response.json();
+
+      console.log('Image upload res', data);
+
+      if (!response.ok) {
+        throw new Error('Image upload failed');
+      }
+
+     // const data = await response.json();
+      setError(false);
+      //console.log('Image upload res', data);
+        return data.key as string;
     } catch (err) {
+   
       console.log('Image upload failed', err);
       Alert.alert('Low network connection, failed to upload image');
+      setError(true);
       //throw err;
     } finally {
       setLoading(false);
     }
   };
 
-  return {uploadImage, loading};
+  return {uploadImage, loading, error};
 };
 
 export default useUploadImage;

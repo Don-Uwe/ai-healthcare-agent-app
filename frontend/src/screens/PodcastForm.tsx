@@ -105,8 +105,27 @@ const PodcastForm = ({
       }
     });
   };
+
+  const WarningBox = () => {
+  return (
+    <View style={styles.warningContainer}>
+      <Ionicon name="alert-circle" size={24} color="#D9534F" style={{ marginRight: 8 }} />
+      <View style={{ flex: 1 }}>
+        <Text style={styles.warningTitle}>Important Submission Guidelines</Text>
+        <Text style={styles.warningText}>
+          Please ensure your podcast title, description, and tags are clear, relevant, 
+          and respectful. Avoid offensive, misleading, or unrelated content.  
+          Podcasts violating our community guidelines may be rejected by our review team.
+        </Text>
+      </View>
+    </View>
+  );
+};
+
   return (
     <ScrollView style={styles.container}>
+
+      <WarningBox/>
       <View style={styles.form}>
         {/* Image Upload */}
         <View style={styles.input}>
@@ -414,6 +433,30 @@ const styles = StyleSheet.create({
     color: PRIMARY_COLOR,
     marginHorizontal: hp(0.5),
   },
+
+  warningContainer: {
+  flexDirection: 'row',
+  backgroundColor: 'rgba(217, 83, 79, 0.1)',
+  borderLeftWidth: 4,
+  borderLeftColor: '#FF8C42',
+  padding: 12,
+  marginHorizontal: 16,
+  borderRadius: 8,
+  marginBottom: 16,
+  alignItems: 'flex-start',
+},
+warningTitle: {
+  fontSize: 18,
+  fontWeight: '700',
+  color: '#D9534F',
+  marginBottom: 4,
+},
+warningText: {
+  fontSize: 15,
+  color: '#444',
+  lineHeight: 20,
+},
+
 });
 
 export default PodcastForm;
