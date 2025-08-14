@@ -82,7 +82,7 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
         updateViewCountMutation.mutate(item._id);
       }}>
       <PodcastCard
-       id= {item._id}
+        id= {item._id}
         title={item.title}
         host={item.user_id.user_name}
         views={item.viewUsers.length}
@@ -100,7 +100,7 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
         handleReport={()=>{
 
         }}
-       playlistAct={()=>{
+        playlistAct={()=>{
 
         }}
         //onSelect={()=>{}}

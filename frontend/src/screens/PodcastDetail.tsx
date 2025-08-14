@@ -169,7 +169,9 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
         {podcast && podcast.cover_image ? (
           <Image
             source={{
-              uri: podcast?.cover_image,
+              uri: podcast?.cover_image.startsWith('http')
+                ? podcast?.cover_image
+                : `${GET_STORAGE_DATA}/${podcast?.cover_image}`,
             }}
             style={styles.podcastImage}
           />

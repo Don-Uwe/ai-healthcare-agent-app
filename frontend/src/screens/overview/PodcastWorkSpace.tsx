@@ -98,7 +98,7 @@ export default function PodcastWorkSpace({
     },
   });
 
-  const [selectedCardId, setSelectedCardId] = useState<string>('');
+  //const [selectedCardId, setSelectedCardId] = useState<string>('');
   const pendingLabel = `Progress (${pendingPodcasts
     ? pendingPodcasts.length
       : 0
@@ -121,7 +121,7 @@ export default function PodcastWorkSpace({
 
   const onRefresh = () => {
     setRefreshing(true);
-    
+
     if(selectedCategory === pendingLabel){
         pendingPodcastsRefetch();
     }

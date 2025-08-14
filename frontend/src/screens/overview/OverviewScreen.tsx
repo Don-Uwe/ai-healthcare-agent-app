@@ -7,7 +7,7 @@ import {
   BUTTON_COLOR,
 } from '../../helper/Theme';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {ArticleData, EditRequest, OverviewScreenProps} from '../../type';
+import {ArticleData, EditRequest, OverviewScreenProps, PodcastData} from '../../type';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {StatusEnum} from '../../helper/Utils';
 import {FAB} from 'react-native-paper';
@@ -46,6 +46,18 @@ export default function OverviewScreen({navigation}: OverviewScreenProps) {
       } else {
         Alert.alert("The article is under reviewed, you can't change it now");
       }
+    }
+  };
+
+  const handlePodcastClick = (item: PodcastData) =>{
+
+    if(item?.status === StatusEnum.DISCARDED) {
+      Alert.alert('Your podcast is not approved');
+      return;
+    } else {
+      navigation.navigate('PodcastDetail', {
+        trackId: item._id,
+      });
     }
   };
 
@@ -99,8 +111,8 @@ export default function OverviewScreen({navigation}: OverviewScreenProps) {
           {/*** Tab 3 */}
           <Tabs.Tab name="Podcasts">
             <PodcastWorkSpace
-              handleClickAction={()=>{
-
+              handleClickAction={(item: PodcastData) => {
+                   handlePodcastClick(item);
               }}
             />
           </Tabs.Tab>

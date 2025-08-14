@@ -61,6 +61,10 @@
 		</dict>
 		<key>NSCameraUsageDescription</key>
 		<string>$(PRODUCT_NAME) would like to use your camera</string>
+
+		<key>NSMicrophoneUsageDescription</key>
+        <string>We need microphone access to record audio.</string>
+
 		<key>NSMicrophoneUsageDescription</key>
 		<string>$(PRODUCT_NAME) would like to your microphone (for videos)</string>
 		<key>NSPhotoLibraryUsageDescription</key>
