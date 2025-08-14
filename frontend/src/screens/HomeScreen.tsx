@@ -14,10 +14,17 @@ import {PRIMARY_COLOR} from '../helper/Theme';
 import AddIcon from '../components/AddIcon';
 import ArticleCard from '../components/ArticleCard';
 import HomeScreenHeader from '../components/HomeScreenHeader';
-import {ArticleData, Category, CategoryType, HomeScreenProps} from '../type';
+import {
+  ArticleData,
+  Category,
+  CategoryType,
+  HomeScreenProps,
+  User,
+} from '../type';
 import axios from 'axios';
 import {
   ARTICLE_TAGS_API,
+  GET_PROFILE_API,
   REPOST_ARTICLE,
   REQUEST_EDIT,
 } from '../helper/APIUtils';
@@ -38,6 +45,7 @@ import {
 import Snackbar from 'react-native-snackbar';
 import {useSocket} from '../../SocketContext';
 import {useFocusEffect} from '@react-navigation/native';
+import InactiveUserModal from '../components/InactiveUserModal';
 
 // Here The purpose of using Redux is to maintain filter state throughout the app session. globally
 const HomeScreen = ({navigation}: HomeScreenProps) => {
@@ -49,9 +57,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const screenWidth = Dimensions.get('window').width;
   const [selectedCardId, setSelectedCardId] = useState<string>('');
   const [repostItem, setRepostItem] = useState<ArticleData | null>(null);
-  const [selectCategoryList, setSelectCategoryList] = useState<
-    Category[]
-  >([]);
+  const [selectCategoryList, setSelectCategoryList] = useState<Category[]>([]);
   const {
     filteredArticles,
     searchedArticles,
@@ -65,14 +71,14 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const [refreshing, setRefreshing] = useState(false);
   const socket = useSocket();
 
-  console.log('User Token', user_token);
-  console.log('User Id', user_id);
-  console.log('BASE URL', Config.BASE_URL);
+  //console.log('User Token', user_token);
+  //console.log('User Id', user_id);
+  //console.log('BASE URL', Config.BASE_URL);
 
   const handleCategorySelection = (category: CategoryType) => {
     // Update Redux State
     setSelectCategoryList(prevList => {
-      const updatedList = prevList.some(p=> p.id === category.id)
+      const updatedList = prevList.some(p => p.id === category.id)
         ? prevList.filter(item => item.id !== category.id)
         : [...prevList, category];
       return updatedList;
@@ -145,10 +151,28 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     },
   });
 
+   const {
+    data: user,
+    refetch: refetchUser,
+    isLoading: isUserLoading,
+  } = useQuery({
+    queryKey: ['get-my-profile'],
+    queryFn: async () => {
+      const response = await axios.get(`${GET_PROFILE_API}`, {
+        headers: {
+          Authorization: `Bearer ${user_token}`,
+        },
+      });
+      return response.data.profile as User;
+    },
+  });
+
   useFocusEffect(
     useCallback(() => {
+        refetchUser();
       refetchUnreadCount();
-    }, [refetchUnreadCount]),
+    
+    }, [refetchUnreadCount, refetchUser]),
   );
   const handleNoteIconClick = () => {
     //navigation.navigate('EditorScreen');
@@ -392,6 +416,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     },
   });
 
+ 
   const onRefresh = () => {
     setRefreshing(true);
     refetch();
@@ -423,8 +448,70 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     return <Text style={styles.message}>No Article Found</Text>;
   }
 
-  if (isLoading || submitEditRequestMutation.isPending) {
+  if (isLoading || submitEditRequestMutation.isPending || isUserLoading) {
     return <Loader />;
+  }
+
+  if (user && (user.isBlockUser || user.isBannedUser)) {
+    return (
+      <SafeAreaView style={styles.blockContainer}>
+        <HomeScreenHeader
+          handlePresentModalPress={handlePresentModalPress}
+          onTextInputChange={handleSearch}
+          onNotificationClick={() => {
+            navigation.navigate('NotificationScreen');
+          }}
+          unreadCount={unreadCount ? unreadCount : 0}
+        />
+
+        <View style={styles.buttonContainer}>
+        <ScrollView
+          horizontal={true}
+          showsHorizontalScrollIndicator={false}
+          //contentContainerStyle={{flex:1}}
+        >
+          {selectedTags &&
+            selectedTags.length > 0 &&
+            !searchMode &&
+            selectedTags.map((item, index) => (
+              <TouchableOpacity
+                key={index}
+                style={{
+                  ...styles.button,
+                  backgroundColor:
+                    selectedCategory !== item ? 'white' : PRIMARY_COLOR,
+                  borderColor:
+                    selectedCategory !== item ? PRIMARY_COLOR : 'white',
+                }}
+                onPress={() => {
+                  handleCategoryClick(item);
+                }}>
+                <Text
+                  style={{
+                    ...styles.labelStyle,
+                    color: selectedCategory !== item ? 'black' : 'white',
+                  }}>
+                  {item}
+                </Text>
+              </TouchableOpacity>
+            ))}
+        </ScrollView>
+      </View>
+        <InactiveUserModal
+          open={true}
+          onRequestAdmin={() => {
+            //navigation.navigate('ContactAdminScreen');
+          }}
+          reason={
+            user.isBlockUser
+              ? 'blocked'
+              : user.isBannedUser
+              ? 'banned'
+              : undefined
+          }
+        />
+      </SafeAreaView>
+    );
   }
 
   return (
@@ -528,6 +615,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0F8FF',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+
+   blockContainer: {
+    flex: 0,
+    backgroundColor: '#F0F8FF',
+    justifyContent: 'center',
+    //alignItems: 'center',
   },
   buttonContainer: {
     flexDirection: 'row',

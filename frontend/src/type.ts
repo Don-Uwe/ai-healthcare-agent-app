@@ -549,6 +549,8 @@ export type User = {
   verificationToken: null;
   refreshToken: null;
   improvements: string[];
+  isBlockUser: boolean;
+  isBannedUser: boolean;
 };
 
 export type Contactdetail = {

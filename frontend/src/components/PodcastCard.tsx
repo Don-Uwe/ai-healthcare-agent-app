@@ -10,6 +10,7 @@ import {useRef} from 'react';
 import {BottomSheetModal} from '@gorhom/bottom-sheet';
 import PodcastActions from './PodcastActions';
 import Share from 'react-native-share';
+import { GET_STORAGE_DATA } from '../helper/APIUtils';
 
 interface PodcastProps {
   id: string;
@@ -73,7 +74,7 @@ const PodcastCard = ({
           source={{
             uri:
               imageUri && imageUri !== ''
-                ? imageUri
+                ? imageUri.startsWith('https') ? imageUri : `${GET_STORAGE_DATA}/${imageUri}`
                 : 'https://t3.ftcdn.net/jpg/05/10/75/30/360_F_510753092_f4AOmCJAczuGgRLCmHxmowga2tC9VYQP.jpg',
           }}
           style={styles.image}

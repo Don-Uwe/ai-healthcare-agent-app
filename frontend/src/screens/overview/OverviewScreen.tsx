@@ -14,6 +14,7 @@ import {FAB} from 'react-native-paper';
 import {hp} from '../../helper/Metric';
 import ArticleWorkSpace from './ArticleWorkSpace';
 import ImprovementWorkspace from './ImprovementWorkspace';
+import PodcastWorkSpace from './PodcastWorkSpace';
 
 export default function OverviewScreen({navigation}: OverviewScreenProps) {
   //const bottomBarHeight = useBottomTabBarHeight();
@@ -94,6 +95,15 @@ export default function OverviewScreen({navigation}: OverviewScreenProps) {
               handleImprovementClick={handleImprovementClick}
             />
           </Tabs.Tab>
+
+          {/*** Tab 3 */}
+          <Tabs.Tab name="Podcasts">
+            <PodcastWorkSpace
+              handleClickAction={()=>{
+
+              }}
+            />
+          </Tabs.Tab>
         </Tabs.Container>
       </View>
       <FAB
@@ -150,7 +160,7 @@ const styles = StyleSheet.create({
   },
   labelStyle: {
     fontWeight: '600',
-    fontSize: 16,
+    fontSize: 14,
     color: 'black',
     textTransform: 'capitalize',
   },

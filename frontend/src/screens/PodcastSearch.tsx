@@ -103,8 +103,8 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
        playlistAct={()=>{
 
         }}
-        onSelect={()=>{}}
-        onClear={()=>{}}
+        //onSelect={()=>{}}
+        //onClear={()=>{}}
       />
     </Pressable>
   );

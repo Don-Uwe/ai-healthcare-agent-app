@@ -72,6 +72,10 @@ const GET_PLAYLIST = `${Config.BASE_URL}/podcast/get-my-playlists`;
 const CREATE_PLAYLIST = `${Config.BASE_URL}/podcast/create-playlist`;
 const ADD_TO_PLAYLIST = `${Config.BASE_URL}/podcast/add-podcast-form-playlist`;
 const UPDATE_PODCAST_PLAYLIST = `${Config.BASE_URL}/podcast/update-playlist`;
+/** Podcast workspace */
+const DISCARDED_PODCASTS = `${Config.BASE_URL}/podcast/discarded`;
+const PENDING_PODCASTS = `${Config.BASE_URL}/podcast/user-pending`;
+const USER_PUBLISHED_PODCASTS = `${Config.BASE_URL}/podcast/user-published`;
 
 
 export {
@@ -141,5 +145,8 @@ export {
   CREATE_PLAYLIST,
   ADD_TO_PLAYLIST,
   UPDATE_PODCAST_PLAYLIST,
-  UPLOAD_PODCAST
+  UPLOAD_PODCAST,
+  DISCARDED_PODCASTS,
+  PENDING_PODCASTS,
+  USER_PUBLISHED_PODCASTS
 };
