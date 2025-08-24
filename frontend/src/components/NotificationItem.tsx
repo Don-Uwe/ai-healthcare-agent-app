@@ -16,14 +16,16 @@ import {BUTTON_COLOR} from '../helper/Theme';
 export default function NotificationItem({
   item,
   handleDeleteAction,
+  handleClick,
 }: {
   item: Notification;
   handleDeleteAction: (item: Notification) => void;
+  handleClick: (item: Notification) => void;
 }) {
   return (
     <Pressable
       onPress={() => {
-        // handle onPress
+        handleClick(item);
       }}>
       <View style={styles.cardContainer}>
         {/* Share Icon */}

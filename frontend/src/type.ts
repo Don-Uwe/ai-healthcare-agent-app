@@ -305,15 +305,52 @@ export type ReviewCardProps = {
   isSelected: Boolean;
   setSelectedCardId: (id: string) => void;
 };
+export type Admin = {
+  _id: string;
+  user_name: string;
+  email: string;
+};
 
 export type Notification = {
   _id: string;
-  userId: string;
+  userId: User | null;
+  adminId: Admin | null;
+  articleId: ArticleData | null;
+  revisionId: EditRequest | null;
+  podcastId: PodcastData | null;
+  commentId: Comment | null;
+  articleRecordId: string | null;
+  type: NotificationType;
   title: string;
   message: string;
   read: boolean;
   timestamp: string;
 };
+
+export enum NotificationType {
+  ArticleReview = 'articleReview',
+  PodcastReview = 'podcastReview',
+  PodcastCommentMention = 'podcastCommentMention',
+  ArticleCommentMention = 'articleCommentMention',
+  ArticleRepost = 'articleRepost',
+  UserFollow = 'userFollow',
+  CommentLike = 'commentLike',
+  Comment = 'comment',
+  Article = 'article',
+  Podcast = 'podcast',
+  EditRequest = 'editRequest',
+  ArticleLike = 'articleLike',
+  PodcastLike = 'podcastLike',
+  ArticleImprovement = 'articleImprovement',
+  ArticleComment = 'articleComment',
+  PodcastComment = 'podcastComment',
+  EditRequestComment = 'editRequestComment',
+  ArticleCommentLike = 'articleCommentLike',
+  PodcastCommentLike = 'podcastCommentLike',
+  ArticleRevisionReview = 'articleRevisionReview',
+  ArticleSubmitToAdmin = 'articleSubmitToAdmin',
+  RevisionSubmitToAdmin = 'revisionSubmitToAdmin',
+}
 
 export type PocketBaseResponse = {
   message: string;

@@ -139,11 +139,17 @@ const NotificationScreen = ({navigation}) => {
     setRefreshing(false);
   };
 
+  const handleNotificationClick = (item: Notification) => {
+    console.log('Notification clicked:', item);
+    // Navigate to specific screen, on  2nd half
+  };
+
   const renderItem = ({item}: {item: Notification}) => {
     return (
       <NotificationItem
         item={item}
         handleDeleteAction={handleDeleteAction}
+        handleClick={handleNotificationClick}
         // isSelected={selectedCardId === item._id}
         // setSelectedCardId={setSelectedCardId}
         // navigation={navigation}
