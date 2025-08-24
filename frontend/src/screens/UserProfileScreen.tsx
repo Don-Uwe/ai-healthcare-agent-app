@@ -4,7 +4,7 @@ import {PRIMARY_COLOR} from '../helper/Theme';
 import ActivityOverview from '../components/ActivityOverview';
 import {Tabs, MaterialTabBar} from 'react-native-collapsible-tab-view';
 import ArticleCard from '../components/ArticleCard';
-import {useDispatch, useSelector} from 'react-redux';
+import {useSelector} from 'react-redux';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import ProfileHeader from '../components/ProfileHeader';
 import Config from 'react-native-config';
@@ -22,14 +22,12 @@ import Loader from '../components/Loader';
 import {useFocusEffect} from '@react-navigation/native';
 import Snackbar from 'react-native-snackbar';
 import {useSocket} from '../../SocketContext';
-import {setSocialUserId} from '../store/UserSlice';
 
 const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   const {authorId, author_handle} = route.params;
   const {user_id, user_handle, user_token} = useSelector(
     (state: any) => state.user,
   );
-  const dispatch = useDispatch();
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
   const [articleId, setArticleId] = useState<number>();
@@ -96,7 +94,6 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
 
   const onArticleViewed = ({
     articleId,
-    authorId,
     recordId
   }: {
     articleId: number;
@@ -153,13 +150,14 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
           userId: user_id,
           authorId: repostItem.authorId,
           postId: repostItem._id,
+          articleRecordId: repostItem.pb_recordId,
           message: {
             title: `${user_handle} reposted`,
-            body: `${repostItem.title}`,
+            message: `${repostItem.title}`,
           },
           authorMessage: {
             title: `${user_handle} reposted your article`,
-            body: `${repostItem.title}`,
+            message: `${repostItem.title}`,
           },
         });
       }
@@ -198,7 +196,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
 
       return res.data.article as ArticleData;
     },
-    onSuccess: async data => {
+    onSuccess: async () => {
       //console.log('Article Id', articleId);
       //console.log('Author Id', authorId);
 
@@ -215,12 +213,12 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
     },
   });
 
-  const onRefresh = () => {
+  const onRefresh = useCallback(() => {
     setRefreshing(true);
     refetch();
 
     setRefreshing(false);
-  };
+  },[refetch]);
 
   useFocusEffect(
     useCallback(() => {
@@ -229,14 +227,14 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
     }, [refetch, authorId]), // Ensure authorId is a stable value
   );
 
-  const handleReportAction = (item: ArticleData) => {
+  const handleReportAction = useCallback((item: ArticleData) => {
     navigation.navigate('ReportScreen', {
       articleId: item._id,
       authorId: item.authorId as string,
       commentId: null,
       podcastId: null
     });
-  };
+  }, [navigation]);
 
   const submitEditRequestMutation = useMutation({
     mutationKey: ['submit-edit-request-user'],
@@ -294,7 +292,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
         />
       );
     },
-    [navigation, onRefresh, selectedCardId],
+    [handleReportAction, handleRepostAction, navigation, onRefresh, selectedCardId, submitEditRequestMutation],
   );
 
   const onFollowerClick = () => {

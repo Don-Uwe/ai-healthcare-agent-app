@@ -12,7 +12,7 @@ import {
   Dimensions,
   FlatList,
 } from 'react-native';
-import React, {useEffect, useRef, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {useQuery, useMutation} from '@tanstack/react-query';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {PRIMARY_COLOR} from '../../helper/Theme';
@@ -39,7 +39,6 @@ import Snackbar from 'react-native-snackbar';
 //import io from 'socket.io-client';
 import {Comment} from '../../type';
 import {formatCount} from '../../helper/Utils';
-import {useSocket} from '../../../SocketContext';
 //import CommentScreen from '../CommentScreen';
 import Tts from 'react-native-tts';
 import CommentItem from '../../components/CommentItem';
@@ -57,7 +56,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const dispatch = useDispatch();
 
   const [comments, setComments] = useState<Comment[]>([]);
-  const [newComment, setNewComment] = useState('');
+  // const [newComment, setNewComment] = useState('');
   const flatListRef = useRef<FlatList<Comment>>(null);
   // const {user_id} = useSelector((state: any) => state.user);
   const [selectedCommentId, setSelectedCommentId] = useState<string>('');
@@ -249,17 +248,17 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     onSuccess: data => {
       // dispatch(setArticle({article: data}));
 
-      // console.log('author id', data?.authorId);
       if (data?.likeStatus) {
         socket.emit('notification', {
           type: 'likePost',
-          authorId: data?.article?.authorId,
-          message: {
-            title: user
-              ? `${user?.user_handle} liked your post`
-              : 'Someone liked your post',
-            body: data?.article?.title,
-          },
+          userId: data?.article?.authorId,
+          articleId: data?.article?._id,
+          podcastId: null,
+          articleRecordId: data?.article?.pb_recordId,
+          title: user
+            ? `${user?.user_handle} liked your post`
+            : 'Someone liked your post',
+          message: data?.article?.title,
         });
       }
       refetch();
@@ -329,8 +328,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
       // setCommentLoading(data);
     });
 
-    socket.on('like-comment-processing', () => {
-      //  setCommentLikeLoading(data);
+    socket.on('like-comment-processing', (data) => {
+        setCommentLikeLoading(data);
     });
 
     socket.on('error', () => {
@@ -527,7 +526,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     return plainText;
   }
 
-  const speakSection = async (language = 'en-US', content: string) => {
+  const speakSection = async (_language = 'en-US', content: string) => {
     // Tts.requestInstallData();
     Tts.setDefaultPitch(0.6);
 
@@ -539,7 +538,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     const res = await convertHtmlToPlainText(content);
 
     if (res) {
-      Tts.getInitStatus().then(d => {
+      Tts.getInitStatus().then(() => {
         const textChunks = res.split(' ');
         let chunkIndex = 0;
 
@@ -909,7 +908,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
               //  if (article && article?.authorId) {
               navigation.navigate('UserProfileScreen', {
                 authorId: authorId,
-              
+                author_handle: undefined,
               });
             }}>
             {profile_image && profile_image !== '' ? (

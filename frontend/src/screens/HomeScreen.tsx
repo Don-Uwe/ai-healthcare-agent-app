@@ -236,17 +236,18 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           userId: user_id,
           authorId: repostItem.authorId,
           postId: repostItem._id,
+          articleRecordId: repostItem.pb_recordId,
           message: {
             title: `${user_handle} reposted`,
-            body: `${repostItem.title}`,
+            message: `${repostItem.title}`,
           },
           authorMessage: {
             title: `${user_handle} reposted your article`,
-            body: `${repostItem.title}`,
+            message: `${repostItem.title}`,
           },
         };
 
-        console.log('notification body', body);
+       // console.log('notification body', body);
         socket.emit('notification', body);
       }
     },

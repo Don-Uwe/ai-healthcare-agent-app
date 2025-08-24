@@ -36,6 +36,7 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import Share from 'react-native-share';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {hp} from '../helper/Metric';
+import { useSocket } from '../../SocketContext';
 
 const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   //const [progress, setProgress] = useState(10);
@@ -43,7 +44,8 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   const {trackId} = route.params;
   const playbackState = usePlaybackState();
   const progress = useProgress();
-  const {user_token, user_id} = useSelector((state: any) => state.user);
+  const socket = useSocket();
+  const {user_token, user_id, user_handle} = useSelector((state: any) => state.user);
   const {isConnected} = useSelector((state: any) => state.network);
   const [isLoading, setLoading] = useState<boolean>(false);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
@@ -116,14 +118,28 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
       );
       return res.data as any;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+
+        if (data?.likeStatus && podcast) {
+        // data.userId, data.articleId, data.podcastId, data.articleRecordId, data.title, data.message
+        socket.emit('notification', {
+          type: 'likePost',
+          userId: user_id,
+          articleId: null,
+          podcastId: podcast._id,
+          articleRecordId: null,
+          title: `${user_handle} liked your post`,
+          message: podcast.title,
+
+        });
       refetch();
-    },
-    onError: err => {
-      console.log('Update like count err', err);
-      Snackbar.show({
-        text: 'Something went wrong!',
-        duration: Snackbar.LENGTH_SHORT,
+    }
+  },
+  onError: err => {
+    console.log('Update like count err', err);
+    Snackbar.show({
+      text: 'Something went wrong!',
+      duration: Snackbar.LENGTH_SHORT,
       });
     },
   });

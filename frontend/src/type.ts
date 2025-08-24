@@ -132,9 +132,8 @@ export type NewPasswordScreenProp = StackScreenProps<
 >;
 
 export type UserProfileScreenProp =
-  | StackScreenProps<RootStackParamList, 'UserProfileScreen'>
-  | StackScreenProps<RootStackParamList, 'ArticleScreen'>
-  | StackScreenProps<RootStackParamList, 'CommentScreen'>;
+   StackScreenProps<RootStackParamList, 'UserProfileScreen'>;
+ 
 
 export type OtpScreenProp = StackScreenProps<RootStackParamList, 'OtpScreen'>;
 

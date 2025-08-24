@@ -7,7 +7,6 @@ import {
   Image,
   Alert,
   Platform,
-  ActivityIndicator,
 } from 'react-native';
 import {OfflinePodcastDetailProp, PodcastData} from '../type';
 import {hp} from '../helper/Metric';
@@ -32,16 +31,17 @@ import {GET_STORAGE_DATA, LIKE_PODCAST} from '../helper/APIUtils';
 import Share from 'react-native-share';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useSocket } from '../../SocketContext';
 
 export default function OfflinePodcastDetail({
-  navigation,
   route,
 }: OfflinePodcastDetailProp) {
   const {podcast} = route.params;
+  const socket = useSocket();
   const insets = useSafeAreaInsets();
   const playbackState = usePlaybackState();
   const progress = useProgress();
-  const {user_id, user_token} = useSelector((state: any) => state.user);
+  const {user_id, user_token, user_handle} = useSelector((state: any) => state.user);
   const {isConnected} = useSelector((state: any) => state.network);
   //const [isLoading, setLoading] = useState<boolean>(false);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
@@ -80,7 +80,7 @@ export default function OfflinePodcastDetail({
 
   const handleShare = async () => {
     try {
-      const result = await Share.open({
+       await Share.open({
         title: podcast?.title,
         message: `${podcast?.title} : Check out this podcast on UltimateHealth app!`,
         // Most Recent APK: 0.7.4
@@ -118,6 +118,19 @@ export default function OfflinePodcastDetail({
         await updateOfflinePodcastLikeStatus(podcast);
       } else {
         podcast.likedUsers.push(user_id);
+        if (data?.likeStatus) {
+        // data.userId, data.articleId, data.podcastId, data.articleRecordId, data.title, data.message
+        socket.emit('notification', {
+          type: 'likePost',
+          userId: user_id,
+          articleId: null,
+          podcastId: podcast._id,
+          articleRecordId: null,
+          title: `${user_handle} liked your post`,
+          message: podcast.title,
+
+        });
+      }
         await updateOfflinePodcastLikeStatus(podcast);
       }
     },

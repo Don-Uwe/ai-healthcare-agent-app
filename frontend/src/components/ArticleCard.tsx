@@ -8,9 +8,8 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Platform,
-  NativeModules,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
 import {fp, hp} from '../helper/Metric';
 import {ArticleCardProps, ArticleData, User} from '../type';
 import moment from 'moment';
@@ -24,7 +23,6 @@ import {
   GET_ARTICLE_CONTENT,
   GET_IMAGE,
   GET_PROFILE_API,
-  GET_STORAGE_DATA,
   LIKE_ARTICLE,
   SAVE_ARTICLE,
 } from '../helper/APIUtils';
@@ -91,11 +89,9 @@ const ArticleCard = ({
     socket.on('connect', () => {
       console.log('connection established');
     });
-  }, []);
+  }, [socket]);
   const {
     data: user,
-    refetch,
-    isLoading,
   } = useQuery({
     queryKey: ['get-my-profile'],
     queryFn: async () => {
@@ -133,7 +129,7 @@ const ArticleCard = ({
       success();
     },
 
-    onError: error => {
+    onError: () => {
       //console.log('Update View Count Error', error);
       Alert.alert('Internal server error, try again!');
     },
@@ -170,21 +166,23 @@ const ArticleCard = ({
 
       //console.log('author', data);
       if (data?.likeStatus) {
+        // data.userId, data.articleId, data.podcastId, data.articleRecordId, data.title, data.message
         socket.emit('notification', {
           type: 'likePost',
-          authorId: data?.article?.authorId,
-          message: {
-            title: user
-              ? `${user?.user_handle} liked your post`
-              : 'Someone liked your post',
-            body: data?.article?.title,
-          },
+          userId: data?.article?.authorId,
+          articleId: data?.article?._id,
+          podcastId: null,
+          articleRecordId: data?.article?.pb_recordId,
+          title: user
+            ? `${user?.user_handle} liked your post`
+            : 'Someone liked your post',
+          message: data?.article?.title,
         });
       }
       success();
     },
 
-    onError: err => {
+    onError: () => {
       Alert.alert('Try Again!');
       //console.log('Like Error', err);
     },

@@ -5,7 +5,7 @@
  * @format
  */
 
-import React, {useEffect, useRef} from 'react';
+import React, {useEffect} from 'react';
 import {Platform, StatusBar, useColorScheme, View} from 'react-native';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import {PRIMARY_COLOR} from './src/helper/Theme';
@@ -32,7 +32,7 @@ function App(): React.JSX.Element {
   };
 
   const BarStyle = Platform.OS === 'ios' ? 'dark-content' : 'light-content';
-  const navigationContainerRef = useRef();
+  //const navigationContainerRef = useRef();
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -60,7 +60,7 @@ function App(): React.JSX.Element {
     init();
     return ()=>{
        TrackPlayer.reset();
-    }
+    };
   }, []);
 
   useEffect(() => {
@@ -69,18 +69,12 @@ function App(): React.JSX.Element {
 
   useEffect(() => {
     PushNotification.configure({
-      // Called when the device successfully registers for push notifications
       onRegister: token => {
         console.log('FCM Token:', token);
       },
 
-      onNotification: notification => {
-        console.log(
-          'Foreground notification received from on notification event:',
-          notification,
-        );
+      onNotification: () => {
         // Handle notification action here
-        //  notification.finish(PushNotificationIOS.FetchResult.NoData);
       },
       requestPermissions: true, // Automatically request permissions on iOS
     });
@@ -90,7 +84,7 @@ function App(): React.JSX.Element {
       {
         channelId: 'default-channel',
         channelName: 'Default Channel',
-        channelDescription: 'A default channel',
+        channelDescription: 'UltimateHealth Notifications',
         playSound: true,
         soundName: 'default',
         importance: 4,
@@ -103,7 +97,7 @@ function App(): React.JSX.Element {
         'Foreground notification received from message:',
         remoteMessage,
       );
-      const data = remoteMessage.data;
+      //const data = remoteMessage.data;
       // handleNotification(data);
 
       PushNotification.localNotification({
@@ -119,8 +113,8 @@ function App(): React.JSX.Element {
 
     messaging().setBackgroundMessageHandler(async remoteMessage => {
       console.log('Background notification received:', remoteMessage); // wjem app is in bg
-      const data = remoteMessage.data;
-      handleNotification(data);
+     // const data = remoteMessage.data;
+      //handleNotification(data);
     });
 
     // On app open
@@ -133,8 +127,8 @@ function App(): React.JSX.Element {
     });
     const onOpenApp = messaging().onNotificationOpenedApp(remoteMessage => {
       console.log('Notification caused app to open:', remoteMessage);
-      const data = remoteMessage.data;
-      handleNotification(data);
+      // const data = remoteMessage.data;
+      // handleNotification(data);
     });
 
     return () => {
@@ -142,8 +136,9 @@ function App(): React.JSX.Element {
       unsubscribe1();
       onOpenApp();
     };
-  }, []);
+  }, [dispatch]);
 
+  /*
   const handleNotification = data => {
     if (!navigationContainerRef.current) {
       return;
@@ -167,6 +162,7 @@ function App(): React.JSX.Element {
       navigationContainerRef.current.navigate('NotificationScreen');
     }
   };
+  */
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -181,7 +177,7 @@ function App(): React.JSX.Element {
                 isDarkMode ? backgroundStyle.backgroundColor : PRIMARY_COLOR
               }
             />
-            <NavigationContainer ref={navigationContainerRef}>
+            <NavigationContainer>
               <StackNavigation />
             </NavigationContainer>
           </View>
