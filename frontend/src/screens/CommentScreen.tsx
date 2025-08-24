@@ -25,7 +25,6 @@ import {
 import {GET_STORAGE_DATA} from '../helper/APIUtils';
 
 const CommentScreen = ({navigation, route}: CommentScreenProp) => {
-  //const socket = io('http://51.20.1.81:8084');
   const socket = useSocket();
   const {articleId, mentionedUsers} = route.params;
   const [comments, setComments] = useState<Comment[]>([]);

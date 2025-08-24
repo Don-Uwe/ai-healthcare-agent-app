@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   FlatList,
   ScrollView,
-  Dimensions,
 } from 'react-native';
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {PRIMARY_COLOR} from '../helper/Theme';
@@ -54,7 +53,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [sortingType, setSortingType] = useState<string>('');
   //const [loading, setLoading] = useState(true);
-  const screenWidth = Dimensions.get('window').width;
   const [selectedCardId, setSelectedCardId] = useState<string>('');
   const [repostItem, setRepostItem] = useState<ArticleData | null>(null);
   const [selectCategoryList, setSelectCategoryList] = useState<Category[]>([]);
@@ -70,6 +68,8 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   );
   const [refreshing, setRefreshing] = useState(false);
   const socket = useSocket();
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
 
   //console.log('User Token', user_token);
   //console.log('User Id', user_id);
@@ -90,7 +90,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     bottomSheetModalRef.current?.present();
   }, []);
 
-  const getAllCategories = async () => {
+  const getAllCategories = useCallback(async () => {
     if (user_token === '') {
       Alert.alert('No token found');
       return;
@@ -119,13 +119,13 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     }
     setArticleCategories(categoryData);
     dispatch(setTags({tags: categoryData}));
-  };
+  }, [dispatch, selectedTags, user_token]);
 
   useEffect(() => {
     getAllCategories();
 
     return () => {};
-  }, []);
+  }, [getAllCategories]);
 
   const {data: unreadCount, refetch: refetchUnreadCount} = useQuery({
     queryKey: ['get-unread-notifications-count'],
@@ -151,7 +151,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     },
   });
 
-   const {
+  const {
     data: user,
     refetch: refetchUser,
     isLoading: isUserLoading,
@@ -169,15 +169,15 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
 
   useFocusEffect(
     useCallback(() => {
-        refetchUser();
+      refetchUser();
       refetchUnreadCount();
-    
     }, [refetchUnreadCount, refetchUser]),
   );
   const handleNoteIconClick = () => {
     //navigation.navigate('EditorScreen');
     navigation.navigate('ArticleDescriptionScreen', {
       article: null,
+      htmlContent: undefined,
     });
   };
 
@@ -247,7 +247,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           },
         };
 
-       // console.log('notification body', body);
+        // console.log('notification body', body);
         socket.emit('notification', body);
       }
     },
@@ -393,31 +393,37 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     isError,
     refetch,
   } = useQuery({
-    queryKey: ['get-all-articles'],
+    queryKey: ['get-all-articles', page],
     queryFn: async () => {
       try {
-        if (user_token === '') {
-          throw new Error('No token found');
+        const response = await axios.get(
+          `${Config.BASE_URL}/articles?page=${page}`,
+          {
+            headers: {Authorization: `Bearer ${user_token}`},
+          },
+        );
+
+        const d: ArticleData[] = response.data.articles;
+
+        if (Number(page) === 1 && response.data.totalPages) {
+          setTotalPages(response.data.totalPages);
         }
 
-        //console.log('ARTICLE URL', `${Config.BASE_URL}/articles`);
-        const response = await axios.get(`${Config.BASE_URL}/articles`, {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        });
+        if (Number(page) === 1) {
+          updateArticles(d);
+        } else {
+          updateArticles([...filteredArticles, ...d]);
+        }
 
-        console.log('Article Response', response);
-        let d = response.data.articles as ArticleData[];
-        updateArticles(d);
         return response.data.articles as ArticleData[];
       } catch (err) {
         console.error('Error fetching articles:', err);
+        return [];
       }
     },
+    enabled: !!user_token && !!page,
   });
 
- 
   const onRefresh = () => {
     setRefreshing(true);
     refetch();
@@ -466,38 +472,38 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         />
 
         <View style={styles.buttonContainer}>
-        <ScrollView
-          horizontal={true}
-          showsHorizontalScrollIndicator={false}
-          //contentContainerStyle={{flex:1}}
-        >
-          {selectedTags &&
-            selectedTags.length > 0 &&
-            !searchMode &&
-            selectedTags.map((item, index) => (
-              <TouchableOpacity
-                key={index}
-                style={{
-                  ...styles.button,
-                  backgroundColor:
-                    selectedCategory !== item ? 'white' : PRIMARY_COLOR,
-                  borderColor:
-                    selectedCategory !== item ? PRIMARY_COLOR : 'white',
-                }}
-                onPress={() => {
-                  handleCategoryClick(item);
-                }}>
-                <Text
+          <ScrollView
+            horizontal={true}
+            showsHorizontalScrollIndicator={false}
+            //contentContainerStyle={{flex:1}}
+          >
+            {selectedTags &&
+              selectedTags.length > 0 &&
+              !searchMode &&
+              selectedTags.map((item, index) => (
+                <TouchableOpacity
+                  key={index}
                   style={{
-                    ...styles.labelStyle,
-                    color: selectedCategory !== item ? 'black' : 'white',
+                    ...styles.button,
+                    backgroundColor:
+                      selectedCategory !== item ? 'white' : PRIMARY_COLOR,
+                    borderColor:
+                      selectedCategory !== item ? PRIMARY_COLOR : 'white',
+                  }}
+                  onPress={() => {
+                    handleCategoryClick(item);
                   }}>
-                  {item}
-                </Text>
-              </TouchableOpacity>
-            ))}
-        </ScrollView>
-      </View>
+                  <Text
+                    style={{
+                      ...styles.labelStyle,
+                      color: selectedCategory !== item ? 'black' : 'white',
+                    }}>
+                    {item}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+          </ScrollView>
+        </View>
         <InactiveUserModal
           open={true}
           onRequestAdmin={() => {
@@ -590,13 +596,19 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
               <View style={styles.emptyContainer}>
                 {/**
                  *  <Image
-                  source={require('../assets/article_default.jpg')}
+                  source={require('../assets/no_results.jpg')}
                   style={styles.emptyImgStyle}
                 />
                  */}
                 <Text style={styles.message}>No Article Found</Text>
               </View>
             }
+            onEndReached={() => {
+              if (page < totalPages) {
+                setPage(prev => prev + 1);
+              }
+            }}
+            onEndReachedThreshold={0.5}
           />
         )}
       </View>
@@ -618,7 +630,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-   blockContainer: {
+  blockContainer: {
     flex: 0,
     backgroundColor: '#F0F8FF',
     justifyContent: 'center',

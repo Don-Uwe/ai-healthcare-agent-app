@@ -280,7 +280,7 @@ const ArticleCard = ({
           />
         ) : (
           <Image
-            source={require('../assets/article_default.jpg')}
+            source={require('../assets/no_results.jpg')}
             style={styles.image}
           />
         )}

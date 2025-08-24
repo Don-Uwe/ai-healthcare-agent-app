@@ -9,7 +9,11 @@ import {
   FlatList,
   Image,
 } from 'react-native';
-import {DISCARDED_PODCASTS, PENDING_PODCASTS, USER_PUBLISHED_PODCASTS} from '../../helper/APIUtils';
+import {
+  DISCARDED_PODCASTS,
+  PENDING_PODCASTS,
+  USER_PUBLISHED_PODCASTS,
+} from '../../helper/APIUtils';
 import {PodcastData} from '../../type';
 import {useSelector} from 'react-redux';
 import {msToTime} from '../../helper/Utils';
@@ -25,110 +29,143 @@ export default function PodcastWorkSpace({
 }) {
   const {user_token, user_handle} = useSelector((state: any) => state.user);
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [publishedPage, setPublishedPage] = useState(1);
+  const [totalPublishPages, setTotalPublishPages] = useState(0);
+  const [publishedPodcasts, setPublishedPodcasts] = useState<PodcastData[]>([]);
+
+  const [pendingPage, setPendingPage] = useState(1);
+  const [totalPendingPages, setTotalPendingPages] = useState(0);
+  const [pendingPodcasts, setPendingPodcasts] = useState<PodcastData[]>([]);
+  const [selectedStatus, setSelectedStatus] = useState(1);
+
+  const [discardedPage, setDiscardedPage] = useState(1);
+  const [totalDiscardedPages, setTotalDiscardedPages] = useState(0);
+  const [discardedPodcasts, setDiscardedPodcasts] = useState<PodcastData[]>([]);
 
   const {
-    data: publishedPodcasts,
     isLoading: publishedPodcastsLoading,
     refetch: publishedPodcastsRefetch,
   } = useQuery({
-    queryKey: ['get-published-podcasts-for-user'],
+    queryKey: ['get-published-podcasts-for-user', publishedPage],
     queryFn: async () => {
       try {
-        const response = await axios.get(`${USER_PUBLISHED_PODCASTS}`, {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
+        const response = await axios.get(
+          `${USER_PUBLISHED_PODCASTS}?page=${publishedPage}`,
+          {
+            headers: {
+              Authorization: `Bearer ${user_token}`,
+            },
           },
-        });
+        );
+
+        if (Number(publishedPage) === 1 && response.data.totalPages) {
+          let totalPage = response.data.totalPages;
+          setTotalPublishPages(totalPage);
+
+          setPublishedPodcasts(response.data.publishedPodcasts);
+        } else {
+          if (response.data.publishedPodcasts) {
+            let oldPodcasts = (publishedPodcasts as PodcastData[]) ?? ([] as PodcastData[]);
+            let newPodcasts = response.data.publishedPodcasts as PodcastData[];
+            setPublishedPodcasts([...oldPodcasts, ...newPodcasts]);
+          }
+        }
 
         //console.log('Article Response', response);
         //let d = response.data as ArticleData[];
         //updateArticles(d);
-        return response.data as PodcastData[];
+        return response.data.publishedPodcasts as PodcastData[];
       } catch (err) {
         console.error('Error fetching podcasts:', err);
       }
     },
+    enabled: !!user_token && !!publishedPage,
   });
 
-   const {
-    data: pendingPodcasts,
+  const {
     isLoading: pendingPodcastsLoading,
     refetch: pendingPodcastsRefetch,
   } = useQuery({
-    queryKey: ['get-pending-podcasts-for-user'],
+    queryKey: ['get-pending-podcasts-for-user', pendingPage],
     queryFn: async () => {
       try {
-        const response = await axios.get(`${PENDING_PODCASTS}`, {
+        const response = await axios.get(`${PENDING_PODCASTS}?page=${pendingPage}`, {
           headers: {
             Authorization: `Bearer ${user_token}`,
           },
         });
 
-        //console.log('Article Response', response);
-        //let d = response.data as ArticleData[];
-        //updateArticles(d);
-        return response.data as PodcastData[];
+        if (Number(pendingPage) === 1 && response.data.totalPages) {
+          let totalPage = response.data.totalPages;
+          setTotalPendingPages(totalPage);
+
+          setPendingPodcasts(response.data.pendingPodcasts);
+        } else {
+          if (response.data.pendingPodcasts) {
+            let oldPodcasts = (pendingPodcasts as PodcastData[]) ?? ([] as PodcastData[]);
+            let newPodcasts = response.data.pendingPodcasts as PodcastData[];
+            setPendingPodcasts([...oldPodcasts, ...newPodcasts]);
+          }
+        }
+
+        return response.data.pendingPodcasts as PodcastData[];
       } catch (err) {
         console.error('Error fetching podcasts:', err);
       }
     },
   });
 
-   const {
-    data: discardedPodcasts,
+  const {
     isLoading: discardedPodcastsLoading,
     refetch: discardedPodcastsRefetch,
   } = useQuery({
-    queryKey: ['get-discarded-podcasts-for-user'],
+    queryKey: ['get-discarded-podcasts-for-user', discardedPage],
     queryFn: async () => {
       try {
-        const response = await axios.get(`${DISCARDED_PODCASTS}`, {
+        const response = await axios.get(`${DISCARDED_PODCASTS}?page=${discardedPage}`, {
           headers: {
             Authorization: `Bearer ${user_token}`,
           },
         });
 
-       // console.log('Podcast Response', response.data);
-        //let d = response.data as ArticleData[];
-        //updateArticles(d);
-        return response.data as PodcastData[];
+        if (Number(discardedPage) === 1 && response.data.totalPages) {
+          let totalPage = response.data.totalPages;
+          setTotalDiscardedPages(totalPage);
+
+          setDiscardedPodcasts(response.data.discardedPodcasts);
+        } else {
+          if (response.data.discardedPodcasts) {
+            let oldPodcasts = (discardedPodcasts as PodcastData[]) ?? ([] as PodcastData[]);
+            let newPodcasts = response.data.discardedPodcasts as PodcastData[];
+            setDiscardedPodcasts([...oldPodcasts, ...newPodcasts]);
+          }
+        }
+        return response.data.discardedPodcasts as PodcastData[];
       } catch (err) {
         console.error('Error fetching podcasts:', err);
       }
     },
+    enabled: !!user_token && !!discardedPage,
   });
 
   //const [selectedCardId, setSelectedCardId] = useState<string>('');
-  const pendingLabel = `Progress (${pendingPodcasts
-    ? pendingPodcasts.length
-      : 0
-  })`;
-  const publishedLabel = `Published (${
-    publishedPodcasts
-      ? publishedPodcasts.length
-      : 0
-  })`;
+ 
 
-  const discardLabel = `Discarded (${
-    discardedPodcasts
-      ? discardedPodcasts.length
-      : 0
-  })`;
+  const categories = [1, 2, 3];
 
-  const categories = [publishedLabel, pendingLabel, discardLabel];
-  const [selectedCategory, setSelectedCategory] =
-    useState<string>(publishedLabel);
 
   const onRefresh = () => {
     setRefreshing(true);
 
-    if(selectedCategory === pendingLabel){
-        pendingPodcastsRefetch();
-    }
-    else if(selectedCategory === publishedLabel){
-        publishedPodcastsRefetch();
-    }else if(selectedCategory === discardLabel){
-        discardedPodcastsRefetch();
+    if (selectedStatus === 2) {
+      setPendingPage(1);
+      pendingPodcastsRefetch();
+    } else if (selectedStatus === 1) {
+      setPublishedPage(1);
+      publishedPodcastsRefetch();
+    } else if (selectedStatus === 3) {
+      setDiscardedPage(1);
+      discardedPodcastsRefetch();
     }
     setRefreshing(false);
   };
@@ -144,27 +181,27 @@ export default function PodcastWorkSpace({
           views={item.viewUsers.length}
           duration={msToTime(item.duration)}
           tags={item.tags}
-          handleClick={()=>{
+          handleClick={() => {
             handleClickAction(item);
           }}
-          downLoadAudio={()=>{
-
-          }}
+          downLoadAudio={() => {}}
           handleReport={() => {
             // Handle report action
           }}
           downloaded={false}
           display={false}
-          playlistAct={()=>{
-
-          }}
+          playlistAct={() => {}}
         />
       );
     },
     [handleClickAction, user_handle],
   );
 
-  if (publishedPodcastsLoading || pendingPodcastsLoading || discardedPodcastsLoading) {
+  if (
+    publishedPodcastsLoading ||
+    pendingPodcastsLoading ||
+    discardedPodcastsLoading
+  ) {
     return <Loader />;
   }
 
@@ -178,19 +215,25 @@ export default function PodcastWorkSpace({
               style={{
                 ...styles.button,
                 backgroundColor:
-                  selectedCategory !== item ? 'white' : PRIMARY_COLOR,
+                  selectedStatus !== item ? 'white' : PRIMARY_COLOR,
                 borderColor:
-                  selectedCategory !== item ? PRIMARY_COLOR : 'white',
+                  selectedStatus !== item ? PRIMARY_COLOR : 'white',
               }}
               onPress={() => {
-                setSelectedCategory(item);
+                setSelectedStatus(item);
+                //setSelectedCategory(item);
               }}>
               <Text
                 style={{
                   ...styles.labelStyle,
-                  color: selectedCategory !== item ? 'black' : 'white',
+                  color: selectedStatus !== item ? 'black' : 'white',
                 }}>
-                {item}
+                {item === 1 ?
+                `Published(${publishedPodcasts ? publishedPodcasts.length : 0})` :
+                item === 2 ?
+                `Pending(${pendingPodcasts ? pendingPodcasts.length : 0})`
+                : `Discarded(${discardedPodcasts ? discardedPodcasts.length : 0})`
+               }
               </Text>
             </TouchableOpacity>
           ))}
@@ -199,9 +242,9 @@ export default function PodcastWorkSpace({
         <View style={styles.articleContainer}>
           <FlatList
             data={
-              selectedCategory === publishedLabel
+              selectedStatus === 1
                 ? publishedPodcasts ?? []
-                : selectedCategory === pendingLabel
+                : selectedStatus === 2
                 ? pendingPodcasts ?? []
                 : discardedPodcasts ?? []
             }
@@ -213,12 +256,32 @@ export default function PodcastWorkSpace({
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Image
-                  source={require('../../assets/article_default.jpg')}
+                  source={require('../../assets/no_results.jpg')}
                   style={styles.image}
                 />
                 <Text style={styles.message}>No podcasts Found</Text>
               </View>
             }
+            onEndReached={() => {
+
+              if(selectedStatus === 1){
+                if(publishedPage < totalPublishPages){
+                  setPublishedPage(prev => prev + 1);
+                }
+              }
+              else if(selectedStatus === 2){
+
+                if(pendingPage < totalPendingPages){
+                  setPendingPage(prev => prev + 1);
+                }
+              }
+              else if(selectedStatus === 3){
+                if(discardedPage < totalDiscardedPages){
+                  setDiscardedPage(prev => prev + 1);
+                }
+              }
+            }}
+            onEndReachedThreshold={0.5}
           />
         </View>
       </View>
@@ -238,7 +301,7 @@ const styles = StyleSheet.create({
   button: {
     flex: 1,
     borderRadius: 10,
-    marginHorizontal:2,
+    marginHorizontal: 2,
     marginVertical: 4,
     padding: hp(1.5),
     borderWidth: 1,

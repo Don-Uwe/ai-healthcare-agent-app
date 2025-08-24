@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Text,
   View,
+  Image,
 } from 'react-native';
 import React, {useEffect} from 'react';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
@@ -13,7 +14,7 @@ import {useSelector} from 'react-redux';
 import {useMutation, useQuery} from '@tanstack/react-query';
 import axios from 'axios';
 import Config from 'react-native-config';
-import {Notification} from '../type';
+import {Notification, NotificationType} from '../type';
 import Loader from '../components/Loader';
 import Snackbar from 'react-native-snackbar';
 
@@ -22,34 +23,44 @@ const NotificationScreen = ({navigation}) => {
   //const notifications = [];
   const {user_token} = useSelector((state: any) => state.user);
   const [refreshing, setRefreshing] = React.useState(false);
+  const [page, setPage] = React.useState(0);
+  const [totalPages, setTotalPages] = React.useState(0);
+  const [notificationsData, setNotificationsData] = React.useState<Notification[]>();
 
-  console.log(user_token);
-  console.log('user_token');
+ // console.log(user_token);
+//  console.log('user_token');
 
   const {
     data: notifications,
     isLoading,
-    isError,
     refetch,
   } = useQuery({
-    queryKey: ['get-all-notifications'],
+    queryKey: ['get-all-notifications', page],
     queryFn: async () => {
       try {
-        if (user_token === '') {
-          throw new Error('No token found');
-        }
-        const response = await axios.get(`${Config.BASE_URL}/notifications`, {
+        const response = await axios.get(`${Config.BASE_URL}/notifications?page=${page}`, {
           headers: {
             Authorization: `Bearer ${user_token}`,
           },
         });
 
+        if(Number(page) === 1){
+          if(response.data.totalPages){
+          const totalPage = response.data.totalPages;
+          setTotalPages(totalPage);
+          }
+          setNotificationsData(response.data.notifications);
+        }else{
+          const oldNotif = notificationsData ?? [];
+          setNotificationsData([...oldNotif, ...response.data.notifications]);
+        }
         // console.log('Notification Response', response);
-        return response.data as Notification[];
+        return response.data.notifications as Notification[];
       } catch (err) {
         console.error('Error fetching articles:', err);
       }
     },
+    enabled: !!user_token && !!page,
   });
 
   // Mark Notification as read api integration
@@ -131,7 +142,7 @@ const NotificationScreen = ({navigation}) => {
     markNotificationMutation.mutate();
 
     return () => {};
-  }, []);
+  }, [markNotificationMutation]);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -140,8 +151,83 @@ const NotificationScreen = ({navigation}) => {
   };
 
   const handleNotificationClick = (item: Notification) => {
-    console.log('Notification clicked:', item);
-    // Navigate to specific screen, on  2nd half
+    if (
+      (item.type === NotificationType.PodcastCommentMention ||
+        item.type === NotificationType.PodcastComment ||
+        item.type === NotificationType.PodcastCommentLike) &&
+      item.podcastId
+    ) {
+      navigation.navigate('PodcastDiscussion', {
+        podcastId: item.podcastId._id,
+        mentionedUsers: item.podcastId.mentionedUsers,
+      });
+    } else if (
+      (item.type === NotificationType.ArticleCommentMention ||
+        item.type === NotificationType.ArticleRepost ||
+        item.type === NotificationType.Article ||
+        item.type === NotificationType.EditRequest ||
+        item.type === NotificationType.ArticleLike ||
+        item.type === NotificationType.ArticleComment) &&
+      item.articleId
+    ) {
+      navigation.navigate('ArticleScreen', {
+        articleId: Number(item.articleId._id),
+        authorId: item.articleId.authorId,
+        recordId: item.articleId.pb_recordId,
+      });
+    } else if (item.type === NotificationType.UserFollow && item.userId) {
+      navigation.navigate('UserProfileScreen', {
+        userId: item.userId._id,
+      });
+    } else if (item.type === NotificationType.CommentLike) {
+      if (item.podcastId) {
+        navigation.navigate('PodcastDiscussion', {
+          podcastId: item.podcastId._id,
+          mentionedUsers: item.podcastId.mentionedUsers,
+        });
+      } else if (item.articleId) {
+        navigation.navigate('CommentScreen', {
+          articleId: item.articleId._id,
+          mentionedUsers: item.articleId.mentionedUsers,
+        });
+      }
+    } else if (
+      (item.type === NotificationType.Podcast ||
+        item.type === NotificationType.PodcastLike) &&
+      item.podcastId
+    ) {
+      navigation.navigate('PodcastDetail', {
+        trackId: item.podcastId._id,
+      });
+    }
+    else if(item.type === NotificationType.ArticleCommentLike){
+      if(item.articleId){
+        navigation.navigate('CommentScreen', {
+        articleId: item.articleId._id,
+        mentionedUsers: item.articleId.mentionedUsers,
+      });
+      }
+    }
+    else if(item.type === NotificationType.ArticleReview){
+
+      if(item.articleId){
+        navigation.navigate('ReviewScreen',{
+        articleId: item.articleId._id,
+        authorId: item.articleId.authorId,
+        recordId: item.articleId.pb_recordId,
+      });
+      }
+    }
+    else if(item.type === NotificationType.ArticleRevisionReview){
+      if(item.revisionId){
+        navigation.navigate('ImprovementReviewScreen',{
+          requestId: item.revisionId._id,
+          authorId: item.revisionId.user_id,
+          recordId: item.revisionId.pb_recordId,
+          articleRecordId: item.revisionId.article_recordId,
+        });
+      }
+    }
   };
 
   const renderItem = ({item}: {item: Notification}) => {
@@ -150,10 +236,6 @@ const NotificationScreen = ({navigation}) => {
         item={item}
         handleDeleteAction={handleDeleteAction}
         handleClick={handleNotificationClick}
-        // isSelected={selectedCardId === item._id}
-        // setSelectedCardId={setSelectedCardId}
-        // navigation={navigation}
-        //  success={onRefresh}
       />
     );
   };
@@ -161,7 +243,7 @@ const NotificationScreen = ({navigation}) => {
   const handleDeleteAction = (item: Notification) => {
     console.log('Notification ID', item?._id);
     deleteNotificationMutation.mutate({
-      id: item?._id
+      id: item?._id,
     });
   };
 
@@ -181,15 +263,20 @@ const NotificationScreen = ({navigation}) => {
         onRefresh={onRefresh}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            {/**
-                 *  <Image
-                  source={require('../assets/article_default.jpg')}
+              <Image
+                  source={require('../assets/no_results.jpg')}
                   style={styles.emptyImgStyle}
                 />
-                 */}
-            <Text style={styles.message}>No Article Found</Text>
+
+            <Text style={styles.message}>No Notifications Found</Text>
           </View>
         }
+         onEndReached={() => {
+              if (page < totalPages) {
+                setPage(prev => prev + 1);
+              }
+        }}
+         onEndReachedThreshold={0.5}
       />
     </SafeAreaView>
   );
@@ -250,5 +337,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginTop: 40,
     paddingBottom: 120,
+  },
+  emptyImgStyle: {
+    width: 300,
+    height: 200,
+    borderRadius: 8,
+    marginBottom: 10,
+    resizeMode: 'contain',
   },
 });

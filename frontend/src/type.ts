@@ -133,7 +133,7 @@ export type NewPasswordScreenProp = StackScreenProps<
 
 export type UserProfileScreenProp =
    StackScreenProps<RootStackParamList, 'UserProfileScreen'>;
- 
+
 
 export type OtpScreenProp = StackScreenProps<RootStackParamList, 'OtpScreen'>;
 
@@ -328,28 +328,23 @@ export type Notification = {
 };
 
 export enum NotificationType {
-  ArticleReview = 'articleReview',
-  PodcastReview = 'podcastReview',
+
   PodcastCommentMention = 'podcastCommentMention',
   ArticleCommentMention = 'articleCommentMention',
   ArticleRepost = 'articleRepost',
   UserFollow = 'userFollow',
   CommentLike = 'commentLike',
-  Comment = 'comment',
   Article = 'article',
   Podcast = 'podcast',
   EditRequest = 'editRequest',
   ArticleLike = 'articleLike',
   PodcastLike = 'podcastLike',
-  ArticleImprovement = 'articleImprovement',
   ArticleComment = 'articleComment',
   PodcastComment = 'podcastComment',
-  EditRequestComment = 'editRequestComment',
   ArticleCommentLike = 'articleCommentLike',
   PodcastCommentLike = 'podcastCommentLike',
   ArticleRevisionReview = 'articleRevisionReview',
-  ArticleSubmitToAdmin = 'articleSubmitToAdmin',
-  RevisionSubmitToAdmin = 'revisionSubmitToAdmin',
+  ArticleReview = 'articleReview',
 }
 
 export type PocketBaseResponse = {

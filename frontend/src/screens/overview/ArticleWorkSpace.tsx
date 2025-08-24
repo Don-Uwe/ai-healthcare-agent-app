@@ -1,6 +1,6 @@
 import {useQuery} from '@tanstack/react-query';
 import axios from 'axios';
-import React, {useCallback, useState} from 'react';
+import {useCallback, useState} from 'react';
 import {
   View,
   StyleSheet,
@@ -12,7 +12,6 @@ import {
 import {GET_ALL_ARTICLES_FOR_USER} from '../../helper/APIUtils';
 import {ArticleData} from '../../type';
 import {useSelector} from 'react-redux';
-import {StatusEnum} from '../../helper/Utils';
 import ReviewCard from '../../components/ReviewCard';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
 import {hp} from '../../helper/Metric';
@@ -25,61 +24,92 @@ export default function ArticleWorkSpace({
 }) {
   const {user_token} = useSelector((state: any) => state.user);
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [selectedStatus, setSelectedStatus] = useState(1);
+  const [visit, setVisit] = useState(1);
+  const [publishedLabel, setPublishedLabel] = useState('Published');
+  const [progressLabel, setProgressLabel] = useState('Progress');
+  const [discardLabel, setDiscardLabel] = useState('Discard');
+  const [articleData, setArticleData] = useState<ArticleData[]>();
 
   const {
     data: articles,
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: ['get-all-articles-for-user'],
+    queryKey: ['get-all-articles-for-user', page, selectedStatus],
     queryFn: async () => {
       try {
-        const response = await axios.get(`${GET_ALL_ARTICLES_FOR_USER}`, {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
+        const response = await axios.get(
+          `${GET_ALL_ARTICLES_FOR_USER}?page=${page}&status=${selectedStatus}`,
+          {
+            headers: {
+              Authorization: `Bearer ${user_token}`,
+            },
           },
-        });
+        );
 
         //console.log('Article Response', response);
-        let d = response.data.articles as ArticleData[];
+        //let d = response.data.articles as ArticleData[];
         //updateArticles(d);
+
+        if (Number(page) === 1 && response.data.totalPages) {
+          setTotalPages(response.data.totalPages);
+          setArticleData(response.data.articles);
+        }else{
+          if(response.data.articles){
+            const d = response.data.articles;
+             setArticleData(prev => [...prev, ...d]);
+          }
+        }
+
+        if (Number(visit) === 1) {
+          if (response.data.publishedCount) {
+            const publishCount = response.data.publishedCount;
+            setPublishedLabel(`Published(${publishCount})`);
+          }
+          if (response.data.progressCount) {
+            const progressCount = response.data.progressCount;
+            setProgressLabel(`Progress(${progressCount})`);
+          }
+
+          if (response.data.discardCount) {
+            const discardCount = response.data.discardCount;
+            setDiscardLabel(`Discarded(${discardCount})`);
+          }
+
+          setVisit(0);
+        }
+
         return response.data.articles as ArticleData[];
       } catch (err) {
         console.error('Error fetching articles:', err);
       }
     },
+    enabled: !!user_token && !!page,
   });
 
   const [selectedCardId, setSelectedCardId] = useState<string>('');
-  const progressLabel = `Progress (${
-    articles
-      ? articles.filter(
-          a =>
-            a.status === StatusEnum.AWAITING_USER ||
-            a.status === StatusEnum.REVIEW_PENDING ||
-            a.status === StatusEnum.IN_PROGRESS ||
-            a.status === StatusEnum.UNASSIGNED,
-        ).length
-      : 0
-  })`;
-  const publishedLabel = `Published (${
-    articles
-      ? articles.filter(a => a.status === StatusEnum.PUBLISHED).length
-      : 0
-  })`;
 
-  const discardLabel = `Discarded (${
-    articles
-      ? articles.filter(a => a.status === StatusEnum.DISCARDED).length
-      : 0
-  })`;
-
-  const categories = [publishedLabel, progressLabel, discardLabel];
-  const [selectedCategory, setSelectedCategory] =
-    useState<string>(publishedLabel);
+  const categories = [
+    {
+      label: publishedLabel,
+      status: 1,
+    },
+    {
+      label: progressLabel,
+      status: 2,
+    },
+    {
+      label: discardLabel,
+      status: 3,
+    },
+  ];
 
   const onRefresh = () => {
     setRefreshing(true);
+    setPage(1);
     refetch();
     setRefreshing(false);
   };
@@ -112,19 +142,24 @@ export default function ArticleWorkSpace({
               style={{
                 ...styles.button,
                 backgroundColor:
-                  selectedCategory !== item ? 'white' : PRIMARY_COLOR,
+                  item.status !== selectedStatus ? 'white' : PRIMARY_COLOR,
                 borderColor:
-                  selectedCategory !== item ? PRIMARY_COLOR : 'white',
+                  item.status !== selectedStatus ? PRIMARY_COLOR : 'white',
               }}
               onPress={() => {
-                setSelectedCategory(item);
+                setSelectedStatus(item.status);
+                setPage(1);
               }}>
               <Text
                 style={{
                   ...styles.labelStyle,
-                  color: selectedCategory !== item ? 'black' : 'white',
+                  color: selectedStatus !== item.status ? 'black' : 'white',
                 }}>
-                {item}
+                {item.status === 1
+                  ? publishedLabel
+                  : item.status === 2
+                  ? progressLabel
+                  : discardLabel}
               </Text>
             </TouchableOpacity>
           ))}
@@ -132,25 +167,7 @@ export default function ArticleWorkSpace({
 
         <View style={styles.articleContainer}>
           <FlatList
-            data={
-              selectedCategory === publishedLabel
-                ? articles
-                  ? articles.filter(a => a.status === StatusEnum.PUBLISHED)
-                  : []
-                : selectedCategory === progressLabel
-                ? articles
-                  ? articles.filter(
-                      a =>
-                        a.status === StatusEnum.AWAITING_USER ||
-                        a.status === StatusEnum.REVIEW_PENDING ||
-                        a.status === StatusEnum.IN_PROGRESS ||
-                        a.status === StatusEnum.UNASSIGNED,
-                    )
-                  : []
-                : articles
-                ? articles.filter(a => a.status === StatusEnum.DISCARDED)
-                : []
-            }
+            data={articleData ? articleData : []}
             renderItem={renderItem}
             keyExtractor={item => item._id.toString()}
             contentContainerStyle={styles.flatListContentContainer}
@@ -159,12 +176,18 @@ export default function ArticleWorkSpace({
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Image
-                  source={require('../../assets/article_default.jpg')}
+                  source={require('../../assets/no_results.jpg')}
                   style={styles.image}
                 />
                 <Text style={styles.message}>No Article Found</Text>
               </View>
             }
+             onEndReached={() => {
+              if (page < totalPages) {
+                setPage(prev => prev + 1);
+              }
+            }}
+            onEndReachedThreshold={0.5}
           />
         </View>
       </View>
@@ -184,7 +207,7 @@ const styles = StyleSheet.create({
   button: {
     flex: 1,
     borderRadius: 10,
-    marginHorizontal:2,
+    marginHorizontal: 2,
     marginVertical: 4,
     padding: hp(1.5),
     borderWidth: 1,

@@ -12,7 +12,6 @@ import {GET_ALL_IMPROVEMENTS_FOR_USER} from '../../helper/APIUtils';
 import axios from 'axios';
 import {useQuery} from '@tanstack/react-query';
 import {useSelector} from 'react-redux';
-import {StatusEnum} from '../../helper/Utils';
 import Loader from '../../components/Loader';
 import ImprovementCard from '../../components/ImprovementCard';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
@@ -26,58 +25,86 @@ export default function ImprovementWorkspace({
   const {user_token} = useSelector((state: any) => state.user);
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [selectedStatus, setSelectedStatus] = useState(1);
+  const [visit, setVisit] = useState(1);
+  const [publishedLabel, setPublishedLabel] = useState('Published');
+  const [progressLabel, setProgressLabel] = useState('Progress');
+  const [discardLabel, setDiscardLabel] = useState('Discard');
+  const [improvementData, setImprovementData] = useState<EditRequest[]>();
+
   const {
-    data: improvements,
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: ['get-all-improvements-for-review'],
+    queryKey: ['get-all-improvements-for-review', page, selectedStatus],
     queryFn: async () => {
       try {
-     
-    
-        const response = await axios.get(`${GET_ALL_IMPROVEMENTS_FOR_USER}`, {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
+        const response = await axios.get(
+          `${GET_ALL_IMPROVEMENTS_FOR_USER}?page=${page}&status=${selectedStatus}`,
+          {
+            headers: {
+              Authorization: `Bearer ${user_token}`,
+            },
           },
-        });
-        return response.data as EditRequest[];
+        );
+        if (Number(page) === 1 && response.data.totalPages) {
+          setTotalPages(response.data.totalPages);
+          setImprovementData(response.data.articles);
+        } else {
+          if (response.data.articles) {
+            const d = response.data.articles;
+            setImprovementData(prev => [...prev, ...d]);
+          }
+        }
+
+        if (Number(visit) === 1) {
+          if (response.data.publishedCount) {
+            const publishCount = response.data.publishedCount;
+            setPublishedLabel(`Published(${publishCount})`);
+          }
+          if (response.data.progressCount) {
+            const progressCount = response.data.progressCount;
+            setProgressLabel(`Progress(${progressCount})`);
+          }
+
+          if (response.data.discardCount) {
+            const discardCount = response.data.discardCount;
+            setDiscardLabel(`Discarded(${discardCount})`);
+          }
+
+          setVisit(0);
+        }
+
+        return response.data.articles as EditRequest[];
       } catch (err) {
         console.error('Error fetching articles:', err);
       }
     },
+    enabled: !!user_token && !!page,
   });
 
 
-  const progressLabel = `Progress (${
-    improvements
-      ? improvements.filter(
-          a =>
-            a.status === StatusEnum.AWAITING_USER ||
-            a.status === StatusEnum.REVIEW_PENDING ||
-            a.status === StatusEnum.IN_PROGRESS ||
-            a.status === StatusEnum.UNASSIGNED,
-        ).length
-      : 0
-  })`;
-  const publishedLabel = `Published (${
-    improvements
-      ? improvements.filter(a => a.status === StatusEnum.PUBLISHED).length
-      : 0
-  })`;
+   const categories = [
+    {
+      label: publishedLabel,
+      status: 1,
+    },
+    {
+      label: progressLabel,
+      status: 2,
+    },
+    {
+      label: discardLabel,
+      status: 3,
+    },
+  ];
 
-  const discardLabel = `Discarded (${
-    improvements
-      ? improvements.filter(a => a.status === StatusEnum.DISCARDED).length
-      : 0
-  })`;
-
-  const categories = [publishedLabel, progressLabel, discardLabel];
-  const [selectedCategory, setSelectedCategory] =
-    useState<string>(publishedLabel);
 
   const onRefresh = () => {
     setRefreshing(true);
+    setPage(1);
     refetch();
     setRefreshing(false);
   };
@@ -90,8 +117,6 @@ export default function ImprovementWorkspace({
     },
     [handleImprovementClick],
   );
-
- 
 
   if (isLoading) {
     return <Loader />;
@@ -107,19 +132,24 @@ export default function ImprovementWorkspace({
               style={{
                 ...styles.button,
                 backgroundColor:
-                  selectedCategory !== item ? 'white' : PRIMARY_COLOR,
+                  selectedStatus !== item.status ? 'white' : PRIMARY_COLOR,
                 borderColor:
-                  selectedCategory !== item ? PRIMARY_COLOR : 'white',
+                  selectedStatus !== item.status ? PRIMARY_COLOR : 'white',
               }}
               onPress={() => {
-                setSelectedCategory(item);
+                setSelectedStatus(item.status);
+                setPage(1);
               }}>
               <Text
                 style={{
                   ...styles.labelStyle,
-                  color: selectedCategory !== item ? 'black' : 'white',
+                  color: selectedStatus !== item.status ? 'black' : 'white',
                 }}>
-                {item}
+                {item.status === 1
+                  ? publishedLabel
+                  : item.status === 2
+                  ? progressLabel
+                  : discardLabel}
               </Text>
             </TouchableOpacity>
           ))}
@@ -127,25 +157,7 @@ export default function ImprovementWorkspace({
 
         <View style={styles.articleContainer}>
           <FlatList
-            data={
-              selectedCategory === publishedLabel
-                ? improvements
-                  ? improvements.filter(a => a.status === StatusEnum.PUBLISHED)
-                  : []
-                : selectedCategory === progressLabel
-                ? improvements
-                  ? improvements.filter(
-                      a =>
-                        a.status === StatusEnum.AWAITING_USER ||
-                        a.status === StatusEnum.REVIEW_PENDING ||
-                        a.status === StatusEnum.IN_PROGRESS ||
-                        a.status === StatusEnum.UNASSIGNED,
-                    )
-                  : []
-                : improvements
-                ? improvements.filter(a => a.status === StatusEnum.DISCARDED)
-                : []
-            }
+            data={improvementData ? improvementData : []}
             renderItem={renderItem}
             keyExtractor={item => item._id.toString()}
             contentContainerStyle={styles.flatListContentContainer}
@@ -154,12 +166,18 @@ export default function ImprovementWorkspace({
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Image
-                  source={require('../../assets/article_default.jpg')}
+                  source={require('../../assets/no_results.jpg')}
                   style={styles.image}
                 />
-                <Text style={styles.message}>No Article Found</Text>
+                <Text style={styles.message}>No Improvements Found</Text>
               </View>
             }
+            onEndReached={() => {
+              if (page < totalPages) {
+                setPage(prev => prev + 1);
+              }
+            }}
+            onEndReachedThreshold={0.5}
           />
         </View>
       </View>

@@ -68,7 +68,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
   );
   */
 }
-import React, {useState} from 'react';
+import {useState} from 'react';
 import {
   View,
   FlatList,
@@ -89,12 +89,11 @@ import PodcastEmptyComponent from '../components/PodcastEmptyComponent';
 import Snackbar from 'react-native-snackbar';
 import {setaddedPodcastId, setPodcasts} from '../store/dataSlice';
 import CreatePlaylist from '../components/CreatePlaylist';
-import { ON_PRIMARY_COLOR } from '../helper/Theme';
-import AddIcon from '../components/AddIcon';
-import { NativeModules, NativeEventEmitter } from 'react-native';
+import {ON_PRIMARY_COLOR} from '../helper/Theme';
+import {NativeModules, NativeEventEmitter} from 'react-native';
 import CreateIcon from '../components/CreateIcon';
 
-const { WavAudioRecorder } = NativeModules;
+const {WavAudioRecorder} = NativeModules;
 const recorderEvents = new NativeEventEmitter(WavAudioRecorder);
 
 const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
@@ -103,46 +102,59 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const {podcasts} = useSelector((state: any) => state.data);
   const [playlistModalOpen, setPlaylistModalOpen] = useState<boolean>(false);
- // const [playlistIds, setPlaylistIds] = useState<string[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
 
-  const openPlaylist = (id: string)=>{
+  // const [playlistIds, setPlaylistIds] = useState<string[]>([]);
 
-   // setPlaylistIds([id]);
+  const openPlaylist = (id: string) => {
+    // setPlaylistIds([id]);
     dispatch(setaddedPodcastId(id));
     // console.log('playlist ids', playlistIds);
     setPlaylistModalOpen(true);
-
   };
-  const closePlaylist = ()=>{
+  const closePlaylist = () => {
     setPlaylistModalOpen(false);
-   // setPlaylistIds([]);
+    // setPlaylistIds([]);
     dispatch(setaddedPodcastId(''));
   };
 
   const {isLoading, refetch} = useQuery({
-    queryKey: ['get-all-podcasts'],
+    queryKey: ['get-all-podcasts', page],
     queryFn: async () => {
       try {
-        if (user_token === '') {
-          throw new Error('No token found');
-        }
-        const response = await axios.get(`${GET_ALL_PODCASTS}`, {
+        const response = await axios.get(`${GET_ALL_PODCASTS}?page=${page}`, {
           headers: {
             Authorization: `Bearer ${user_token}`,
           },
         });
-        const d = response.data as PodcastData[];
-        dispatch(setPodcasts(d));
+
+        if (Number(page) === 1) {
+          if (response.data.totalPages) {
+            const total = response.data.totalPages;
+            setTotalPages(total);
+          }
+          if(response.data.allPodcasts){
+            let data = response.data.allPodcasts as PodcastData[];
+            dispatch(setPodcasts(data));
+          }
+        }else{
+          const oldPodcasts = podcasts;
+          let data = response.data.allPodcasts as PodcastData[];
+          dispatch(setPodcasts([...oldPodcasts, ...data]));
+        }
+        const d = response.data.allPodcasts as PodcastData[];
         return d;
       } catch (err) {
         console.error('Error fetching podcasts:', err);
       }
     },
+    enabled : !!user_token && !!page,
   });
-
 
   const onRefresh = () => {
     setRefreshing(true);
+    setPage(1);
     refetch();
     setRefreshing(false);
   };
@@ -207,10 +219,10 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
           updateViewCountMutation.mutate(item._id);
         }}
         imageUri={item.cover_image}
-        handleReport={()=>{
+        handleReport={() => {
           navigateToReport(item._id);
         }}
-       playlistAct={openPlaylist}
+        playlistAct={openPlaylist}
       />
     </Pressable>
   );
@@ -227,30 +239,30 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
           ListEmptyComponent={<PodcastEmptyComponent />}
           refreshing={refreshing}
           onRefresh={onRefresh}
+          onEndReached={() => {
+            if (page < totalPages) {
+              setPage(prev => prev + 1);
+            }
+          }}
+         onEndReachedThreshold={0.5}
         />
       )}
 
+      <CreatePlaylist visible={playlistModalOpen} dismiss={closePlaylist} />
 
-
-
-
-      <CreatePlaylist
-        visible={playlistModalOpen}
-        dismiss={closePlaylist}
-      />
-
-        <TouchableOpacity
-  style={styles.homePlusIconview}
-  onPress={() => {
-    console.log('Add icon clicked');
-    navigation.navigate('PodcastForm');
-  }}
->
-  <CreateIcon callback={()=>{
-        console.log('Add icon clicked');
-    navigation.navigate('PodcastForm');
-  }}/>
-</TouchableOpacity>
+      <TouchableOpacity
+        style={styles.homePlusIconview}
+        onPress={() => {
+          console.log('Add icon clicked');
+          navigation.navigate('PodcastForm');
+        }}>
+        <CreateIcon
+          callback={() => {
+            console.log('Add icon clicked');
+            navigation.navigate('PodcastForm');
+          }}
+        />
+      </TouchableOpacity>
     </View>
   );
 };
@@ -283,7 +295,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
   },
-   homePlusIconview: {
+  homePlusIconview: {
     bottom: 100,
     right: 25,
     position: 'absolute',

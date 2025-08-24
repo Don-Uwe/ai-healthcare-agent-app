@@ -26,23 +26,44 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
   const [query, setQuery] = useState<string>('');
   const {user_token} = useSelector((state: any) => state.user);
   // const [results, setResults] = useState<PodcastData>([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [searchData, setSearchData] = useState<PodcastData[]>([]);
 
   const {
-    data: results,
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: ['serach-podcasts'],
+    queryKey: ['serach-podcasts', page],
     queryFn: async () => {
-      const res = await axios.get(`${SEARCH_PODCAST}?q=${query}`, {
+      const res = await axios.get(`${SEARCH_PODCAST}?q=${query}&page=${page}`, {
         headers: {
           Authorization: `Bearer ${user_token}`,
         },
       });
 
-      return res.data as PodcastData[];
+      if(Number(page) === 1){
+        if(res.data.totalPages){
+          const pages = res.data.totalPages;
+          setTotalPages(pages);
+        }
+
+        if(res.data.matchPodcasts){
+          setSearchData(res.data.matchPodcasts);
+        }
+      }else{
+
+        if(res.data.matchPodcasts){
+           const oldPodcasts = searchData;
+        const newPodcasts = res.data.matchPodcasts;
+
+        setSearchData([...oldPodcasts, ...newPodcasts]);
+        }
+      }
+
+      return res.data.matchPodcasts as PodcastData[];
     },
-    enabled: !!query,
+    enabled: !!query && !!user_token  ,
   });
 
   const updateViewCountMutation = useMutation({
@@ -109,6 +130,7 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
     </Pressable>
   );
 
+
   return (
     <View style={styles.container}>
       <View style={styles.searchWrapper}>
@@ -134,6 +156,7 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
             value={query}
             onChangeText={setQuery}
             onSubmitEditing={() => {
+              setPage(1);
               refetch();
             }} // If user presses enter on keyboard
             returnKeyType="search"
@@ -153,12 +176,16 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
         <ActivityIndicator size="large" />
       ) : (
         <FlatList
-          data={results && query !== '' ? results : []}
+          data={searchData && query !== '' ? searchData : []}
           keyExtractor={item => item._id.toString()}
           renderItem={renderItem}
           ListEmptyComponent={<NoResults />}
-          //refreshing={refreshing}
-          // onRefresh={onRefresh}
+          onEndReached={() => {
+              if (page < totalPages) {
+                setPage(prev => prev + 1);
+              }
+        }}
+         onEndReachedThreshold={0.5}
         />
       )}
     </View>
