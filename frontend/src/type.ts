@@ -316,7 +316,7 @@ export type Notification = {
   userId: User | null;
   adminId: Admin | null;
   articleId: ArticleData | null;
-  revisionId: EditRequest | null;
+  revisonId: EditRequest | null;
   podcastId: PodcastData | null;
   commentId: Comment | null;
   articleRecordId: string | null;

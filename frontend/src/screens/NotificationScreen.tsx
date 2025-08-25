@@ -219,12 +219,12 @@ const NotificationScreen = ({navigation}) => {
       }
     }
     else if(item.type === NotificationType.ArticleRevisionReview){
-      if(item.revisionId){
+      if(item.revisonId){
         navigation.navigate('ImprovementReviewScreen',{
-          requestId: item.revisionId._id,
-          authorId: item.revisionId.user_id,
-          recordId: item.revisionId.pb_recordId,
-          articleRecordId: item.revisionId.article_recordId,
+          requestId: item.revisonId._id,
+          authorId: item.revisonId.user_id,
+          recordId: item.revisonId.pb_recordId,
+          articleRecordId: item.revisonId.article_recordId,
         });
       }
     }
