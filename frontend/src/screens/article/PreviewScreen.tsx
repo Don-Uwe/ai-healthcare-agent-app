@@ -203,6 +203,8 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
       article: string;
       recordId: string;
     }) => {
+
+      
       const response = await axios.post(
         POST_ARTICLE,
         {
@@ -214,6 +216,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
           imageUtils: imageUtils,
           description: description,
           pb_recordId: recordId,
+          allow_podcast: true,
         },
         {
           headers: {

@@ -135,7 +135,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           throw new Error('No token found');
         }
         const response = await axios.get(
-          `${Config.BASE_URL}/notification/unread-count`,
+          `${Config.BASE_URL}/notification/unread-count?role=2`,
           {
             headers: {
               Authorization: `Bearer ${user_token}`,

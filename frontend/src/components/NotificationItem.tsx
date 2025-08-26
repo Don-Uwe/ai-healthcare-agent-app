@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
     maxHeight: 360,
     backgroundColor: 'white',
     flexDirection: 'row',
-    marginVertical: 14,
+    marginVertical: 4,
     overflow: 'hidden',
     elevation: 4,
 

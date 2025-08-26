@@ -17,13 +17,14 @@ import Config from 'react-native-config';
 import {Notification, NotificationType} from '../type';
 import Loader from '../components/Loader';
 import Snackbar from 'react-native-snackbar';
+import { hp } from '../helper/Metric';
 
 // PodcastsScreen component displays the list of podcasts and includes a PodcastPlayer
 const NotificationScreen = ({navigation}) => {
   //const notifications = [];
   const {user_token} = useSelector((state: any) => state.user);
   const [refreshing, setRefreshing] = React.useState(false);
-  const [page, setPage] = React.useState(0);
+  const [page, setPage] = React.useState(1);
   const [totalPages, setTotalPages] = React.useState(0);
   const [notificationsData, setNotificationsData] = React.useState<Notification[]>();
 
@@ -31,14 +32,13 @@ const NotificationScreen = ({navigation}) => {
 //  console.log('user_token');
 
   const {
-    data: notifications,
     isLoading,
     refetch,
   } = useQuery({
     queryKey: ['get-all-notifications', page],
     queryFn: async () => {
       try {
-        const response = await axios.get(`${Config.BASE_URL}/notifications?page=${page}`, {
+        const response = await axios.get(`${Config.BASE_URL}/notifications?role=2&page=${page}`, {
           headers: {
             Authorization: `Bearer ${user_token}`,
           },
@@ -72,7 +72,7 @@ const NotificationScreen = ({navigation}) => {
         return;
       }
       const res = await axios.put(
-        `${Config.BASE_URL}/notifications/mark-as-read`,
+        `${Config.BASE_URL}/notifications/mark-as-read?role=2`,
         {},
         {
           headers: {
@@ -142,7 +142,7 @@ const NotificationScreen = ({navigation}) => {
     markNotificationMutation.mutate();
 
     return () => {};
-  }, [markNotificationMutation]);
+  }, []);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -255,7 +255,7 @@ const NotificationScreen = ({navigation}) => {
     // Main container
     <SafeAreaView style={styles.container}>
       <FlatList
-        data={notifications}
+        data={notificationsData}
         renderItem={renderItem}
         keyExtractor={item => item._id.toString()}
         contentContainerStyle={styles.flatListContentContainer}
@@ -296,10 +296,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
-    paddingBottom: 20,
+   // paddingBottom: hp(3),
   },
   content: {
-    marginTop: 15,
+    marginTop: hp(3),
     paddingHorizontal: 16,
   },
   recentPodcastsHeader: {

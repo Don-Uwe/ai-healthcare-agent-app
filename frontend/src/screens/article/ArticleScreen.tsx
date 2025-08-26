@@ -55,6 +55,10 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const socket = io(`${Config.SOCKET_URL}`);
   const dispatch = useDispatch();
 
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} = Dimensions.get('window');
+  const baseHeight = SCREEN_HEIGHT * 0.1;
+  const scalePerChar = SCREEN_HEIGHT * 0.002;
+
   const [comments, setComments] = useState<Comment[]>([]);
   // const [newComment, setNewComment] = useState('');
   const flatListRef = useRef<FlatList<Comment>>(null);
@@ -70,12 +74,12 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     updateViewCountMutation.mutate();
 
     // Tts.requestInstallData();
-   // const subscription = Tts.addEventListener('Tts-finish', event => {
-      //finishEvent();
+    // const subscription = Tts.addEventListener('Tts-finish', event => {
+    //finishEvent();
     //});
     return () => {
       Tts.stop();
-     // subscription;
+      // subscription;
     };
   }, []);
 
@@ -328,8 +332,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
       // setCommentLoading(data);
     });
 
-    socket.on('like-comment-processing', (data) => {
-        setCommentLikeLoading(data);
+    socket.on('like-comment-processing', data => {
+      setCommentLikeLoading(data);
     });
 
     socket.on('error', () => {
@@ -436,9 +440,9 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   }, [htmlContent]);
 
   //const handleEditAction = (comment: Comment) => {
-    // setNewComment(comment.content);
-    // setEditMode(true);
-    //setEditCommentId(comment._id);
+  // setNewComment(comment.content);
+  // setEditMode(true);
+  //setEditCommentId(comment._id);
   //};
 
   const handleMentionClick = (user_handle: string) => {
@@ -488,7 +492,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
       articleId: articleId.toString(),
       authorId: authorId,
       commentId: commentId,
-      podcastId: null
+      podcastId: null,
     });
   };
 
@@ -859,7 +863,11 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
               style={{
                 padding: 7,
                 //width: '99%',
-                minHeight: webviewHeight - 2500,
+                minHeight: Math.min(
+                  SCREEN_HEIGHT * 0.8,
+                  baseHeight +
+                    (htmlContent?.length ?? noDataHtml.length) * scalePerChar,
+                ),
                 // flex:7,
                 justifyContent: 'center',
                 alignItems: 'center',
@@ -881,7 +889,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
               isSelected={selectedCommentId === item._id}
               userId={user_id}
               setSelectedCommentId={setSelectedCommentId}
-              handleEditAction={()=>{
+              handleEditAction={() => {
                 //handleEditAction
               }}
               deleteAction={handleDeleteAction}
