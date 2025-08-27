@@ -55,7 +55,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const socket = io(`${Config.SOCKET_URL}`);
   const dispatch = useDispatch();
 
-  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} = Dimensions.get('window');
+  const {height: SCREEN_HEIGHT} = Dimensions.get('window');
   const baseHeight = SCREEN_HEIGHT * 0.1;
   const scalePerChar = SCREEN_HEIGHT * 0.002;
 

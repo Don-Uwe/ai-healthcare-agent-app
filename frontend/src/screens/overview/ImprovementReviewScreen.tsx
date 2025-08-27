@@ -8,6 +8,7 @@ import {
   View,
   ScrollView,
   FlatList,
+  Dimensions,
 } from 'react-native';
 import {useEffect, useRef, useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
@@ -46,6 +47,9 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
   const RichText = useRef();
   const [feedback, setFeedback] = useState('');
   const [webviewHeight, setWebViewHeight] = useState(0);
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} = Dimensions.get('window');
+  const baseHeight = SCREEN_HEIGHT * 0.1;
+  const scalePerChar = SCREEN_HEIGHT * 0.002;
 
   const socket = useSocket();
   const dispatch = useDispatch();
@@ -244,7 +248,11 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
               style={{
                 padding: 7,
                 //width: '99%',
-                minHeight: webviewHeight - 2500,
+                 minHeight: Math.min(
+                  SCREEN_HEIGHT * 0.8,
+                  baseHeight +
+                    (htmlContent?.length ?? noDataHtml.length) * scalePerChar,
+                ),
                 // flex:7,
                 justifyContent: 'center',
                 alignItems: 'center',

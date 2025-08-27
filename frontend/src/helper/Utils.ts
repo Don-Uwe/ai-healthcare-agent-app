@@ -5,6 +5,8 @@ import {GET_STORAGE_DATA} from './APIUtils';
 import {Platform} from 'react-native';
 import RNFS from 'react-native-fs';
 
+
+
 export const checkInternetConnection = (
   callback: (isConnected: boolean) => void,
 ) => {
