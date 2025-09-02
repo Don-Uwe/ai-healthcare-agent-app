@@ -10,7 +10,8 @@
 
 <br/>
 
-### API DOCUMENTATION AVAILABLE SOON
+ 
+
 
 
 <table align="center">
@@ -40,6 +41,9 @@
 
 [![Download Latest APK](https://img.shields.io/badge/Download-APK-blue.svg)](https://drive.google.com/file/d/19pRw_TWU4R3wcXjffOPBy1JGBDGnlaEh/view?usp=sharing)
 
+
+### 📄 API DOCUMENTATION  
+[Click here to view the full API Documentation](https://rebrand.ly/9el5636)
 
 
 <!------------------------------------------------------------------------FEATURED IN------------------------------------------------------------------------------>
