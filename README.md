@@ -43,7 +43,7 @@
 
 
 ### 📄 API DOCUMENTATION  
-[Click here to view the full API Documentation](https://rebrand.ly/9el5636)
+[Click here to view the full API Documentation](https://uhsocial.in/docs/)
 
 
 <!------------------------------------------------------------------------FEATURED IN------------------------------------------------------------------------------>
