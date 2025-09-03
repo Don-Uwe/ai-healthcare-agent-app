@@ -41,6 +41,7 @@
 
 [![Download Latest APK](https://img.shields.io/badge/Download-APK-blue.svg)](https://drive.google.com/file/d/19pRw_TWU4R3wcXjffOPBy1JGBDGnlaEh/view?usp=sharing)
 
+Managing content at scale requires a clear and controlled workflow to ensure quality, accuracy, and accountability. This system outlines how articles are created, reviewed, and improved over time using a structured CRUD (Create, Read, Update, Delete) approach — enriched by an edit request mechanism, inspired by proven practices at platforms like <a href="https://www.geeksforgeeks.org/">GeeksforGeeks.</a>
 
 <h3>📄 API DOCUMENTATION</h3>
 <a href="https://uhsocial.in/docs" target="_blank" rel="noopener noreferrer">
