@@ -12,7 +12,7 @@ import {
   Dimensions,
   FlatList,
 } from 'react-native';
-import {useEffect, useRef, useState} from 'react';
+import {useEffect, useMemo, useRef, useState} from 'react';
 import {useQuery, useMutation} from '@tanstack/react-query';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {PRIMARY_COLOR} from '../../helper/Theme';
@@ -52,12 +52,12 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const {user_id, user_token} = useSelector((state: any) => state.user);
   const [readEventSave, setReadEventSave] = useState(false);
 
-  const socket = io(`${Config.SOCKET_URL}`);
+  const socket = io(`${Config.SOCKET_PROD}`);
   const dispatch = useDispatch();
 
   const {height: SCREEN_HEIGHT} = Dimensions.get('window');
   const baseHeight = SCREEN_HEIGHT * 0.1;
-  const scalePerChar = SCREEN_HEIGHT * 0.002;
+  //const scalePerChar = SCREEN_HEIGHT * 0.2;
 
   const [comments, setComments] = useState<Comment[]>([]);
   // const [newComment, setNewComment] = useState('');
@@ -162,6 +162,21 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   });
 
   // console.log('View Users', article?.viewUsers);
+   //const noDataHtml = '<p>No data available</p>';
+
+  const contentLength = htmlContent?.length ?? noDataHtml.length;
+
+  // --- Settings ---
+  const scalePerChar = 1 / 1000;
+  const maxMultiplier = 4.3;
+  const baseMultiplier = 0.8;
+
+  const minHeight = useMemo(() => {
+    const scaleFactor = Math.min(contentLength * scalePerChar, maxMultiplier);
+    const scaledHeight = SCREEN_HEIGHT * (baseMultiplier + scaleFactor);
+    const cappedHeight = Math.min(scaledHeight, SCREEN_HEIGHT * 6);
+    return cappedHeight;
+  }, [SCREEN_HEIGHT, contentLength, scalePerChar]);
 
   const handleLike = () => {
     if (article) {
@@ -606,6 +621,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   };
   */
 
+//  console.log('Content', htmlContent);
+
   if (isLoading) {
     return <Loader />;
   }
@@ -863,11 +880,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
               style={{
                 padding: 7,
                 //width: '99%',
-                minHeight: Math.min(
-                  SCREEN_HEIGHT * 0.8,
-                  baseHeight +
-                    (htmlContent?.length ?? noDataHtml.length) * scalePerChar,
-                ),
+                minHeight: minHeight,
                 // flex:7,
                 justifyContent: 'center',
                 alignItems: 'center',

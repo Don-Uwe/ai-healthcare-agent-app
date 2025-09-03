@@ -10,7 +10,7 @@ import {
   FlatList,
   Dimensions,
 } from 'react-native';
-import {useEffect, useRef, useState} from 'react';
+import {useEffect, useMemo, useRef, useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
@@ -49,7 +49,7 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
   const [webviewHeight, setWebViewHeight] = useState(0);
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} = Dimensions.get('window');
   const baseHeight = SCREEN_HEIGHT * 0.1;
-  const scalePerChar = SCREEN_HEIGHT * 0.002;
+
 
   const socket = useSocket();
   const dispatch = useDispatch();
@@ -181,6 +181,17 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
     document.head.appendChild(style);
   `;
 
+  const scalePerChar = 1 / 1000;
+    const maxMultiplier = 4.3;
+    const baseMultiplier = 0.8;
+  
+    const minHeight = useMemo(() => {
+      let content = htmlContent ?? "";
+      const scaleFactor = Math.min(content.length * scalePerChar, maxMultiplier);
+      const scaledHeight = SCREEN_HEIGHT * (baseMultiplier + scaleFactor);
+      const cappedHeight = Math.min(scaledHeight, SCREEN_HEIGHT * 6);
+      return cappedHeight;
+    }, [SCREEN_HEIGHT, htmlContent, scalePerChar]);
   return (
     <View style={styles.container}>
       <ScrollView
@@ -248,11 +259,7 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
               style={{
                 padding: 7,
                 //width: '99%',
-                 minHeight: Math.min(
-                  SCREEN_HEIGHT * 0.8,
-                  baseHeight +
-                    (htmlContent?.length ?? noDataHtml.length) * scalePerChar,
-                ),
+                 minHeight:minHeight,
                 // flex:7,
                 justifyContent: 'center',
                 alignItems: 'center',

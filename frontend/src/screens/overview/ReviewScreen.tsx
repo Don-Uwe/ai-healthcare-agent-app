@@ -10,7 +10,7 @@ import {
   FlatList,
   Dimensions,
 } from 'react-native';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
@@ -52,9 +52,9 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} = Dimensions.get('window');
   const baseHeight = SCREEN_HEIGHT * 0.1;
-  const scalePerChar = SCREEN_HEIGHT * 0.002;
+  //const scalePerChar = SCREEN_HEIGHT * 0.002;
 
-  const socket = io(`${Config.SOCKET_URL}`);
+  const socket = io(`${Config.SOCKET_PROD}`);
   const dispatch = useDispatch();
 
   const [comments, setComments] = useState<Comment[]>([]);
@@ -198,6 +198,18 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
     document.head.appendChild(style);
   `;
 
+  const scalePerChar = 1 / 1000;
+    const maxMultiplier = 4.3;
+    const baseMultiplier = 0.8;
+  
+    const minHeight = useMemo(() => {
+      const content = htmlContent ?? "";
+      const scaleFactor = Math.min(content.length * scalePerChar, maxMultiplier);
+      const scaledHeight = SCREEN_HEIGHT * (baseMultiplier + scaleFactor);
+      const cappedHeight = Math.min(scaledHeight, SCREEN_HEIGHT * 6);
+      return cappedHeight;
+    }, [SCREEN_HEIGHT, htmlContent, scalePerChar]);
+
   //const contentSource = article?.content?.endsWith('.html')
   //   ? {uri: `${GET_STORAGE_DATA}/${article.content}`}
   //   : {html: article?.content};
@@ -273,11 +285,7 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
               style={{
                 padding: 7,
                 //width: '99%',
-                minHeight: Math.min(
-                  SCREEN_HEIGHT * 0.8,
-                  baseHeight +
-                    (htmlContent?.length ?? noDataHtml.length) * scalePerChar,
-                ),
+                minHeight: minHeight,
                 // flex:7,
                 justifyContent: 'center',
                 alignItems: 'center',

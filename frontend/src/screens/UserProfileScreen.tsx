@@ -46,11 +46,11 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
     queryFn: async () => {
       let url: string;
       if (authorId) {
-        url = `${Config.BASE_URL}/user/getuserprofile?id=${authorId}`;
+        url = `${Config.PROD_URL}/user/getuserprofile?id=${authorId}`;
       } else if (author_handle) {
-        url = `${Config.BASE_URL}/user/getuserprofile?handle=${author_handle}`;
+        url = `${Config.PROD_URL}/user/getuserprofile?handle=${author_handle}`;
       } else {
-        url = `${Config.BASE_URL}/user/getuserprofile?id=${user_id}`;
+        url = `${Config.PROD_URL}/user/getuserprofile?id=${user_id}`;
       }
       // console.log('User token', user_token);
       const response = await axios.get(url, {

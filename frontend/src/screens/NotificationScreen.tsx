@@ -38,7 +38,7 @@ const NotificationScreen = ({navigation}) => {
     queryKey: ['get-all-notifications', page],
     queryFn: async () => {
       try {
-        const response = await axios.get(`${Config.BASE_URL}/notifications?role=2&page=${page}`, {
+        const response = await axios.get(`${Config.PROD_URL}/notifications?role=2&page=${page}`, {
           headers: {
             Authorization: `Bearer ${user_token}`,
           },
@@ -72,8 +72,10 @@ const NotificationScreen = ({navigation}) => {
         return;
       }
       const res = await axios.put(
-        `${Config.BASE_URL}/notifications/mark-as-read?role=2`,
-        {},
+        `${Config.PROD_URL}/notifications/mark-as-read?role=2`,
+        {
+          role: 2,
+        },
         {
           headers: {
             Authorization: `Bearer ${user_token}`,
@@ -109,7 +111,7 @@ const NotificationScreen = ({navigation}) => {
         return;
       }
       const res = await axios.delete(
-        `${Config.BASE_URL}/notification/${id}`,
+        `${Config.PROD_URL}/notification/${id}`,
 
         {
           headers: {

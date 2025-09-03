@@ -1,9 +1,9 @@
-import React, {useRef} from 'react';
+import React, {useMemo, useRef} from 'react';
 import {View, Image, Text, StyleSheet} from 'react-native';
 import {Comment} from '../type';
 import moment from 'moment';
 import WebView from 'react-native-webview';
-import { baseHeight, height, scalePerChar } from '../helper/Metric';
+import { baseHeight, height } from '../helper/Metric';
 
 export default function ReviewItem({item}: {item: Comment}) {
   const webViewRef = useRef<WebView>(null);
@@ -23,6 +23,17 @@ export default function ReviewItem({item}: {item: Comment}) {
     \`;
     document.head.appendChild(style);
   `;
+
+  const scalePerChar = 1 / 1000;
+    const maxMultiplier = 4.3;
+    const baseMultiplier = 0.8;
+  
+    const minHeight = useMemo(() => {
+      const scaleFactor = Math.min(item.content.length * scalePerChar, maxMultiplier);
+      const scaledHeight = height * (baseMultiplier + scaleFactor);
+      const cappedHeight = Math.min(scaledHeight, height * 6);
+      return cappedHeight;
+    }, [ item.content.length, scalePerChar]);
   return (
     <View style={styles.commentContainer}>
       <Image
@@ -51,11 +62,7 @@ export default function ReviewItem({item}: {item: Comment}) {
               padding: 7,
               //width: '99%',
              // minHeight: item.content.length-20 ,
-               minHeight: Math.min(
-                  height * 0.8,
-                  baseHeight +
-                    (item.content.length ?? 0) * scalePerChar,
-                ),
+               minHeight: minHeight,
               // flex:7,
               justifyContent: 'center',
               alignItems: 'center',

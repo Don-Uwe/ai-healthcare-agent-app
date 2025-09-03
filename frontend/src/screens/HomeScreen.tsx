@@ -73,7 +73,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
 
   //console.log('User Token', user_token);
   //console.log('User Id', user_id);
-  //console.log('BASE URL', Config.BASE_URL);
+  //console.log('BASE URL', Config.PROD_URL);
 
   const handleCategorySelection = (category: CategoryType) => {
     // Update Redux State
@@ -96,7 +96,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       return;
     }
     const {data: categoryData} = await axios.get(
-      `${Config.BASE_URL + ARTICLE_TAGS_API}`,
+      `${Config.PROD_URL + ARTICLE_TAGS_API}`,
       {
         headers: {
           Authorization: `Bearer ${user_token}`,
@@ -135,7 +135,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           throw new Error('No token found');
         }
         const response = await axios.get(
-          `${Config.BASE_URL}/notification/unread-count?role=2`,
+          `${Config.PROD_URL}/notification/unread-count?role=2`,
           {
             headers: {
               Authorization: `Bearer ${user_token}`,
@@ -397,7 +397,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     queryFn: async () => {
       try {
         const response = await axios.get(
-          `${Config.BASE_URL}/articles?page=${page}`,
+          `${Config.PROD_URL}/articles?page=${page}`,
           {
             headers: {Authorization: `Bearer ${user_token}`},
           },

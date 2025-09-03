@@ -10,7 +10,7 @@ import FeatherIcon from 'react-native-vector-icons/Feather';
 import Ionicon from 'react-native-vector-icons/Ionicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {fp, hp, wp} from '../helper/Metric';
-import {BUTTON_COLOR, ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
+import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import {HomeScreenHeaderProps} from '../type';
 
 const HomeScreenHeader = ({
@@ -66,10 +66,10 @@ const HomeScreenHeader = ({
                   <View
                     style={{
                       position: 'absolute',
-                      top: 1,
+                      top: 0.5,
                       right: 2,
-                      width: 18,
-                      height: 18,
+                      width: 16,
+                      height: 16,
                       borderRadius: 9,
                       backgroundColor: 'red',
                       justifyContent: 'center',
