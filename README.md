@@ -42,8 +42,11 @@
 [![Download Latest APK](https://img.shields.io/badge/Download-APK-blue.svg)](https://drive.google.com/file/d/19pRw_TWU4R3wcXjffOPBy1JGBDGnlaEh/view?usp=sharing)
 
 
-### 📄 API DOCUMENTATION  
-[Click here to view the full API Documentation](https://uhsocial.in/docs/)
+<h3>📄 API DOCUMENTATION</h3>
+<a href="https://uhsocial.in/docs" target="_blank" rel="noopener noreferrer">
+  Click here to view the full API Documentation
+</a>
+
 
 
 <!------------------------------------------------------------------------FEATURED IN------------------------------------------------------------------------------>
