@@ -29,11 +29,16 @@ export default function ReviewItem({item}: {item: Comment}) {
     const baseMultiplier = 0.8;
   
     const minHeight = useMemo(() => {
+      const startIndex = item.content ? item.content.indexOf("<body>") : -1;
+      const lastIndex = item.content ? item.content.indexOf("</body>") : -1;
+
+      const length = (lastIndex - startIndex +1);
+
       const scaleFactor = Math.min(item.content.length * scalePerChar, maxMultiplier);
       const scaledHeight = height * (baseMultiplier + scaleFactor);
-      const cappedHeight = Math.min(scaledHeight, height * 6);
+      const cappedHeight = Math.min(length,Math.min(scaledHeight, height * 6));
       return cappedHeight;
-    }, [ item.content.length, scalePerChar]);
+    }, [item.content, scalePerChar]);
   return (
     <View style={styles.commentContainer}>
       <Image

@@ -32,7 +32,7 @@ export default function ImprovementWorkspace({
   const [publishedLabel, setPublishedLabel] = useState('Published');
   const [progressLabel, setProgressLabel] = useState('Progress');
   const [discardLabel, setDiscardLabel] = useState('Discard');
-  const [improvementData, setImprovementData] = useState<EditRequest[]>();
+  const [improvementData, setImprovementData] = useState<EditRequest[]>([]);
 
   const {
     isLoading,

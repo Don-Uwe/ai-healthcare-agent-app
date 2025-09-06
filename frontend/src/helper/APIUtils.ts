@@ -39,7 +39,7 @@ const GET_YEARLY_WRITES_REPORT = `${Config.PROD_URL}/analytics/yearly-writes/`;
 
 const VULTR_CHAT_URL = 'https://api.vultrinference.com/v1/chat/completions';
 const GET_ARTICLE_CONTENT = `${Config.PROD_URL}/articles/get-article-content`;
-const GET_IMPROVEMENT_CONTENT = `${Config.PROD_URL}/articles/get-improve-content`;
+const GET_IMPROVEMENT_CONTENT = `${Config.PROD_URL}/article/get-improve-content`;
 
 const REPOST_ARTICLE = `${Config.PROD_URL}/article/repost`;
 const CHECK_USER_HANDLE = `${Config.PROD_URL}/user/check-user-handle`;

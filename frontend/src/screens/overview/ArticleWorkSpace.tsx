@@ -31,7 +31,7 @@ export default function ArticleWorkSpace({
   const [publishedLabel, setPublishedLabel] = useState('Published');
   const [progressLabel, setProgressLabel] = useState('Progress');
   const [discardLabel, setDiscardLabel] = useState('Discard');
-  const [articleData, setArticleData] = useState<ArticleData[]>();
+  const [articleData, setArticleData] = useState<ArticleData[]>([]);
 
   const {
     data: articles,
@@ -50,7 +50,7 @@ export default function ArticleWorkSpace({
           },
         );
 
-        //console.log('Article Response', response);
+        console.log('Article Response', response.data);
         //let d = response.data.articles as ArticleData[];
         //updateArticles(d);
 
@@ -58,8 +58,9 @@ export default function ArticleWorkSpace({
           setTotalPages(response.data.totalPages);
           setArticleData(response.data.articles);
         }else{
-          if(response.data.articles){
+          if(response.data.articles && Array.isArray(response.data.articles)){
             const d = response.data.articles;
+            console.log("res", d);
              setArticleData(prev => [...prev, ...d]);
           }
         }

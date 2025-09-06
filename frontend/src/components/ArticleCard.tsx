@@ -13,7 +13,7 @@ import {useEffect, useState} from 'react';
 import {fp, hp} from '../helper/Metric';
 import {ArticleCardProps, ArticleData, User} from '../type';
 import moment from 'moment';
-import {useSelector} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import axios from 'axios';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -56,6 +56,7 @@ const ArticleCard = ({
   const {user_token, user_id} = useSelector((state: any) => state.user);
 
   //const socket = io('http://51.20.1.81:8084');
+  const dispatch = useDispatch();
   const socket = useSocket();
   const width = useSharedValue(0);
   const yValue = useSharedValue(60);
@@ -162,7 +163,7 @@ const ArticleCard = ({
     },
 
     onSuccess: data => {
-      // dispatch(setArticle({article: data}));
+       //dispatch(setArticle({article: data}));
 
       //console.log('author', data);
       if (data?.likeStatus) {
@@ -382,7 +383,7 @@ const ArticleCard = ({
                   updateLikeMutation.mutate();
                 }}
                 style={styles.likeSaveChildContainer}>
-                {item.likedUsers.includes(user_id) ? (
+                {item.likedUsers.some(it=> (it._id &&  it._id.toString() === user_id) || (it.toString() === user_id)) ? (
                   <AntDesign name="heart" size={24} color={PRIMARY_COLOR} />
                 ) : (
                   <AntDesign name="hearto" size={24} color={'black'} />

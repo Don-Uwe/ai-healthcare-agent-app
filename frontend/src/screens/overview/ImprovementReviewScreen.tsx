@@ -71,6 +71,7 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
   const {data: improvement} = useQuery({
     queryKey: ['get-improvement-by-id'],
     queryFn: async () => {
+
       const response = await axios.get(
         `${GET_IMPROVEMENT_BY_ID}/${requestId}`,
         {
@@ -114,6 +115,8 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
     },
   });
 
+  console.log('html-content', htmlContent);
+
   const noDataHtml = '<p>No Data found</p>';
 
   if (user) {
@@ -139,6 +142,7 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
     // Listen for new comments
     socket.on('new-feedback', data => {
       console.log('new comment loaded', data);
+      setFeedback('');
       // if (data.articleId === route.params.articleId) {
       setComments(prevComments => {
         const newComments = [data, ...prevComments];
@@ -189,7 +193,7 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
       let content = htmlContent ?? "";
       const scaleFactor = Math.min(content.length * scalePerChar, maxMultiplier);
       const scaledHeight = SCREEN_HEIGHT * (baseMultiplier + scaleFactor);
-      const cappedHeight = Math.min(scaledHeight, SCREEN_HEIGHT * 6);
+      const cappedHeight = Math.min(content.length + 27, Math.min(scaledHeight, SCREEN_HEIGHT * 6));
       return cappedHeight;
     }, [SCREEN_HEIGHT, htmlContent, scalePerChar]);
   return (

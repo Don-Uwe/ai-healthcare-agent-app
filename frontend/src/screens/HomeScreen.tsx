@@ -263,9 +263,11 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     mutationFn: async ({
       articleId,
       reason,
+      articleRecordId
     }: {
       articleId: string;
       reason: string;
+      articleRecordId: string;
     }) => {
       //console.log('Article Id', articleId);
       // console.log('Reason', reason);
@@ -276,6 +278,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         {
           article_id: articleId,
           edit_reason: reason,
+          article_recordId: articleRecordId
         },
         {
           headers: {
@@ -318,6 +321,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           submitEditRequestMutation.mutate({
             articleId: item._id,
             reason: reason,
+            articleRecordId: item.pb_recordId
           });
         }}
       />

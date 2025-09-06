@@ -9,6 +9,7 @@ import {
   ScrollView,
   FlatList,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
@@ -48,6 +49,7 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
   const {user_token} = useSelector((state: any) => state.user);
   const RichText = useRef();
   const [feedback, setFeedback] = useState('');
+  const [loading, setLoading] = useState(false);
   const [webviewHeight, setWebViewHeight] = useState(0);
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} = Dimensions.get('window');
@@ -139,6 +141,8 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
 
     // Listen for new comments
     socket.on('new-feedback', data => {
+      setLoading(false);
+      
       console.log('new comment loaded', data);
       //if (data.articleId === route.params.articleId) {
       setComments(prevComments => {
@@ -206,7 +210,7 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
       const content = htmlContent ?? "";
       const scaleFactor = Math.min(content.length * scalePerChar, maxMultiplier);
       const scaledHeight = SCREEN_HEIGHT * (baseMultiplier + scaleFactor);
-      const cappedHeight = Math.min(scaledHeight, SCREEN_HEIGHT * 6);
+      const cappedHeight = Math.min(content.length,  Math.min(scaledHeight, SCREEN_HEIGHT * 6));
       return cappedHeight;
     }, [SCREEN_HEIGHT, htmlContent, scalePerChar]);
 
@@ -391,11 +395,18 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
               />
 
               {feedback.length > 0 && (
-                <TouchableOpacity
+                <View>
+                  {
+                    loading ? (
+                    <ActivityIndicator size={'large'} color = {PRIMARY_COLOR}/>
+                    ): (
+                      <TouchableOpacity
                   style={styles.submitButton}
                   onPress={() => {
                     // emit socket event for feedback
+                      setLoading(true);
                     const ans = createFeebackHTMLStructure(feedback);
+                  
                     socket.emit('add-review-comment', {
                       articleId: article?._id,
                       reviewer_id: article?.reviewer_id,
@@ -406,6 +417,9 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
                   }}>
                   <Text style={styles.submitButtonText}>Post</Text>
                 </TouchableOpacity>
+                    )
+                  }
+                </View>
               )}
             </View>
           )}
