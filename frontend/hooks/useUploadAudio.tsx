@@ -42,8 +42,10 @@ const useUploadAudio = () => {
         body: formData
       });
 
+      //const rawText = await response.text();
+      //console.log('Raw response text:', rawText);
       const data = await response.json();
-      console.log('Audio upload response:', data);
+      //console.log('Audio upload response:', data);
 
       if (!response.ok) {
         throw new Error('Audio upload failed');

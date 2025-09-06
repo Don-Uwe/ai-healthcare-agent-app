@@ -353,6 +353,9 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
       let uploadedUrl = await uploadImage(resizedImageUri?.uri);
       let audioUrl = await uploadAudio(filePath);
 
+      console.log("audio", audioUrl);
+      console.log("Image", uploadedUrl);
+
       if (uploadedUrl && audioUrl) {
         // Call the mutation to upload the podcast
         uploadPodcastMutation.mutate({
