@@ -4,7 +4,7 @@ import {ArticleData, Category, Podcast} from '../type';
 export type DataState = {
   filteredArticles: ArticleData[];
   searchedArticles: ArticleData[];
-  selectedTags: string[];
+  selectedTags: Category[];
   sortType: 'recent' | 'popular' | 'oldest' | '';
   searchMode: boolean;
   article: ArticleData;

@@ -50,12 +50,13 @@ import InactiveUserModal from '../components/InactiveUserModal';
 const HomeScreen = ({navigation}: HomeScreenProps) => {
   const dispatch = useDispatch();
   const [articleCategories, setArticleCategories] = useState<Category[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<Category>();
   const [sortingType, setSortingType] = useState<string>('');
   //const [loading, setLoading] = useState(true);
   const [selectedCardId, setSelectedCardId] = useState<string>('');
   const [repostItem, setRepostItem] = useState<ArticleData | null>(null);
   const [selectCategoryList, setSelectCategoryList] = useState<Category[]>([]);
+  const[filterLoading, setFilterLoading] = useState<boolean>(false);
   const {
     filteredArticles,
     searchedArticles,
@@ -110,10 +111,10 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       //console.log('Category Data', categoryData);
       dispatch(
         setSelectedTags({
-          selectedTags: categoryData.map(category => category.name),
+          selectedTags: categoryData,
         }),
       );
-      setSelectedCategory(categoryData[0]?.name);
+      setSelectedCategory(categoryData[0]);
     } else {
       setSelectedCategory(selectedTags[0]);
     }
@@ -181,7 +182,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     });
   };
 
-  const handleCategoryClick = (category: string) => {
+  const handleCategoryClick = (category: Category) => {
     setSelectedCategory(category);
   };
 
@@ -263,7 +264,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     mutationFn: async ({
       articleId,
       reason,
-      articleRecordId
+      articleRecordId,
     }: {
       articleId: string;
       reason: string;
@@ -278,7 +279,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         {
           article_id: articleId,
           edit_reason: reason,
-          article_recordId: articleRecordId
+          article_recordId: articleRecordId,
         },
         {
           headers: {
@@ -321,7 +322,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           submitEditRequestMutation.mutate({
             articleId: item._id,
             reason: reason,
-            articleRecordId: item.pb_recordId
+            articleRecordId: item.pb_recordId,
           });
         }}
       />
@@ -334,7 +335,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     setSortingType('');
     dispatch(
       setSelectedTags({
-        selectedTags: articleCategories.map(category => category.name),
+        selectedTags: articleCategories,
       }),
     );
     dispatch(setSortType({sortType: ''}));
@@ -343,52 +344,64 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
 
   const handleFilterApply = () => {
     // Update Redux State Variables
+    console.log('enter');
     if (selectCategoryList.length > 0) {
+    //   console.log("enter")
       dispatch(setSelectedTags({selectedTags: selectCategoryList}));
     } else {
+       //console.log("enter ele", articleCategories);
+
       dispatch(
         setSelectedTags({
-          selectedTags: articleCategories.map(category => category.name),
+          selectedTags: articleCategories,
         }),
       );
+
     }
 
-    dispatch(setSortType({sortType: sortingType}));
+   if(sortingType && sortingType !== ''){
+      console.log("Sort type", sortType);
+     dispatch(setSortType({sortType: sortingType}));
+    }
+
     updateArticles(articleData);
   };
 
   const updateArticles = (articleData?: ArticleData[]) => {
+    setFilterLoading(true);
     if (!articleData) {
+      setFilterLoading(false);
       return;
     }
 
     let filtered = articleData;
-    //console.log('sort type', sortType);
+   // console.log('sort type', sortType);
     //console.log('Filtered before', filtered);
     if (selectedTags.length > 0) {
       filtered = filtered.filter(article =>
         selectedTags.some(tag =>
-          article.tags.some(category => category.name === tag),
+          article.tags.some(category => category.name === tag.name),
         ),
       );
     }
-    // console.log('Filtered before sort', filtered);
-    if (sortType === 'recent' && filtered.length > 1) {
+   //  console.log('Filtered before sort', filtered);
+    if (sortType && sortType === 'recent' && filtered.length > 1) {
       filtered = filtered.sort(
         (a, b) =>
           new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime(),
       );
-    } else if (sortType === 'oldest' && filtered.length > 1) {
+    } else if (sortType && sortType === 'oldest' && filtered.length > 1) {
       filtered.sort(
         (a, b) =>
           new Date(a.lastUpdated).getTime() - new Date(b.lastUpdated).getTime(),
       );
-    } else if (sortType === 'popular' && filtered.length > 1) {
+    } else if (sortType && sortType === 'popular' && filtered.length > 1) {
       filtered.sort((a, b) => b.viewCount - a.viewCount);
     }
-    //console.log('Filtered', filtered);
+   // console.log('Filtered', filtered);
     //console.log('Article Data', articleData);
     dispatch(setFilteredArticles({filteredArticles: filtered}));
+    setFilterLoading(false);
   };
 
   const {
@@ -490,9 +503,9 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
                   style={{
                     ...styles.button,
                     backgroundColor:
-                      selectedCategory !== item ? 'white' : PRIMARY_COLOR,
+                      selectedCategory && selectedCategory._id !== item._id ? 'white' : PRIMARY_COLOR,
                     borderColor:
-                      selectedCategory !== item ? PRIMARY_COLOR : 'white',
+                      selectedCategory && selectedCategory._id !== item._id ? PRIMARY_COLOR : 'white',
                   }}
                   onPress={() => {
                     handleCategoryClick(item);
@@ -500,9 +513,9 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
                   <Text
                     style={{
                       ...styles.labelStyle,
-                      color: selectedCategory !== item ? 'black' : 'white',
+                      color: selectedCategory && selectedCategory._id !== item._id ? 'black' : 'white',
                     }}>
-                    {item}
+                    {item.name}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -560,9 +573,9 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
                 style={{
                   ...styles.button,
                   backgroundColor:
-                    selectedCategory !== item ? 'white' : PRIMARY_COLOR,
+                    selectedCategory && selectedCategory._id !== item._id ? 'white' : PRIMARY_COLOR,
                   borderColor:
-                    selectedCategory !== item ? PRIMARY_COLOR : 'white',
+                    selectedCategory && selectedCategory._id !== item._id ? PRIMARY_COLOR : 'white',
                 }}
                 onPress={() => {
                   handleCategoryClick(item);
@@ -570,9 +583,9 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
                 <Text
                   style={{
                     ...styles.labelStyle,
-                    color: selectedCategory !== item ? 'black' : 'white',
+                    color: selectedCategory && selectedCategory._id !== item._id ? 'black' : 'white',
                   }}>
-                  {item}
+                  {item.name}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -583,12 +596,12 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           searchedArticles.length > 0) && (
           <FlatList
             data={
-              searchMode
+              searchMode 
                 ? searchedArticles
                 : filteredArticles.filter(
                     article =>
                       article.tags &&
-                      article.tags.some(tag => tag.name === selectedCategory),
+                      article.tags.some(tag => tag.name === selectedCategory?.name),
                   )
             }
             renderItem={renderItem}
