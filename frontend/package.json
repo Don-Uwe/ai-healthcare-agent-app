@@ -23,6 +23,10 @@
     "@react-navigation/native": "^6.1.17",
     "@react-navigation/stack": "^6.3.29",
     "@reduxjs/toolkit": "^2.2.5",
+    "@tamagui/config": "^1.134.2",
+    "@tamagui/core": "^1.134.2",
+    "@tamagui/themes": "^1.134.2",
+    "@tamagui/web": "^1.134.2",
     "@tanstack/react-query": "^5.51.23",
     "axios": "^1.7.2",
     "email-validator": "^2.0.4",
@@ -63,7 +67,8 @@
     "react-native-webview": "^13.10.4",
     "react-redux": "^9.1.2",
     "redux": "^5.0.1",
-    "socket.io-client": "^4.2.0"
+    "socket.io-client": "^4.2.0",
+    "tamagui": "^1.134.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

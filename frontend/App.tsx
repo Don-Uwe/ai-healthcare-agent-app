@@ -23,8 +23,18 @@ import {useDispatch} from 'react-redux';
 import TrackPlayer, {Capability} from 'react-native-track-player';
 import {cleanUpDownloads} from './src/helper/Utils';
 import { Provider as PaperProvider } from 'react-native-paper';
+import { TamaguiProvider } from '@tamagui/core'
+import config from './tamagui.config'
 
 const queryClient = new QueryClient();
+
+
+type Conf = typeof config
+
+declare module '@tamagui/core' {
+  interface TamaguiCustomConfig extends Conf {}
+}
+
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
   const backgroundStyle = {
@@ -167,6 +177,7 @@ function App(): React.JSX.Element {
   return (
     <QueryClientProvider client={queryClient}>
       <SocketProvider>
+       <TamaguiProvider config={config}>
         <SafeAreaProvider>
           <PaperProvider>
           <View
@@ -183,6 +194,7 @@ function App(): React.JSX.Element {
           </View>
           </PaperProvider>
         </SafeAreaProvider>
+        </TamaguiProvider>
       </SocketProvider>
     </QueryClientProvider>
   );
