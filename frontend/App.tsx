@@ -23,7 +23,7 @@ import {useDispatch} from 'react-redux';
 import TrackPlayer, {Capability} from 'react-native-track-player';
 import {cleanUpDownloads} from './src/helper/Utils';
 import { Provider as PaperProvider } from 'react-native-paper';
-import { TamaguiProvider } from '@tamagui/core';
+import { TamaguiProvider, PortalProvider } from 'tamagui';
 import config from './tamagui.config';
 
 const queryClient = new QueryClient();
@@ -174,9 +174,9 @@ function App(): React.JSX.Element {
   */
 
   return (
+    <TamaguiProvider config={config}>
     <QueryClientProvider client={queryClient}>
       <SocketProvider>
-       <TamaguiProvider config={config}>
         <SafeAreaProvider>
           <PaperProvider>
           <View
@@ -193,9 +193,10 @@ function App(): React.JSX.Element {
           </View>
           </PaperProvider>
         </SafeAreaProvider>
-        </TamaguiProvider>
+        
       </SocketProvider>
     </QueryClientProvider>
+    </TamaguiProvider>
   );
 }
 

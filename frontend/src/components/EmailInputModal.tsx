@@ -1,151 +1,131 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
-  View,
-  Modal,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-} from 'react-native';
-import {PRIMARY_COLOR} from '../helper/Theme';
-import {EmailInputModalProp} from '../type';
-import {hp} from '../helper/Metric';
+  Dialog,
+  Button,
+  YStack,
+  Input,
+  Spacer,
+  H2,
+  H4,
+} from 'tamagui';
+import { EmailInputModalProp } from '../type';
 
 export default function EmailInputModal({
   visible,
   callback,
   backButtonClick,
   onDismiss,
-  isRequestVerification
+  isRequestVerification,
 }: EmailInputModalProp) {
-  const [modelTitle, setModelTitle] = useState(true);
   const [email, setEmail] = useState('');
+  const [isValid, setIsValid] = useState(true);
 
-  /** Back Button Click */
+  const verifyEmail = () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const valid = emailRegex.test(email);
+    setIsValid(valid);
+
+    if (valid) {
+      callback(email);
+      setEmail('');
+    }
+  };
+
   const handleBackClick = () => {
-    setModelTitle(true);
+    setIsValid(true);
     setEmail('');
     backButtonClick();
   };
 
-  /** Submit Button action click */
-  const verifyEmail = () => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (!emailRegex.test(email)) {
-      setModelTitle(false);
-      //return;
-    } else {
-      callback(email);
-      setModelTitle(true);
-      setEmail('');
-    }
-
-    // navigator.navigate('OtpScreen');
-  };
-
   return (
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={visible}
-      onDismiss={onDismiss}>
-      <View style={styles.overlay}>
-        <View style={styles.modalContainer}>
-          <Text style={modelTitle ? styles.modalTitle : styles.modalTitleError}>
-            {modelTitle
-              ? isRequestVerification
-                ? 'Email Verification'
-                : 'Forgot password'
-              : 'Email is not valid'}
-          </Text>
-          <TextInput
-            autoCapitalize="none"
-            autoCorrect={false}
-            keyboardType="email-address"
-            placeholder="Enter your email"
-            placeholderTextColor="#000000"
-            value={email}
-            onChangeText={text => {
-              setEmail(text);
-              setModelTitle(true);
-            }}
-            style={modelTitle ? styles.modalInput : styles.modalInputError}
-          />
-          <TouchableOpacity style={styles.modalButton} onPress={verifyEmail}>
-            <Text style={styles.modalButtonText}>
-              {isRequestVerification ? 'Send Verification Link' : 'Send OTP'}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={{...styles.modalButton, backgroundColor: PRIMARY_COLOR}}
-            onPress={handleBackClick}>
-            <Text style={styles.modalButtonText}>Back</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </Modal>
+    <Dialog open={visible} onOpenChange={(open) => !open && onDismiss?.()}>
+      <Dialog.Portal>
+        <Dialog.Overlay
+          key="overlay"
+          animation="fast"
+          opacity={0.6}
+          backgroundColor="rgba(0,0,0,0.5)"
+          enterStyle={{ opacity: 0 }}
+          exitStyle={{ opacity: 0 }}
+        />
+
+        <Dialog.Content
+          elevate
+          bg="$background"
+          p="$6"
+          paddingVertical="$7"
+          borderRadius="$6"
+          width="90%"
+          maxWidth={480}
+          maxHeight="95%"
+          animation={[
+            'bouncy',
+            {
+              opacity: { overshootClamping: true },
+            },
+          ]}
+          // eslint-disable-next-line react-native/no-inline-styles
+          enterStyle={{ y: '-20px', opacity: 0 }}
+          // eslint-disable-next-line react-native/no-inline-styles
+          exitStyle={{ y: '20px', opacity: 0 }}
+        >
+          <YStack width="100%" gap="$4" alignItems="center">
+            <H2
+              color={isValid ? '$color12' : '$red10'}
+              textAlign="center"
+              fontSize={28}
+            >
+              {isValid
+                ? isRequestVerification
+                  ? 'Email Verification'
+                  : 'Forgot Password'
+                : 'Email is not valid'}
+            </H2>
+
+            <H4 color="$color10" textAlign="center" fontSize={16}>
+              Please enter your registered email to continue.
+            </H4>
+
+            <Spacer size={8} />
+
+            <Input
+              size="$7"
+              height="$5"
+              width="100%"
+              padding={"$2"}
+              borderRadius={"$2"}
+              placeholder="Enter your email"
+              value={email}
+              onChangeText={(text) => {
+                setEmail(text);
+                setIsValid(true);
+              }}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              borderColor={isValid ? '$color6' : '$red8'}
+              backgroundColor={isValid ? '$color2' : '$red1'}
+            />
+
+            <YStack gap="$3" width="100%">
+              <Button size="$4"  height="$5" padding="$2" theme="blue" onPress={verifyEmail}>
+                {isRequestVerification ? 'Send Verification Link' : 'Send OTP'}
+              </Button>
+
+              <Button
+                size="$4"
+                height="$5"
+                theme="active"
+                padding="$3"
+                variant="outlined"
+                onPress={handleBackClick}
+              >
+                Back
+              </Button>
+            </YStack>
+          </YStack>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog>
   );
 }
-
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent black overlay
-    justifyContent: 'center',
-
-    alignItems: 'center',
-  },
-  modalContainer: {
-    backgroundColor: 'white',
-    padding: 14,
-    borderRadius: 10,
-    marginHorizontal: 14,
-    width: '95%',
-    height: hp(45),
-    justifyContent: 'center',
-    // alignItems:"center"
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginVertical: 10,
-    //color:"black"
-  },
-  modalTitleError: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: 'red',
-  },
-  modalInput: {
-    height: 47,
-    borderColor: PRIMARY_COLOR,
-    borderWidth: 1,
-    backgroundColor: '#B6D0E2',
-    marginVertical: 10,
-    paddingHorizontal: 10,
-    borderRadius: 5,
-  },
-  modalInputError: {
-    height: 40,
-    borderColor: 'red',
-    borderWidth: 1,
-    marginBottom: 10,
-    paddingHorizontal: 10,
-    borderRadius: 5,
-  },
-  modalButton: {
-    padding: 10,
-    alignItems: 'center',
-    marginTop: 10,
-    backgroundColor: '#0F52BA',
-    borderRadius: 7,
-    marginVertical: 10,
-  },
-  modalButtonText: {
-    color: 'white',
-    fontWeight: '500',
-    fontSize: 16,
-  },
-});
