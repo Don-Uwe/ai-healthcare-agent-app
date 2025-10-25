@@ -29,6 +29,7 @@ import {
   GET_ARTICLE_CONTENT,
   GET_PROFILE_API,
   GET_STORAGE_DATA,
+  SOCKET_PROD,
 } from '../../helper/APIUtils';
 import axios from 'axios';
 
@@ -41,7 +42,6 @@ import {actions, RichEditor, RichToolbar} from 'react-native-pell-rich-editor';
 import {createFeebackHTMLStructure, StatusEnum} from '../../helper/Utils';
 import ReviewItem from '../../components/ReviewItem';
 import {io} from 'socket.io-client';
-import Config from 'react-native-config';
 
 const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
   const insets = useSafeAreaInsets();
@@ -56,7 +56,7 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
   const baseHeight = SCREEN_HEIGHT * 0.1;
   //const scalePerChar = SCREEN_HEIGHT * 0.002;
 
-  const socket = io(`${Config.SOCKET_PROD}`);
+  const socket = io(`${SOCKET_PROD}`);
   const dispatch = useDispatch();
 
   const [comments, setComments] = useState<Comment[]>([]);
@@ -249,7 +249,7 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
             />
           ) : (
             <Image
-              source={require('../../assets/no_results.jpg')}
+              source={require('../../../assets/images/no_results.jpg')}
               style={styles.image}
             />
           )}

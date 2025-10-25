@@ -44,7 +44,6 @@ import Tts from 'react-native-tts';
 import CommentItem from '../../components/CommentItem';
 import {setUserHandle} from '../../store/UserSlice';
 import {io} from 'socket.io-client';
-import Config from 'react-native-config';
 
 const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const insets = useSafeAreaInsets();
@@ -653,7 +652,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
             />
           ) : (
             <Image
-              source={require('../../assets/no_results.jpg')}
+              source={require('../../assets/images/no_results.jpg')}
               style={styles.image}
             />
           )}

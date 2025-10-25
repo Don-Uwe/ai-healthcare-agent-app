@@ -16,11 +16,13 @@ import moment from 'moment';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+/*
 import TrackPlayer, {
   usePlaybackState,
   useProgress,
   State,
 } from 'react-native-track-player';
+ */
 import {formatCount, updateOfflinePodcastLikeStatus} from '../helper/Utils';
 import {useSelector} from 'react-redux';
 import {useCallback, useEffect, useState} from 'react';
@@ -39,8 +41,8 @@ export default function OfflinePodcastDetail({
   const {podcast} = route.params;
   const socket = useSocket();
   const insets = useSafeAreaInsets();
-  const playbackState = usePlaybackState();
-  const progress = useProgress();
+  //const playbackState = usePlaybackState();
+  //const progress = useProgress();
   const {user_id, user_token, user_handle} = useSelector((state: any) => state.user);
   const {isConnected} = useSelector((state: any) => state.network);
   //const [isLoading, setLoading] = useState<boolean>(false);
@@ -48,14 +50,16 @@ export default function OfflinePodcastDetail({
   const [currentPodcast, setCurrentPodcast] = useState<PodcastData>(podcast);
 
   const addTrack = useCallback(async () => {
-    await TrackPlayer.reset();
+  //  await TrackPlayer.reset();
     if (podcast) {
+      /*
       await TrackPlayer.add({
         id: podcast._id,
         url: `file://${podcast.filePath}`,
         title: podcast?.title,
         artist: podcast?.user_id.user_name,
       });
+      */
     }
   }, [podcast]);
 
@@ -65,8 +69,9 @@ export default function OfflinePodcastDetail({
   }, [addTrack]);
 
   const handleListenPress = async () => {
-    const currentState = await TrackPlayer.getPlaybackState();
+   // const currentState = await TrackPlayer.getPlaybackState();
 
+   /*
     if (currentState.state === State.Playing) {
       await TrackPlayer.pause();
     } else if (
@@ -76,6 +81,7 @@ export default function OfflinePodcastDetail({
     ) {
       await TrackPlayer.play();
     }
+      */
   };
 
   const handleShare = async () => {
@@ -324,36 +330,46 @@ export default function OfflinePodcastDetail({
       <Slider
         style={styles.slider}
         minimumValue={0}
-        maximumValue={progress.duration}
-        value={progress.position}
+       // maximumValue={progress.duration}
+        //value={progress.position}
         minimumTrackTintColor={PRIMARY_COLOR}
         maximumTrackTintColor="#ccc"
         thumbTintColor={PRIMARY_COLOR}
         onSlidingComplete={async value => {
           // seek to selected time
-          await TrackPlayer.seekTo(value);
+          //await TrackPlayer.seekTo(value);
         }}
       />
 
-      <View style={styles.timeRow}>
+      {
+        /**
+         * <View style={styles.timeRow}>
         <Text style={styles.time}>{formatTime(progress.position)}</Text>
         <Text style={styles.time}>{formatTime(progress.duration)}</Text>
       </View>
+         */
+      }
 
-      {playbackState.state === State.Buffering && (
+      {
+        /**
+         * {playbackState.state === State.Buffering && (
         <Text style={styles.bufferingText}>⏳ Buffering... please wait</Text>
       )}
+         */
+      }
 
       <TouchableOpacity
         style={[
           styles.listenButton,
-          playbackState.state === State.Buffering &&
+         // playbackState.state === State.Buffering &&
             styles.listenButtonDisabled,
         ]}
         onPress={handleListenPress}
-        disabled={playbackState.state === State.Buffering}>
+        //disabled={playbackState.state === State.Buffering}
+        
+        >
         <Text style={styles.listenText}>
-          {playbackState.state === State.Playing ? '⏸️Pause' : '🎧 Listen Now'}
+          {false ? '⏸️Pause' : '🎧 Listen Now'}
         </Text>
       </TouchableOpacity>
     </ScrollView>

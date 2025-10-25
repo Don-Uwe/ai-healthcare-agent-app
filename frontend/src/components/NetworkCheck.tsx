@@ -35,7 +35,7 @@ const NetworkCheck = () => {
     <View style={styles.container}>
       <View style={styles.lottieContainer}>
         <LottieView
-          source={require('../assets/LottieAnimation/NetworkAnimation.json')}
+          source={require('../../assets/LottieAnimation/NetworkAnimation.json')}
           autoPlay={true}
           loop={true}
           style={styles.lottieView}

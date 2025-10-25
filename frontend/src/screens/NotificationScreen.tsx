@@ -13,11 +13,11 @@ import NotificationItem from '../components/NotificationItem';
 import {useSelector} from 'react-redux';
 import {useMutation, useQuery} from '@tanstack/react-query';
 import axios from 'axios';
-import Config from 'react-native-config';
 import {Notification, NotificationType} from '../type';
 import Loader from '../components/Loader';
 import Snackbar from 'react-native-snackbar';
 import { hp } from '../helper/Metric';
+import { PROD_URL } from '../helper/APIUtils';
 
 // PodcastsScreen component displays the list of podcasts and includes a PodcastPlayer
 const NotificationScreen = ({navigation}) => {
@@ -38,7 +38,7 @@ const NotificationScreen = ({navigation}) => {
     queryKey: ['get-all-notifications', page],
     queryFn: async () => {
       try {
-        const response = await axios.get(`${Config.PROD_URL}/notifications?role=2&page=${page}`, {
+        const response = await axios.get(`${PROD_URL}/notifications?role=2&page=${page}`, {
           headers: {
             Authorization: `Bearer ${user_token}`,
           },
@@ -72,7 +72,7 @@ const NotificationScreen = ({navigation}) => {
         return;
       }
       const res = await axios.put(
-        `${Config.PROD_URL}/notifications/mark-as-read?role=2`,
+        `${PROD_URL}/notifications/mark-as-read?role=2`,
         {
           role: 2,
         },
@@ -111,7 +111,7 @@ const NotificationScreen = ({navigation}) => {
         return;
       }
       const res = await axios.delete(
-        `${Config.PROD_URL}/notification/${id}`,
+        `${PROD_URL}/notification/${id}`,
 
         {
           headers: {
@@ -266,7 +266,7 @@ const NotificationScreen = ({navigation}) => {
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
               <Image
-                  source={require('../assets/no_results.jpg')}
+                  source={require('../../assets/images/no_results.jpg')}
                   style={styles.emptyImgStyle}
                 />
 

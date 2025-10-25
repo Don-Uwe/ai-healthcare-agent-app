@@ -6,7 +6,7 @@ const NoResults = ({ query = '' }) => {
   return (
     <View style={styles.container}>
       <Image
-        source={require('../assets/no_results.jpg')} 
+        source={require('../../assets/images/no_results.jpg')} 
         style={styles.image}
         resizeMode="contain"
       />

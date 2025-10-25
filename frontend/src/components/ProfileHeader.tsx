@@ -9,7 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import React from 'react';
-import EllipseSvg from '../assets/svg/EllipseSvg';
+import EllipseSvg from '../../assets/svg/EllipseSvg';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';

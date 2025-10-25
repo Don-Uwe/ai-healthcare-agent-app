@@ -289,10 +289,16 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
               />
             </View>
           ) : (
-            <Image
-              source={require('../../assets/icon.png')}
+           <View>
+            {
+              /**
+               *  <Image
+              source={require('../../../assets/images/icon.png')}
               style={styles.logo}
             />
+               */
+            }
+           </View>
           )}
 
           <View style={styles.field}>

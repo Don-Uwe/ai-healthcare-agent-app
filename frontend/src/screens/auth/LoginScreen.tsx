@@ -1,13 +1,11 @@
+
 import {
-  Image,
   StyleSheet,
   Text,
   View,
   TextInput,
   TouchableOpacity,
   StatusBar,
-
-  
   Alert,
   useColorScheme,
   ScrollView,
@@ -19,7 +17,7 @@ import {
 } from '../../helper/Theme';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {fp, hp, wp} from '../../helper/Metric';
-import {Colors} from 'react-native/Libraries/NewAppScreen';
+//import {Colors} from 'react-native/Libraries/NewAppScreen';
 // import {useNavigation} from '@react-navigation/native';
 import {KEYS, storeItem} from '../../helper/Utils';
 import EmailInputModal from '../../components/EmailInputModal';
@@ -33,6 +31,7 @@ import {LOGIN_API, RESEND_VERIFICATION, SEND_OTP} from '../../helper/APIUtils';
 import Loader from '../../components/Loader';
 import {setUserHandle, setUserId, setUserToken} from '../../store/UserSlice';
 import messaging from '@react-native-firebase/messaging';
+
 
 const LoginScreen = ({navigation}: LoginScreenProp) => {
   const inset = useSafeAreaInsets();
@@ -340,10 +339,14 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
       <View style={[styles.innercontainer, {paddingTop: inset.top}]}>
         <View style={styles.logoContainer}>
           {/* image */}
-          <Image
-            source={require('../../assets/icon.png')}
+         {
+          /**
+           *  <Image
+            source={require('../../../assets/images/icon.png')}
             style={styles.logo}
           />
+           */
+         }
           {/* brand text container */}
           <Text style={styles.brandText}>Ultimate Health</Text>
         </View>
@@ -351,7 +354,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
         <View
           style={[
             styles.formContainer,
-            {backgroundColor: isDarkMode ? Colors.darker : 'white'},
+            {backgroundColor: isDarkMode ? 'black' : 'white'},
           ]}>
           {/* email input */}
           <Text style={styles.inputLabelTxt}>Email</Text>

@@ -177,7 +177,7 @@ export default function ArticleWorkSpace({
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Image
-                  source={require('../../assets/no_results.jpg')}
+                  source={require('../../assets/images/no_results.jpg')}
                   style={styles.image}
                 />
                 <Text style={styles.message}>No Article Found</Text>

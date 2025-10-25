@@ -20,7 +20,7 @@ export default function NoInternetLayout(): JSX.Element {
           height: '100%',
           position: 'absolute',
         }}
-        source={require('../assets/svg/EllipseSvg')}
+        source={require('../../assets/svg/EllipseSvg')}
       />
       <Icon
         name="wifi-off"

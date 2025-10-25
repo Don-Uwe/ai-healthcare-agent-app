@@ -5,7 +5,7 @@ export default function PodcastEmptyComponent() {
   return (
     <View style={styles.emptyContainer}>
       <Image
-        source={require('../assets/podcast_default.jpg')}
+        source={require('../../assets/images/podcast_default.jpg')}
         style={styles.image}
       />
       <Text style={styles.message}>No podcast Found</Text>

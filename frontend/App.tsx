@@ -7,8 +7,8 @@
 
 import React, {useEffect} from 'react';
 import {Platform, StatusBar, useColorScheme, View} from 'react-native';
-import {Colors} from 'react-native/Libraries/NewAppScreen';
-import {PRIMARY_COLOR} from './src/helper/Theme';
+//import {Colors} from 'react-native/Libraries/NewAppScreen';
+import {PRIMARY_COLOR, SECONDARY_COLOR} from './src/helper/Theme';
 import {NavigationContainer} from '@react-navigation/native';
 import StackNavigation from './src/navigations/StackNavigation';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
@@ -16,15 +16,16 @@ import {addEventListener} from '@react-native-community/netinfo';
 import {setConnected} from './src/store/NetworkSlice';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import messaging from '@react-native-firebase/messaging';
-import PushNotification from 'react-native-push-notification';
+//import PushNotification from 'react-native-push-notification';
 
 import {SocketProvider} from './SocketContext';
 import {useDispatch} from 'react-redux';
-import TrackPlayer, {Capability} from 'react-native-track-player';
+//import TrackPlayer, {Capability} from 'react-native-track-player';
 import {cleanUpDownloads} from './src/helper/Utils';
 import { Provider as PaperProvider } from 'react-native-paper';
-import { TamaguiProvider, PortalProvider } from 'tamagui';
+import { TamaguiProvider } from 'tamagui';
 import config from './tamagui.config';
+import { FirebaseProvider } from './hooks/FirebaseContext';
 
 const queryClient = new QueryClient();
 
@@ -37,7 +38,7 @@ declare module '@tamagui/core' {
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
   const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+    backgroundColor: isDarkMode ? '#000' : SECONDARY_COLOR,
   };
 
   const BarStyle = Platform.OS === 'ios' ? 'dark-content' : 'light-content';
@@ -45,6 +46,7 @@ function App(): React.JSX.Element {
   const dispatch = useDispatch();
 
   useEffect(() => {
+    /*
     const init = async () => {
       try {
         await TrackPlayer.setupPlayer();
@@ -65,10 +67,11 @@ function App(): React.JSX.Element {
         console.log(' TrackPlayer already initialized or failed', e);
       }
     };
+    */
 
-    init();
+    //init();
     return ()=>{
-       TrackPlayer.reset();
+      // TrackPlayer.reset();
     };
   }, []);
 
@@ -77,6 +80,7 @@ function App(): React.JSX.Element {
   }, []);
 
   useEffect(() => {
+    /*
     PushNotification.configure({
       onRegister: token => {
         console.log('FCM Token:', token);
@@ -101,6 +105,7 @@ function App(): React.JSX.Element {
       },
       created => console.log(`createChannel returned '${created}'`),
     );
+    */
     const unsubscribe = messaging().onMessage(async remoteMessage => {
       console.log(
         'Foreground notification received from message:',
@@ -109,6 +114,7 @@ function App(): React.JSX.Element {
       //const data = remoteMessage.data;
       // handleNotification(data);
 
+      /*
       PushNotification.localNotification({
         channelId: 'default-channel',
         title: remoteMessage?.notification?.title,
@@ -118,6 +124,7 @@ function App(): React.JSX.Element {
         priority: 'high',
         visibility: 'public',
       });
+      */
     });
 
     messaging().setBackgroundMessageHandler(async remoteMessage => {
@@ -176,8 +183,10 @@ function App(): React.JSX.Element {
   return (
     <TamaguiProvider config={config}>
     <QueryClientProvider client={queryClient}>
+         <FirebaseProvider>
       <SocketProvider>
         <SafeAreaProvider>
+         
           <PaperProvider>
           <View
             style={{flex: 1, backgroundColor: backgroundStyle.backgroundColor}}>
@@ -192,9 +201,11 @@ function App(): React.JSX.Element {
             </NavigationContainer>
           </View>
           </PaperProvider>
+        
         </SafeAreaProvider>
         
       </SocketProvider>
+      </FirebaseProvider>
     </QueryClientProvider>
     </TamaguiProvider>
   );

@@ -288,7 +288,7 @@ export type ArticleCardProps = {
     | ProfileScreenProps['navigation']
     | UserProfileScreenProp['navigation'];
   success: () => void;
-  isSelected: Boolean;
+  isSelected: boolean;
   setSelectedCardId: (id: string) => void;
   handleRepostAction: (item: ArticleData) => void;
   handleReportAction: (item: ArticleData) => void;
@@ -302,7 +302,7 @@ export type ArticleCardProps = {
 export type ReviewCardProps = {
   item: ArticleData;
   onclick: (item: ArticleData) => void;
-  isSelected: Boolean;
+  isSelected: boolean;
   setSelectedCardId: (id: string) => void;
 };
 export type Admin = {
@@ -615,9 +615,9 @@ export type Comment = {
   replies: Comment[];
   likedUsers: string[];
   status: string;
-  isEdited: Boolean;
-  isReview: Boolean;
-  isNote: Boolean;
+  isEdited: boolean;
+  isReview: boolean;
+  isNote: boolean;
 };
 
 export type EditRequest = {

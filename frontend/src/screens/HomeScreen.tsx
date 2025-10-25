@@ -1,5 +1,4 @@
 import {
-  SafeAreaView,
   StyleSheet,
   View,
   Alert,
@@ -9,6 +8,7 @@ import {
   ScrollView,
 } from 'react-native';
 import {useCallback, useEffect, useRef, useState} from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import AddIcon from '../components/AddIcon';
 import ArticleCard from '../components/ArticleCard';
@@ -24,6 +24,7 @@ import axios from 'axios';
 import {
   ARTICLE_TAGS_API,
   GET_PROFILE_API,
+  PROD_URL,
   REPOST_ARTICLE,
   REQUEST_EDIT,
 } from '../helper/APIUtils';
@@ -32,7 +33,7 @@ import {BottomSheetModal} from '@gorhom/bottom-sheet';
 import {useMutation, useQuery} from '@tanstack/react-query';
 import {useSelector, useDispatch} from 'react-redux';
 import Loader from '../components/Loader';
-import Config from 'react-native-config';
+
 import {
   setFilteredArticles,
   setSearchedArticles,
@@ -74,7 +75,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
 
   //console.log('User Token', user_token);
   //console.log('User Id', user_id);
-  //console.log('BASE URL', Config.PROD_URL);
+  //console.log('BASE URL', PROD_URL);
 
   const handleCategorySelection = (category: CategoryType) => {
     // Update Redux State
@@ -97,7 +98,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       return;
     }
     const {data: categoryData} = await axios.get(
-      `${Config.PROD_URL + ARTICLE_TAGS_API}`,
+      `${PROD_URL + ARTICLE_TAGS_API}`,
       {
         headers: {
           Authorization: `Bearer ${user_token}`,
@@ -136,7 +137,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           throw new Error('No token found');
         }
         const response = await axios.get(
-          `${Config.PROD_URL}/notification/unread-count?role=2`,
+          `${PROD_URL}/notification/unread-count?role=2`,
           {
             headers: {
               Authorization: `Bearer ${user_token}`,
@@ -414,7 +415,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     queryFn: async () => {
       try {
         const response = await axios.get(
-          `${Config.PROD_URL}/articles?page=${page}`,
+          `${PROD_URL}/articles?page=${page}`,
           {
             headers: {Authorization: `Bearer ${user_token}`},
           },

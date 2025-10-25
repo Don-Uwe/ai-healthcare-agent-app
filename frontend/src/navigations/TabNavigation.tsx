@@ -4,13 +4,13 @@ import HomeScreen from '../screens/HomeScreen';
 import PodcastsScreen from '../screens/PodcastsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 // import {KeyboardAvoidingView, StyleSheet} from 'react-native';
-import {Colors} from 'react-native/Libraries/NewAppScreen';
+// import {Colors} from 'react-native/Libraries/NewAppScreen';
 import TabBar from './TabBar';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {TabParamList} from '../type';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import BotScreen from '../screens/BotScreen';
-import {BUTTON_COLOR} from '../helper/Theme';
+import {BUTTON_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import HeaderRightMenu from '../components/HeaderRightMenu';
 
 const Tab = createBottomTabNavigator<TabParamList>();
@@ -25,7 +25,7 @@ const TabNavigation = () => {
         options={{
           headerShown: false,
           headerStyle: {
-            backgroundColor: Colors.darker,
+            backgroundColor: PRIMARY_COLOR,
           },
           headerTitleStyle: {
             color: 'white',
