@@ -17,8 +17,8 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import ArticleFloatingMenu from './ArticleFloatingMenu';
-import Entypo from 'react-native-vector-icons/Entypo';
-import AntDesign from 'react-native-vector-icons/AntDesign';
+import Entypo from '@expo/vector-icons/Entypo';
+import AntDesign from '@expo/vector-icons/AntDesign';
 import {PRIMARY_COLOR} from '../helper/Theme';
 
 export default function CommentItem({

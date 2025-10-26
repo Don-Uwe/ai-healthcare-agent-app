@@ -1,7 +1,7 @@
 import React from 'react';
 import {View, Pressable, StyleSheet, useColorScheme, Image} from 'react-native';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import {VULTR_CHAT_PROFILE_AVTARS} from '../helper/Utils';
 

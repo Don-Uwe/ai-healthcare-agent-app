@@ -19,7 +19,7 @@ import AmplitudeWave from '../components/AmplitudeWave';
 import {useMutation} from '@tanstack/react-query';
 import {useSelector} from 'react-redux';
 import axios from 'axios';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import Icon from '@expo/vector-icons/MaterialCommunityIcons';
 import Snackbar from 'react-native-snackbar';
 // import TrackPlayer, {State, useProgress} from 'react-native-track-player';
 import {UPLOAD_PODCAST} from '../helper/APIUtils';

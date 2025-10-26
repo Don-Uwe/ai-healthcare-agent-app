@@ -6,9 +6,9 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import React from 'react';
-import FeatherIcon from 'react-native-vector-icons/Feather';
-import Ionicon from 'react-native-vector-icons/Ionicons';
-import AntDesign from 'react-native-vector-icons/AntDesign';
+import FeatherIcon from '@expo/vector-icons/Feather';
+import Ionicon from '@expo/vector-icons/Ionicons';
+import AntDesign from '@expo/vector-icons/AntDesign';
 import {fp, hp, wp} from '../helper/Metric';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import {HomeScreenHeaderProps} from '../type';

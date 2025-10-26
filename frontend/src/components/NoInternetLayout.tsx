@@ -1,7 +1,7 @@
 import React from 'react';
 import {SafeAreaView, Text, Image} from 'react-native';
 import GlobalStyles from '../styles/GlobalStyle';
-import Icon from 'react-native-vector-icons/Feather';
+import Icon from '@expo/vector-icons/Feather';
 import {BUTTON_COLOR} from '../helper/Theme';
 
 export default function NoInternetLayout(): JSX.Element {

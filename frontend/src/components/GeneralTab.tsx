@@ -7,7 +7,7 @@ import {
   Image,
 } from 'react-native';
 import React, {memo} from 'react';
-import Feather from 'react-native-vector-icons/Feather';
+import Feather from '@expo/vector-icons/Feather';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import {ProfileEditGeneralTab} from '../type';
 //import fallback_profile from '../assets/avatar.jpg';

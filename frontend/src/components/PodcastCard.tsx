@@ -1,11 +1,11 @@
 import React from 'react';
 import {StyleSheet, Text, View, Image, TouchableOpacity, Alert} from 'react-native';
-import Feather from 'react-native-vector-icons/Feather';
+import Feather from '@expo/vector-icons/Feather';
 import {hp, wp} from '../helper/Metric';
 import {formatCount} from '../helper/Utils';
 import {Category} from '../type';
 import {PRIMARY_COLOR} from '../helper/Theme';
-import Entypo from 'react-native-vector-icons/Entypo';
+import Entypo from '@expo/vector-icons/Entypo';
 import {useRef} from 'react';
 import {BottomSheetModal} from '@gorhom/bottom-sheet';
 import PodcastActions from './PodcastActions';

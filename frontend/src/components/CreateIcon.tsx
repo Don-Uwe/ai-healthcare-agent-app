@@ -1,6 +1,6 @@
 import {SafeAreaView, StyleSheet, TouchableOpacity} from 'react-native';
 import React from 'react';
-import Entypo from 'react-native-vector-icons/Entypo';
+import Entypo from '@expo/vector-icons/Entypo';
 import {BUTTON_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import {AddIconProp} from '../type';
 

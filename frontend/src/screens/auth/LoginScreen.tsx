@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   StatusBar,
   Alert,
+  Image,
   useColorScheme,
   ScrollView,
 } from 'react-native';
@@ -21,7 +22,7 @@ import {fp, hp, wp} from '../../helper/Metric';
 // import {useNavigation} from '@react-navigation/native';
 import {KEYS, storeItem} from '../../helper/Utils';
 import EmailInputModal from '../../components/EmailInputModal';
-import Icon from 'react-native-vector-icons/Ionicons';
+import Icon from '@expo/vector-icons/Ionicons';
 
 import {AuthData, LoginScreenProp, User} from '../../type';
 import {useMutation} from '@tanstack/react-query';
@@ -339,14 +340,13 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
       <View style={[styles.innercontainer, {paddingTop: inset.top}]}>
         <View style={styles.logoContainer}>
           {/* image */}
-         {
-          /**
-           *  <Image
+         
+           <Image
             source={require('../../../assets/images/icon.png')}
             style={styles.logo}
           />
-           */
-         }
+           
+         
           {/* brand text container */}
           <Text style={styles.brandText}>Ultimate Health</Text>
         </View>

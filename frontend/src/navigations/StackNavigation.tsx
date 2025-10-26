@@ -21,8 +21,8 @@ import {
   BackHandler,
   Pressable,
 } from 'react-native';
-import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
-import Ionicon from 'react-native-vector-icons/Ionicons';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import Ionicon from '@expo/vector-icons/Ionicons';
 import ArticleDescriptionScreen from '../screens/article/ArticleDescriptionScreen';
 import ProfileEditScreen from '../screens/ProfileEditScreen';
 import UserProfileScreen from '../screens/UserProfileScreen';

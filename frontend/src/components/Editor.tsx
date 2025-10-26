@@ -1,9 +1,9 @@
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import {actions, RichEditor, RichToolbar} from 'react-native-pell-rich-editor';
-import Entypo from 'react-native-vector-icons/Entypo';
-import Feather from 'react-native-vector-icons/Feather';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import Entypo from '@expo/vector-icons/Entypo';
+import Feather from '@expo/vector-icons/Feather';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import {wp, hp} from '../helper/Metric';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import {useRef, useState} from 'react';

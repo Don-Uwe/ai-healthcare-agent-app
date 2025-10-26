@@ -14,13 +14,13 @@ import {
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {ArticleData, ReviewScreenProp, User} from '../../type';
-import Feather from 'react-native-vector-icons/Feather';
-import Entypo from 'react-native-vector-icons/Entypo';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import Feather from '@expo/vector-icons/Feather';
+import Entypo from '@expo/vector-icons/Entypo';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import {useDispatch, useSelector} from 'react-redux';
 import WebView from 'react-native-webview';
 import {hp, wp} from '../../helper/Metric';

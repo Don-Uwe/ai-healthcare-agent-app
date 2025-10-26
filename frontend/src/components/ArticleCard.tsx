@@ -15,9 +15,9 @@ import {ArticleCardProps, ArticleData, User} from '../type';
 import moment from 'moment';
 import {useDispatch, useSelector} from 'react-redux';
 import axios from 'axios';
-import AntDesign from 'react-native-vector-icons/AntDesign';
-import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons';
-import IonIcons from 'react-native-vector-icons/Ionicons';
+import AntDesign from '@expo/vector-icons/AntDesign';
+import MaterialCommunityIcon from '@expo/vector-icons/MaterialCommunityIcons';
+import IonIcons from '@expo/vector-icons/Ionicons';
 import {useMutation, useQuery} from '@tanstack/react-query';
 import {
   GET_ARTICLE_CONTENT,
@@ -35,11 +35,11 @@ import Animated, {
 } from 'react-native-reanimated';
 import ArticleFloatingMenu from './ArticleFloatingMenu';
 //import io from 'socket.io-client';
-import Entypo from 'react-native-vector-icons/Entypo';
+import Entypo from '@expo/vector-icons/Entypo';
 import Share from 'react-native-share';
 import RNFS from 'react-native-fs';
 import RNHTMLtoPDF from 'react-native-html-to-pdf';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import {useSocket} from '../../SocketContext';
 import EditRequestModal from './EditRequestModal';
 

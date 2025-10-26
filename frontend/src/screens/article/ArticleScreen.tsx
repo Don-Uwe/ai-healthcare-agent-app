@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import {useEffect, useMemo, useRef, useState} from 'react';
 import {useQuery, useMutation} from '@tanstack/react-query';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import {PRIMARY_COLOR} from '../../helper/Theme';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {ArticleData, ArticleScreenProp, User} from '../../type';

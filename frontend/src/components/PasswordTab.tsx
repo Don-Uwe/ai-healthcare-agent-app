@@ -6,7 +6,7 @@ import {
   View,
 } from 'react-native';
 import React, {useState} from 'react';
-import Feather from 'react-native-vector-icons/Feather';
+import Feather from '@expo/vector-icons/Feather';
 import {PRIMARY_COLOR} from '../helper/Theme';
 
 const PasswordTab = ({

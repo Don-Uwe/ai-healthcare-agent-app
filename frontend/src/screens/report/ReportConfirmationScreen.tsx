@@ -11,12 +11,11 @@ export default function ReportConfirmationScreen({
   return (
     <View style={styles.container}>
       {
-        /**
-         * <Image
+        <Image
         style={styles.imageStyle}
         source={require('../../../assets/images/icon.png')}
       />
-         */
+       
       }
 
       <Text style={styles.header}>Thanks for helping our community</Text>

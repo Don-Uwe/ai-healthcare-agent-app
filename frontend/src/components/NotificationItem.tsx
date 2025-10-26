@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import {Notification} from '../type';
 import {fp, hp} from '../helper/Metric';
-import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons';
+import MaterialCommunityIcon from '@expo/vector-icons/MaterialCommunityIcons';
 import {BUTTON_COLOR} from '../helper/Theme';
 
 export default function NotificationItem({

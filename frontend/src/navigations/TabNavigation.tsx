@@ -8,7 +8,7 @@ import ProfileScreen from '../screens/ProfileScreen';
 import TabBar from './TabBar';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {TabParamList} from '../type';
-import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import BotScreen from '../screens/BotScreen';
 import {BUTTON_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import HeaderRightMenu from '../components/HeaderRightMenu';

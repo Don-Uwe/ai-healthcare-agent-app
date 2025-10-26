@@ -13,9 +13,9 @@ import {hp} from '../helper/Metric';
 import {ON_PRIMARY_COLOR, BUTTON_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import Slider from '@react-native-community/slider';
 import moment from 'moment';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import AntDesign from 'react-native-vector-icons/AntDesign';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import AntDesign from '@expo/vector-icons/AntDesign';
 /*
 import TrackPlayer, {
   usePlaybackState,
@@ -32,7 +32,7 @@ import Snackbar from 'react-native-snackbar';
 import {GET_STORAGE_DATA, LIKE_PODCAST} from '../helper/APIUtils';
 import Share from 'react-native-share';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import Icon from '@expo/vector-icons/MaterialIcons';
 import { useSocket } from '../../SocketContext';
 
 export default function OfflinePodcastDetail({

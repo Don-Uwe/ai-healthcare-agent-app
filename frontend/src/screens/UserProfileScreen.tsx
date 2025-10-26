@@ -17,7 +17,7 @@ import {
 import {ArticleData, UserProfileScreenProp, User} from '../type';
 import {useMutation, useQuery} from '@tanstack/react-query';
 import axios from 'axios';
-import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Loader from '../components/Loader';
 import {useFocusEffect} from '@react-navigation/native';
 import Snackbar from 'react-native-snackbar';

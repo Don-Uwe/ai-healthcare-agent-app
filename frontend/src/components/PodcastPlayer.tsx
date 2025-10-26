@@ -8,12 +8,12 @@ import {
   Platform,
 } from 'react-native';
 import React, {useEffect, useState, useRef} from 'react';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import Entypo from 'react-native-vector-icons/Entypo';
-import EvilIcons from 'react-native-vector-icons/EvilIcons';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import Entypo from '@expo/vector-icons/Entypo';
+import EvilIcons from '@expo/vector-icons/EvilIcons';
 import Slider from '@react-native-community/slider';
-import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
-import Feather from 'react-native-vector-icons/Feather';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import Feather from '@expo/vector-icons/Feather';
 import {PRIMARY_COLOR} from '../helper/Theme'; // Custom theme color
 import Tts from 'react-native-tts'; // Text-to-Speech library
 

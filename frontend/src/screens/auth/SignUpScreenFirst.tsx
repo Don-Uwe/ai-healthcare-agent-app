@@ -10,11 +10,11 @@ import {
   SafeAreaView,
   Alert,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import Icon from '@expo/vector-icons/MaterialIcons';
 import {Dropdown} from 'react-native-element-dropdown';
-import AntDesign from 'react-native-vector-icons/AntDesign';
+import AntDesign from '@expo/vector-icons/AntDesign';
 import {hp} from '../../helper/Metric';
-import AntIcon from 'react-native-vector-icons/AntDesign';
+import AntIcon from '@expo/vector-icons/AntDesign';
 import {BUTTON_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
 import {SignUpScreenFirstProp, UserDetail} from '../../type';
 import {useMutation} from '@tanstack/react-query';

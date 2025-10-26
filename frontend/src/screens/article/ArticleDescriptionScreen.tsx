@@ -12,7 +12,7 @@ import {
 // import {hp} from '../../helper/Metric';
 import {useSelector} from 'react-redux';
 import {ArticleDescriptionProp, Category} from '../../type';
-import Ionicon from 'react-native-vector-icons/Ionicons';
+import Ionicon from '@expo/vector-icons/Ionicons';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
 import {
   ImageLibraryOptions,

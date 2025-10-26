@@ -9,7 +9,7 @@ import {
   BottomSheetModal,
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import Icon from '@expo/vector-icons/MaterialIcons';
 import { ON_PRIMARY_COLOR } from '../helper/Theme';
 
 const ActionItem = ({

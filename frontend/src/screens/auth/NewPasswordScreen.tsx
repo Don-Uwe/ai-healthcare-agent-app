@@ -9,9 +9,9 @@ import {
   Alert,
 } from 'react-native';
 import {BUTTON_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
-import feather from 'react-native-vector-icons/Feather';
+import feather from '@expo/vector-icons/Feather';
 import {hp} from '../../helper/Metric';
-import AntIcon from 'react-native-vector-icons/AntDesign';
+import AntIcon from '@expo/vector-icons/AntDesign';
 import {NewPasswordScreenProp} from '../../type';
 import {useMutation} from '@tanstack/react-query';
 import axios, {AxiosError} from 'axios';

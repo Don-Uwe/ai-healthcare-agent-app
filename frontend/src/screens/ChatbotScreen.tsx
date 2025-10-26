@@ -9,7 +9,7 @@ import {
 import {PRIMARY_COLOR} from '../helper/Theme';
 import {useSelector} from 'react-redux';
 import {Alert, View, SafeAreaView,  KeyboardAvoidingView} from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import {useMutation, useQuery} from '@tanstack/react-query';
 import {
   GET_PROFILE_API,

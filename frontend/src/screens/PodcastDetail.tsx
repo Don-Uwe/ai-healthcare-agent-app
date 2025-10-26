@@ -11,7 +11,7 @@ import {
   ActivityIndicator,
   Platform,
 } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import {PodcastData, PodcastDetailScreenProp} from '../type';
 import {BUTTON_COLOR, ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import Slider from '@react-native-community/slider';
@@ -36,7 +36,7 @@ import {useSelector} from 'react-redux';
 import moment from 'moment';
 import {downloadAudio, formatCount} from '../helper/Utils';
 import Snackbar from 'react-native-snackbar';
-import AntDesign from 'react-native-vector-icons/AntDesign';
+import AntDesign from '@expo/vector-icons/AntDesign';
 import Share from 'react-native-share';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {hp} from '../helper/Metric';

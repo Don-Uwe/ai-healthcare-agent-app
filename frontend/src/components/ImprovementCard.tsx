@@ -12,7 +12,7 @@ import moment from 'moment';
 import {BUTTON_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import {StatusEnum} from '../helper/Utils';
 //import io from 'socket.io-client';
-import AntDesign from 'react-native-vector-icons/AntDesign';
+import AntDesign from '@expo/vector-icons/AntDesign';
 import WebView from 'react-native-webview';
 
 const ImprovementCard = ({item, onNavigate}: ImprovementCardProps) => {

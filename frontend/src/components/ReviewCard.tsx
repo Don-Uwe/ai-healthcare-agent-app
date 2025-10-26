@@ -18,8 +18,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import ArticleFloatingMenu from './ArticleFloatingMenu';
 //import io from 'socket.io-client';
-import Entypo from 'react-native-vector-icons/Entypo';
-import AntDesign from 'react-native-vector-icons/AntDesign';
+import Entypo from '@expo/vector-icons/Entypo';
+import AntDesign from '@expo/vector-icons/AntDesign';
 
 const ReviewCard = ({
   item,

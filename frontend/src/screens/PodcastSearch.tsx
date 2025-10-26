@@ -15,7 +15,7 @@ import axios from 'axios';
 import {SEARCH_PODCAST, UPDATE_PODCAST_VIEW_COUNT} from '../helper/APIUtils';
 import {useSelector} from 'react-redux';
 import PodcastCard from '../components/PodcastCard';
-import AntDesign from 'react-native-vector-icons/AntDesign';
+import AntDesign from '@expo/vector-icons/AntDesign';
 import {msToTime} from '../helper/Utils';
 import Snackbar from 'react-native-snackbar';
 import NoResults from '../components/NoResult';

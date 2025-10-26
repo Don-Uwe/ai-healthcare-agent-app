@@ -9,10 +9,10 @@ import {
   Image,
   Alert,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import Icon from '@expo/vector-icons/MaterialIcons';
 import {hp, wp} from '../../helper/Metric';
 import {PRIMARY_COLOR} from '../../helper/Theme';
-import AntIcon from 'react-native-vector-icons/AntDesign';
+import AntIcon from '@expo/vector-icons/AntDesign';
 import {Contactdetail, SignUpScreenSecondProp} from '../../type';
 import {useMutation} from '@tanstack/react-query';
 import axios, {AxiosError} from 'axios';
@@ -291,12 +291,11 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
           ) : (
            <View>
             {
-              /**
-               *  <Image
+               <Image
               source={require('../../../assets/images/icon.png')}
               style={styles.logo}
             />
-               */
+              
             }
            </View>
           )}

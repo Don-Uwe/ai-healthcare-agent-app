@@ -2,11 +2,11 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {StyleSheet, Text, ScrollView, Alert} from 'react-native';
 import {actions, RichEditor, RichToolbar} from 'react-native-pell-rich-editor';
-import Feather from 'react-native-vector-icons/Feather';
-import Entypo from 'react-native-vector-icons/Entypo';
-import IonIcon from 'react-native-vector-icons/Ionicons';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import Fontisto from 'react-native-vector-icons/Fontisto';
+import Feather from '@expo/vector-icons/Feather';
+import Entypo from '@expo/vector-icons/Entypo';
+import IonIcon from '@expo/vector-icons/Ionicons';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import Fontisto from '@expo/vector-icons/Fontisto';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {EditorScreenProp} from '../../type';

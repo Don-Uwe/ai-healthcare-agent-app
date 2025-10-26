@@ -1,6 +1,6 @@
 import {SafeAreaView, StyleSheet, TouchableOpacity} from 'react-native';
 import React from 'react';
-import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import {AddIconProp} from '../type';
 

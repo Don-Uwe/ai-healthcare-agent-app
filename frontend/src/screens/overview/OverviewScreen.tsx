@@ -8,7 +8,7 @@ import {
 } from '../../helper/Theme';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {ArticleData, EditRequest, OverviewScreenProps, PodcastData} from '../../type';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import {StatusEnum} from '../../helper/Utils';
 import {FAB} from 'react-native-paper';
 import {hp} from '../../helper/Metric';

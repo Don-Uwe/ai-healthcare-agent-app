@@ -3,6 +3,7 @@ import {
   View,
   Alert,
   Text,
+  Image,
   TouchableOpacity,
   FlatList,
   ScrollView,
@@ -612,12 +613,11 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
             onRefresh={onRefresh}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                {/**
-                 *  <Image
-                  source={require('../assets/no_results.jpg')}
+                <Image
+                  source={require('../assets/images/no_results.jpg')}
                   style={styles.emptyImgStyle}
                 />
-                 */}
+                 
                 <Text style={styles.message}>No Article Found</Text>
               </View>
             }
