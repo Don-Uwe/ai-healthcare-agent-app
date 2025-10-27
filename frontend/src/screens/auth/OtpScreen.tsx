@@ -5,13 +5,12 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   KeyboardAvoidingView,
   Alert,
 } from 'react-native';
-import {BUTTON_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import {PRIMARY_COLOR} from '../../helper/Theme';
 import {hp} from '../../helper/Metric';
-import Icon from '@expo/vector-icons/Entypo';
 import AntIcon from '@expo/vector-icons/AntDesign';
 import {OtpScreenProp} from '../../type';
 import {OTPInput, OTPInputConfig} from '../../components/OTPInput';
@@ -140,12 +139,7 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
         </TouchableOpacity>
 
         <View style={styles.innerContainer}>
-          {/**
-             *  <Text style={styles.title}>
-            We have sent you OTP to your email address for verification
-          </Text>
-             */}
-
+        
           <OTPInput
             codes={codes!}
             errorMessages={errorMessages}
