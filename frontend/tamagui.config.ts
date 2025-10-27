@@ -36,6 +36,11 @@ const tokens = createTokens({
     red1: '#FEE2E2',
     red8: '#DC2626',
     red10: '#991B1B',
+    blue10: '#007AFF',
+    gray3: '#F5F5F5',
+    borderColor: '#99CCFF',
+    background: '#FFFFFF',
+ 
   },
 
   space: {
