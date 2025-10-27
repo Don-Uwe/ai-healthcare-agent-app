@@ -250,20 +250,22 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
     return <Loader />;
   }
   return (
-    <ScrollView backgroundColor="$background">
+    <ScrollView
+      backgroundColor="$background"
+      showsVerticalScrollIndicator={false}>
       <SafeAreaView>
         {/* Header Quote */}
         <YStack
           width="92%"
           height={160}
           borderRadius="$6"
-          marginTop="$4"
+          marginTop="$6"
           alignItems="center"
           justifyContent="center"
           backgroundColor="$blue10"
           alignSelf="center"
           paddingHorizontal="$4"
-          paddingVertical="$4"
+          paddingVertical="$5"
           elevation={3}>
           <Text
             fontSize={18}
@@ -286,33 +288,32 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
           alignSelf="center"
           backgroundColor="$background"
           borderRadius="$6"
-          padding="$4"
-          marginTop="$5"
-          space="$4"
+          padding="$5"
+          marginTop="$6"
+          marginBottom="$10"
+          space="$5"
           elevation={2}>
           {/* Profile Image */}
-           {user.profile_image && (
-          <YStack
-            height={100}
-            width={100}
-            borderRadius={50}
-            backgroundColor="$blue10"
-            alignItems="center"
-            justifyContent="center"
-            overflow="hidden"
-            alignSelf="center"
-            marginBottom="$3">
-           
+          {user.profile_image && (
+            <YStack
+              height={110}
+              width={110}
+              borderRadius={55}
+              backgroundColor="$blue10"
+              alignItems="center"
+              justifyContent="center"
+              overflow="hidden"
+              alignSelf="center"
+              marginBottom="$4">
               <Image
                 source={{uri: user.profile_image}}
                 style={{
                   height: '100%',
                   width: '100%',
-    
+                  resizeMode: 'cover',
                 }}
               />
-            
-          </YStack>
+            </YStack>
           )}
 
           {/* Input Fields */}
@@ -356,20 +357,19 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
             <XStack key={index} position="relative">
               <Input
                 flex={1}
-                height="$5"
+                height="$6"
                 borderColor="$blue10"
                 borderWidth={1}
                 borderRadius="$4"
+                paddingHorizontal="$4"
+                marginVertical="$2"
                 placeholder={field.placeholder}
                 value={field.value}
                 onChangeText={field.onChangeText}
                 keyboardType={field.keyboardType}
                 maxLength={field.maxLength}
-                paddingRight="$8"
-              
-                marginVertical="$1" 
               />
-              <YStack position="absolute" right={14} top={10}>
+              <YStack position="absolute" right={14} top={12}>
                 <Icon name={field.icon} size={20} color="#000" />
               </YStack>
             </XStack>
@@ -378,10 +378,11 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
           {/* Submit Button */}
           <Button
             backgroundColor="$blue10"
-            borderRadius="$4"
+            borderRadius="$5"
             alignSelf="center"
             width="100%"
             size="$6"
+            marginTop="$2"
             onPress={handleSubmit}>
             <Text color="white" fontWeight="700" fontSize={18}>
               Register
