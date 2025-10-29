@@ -11,12 +11,9 @@ import {
   Button,
   Text,
   Separator,
-  H4,
-  H2,
-  H3,
 } from 'tamagui';
 import {KEYS, storeItem} from '../../helper/Utils';
-import EmailInputModal from '../../components/EmailInputModal';
+
 import Icon from '@expo/vector-icons/Ionicons';
 import {AuthData, LoginScreenProp, User} from '../../type';
 import {useMutation} from '@tanstack/react-query';
@@ -27,7 +24,7 @@ import Loader from '../../components/Loader';
 import {setUserHandle, setUserId, setUserToken} from '../../store/UserSlice';
 import messaging from '@react-native-firebase/messaging';
 import Entypo from '@expo/vector-icons/Entypo';
-import {PRIMARY_COLOR} from '@/src/helper/Theme';
+import EmailInputBottomSheet from '../../components/EmailInputModal';
 
 const LoginScreen = ({navigation}: LoginScreenProp) => {
   const inset = useSafeAreaInsets();
@@ -479,20 +476,20 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
           </Button>
         </YStack>
 
-        <EmailInputModal
-          visible={emailInputVisible}
-          backButtonClick={handleEmailInputBack}
-          onDismiss={() => setEmailInputVisible(false)}
-          callback={(email: string) => {
-            setOtpMail(email);
-            if (requestVerificationMode) {
-              requestVerification.mutate({email1: email});
-            } else {
-              sendOtpMutation.mutate({email});
-            }
-          }}
-          isRequestVerification={requestVerificationMode}
-        />
+       <EmailInputBottomSheet
+        visible={emailInputVisible}
+        callback={(email: string) => {
+          setOtpMail(email)
+          if (requestVerificationMode) {
+            requestVerification.mutate({ email1: email })
+          } else {
+            sendOtpMutation.mutate({ email })
+          }
+        }}
+        backButtonClick={handleEmailInputBack}
+        onDismiss={() => setEmailInputVisible(false)}
+        isRequestVerification={requestVerificationMode}
+      />
       </YStack>
     </ScrollView>
   );

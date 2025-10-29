@@ -1,22 +1,27 @@
 import React, {useState} from 'react';
+import {Alert, useColorScheme} from 'react-native';
 import {
-  View,
+  Theme,
+  YStack,
+  XStack,
+  Card,
+  Input,
+  Button,
+  Paragraph,
   Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  SafeAreaView,
-  Alert,
-} from 'react-native';
-import {BUTTON_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
-import feather from '@expo/vector-icons/Feather';
-import {hp} from '../../helper/Metric';
-import AntIcon from '@expo/vector-icons/AntDesign';
+  Circle,
+} from 'tamagui';
+import {SafeAreaView} from 'react-native-safe-area-context';
+
 import {NewPasswordScreenProp} from '../../type';
 import {useMutation} from '@tanstack/react-query';
 import axios, {AxiosError} from 'axios';
 import {CHANGE_PASSWORD_API} from '../../helper/APIUtils';
 import Loader from '../../components/Loader';
+import AntDesign from '@expo/vector-icons/AntDesign';
+import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '@/src/helper/Theme';
+import Entypo from '@expo/vector-icons/Entypo';
+import Icon from '@expo/vector-icons/Ionicons';
 
 export default function NewPasswordScreen({
   navigation,
@@ -24,57 +29,70 @@ export default function NewPasswordScreen({
 }: NewPasswordScreenProp) {
   const {email} = route.params;
   const [password, setPassword] = useState('');
+  const isDarkMode = useColorScheme() === 'dark';
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordVerify, setPasswordVerify] = useState(false);
-  const [showPassword, setShowPassword] = useState({
-    new: false,
-    confirm: false,
-  });
-  const [error, setError] = useState({
-    new: false,
-    confirm: false,
-  });
-  const [errorText, setErrorText] = useState({
-    new: '',
-    confirm: '',
-  });
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const [secureTextEntry, setSecureTextEntry] = useState(true);
+  const [secureNewTextEntry, setSecureNewTextEntry] = useState(true);
+  const handleSecureEntryClickEvent = () => {
+    setSecureTextEntry(!secureTextEntry);
+  };
+
+  const handleSecureNewEntryClickEvent = () => {
+    setSecureNewTextEntry(!secureNewTextEntry);
+  };
 
   const handlePasswordSubmit = () => {
     if (!password || password.length === 0) {
-      setError({...error, new: true});
-      setErrorText({...errorText, new: 'Please give a password'});
+      //setError({...error, new: true});
+      //setErrorText({...errorText, new: 'Please give a password'});
+      Alert.alert('Please give a password');
+      setErrorMessage('Please give a password');
       return;
     } else if (!passwordVerify) {
-      setError({...error, new: true});
-      setErrorText({
-        ...errorText,
-        new: 'Please enter a valid password',
-      });
+      //setError({...error, new: true});
+      Alert.alert('Please enter a valid password');
+      setErrorMessage('Please enter a valid password');
       return;
     } else if (!confirmPassword || confirmPassword.length === 0) {
-      setError({...error, confirm: true});
-      setErrorText({...errorText, confirm: 'Please confirm your password'});
+      //setError({...error, confirm: true});
+      Alert.alert('Please confirm your password');
+      setErrorMessage('Please confirm your password');
       return;
     } else if (password !== confirmPassword) {
-      setError({...error, confirm: true});
-      setErrorText({
-        ...errorText,
-        confirm: 'confirmation password does not match the new password',
-      });
+      // setError({...error, confirm: true});
+      Alert.alert('confirmation password does not match the new password');
+      setErrorMessage('confirmation password does not match the new password');
       return;
     } else {
       //navigation.navigate('LoginScreen');
+      setErrorMessage(null);
       changePasswordMutation.mutate();
     }
   };
 
   const handlePassword = e => {
     let pass = e;
+    setErrorMessage(null);
     setPassword(pass);
     setPasswordVerify(false);
 
     if (/(?=.*[a-z]).{6,}/.test(pass)) {
       setPassword(pass);
+      setPasswordVerify(true);
+    }
+  };
+
+  const handleConfirmPassword = e => {
+    let pass = e;
+    setErrorMessage(null);
+    setConfirmPassword(pass);
+    setPasswordVerify(false);
+
+    if (/(?=.*[a-z]).{6,}/.test(pass)) {
+      setConfirmPassword(pass);
       setPasswordVerify(true);
     }
   };
@@ -119,162 +137,194 @@ export default function NewPasswordScreen({
     return <Loader />;
   }
   return (
-    <SafeAreaView style={styles.container}>
-      <TouchableOpacity
-        style={{marginHorizontal: 16, marginTop: 6}}
-        onPress={() => {
-          navigation.navigate('LoginScreen');
-        }}>
-        <AntIcon name="arrowleft" size={35} color="white" />
-      </TouchableOpacity>
+   <Theme name="light">
+  <SafeAreaView style={{ flex: 1, backgroundColor: '#f7f6fb' }}>
+    <YStack f={1} jc="center" ai="center" px="$4" p="$6">
+      <Card
+        elevate
+        bordered
+        bg="white"
+        width="100%"  // Card should stretch across full width
+        maxWidth={400} // Limits the card's width (you can adjust this value)
+        height="auto" // Card's height adjusts based on content
+        p="$6" // Reduced padding for more space
+        br="$8"
+        shadowColor="#00000020"
+        ai="center"
+      >
+        {/* Icon Circle */}
+        <Circle
+          size={70}
+          bg={ON_PRIMARY_COLOR}
+          jc="center"
+          ai="center"
+          mb="$4"
+        >
+          <AntDesign
+            size={32}
+            name="key"
+            color={PRIMARY_COLOR}
+            strokeWidth={2.2}
+          />
+        </Circle>
 
-      <View style={styles.innerContainer}>
-        {/* <Text style={styles.title}>New Password</Text> */}
+        {/* Title & Subtitle */}
+        <Text
+          fontSize={20}
+          fontWeight="600"
+          alignSelf="center"
+          marginTop="$2"
+          color="$color12"
+          mb="$2"
+        >
+          Set your new password
+        </Text>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.text}>Enter new password</Text>
-          {error.new && <Text style={styles.error}>{errorText.new}</Text>}
-          <View
-            style={[styles.passwordContainer, error.new && styles.inputError]}>
-            <TextInput
-              autoCapitalize="none"
-              autoCorrect={false}
-              secureTextEntry={!showPassword.new}
-              placeholder="at least 6 length"
-              value={password}
-              onChangeText={e => {
-                handlePassword(e);
-                setError({...error, new: false});
-              }}
-              style={styles.input}
-            />
-            <feather.Button
-              name={showPassword.new ? 'eye' : 'eye-off'}
-              size={16}
-              color="black"
-              backgroundColor="white"
-              onPress={() =>
-                setShowPassword({...showPassword, new: !showPassword.new})
-              }
-            />
-          </View>
-        </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.text}>Confirm password</Text>
-          {error.confirm && (
-            <Text style={styles.error}>{errorText.confirm}</Text>
-          )}
-          <View
-            style={[
-              styles.passwordContainer,
-              error.confirm && styles.inputError,
-            ]}>
-            <TextInput
-              autoCapitalize="none"
-              autoCorrect={false}
-              secureTextEntry={!showPassword.confirm}
-              placeholder="at least 6 length"
-              value={confirmPassword}
-              onChangeText={text => {
-                setConfirmPassword(text);
-                setError({...error, confirm: false});
-              }}
-              style={styles.input}
-            />
-            <feather.Button
-              name={showPassword.confirm ? 'eye' : 'eye-off'}
-              size={16}
-              color="black"
-              backgroundColor="white"
-              onPress={() =>
-                setShowPassword({
-                  ...showPassword,
-                  confirm: !showPassword.confirm,
-                })
-              }
-            />
-          </View>
-        </View>
-        <TouchableOpacity style={styles.button} onPress={handlePasswordSubmit}>
-          <Text style={styles.buttonText}>Submit</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+        {/* Inputs */}
+        <YStack space="$4" w="100%" marginTop="$4">
+          <YStack space="$2">
+            <Text fontWeight="600" color="$gray11">
+              Password
+            </Text>
+
+            <XStack ai="center" position="relative">
+              <Entypo
+                name="lock"
+                size={22}
+                color={isDarkMode ? 'white' : 'black'}
+                style={{
+                  position: 'absolute',
+                  left: 12,
+                  zIndex: 1,
+                }}
+              />
+              <Input
+                flex={1}
+                height="$6"
+                borderRadius="$3"
+                placeholder="Password"
+                secureTextEntry={secureTextEntry}
+                autoCapitalize="none"
+                onChangeText={handlePassword}
+                value={password}
+                color={isDarkMode ? '$color' : '$color10'}
+                paddingLeft="$8"
+                paddingRight="$8"
+              />
+              <Button
+                chromeless
+                size="$4"
+                circular
+                position="absolute"
+                right={6}
+                onPress={handleSecureEntryClickEvent}
+              >
+                <Icon
+                  name={secureTextEntry ? 'eye-off' : 'eye'}
+                  size={22}
+                  color={isDarkMode ? 'white' : 'black'}
+                />
+              </Button>
+            </XStack>
+          </YStack>
+
+          <YStack space="$2">
+            <Text fontWeight="600" color="$gray11">
+              Confirm your new password
+            </Text>
+
+            <XStack ai="center" position="relative">
+              <Entypo
+                name="lock"
+                size={22}
+                color={isDarkMode ? 'white' : 'black'}
+                style={{
+                  position: 'absolute',
+                  left: 12,
+                  zIndex: 1,
+                }}
+              />
+              <Input
+                flex={1}
+                height="$6"
+                borderRadius="$3"
+                placeholder="Confirm Password"
+                secureTextEntry={secureNewTextEntry}
+                autoCapitalize="none"
+                onChangeText={handleConfirmPassword}
+                value={confirmPassword}
+                color={isDarkMode ? '$color' : '$color10'}
+                paddingLeft="$8"
+                paddingRight="$8"
+              />
+              <Button
+                chromeless
+                size="$4"
+                circular
+                position="absolute"
+                right={6}
+                onPress={handleSecureNewEntryClickEvent}
+              >
+                <Icon
+                  name={secureNewTextEntry ? 'eye-off' : 'eye'}
+                  size={22}
+                  color={isDarkMode ? 'white' : 'black'}
+                />
+              </Button>
+            </XStack>
+          </YStack>
+        </YStack>
+
+        {/* Error Message */}
+        {errorMessage && (
+          <Paragraph
+            color="$red10"
+            fontSize={14}
+            fontWeight="600"
+            textAlign="center"
+            mt="$3"
+          >
+            {errorMessage}
+          </Paragraph>
+        )}
+
+        {/* Confirm Button */}
+        <YStack w="100%" marginTop="$8">
+          <Button
+            backgroundColor="$blue10"
+            w="100%" // Ensure the button stretches across full width
+            h={50}
+            borderRadius={10}
+            hoverStyle={{ bg: '$purple8' }}
+            pressStyle={{ bg: '$purple7' }}
+            onPress={handlePasswordSubmit}
+          >
+            <Text fontSize={17} fontWeight="500" color="white">
+              Confirm
+            </Text>
+          </Button>
+        </YStack>
+
+        {/* Return Link */}
+        <XStack marginTop="$6" ai="center" space="$2">
+          <Icon
+            color="$gray10"
+            name="arrow-back-circle-outline"
+            size={28}
+          />
+          <Text
+            color="$purple10"
+            fontWeight="600"
+            fontSize={16}
+            onPress={() => navigation.navigate('LoginScreen')}
+          >
+            Return to the login screen
+          </Text>
+        </XStack>
+      </Card>
+    </YStack>
+  </SafeAreaView>
+</Theme>
+
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: PRIMARY_COLOR,
-  },
-  innerContainer: {
-    alignItems: 'center',
-    padding: 20,
-    borderColor: 'white',
-    marginTop: 80,
-    backgroundColor: 'white',
-    paddingHorizontal: 10,
-    paddingVertical: 20,
-    paddingTop: hp(10),
-    width: '100%',
-    height: '100%',
-  },
-  // title: {
-  //   fontSize: 24,
-  //   fontWeight: 'bold',
-  //   color: 'black',
-  //   marginBottom: 20,
-  // },
-  inputContainer: {
-    width: '90%',
-    marginVertical: 20,
-  },
-  error: {
-    color: 'red',
-    marginBottom: 10,
-    fontWeight: '400',
-    fontSize: 16,
-    //marginHorizontal: 5,
-    width: '80%',
-  },
-  inputError: {
-    borderColor: 'red',
-  },
-  text: {
-    fontSize: 16,
-    color: BUTTON_COLOR,
-    marginBottom: 8,
-    fontWeight: '500',
-
-  },
-  passwordContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: PRIMARY_COLOR,
-    backgroundColor: 'white',
-    borderRadius: 6,
-  },
-  input: {
-    flex: 1,
-    height: 40,
-    paddingHorizontal: 10,
-    backgroundColor: 'white',
-    width: '100%',
-    borderRadius: 15,
-  },
-  button: {
-    backgroundColor: PRIMARY_COLOR,
-    padding: 10,
-    borderRadius: 3,
-    marginTop: 20,
-    alignItems: 'center',
-    width: '92%',
-  },
-  buttonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 18,
-  },
-});

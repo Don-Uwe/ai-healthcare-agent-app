@@ -1,46 +1,33 @@
-import React, {RefObject, useRef, useState} from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Alert,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import {PRIMARY_COLOR} from '../../helper/Theme';
-import {hp} from '../../helper/Metric';
-import AntIcon from '@expo/vector-icons/AntDesign';
+import React, {useRef, useState} from 'react';
+import {TextInput, Alert} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import {OtpScreenProp} from '../../type';
-import {OTPInput, OTPInputConfig} from '../../components/OTPInput';
 import {useMutation} from '@tanstack/react-query';
 import axios, {AxiosError} from 'axios';
 import {CHECK_OTP, SEND_OTP} from '../../helper/APIUtils';
 import Loader from '../../components/Loader';
+import {
+  Theme,
+  YStack,
+  Text,
+  Button,
+  XStack,
+  Input,
+  Paragraph,
+  Card,
+} from 'tamagui';
 
 export default function OtpScreen({navigation, route}: OtpScreenProp) {
-  const [codes, setCodes] = useState<string[] | undefined>(Array(4).fill(''));
+  const [otp, setOtp] = useState(['', '', '', '']);
+  const inputs = useRef<(TextInput | null)[]>([]);
   const {email} = route.params;
-  const refs: RefObject<TextInput>[] = [
-    useRef<TextInput>(null),
-    useRef<TextInput>(null),
-    useRef<TextInput>(null),
-    useRef<TextInput>(null),
-  ];
+  
 
-  const config: OTPInputConfig = {
-    backgroundColor: '#f5f5f5',
-    textColor: '#000000',
-    borderColor: '#c1c1c1',
-    errorColor: 'red',
-    focusColor: PRIMARY_COLOR,
-  };
   const [errorMessages, setErrorMessages] = useState<string[]>();
 
   const handleSubmit = () => {
     //navigation.navigate('NewPasswordScreen');
-    const fullCode = codes!.join('');
+    const fullCode = otp!.join('');
     if (!fullCode || fullCode.length === 0) {
       setErrorMessages(['Please provide otp inputs']);
       return;
@@ -63,7 +50,7 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
 
     onSuccess: () => {
       Alert.alert('OTP has sent to your mail');
-      setCodes(Array(4).fill(''));
+      setOtp(Array(4).fill(''));
       setErrorMessages(undefined);
     },
     onError: error => {
@@ -107,20 +94,21 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
     },
   });
 
-  const onChangeCode = (text: string, index: number) => {
-    if (text.length > 1) {
-      setErrorMessages(undefined);
-      const newCodes = text.split('');
-      setCodes(newCodes);
-      refs[3]!.current?.focus();
-      return;
-    }
+  const handleChange = (text: string, index: number) => {
     setErrorMessages(undefined);
-    const newCodes = [...codes!];
-    newCodes[index] = text;
-    setCodes(newCodes);
-    if (text !== '' && index < 3) {
-      refs[index + 1]!.current?.focus();
+
+    const newOtp = [...otp];
+    newOtp[index] = text;
+    setOtp(newOtp);
+
+    if (text && index < otp.length - 1) {
+      inputs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyPress = (e: any, index: number) => {
+    if (e.nativeEvent.key === 'Backspace' && !otp[index] && index > 0) {
+      inputs.current[index - 1]?.focus();
     }
   };
 
@@ -128,144 +116,110 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
     return <Loader />;
   }
   return (
-    <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView>
-        <TouchableOpacity
-          style={{marginHorizontal: 16, marginTop: 6}}
-          onPress={() => {
-            navigation.goBack();
-          }}>
-          <AntIcon name="arrowleft" size={35} color="white" />
-        </TouchableOpacity>
+    <Theme name="light">
+      <SafeAreaView
+        style={{
+          flex: 1,
+          backgroundColor: 'white',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+        <YStack f={1} jc="center" ai="center" bg="white" p="$6" space="$5">
+          <Card
+            elevate
+            bordered
+            p="$9"
+            width="90%"
+            bg="white"
+            br="$6"
+            shadowColor="#00000020">
+            <YStack ai="center" space="$3">
+              <Text fontSize={29} fontWeight="700" color="$color12">
+                OTP Verification
+              </Text>
+              <Paragraph
+                textAlign="center"
+                color="$gray11"
+                fontSize={15}
+                fontWeight={'600'}
+                lineHeight={22}>
+                Enter the 4-digit verification code we’ve sent to your
+                registered email address.
+              </Paragraph>
+            </YStack>
 
-        <View style={styles.innerContainer}>
-        
-          <OTPInput
-            codes={codes!}
-            errorMessages={errorMessages}
-            onChangeCode={onChangeCode}
-            refs={refs}
-            config={config}
-          />
+            <XStack space="$3" jc="center" mt="$6">
+              {otp.map((digit, index) => (
+                <Input
+                  key={index}
+                  ref={ref => (inputs.current[index] = ref)}
+                  value={digit}
+                  onChangeText={text => handleChange(text, index)}
+                  onKeyPress={e => handleKeyPress(e, index)}
+                  keyboardType="numeric"
+                  maxLength={1}
+                  textAlign="center"
+                  fontSize={24}
+                  borderWidth={1.5}
+                  borderColor={digit ? '$blue9' : '$gray5'}
+                  focusStyle={{borderColor: '$blue10', shadowColor: '$blue6'}}
+                  bw={1.5}
+                  br="$5"
+                  width={54}
+                  height={54}
+                  bg="$gray1"
+                />
+              ))}
+            </XStack>
 
-          <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-            <Text style={styles.buttonText}>Verify</Text>
-          </TouchableOpacity>
+            {errorMessages && (
+              <Paragraph
+                mt="$3"
+                mb="$1"
+                color="$red10"
+                fontSize={14}
+                fontWeight="600"
+                textAlign="center">
+                {errorMessages}
+              </Paragraph>
+            )}
 
-          <TouchableOpacity
-            onPress={() => {
-              sendOtpMutation.mutate();
-            }}
-            style={styles.resendContainer}>
-            <Text
-              style={[styles.resendText, {textDecorationLine: 'underline'}]}>
-              Resend OTP?
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+            <Button
+              backgroundColor="$blue10"
+              hoverStyle={{bg: '$blue9'}}
+              pressStyle={{bg: '$blue8'}}
+              borderRadius={12}
+              //width="100%"
+              paddingHorizontal={'$10'}
+              alignItems="center"
+              alignSelf="center"
+              height={50}
+              marginTop={14}
+              onPress={handleSubmit}>
+              <Text
+                fontSize={17}
+                fontWeight="600"
+                color="white"
+                alignSelf="center">
+                Continue
+              </Text>
+            </Button>
+
+            <YStack marginTop="$5" ai="center">
+              <Paragraph color="$gray10" fontSize={15}>
+                Didn’t receive the code?{' '}
+                <Text
+                onPress={()=>{
+                  sendOtpMutation.mutate();
+                }} 
+                color="$blue10" fontWeight="600">
+                  Resend
+                </Text>
+              </Paragraph>
+            </YStack>
+          </Card>
+        </YStack>
+      </SafeAreaView>
+    </Theme>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: PRIMARY_COLOR,
-  },
-
-  innerContainer: {
-    alignItems: 'center',
-    borderColor: 'white',
-    paddingTop: hp(14),
-    marginTop: hp(10),
-    borderTopLeftRadius: 18,
-    borderTopRightRadius: 18,
-    //borderRadius: 30,
-    backgroundColor: 'white',
-    paddingHorizontal: 10,
-    paddingVertical: 20,
-    height: '100%',
-    width: '100%',
-  },
-  logo: {
-    marginBottom: 10,
-    backgroundColor: 'white',
-    alignSelf: 'center',
-  },
-  error: {
-    color: 'red',
-    marginBottom: 10,
-    fontWeight: 'bold',
-    marginHorizontal: 20,
-    fontSize: 18,
-    width: '80%',
-  },
-  otpContainer: {
-    width: '100%',
-    marginBottom: 10,
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '400',
-    textAlign: 'center',
-    marginBottom: 20,
-    color: PRIMARY_COLOR,
-    width: '90%',
-  },
-
-  inPutContainer: {
-    flex: 0,
-    height: 50,
-    width: '85%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    borderColor: PRIMARY_COLOR,
-    borderWidth: 1,
-    alignSelf: 'center',
-    borderRadius: 8,
-    marginTop: 20,
-    marginHorizontal: 7,
-  },
-
-  input: {
-    height: 50,
-
-    width: '80%',
-    fontSize: 18,
-    borderRadius: 7,
-    borderColor: 'white',
-    marginBottom: 6,
-    paddingHorizontal: 4,
-    textAlign: 'left',
-    fontWeight: '500',
-  },
-  inputError: {
-    borderColor: 'red',
-  },
-  resendContainer: {
-    marginBottom: 20,
-    // marginLeft: 'auto',
-    // marginRight: '7%',
-  },
-  resendText: {
-    color: PRIMARY_COLOR,
-    fontWeight: '700',
-    fontSize: 14,
-    marginTop: 4,
-  },
-  button: {
-    backgroundColor: PRIMARY_COLOR,
-    padding: 7,
-    marginVertical: 10,
-    borderRadius: 6,
-    alignItems: 'center',
-    width: '70%',
-  },
-  buttonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 18,
-  },
-});
