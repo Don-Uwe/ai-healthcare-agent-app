@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import React from 'react';
 import {Alert, Image, useColorScheme} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -58,6 +58,10 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
       console.log('Authorization status:', authStatus);
     }
   }
+
+  useEffect(()=>{
+   console.log("Email modal visibility state", emailInputVisible);
+  },[emailInputVisible])
 
   async function getFCMToken() {
     await requestUserPermission();
@@ -300,7 +304,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
       showsVerticalScrollIndicator={false}>
       <StatusBar
         style={isDarkMode ? 'light' : 'dark'}
-        backgroundColor="$blue10"
+        backgroundColor={isDarkMode ? '#007AFF' : '#007AFF'}
       />
 
       <YStack
@@ -436,6 +440,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
             size="$5"
             alignSelf="center"
             onPress={() => {
+              console.log("Forgot Password clicked!");
               setEmailInputVisible(true);
               setRequestVerification(false);
             }}>

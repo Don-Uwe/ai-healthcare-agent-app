@@ -1,6 +1,7 @@
-import { createTamagui, createTokens } from 'tamagui'
-import { createAnimations } from '@tamagui/animations-css'
-import { themes } from '@tamagui/themes'
+import { createTamagui, createTokens, TamaguiConfig } from 'tamagui';
+import { themes } from '@tamagui/themes';
+import { createAnimations } from '@tamagui/animations-react-native'
+
 
 const animations = createAnimations({
   bouncy: {
@@ -8,9 +9,16 @@ const animations = createAnimations({
     damping: 10,
     stiffness: 100,
   },
-  fast: 'quick',
-  slow: 'lazy',
-})
+  fast: {
+    type: 'timing',
+    duration: 150,
+  },
+  slow: {
+    type: 'timing',
+    duration: 600,
+  },
+});
+
 
 const tokens = createTokens({
   color: {
@@ -116,7 +124,7 @@ const shorthands = {
   br: 'borderRadius',
 }
 
-const config = createTamagui({
+const config:TamaguiConfig = createTamagui({
   defaultTheme: 'light',
   animations,
   shorthands,
@@ -189,10 +197,5 @@ const config = createTamagui({
   },
 })
 
-export type AppConfig = typeof config
-
-declare module 'tamagui' {
-  interface TamaguiCustomConfig extends AppConfig {}
-}
 
 export default config;
