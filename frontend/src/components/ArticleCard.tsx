@@ -42,6 +42,7 @@ import RNHTMLtoPDF from 'react-native-html-to-pdf';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import {useSocket} from '../../SocketContext';
 import EditRequestModal from './EditRequestModal';
+import { FontAwesome } from '@expo/vector-icons';
 
 const ArticleCard = ({
   item,
@@ -62,7 +63,7 @@ const ArticleCard = ({
   const yValue = useSharedValue(60);
   const [requestModalVisible, setRequestModalVisible] =
     useState<boolean>(false);
-
+  const [menuVisible, setMenuVisible] = useState(false);
   const menuStyle = useAnimatedStyle(() => {
     return {
       width: width.value,
@@ -201,6 +202,11 @@ const ArticleCard = ({
     }
   };
 
+  const onChange = ()=>{
+    console.log("Menu visible")
+    setMenuVisible(true);
+  }
+
   const generatePDFFromUrl = async (recordId: string, title: string) => {
     // setLoading(true);
 
@@ -288,23 +294,33 @@ const ArticleCard = ({
 
         <View style={styles.textContainer}>
           {/* Share Icon */}
-          {isSelected && (
-            <Animated.View style={[menuStyle, styles.shareIconContainer]}>
+          
+          
               <ArticleFloatingMenu
                 items={[
                   {
                     name: 'Share this post',
                     action: () => {
                       handleShare();
-                      handleAnimation();
+                      //handleAnimation();
+                      setMenuVisible(false);
                     },
-                    icon: 'sharealt',
+                    icon: 'share-alt',
+                  },
+                  {
+                    name: 'Repost in your feed',
+                    action: () => {
+                      handleRepostAction(item);
+                      //handleAnimation();
+                      setMenuVisible(false);
+                    },
+                    icon: 'fork',
                   },
                   {
                     name: 'Download as pdf',
                     action: () => {
-                      handleAnimation();
-
+                      //handleAnimation();
+                      setMenuVisible(false);
                       generatePDFFromUrl(item?.pb_recordId, item?.title);
                     },
                     icon: 'download',
@@ -312,29 +328,36 @@ const ArticleCard = ({
                   {
                     name: 'Request to edit',
                     action: () => {
+                       setMenuVisible(false);
                       setRequestModalVisible(true);
                       console.log('modal visible', requestModalVisible);
-                      handleAnimation();
+                     // handleAnimation();
+                      
                     },
                     icon: 'edit',
                   },
                   {
                     name: 'Report this post',
                     action: () => {
+                       setMenuVisible(false);
                       handleReportAction(item);
-                      handleAnimation();
+                     // handleAnimation();
                     },
-                    icon: 'infocirlce',
+                    icon: 'aim',
                   },
-                ]}
-              />
-            </Animated.View>
-          )}
+                ]} 
+                visible={menuVisible} 
+                onDismiss={()=>{
+                 setMenuVisible(false);
+                } }              
+                />
+            
+          
 
           {/* Icon for more options */}
           <TouchableOpacity
             style={styles.shareIconContainer}
-            onPress={() => handleAnimation()}>
+            onPress={onChange}>
             <Entypo name="dots-three-vertical" size={20} color={'black'} />
           </TouchableOpacity>
 
@@ -386,9 +409,9 @@ const ArticleCard = ({
                 {item.likedUsers.some(it=> (it._id &&  it._id.toString() === user_id) || (it.toString() === user_id)) ? (
                   <AntDesign name="heart" size={24} color={PRIMARY_COLOR} />
                 ) : (
-                  <AntDesign name="hearto" size={24} color={'black'} />
+                  <FontAwesome name="heart-o" size={24} color={'black'} />
                 )}
-                <Text style={{...styles.title, marginStart: 3}}>
+                <Text style={{...styles.title, marginStart: 3, fontWeight:'500', color:"black"}}>
                   {formatCount(item.likedUsers.length)}
                 </Text>
               </TouchableOpacity>
@@ -401,26 +424,29 @@ const ArticleCard = ({
                   mentionedUsers: item.mentionedUsers
                     ? item.mentionedUsers
                     : [],
+                  article: item
                 });
               }}
               style={styles.likeSaveChildContainer}>
-              <MaterialCommunityIcon
-                name="comment-outline"
+              <FontAwesome
+                name="comment-o"
                 size={24}
-                color={PRIMARY_COLOR}
+                color={'black'}
               />
+
+             
             </TouchableOpacity>
 
             <TouchableOpacity
               onPress={() => {
-                width.value = withTiming(0, {duration: 300});
-                yValue.value = withTiming(100, {duration: 300});
+               // width.value = withTiming(0, {duration: 300});
+               // yValue.value = withTiming(100, {duration: 300});
                 handleRepostAction(item);
               }}
               style={styles.likeSaveChildContainer}>
-              <FontAwesome5 name="retweet" size={22} color={PRIMARY_COLOR} />
+              <AntDesign name="fork" size={22} color={'black'} />
               <Text
-                style={{...styles.title, marginStart: 3, color: PRIMARY_COLOR}}>
+                style={{...styles.title, fontWeight:'500', marginStart: 3, color: 'black'}}>
                 {formatCount(item.repostUsers.length)}
               </Text>
             </TouchableOpacity>
@@ -447,29 +473,75 @@ const ArticleCard = ({
       </View>
     </Pressable>
 
-    // future card
-    // <TouchableOpacity style={styles.card}>
-    //   <Image source={{uri: item?.imageUtils}} style={styles.image} />
-    //   <View style={styles.content}>
-    //     <Text style={styles.title}>{item?.title}</Text>
-    //     <Text style={styles.author}>
-    //       by {item?.author_name} | {item?.date_updated}
-    //     </Text>
-    //     <Text style={styles.description}>{item?.description}</Text>
-    //     <View style={styles.categoriesContainer}>
-    //       {item?.category.map((value, key) => (
-    //         <View key={key} style={styles.category}>
-    //           <Text style={styles.categoryText}>{value}</Text>
-    //         </View>
-    //       ))}
-    //     </View>
-    //   </View>
-    // </TouchableOpacity>
+
   );
 };
 
 export default ArticleCard;
 
+const styles = StyleSheet.create({
+  cardContainer: {
+    width: '100%',
+    backgroundColor: '#ffffff',
+    flexDirection: 'row',
+    marginVertical: 10, 
+    borderRadius: 12,
+    overflow: 'hidden',
+    elevation: 2, 
+    borderWidth: 1, 
+    borderColor: '#E0E0E0',
+  },
+  image: {
+    flex: 0.4, 
+    height: '100%', 
+    resizeMode: 'cover',
+  },
+  textContainer: {
+    flex: 0.6, 
+    backgroundColor: 'white',
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    justifyContent: 'space-between', 
+  },
+
+  title: {
+    fontSize: fp(5.5),
+    fontWeight: '700', 
+    color: '#191C1B', 
+    marginBottom: 4,
+  },
+  footerText: {
+    fontSize: fp(3.5),
+    fontWeight: '600',
+    color: PRIMARY_COLOR, 
+    marginBottom: 3,
+  },
+  footerText1: {
+    fontSize: fp(3.5),
+    fontWeight: '400', 
+    color: '#778599',
+    marginBottom: 2,
+  },
+  likeSaveContainer: {
+    flexDirection: 'row',
+    width: '100%',
+    marginTop: 10,
+    justifyContent: 'space-between', 
+  },
+  likeSaveChildContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  shareIconContainer: {
+
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    zIndex: 1,
+  },
+});
+
+/*
 const styles = StyleSheet.create({
   cardContainer: {
     flex: 0,
@@ -550,48 +622,6 @@ const styles = StyleSheet.create({
     right: 1,
     zIndex: 1,
   },
-  // future card styles
-  //   card: {
-  //     marginBottom: 20,
-  //     backgroundColor: 'white',
-  //     padding: 15,
-  //     borderRadius: 10,
-  //   },
-  //   image: {
-  //     width: '100%',
-  //     height: 200,
-  //     borderRadius: 10,
-  //     resizeMode: 'cover',
-  //   },
-  //   content: {
-  //     padding: 10,
-  //   },
-  //   title: {
-  //     fontSize: 20,
-  //     fontWeight: 'bold',
-  //     marginBottom: 10,
-  //   },
-  //   author: {
-  //     fontSize: 14,
-  //     color: '#999',
-  //     marginBottom: 10,
-  //   },
-  //   description: {
-  //     fontSize: 14,
-  //   },
-  //   categoriesContainer: {
-  //     flexDirection: 'row',
-  //     marginTop: 10,
-  //     gap: 5,
-  //   },
-  //   category: {
-  //     padding: 10,
-  //     borderRadius: 50,
-  //     backgroundColor: PRIMARY_COLOR,
-  //     marginTop: 5,
-  //   },
-  //   categoryText: {
-  //     color: 'white',
-  //     fontWeight: '600',
-  //   },
+ 
 });
+*/

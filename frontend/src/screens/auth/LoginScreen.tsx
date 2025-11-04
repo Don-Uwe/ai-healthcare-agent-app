@@ -102,12 +102,12 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
     }
   };
   const handlePassword = e => {
-    let pass = e.nativeEvent.text;
-    setPassword(pass);
+    //let pass = e.nativeEvent.text;
+    setPassword(e);
     setPasswordVerify(false);
 
-    if (/(?=.*[a-z]).{6,}/.test(pass)) {
-      setPassword(pass);
+    if (/(?=.*[a-z]).{6,}/.test(e)) {
+      setPassword(e);
       setPasswordVerify(true);
     }
   };
@@ -126,6 +126,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
   const loginMutation = useMutation({
     mutationKey: ['login'],
     mutationFn: async () => {
+      console.log("LOGIN", LOGIN_API);
       const res = await axios.post(LOGIN_API, {
         email: email,
         password: password,

@@ -134,6 +134,11 @@ const StackNavigation = () => {
           headerShown: true,
           headerTitle: 'Write your post',
           headerBackTitleVisible: false,
+          headerTintColor:"white",
+          headerTransparent: false,
+          headerStyle: {
+            backgroundColor:"#000A60"
+          },
           // eslint-disable-next-line react/no-unstable-nested-components
           headerLeft: () => (
             <TouchableOpacity
@@ -141,7 +146,7 @@ const StackNavigation = () => {
               onPress={() => {
                 navigation.goBack();
               }}>
-              <FontAwesome6 size={25} name="arrow-left" color="black" />
+              <FontAwesome6 size={25} name="arrow-left" color="white" />
             </TouchableOpacity>
           ),
         })}
@@ -154,7 +159,12 @@ const StackNavigation = () => {
           headerShown: true,
           headerTitle: 'Start Writing',
           headerBackTitleVisible: false,
-          headerTitleStyle: {color: BUTTON_COLOR},
+          
+          headerTintColor:"white",
+          headerTransparent: false,
+          headerStyle: {
+            backgroundColor:"#000A60"
+          },
           // eslint-disable-next-line react/no-unstable-nested-components
           headerLeft: () => (
             <TouchableOpacity
@@ -162,7 +172,7 @@ const StackNavigation = () => {
               onPress={() => {
                 navigation.goBack();
               }}>
-              <Ionicon name="arrow-back" size={36} color={BUTTON_COLOR} />
+              <Ionicon name="arrow-back" size={36} color={'white'} />
               {/* <FontAwesome6 size={25} name="arrow-left" color="black" /> */}
             </TouchableOpacity>
           ),
@@ -200,10 +210,16 @@ const StackNavigation = () => {
       <Stack.Screen
         name="PreviewScreen"
         component={PreviewScreen}
+        
         options={({navigation}) => ({
           headerShown: true,
-          headerTitle: '',
+          headerTitle: 'Preview your post',
           headerBackTitleVisible: false,
+           headerTintColor:"white",
+          headerTransparent: false,
+          headerStyle: {
+            backgroundColor:"#000A60"
+          },
           // eslint-disable-next-line react/no-unstable-nested-components
           headerLeft: () => (
             <TouchableOpacity
@@ -211,7 +227,7 @@ const StackNavigation = () => {
               onPress={() => {
                 navigation.goBack();
               }}>
-              <FontAwesome6 size={25} name="arrow-left" color={PRIMARY_COLOR} />
+              <FontAwesome6 size={25} name="arrow-left" color={'white'} />
             </TouchableOpacity>
           ),
         })}
@@ -265,8 +281,13 @@ const StackNavigation = () => {
         component={RenderSuggestion}
         options={({navigation}) => ({
           headerShown: true,
-          headerTitle: '',
+          headerTitle: 'Suggestions',
           headerBackTitleVisible: false,
+          headerTintColor:"white",
+          headerTransparent: false,
+          headerStyle: {
+            backgroundColor:"#000A60"
+          },
           // eslint-disable-next-line react/no-unstable-nested-components
           headerLeft: () => (
             <TouchableOpacity
@@ -274,7 +295,7 @@ const StackNavigation = () => {
               onPress={() => {
                 navigation.goBack();
               }}>
-              <FontAwesome6 size={25} name="arrow-left" color={PRIMARY_COLOR} />
+              <FontAwesome6 size={25} name="arrow-left" color={'white'} />
             </TouchableOpacity>
           ),
         })}
@@ -375,8 +396,12 @@ const StackNavigation = () => {
         component={CommentScreen}
         options={({navigation}) => ({
           headerShown: true,
-          headerTitle: '',
-          headerTransparent: true,
+          headerTitle: 'Leave a feedback',
+          headerTintColor:"white",
+          headerTransparent: false,
+          headerStyle: {
+            backgroundColor:"#000A60"
+          },
           headerBackTitleVisible: false,
           // eslint-disable-next-line react/no-unstable-nested-components
           headerLeft: () => (
@@ -386,7 +411,7 @@ const StackNavigation = () => {
                 queryClient.invalidateQueries({queryKey: ['get-user-socials']});
                 navigation.goBack();
               }}>
-              <FontAwesome6 size={25} name="arrow-left" color={PRIMARY_COLOR} />
+              <FontAwesome6 size={25} name="arrow-left" color={'white'} />
             </TouchableOpacity>
           ),
         })}
@@ -423,13 +448,17 @@ const StackNavigation = () => {
           //headerTransparent: true,
           headerTitleAlign: 'center',
           headerBackTitleVisible: false,
+           headerTintColor:"white",
+          headerTransparent: false,
+        
           headerStyle: {
-            elevation: 4, // Elevation for Android
-            // backgroundColor:'red',
-            shadowColor: '#000', // Shadow color for iOS
-            shadowOffset: {width: 0, height: 2}, // Shadow offset for iOS
-            shadowOpacity: 0.25, // Shadow opacity for iOS
-            shadowRadius: 3.5, // Shadow radius for iOS
+            elevation: 4, 
+          
+            backgroundColor:"#000A60",
+            shadowColor: '#000', 
+            shadowOffset: {width: 0, height: 2}, 
+            shadowOpacity: 0.25, 
+            shadowRadius: 3.5, 
           },
           // eslint-disable-next-line react/no-unstable-nested-components
           headerLeft: () => (
@@ -438,7 +467,7 @@ const StackNavigation = () => {
               onPress={() => {
                 navigation.goBack();
               }}>
-              <FontAwesome6 size={25} name="arrow-left" color={PRIMARY_COLOR} />
+              <FontAwesome6 size={25} name="arrow-left" color={'white'} />
             </TouchableOpacity>
           ),
         })}
@@ -646,15 +675,15 @@ const styles = StyleSheet.create({
   },
   headerLeftButtonEditorScreen: {
     marginLeft: 15,
-    paddingHorizontal: 8,
+    paddingHorizontal: 15,
     paddingVertical: 6,
   },
 
   headerLeftButtonCommentScreen: {
-    marginLeft: 15,
-    backgroundColor: '#ffffff',
-    paddingHorizontal: 6,
-    paddingVertical: 6,
+    marginHorizontal: 15,
+    //backgroundColor: '#ffffff',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
     marginTop: 0,
   },
   profileScreenHeaderLeftButton: {

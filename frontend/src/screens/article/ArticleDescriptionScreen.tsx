@@ -258,7 +258,8 @@ const styles = StyleSheet.create({
     backgroundColor: ON_PRIMARY_COLOR,
   },
   form: {
-    marginVertical: 24,
+    marginTop: 24,
+    marginBottom: 60,
     paddingHorizontal: 16,
   },
   input: {

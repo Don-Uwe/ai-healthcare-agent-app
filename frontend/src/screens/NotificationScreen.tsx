@@ -1,7 +1,6 @@
 import {
   Alert,
   FlatList,
-  SafeAreaView,
   StyleSheet,
   Text,
   View,
@@ -18,6 +17,7 @@ import Loader from '../components/Loader';
 import Snackbar from 'react-native-snackbar';
 import { hp } from '../helper/Metric';
 import { PROD_URL } from '../helper/APIUtils';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // PodcastsScreen component displays the list of podcasts and includes a PodcastPlayer
 const NotificationScreen = ({navigation}) => {
@@ -191,6 +191,7 @@ const NotificationScreen = ({navigation}) => {
         navigation.navigate('CommentScreen', {
           articleId: item.articleId._id,
           mentionedUsers: item.articleId.mentionedUsers,
+          article: item.articleId
         });
       }
     } else if (
@@ -337,7 +338,7 @@ const styles = StyleSheet.create({
 
   flatListContentContainer: {
     paddingHorizontal: 16,
-    marginTop: 40,
+    marginTop: 4,
     paddingBottom: 120,
   },
   emptyImgStyle: {

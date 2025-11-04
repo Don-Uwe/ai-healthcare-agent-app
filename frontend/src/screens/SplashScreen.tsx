@@ -1,16 +1,27 @@
-import React, {useEffect} from 'react';
-import {View, Text, StyleSheet, Image, Alert, BackHandler} from 'react-native';
-import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
-import {SplashScreenProp, User} from '../type';
-import {clearStorage, KEYS, retrieveItem} from '../helper/Utils';
-import {useDispatch} from 'react-redux';
-import {setUserHandle, setUserId, setUserToken} from '../store/UserSlice';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import axios, {AxiosError} from 'axios';
-import {GET_PROFILE_API} from '../helper/APIUtils';
+import React, { useEffect } from "react";
+import { Alert, BackHandler, Image, StyleSheet } from "react-native";
+import { YStack, Text, Button } from "tamagui";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  Easing,
+} from "react-native-reanimated";
+import { SplashScreenProp, User } from "../type";
+import { useDispatch } from "react-redux";
+import { GET_PROFILE_API } from "../helper/APIUtils";
+import axios from "axios";
+import { retrieveItem, KEYS, clearStorage } from "../helper/Utils";
+import { setUserId, setUserToken, setUserHandle } from "../store/UserSlice";
 
-const SplashScreen = ({navigation}: SplashScreenProp) => {
-  const dispatch = useDispatch();
+
+
+export default function SplashScreen({ navigation}: SplashScreenProp) {
+  const opacity = useSharedValue(0);
+  const scale = useSharedValue(0.8);
+  const translateY = useSharedValue(20);
+
+    const dispatch = useDispatch();
 
   function isDateMoreThanSevenDaysOld(dateString: string) {
     const inputDate = new Date(dateString).getTime();
@@ -29,7 +40,7 @@ const SplashScreen = ({navigation}: SplashScreenProp) => {
       });
 
       return response.data.profile as User;
-    } catch (err) {
+    } catch (err:any) {
       // Token is blacklisted
       const status = err.response.status;
       //console.log('lOGIN STATUS', status);
@@ -61,7 +72,7 @@ const SplashScreen = ({navigation}: SplashScreenProp) => {
     }
   };
 
-  const checkLoginStatus = async () => {
+    const checkLoginStatus = async () => {
     try {
       const userId = await retrieveItem(KEYS.USER_ID);
       //console.log('User Id', userId);
@@ -84,70 +95,99 @@ const SplashScreen = ({navigation}: SplashScreenProp) => {
 
         navigation.reset({
           index: 0,
-          routes: [{name: 'TabNavigation'}], // Send user to LoginScreen after logout
+          routes: [{name: 'TabNavigation'}], 
         });
       } else {
         await clearStorage();
         navigation.reset({
           index: 0,
-          routes: [{name: 'LoginScreen'}], // Send user to LoginScreen after logout
+          routes: [{name: 'LoginScreen'}], 
         });
       }
     } catch (error) {
       console.error('Error retrieving user data from storage', error);
       await clearStorage();
-      // navigation.navigate('LoginScreen'); // Navigate to LoginPage if there's an error
+      // navigation.navigate('LoginScreen'); 
       navigation.reset({
         index: 0,
-        routes: [{name: 'LoginScreen'}], // Send user to LoginScreen after logout
+        routes: [{name: 'LoginScreen'}], 
       });
     }
   };
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      checkLoginStatus();
-    }, 3000);
 
-    return () => {
-      clearTimeout(timer);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigation]);
+
+  useEffect(() => {
+    opacity.value = withTiming(1, { duration: 1200, easing: Easing.out(Easing.exp) });
+    scale.value = withTiming(1, { duration: 1000, easing: Easing.out(Easing.ease) });
+    translateY.value = withTiming(0, { duration: 1000, easing: Easing.out(Easing.ease) });
+  }, []);
+
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [{ scale: scale.value }, { translateY: translateY.value }],
+  }));
+
 
   return (
-    <View style={styles.container}>
-      
-      <Image source={require('../../assets/images/icon.png')} style={styles.icon} />
-         
-      <Text style={styles.text}>Ultimate</Text>
+    <YStack
+      flex={1}
+      alignItems="center"
+      justifyContent="center"
+      bg="$background"
+      padding="$6"
+      gap="$4"
+    >
+      <Animated.View style={animatedStyle}>
+        <Image
+          source={require("../../assets/images/icon.png")}
+          style={styles.icon}
+        />
+        <Text
+          mt="$4"
+          fontSize="$8"
+          fontWeight="800"
+          color="$color12"
+          letterSpacing={1}
+          textAlign="center"
+        >
+          Ultimate Health
+        </Text>
+        <Text
+          mt="$2"
+          fontSize="$4"
+          color="$color10"
+          textAlign="center"
+          px="$4"
+        >
+          Empowering wellness through knowledge
+        </Text>
+      </Animated.View>
 
-
-      <Text style={styles.text}>Health</Text>
-    </View>
+      <Button
+        marginTop="$6"
+        size="$7"
+        backgroundColor="$color9"
+        color="black"
+        paddingHorizontal="$9"
+        paddingVertical="$2"
+        borderRadius="$10"
+        elevation={4}
+        pressStyle={{ scale: 0.96, opacity: 0.9 }}
+        onPress={checkLoginStatus}
+      >
+        <Text fontSize={16} color='black'>Continue</Text>
+      </Button>
+    </YStack>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: PRIMARY_COLOR,
-  },
   icon: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    marginBottom: 10,
-  },
-  text: {
-    fontSize: 22,
-    // fontWeight: 'bold',
-    color: ON_PRIMARY_COLOR,
-    textAlign: 'center',
-    fontFamily: 'Lobster-Regular',
+    width: 130,
+    height: 130,
+    borderRadius: 65,
+    alignSelf: "center",
   },
 });
-
-export default SplashScreen;

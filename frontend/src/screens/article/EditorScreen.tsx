@@ -1,6 +1,12 @@
 /* eslint-disable react/no-unstable-nested-components */
 import React, {useEffect, useRef, useState} from 'react';
-import {StyleSheet, Text, ScrollView, Alert} from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  ScrollView,
+  Alert,
+  TouchableOpacity,
+} from 'react-native';
 import {actions, RichEditor, RichToolbar} from 'react-native-pell-rich-editor';
 import Feather from '@expo/vector-icons/Feather';
 import Entypo from '@expo/vector-icons/Entypo';
@@ -8,7 +14,6 @@ import IonIcon from '@expo/vector-icons/Ionicons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Fontisto from '@expo/vector-icons/Fontisto';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
-import {TouchableOpacity} from 'react-native-gesture-handler';
 import {EditorScreenProp} from '../../type';
 import {launchImageLibrary} from 'react-native-image-picker';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -67,7 +72,7 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
               Alert.alert('Error', 'Please enter at least 20 characters');
             }
           }}>
-          <Fontisto name="preview" size={26} color="black" />
+          <Fontisto name="preview" size={26} color="white" />
         </TouchableOpacity>
       ),
     });
@@ -83,6 +88,8 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
     htmlImages,
     articleData,
     requestId,
+    dispatch,
+    pb_record_id,
   ]);
 
   useEffect(() => {
@@ -123,7 +130,7 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
   useEffect(() => {
     if (editorReady && article) {
       RichText.current?.setContentHTML(article);
-      //RichText.current?.focusContentEditor(); // Optional: Ensure the cursor is focused
+      //RichText.current?.focusContentEditor(); 
     }
   }, [editorReady]);
 

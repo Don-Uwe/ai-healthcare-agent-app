@@ -29,6 +29,7 @@ import {
   GET_PROFILE_IMAGE_BY_ID,
   GET_STORAGE_DATA,
   LIKE_ARTICLE,
+  SOCKET_PROD,
   UPDATE_READ_EVENT,
   UPDATE_VIEW_COUNT,
 } from '../../helper/APIUtils';
@@ -44,6 +45,7 @@ import Tts from 'react-native-tts';
 import CommentItem from '../../components/CommentItem';
 import {setUserHandle} from '../../store/UserSlice';
 import {io} from 'socket.io-client';
+import { Feather } from '@expo/vector-icons';
 
 const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const insets = useSafeAreaInsets();
@@ -51,19 +53,15 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const {user_id, user_token} = useSelector((state: any) => state.user);
   const [readEventSave, setReadEventSave] = useState(false);
 
-  const socket = io(`${Config.SOCKET_PROD}`);
+  const socket = io(`${SOCKET_PROD}`);
   const dispatch = useDispatch();
 
   const {height: SCREEN_HEIGHT} = Dimensions.get('window');
   const baseHeight = SCREEN_HEIGHT * 0.1;
   //const scalePerChar = SCREEN_HEIGHT * 0.2;
 
-  const [comments, setComments] = useState<Comment[]>([]);
-  // const [newComment, setNewComment] = useState('');
-  const flatListRef = useRef<FlatList<Comment>>(null);
-  // const {user_id} = useSelector((state: any) => state.user);
-  const [selectedCommentId, setSelectedCommentId] = useState<string>('');
-  const [commentLikeLoading, setCommentLikeLoading] = useState<Boolean>(false);
+
+ 
   const [webviewHeight, setWebViewHeight] = useState(0);
   const [speechingMode, setSpeechingMode] = useState(false);
 
@@ -334,102 +332,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     },
   });
 
-  useEffect(() => {
-    //console.log('Fetching comments for articleId:', route.params.articleId);
-    socket.emit('fetch-comments', {articleId: route.params.articleId});
 
-    socket.on('connect', () => {
-      console.log('connection established');
-    });
-
-    socket.on('comment-processing', () => {
-      // setCommentLoading(data);
-    });
-
-    socket.on('like-comment-processing', data => {
-      setCommentLikeLoading(data);
-    });
-
-    socket.on('error', () => {
-      console.log('connection error');
-    });
-
-    socket.on('fetch-comments', data => {
-      console.log('comment loaded');
-      if (data.articleId === route.params.articleId) {
-        setComments(data.comments);
-      }
-    });
-
-    // Listen for new comments
-    socket.on('comment', data => {
-      console.log('new comment loaded', data);
-      if (data.articleId === route.params.articleId) {
-        setComments(prevComments => {
-          const newComments = [data.comment, ...prevComments];
-          // Scroll to the first index after adding the new comment
-          if (flatListRef.current && newComments.length > 1) {
-            flatListRef?.current.scrollToIndex({index: 0, animated: true});
-          }
-
-          return newComments;
-        });
-      }
-    });
-
-    // Listen for new replies
-    socket.on('new-reply', data => {
-      if (data.articleId === route.params.articleId) {
-        setComments(prevComments => {
-          return prevComments.map(comment =>
-            comment._id === data.parentCommentId
-              ? {...comment, replies: [...comment.replies, data.reply]}
-              : comment,
-          );
-        });
-      }
-    });
-
-    // Listen to edit comment updates (e.g., when replies are added)
-    socket.on('edit-comment', data => {
-      setComments(prevComments => {
-        return prevComments.map(comment =>
-          comment._id === data._id
-            ? {...comment, ...data} // update the comment with new data
-            : comment,
-        );
-      });
-    });
-
-    // Listen to like and dislike comment
-    socket.on('like-comment', data => {
-      setComments(prevComments => {
-        return prevComments.map(comment =>
-          comment._id === data._id ? {...comment, ...data} : comment,
-        );
-      });
-    });
-
-    socket.on('delete-comment', data => {
-      //console.log('Delete Comment Data', data);
-
-      //console.log('Comments Length before', comments.length);
-      setComments(prevComments =>
-        prevComments.filter(comment => comment._id !== data.commentId),
-      );
-
-      //console.log('Comments Length', comments.length);
-    });
-
-    return () => {
-      socket.off('fetch-comments');
-      socket.off('comment');
-      socket.off('new-reply');
-      socket.off('edit-comment');
-      socket.off('delete-comment');
-      socket.off('like-comment');
-    };
-  }, [socket, route.params.articleId]);
 
   useEffect(() => {
     if (htmlContent) {
@@ -459,56 +362,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   //setEditCommentId(comment._id);
   //};
 
-  const handleMentionClick = (user_handle: string) => {
-    //console.log('user handle', user_handle);
-    navigation.navigate('UserProfileScreen', {
-      authorId: '',
-      author_handle: user_handle.substring(1),
-    });
-  };
 
-  const handleDeleteAction = (comment: Comment) => {
-    //commentId, articleId, userId
-    Alert.alert(
-      'Alert',
-      'Are you sure you want to delete this comment.',
-      [
-        {
-          text: 'Cancel',
-          onPress: () => console.log('Cancel Pressed'),
-          style: 'cancel',
-        },
-        {
-          text: 'OK',
-          onPress: () => {
-            socket.emit('delete-comment', {
-              commentId: comment._id,
-              articleId: route.params.articleId,
-              userId: user_id,
-            });
-          },
-        },
-      ],
-      {cancelable: false},
-    );
-  };
-
-  const handleLikeAction = (comment: Comment) => {
-    socket.emit('like-comment', {
-      commentId: comment._id,
-      articleId: route.params.articleId,
-      userId: user_id,
-    });
-  };
-
-  const handleReportAction = (commentId: string, authorId: string) => {
-    navigation.navigate('ReportScreen', {
-      articleId: articleId.toString(),
-      authorId: authorId,
-      commentId: commentId,
-      podcastId: null,
-    });
-  };
 
   // console.log('author id', authorId);
 
@@ -530,7 +384,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
 
   async function convertHtmlToPlainText(html: string) {
     // Remove inline styles
-    var modifiedHtml = html.replace(/ style="[^"]*"/g, '');
+    let modifiedHtml = html.replace(/ style="[^"]*"/g, '');
 
     // Remove <style> blocks and their content
     modifiedHtml = modifiedHtml.replace(/<style[^>]*>[\s\S]*?<\/style>/g, '');
@@ -539,7 +393,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     modifiedHtml = modifiedHtml.replace(/&nbsp;/g, ' ');
 
     // Remove all other HTML tags
-    var plainText = modifiedHtml.replace(/<[^>]*>/g, '');
+    let plainText = modifiedHtml.replace(/<[^>]*>/g, '');
 
     return plainText;
   }
@@ -632,7 +486,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
       <ScrollView
         style={styles.scrollView}
         onScroll={e => {
-          var windowHeight = Dimensions.get('window').height,
+          let windowHeight = Dimensions.get('window').height,
             height = e.nativeEvent.contentSize.height,
             offset = e.nativeEvent.contentOffset.y;
           if (windowHeight + offset >= height) {
@@ -701,10 +555,10 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
                 backgroundColor: 'white',
               },
             ]}>
-            <FontAwesome
-              name={!speechingMode ? 'play' : 'pause'}
+            <Feather
+              name={speechingMode ? 'mic' : 'mic-off'}
               size={30}
-              color={PRIMARY_COLOR}
+              color={speechingMode ? PRIMARY_COLOR : 'black'}
             />
           </TouchableOpacity>
         </View>
@@ -893,26 +747,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
           </View>
         </View>
 
-        <View style={{padding: wp(4), marginTop: hp(4.5)}}>
-          {comments?.map((item, index) => (
-            <CommentItem
-              key={index}
-              item={item}
-              isSelected={selectedCommentId === item._id}
-              userId={user_id}
-              setSelectedCommentId={setSelectedCommentId}
-              handleEditAction={() => {
-                //handleEditAction
-              }}
-              deleteAction={handleDeleteAction}
-              handleLikeAction={handleLikeAction}
-              commentLikeLoading={commentLikeLoading}
-              handleMentionClick={handleMentionClick}
-              handleReportAction={handleReportAction}
-              isFromArticle={true}
-            />
-          ))}
-        </View>
+     
       </ScrollView>
       <View
         style={[

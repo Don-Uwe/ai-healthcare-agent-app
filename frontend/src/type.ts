@@ -67,6 +67,7 @@ export type RootStackParamList = {
   CommentScreen: {
     articleId: number;
     mentionedUsers: User[];
+    article: ArticleData;
   };
   PodcastDiscussion:{
     podcastId: string;
@@ -297,6 +298,7 @@ export type ArticleCardProps = {
     index: number,
     reason: string,
   ) => void;
+
 };
 
 export type ReviewCardProps = {

@@ -1,8 +1,7 @@
 import React, {useRef, useState} from 'react';
-import {Alert, StyleSheet, Text, View} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import {Alert, StyleSheet, Text, View, TouchableOpacity} from 'react-native';
 import {WebView} from 'react-native-webview';
-import {PRIMARY_COLOR} from '../../helper/Theme';
+import {BUTTON_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
 import {
   ArticleData,
   ContentSuggestionResponse,
@@ -69,7 +68,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
             //createPostMutation.mutate();
             handlePostSubmit();
           }}>
-          <Text style={styles.textWhite}>Post</Text>
+          <Text style={styles.textWhite}>Submit</Text>
         </TouchableOpacity>
       ),
     });
@@ -478,7 +477,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
   return (
     <View style={styles.container}>
       <View style={styles.aiReviewBox}>
-        <Text style={styles.reviewTitle}>✅ Your Post Is Ready to Review</Text>
+        <Text style={styles.reviewTitle}> Your Post Is Ready to Review</Text>
         <Text style={styles.reviewSubtext}>
           Want to make it even better? Check your post with our AI Assistant’s
           suggestions.
@@ -538,7 +537,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
     paddingHorizontal: 8,
     paddingVertical: 7,
-    backgroundColor: PRIMARY_COLOR,
+    backgroundColor: BUTTON_COLOR,
     width: 75,
     padding: 6,
     justifyContent: 'center',

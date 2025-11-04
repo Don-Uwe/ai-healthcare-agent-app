@@ -5,6 +5,8 @@ import {createHTMLStructure} from '../../helper/Utils';
 import {useRef} from 'react';
 import {useDispatch} from 'react-redux';
 import {setSuggestionAccepted} from '../../store/dataSlice';
+import { hp } from '@/src/helper/Metric';
+import { BUTTON_COLOR } from '@/src/helper/Theme';
 
 export default function RenderSuggestion({
   navigation,
@@ -71,7 +73,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 10,
-    marginBottom: 20,
+    marginBottom: hp(10),
   },
   cancelButton: {
     flex: 1,
@@ -83,7 +85,7 @@ const styles = StyleSheet.create({
   },
   acceptButton: {
     flex: 1,
-    backgroundColor: '#4CAF50',
+    backgroundColor: BUTTON_COLOR,
     paddingVertical: 12,
     borderRadius: 8,
     marginLeft: 10,

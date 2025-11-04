@@ -47,6 +47,8 @@ import Snackbar from 'react-native-snackbar';
 import {useSocket} from '../../SocketContext';
 import {useFocusEffect} from '@react-navigation/native';
 import InactiveUserModal from '../components/InactiveUserModal';
+import { StatusBar } from 'expo-status-bar';
+import { wp } from '../helper/Metric';
 
 // Here The purpose of using Redux is to maintain filter state throughout the app session. globally
 const HomeScreen = ({navigation}: HomeScreenProps) => {
@@ -272,9 +274,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       reason: string;
       articleRecordId: string;
     }) => {
-      //console.log('Article Id', articleId);
-      // console.log('Reason', reason);
-      // console.log('URL', REQUEST_EDIT);
+   
 
       const res = await axios.post(
         REQUEST_EDIT,
@@ -481,6 +481,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   if (user && (user.isBlockUser || user.isBannedUser)) {
     return (
       <SafeAreaView style={styles.blockContainer}>
+        <StatusBar style="dark" backgroundColor={PRIMARY_COLOR} />
         <HomeScreenHeader
           handlePresentModalPress={handlePresentModalPress}
           onTextInputChange={handleSearch}
@@ -575,7 +576,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
                 style={{
                   ...styles.button,
                   backgroundColor:
-                    selectedCategory && selectedCategory._id !== item._id ? 'white' : PRIMARY_COLOR,
+                    selectedCategory && selectedCategory._id !== item._id ? 'white' : '#000A60',
                   borderColor:
                     selectedCategory && selectedCategory._id !== item._id ? PRIMARY_COLOR : 'white',
                 }}
@@ -642,28 +643,31 @@ export default HomeScreen;
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#F0F8FF',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+  flex: 1,
+  backgroundColor: '#F0F8FF',
+  justifyContent: 'flex-start',
+  alignItems: 'stretch',
+},
+
 
   blockContainer: {
     flex: 0,
     backgroundColor: '#F0F8FF',
     justifyContent: 'center',
     //alignItems: 'center',
+
   },
   buttonContainer: {
+    marginTop: wp(3),
     flexDirection: 'row',
     paddingHorizontal: 6,
   },
   button: {
     flex: 0,
-    borderRadius: 14,
+    borderRadius: wp(4),
     marginHorizontal: 6,
     marginVertical: 4,
-    padding: 8,
+    padding: wp(3.5),
     borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',

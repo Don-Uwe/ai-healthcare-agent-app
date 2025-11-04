@@ -4,6 +4,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import {VULTR_CHAT_PROFILE_AVTARS} from '../helper/Utils';
+import { hp } from '../helper/Metric';
 
 const TabBar = ({state, descriptors, navigation}: any) => {
   const isDarkMode = useColorScheme() === 'dark';
@@ -123,7 +124,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
-    paddingBottom: 2,
+    paddingBottom: hp(6),
     backgroundColor: 'red',
     //borderWidth: 0.19,
     zIndex: 0,

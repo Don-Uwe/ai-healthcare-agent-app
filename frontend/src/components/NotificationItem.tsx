@@ -9,9 +9,10 @@ import {
   Alert,
 } from 'react-native';
 import {Notification} from '../type';
-import {fp, hp} from '../helper/Metric';
+import {fp, hp, wp} from '../helper/Metric';
 import MaterialCommunityIcon from '@expo/vector-icons/MaterialCommunityIcons';
 import {BUTTON_COLOR} from '../helper/Theme';
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function NotificationItem({
   item,
@@ -34,7 +35,7 @@ export default function NotificationItem({
           {/* title */}
           <Text style={styles.title}>{item?.title}</Text>
 
-          <Text style={styles.footerText}>
+          <Text style={styles.description}>
             {item?.message} {''}
           </Text>
           <Text style={styles.footerText}>
@@ -65,10 +66,10 @@ export default function NotificationItem({
               {cancelable: false},
             );
           }}>
-          <MaterialCommunityIcon
-            name="delete-empty-outline"
+          <MaterialIcons
+            name="delete-forever"
             size={30}
-            color={BUTTON_COLOR}
+            color={'#778599'}
             style={{alignSelf: 'center'}}
           />
         </TouchableOpacity>
@@ -87,6 +88,7 @@ const styles = StyleSheet.create({
     marginVertical: 4,
     overflow: 'hidden',
     elevation: 4,
+    padding: wp(2.5),
 
     borderRadius: 12,
   },
@@ -122,17 +124,18 @@ const styles = StyleSheet.create({
     fontFamily: 'Lobster-Regular',
   },
   description: {
-    fontSize: fp(3),
+    fontSize: fp(4),
     fontWeight: '500',
     lineHeight: 18,
-    color: '#778599',
+   color: '#121a26',
     marginBottom: 10,
     fontFamily: 'monospace',
   },
   footerText: {
     fontSize: fp(3.3),
     fontWeight: '600',
-    color: '#121a26',
+     color: '#778599',
+    
     marginBottom: 3,
   },
 
@@ -150,48 +153,5 @@ const styles = StyleSheet.create({
     right: 1,
     zIndex: 1,
   },
-  // future card styles
-  //   card: {
-  //     marginBottom: 20,
-  //     backgroundColor: 'white',
-  //     padding: 15,
-  //     borderRadius: 10,
-  //   },
-  //   image: {
-  //     width: '100%',
-  //     height: 200,
-  //     borderRadius: 10,
-  //     resizeMode: 'cover',
-  //   },
-  //   content: {
-  //     padding: 10,
-  //   },
-  //   title: {
-  //     fontSize: 20,
-  //     fontWeight: 'bold',
-  //     marginBottom: 10,
-  //   },
-  //   author: {
-  //     fontSize: 14,
-  //     color: '#999',
-  //     marginBottom: 10,
-  //   },
-  //   description: {
-  //     fontSize: 14,
-  //   },
-  //   categoriesContainer: {
-  //     flexDirection: 'row',
-  //     marginTop: 10,
-  //     gap: 5,
-  //   },
-  //   category: {
-  //     padding: 10,
-  //     borderRadius: 50,
-  //     backgroundColor: PRIMARY_COLOR,
-  //     marginTop: 5,
-  //   },
-  //   categoryText: {
-  //     color: 'white',
-  //     fontWeight: '600',
-  //   },
+ 
 });
