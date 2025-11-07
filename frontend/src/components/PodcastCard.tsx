@@ -1,16 +1,16 @@
 import React from 'react';
-import {StyleSheet, Text, View, Image, TouchableOpacity, Alert} from 'react-native';
-import Feather from '@expo/vector-icons/Feather';
-import {hp, wp} from '../helper/Metric';
+import {TouchableOpacity, Alert} from 'react-native';
+
+import {YStack, XStack, Image, Text, styled} from 'tamagui';
+import {Feather, Entypo} from '@expo/vector-icons';
 import {formatCount} from '../helper/Utils';
 import {Category} from '../type';
-import {PRIMARY_COLOR} from '../helper/Theme';
-import Entypo from '@expo/vector-icons/Entypo';
+
 import {useRef} from 'react';
 import {BottomSheetModal} from '@gorhom/bottom-sheet';
 import PodcastActions from './PodcastActions';
 import Share from 'react-native-share';
-import { GET_STORAGE_DATA } from '../helper/APIUtils';
+import {GET_STORAGE_DATA} from '../helper/APIUtils';
 
 interface PodcastProps {
   id: string;
@@ -25,7 +25,7 @@ interface PodcastProps {
   handleClick: () => void;
   downLoadAudio: () => void;
   handleReport: () => void;
-  playlistAct: (id: string)=> void;
+  playlistAct: (id: string) => void;
 }
 
 const PodcastCard = ({
@@ -41,16 +41,16 @@ const PodcastCard = ({
   handleReport,
   downloaded,
   display,
- playlistAct,
+  playlistAct,
 }: PodcastProps) => {
   const sheetRef = useRef<BottomSheetModal>(null);
 
   const handleOpenSheet = () => {
-   // onSelect(id);
+    // onSelect(id);
     sheetRef.current?.present();
   };
 
-   const handleShare = async () => {
+  const handleShare = async () => {
     try {
       const result = await Share.open({
         title: title,
@@ -65,58 +65,91 @@ const PodcastCard = ({
       Alert.alert('Error', 'Something went wrong while sharing.');
     }
   };
+
+  const uri =
+    imageUri && imageUri !== ''
+      ? imageUri.startsWith('https')
+        ? imageUri
+        : `${GET_STORAGE_DATA}/${imageUri}`
+      : 'https://t3.ftcdn.net/jpg/05/10/75/30/360_F_510753092_f4AOmCJAczuGgRLCmHxmowga2tC9VYQP.jpg';
+
+  const CardContainer = styled(YStack, {
+    width: '100%',
+    borderRadius: 20,
+    backgroundColor: 'white',
+    padding: '$2',
+    marginVertical: '$3',
+    shadowColor: '#00000022',
+    elevation: 2,
+    overflow: 'hidden', // ✅ Prevents child overflow
+  });
+
+  const TagText = styled(Text, {
+    backgroundColor: '#f0f0f0',
+    color: '$blue10',
+    fontSize: 12,
+    paddingHorizontal: '$2',
+    paddingVertical: '$1',
+    borderRadius: 12,
+  });
+
   return (
-    // Main container for the podcast card
-    <View style={styles.container}>
-      <View style={styles.imageTextContainer}>
-        {/* Display the podcast image */}
-        <Image
-          source={{
-            uri:
-              imageUri && imageUri !== ''
-                ? imageUri.startsWith('https') ? imageUri : `${GET_STORAGE_DATA}/${imageUri}`
-                : 'https://t3.ftcdn.net/jpg/05/10/75/30/360_F_510753092_f4AOmCJAczuGgRLCmHxmowga2tC9VYQP.jpg',
-          }}
-          style={styles.image}
-        />
-        <View>
-          {/* Display the podcast title */}
-          <Text style={styles.title} numberOfLines={3} ellipsizeMode="tail">
-            {title}
-          </Text>
-          {/* Display the podcast host */}
-          <Text style={styles.host}>{host}</Text>
+    <CardContainer>
+      <XStack space="$3" ai="center" jc="space-between">
+        {/* Left section: Image + Text */}
+        <XStack flex={1} space="$3" ai="flex-start">
+          <Image source={{uri}} width={90} height={90} borderRadius={20} />
 
-          <View style={styles.tagsContainer}>
-            {tags?.map((tag, index) => (
-              <Text key={index} style={styles.tagText}>
-                #{tag.name}
-              </Text>
-            ))}
-          </View>
-          <View style={styles.likesContainer}>
-            {/* Display the number of likes with a heart icon */}
-            {/* <Ionicons name="heart" size={20} /> */}
-            <Text>
-              {views <= 1 ? `${views} view` : `${formatCount(views)} views`}
+          <YStack f={1} space="$1" overflow="hidden">
+            <Text
+              fontSize={16}
+              fontWeight="700"
+              numberOfLines={3}
+              ellipsizeMode="tail">
+              {title}
             </Text>
-          </View>
-        </View>
-      </View>
 
-      <View style={styles.playContainer}>
-        <TouchableOpacity onPress={handleClick}>
-          <Feather name="chevrons-right" size={24} color={'black'} />
-        </TouchableOpacity>
+            <Text fontSize={14} color="$gray11">
+              {host}
+            </Text>
 
-        <Text style={styles.durationText}>{duration}</Text>
-      </View>
+            <XStack flexWrap="wrap" space="$1" mt="$1">
+              {tags?.map((tag, i) => (
+                <TagText key={i}>#{tag.name}</TagText>
+              ))}
+            </XStack>
 
+            <XStack ai="center" mt="$1" space="$1">
+              <Text color="$gray10">
+                {views <= 1 ? `${views} view` : `${formatCount(views)} views`}
+              </Text>
+              <Text fontSize={14} color="$gray10" mt="$1">
+                {duration}
+              </Text>
+            </XStack>
+          </YStack>
+        </XStack>
+
+        {/* Right section: Play button + duration */}
+        <YStack ai="center" jc="center" minWidth={50}>
+          <TouchableOpacity onPress={handleClick}>
+            <Feather name="chevrons-right" size={24} color="black" />
+          </TouchableOpacity>
+        </YStack>
+      </XStack>
+
+      {/* Dots icon (top-right corner) */}
       {display && (
         <TouchableOpacity
-          style={styles.shareIconContainer}
-          onPress={() => handleOpenSheet()}>
-          <Entypo name="dots-three-vertical" size={18} color={'black'} />
+          style={{
+            position: 'absolute',
+            top: 6,
+            right: 6,
+            padding: 4,
+            backgroundColor: 'transparent',
+          }}
+          onPress={handleOpenSheet}>
+          <Entypo name="dots-three-vertical" size={18} color="black" />
         </TouchableOpacity>
       )}
 
@@ -126,88 +159,10 @@ const PodcastCard = ({
         onShare={handleShare}
         onReport={handleReport}
         onDownload={downLoadAudio}
-        onSave={()=>{
-
-         playlistAct(id);
-        }}
+        onSave={() => playlistAct(id)}
       />
-    </View>
+    </CardContainer>
   );
 };
-
-// Styles for the PodcastCard component
-const styles = StyleSheet.create({
-  container: {
-    gap: 10,
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginVertical: 10,
-    padding: 7,
-  },
-  imageTextContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    gap: 12,
-  },
-  image: {
-    height: hp(16),
-    width: wp(29),
-    borderRadius: 20,
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    flexShrink: 1,
-    maxWidth: wp(40),
-  },
-  host: {
-    fontSize: 14,
-    fontWeight: 'regular',
-  },
-  likesContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-    marginTop: 1,
-  },
-  playContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: 60,
-    marginLeft: 12,
-    bottom: hp(2),
-  },
-  tagsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 6,
-    rowGap: 4,
-    columnGap: 8,
-  },
-
-  tagText: {
-    backgroundColor: '#f0f0f0',
-    color: PRIMARY_COLOR,
-    fontSize: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginRight: 6,
-    marginBottom: 4,
-  },
-  durationText: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 4,
-    textAlign: 'center',
-  },
-  shareIconContainer: {
-    position: 'absolute',
-    top: 1,
-    right: 1,
-    zIndex: 1,
-  },
-});
 
 export default PodcastCard;

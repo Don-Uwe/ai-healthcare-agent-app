@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {SafeAreaView, BackHandler} from 'react-native';
+import { BackHandler} from 'react-native';
 import BpWidget from '../components/Bots/BpWidget';
 import BpIncommingMessagesListener from '../components/Bots/BpIncomingMessageListener';
 import {useRef} from 'react';
@@ -9,6 +9,7 @@ import NoInternetLayout from '../components/NoInternetLayout';
 import CustomStatusBar from '../components/CustomStatusBar';
 import Loader from '../components/Loader';
 import React from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function BotScreen({navigation}) {
   const [isLoading, setLoading] = useState(true);

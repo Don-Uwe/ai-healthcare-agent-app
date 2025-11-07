@@ -31,46 +31,7 @@ export default function SplashScreen({ navigation}: SplashScreenProp) {
     return daysDifference >= 6;
   }
 
-  const getUserData = async (user_token: string) => {
-    try {
-      const response = await axios.get(`${GET_PROFILE_API}`, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      });
 
-      return response.data.profile as User;
-    } catch (err:any) {
-      // Token is blacklisted
-      const status = err.response.status;
-      //console.log('lOGIN STATUS', status);
-
-      if (status === 403) {
-        Alert.alert(
-          'Session Expired',
-          'You have logged in from a different device. Please create a new login session. Your previous session has been terminated.',
-          [
-            {
-              text: 'continue',
-              onPress: () => {
-                navigation.reset({
-                  index: 0,
-                  routes: [{name: 'LoginScreen'}],
-                });
-              },
-            },
-            {
-              text: 'exit',
-              onPress: () => {
-                BackHandler.exitApp(); // This works on Android, for iOS it is not possible
-              },
-            },
-          ],
-          {cancelable: false},
-        );
-      }
-    }
-  };
 
     const checkLoginStatus = async () => {
     try {
@@ -87,7 +48,7 @@ export default function SplashScreen({ navigation}: SplashScreenProp) {
       ) {
         // check if token blacklisted or not, later more than 7 days check will remove no need
 
-        await getUserData(user);
+       // await getUserData(user);
 
         dispatch(setUserId(userId));
         dispatch(setUserToken(user));

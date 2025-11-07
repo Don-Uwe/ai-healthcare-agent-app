@@ -1,8 +1,9 @@
-import React from 'react';
-import {SafeAreaView, Text, Image} from 'react-native';
+import React, { JSX } from 'react';
+import { Text, Image} from 'react-native';
 import GlobalStyles from '../styles/GlobalStyle';
 import Icon from '@expo/vector-icons/Feather';
 import {BUTTON_COLOR} from '../helper/Theme';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function NoInternetLayout(): JSX.Element {
   // Use useSelector with the proper type

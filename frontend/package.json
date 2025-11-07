@@ -29,6 +29,7 @@
     "@tamagui/themes": "^1.135.6",
     "@tanstack/react-query": "^5.90.5",
     "axios": "^1.12.2",
+    "date-fns": "^4.1.0",
     "email-validator": "^2.0.4",
     "expo": "~54.0.19",
     "expo-asset": "^12.0.9",

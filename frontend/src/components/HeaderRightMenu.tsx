@@ -1,202 +1,199 @@
 import { useNavigation } from '@react-navigation/native';
 import { useCallback, useRef, useState } from 'react';
-import { Menu, Divider } from 'react-native-paper';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
-import AntDesign from '@expo/vector-icons/AntDesign';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import Feather from '@expo/vector-icons/Feather';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Category, CategoryType, PodcastData, RootStackParamList } from '../type';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { ON_PRIMARY_COLOR } from '../helper/Theme';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import FilterModal from './FilterModal';
-import { useDispatch, useSelector } from 'react-redux';
 import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
-import { FILTER_PODCAST } from '../helper/APIUtils';
-import { setPodcasts, setSelectedTags } from '../store/dataSlice';
+import { useDispatch, useSelector } from 'react-redux';
 import Snackbar from 'react-native-snackbar';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { FILTER_PODCAST } from '../helper/APIUtils';
+import { setPodcasts } from '../store/dataSlice';
+import { RootStackParamList, Category, CategoryType, PodcastData } from '../type';
+import FilterModal from './FilterModal';
+import { XStack, YStack, Button, Popover, Separator, Text } from 'tamagui';
+import { Feather, FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
+import { ON_PRIMARY_COLOR } from '../helper/Theme';
 
 interface Props {
- onClick: ()=> void;
+  onClick: () => void;
 }
-const HeaderRightMenu = ({onClick}:Props) => {
-  const [visible, setVisible] = useState(false);
-  const openMenu = () => setVisible(true);
-  const closeMenu = () => setVisible(false);
-  const {categories} = useSelector((state:any)=> state.data);
-  const {user_token} = useSelector((state:any)=> state.user);
-  const {isConnected} = useSelector((state: any)=> state.network);
+
+const HeaderRightMenu = ({ onClick }: Props) => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const [menuOpen, setMenuOpen] = useState(false);
   const [sortingType, setSortingType] = useState<string>('');
-  const dispatch = useDispatch();
   const [selectCategoryList, setSelectedCategoryList] = useState<Category[]>([]);
 
+  const { categories } = useSelector((state: any) => state.data);
+  const { user_token } = useSelector((state: any) => state.user);
+  const { isConnected } = useSelector((state: any) => state.network);
+  const dispatch = useDispatch();
 
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+
   const handlePresentModalPress = useCallback(() => {
     bottomSheetModalRef.current?.present();
+    setMenuOpen(false);
   }, []);
 
   const updateFilterMutation = useMutation({
-    mutationKey:['apply-filter-on-podcast'],
-    mutationFn: async ()=>{
-
-     // console.log('Send data', {
-      //  tags: selectCategoryList.map(item=> item._id),
-      //  sortType: sortingType === 'oldest' ? 0 : -1,
-      //});
-
-     // console.log('URL', FILTER_PODCAST);
-      //console.log('Token', user_token);
-      
-      const res = await axios.post(FILTER_PODCAST, {
-        tags: selectCategoryList.map(item=> item._id),
-        sortType: sortingType === 'oldest' ? 0 : -1,
-      },
-      {
-        headers:{
-          Authorization :`Bearer ${user_token}`,
+    mutationKey: ['apply-filter-on-podcast'],
+    mutationFn: async () => {
+      const res = await axios.post(
+        FILTER_PODCAST,
+        {
+          tags: selectCategoryList.map((item) => item._id),
+          sortType: sortingType === 'oldest' ? 0 : -1,
         },
-      });
-
+        {
+          headers: { Authorization: `Bearer ${user_token}` },
+        }
+      );
       return res.data as PodcastData[];
     },
-    onSuccess: (data)=>{
-       dispatch(setPodcasts(data));
+    onSuccess: (data) => {
+      dispatch(setPodcasts(data));
     },
-    onError:(err)=>{
-      console.log('err', err);
+    onError: () => {
       Snackbar.show({
-        text:'You are in offline',
+        text: 'You are offline',
         duration: Snackbar.LENGTH_SHORT,
       });
     },
   });
 
-   const handleCategorySelection = (category: CategoryType) => {
-    // Update Redux State
-    setSelectedCategoryList(prevList => {
-      const updatedList = prevList.some(p=> p.id === category.id)
-        ? prevList.filter(item => item.id !== category.id)
-        : [...prevList, category];
-      return updatedList;
-    });
+  const handleCategorySelection = (category: CategoryType) => {
+    setSelectedCategoryList((prevList) =>
+      prevList.some((p) => p.id === category.id)
+        ? prevList.filter((item) => item.id !== category.id)
+        : [...prevList, category]
+    );
   };
 
-   const handleFilterReset = () => {
-      // Update Redux State Variables
-      setSelectedCategoryList([]);
-      setSortingType('');
-      //dispatch(
-       // setSelectedTags({
-       //   selectedTags: categories.map(category => category.name),
-       // }),
-      //);
-    };
+  const handleFilterReset = () => {
+    setSelectedCategoryList([]);
+    setSortingType('');
+  };
+
   return (
-    <View style={styles.container}>
-      <TouchableOpacity onPress={onClick} style={styles.iconWrapper}>
-        <AntDesign name="search1" color="#333" size={24} />
-      </TouchableOpacity>
+    <XStack ai="center" space="$3" mr="$3">
 
-      <Menu
-        visible={visible}
-        onDismiss={closeMenu}
-        anchor={
-          <TouchableOpacity onPress={openMenu} style={styles.iconWrapper}>
-            <MaterialCommunityIcons name="dots-vertical" color="#333" size={24} />
-          </TouchableOpacity>
-        }
-        contentStyle={styles.menuContent}
-      >
-        <Menu.Item
-          onPress={() => {
-            closeMenu();
-            // navigation.navigate('Profile');
-          }}
-          title="Profile"
-          leadingIcon={() => <FontAwesome name="user" size={18} color="#555" />}
-          titleStyle={styles.menuItem}
-        />
+      <Button
+        size="$4"
+        circular
+        bg={ON_PRIMARY_COLOR}
+        icon={<Feather name="search" size={20} color="#333" />}
+        onPress={onClick}
+        pressStyle={{ opacity: 0.7 }}
+      />
 
-        <Menu.Item
-          onPress={() => {
-            closeMenu();
-            navigation.navigate('OfflinePodcastList');
-          }}
-          title="Downloads"
-          leadingIcon={() => <Feather name="download" size={18} color="#555" />}
-          titleStyle={styles.menuItem}
-        />
+      {/* ⋮ Menu Button */}
+      <Popover open={menuOpen} onOpenChange={setMenuOpen}>
+        <Popover.Trigger asChild>
+          <Button
+            size="$4"
+            circular
+            bg={ON_PRIMARY_COLOR}
+            icon={<MaterialCommunityIcons name="dots-vertical" size={20} color="#333" />}
+            pressStyle={{ opacity: 0.7 }}
+          />
+        </Popover.Trigger>
 
-        <Divider />
-
-        <Menu.Item
-          onPress={() => {
-            closeMenu();
-            // navigation.navigate('Filter');
-            handlePresentModalPress();
-          }}
-          title="Filter"
-          leadingIcon={() => <Feather name="filter" size={18} color="#555" />}
-          titleStyle={styles.menuItem}
-        />
-      </Menu>
-
-           <FilterModal
-              bottomSheetModalRef={bottomSheetModalRef}
-              categories={categories} // will fetch from redux
-              handleCategorySelection={handleCategorySelection}
-              selectCategoryList={selectCategoryList}
-              handleFilterReset={handleFilterReset}
-              handleFilterApply={()=>{
-                if(isConnected){
-                  if(selectCategoryList.length > 0){
-                     updateFilterMutation.mutate();
-                  }
-
-                }else{
-                  // filter existing podcasts (later), at the time of paginatiom
-                  Snackbar.show({
-                    text: 'You are offline',
-                    duration: Snackbar.LENGTH_SHORT,
-                  });
-                }
+        <Popover.Content
+          bg={ON_PRIMARY_COLOR}
+          borderRadius="$4"
+          elevation="$3"
+          p="$1"
+          width={180}
+          shadowColor="rgba(0,0,0,0.15)"
+        >
+          <YStack>
+            {/* Menu Row: Profile */}
+            <XStack
+              ai="center"
+              jc="space-between"
+              py="$2"
+              px="$2"
+              br="$4"
+              hoverStyle={{ bg: 'rgba(0,0,0,0.05)' }}
+              pressStyle={{ opacity: 0.8 }}
+              onPress={() => {
+                setMenuOpen(false);
+                // navigation.navigate('Profile');
               }}
-              setSortingType={setSortingType}
-              sortingType={sortingType}
-            />
-    </View>
+            >
+              <Text fontSize={15} color="#333">
+                Profile
+              </Text>
+              <FontAwesome name="user" size={17} color="#555" />
+            </XStack>
+
+            {/* Menu Row: Downloads */}
+            <XStack
+              ai="center"
+              jc="space-around"
+              py="$2"
+              px="$1"
+              br="$4"
+              hoverStyle={{ bg: 'rgba(0,0,0,0.05)' }}
+              pressStyle={{ opacity: 0.8 }}
+              onPress={() => {
+                setMenuOpen(false);
+                navigation.navigate('OfflinePodcastList');
+              }}
+            >
+              <Text fontSize={15} color="#333">
+                Downloads
+              </Text>
+              <Feather name="download" size={17} color="#555" />
+            </XStack>
+
+            <Separator my="$1" />
+
+            {/* Menu Row: Filter */}
+            <XStack
+              ai="center"
+              jc="space-between"
+              py="$3"
+              px="$3"
+              br="$4"
+              hoverStyle={{ bg: 'rgba(0,0,0,0.05)' }}
+              pressStyle={{ opacity: 0.8 }}
+              onPress={handlePresentModalPress}
+            >
+              <Text fontSize={15} color="#333">
+                Filter
+              </Text>
+              <Feather name="filter" size={17} color="#555" />
+            </XStack>
+          </YStack>
+        </Popover.Content>
+      </Popover>
+
+      {/* 🔽 Bottom Sheet Filter */}
+      <FilterModal
+        bottomSheetModalRef={bottomSheetModalRef}
+        categories={categories}
+        handleCategorySelection={handleCategorySelection}
+        selectCategoryList={selectCategoryList}
+        handleFilterReset={handleFilterReset}
+        handleFilterApply={() => {
+          if (isConnected) {
+            if (selectCategoryList.length > 0) {
+              updateFilterMutation.mutate();
+            }
+          } else {
+            Snackbar.show({
+              text: 'You are offline',
+              duration: Snackbar.LENGTH_SHORT,
+            });
+          }
+        }}
+        setSortingType={setSortingType}
+        sortingType={sortingType}
+      />
+    </XStack>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 12,
-    gap: 12,
-  },
-  iconWrapper: {
-    padding: 6,
-    borderRadius: 20,
-    backgroundColor: ON_PRIMARY_COLOR,
-  },
-  menuContent: {
-    backgroundColor: ON_PRIMARY_COLOR,
-    borderRadius: 8,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  menuItem: {
-    fontSize: 15,
-    color: '#333',
-  },
-});
 
 export default HeaderRightMenu;

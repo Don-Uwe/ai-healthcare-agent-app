@@ -6,7 +6,7 @@ import ProfileScreen from '../screens/ProfileScreen';
 // import {KeyboardAvoidingView, StyleSheet} from 'react-native';
 // import {Colors} from 'react-native/Libraries/NewAppScreen';
 import TabBar from './TabBar';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import {TouchableOpacity} from 'react-native';
 import {TabParamList} from '../type';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import BotScreen from '../screens/BotScreen';
@@ -39,9 +39,13 @@ const TabNavigation = () => {
     headerShown: true,
     headerTitle: '🎧 Podcasts',
     headerTransparent: true,
+    headerStyle: {
+       backgroundColor:"#000A60"
+    },
     headerTitleStyle: {
       fontSize: 23,
       marginBottom: 12,
+       color:"white"
     },
     headerRight: () => (
       <HeaderRightMenu onClick={()=>{

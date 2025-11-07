@@ -5,7 +5,6 @@ import {
   View,
   Dimensions,
   StyleSheet,
-  SafeAreaView,
   Alert,
   ActivityIndicator,
 } from 'react-native';
@@ -16,7 +15,7 @@ import GeneralTab from '../components/GeneralTab';
 import ContactTab from '../components/ContactTab';
 import ProfessionalTab from '../components/ProfessionalTab';
 import PasswordTab from '../components/PasswordTab';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useSelector} from 'react-redux';
 import {useMutation, useQuery} from '@tanstack/react-query';
 import axios, {AxiosError} from 'axios';

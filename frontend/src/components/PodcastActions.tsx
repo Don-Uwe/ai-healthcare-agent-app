@@ -36,6 +36,7 @@ interface Props {
    onSave: ()=> void;
    downloaded: boolean;
 }
+// eslint-disable-next-line react/display-name
 const PodcastActions = React.forwardRef(
   ({ onShare, onReport, onDownload, onSave, downloaded}: Props, ref: any) => {
     const snapPoints = useMemo(() => ['40%'], []);
@@ -65,7 +66,7 @@ const PodcastActions = React.forwardRef(
         index={0}
         backdropComponent={renderBackdrop}
         enablePanDownToClose
-        backgroundStyle={{ backgroundColor: ON_PRIMARY_COLOR }}
+        backgroundStyle={{ backgroundColor: 'white' }}
       >
         <BottomSheetView style={styles.sheetContent}>
           <ActionItem icon="share" label="Share" onPress={() => handleAction(onShare)} />

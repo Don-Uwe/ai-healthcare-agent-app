@@ -1,82 +1,16 @@
-// PodcastsScreen component displays the list of podcasts and includes a PodcastPlayer
-/*
-const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
-  const headerHeight = useHeaderHeight();
-
-  // Effect to handle back navigation and show an exit confirmation alert
-  /*
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('beforeRemove', e => {
-      e.preventDefault();
-      Alert.alert(
-        'Warning',
-        'Do you want to exit',
-        [
-          {text: 'No', onPress: () => null},
-          {text: 'Yes', onPress: () => {
-            BackHandler.exitApp()
-          }},
-        ],
-        {cancelable: true},
-      );
-    });
-
-    return unsubscribe;
-  }, [navigation]);
-  */
-{
-  /**
-  return (
-    // Main container
-    <View style={styles.container}>
-        Header with PodcastPlayer }
-        <View style={[styles.header, {paddingTop: headerHeight}]}>
-        <PodcastPlayer />
-      </View>
-      {/* Content including recent podcasts list }
-      <View style={styles.content}>
-        <View style={styles.recentPodcastsHeader}>
-          <Text style={styles.recentPodcastsTitle}>Recent Podcasts</Text>
-          <TouchableOpacity>
-            <Text style={styles.seeMoreText}>See more</Text>
-          </TouchableOpacity>
-        </View>
-        {/* FlatList to display podcasts }
-        <FlatList
-          data={podcast}
-          renderItem={({item}) => (
-            <PodcastCard
-              imageUri={item.imageUri}
-              title={item.title}
-              host={item.host}
-              duration={item.duration}
-              likes={item.likes}
-            />
-          )}
-          contentInsetAdjustmentBehavior="always"
-          automaticallyAdjustContentInsets={true}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{
-            paddingBottom: Dimensions.get('screen').height - hp(40),
-          }}
-        />
-      </View>
-      }
-
-      <Text style={styles.recentPodcastsTitle}>Coming Soon</Text>
-    </View>
-  );
-  */
-}
-import {useState} from 'react';
+import {useMemo, useState} from 'react';
 import {
-  View,
-  FlatList,
   StyleSheet,
-  ActivityIndicator,
   Pressable,
   TouchableOpacity,
+  NativeModules,
+  ScrollView,
+  NativeEventEmitter,
+  RefreshControl,
 } from 'react-native';
+
+import {YStack, XStack, H5, Input} from 'tamagui';
+import {Feather} from '@expo/vector-icons';
 import axios from 'axios';
 import PodcastCard from '../components/PodcastCard';
 import {hp} from '../helper/Metric';
@@ -84,14 +18,19 @@ import {PodcastData, PodcastScreenProps} from '../type';
 import {useDispatch, useSelector} from 'react-redux';
 import {useMutation, useQuery} from '@tanstack/react-query';
 import {downloadAudio, msToTime} from '../helper/Utils';
-import {GET_ALL_PODCASTS, UPDATE_PODCAST_VIEW_COUNT} from '../helper/APIUtils';
-import PodcastEmptyComponent from '../components/PodcastEmptyComponent';
+import {
+  GET_ALL_PODCASTS,
+  GET_STORAGE_DATA,
+  UPDATE_PODCAST_VIEW_COUNT,
+} from '../helper/APIUtils';
+import {differenceInDays} from 'date-fns';
 import Snackbar from 'react-native-snackbar';
 import {setaddedPodcastId, setPodcasts} from '../store/dataSlice';
 import CreatePlaylist from '../components/CreatePlaylist';
-import {ON_PRIMARY_COLOR} from '../helper/Theme';
-import {NativeModules, NativeEventEmitter} from 'react-native';
+import {BUTTON_COLOR, ON_PRIMARY_COLOR} from '../helper/Theme';
+
 import CreateIcon from '../components/CreateIcon';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 const {WavAudioRecorder} = NativeModules;
 const recorderEvents = new NativeEventEmitter(WavAudioRecorder);
@@ -112,6 +51,11 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
     dispatch(setaddedPodcastId(id));
     // console.log('playlist ids', playlistIds);
     setPlaylistModalOpen(true);
+  };
+
+  const generateUrl = (url: string) => {
+    if (url && url.startsWith('https')) return url;
+    else return `${GET_STORAGE_DATA}/${url}`;
   };
   const closePlaylist = () => {
     setPlaylistModalOpen(false);
@@ -134,11 +78,11 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
             const total = response.data.totalPages;
             setTotalPages(total);
           }
-          if(response.data.allPodcasts){
+          if (response.data.allPodcasts) {
             let data = response.data.allPodcasts as PodcastData[];
             dispatch(setPodcasts(data));
           }
-        }else{
+        } else {
           const oldPodcasts = podcasts;
           let data = response.data.allPodcasts as PodcastData[];
           dispatch(setPodcasts([...oldPodcasts, ...data]));
@@ -149,7 +93,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
         console.error('Error fetching podcasts:', err);
       }
     },
-    enabled : !!user_token && !!page,
+    enabled: !!user_token && !!page,
   });
 
   const onRefresh = () => {
@@ -159,7 +103,47 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
     setRefreshing(false);
   };
 
-  const navigateToReport = podcastId => {
+  const handleScroll = ({nativeEvent}: {nativeEvent: any}) => {
+    const {layoutMeasurement, contentOffset, contentSize} = nativeEvent;
+    const isCloseToBottom =
+      layoutMeasurement.height + contentOffset.y >= contentSize.height - 20;
+
+    if (isCloseToBottom && page < totalPages) {
+      setPage(prev => prev + 1);
+    }
+  };
+
+  const {latestPodcasts, recommendedPodcasts, allPodcasts} = useMemo(() => {
+    if (!podcasts?.length) {
+      return {latestPodcasts: [], recommendedPodcasts: [], allPodcasts: []};
+    }
+
+    const now = new Date();
+    const latest = podcasts.filter(
+      p => differenceInDays(now, new Date(p.updated_at)) <= 7,
+    );
+
+    const withViews = [...podcasts].sort(
+      (a, b) => (b.viewUsers?.length || 0) - (a.viewUsers?.length || 0),
+    );
+
+    // Step 3: take top 5–10 as recommended
+    const recommended = withViews.slice(0, 2);
+
+    const latestIds = new Set(latest.map(p => p._id));
+    const recommendedIds = new Set(recommended.map(p => p._id));
+    const all = podcasts.filter(
+      p => !latestIds.has(p._id) && !recommendedIds.has(p._id),
+    );
+
+    return {
+      latestPodcasts: latest,
+      recommendedPodcasts: recommended,
+      allPodcasts: all,
+    };
+  }, [podcasts]);
+
+  const navigateToReport = (podcastId: string) => {
     navigation.navigate('ReportScreen', {
       articleId: '',
       authorId: user_id,
@@ -197,8 +181,9 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
     },
   });
 
-  const renderItem = ({item}: {item: PodcastData}) => (
+  const renderItem = ({item, i}: {item: PodcastData; i: number}) => (
     <Pressable
+      key={i}
       onPress={() => {
         //playPodcast(item);
         updateViewCountMutation.mutate(item._id);
@@ -228,25 +213,55 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
   );
 
   return (
-    <View style={styles.container}>
-      {isLoading ? (
-        <ActivityIndicator size="large" />
-      ) : (
-        <FlatList
-          data={podcasts ? podcasts : []}
-          keyExtractor={item => item._id.toString()}
-          renderItem={renderItem}
-          ListEmptyComponent={<PodcastEmptyComponent />}
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          onEndReached={() => {
-            if (page < totalPages) {
-              setPage(prev => prev + 1);
-            }
-          }}
-         onEndReachedThreshold={0.5}
-        />
-      )}
+    <SafeAreaView style={styles.container}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={400}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }>
+        <YStack f={1} p="$3">
+          {/* Header */}
+          <H5
+            marginVertical="$2"
+            color="$color"
+            fontWeight="700"
+            fontSize={17}
+            letterSpacing={0.5}>
+            Recommended
+          </H5>
+
+          {recommendedPodcasts.map((item: PodcastData, i: number) =>
+            renderItem({item, i}),
+          )}
+
+          <H5
+            marginVertical="$2"
+            color="$color"
+            fontWeight="700"
+            fontSize={17}
+            letterSpacing={0.5}>
+            All
+          </H5>
+          {/* Featured Podcast */}
+          {allPodcasts.map((item: PodcastData, i: number) =>
+            renderItem({item, i}),
+          )}
+
+          <H5
+            marginVertical="$2"
+            color="$color"
+            fontWeight="700"
+            fontSize={17}
+            letterSpacing={0.5}>
+            Latest Episodes
+          </H5>
+          {latestPodcasts.map((item: PodcastData, i: number) =>
+            renderItem({item, i}),
+          )}
+        </YStack>
+      </ScrollView>
 
       <CreatePlaylist visible={playlistModalOpen} dismiss={closePlaylist} />
 
@@ -263,7 +278,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
           }}
         />
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -272,71 +287,15 @@ export default PodcastsScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: hp(10),
+    marginVertical: hp(10),
     paddingHorizontal: 12,
     backgroundColor: ON_PRIMARY_COLOR,
-    //backgroundColor: '#ffffff',
   },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 12,
-  },
-  item: {
-    paddingVertical: 12,
-    borderBottomColor: '#ccc',
-    borderBottomWidth: 1,
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  artist: {
-    fontSize: 14,
-    color: '#666',
-  },
+
   homePlusIconview: {
-    bottom: 100,
+    bottom: hp(5),
     right: 25,
     position: 'absolute',
     zIndex: 10,
   },
 });
-
-/*
-// Styles for PodcastsScreen component
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: PRIMARY_COLOR,
-    justifyContent: 'center',
-  },
-  header: {
-    backgroundColor: PRIMARY_COLOR,
-    paddingHorizontal: 16,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    paddingBottom: 20,
-  },
-  content: {
-    marginTop: 15,
-    paddingHorizontal: 16,
-  },
-  recentPodcastsHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  recentPodcastsTitle: {
-    fontSize: 25,
-    fontWeight: 'bold',
-    color: 'white',
-    alignSelf: 'center',
-  },
-  seeMoreText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});
-*/
