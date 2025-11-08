@@ -240,7 +240,8 @@ const styles = StyleSheet.create({
     backgroundColor: ON_PRIMARY_COLOR,
   },
   form: {
-    marginVertical: 24,
+    marginTop: hp(3),
+    
     paddingHorizontal: 16,
   },
   input: {
@@ -388,6 +389,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#007bff',
     padding: 16,
     borderRadius: 8,
+    marginBottom: hp(8)
   },
   submitButtonText: {
     color: '#fff',
@@ -440,6 +442,7 @@ const styles = StyleSheet.create({
   borderLeftWidth: 4,
   borderLeftColor: '#FF8C42',
   padding: 12,
+  marginTop: hp(2),
   marginHorizontal: 16,
   borderRadius: 8,
   marginBottom: 16,

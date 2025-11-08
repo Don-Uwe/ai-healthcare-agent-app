@@ -1,54 +1,30 @@
 // NoResults.js
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { YStack , Image, Text} from 'tamagui';
 
 const NoResults = ({ query = '' }) => {
   return (
-    <View style={styles.container}>
-      <Image
-        source={require('../../assets/images/no_results.jpg')} 
-        style={styles.image}
-        resizeMode="contain"
+    <SafeAreaView>
+    <YStack f={1} jc="center" ai="center" space="$3">
+      {/* Empty Result */}
+      <MaterialCommunityIcons
+      name='book-search'
+      size={100}
+      color={'#0EA5E9'}
       />
-      <Text style={styles.title}>No results found</Text>
-      {query !== '' && (
-        <Text style={styles.subtitle}>
-          We couldn’t find anything for "{query}"
-        </Text>
-      )}
-      <Text style={styles.tips}>Try different keywords or check your spelling.</Text>
-    </View>
-  );
+      <Text fontSize="$6" fontWeight="700" color="#808080">
+        No results found
+      </Text>
+      <Text fontSize="$4" color="#777">
+        Try different keywords or check your spelling.
+      </Text>
+    </YStack>
+    </SafeAreaView>
+  )
 };
 
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    marginTop: 60,
-    paddingHorizontal: 24,
-  },
-  image: {
-    width: 150,
-    height: 150,
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#333',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginTop: 6,
-  },
-  tips: {
-    fontSize: 14,
-    color: '#888',
-    marginTop: 16,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-});
 
 export default NoResults;

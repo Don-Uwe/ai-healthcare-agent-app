@@ -1,12 +1,14 @@
-import {View, Image, Text, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet} from 'react-native';
 import {hp} from '../helper/Metric';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function PodcastEmptyComponent() {
   return (
     <View style={styles.emptyContainer}>
-      <Image
-        source={require('../../assets/images/podcast_default.jpg')}
-        style={styles.image}
+     <MaterialCommunityIcons
+      name='book-search'
+      size={100}
+      color={'#0EA5E9'}
       />
       <Text style={styles.message}>No podcast Found</Text>
     </View>

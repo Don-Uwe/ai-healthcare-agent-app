@@ -10,9 +10,10 @@ import { FILTER_PODCAST } from '../helper/APIUtils';
 import { setPodcasts } from '../store/dataSlice';
 import { RootStackParamList, Category, CategoryType, PodcastData } from '../type';
 import FilterModal from './FilterModal';
-import { XStack, YStack, Button, Popover, Separator, Text } from 'tamagui';
+import { XStack, YStack, Button, Popover, Separator, Text, useTheme } from 'tamagui';
 import { Feather, FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
 import { ON_PRIMARY_COLOR } from '../helper/Theme';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface Props {
   onClick: () => void;
@@ -28,7 +29,18 @@ const HeaderRightMenu = ({ onClick }: Props) => {
   const { user_token } = useSelector((state: any) => state.user);
   const { isConnected } = useSelector((state: any) => state.network);
   const dispatch = useDispatch();
+  const theme = useTheme();
 
+  const menuItemProps = {
+    ai: 'center',
+    jc: 'space-between', 
+    py: '$2.5',
+    px: '$3',
+    br: '$4',
+   // hoverStyle: { bg: theme.gray12.val },
+    pressStyle: { opacity: 0.8 },
+    animation: 'quick',
+  };
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
 
   const handlePresentModalPress = useCallback(() => {
@@ -64,7 +76,7 @@ const HeaderRightMenu = ({ onClick }: Props) => {
 
   const handleCategorySelection = (category: CategoryType) => {
     setSelectedCategoryList((prevList) =>
-      prevList.some((p) => p.id === category.id)
+      prevList.some((p: Category) => p.id === category.id)
         ? prevList.filter((item) => item.id !== category.id)
         : [...prevList, category]
     );
@@ -76,6 +88,8 @@ const HeaderRightMenu = ({ onClick }: Props) => {
   };
 
   return (
+
+    <SafeAreaView>
     <XStack ai="center" space="$3" mr="$3">
 
       <Button
@@ -104,14 +118,14 @@ const HeaderRightMenu = ({ onClick }: Props) => {
           borderRadius="$4"
           elevation="$3"
           p="$1"
-          width={180}
+          width={150}
           shadowColor="rgba(0,0,0,0.15)"
         >
           <YStack>
             {/* Menu Row: Profile */}
             <XStack
-              ai="center"
-              jc="space-between"
+              alignItems="flex-start"
+              justifyContent="space-between"
               py="$2"
               px="$2"
               br="$4"
@@ -130,12 +144,12 @@ const HeaderRightMenu = ({ onClick }: Props) => {
 
             {/* Menu Row: Downloads */}
             <XStack
-              ai="center"
-              jc="space-around"
+              alignItems="flex-start"
+              justifyContent="space-between"
               py="$2"
               px="$1"
               br="$4"
-              hoverStyle={{ bg: 'rgba(0,0,0,0.05)' }}
+              hoverStyle={{ backgroundColor: 'rgba(0,0,0,0.05)' }}
               pressStyle={{ opacity: 0.8 }}
               onPress={() => {
                 setMenuOpen(false);
@@ -170,7 +184,6 @@ const HeaderRightMenu = ({ onClick }: Props) => {
         </Popover.Content>
       </Popover>
 
-      {/* 🔽 Bottom Sheet Filter */}
       <FilterModal
         bottomSheetModalRef={bottomSheetModalRef}
         categories={categories}
@@ -193,6 +206,7 @@ const HeaderRightMenu = ({ onClick }: Props) => {
         sortingType={sortingType}
       />
     </XStack>
+    </SafeAreaView>
   );
 };
 

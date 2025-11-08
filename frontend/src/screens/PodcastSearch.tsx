@@ -1,14 +1,5 @@
 import React, {useState} from 'react';
-import {
-  Pressable,
-  View,
-  StyleSheet,
-  FlatList,
-  ActivityIndicator,
-  TextInput,
-  Text,
-  TouchableOpacity,
-} from 'react-native';
+import {Pressable, StyleSheet, FlatList, ActivityIndicator} from 'react-native';
 import {PodcastData, PodcastSearchProp} from '../type';
 import {useMutation, useQuery} from '@tanstack/react-query';
 import axios from 'axios';
@@ -20,7 +11,9 @@ import {msToTime} from '../helper/Utils';
 import Snackbar from 'react-native-snackbar';
 import NoResults from '../components/NoResult';
 import {hp} from '../helper/Metric';
-import {PRIMARY_COLOR} from '../helper/Theme';
+import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
+import {XStack, YStack, Text, Button, Input, Image, Separator} from 'tamagui';
+import {Feather} from '@expo/vector-icons';
 
 export default function PodcastSearch({navigation}: PodcastSearchProp) {
   const [query, setQuery] = useState<string>('');
@@ -30,10 +23,7 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
   const [totalPages, setTotalPages] = useState(0);
   const [searchData, setSearchData] = useState<PodcastData[]>([]);
 
-  const {
-    isLoading,
-    refetch,
-  } = useQuery({
+  const {isLoading, refetch} = useQuery({
     queryKey: ['serach-podcasts', page],
     queryFn: async () => {
       const res = await axios.get(`${SEARCH_PODCAST}?q=${query}&page=${page}`, {
@@ -42,28 +32,27 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
         },
       });
 
-      if(Number(page) === 1){
-        if(res.data.totalPages){
+      if (Number(page) === 1) {
+        if (res.data.totalPages) {
           const pages = res.data.totalPages;
           setTotalPages(pages);
         }
 
-        if(res.data.matchPodcasts){
+        if (res.data.matchPodcasts) {
           setSearchData(res.data.matchPodcasts);
         }
-      }else{
+      } else {
+        if (res.data.matchPodcasts) {
+          const oldPodcasts = searchData;
+          const newPodcasts = res.data.matchPodcasts;
 
-        if(res.data.matchPodcasts){
-           const oldPodcasts = searchData;
-        const newPodcasts = res.data.matchPodcasts;
-
-        setSearchData([...oldPodcasts, ...newPodcasts]);
+          setSearchData([...oldPodcasts, ...newPodcasts]);
         }
       }
 
       return res.data.matchPodcasts as PodcastData[];
     },
-    enabled: !!query && !!user_token  ,
+    enabled: !!query && !!user_token,
   });
 
   const updateViewCountMutation = useMutation({
@@ -103,7 +92,7 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
         updateViewCountMutation.mutate(item._id);
       }}>
       <PodcastCard
-        id= {item._id}
+        id={item._id}
         title={item.title}
         host={item.user_id.user_name}
         views={item.viewUsers.length}
@@ -111,155 +100,96 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
         tags={item.tags}
         display={false}
         downloaded={false}
-        downLoadAudio={()=>{
-
-        }}
+        downLoadAudio={() => {}}
         handleClick={() => {
           updateViewCountMutation.mutate(item._id);
         }}
         imageUri={item.cover_image}
-        handleReport={()=>{
-
-        }}
-        playlistAct={()=>{
-
-        }}
+        handleReport={() => {}}
+        playlistAct={() => {}}
         //onSelect={()=>{}}
         //onClear={()=>{}}
       />
     </Pressable>
   );
 
-
   return (
-    <View style={styles.container}>
-      <View style={styles.searchWrapper}>
-        <TouchableOpacity
-          onPress={() => {
-            navigation.goBack();
-          }}
-          style={styles.backBtn}>
-          <AntDesign name="arrowleft" size={27} color={PRIMARY_COLOR} />
-        </TouchableOpacity>
-        <View style={styles.searchContainer}>
-          <AntDesign
-            name="search1"
-            color={PRIMARY_COLOR}
-            size={24}
-            style={{marginStart: 8, marginTop: 2}}
-          />
-
-          <TextInput
-            style={styles.searchInput}
+    <YStack flex={1} height={'100%'} bg={ON_PRIMARY_COLOR} pt="$6" jc="flex-start">
+      {/* Search Bar */}
+      <XStack
+        alignItems="center"
+        justifyContent="space-between"
+        marginTop="$0.5"
+        padding="$4"
+        borderRadius="$4"
+        shadowOffset={{width: 0, height: 1}}
+        shadowOpacity={0.1}
+        shadowRadius={3}>
+        <XStack
+          alignItems="center"
+          width="100%"
+          flex={1}
+          //backgroundColor="#EFEFEF"
+          borderRadius="$2"
+          paddingHorizontal="$3"
+          borderWidth={1}
+          borderColor={PRIMARY_COLOR}
+          paddingVertical="$1"
+          space="$3">
+          <Feather name="search" size={25} color={'#c1c1c1'} />
+          <Input
+            flex={1}
+            size="$2"
+            minHeight={'$5'}
+            padding="$3"
+            paddingVertical="$2"
             placeholder="Search..."
-            placeholderTextColor="#999"
-            value={query}
+            placeholderTextColor={'#c1c1c1'}
+            borderWidth={0}
+            bg="transparent"
             onChangeText={setQuery}
-            onSubmitEditing={() => {
-              setPage(1);
-              refetch();
-            }} // If user presses enter on keyboard
-            returnKeyType="search"
+            value={query}
+            color={'black'}
+            focusStyle={{
+              outlineWidth: 0,
+              borderColor: 'transparent',
+              boxShadow: 'none',
+            }}
           />
 
-          <TouchableOpacity
-            style={styles.searchBtn}
-            onPress={() => {
-              refetch();
-            }}>
-            <Text style={styles.searchBtnText}>Go</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+          <Pressable onPress={()=>{
+            setQuery('');
+          }}>
+            <Feather name="clock" size={25} color={'#888'} />
+          </Pressable>
+        </XStack>
+      </XStack>
+
+      <Separator my="$2" opacity={0} />
 
       {isLoading && query !== '' ? (
-        <ActivityIndicator size="large" />
+        <YStack f={1} ai="center" jc="center">
+          <ActivityIndicator size="large" color={PRIMARY_COLOR} />
+        </YStack>
       ) : (
-        <FlatList
-          data={searchData && query !== '' ? searchData : []}
-          keyExtractor={item => item._id.toString()}
-          renderItem={renderItem}
-          ListEmptyComponent={<NoResults />}
-          onEndReached={() => {
-              if (page < totalPages) {
-                setPage(prev => prev + 1);
-              }
-        }}
-         onEndReachedThreshold={0.5}
-        />
+        <YStack px="$2">
+          <FlatList
+            data={query !== '' ? searchData : []}
+            keyExtractor={item => item._id.toString()}
+            renderItem={renderItem}
+            ListEmptyComponent={
+              <YStack ai="center" jc="center" py="$8">
+                <NoResults />
+              </YStack>
+            }
+            onEndReached={() => {
+              if (page < totalPages) setPage(prev => prev + 1);
+            }}
+            onEndReachedThreshold={0.5}
+            showsVerticalScrollIndicator={false}
+          />
+        </YStack>
       )}
-    </View>
+    </YStack>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: hp(1.5),
-    paddingHorizontal: 16,
-    //backgroundColor: ON_PRIMARY_COLOR,
-    backgroundColor: '#ffffff',
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 12,
-  },
-  item: {
-    paddingVertical: 12,
-    borderBottomColor: '#ccc',
-    borderBottomWidth: 1,
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  artist: {
-    fontSize: 14,
-    color: '#666',
-  },
-
-  searchContainer: {
-    flex: 1,
-    height: hp(6),
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: PRIMARY_COLOR,
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    paddingHorizontal: 2,
-  },
-
-  searchInput: {
-    flex: 1,
-    marginStart: 8,
-    fontSize: 16,
-    color: '#000',
-  },
-
-  searchBtn: {
-    backgroundColor: PRIMARY_COLOR,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-    marginEnd: 6,
-  },
-
-  searchBtnText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-
-  searchWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    //paddingHorizontal: 3,
-    marginVertical: 10,
-  },
-  backBtn: {
-    marginEnd: 4,
-    padding: 2,
-  },
-});

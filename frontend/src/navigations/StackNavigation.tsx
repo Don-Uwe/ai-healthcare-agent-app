@@ -134,10 +134,10 @@ const StackNavigation = () => {
           headerShown: true,
           headerTitle: 'Write your post',
           headerBackTitleVisible: false,
-          headerTintColor:"white",
+          headerTintColor: 'white',
           headerTransparent: false,
           headerStyle: {
-            backgroundColor:"#000A60"
+            backgroundColor: '#000A60',
           },
           // eslint-disable-next-line react/no-unstable-nested-components
           headerLeft: () => (
@@ -159,11 +159,11 @@ const StackNavigation = () => {
           headerShown: true,
           headerTitle: 'Start Writing',
           headerBackTitleVisible: false,
-          
-          headerTintColor:"white",
+
+          headerTintColor: 'white',
           headerTransparent: false,
           headerStyle: {
-            backgroundColor:"#000A60"
+            backgroundColor: '#000A60',
           },
           // eslint-disable-next-line react/no-unstable-nested-components
           headerLeft: () => (
@@ -186,39 +186,58 @@ const StackNavigation = () => {
           headerShown: true,
           headerTitle: 'Start Podcasting',
           headerBackTitleVisible: false,
-          headerTitleStyle: {color: PRIMARY_COLOR},
-         
+          headerTitleStyle: {color: '#ffffff'},
+          headerStyle: {
+            backgroundColor: '#000A60',
+          },
           headerLeft: () => (
             <TouchableOpacity
               style={styles.headerLeftButtonEditorScreen}
               onPress={() => {
                 navigation.goBack();
               }}>
-              <Ionicon name="arrow-back" size={36} color={PRIMARY_COLOR} />
+              <Ionicon name="arrow-back" size={36} color={'#ffffff'} />
               {/* <FontAwesome6 size={25} name="arrow-left" color="black" /> */}
             </TouchableOpacity>
           ),
         })}
       />
 
-       <Stack.Screen
+      <Stack.Screen
         name="PodcastSearch"
         component={PodcastSearch}
-        options={{headerShown: false}}
+        options={{
+          headerShown: true,
+          headerTitle: 'Search Podcast',
+          headerStyle: {
+            backgroundColor: '#000A60',
+          },
+          headerTitleStyle: {color: 'white'},
+
+          headerLeft: () => (
+            <TouchableOpacity
+              style={styles.headerLeftButtonEditorScreen}
+              onPress={() => {
+                navigation.goBack();
+              }}>
+              <Ionicon name="arrow-back" size={36} color={'white'} />
+              {/* <FontAwesome6 size={25} name="arrow-left" color="black" /> */}
+            </TouchableOpacity>
+          ),
+        }}
       />
 
       <Stack.Screen
         name="PreviewScreen"
         component={PreviewScreen}
-        
         options={({navigation}) => ({
           headerShown: true,
           headerTitle: 'Preview your post',
           headerBackTitleVisible: false,
-           headerTintColor:"white",
+          headerTintColor: 'white',
           headerTransparent: false,
           headerStyle: {
-            backgroundColor:"#000A60"
+            backgroundColor: '#000A60',
           },
           // eslint-disable-next-line react/no-unstable-nested-components
           headerLeft: () => (
@@ -233,15 +252,18 @@ const StackNavigation = () => {
         })}
       />
 
-
       <Stack.Screen
         name="OfflinePodcastList"
         component={OfflinePodcastList}
         options={({navigation}) => ({
           headerShown: true,
           headerTitle: 'Downloaded Podcasts',
+          headerTintColor: '#ffffff',
           headerBackTitleVisible: false,
           headerTransparent: true,
+          headerStyle: {
+            backgroundColor: '#000A60',
+          },
           // eslint-disable-next-line react/no-unstable-nested-components
           headerLeft: () => (
             <TouchableOpacity
@@ -249,7 +271,7 @@ const StackNavigation = () => {
               onPress={() => {
                 navigation.goBack();
               }}>
-              <FontAwesome6 size={25} name="arrow-left" color={PRIMARY_COLOR} />
+              <FontAwesome6 size={25} name="arrow-left" color={'#ffffff'} />
             </TouchableOpacity>
           ),
         })}
@@ -283,10 +305,10 @@ const StackNavigation = () => {
           headerShown: true,
           headerTitle: 'Suggestions',
           headerBackTitleVisible: false,
-          headerTintColor:"white",
+          headerTintColor: 'white',
           headerTransparent: false,
           headerStyle: {
-            backgroundColor:"#000A60"
+            backgroundColor: '#000A60',
           },
           // eslint-disable-next-line react/no-unstable-nested-components
           headerLeft: () => (
@@ -364,7 +386,7 @@ const StackNavigation = () => {
         })}
       />
 
-        <Stack.Screen
+      <Stack.Screen
         name="PodcastRecorder"
         component={PodcastRecorder}
         options={{headerShown: false}}
@@ -397,10 +419,10 @@ const StackNavigation = () => {
         options={({navigation}) => ({
           headerShown: true,
           headerTitle: 'Leave a feedback',
-          headerTintColor:"white",
+          headerTintColor: 'white',
           headerTransparent: false,
           headerStyle: {
-            backgroundColor:"#000A60"
+            backgroundColor: '#000A60',
           },
           headerBackTitleVisible: false,
           // eslint-disable-next-line react/no-unstable-nested-components
@@ -448,17 +470,17 @@ const StackNavigation = () => {
           //headerTransparent: true,
           headerTitleAlign: 'center',
           headerBackTitleVisible: false,
-           headerTintColor:"white",
+          headerTintColor: 'white',
           headerTransparent: false,
-        
+
           headerStyle: {
-            elevation: 4, 
-          
-            backgroundColor:"#000A60",
-            shadowColor: '#000', 
-            shadowOffset: {width: 0, height: 2}, 
-            shadowOpacity: 0.25, 
-            shadowRadius: 3.5, 
+            elevation: 4,
+
+            backgroundColor: '#000A60',
+            shadowColor: '#000',
+            shadowOffset: {width: 0, height: 2},
+            shadowOpacity: 0.25,
+            shadowRadius: 3.5,
           },
           // eslint-disable-next-line react/no-unstable-nested-components
           headerLeft: () => (
