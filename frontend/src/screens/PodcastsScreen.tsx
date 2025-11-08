@@ -221,7 +221,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }>
-        <YStack f={1} p="$3">
+        <YStack flex={1} p="$2">
           {/* Header */}
           <H5
             marginVertical="$2"

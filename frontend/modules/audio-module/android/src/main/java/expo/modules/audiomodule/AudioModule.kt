@@ -65,8 +65,8 @@ class AudioModule : Module() {
 
    // Start Recording Work
     Function("startRecording") {
-      if (isRecording) return@Function
-      val ctx = appContext.reactContext ?: return@Function
+      if (isRecording) return@Function null
+      val ctx = appContext.reactContext ?: return@Function null
 
       val externalDir = ctx.getExternalFilesDir(Environment.DIRECTORY_MUSIC)
       val id = System.currentTimeMillis().toString()
@@ -83,7 +83,7 @@ class AudioModule : Module() {
 
       if (audioRecord?.state != AudioRecord.STATE_INITIALIZED) {
         Log.e("AudioModule", "AudioRecord init failed")
-        return@Function
+        return@Function null
       }
 
       isRecording = true
@@ -123,7 +123,7 @@ class AudioModule : Module() {
 
     // Stop Recording Work
     Function("stopRecording") {
-      if (!isRecording) return@Function
+      if (!isRecording) return@Function null
       isRecording = false
       audioRecord?.apply {
         stop()
@@ -139,6 +139,7 @@ class AudioModule : Module() {
       sendEvent("onChange", mapOf(
         "value" to value
       ))
+       return@AsyncFunction null
     }
 
     // Enables the module to be used as a native view. Definition components that are accepted as part of
