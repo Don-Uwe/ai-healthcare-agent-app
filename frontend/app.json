@@ -13,9 +13,24 @@
       "barStyle": "light-content" 
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "App requires microphone access to record audio.",
+        "NSPhotoLibraryAddUsageDescription": "App needs access to save recordings.",
+        "NSPhotoLibraryUsageDescription": "App needs access to select or manage audio files.",
+        "UIBackgroundModes": ["audio"]
+      }
     },
     "android": {
+      "permissions": [
+        "INTERNET",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "RECORD_AUDIO",
+        "VIBRATE",
+        "RECEIVE_BOOT_COMPLETED",
+        "POST_NOTIFICATIONS"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

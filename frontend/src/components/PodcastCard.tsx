@@ -1,16 +1,14 @@
-import React from 'react';
+import React, {useRef} from 'react';
 import {TouchableOpacity, Alert} from 'react-native';
-
 import {YStack, XStack, Image, Text, styled} from 'tamagui';
 import {Feather, Entypo} from '@expo/vector-icons';
 import {formatCount} from '../helper/Utils';
 import {Category} from '../type';
-
-import {useRef} from 'react';
 import {BottomSheetModal} from '@gorhom/bottom-sheet';
 import PodcastActions from './PodcastActions';
 import Share from 'react-native-share';
 import {GET_STORAGE_DATA} from '../helper/APIUtils';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface PodcastProps {
   id: string;
@@ -81,7 +79,7 @@ const PodcastCard = ({
     marginVertical: '$3',
     shadowColor: '#00000022',
     elevation: 2,
-    overflow: 'hidden', // ✅ Prevents child overflow
+    overflow: 'hidden', 
   });
 
   const TagText = styled(Text, {
@@ -94,6 +92,7 @@ const PodcastCard = ({
   });
 
   return (
+    <SafeAreaView>
     <CardContainer>
       <XStack space="$3" ai="center" jc="space-between">
         {/* Left section: Image + Text */}
@@ -162,6 +161,7 @@ const PodcastCard = ({
         onSave={() => playlistAct(id)}
       />
     </CardContainer>
+    </SafeAreaView>
   );
 };
 

@@ -1,17 +1,18 @@
-import {View, Text, StyleSheet} from 'react-native';
+import {Text, StyleSheet} from 'react-native';
 import {hp} from '../helper/Metric';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function PodcastEmptyComponent() {
   return (
-    <View style={styles.emptyContainer}>
+    <SafeAreaView style={styles.emptyContainer}>
      <MaterialCommunityIcons
       name='book-search'
       size={100}
       color={'#0EA5E9'}
       />
       <Text style={styles.message}>No podcast Found</Text>
-    </View>
+    </SafeAreaView>
   );
 }
 
