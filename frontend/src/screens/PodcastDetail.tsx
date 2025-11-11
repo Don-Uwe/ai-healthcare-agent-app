@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -15,7 +15,7 @@ import {PodcastData, PodcastDetailScreenProp} from '../type';
 import {BUTTON_COLOR, ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import Slider from '@react-native-community/slider';
 
-import {useAudioPlayer, AudioPlayer} from 'expo-audio';
+import {useAudioPlayer} from 'expo-audio';
 
 import {useMutation, useQuery} from '@tanstack/react-query';
 import axios from 'axios';
@@ -35,7 +35,8 @@ import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {hp} from '../helper/Metric';
 import {useSocket} from '../../SocketContext';
 import {Feather} from '@expo/vector-icons';
-import {Asset} from 'expo-asset';
+import { Asset } from 'expo-asset';
+import Loader from '../components/Loader';
 
 const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   //const [progress, setProgress] = useState(10);
@@ -51,7 +52,6 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [duration, setDuration] = useState(0);
   const [position, setPosition] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
 
   const handleListenPress = async () => {
     if (!player) return;
@@ -85,26 +85,31 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
     },
   });
 
-  const audioSource = useMemo(() => {
-    if (podcast?.audio_url) {
-      return `${GET_IMAGE}/${podcast.audio_url}`;
-    } else {
-      const asset = Asset.fromModule(
-        require('../../assets/sounds/funny-cartoon-sound-397415.mp3'),
-      );
-      return asset.localUri ?? asset.uri;
-    }
-  }, [podcast?.audio_url]);
+  const [source, setSource] = useState<string  | null>(null);
 
-  // frontend\assets\sounds\funny-cartoon-sound-397415.mp3
-  const player = useAudioPlayer(audioSource);
+  useEffect(() => {
+    let mounted = true;
+    // eslint-disable-next-line no-unused-expressions
+    (async () => {
+      if (podcast?.audio_url) {
+        if (mounted) setSource(`${GET_IMAGE}/${podcast.audio_url}`);
+      } 
+    })
+    return () => {
+      mounted = false;
+    };
+  }, [podcast]);
 
+  // only initialize once a valid uri exists
+  const player = useAudioPlayer(source ??   require("../../assets/sounds/funny-cartoon-sound-397415.mp3") );
+
+  
   useEffect(() => {
     const interval = setInterval(() => {
       if (player.playing) {
         setPosition(player.currentTime || 0);
         setDuration(player.duration || 1);
-        setIsPlaying(player.playing || false);
+        // setIsPlaying(player.playing || false);
       }
     }, 500);
 
@@ -199,6 +204,13 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
       Alert.alert('Error', 'Something went wrong while sharing.');
     }
   };
+
+
+  if(isLoading){
+    return (
+      <Loader/>
+    )
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -412,7 +424,7 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
           onPress={handleListenPress}
           disabled={player.currentStatus.isBuffering}>
           <Text style={styles.listenText}>
-            {isPlaying ? '⏸️Pause' : '🎧 Listen Now'}
+            {player.currentStatus.playing ? '⏸️Pause' : '🎧 Listen Now'}
           </Text>
         </TouchableOpacity>
       </ScrollView>
