@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {
   View,
   Text,
@@ -35,6 +35,7 @@ import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {hp} from '../helper/Metric';
 import {useSocket} from '../../SocketContext';
 import {Feather} from '@expo/vector-icons';
+import {Asset} from 'expo-asset';
 
 const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   //const [progress, setProgress] = useState(10);
@@ -54,7 +55,7 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
 
   const handleListenPress = async () => {
     if (!player) return;
-    const status =  player.currentStatus;
+    const status = player.currentStatus;
     if (status.playing) {
       player.pause();
     } else {
@@ -84,11 +85,19 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
     },
   });
 
-  const player = useAudioPlayer(
-    podcast
-      ? `${GET_IMAGE}/${podcast.audio_url}`
-      : require('../assets/sounds/funny-cartoon-sound-397415.mp3'),
-  );
+  const audioSource = useMemo(() => {
+    if (podcast?.audio_url) {
+      return `${GET_IMAGE}/${podcast.audio_url}`;
+    } else {
+      const asset = Asset.fromModule(
+        require('../../assets/sounds/funny-cartoon-sound-397415.mp3'),
+      );
+      return asset.localUri ?? asset.uri;
+    }
+  }, [podcast?.audio_url]);
+
+  // frontend\assets\sounds\funny-cartoon-sound-397415.mp3
+  const player = useAudioPlayer(audioSource);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -114,7 +123,7 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   useEffect(() => {
     const interval = setInterval(async () => {
       if (player) {
-        const status =  player.currentStatus;
+        const status = player.currentStatus;
         if (status.isLoaded) setPosition(status.currentTime);
       }
     }, 500);

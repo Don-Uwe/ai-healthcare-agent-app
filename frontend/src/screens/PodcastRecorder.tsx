@@ -52,7 +52,7 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
   const player = useAudioPlayer(
     filePath
       ? filePath
-      : require('../assets/sounds/funny-cartoon-sound-397415.mp3'),
+      : require('../../assets/sounds/funny-cartoon-sound-397415.mp3'),
   );
 
   const formatTime = (ms: number) => {
