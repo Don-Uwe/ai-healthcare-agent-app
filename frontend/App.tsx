@@ -20,7 +20,6 @@ import messaging from '@react-native-firebase/messaging';
 
 import {SocketProvider} from './SocketContext';
 import {useDispatch} from 'react-redux';
-//import TrackPlayer, {Capability} from 'react-native-track-player';
 import {cleanUpDownloads} from './src/helper/Utils';
 import { Provider as PaperProvider } from 'react-native-paper';
 import { TamaguiProvider } from 'tamagui';
@@ -45,35 +44,7 @@ function App(): React.JSX.Element {
   //const navigationContainerRef = useRef();
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    /*
-    const init = async () => {
-      try {
-        await TrackPlayer.setupPlayer();
-
-        await TrackPlayer.updateOptions({
-          capabilities: [
-            Capability.Play,
-            Capability.Pause,
-            Capability.SkipToNext,
-            Capability.SkipToPrevious,
-            Capability.Stop,
-          ],
-          compactCapabilities: [Capability.Play, Capability.Pause],
-        });
-
-        console.log(' TrackPlayer initialized once');
-      } catch (e) {
-        console.log(' TrackPlayer already initialized or failed', e);
-      }
-    };
-    */
-
-    //init();
-    return ()=>{
-      // TrackPlayer.reset();
-    };
-  }, []);
+ 
 
   useEffect(() => {
     cleanUpDownloads();

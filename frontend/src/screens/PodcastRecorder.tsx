@@ -6,9 +6,7 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-
   DeviceEventEmitter,
-
   Alert,
 } from 'react-native';
 //import AudioRecorderPlayer from 'react-native-audio-recorder-player';
@@ -21,18 +19,19 @@ import {useSelector} from 'react-redux';
 import axios from 'axios';
 import Icon from '@expo/vector-icons/MaterialCommunityIcons';
 import Snackbar from 'react-native-snackbar';
-import TrackPlayer, {State, useProgress} from 'react-native-track-player';
+
 import {UPLOAD_PODCAST} from '../helper/APIUtils';
 import useUploadImage from '../../hooks/useUploadImage';
 import ImageResizer from '@bam.tech/react-native-image-resizer';
 import useUploadAudio from '../../hooks/useUploadAudio';
 import Slider from '@react-native-community/slider';
-import {BUTTON_COLOR, PRIMARY_COLOR} from '../helper/Theme';
+import {BUTTON_COLOR} from '../helper/Theme';
 
 //const {AudioModule} = NativeModules;
 //const AudioModule = NativeModules.AudioModule;
 //const emitter = new NativeEventEmitter(AudioModule);
-import { requireNativeModule } from 'expo-modules-core';
+import {requireNativeModule} from 'expo-modules-core';
+import {useAudioPlayer} from 'expo-audio';
 
 const AudioModule = requireNativeModule('AudioModule');
 
@@ -47,9 +46,14 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
   const {user_token, user_id} = useSelector((state: any) => state.user);
   const [amplitudes, setAmplitudes] = useState<number[]>([]);
   //const [currentAmplitude, setCurrentAmplitude] = useState<number>(0);
-  const progress = useProgress();
   const recordStartTimeRef = useRef<number | null>(null);
   const timerRef = useRef(null);
+
+  const player = useAudioPlayer(
+    filePath
+      ? filePath
+      : require('../assets/sounds/funny-cartoon-sound-397415.mp3'),
+  );
 
   const formatTime = (ms: number) => {
     const totalSec = Math.floor(ms / 1000);
@@ -59,7 +63,7 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
     return `${hours}:${minutes}:${seconds}`;
   };
 
-   const formatSecTime = (seconds: number) => {
+  const formatSecTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
     const secs = Math.floor(seconds % 60);
@@ -90,7 +94,7 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
- 
+
     recordStartTimeRef.current = null;
   };
 
@@ -132,25 +136,6 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
     }
   };
 
-  const addTrack = async () => {
-    const currentState = await TrackPlayer.getPlaybackState();
-
-    if (currentState.state === State.Playing) {
-      await TrackPlayer.pause();
-    } else if (currentState.state === State.Paused) {
-      await TrackPlayer.play();
-    } else {
-      await TrackPlayer.reset();
-      await TrackPlayer.add({
-        id: 'recording',
-        url: filePath ? filePath : '',
-        title: 'Recording',
-        artist: 'You',
-      });
-      await TrackPlayer.play();
-    }
-  };
-
   // UI State: 'idle' | 'recording' | 'review' | 'playing' | 'paused' | 'uploading'
   const [uiState, setUiState] = useState<
     'idle' | 'recording' | 'review' | 'playing' | 'paused' | 'uploading'
@@ -169,12 +154,16 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
   };
 
   const handlePlay = async () => {
-    await addTrack();
+    if (!player) return;
+
+    player.play();
     setUiState('playing');
   };
 
   const handlePause = async () => {
-    await TrackPlayer.pause();
+    if (!player) return;
+
+    player.pause();
     setUiState('paused');
   };
 
@@ -202,7 +191,7 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
     setUiState('idle');
   };
 
-  const unlinkFile = async () => {
+  const unlinkFile = useCallback(async () => {
     if (filePath) {
       try {
         const exists = await RNFS.exists(filePath);
@@ -214,19 +203,20 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
         console.warn('Error deleting file:', err);
       }
     }
-  };
-  const handleUpload = async () => {
+  }, [filePath]);
+  
+  const handleUpload = useCallback(async () => {
     setUploading(false);
     setUiState('idle');
     setFilePath(null);
     setAmplitudes([]);
     setRecordTime('00:00:00');
     await unlinkFile();
-  };
+  },[unlinkFile]);
 
-  const stopPlay = async () => {
+  const stopPlay =  () => {
     try {
-      await TrackPlayer.stop();
+       player.remove();
     } catch (e) {
       console.error('Error stopping playback:', e);
     }
@@ -296,7 +286,7 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
           article_id: null,
           audio_url: audio_url,
           cover_image: cover_image,
-          duration: progress.duration,
+          duration: player.duration,
         },
         {
           headers: {
@@ -356,8 +346,8 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
       let uploadedUrl = await uploadImage(resizedImageUri?.uri);
       let audioUrl = await uploadAudio(filePath);
 
-      console.log("audio", audioUrl);
-      console.log("Image", uploadedUrl);
+      console.log('audio', audioUrl);
+      console.log('Image', uploadedUrl);
 
       if (uploadedUrl && audioUrl) {
         // Call the mutation to upload the podcast
@@ -420,7 +410,7 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
     if (error || imageError) {
       handleUpload();
     }
-  }, [error, imageError]);
+  }, [error, handleUpload, imageError]);
 
   return (
     <View style={styles.container}>
@@ -445,29 +435,33 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
         )}
       </View>
 
-      {(uiState === 'playing' ||
-        uiState === 'paused') && (
-
-            <View style={{width: '100%', alignItems: 'stretch', marginTop: 8, marginBottom: 4}}>
-            <Slider
-              style={styles.slider}
-              minimumValue={0}
-              maximumValue={progress.duration}
-              value={progress.position}
-              minimumTrackTintColor={BUTTON_COLOR}
-              maximumTrackTintColor="#ccc"
-              thumbTintColor={BUTTON_COLOR}
-              onSlidingComplete={async value => {
+      {(uiState === 'playing' || uiState === 'paused') && (
+        <View
+          style={{
+            width: '100%',
+            alignItems: 'stretch',
+            marginTop: 8,
+            marginBottom: 4,
+          }}>
+          <Slider
+            style={styles.slider}
+            minimumValue={0}
+            maximumValue={player.duration}
+            value={player.currentStatus ? player.currentStatus.currentTime : 0}
+            minimumTrackTintColor={BUTTON_COLOR}
+            maximumTrackTintColor="#ccc"
+            thumbTintColor={BUTTON_COLOR}
+            onSlidingComplete={async value => {
               // seek to selected time
-              await TrackPlayer.seekTo(value);
-              }}
-            />
-            <View style={styles.timeRow}>
-              <Text style={styles.time}>{formatSecTime(progress.position)}</Text>
-              <Text style={styles.time}>{formatSecTime(progress.duration)}</Text>
-            </View>
-            </View>
-        )}
+              await player.seekTo(value);
+            }}
+          />
+          <View style={styles.timeRow}>
+            <Text style={styles.time}>{formatSecTime(player.currentStatus ? player.currentStatus.currentTime : 0)}</Text>
+            <Text style={styles.time}>{formatSecTime(player.duration)}</Text>
+          </View>
+        </View>
+      )}
 
       {/* Action Buttons */}
       <View style={{flexDirection: 'row', marginTop: 24, gap: 16}}>
@@ -724,14 +718,14 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
 
-   slider: {
+  slider: {
     width: '100%',
     height: 36,
     marginTop: 6,
     marginBottom: 2,
   },
 
-   timeRow: {
+  timeRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 4,
@@ -742,4 +736,3 @@ const styles = StyleSheet.create({
     color: '#777',
   },
 });
-

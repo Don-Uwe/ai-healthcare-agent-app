@@ -14,15 +14,10 @@ import {ON_PRIMARY_COLOR, BUTTON_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import Slider from '@react-native-community/slider';
 import moment from 'moment';
 import Ionicons from '@expo/vector-icons/Ionicons';
+// eslint-disable-next-line import/no-duplicates
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import AntDesign from '@expo/vector-icons/AntDesign';
-/*
-import TrackPlayer, {
-  usePlaybackState,
-  useProgress,
-  State,
-} from 'react-native-track-player';
- */
+
 import {formatCount, updateOfflinePodcastLikeStatus} from '../helper/Utils';
 import {useSelector} from 'react-redux';
 import {useCallback, useEffect, useState} from 'react';
@@ -33,7 +28,9 @@ import {GET_STORAGE_DATA, LIKE_PODCAST} from '../helper/APIUtils';
 import Share from 'react-native-share';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Icon from '@expo/vector-icons/MaterialIcons';
-import { useSocket } from '../../SocketContext';
+import {useSocket} from '../../SocketContext';
+import {Feather} from '@expo/vector-icons';
+import {useAudioPlayer} from 'expo-audio';
 
 export default function OfflinePodcastDetail({
   route,
@@ -43,50 +40,29 @@ export default function OfflinePodcastDetail({
   const insets = useSafeAreaInsets();
   //const playbackState = usePlaybackState();
   //const progress = useProgress();
-  const {user_id, user_token, user_handle} = useSelector((state: any) => state.user);
+  const {user_id, user_token, user_handle} = useSelector(
+    (state: any) => state.user,
+  );
   const {isConnected} = useSelector((state: any) => state.network);
   //const [isLoading, setLoading] = useState<boolean>(false);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [currentPodcast, setCurrentPodcast] = useState<PodcastData>(podcast);
 
-  const addTrack = useCallback(async () => {
-  //  await TrackPlayer.reset();
-    if (podcast) {
-      /*
-      await TrackPlayer.add({
-        id: podcast._id,
-        url: `file://${podcast.filePath}`,
-        title: podcast?.title,
-        artist: podcast?.user_id.user_name,
-      });
-      */
-    }
-  }, [podcast]);
-
-  useEffect(() => {
-    addTrack();
-    return () => {};
-  }, [addTrack]);
+  const player = useAudioPlayer(`file://${podcast.filePath}`);
 
   const handleListenPress = async () => {
-   // const currentState = await TrackPlayer.getPlaybackState();
+    const currentState = player.currentStatus;
 
-   /*
-    if (currentState.state === State.Playing) {
-      await TrackPlayer.pause();
-    } else if (
-      currentState.state === State.Paused ||
-      currentState.state === State.Ready ||
-      currentState.state === State.Stopped
-    ) {
-      await TrackPlayer.play();
+    if (currentState.playing) {
+      player.pause();
+    } else {
+      player.play();
     }
-      */
   };
 
   const handleShare = async () => {
     try {
-       await Share.open({
+      await Share.open({
         title: podcast?.title,
         message: `${podcast?.title} : Check out this podcast on UltimateHealth app!`,
         // Most Recent APK: 0.7.4
@@ -125,18 +101,17 @@ export default function OfflinePodcastDetail({
       } else {
         podcast.likedUsers.push(user_id);
         if (data?.likeStatus) {
-        // data.userId, data.articleId, data.podcastId, data.articleRecordId, data.title, data.message
-        socket.emit('notification', {
-          type: 'likePost',
-          userId: user_id,
-          articleId: null,
-          podcastId: podcast._id,
-          articleRecordId: null,
-          title: `${user_handle} liked your post`,
-          message: podcast.title,
-
-        });
-      }
+          // data.userId, data.articleId, data.podcastId, data.articleRecordId, data.title, data.message
+          socket.emit('notification', {
+            type: 'likePost',
+            userId: user_id,
+            articleId: null,
+            podcastId: podcast._id,
+            articleRecordId: null,
+            title: `${user_handle} liked your post`,
+            message: podcast.title,
+          });
+        }
         await updateOfflinePodcastLikeStatus(podcast);
       }
     },
@@ -240,7 +215,7 @@ export default function OfflinePodcastDetail({
           {currentPodcast?.likedUsers.includes(user_id) ? (
             <AntDesign name="heart" size={24} color={PRIMARY_COLOR} />
           ) : (
-            <AntDesign name="hearto" size={24} color={'black'} />
+            <Feather name="heart" size={24} color={'black'} />
           )}
           <Text style={styles.likeCount}>
             {currentPodcast?.likedUsers?.length
@@ -253,22 +228,22 @@ export default function OfflinePodcastDetail({
           <MaterialIcons name="done" size={24} color="green" />
         </View>
         <TouchableOpacity
-            style={styles.footerItem}
-            onPress={() => {
-              if (isConnected) {
-               // handleDiscussion(); // You need to define this
-              } else {
-                Snackbar.show({
-                  text: 'You are currently offline',
-                  duration: Snackbar.LENGTH_SHORT,
-                });
-              }
-            }}>
-            <Ionicons name="chatbubble-outline" size={24} color="#1E1E1E" />
-            <Text style={styles.likeCount}>
-              {podcast?.commentCount ? formatCount(podcast?.commentCount) : 0}
-            </Text>
-          </TouchableOpacity>
+          style={styles.footerItem}
+          onPress={() => {
+            if (isConnected) {
+              // handleDiscussion(); // You need to define this
+            } else {
+              Snackbar.show({
+                text: 'You are currently offline',
+                duration: Snackbar.LENGTH_SHORT,
+              });
+            }
+          }}>
+          <Ionicons name="chatbubble-outline" size={24} color="#1E1E1E" />
+          <Text style={styles.likeCount}>
+            {podcast?.commentCount ? formatCount(podcast?.commentCount) : 0}
+          </Text>
+        </TouchableOpacity>
 
         {
           <TouchableOpacity
@@ -330,44 +305,38 @@ export default function OfflinePodcastDetail({
       <Slider
         style={styles.slider}
         minimumValue={0}
-       // maximumValue={progress.duration}
-        //value={progress.position}
+         maximumValue={player.duration || 1}
+        value={player.currentStatus ? player.currentStatus.currentTime : 0}
         minimumTrackTintColor={PRIMARY_COLOR}
         maximumTrackTintColor="#ccc"
         thumbTintColor={PRIMARY_COLOR}
         onSlidingComplete={async value => {
           // seek to selected time
-          //await TrackPlayer.seekTo(value);
+          await player.seekTo(value);
         }}
       />
 
-      {
-        /**
-         * <View style={styles.timeRow}>
-        <Text style={styles.time}>{formatTime(progress.position)}</Text>
-        <Text style={styles.time}>{formatTime(progress.duration)}</Text>
+      
+        <View style={styles.timeRow}>
+        <Text style={styles.time}>{formatTime(player.currentStatus ? player.currentStatus.currentTime : 0)}</Text>
+        <Text style={styles.time}>{formatTime(player.duration || 1)}</Text>
       </View>
-         */
-      }
+         
 
-      {
-        /**
-         * {playbackState.state === State.Buffering && (
+      {player.currentStatus && player.currentStatus.isBuffering && (
         <Text style={styles.bufferingText}>⏳ Buffering... please wait</Text>
       )}
-         */
-      }
+         
 
       <TouchableOpacity
         style={[
           styles.listenButton,
-         // playbackState.state === State.Buffering &&
-            styles.listenButtonDisabled,
+          player.currentStatus.isBuffering &&
+          styles.listenButtonDisabled,
         ]}
         onPress={handleListenPress}
-        //disabled={playbackState.state === State.Buffering}
-        
-        >
+        disabled={player.currentStatus.isBuffering}
+      >
         <Text style={styles.listenText}>
           {false ? '⏸️Pause' : '🎧 Listen Now'}
         </Text>

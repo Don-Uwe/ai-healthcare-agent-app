@@ -8,9 +8,9 @@
     "scheme": "ultimatehealth",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-     "androidStatusBar": {
-      "backgroundColor": "#00BFFF", 
-      "barStyle": "light-content" 
+    "androidStatusBar": {
+      "backgroundColor": "#00BFFF",
+      "barStyle": "light-content"
     },
     "ios": {
       "supportsTablet": true,
@@ -18,7 +18,9 @@
         "NSMicrophoneUsageDescription": "App requires microphone access to record audio.",
         "NSPhotoLibraryAddUsageDescription": "App needs access to save recordings.",
         "NSPhotoLibraryUsageDescription": "App needs access to select or manage audio files.",
-        "UIBackgroundModes": ["audio"]
+        "UIBackgroundModes": [
+          "audio"
+        ]
       }
     },
     "android": {
@@ -37,7 +39,6 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.UltimateHealth"
@@ -58,6 +59,12 @@
           "dark": {
             "backgroundColor": "#00BFFF"
           }
+        }
+      ],
+       [
+        "expo-audio",
+        {
+          "microphonePermission": "Allow UltimateHealth to access your microphone."
         }
       ]
     ],

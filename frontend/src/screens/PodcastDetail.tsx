@@ -1,5 +1,4 @@
-import React from 'react';
-import {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -16,13 +15,7 @@ import {PodcastData, PodcastDetailScreenProp} from '../type';
 import {BUTTON_COLOR, ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import Slider from '@react-native-community/slider';
 
-/*
-import TrackPlayer, {
-  State,
-  usePlaybackState,
-  useProgress,
-} from 'react-native-track-player';
- */
+import {useAudioPlayer, AudioPlayer} from 'expo-audio';
 
 import {useMutation, useQuery} from '@tanstack/react-query';
 import axios from 'axios';
@@ -40,35 +33,32 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import Share from 'react-native-share';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {hp} from '../helper/Metric';
-import { useSocket } from '../../SocketContext';
+import {useSocket} from '../../SocketContext';
+import {Feather} from '@expo/vector-icons';
 
 const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   //const [progress, setProgress] = useState(10);
   const insets = useSafeAreaInsets();
   const {trackId} = route.params;
-  const playbackState = usePlaybackState();
-  const progress = useProgress();
+
   const socket = useSocket();
-  const {user_token, user_id, user_handle} = useSelector((state: any) => state.user);
+  const {user_token, user_id, user_handle} = useSelector(
+    (state: any) => state.user,
+  );
   const {isConnected} = useSelector((state: any) => state.network);
   const [isLoading, setLoading] = useState<boolean>(false);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const [duration, setDuration] = useState(0);
+  const [position, setPosition] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const handleListenPress = async () => {
-    const currentState = await TrackPlayer.getPlaybackState();
-
-    console.log('Current state', currentState);
-    console.log('State Playing', State.Playing);
-    console.log('State Ready', State.Ready);
-    console.log('State Stoped', State.Stopped);
-    if (currentState.state === State.Playing) {
-      await TrackPlayer.pause();
-    } else if (
-      currentState.state === State.Paused ||
-      currentState.state === State.Ready ||
-      currentState.state === State.Stopped
-    ) {
-      await TrackPlayer.play();
+    if (!player) return;
+    const status =  player.currentStatus;
+    if (status.playing) {
+      player.pause();
+    } else {
+      player.play();
     }
   };
 
@@ -94,17 +84,42 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
     },
   });
 
-  const addTrack = useCallback(async () => {
-    await TrackPlayer.reset();
-    if (podcast) {
-      await TrackPlayer.add({
-        id: trackId,
-        url: `${GET_IMAGE}/${podcast?.audio_url}`,
-        title: podcast?.title,
-        artist: podcast?.user_id.user_name,
-      });
+  const player = useAudioPlayer(
+    podcast
+      ? `${GET_IMAGE}/${podcast.audio_url}`
+      : require('../assets/sounds/funny-cartoon-sound-397415.mp3'),
+  );
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (player.playing) {
+        setPosition(player.currentTime || 0);
+        setDuration(player.duration || 1);
+        setIsPlaying(player.playing || false);
+      }
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, [player.currentTime, player.duration, player.playing]);
+
+  const handleSeek = async (value: number) => {
+    if (player) {
+      await player.seekTo(value);
+      setPosition(value);
     }
-  }, [podcast, trackId]);
+  };
+
+  // For position update
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      if (player) {
+        const status =  player.currentStatus;
+        if (status.isLoaded) setPosition(status.currentTime);
+      }
+    }, 500);
+    return () => clearInterval(interval);
+  }, [player, player.currentTime, player.duration, player.playing]);
 
   const updateLikeCountMutation = useMutation({
     mutationKey: ['update-podcast-like-count'],
@@ -122,9 +137,8 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
       );
       return res.data as any;
     },
-    onSuccess: (data) => {
-
-        if (data?.likeStatus && podcast) {
+    onSuccess: data => {
+      if (data?.likeStatus && podcast) {
         // data.userId, data.articleId, data.podcastId, data.articleRecordId, data.title, data.message
         socket.emit('notification', {
           type: 'likePost',
@@ -134,24 +148,18 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
           articleRecordId: null,
           title: `${user_handle} liked your post`,
           message: podcast.title,
-
         });
-      refetch();
-    }
-  },
-  onError: err => {
-    console.log('Update like count err', err);
-    Snackbar.show({
-      text: 'Something went wrong!',
-      duration: Snackbar.LENGTH_SHORT,
+        refetch();
+      }
+    },
+    onError: err => {
+      console.log('Update like count err', err);
+      Snackbar.show({
+        text: 'Something went wrong!',
+        duration: Snackbar.LENGTH_SHORT,
       });
     },
   });
-
-  useEffect(() => {
-    addTrack();
-    return () => {};
-  }, [addTrack]);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -265,7 +273,7 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
               {podcast?.likedUsers.includes(user_id) ? (
                 <AntDesign name="heart" size={24} color={PRIMARY_COLOR} />
               ) : (
-                <AntDesign name="hearto" size={24} color={'black'} />
+                <Feather name="heart" size={24} color={'black'} />
               )}
 
               <Text style={styles.likeCount}>
@@ -359,7 +367,6 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
             {moment(podcast?.updated_at).format('MMMM Do YYYY, h:mm A')}
           </Text>
           {podcast && (
-
             <Text style={styles.metaText}>
               {podcast?.viewUsers.length <= 1
                 ? `${podcast?.viewUsers.length} view`
@@ -371,38 +378,32 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
         <Slider
           style={styles.slider}
           minimumValue={0}
-          maximumValue={progress.duration}
-          value={progress.position}
+          maximumValue={duration}
+          value={position}
           minimumTrackTintColor={PRIMARY_COLOR}
           maximumTrackTintColor="#ccc"
           thumbTintColor={PRIMARY_COLOR}
-          onSlidingComplete={async value => {
-            // seek to selected time
-            await TrackPlayer.seekTo(value);
-          }}
+          onSlidingComplete={handleSeek}
         />
 
         <View style={styles.timeRow}>
-          <Text style={styles.time}>{formatTime(progress.position)}</Text>
-          <Text style={styles.time}>{formatTime(progress.duration)}</Text>
+          <Text style={styles.time}>{formatTime(position)}</Text>
+          <Text style={styles.time}>{formatTime(duration)}</Text>
         </View>
 
-        {playbackState.state === State.Buffering && (
+        {player.currentStatus.isBuffering && (
           <Text style={styles.bufferingText}>⏳ Buffering... please wait</Text>
         )}
 
         <TouchableOpacity
           style={[
             styles.listenButton,
-            playbackState.state === State.Buffering &&
-              styles.listenButtonDisabled,
+            player.currentStatus.isBuffering && styles.listenButtonDisabled,
           ]}
           onPress={handleListenPress}
-          disabled={playbackState.state === State.Buffering}>
+          disabled={player.currentStatus.isBuffering}>
           <Text style={styles.listenText}>
-            {playbackState.state === State.Playing
-              ? '⏸️Pause'
-              : '🎧 Listen Now'}
+            {isPlaying ? '⏸️Pause' : '🎧 Listen Now'}
           </Text>
         </TouchableOpacity>
       </ScrollView>
