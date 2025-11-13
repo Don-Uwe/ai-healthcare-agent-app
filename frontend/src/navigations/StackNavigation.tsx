@@ -27,7 +27,7 @@ import ArticleDescriptionScreen from '../screens/article/ArticleDescriptionScree
 import ProfileEditScreen from '../screens/ProfileEditScreen';
 import UserProfileScreen from '../screens/UserProfileScreen';
 import {RootStackParamList, TabParamList} from '../type';
-import {BUTTON_COLOR, PRIMARY_COLOR} from '../helper/Theme';
+import {PRIMARY_COLOR} from '../helper/Theme';
 import LogoutScreen from '../screens/auth/LogoutScreen';
 import {useNavigation, NavigationProp} from '@react-navigation/native';
 import OverviewScreen from '../screens/overview/OverviewScreen';
@@ -44,6 +44,8 @@ import PodcastDiscussion from '../screens/PodcastDiscussion';
 import PodcastSearch from '../screens/PodcastSearch';
 import PodcastRecorder from '../screens/PodcastRecorder';
 import PodcastForm from '../screens/PodcastForm';
+import PodcastPlayer from '../screens/PodcastPlayer';
+
 const Stack = createStackNavigator<RootStackParamList>();
 
 const StackNavigation = () => {
@@ -119,6 +121,12 @@ const StackNavigation = () => {
       <Stack.Screen
         name="OtpScreen"
         component={OtpScreen}
+        options={{headerShown: false}}
+      />
+
+      <Stack.Screen
+        name="PodcastPlayer"
+        component={PodcastPlayer}
         options={{headerShown: false}}
       />
       <Stack.Screen

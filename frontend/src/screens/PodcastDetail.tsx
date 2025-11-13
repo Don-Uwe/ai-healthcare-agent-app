@@ -400,7 +400,7 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
           style={styles.slider}
           minimumValue={0}
           maximumValue={duration}
-          value={position}
+          value={player.currentStatus.currentTime}
           minimumTrackTintColor={PRIMARY_COLOR}
           maximumTrackTintColor="#ccc"
           thumbTintColor={PRIMARY_COLOR}

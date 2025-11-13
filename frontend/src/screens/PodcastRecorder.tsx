@@ -31,14 +31,24 @@ import {BUTTON_COLOR} from '../helper/Theme';
 //const AudioModule = NativeModules.AudioModule;
 //const emitter = new NativeEventEmitter(AudioModule);
 import {requireNativeModule} from 'expo-modules-core';
-import {useAudioPlayer} from 'expo-audio';
 
-const AudioModule = requireNativeModule('AudioModule');
+import {
+  useAudioRecorder,
+  AudioModule,
+  RecordingPresets,
+  setAudioModeAsync,
+  useAudioRecorderState,
+} from 'expo-audio';
+import audioModule from '@/modules/audio-module';
+import { useFocusEffect } from '@react-navigation/native';
+
+//const AudioModule = requireNativeModule('AudioModule');
 
 const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
   const [recording, setRecording] = useState(false);
-  const {uploadImage, loading, error: imageError} = useUploadImage();
-  const {uploadAudio, loading: audioLoading, error} = useUploadAudio();
+
+    const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+  const recorderState = useAudioRecorderState(audioRecorder);
   const [recordTime, setRecordTime] = useState('00:00:00');
   const {title, description, selectedGenres, imageUtils} = route.params;
   const [filePath, setFilePath] = useState<string | null>(null);
@@ -49,12 +59,41 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
   const recordStartTimeRef = useRef<number | null>(null);
   const timerRef = useRef(null);
 
-  const player = useAudioPlayer(
-    filePath
-      ? filePath
-      : require('../../assets/sounds/funny-cartoon-sound-397415.mp3'),
-  );
 
+useFocusEffect(
+  useCallback(() => {
+    handleUpload();
+  }, [])
+);
+
+ const record = async () => {
+    await audioRecorder.prepareToRecordAsync();
+    audioRecorder.record();
+    startTimer();
+  };
+
+  const stopRecording = async () => {
+    // The recording will be available on `audioRecorder.uri`.
+    await audioRecorder.stop();
+    setRecording(false);
+      stopTimer();
+      setFilePath(audioModule.uri);
+  };
+
+  useEffect(() => {
+    (async () => {
+      const status = await AudioModule.requestRecordingPermissionsAsync();
+      if (!status.granted) {
+        Alert.alert('Permission to access microphone was denied');
+      }
+
+      setAudioModeAsync({
+        playsInSilentMode: true,
+        allowsRecording: true,
+      });
+    })();
+  }, []);
+ 
   const formatTime = (ms: number) => {
     const totalSec = Math.floor(ms / 1000);
     const hours = String(Math.floor(totalSec / 3600)).padStart(2, '0');
@@ -63,19 +102,7 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
     return `${hours}:${minutes}:${seconds}`;
   };
 
-  const formatSecTime = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = Math.floor(seconds % 60);
 
-    if (hours > 0) {
-      return `${hours}:${mins < 10 ? '0' : ''}${mins}:${
-        secs < 10 ? '0' : ''
-      }${secs}`;
-    } else {
-      return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-    }
-  };
 
   const startTimer = () => {
     recordStartTimeRef.current = Date.now();
@@ -98,45 +125,37 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
     recordStartTimeRef.current = null;
   };
 
-  const startRecording = async () => {
-    if (Platform.OS === 'android') {
-      const granted = await PermissionsAndroid.requestMultiple([
-        PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
-        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-      ]);
-      if (
-        granted['android.permission.RECORD_AUDIO'] !==
-        PermissionsAndroid.RESULTS.GRANTED
-      ) {
-        console.warn('Permission denied');
-        return;
-      }
-    }
+  // const startRecording = async () => {
+  //   if (Platform.OS === 'android') {
+  //     const granted = await PermissionsAndroid.requestMultiple([
+  //       PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+  //       PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+  //     ]);
+  //     if (
+  //       granted['android.permission.RECORD_AUDIO'] !==
+  //       PermissionsAndroid.RESULTS.GRANTED
+  //     ) {
+  //       console.warn('Permission denied');
+  //       return;
+  //     }
+  //   }
 
-    try {
-      const path: string = await AudioModule.startRecording();
-      console.log('File path', path);
-      setFilePath(path);
-      setRecording(true);
-      //setElapsedMs(0);
-      startTimer();
-    } catch (e) {
-      console.error('Failed to start recording:', e);
-    }
-  };
+  //   try {
+  //     const path: string = await AudioModule.startRecording();
+  //     console.log('File path', path);
+  //     setFilePath(path);
+  //     setRecording(true);
+  //     //setElapsedMs(0);
+  //     startTimer();
+  //   } catch (e) {
+  //     console.error('Failed to start recording:', e);
+  //   }
+  // };
 
-  const stopRecording = async () => {
-    try {
-      await AudioModule.stopRecording();
-      setRecording(false);
-      stopTimer();
-      console.log('Recording saved at:', filePath);
-    } catch (e) {
-      console.error('Failed to stop recording:', e);
-    }
-  };
+
 
   // UI State: 'idle' | 'recording' | 'review' | 'playing' | 'paused' | 'uploading'
+  
   const [uiState, setUiState] = useState<
     'idle' | 'recording' | 'review' | 'playing' | 'paused' | 'uploading'
   >('idle');
@@ -144,7 +163,7 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
 
   // Handle transitions
   const handleStartRecording = async () => {
-    await startRecording();
+    await record();
     setUiState('recording');
   };
 
@@ -153,24 +172,7 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
     setUiState('review');
   };
 
-  const handlePlay = async () => {
-    if (!player) return;
 
-    player.play();
-    setUiState('playing');
-  };
-
-  const handlePause = async () => {
-    if (!player) return;
-
-    player.pause();
-    setUiState('paused');
-  };
-
-  const handleStopPlay = async () => {
-    await stopPlay();
-    setUiState('review');
-  };
 
   const handleReRecord = async () => {
     if (filePath) {
@@ -214,203 +216,55 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
     await unlinkFile();
   },[unlinkFile]);
 
-  const stopPlay =  () => {
-    try {
-       player.remove();
-    } catch (e) {
-      console.error('Error stopping playback:', e);
-    }
-  };
 
-  useEffect(() => {
-    const stopSub = DeviceEventEmitter.addListener('recStop', data => {
-      console.log('File saved at:', data.filePath);
-      setFilePath(data.filePath);
-      setRecording(false);
-    });
 
-    const updateSub = DeviceEventEmitter.addListener('recUpdate', data => {
-      //setElapsedMs(Math.floor(data.elapsedMs / 1000));
-    });
+  // useEffect(() => {
+  //   // const stopSub = AudioModule.addListener('recStop', (data:any) => {
+  //   //   console.log('File saved at:', data.filePath);
+  //   //   setFilePath(data.filePath);
+  //   //   setRecording(false);
+  //   // });
 
-    const audioWaveSubscription = AudioModule.addListener(
-      'onAudioWaveform',
-      event => {
-        /*
-        const amplitude = event.amplitude;
-        // setCurrentAmplitude(amplitude);
-        //console.log('event',event);
-        const scaled = Math.min(1, amplitude * 6);
-        if (scaled >= 1) {
-          setAmplitudes(prev => {
-            const updated = [...prev, scaled];
-            if (updated.length > 100) {
-              // To maintained wave array length 100
-              updated.shift();
-            }
-            return updated;
-          });
-        }
-          */
-        //console.log('amplitudes', amplitudes);
-      },
-    );
+  //   const updateSub = DeviceEventEmitter.addListener('recUpdate', data => {
+  //     //setElapsedMs(Math.floor(data.elapsedMs / 1000));
+  //   });
 
-    return () => {
-      stopSub.remove();
-      updateSub.remove();
-      audioWaveSubscription.remove();
-    };
-  }, []);
+  //   const audioWaveSubscription = AudioModule.addListener(
+  //     'onAudioWaveform',
+  //     event => {
+  //       /*
+  //       const amplitude = event.amplitude;
+  //       // setCurrentAmplitude(amplitude);
+  //       //console.log('event',event);
+  //       const scaled = Math.min(1, amplitude * 6);
+  //       if (scaled >= 1) {
+  //         setAmplitudes(prev => {
+  //           const updated = [...prev, scaled];
+  //           if (updated.length > 100) {
+  //             // To maintained wave array length 100
+  //             updated.shift();
+  //           }
+  //           return updated;
+  //         });
+  //       }
+  //         */
+  //       //console.log('amplitudes', amplitudes);
+  //     },
+  //   );
+
+  //   return () => {
+
+  //     updateSub.remove();
+  //     audioWaveSubscription.remove();
+  //   };
+  // }, []);
+  
   useEffect(() => {
     return () => {
       stopTimer();
     };
   }, []);
 
-  const uploadPodcastMutation = useMutation({
-    mutationKey: ['uploadPodcast'],
-    mutationFn: async ({
-      audio_url,
-      cover_image,
-    }: {
-      audio_url: string;
-      cover_image: string;
-    }) => {
-      const response = await axios.post(
-        UPLOAD_PODCAST,
-        {
-          title: title,
-          description: description,
-          tags: selectedGenres,
-          article_id: null,
-          audio_url: audio_url,
-          cover_image: cover_image,
-          duration: player.duration,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-            'Content-Type': 'application/json',
-          },
-        },
-      );
-
-      return response.data.message as string;
-    },
-    onSuccess: async data => {
-      await handleUpload();
-
-      Snackbar.show({
-        text: data,
-        duration: Snackbar.LENGTH_SHORT,
-      });
-      navigation.navigate('TabNavigation');
-    },
-    onError: async error => {
-      // Handle upload error
-      await handleUpload();
-      Snackbar.show({
-        text: 'Upload failed',
-        duration: Snackbar.LENGTH_SHORT,
-      });
-      console.error('Upload error:', error);
-    },
-  });
-
-  const handlePostSubmit = async () => {
-    if (!filePath || !imageUtils) {
-      Alert.alert(
-        'Error',
-        'Please record a podcast and select an image before uploading.',
-      );
-      return;
-    }
-
-    try {
-      // Show confirmation alert
-      const confirmation = await showConfirmationAlert();
-      if (!confirmation) {
-        Alert.alert('Post discarded');
-        await unlinkFile();
-        navigation.navigate('TabNavigation');
-        return;
-      }
-
-      setUploading(true);
-      setUiState('uploading');
-
-      // Resize the image and handle the upload
-      const resizedImageUri = await resizeImage(imageUtils);
-
-      let uploadedUrl = await uploadImage(resizedImageUri?.uri);
-      let audioUrl = await uploadAudio(filePath);
-
-      console.log('audio', audioUrl);
-      console.log('Image', uploadedUrl);
-
-      if (uploadedUrl && audioUrl) {
-        // Call the mutation to upload the podcast
-        uploadPodcastMutation.mutate({
-          audio_url: audioUrl,
-          cover_image: uploadedUrl,
-        });
-      } else {
-        Alert.alert('Error', 'Could not upload the podcast. Please try again.');
-      }
-    } catch (err) {
-      console.error('Image processing failed:', err);
-      Alert.alert('Error', 'Could not process the images.');
-      await handleUpload();
-    }
-  };
-
-  // Helper function to show confirmation alert
-  const showConfirmationAlert = () => {
-    return new Promise(resolve => {
-      Alert.alert(
-        'Create Podcast',
-        'Please confirm you want to upload this podcast.',
-        [
-          {
-            text: 'Cancel',
-            onPress: () => resolve(false),
-            style: 'cancel',
-          },
-          {
-            text: 'OK',
-            onPress: () => resolve(true),
-          },
-        ],
-        {cancelable: false},
-      );
-    });
-  };
-
-  // Helper function to resize an image
-  const resizeImage = async localImage => {
-    try {
-      const resizedImageUri = await ImageResizer.createResizedImage(
-        localImage,
-        1000, // Width
-        1000, // Height
-        'JPEG', // Format
-        100, // Quality
-      );
-      return resizedImageUri;
-    } catch (err) {
-      console.error('Failed to resize image:', err);
-      // throw new Error('Image resizing failed');
-    }
-  };
-
-  //  if(loading || uploadPodcastMutation.isPending)
-
-  useEffect(() => {
-    if (error || imageError) {
-      handleUpload();
-    }
-  }, [error, handleUpload, imageError]);
 
   return (
     <View style={styles.container}>
@@ -435,34 +289,6 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
         )}
       </View>
 
-      {(uiState === 'playing' || uiState === 'paused') && (
-        <View
-          style={{
-            width: '100%',
-            alignItems: 'stretch',
-            marginTop: 8,
-            marginBottom: 4,
-          }}>
-          <Slider
-            style={styles.slider}
-            minimumValue={0}
-            maximumValue={player.duration}
-            value={player.currentStatus ? player.currentStatus.currentTime : 0}
-            minimumTrackTintColor={BUTTON_COLOR}
-            maximumTrackTintColor="#ccc"
-            thumbTintColor={BUTTON_COLOR}
-            onSlidingComplete={async value => {
-              // seek to selected time
-              await player.seekTo(value);
-            }}
-          />
-          <View style={styles.timeRow}>
-            <Text style={styles.time}>{formatSecTime(player.currentStatus ? player.currentStatus.currentTime : 0)}</Text>
-            <Text style={styles.time}>{formatSecTime(player.duration)}</Text>
-          </View>
-        </View>
-      )}
-
       {/* Action Buttons */}
       <View style={{flexDirection: 'row', marginTop: 24, gap: 16}}>
         {/* Record/Stop */}
@@ -485,42 +311,24 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
           </TouchableOpacity>
         )}
         {/* Play/Pause/Stop */}
-        {uiState === 'review' && filePath && (
+        {uiState === 'review' && audioRecorder.uri && (
           <TouchableOpacity
             style={[styles.circularButton, styles.play]}
-            onPress={handlePlay}
+            onPress={()=>{
+              navigation.navigate("PodcastPlayer", {
+                title: title,
+                description: description,
+                imageUtils: imageUtils,
+                selectedGenres: selectedGenres,
+                filePath: audioRecorder.uri 
+              });
+            }}
             disabled={uploading}>
             <Icon name="play-circle" size={28} color="white" />
             <Text style={styles.actionButtonText}>Play</Text>
           </TouchableOpacity>
         )}
-        {uiState === 'playing' && (
-          <TouchableOpacity
-            style={[styles.circularButton, styles.pause]}
-            onPress={handlePause}
-            disabled={uploading}>
-            <Icon name="pause-circle" size={28} color="white" />
-            <Text style={styles.actionButtonText}>Pause</Text>
-          </TouchableOpacity>
-        )}
-        {uiState === 'paused' && (
-          <TouchableOpacity
-            style={[styles.circularButton, styles.play]}
-            onPress={handlePlay}
-            disabled={uploading}>
-            <Icon name="play-circle" size={28} color="white" />
-            <Text style={styles.actionButtonText}>Resume</Text>
-          </TouchableOpacity>
-        )}
-        {(uiState === 'playing' || uiState === 'paused') && (
-          <TouchableOpacity
-            style={[styles.circularButton, styles.stop]}
-            onPress={handleStopPlay}
-            disabled={uploading}>
-            <Icon name="stop-circle" size={28} color="white" />
-            <Text style={styles.actionButtonText}>Stop</Text>
-          </TouchableOpacity>
-        )}
+    
         {/* Re-record */}
         {uiState === 'review' && (
           <TouchableOpacity
@@ -531,18 +339,7 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
             <Text style={styles.actionButtonText}>Rerecord</Text>
           </TouchableOpacity>
         )}
-        {/* Upload */}
-        {uiState === 'review' && filePath && (
-          <TouchableOpacity
-            style={[styles.circularButton, styles.upload]}
-            onPress={handlePostSubmit}
-            disabled={uploading}>
-            <Icon name="cloud-upload" size={28} color="white" />
-            <Text style={styles.actionButtonText}>
-              {uploading ? 'Uploading...' : 'Upload'}
-            </Text>
-          </TouchableOpacity>
-        )}
+      
       </View>
 
       {/* File Path */}
