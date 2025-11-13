@@ -38,6 +38,10 @@ export default function OfflinePodcastDetail({
   const {podcast} = route.params;
   const socket = useSocket();
   const insets = useSafeAreaInsets();
+
+  const [position, setPosition] = useState(0);
+  const [duration, setDuration] = useState(0);
+
   //const playbackState = usePlaybackState();
   //const progress = useProgress();
   const {user_id, user_token, user_handle} = useSelector(
@@ -50,15 +54,25 @@ export default function OfflinePodcastDetail({
 
   const player = useAudioPlayer(`file://${podcast.filePath}`);
 
-    useEffect(()=>{
+  useEffect(() => {
     //console.log("File path", `${filePath}`);
-   console.log("Player time", player.currentTime)
-   console.log("Player status", player.currentStatus.currentTime);
-  },[ player.currentStatus.currentTime, player.currentTime])
-  
-  useEffect(()=>{
-  console.log("File path", `${podcast.filePath}`);
-  },[])
+    console.log('Player time', player.currentTime);
+    console.log('Player status', player.currentStatus.currentTime);
+  }, [player.currentStatus.currentTime, player.currentTime]);
+
+  useEffect(() => {
+    if (!player) return;
+
+    const interval = setInterval(() => {
+      const status = player.currentStatus;
+      if (status) {
+        setPosition(status.currentTime);
+        setDuration(player.duration || status.duration || 0);
+      }
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, [player]);
 
   const handleListenPress = async () => {
     const currentState = player.currentStatus;
@@ -315,8 +329,8 @@ export default function OfflinePodcastDetail({
       <Slider
         style={styles.slider}
         minimumValue={0}
-         maximumValue={player.duration || 1}
-        value={player.currentStatus ? player.currentStatus.currentTime : 0}
+        maximumValue={player.duration || 1}
+        value={position}
         minimumTrackTintColor={PRIMARY_COLOR}
         maximumTrackTintColor="#ccc"
         thumbTintColor={PRIMARY_COLOR}
@@ -326,29 +340,28 @@ export default function OfflinePodcastDetail({
         }}
       />
 
-      
-        <View style={styles.timeRow}>
-        <Text style={styles.time}>{formatTime(player.currentStatus ? player.currentStatus.currentTime : 0)}</Text>
+      <View style={styles.timeRow}>
+        <Text style={styles.time}>
+          {formatTime(
+            player.currentStatus ? player.currentStatus.currentTime : 0,
+          )}
+        </Text>
         <Text style={styles.time}>{formatTime(player.duration || 1)}</Text>
       </View>
-         
 
-      {player.currentStatus && player.currentStatus.isBuffering && (
+      { player.currentStatus.isBuffering && (
         <Text style={styles.bufferingText}>⏳ Buffering... please wait</Text>
       )}
-         
 
       <TouchableOpacity
         style={[
           styles.listenButton,
-          player.currentStatus.isBuffering &&
-          styles.listenButtonDisabled,
+          player.currentStatus.isBuffering && styles.listenButtonDisabled,
         ]}
         onPress={handleListenPress}
-        disabled={player.currentStatus.isBuffering}
-      >
+        disabled={player.currentStatus.isBuffering}>
         <Text style={styles.listenText}>
-          {false ? '⏸️Pause' : '🎧 Listen Now'}
+          {player.currentStatus.playing ? '⏸️Pause' : '🎧 Listen Now'}
         </Text>
       </TouchableOpacity>
     </ScrollView>

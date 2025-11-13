@@ -1,10 +1,7 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {View, Text, TouchableOpacity, StyleSheet, Alert} from 'react-native';
-//import AudioRecorderPlayer from 'react-native-audio-recorder-player';
-import SoundWave from '../components/SoundWave';
 import {PodcastPlayerScreenProps} from '../type';
 import RNFS from 'react-native-fs';
-import AmplitudeWave from '../components/AmplitudeWave';
 import {useMutation} from '@tanstack/react-query';
 import {useSelector} from 'react-redux';
 import axios from 'axios';
@@ -41,13 +38,7 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
       : require('../../assets/sounds/funny-cartoon-sound-397415.mp3'),
   );
 
-  const formatTime = (ms: number) => {
-    const totalSec = Math.floor(ms / 1000);
-    const hours = String(Math.floor(totalSec / 3600)).padStart(2, '0');
-    const minutes = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
-    const seconds = String(totalSec % 60).padStart(2, '0');
-    return `${hours}:${minutes}:${seconds}`;
-  };
+ 
 
   const formatSecTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
