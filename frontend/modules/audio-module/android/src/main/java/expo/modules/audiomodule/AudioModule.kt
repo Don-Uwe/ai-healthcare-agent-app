@@ -125,11 +125,18 @@ class AudioModule : Module() {
     Function("stopRecording") {
       if (!isRecording) return@Function null
       isRecording = false
-      audioRecord?.apply {
-        stop()
-        release()
-      }
-      audioRecord = null
+      try {
+        audioRecord?.apply {
+            stop()
+            release()
+        }
+        audioRecord = null
+
+        mapOf("filePath" to wavFile.absolutePath)
+       } catch (e: Exception) {
+       // Log.e(TAG, "Error stopping recording", e)
+        //promise.reject("STOP_FAILED", "Failed to stop recording: ${e.message}")
+       }
     }
 
     // Defines a JavaScript function that always returns a Promise and whose native code

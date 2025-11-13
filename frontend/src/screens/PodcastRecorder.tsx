@@ -127,10 +127,11 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
 
   const stopRecording = async () => {
     try {
-      await AudioModule.stopRecording();
+      const result = await AudioModule.stopRecording();
       setRecording(false);
       stopTimer();
-      console.log('Recording saved at:', filePath);
+      console.log('Recording saved at:', result.filePath);
+      setFilePath(result.filePath);
     } catch (e) {
       console.error('Failed to stop recording:', e);
     }
@@ -166,6 +167,10 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
     player.pause();
     setUiState('paused');
   };
+
+  useEffect(()=>{
+    console.log("Ui state", uiState)
+  },[uiState])
 
   const handleStopPlay = async () => {
     await stopPlay();
@@ -223,11 +228,11 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
   };
 
   useEffect(() => {
-    const stopSub = DeviceEventEmitter.addListener('recStop', data => {
-      console.log('File saved at:', data.filePath);
-      setFilePath(data.filePath);
-      setRecording(false);
-    });
+    // const stopSub = AudioModule.addListener('recStop', (data:any) => {
+    //   console.log('File saved at:', data.filePath);
+    //   setFilePath(data.filePath);
+    //   setRecording(false);
+    // });
 
     const updateSub = DeviceEventEmitter.addListener('recUpdate', data => {
       //setElapsedMs(Math.floor(data.elapsedMs / 1000));

@@ -92,7 +92,7 @@ const PodcastCard = ({
   });
 
   return (
-    <SafeAreaView>
+    
     <CardContainer>
       <XStack space="$3" ai="center" jc="space-between">
         {/* Left section: Image + Text */}
@@ -161,7 +161,7 @@ const PodcastCard = ({
         onSave={() => playlistAct(id)}
       />
     </CardContainer>
-    </SafeAreaView>
+  
   );
 };
 
