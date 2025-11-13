@@ -50,6 +50,16 @@ export default function OfflinePodcastDetail({
 
   const player = useAudioPlayer(`file://${podcast.filePath}`);
 
+    useEffect(()=>{
+    //console.log("File path", `${filePath}`);
+   console.log("Player time", player.currentTime)
+   console.log("Player status", player.currentStatus.currentTime);
+  },[ player.currentStatus.currentTime, player.currentTime])
+  
+  useEffect(()=>{
+  console.log("File path", `${podcast.filePath}`);
+  },[])
+
   const handleListenPress = async () => {
     const currentState = player.currentStatus;
 

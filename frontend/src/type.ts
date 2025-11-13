@@ -106,6 +106,14 @@ export type RootStackParamList = {
     imageUtils: string;
   };
 
+  PodcastPlayer:{
+    filePath: string;
+    title: string;
+    description: string;
+    selectedGenres: Category[];
+    imageUtils: string;
+  }
+
   //ChatbotScreen: undefined;
 };
 
@@ -273,6 +281,12 @@ export type PodcastRecorderScreenProps = StackScreenProps<
   RootStackParamList,
   'PodcastRecorder'
 >;
+
+export type PodcastPlayerScreenProps = StackScreenProps<
+  RootStackParamList,
+  'PodcastPlayer'
+>;
+
 
 
 export type HomeScreenHeaderProps = {
