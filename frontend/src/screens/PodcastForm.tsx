@@ -21,6 +21,7 @@ import {
 } from 'react-native-image-picker';
 import ImageResizer from '@bam.tech/react-native-image-resizer';
 import {hp} from '../helper/Metric';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const PodcastForm = ({
   navigation,
@@ -125,7 +126,8 @@ const PodcastForm = ({
   return (
     <ScrollView style={styles.container}>
 
-      <WarningBox/>
+     <SafeAreaView>
+       <WarningBox/>
       <View style={styles.form}>
         {/* Image Upload */}
         <View style={styles.input}>
@@ -230,6 +232,7 @@ const PodcastForm = ({
           <Text style={styles.submitButtonText}>Continue</Text>
         </TouchableOpacity>
       </View>
+     </SafeAreaView>
     </ScrollView>
   );
 };

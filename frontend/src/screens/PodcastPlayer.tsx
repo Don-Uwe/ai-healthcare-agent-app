@@ -1,11 +1,10 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
-import {View, Text, TouchableOpacity, StyleSheet, Alert} from 'react-native';
+import {Alert, Platform, StyleSheet} from 'react-native';
 import {PodcastPlayerScreenProps} from '../type';
 import RNFS from 'react-native-fs';
 import {useMutation} from '@tanstack/react-query';
 import {useSelector} from 'react-redux';
 import axios from 'axios';
-import Icon from '@expo/vector-icons/MaterialCommunityIcons';
 import Snackbar from 'react-native-snackbar';
 
 import {UPLOAD_PODCAST} from '../helper/APIUtils';
@@ -13,8 +12,11 @@ import useUploadImage from '../../hooks/useUploadImage';
 import ImageResizer from '@bam.tech/react-native-image-resizer';
 import useUploadAudio from '../../hooks/useUploadAudio';
 import Slider from '@react-native-community/slider';
-import {BUTTON_COLOR} from '../helper/Theme';
+
 import {useAudioPlayer} from 'expo-audio';
+import {Button, Circle, Progress, Theme, XStack, YStack, Text} from 'tamagui';
+import {Entypo, Ionicons} from '@expo/vector-icons';
+import {BUTTON_COLOR, ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 
 const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
   const {uploadImage, loading, error: imageError} = useUploadImage();
@@ -37,8 +39,6 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
       ? `file://${filePath}`
       : require('../../assets/sounds/funny-cartoon-sound-397415.mp3'),
   );
-
- 
 
   const formatSecTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -63,6 +63,7 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
   // Handle transitions
 
   const handlePlay = async () => {
+    console.log('Play called');
     if (!player) return;
 
     player.play();
@@ -70,6 +71,7 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
   };
 
   const handlePause = async () => {
+    console.log('Pause called');
     if (!player) return;
 
     player.pause();
@@ -77,7 +79,7 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
   };
 
   const handleStopPlay = async () => {
-    await stopPlay();
+    stopPlay();
     setUiState('review');
   };
 
@@ -162,7 +164,7 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
       await handleUpload();
 
       Snackbar.show({
-        text: "Podcast submitted for review",
+        text: 'Podcast submitted for review',
         duration: Snackbar.LENGTH_SHORT,
       });
       navigation.navigate('TabNavigation');
@@ -285,292 +287,115 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
   }, [error, handleUpload, imageError]);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Podcast Player</Text>
-      <View style={styles.iconContainer}>
-        <View style={[styles.micButton, {marginBottom: 0}]}>
-          <Icon name="microphone" size={38} color="white" />
-        </View>
-      </View>
-    
+    <Theme name="dark">
+      <YStack
+        flex={1}
+        backgroundColor="#0B1425"
+        p="$6"
+        pt="$10"
+        jc="space-between">
+        <YStack>
+          <Text color="white" fontSize={42} fontWeight="700">
+            {title}
+          </Text>
+          <Text color="#B8C1D1" fontSize={18} mt="$2">
+            {description}
+          </Text>
+        </YStack>
 
-      {(uiState === 'playing' || uiState === 'paused') && (
-        <View
-          style={{
-            width: '100%',
-            alignItems: 'stretch',
-            marginTop: 8,
-            marginBottom: 4,
-          }}>
+        <YStack alignItems="center" marginTop="$4">
+          <Circle
+            size={220}
+            backgroundColor="#0D1A33"
+            shadowColor="#00D1FF"
+            shadowOffset={{width: 0, height: 0}}
+            shadowRadius={40}
+            ai="center"
+            jc="center">
+            <Entypo name="infinity" size={75} color={'#72D8FF'} />
+          </Circle>
+        </YStack>
+
+        <YStack marginTop="$1">
           <Slider
             style={styles.slider}
             minimumValue={0}
             maximumValue={duration}
             value={position}
-            minimumTrackTintColor={BUTTON_COLOR}
+            minimumTrackTintColor={PRIMARY_COLOR}
             maximumTrackTintColor="#ccc"
-            thumbTintColor={BUTTON_COLOR}
-            onSlidingComplete={async value => {
-              // seek to selected time
-              await player.seekTo(value);
+            thumbTintColor={PRIMARY_COLOR}
+            onSlidingComplete={async (value: number) => {
+              if (player) {
+                await player.seekTo(value);
+                setPosition(value);
+              }
             }}
           />
-          <View style={styles.timeRow}>
-            <Text style={styles.time}>
-              {formatSecTime(
-                player.currentStatus ? player.currentStatus.currentTime : 0,
-              )}
-            </Text>
-            <Text style={styles.time}>{formatSecTime(player.duration)}</Text>
-          </View>
-        </View>
-      )}
 
-      {/* Action Buttons */}
-      <View style={{flexDirection: 'row', marginTop: 24, gap: 16}}>
-        {/* Record/Stop */}
+          <XStack justifyContent="space-between" marginTop="$3">
+            <Text color="#C0C9DA">{formatSecTime(position)}</Text>
+            <Text color="#C0C9DA">{formatSecTime(duration)}</Text>
+          </XStack>
+        </YStack>
 
-        {/* Play/Pause/Stop */}
-        {filePath && (uiState === 'idle' || uiState === 'review') && (
-          <TouchableOpacity
-            style={[styles.circularButton, styles.play]}
-            onPress={handlePlay}
-            disabled={uploading}>
-            <Icon name="play-circle" size={28} color="white" />
-            <Text style={styles.actionButtonText}>Play</Text>
-          </TouchableOpacity>
-        )}
-        {uiState === 'playing' && (
-          <TouchableOpacity
-            style={[styles.circularButton, styles.pause]}
-            onPress={handlePause}
-            disabled={uploading}>
-            <Icon name="pause-circle" size={28} color="white" />
-            <Text style={styles.actionButtonText}>Pause</Text>
-          </TouchableOpacity>
-        )}
-        {uiState === 'paused' && (
-          <TouchableOpacity
-            style={[styles.circularButton, styles.play]}
-            onPress={handlePlay}
-            disabled={uploading}>
-            <Icon name="play-circle" size={28} color="white" />
-            <Text style={styles.actionButtonText}>Resume</Text>
-          </TouchableOpacity>
-        )}
-        {(uiState === 'playing' || uiState === 'paused') && (
-          <TouchableOpacity
-            style={[styles.circularButton, styles.stop]}
-            onPress={handleStopPlay}
-            disabled={uploading}>
-            <Icon name="stop-circle" size={28} color="white" />
-            <Text style={styles.actionButtonText}>Stop</Text>
-          </TouchableOpacity>
-        )}
-        {/* Re-record */}
-        {uiState === 'review' && (
-          <TouchableOpacity
-            style={[styles.circularButton, styles.rerecord]}
-            onPress={handleReRecord}
-            disabled={uploading}>
-            <Icon name="refresh" size={28} color="white" />
-            <Text style={styles.actionButtonText}>Rerecord</Text>
-          </TouchableOpacity>
-        )}
-        {/* Upload */}
-        {uiState === 'review' && filePath && (
-          <TouchableOpacity
-            style={[styles.circularButton, styles.upload]}
-            onPress={handlePostSubmit}
-            disabled={uploading}>
-            <Icon name="cloud-upload" size={28} color="white" />
-            <Text style={styles.actionButtonText}>
-              {uploading ? 'Uploading...' : 'Upload'}
-            </Text>
-          </TouchableOpacity>
-        )}
-      </View>
+        <XStack
+          justifyContent="space-around"
+          alignItems="center"
+          marginTop="$8">
+          <Button
+            chromeless
+            icon={<Ionicons name="play-back" size={26} color="#9BB3C8" />}
+          />
+          <Button
+            w={90}
+            h={80}
+            br={45}
+            onPress={() => {
+              if (player.currentStatus.playing) {
+                handlePause();
+              } else {
+                handlePlay();
+              }
+            }}
+            bg="#4ACDFF"
+            icon={
+              player?.currentStatus.playing ? (
+                <Ionicons name="pause" size={54} color="white" />
+              ) : (
+                <Ionicons name="play" size={54} color="white" />
+              )
+            }
+            elevate
+            shadowColor="#4ACDFF"
+            shadowRadius={30}
+            shadowOffset={{width: 0, height: 0}}
+          />
 
-      {/* File Path */}
-      {filePath && (
-        <Text style={styles.pathText} numberOfLines={1} ellipsizeMode="middle">
-          Saved at: {filePath}
+          <Button
+            chromeless
+            icon={<Ionicons name="play-forward" size={26} color="#9BB3C8" />}
+          />
+        </XStack>
+
+        <Text marginTop="$4" textAlign="center" color="#8FA3BB" fontSize={13}>
+          Saved at:{filePath}
         </Text>
-      )}
-    </View>
+      </YStack>
+    </Theme>
   );
 };
 
 export default PodcastPlayer;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0f172a',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  title: {
-    fontSize: 28,
-    color: '#f8fafc',
-    marginBottom: 20,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  timer: {
-    fontSize: 42,
-    color: '#38bdf8',
-    marginVertical: 20,
-    fontVariant: ['tabular-nums'],
-    letterSpacing: 1,
-  },
-  waveContainer: {
-    height: 80,
-    width: '100%',
-    alignSelf: 'center',
-    marginVertical: 16,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 16,
-    marginTop: 24,
-  },
-
-  // Shared circular style
-  circularButton: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 10,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 1},
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-  },
-
-  // Rectangular style for stop/pause
-  rectButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 28,
-    borderRadius: 12,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 1},
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-  },
-
-  // Colors
-  record: {backgroundColor: '#16a34a'},
-  stop: {backgroundColor: '#dc2626'},
-  play: {backgroundColor: '#3b82f6'},
-  pause: {backgroundColor: '#f59e0b'},
-  rerecord: {backgroundColor: '#0284c7'},
-  upload: {backgroundColor: '#7c3aed'},
-
-  buttonText: {
-    color: '#f8fafc',
-    fontSize: 12,
-    fontWeight: '600',
-    textAlign: 'center',
-    marginTop: 4,
-  },
-
-  pathText: {
-    marginTop: 20,
-    fontSize: 14,
-    color: '#cbd5e1',
-    textAlign: 'center',
-  },
-
-  // Mic styles
-  iconContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginVertical: 16,
-  },
-  micButton: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: '#1e293b',
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-  },
-  micButtonActive: {
-    backgroundColor: '#38bdf8',
-  },
-  micOuterCircle: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#334155',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  micInnerCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#f8fafc',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  micBody: {
-    width: 18,
-    height: 28,
-    borderRadius: 9,
-    backgroundColor: '#38bdf8',
-    marginBottom: 2,
-  },
-  micStem: {
-    width: 4,
-    height: 10,
-    borderRadius: 2,
-    backgroundColor: '#38bdf8',
-    marginTop: 2,
-  },
-  micPulse: {
-    position: 'absolute',
-    top: -15,
-    left: -15,
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    borderWidth: 2,
-    borderColor: '#38bdf8',
-    opacity: 0.4,
-  },
-
-  actionButtonText: {
-    color: '#f8fafc',
-    fontSize: 10,
-    fontWeight: '600',
-    textAlign: 'center',
-    //marginTop: 2,
-    letterSpacing: 0.5,
-  },
-
+ 
   slider: {
     width: '100%',
     height: 36,
     marginTop: 6,
     marginBottom: 2,
   },
-
   timeRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -581,4 +406,5 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#777',
   },
-});
+
+ });
