@@ -1,5 +1,5 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
-import {Alert, Platform, StyleSheet} from 'react-native';
+import {Alert, StyleSheet} from 'react-native';
 import {PodcastPlayerScreenProps} from '../type';
 import RNFS from 'react-native-fs';
 import {useMutation} from '@tanstack/react-query';
@@ -14,14 +14,14 @@ import useUploadAudio from '../../hooks/useUploadAudio';
 import Slider from '@react-native-community/slider';
 
 import {useAudioPlayer} from 'expo-audio';
-import {Button, Circle, Progress, Theme, XStack, YStack, Text} from 'tamagui';
-import {Entypo, Ionicons} from '@expo/vector-icons';
-import {BUTTON_COLOR, ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
+import {Button, Circle, Theme, XStack, YStack, Text} from 'tamagui';
+import {AntDesign, Entypo, Ionicons} from '@expo/vector-icons';
+import {PRIMARY_COLOR} from '../helper/Theme';
 
 const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
   const {uploadImage, loading, error: imageError} = useUploadImage();
   const {uploadAudio, loading: audioLoading, error} = useUploadAudio();
-
+  const [isPlaying, setIsPlaying] = useState(false);
   const [position, setPosition] = useState(0);
   const [duration, setDuration] = useState(0);
 
@@ -64,10 +64,14 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
 
   const handlePlay = async () => {
     console.log('Play called');
-    if (!player) return;
-
+    if (!player) {
+      console.log('enter');
+      return;
+    }
+    await player.seekTo(0);
     player.play();
     setUiState('playing');
+    setIsPlaying(true);
   };
 
   const handlePause = async () => {
@@ -76,6 +80,35 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
 
     player.pause();
     setUiState('paused');
+    setIsPlaying(false);
+  };
+
+  const SKIP_TIME = 5; // seconds
+
+  const handleForward = async () => {
+    if (!player) return;
+
+    let next = position + SKIP_TIME;
+
+    if (next > duration) {
+      next = duration;
+    }
+
+    await player.seekTo(next);
+    setPosition(next);
+  };
+
+  const handleBackward = async () => {
+    if (!player) return;
+
+    let next = position - SKIP_TIME;
+
+    if (next < 0) {
+      next = 0;
+    }
+
+    await player.seekTo(next);
+    setPosition(next);
   };
 
   const handleStopPlay = async () => {
@@ -291,14 +324,14 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
       <YStack
         flex={1}
         backgroundColor="#0B1425"
-        p="$6"
-        pt="$10"
-        jc="space-between">
+        padding="$6"
+        paddingTop="$10"
+        justifyContent="space-between">
         <YStack>
           <Text color="white" fontSize={42} fontWeight="700">
             {title}
           </Text>
-          <Text color="#B8C1D1" fontSize={18} mt="$2">
+          <Text color="#B8C1D1" fontSize={18} marginTop="$2">
             {description}
           </Text>
         </YStack>
@@ -310,9 +343,10 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
             shadowColor="#00D1FF"
             shadowOffset={{width: 0, height: 0}}
             shadowRadius={40}
-            ai="center"
-            jc="center">
-            <Entypo name="infinity" size={75} color={'#72D8FF'} />
+            onPress={handlePostSubmit}
+            alignSelf="center"
+            justifyContent="center">
+            <AntDesign name="cloud-upload" size={75} color={'#72D8FF'} />
           </Circle>
         </YStack>
 
@@ -342,15 +376,17 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
         <XStack
           justifyContent="space-around"
           alignItems="center"
-          marginTop="$8">
+          marginTop="$4">
           <Button
+            height={90}
             chromeless
+            onPress={handleBackward}
             icon={<Ionicons name="play-back" size={26} color="#9BB3C8" />}
           />
           <Button
-            w={90}
-            h={80}
-            br={45}
+            width={90}
+            height={90}
+            borderRadius={45}
             onPress={() => {
               if (player.currentStatus.playing) {
                 handlePause();
@@ -358,12 +394,12 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
                 handlePlay();
               }
             }}
-            bg="#4ACDFF"
+            backgroundColor="#4ACDFF"
             icon={
               player?.currentStatus.playing ? (
-                <Ionicons name="pause" size={54} color="white" />
+                <Ionicons name="pause" size={50} color="white" />
               ) : (
-                <Ionicons name="play" size={54} color="white" />
+                <Ionicons name="play" size={50} color="white" />
               )
             }
             elevate
@@ -373,12 +409,14 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
           />
 
           <Button
+          height={90}
             chromeless
+            onPress={handleForward}
             icon={<Ionicons name="play-forward" size={26} color="#9BB3C8" />}
           />
         </XStack>
 
-        <Text marginTop="$4" textAlign="center" color="#8FA3BB" fontSize={13}>
+        <Text marginTop="$4" marginBottom="$6" textAlign="center" color="#8FA3BB" fontSize={13}>
           Saved at:{filePath}
         </Text>
       </YStack>
@@ -389,7 +427,6 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
 export default PodcastPlayer;
 
 const styles = StyleSheet.create({
- 
   slider: {
     width: '100%',
     height: 36,
@@ -406,5 +443,4 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#777',
   },
-
- });
+});

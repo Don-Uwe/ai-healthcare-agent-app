@@ -1,18 +1,16 @@
 import React, {useState} from 'react';
-import {Pressable, StyleSheet, FlatList, ActivityIndicator} from 'react-native';
+import {Pressable, FlatList, ActivityIndicator} from 'react-native';
 import {PodcastData, PodcastSearchProp} from '../type';
 import {useMutation, useQuery} from '@tanstack/react-query';
 import axios from 'axios';
 import {SEARCH_PODCAST, UPDATE_PODCAST_VIEW_COUNT} from '../helper/APIUtils';
 import {useSelector} from 'react-redux';
 import PodcastCard from '../components/PodcastCard';
-import AntDesign from '@expo/vector-icons/AntDesign';
 import {msToTime} from '../helper/Utils';
 import Snackbar from 'react-native-snackbar';
 import NoResults from '../components/NoResult';
-import {hp} from '../helper/Metric';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
-import {XStack, YStack, Text, Button, Input, Image, Separator} from 'tamagui';
+import {XStack, YStack, Input, Separator} from 'tamagui';
 import {Feather} from '@expo/vector-icons';
 
 export default function PodcastSearch({navigation}: PodcastSearchProp) {
@@ -87,6 +85,7 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
 
   const renderItem = ({item}: {item: PodcastData}) => (
     <Pressable
+      style={{padding: 10}}
       onPress={() => {
         //playPodcast(item);
         updateViewCountMutation.mutate(item._id);
@@ -114,13 +113,18 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
   );
 
   return (
-    <YStack flex={1} height={'100%'} bg={ON_PRIMARY_COLOR} pt="$6" jc="flex-start">
+    <YStack
+      flex={1}
+      height={'100%'}
+      backgroundColor={ON_PRIMARY_COLOR}
+      paddingTop="$4"
+      justifyContent="flex-start">
       {/* Search Bar */}
       <XStack
         alignItems="center"
         justifyContent="space-between"
         marginTop="$0.5"
-        padding="$4"
+        padding="$2"
         borderRadius="$4"
         shadowOffset={{width: 0, height: 1}}
         shadowOpacity={0.1}
@@ -133,10 +137,10 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
           borderRadius="$2"
           paddingHorizontal="$3"
           borderWidth={1}
-          borderColor={PRIMARY_COLOR}
+          borderColor={'$gray10'}
           paddingVertical="$1"
           space="$3">
-          <Feather name="search" size={25} color={'#c1c1c1'} />
+          <Feather name="search" size={25} color={'$gray10'} />
           <Input
             flex={1}
             size="$2"
@@ -157,28 +161,32 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
             }}
           />
 
-          <Pressable onPress={()=>{
-            setQuery('');
-          }}>
-            <Feather name="clock" size={25} color={'#888'} />
+          <Pressable
+            onPress={() => {
+              setQuery('');
+            }}>
+            <Feather name="clock" size={25} color={'$gray10'} />
           </Pressable>
         </XStack>
       </XStack>
 
-      <Separator my="$2" opacity={0} />
+      <Separator marginVertical="$2" opacity={0} />
 
       {isLoading && query !== '' ? (
-        <YStack f={1} ai="center" jc="center">
+        <YStack flex={1} alignItems="center" justifyContent="center">
           <ActivityIndicator size="large" color={PRIMARY_COLOR} />
         </YStack>
       ) : (
-        <YStack px="$2">
+        <YStack paddingHorizontal="$2" marginBottom="$8">
           <FlatList
             data={query !== '' ? searchData : []}
             keyExtractor={item => item._id.toString()}
             renderItem={renderItem}
             ListEmptyComponent={
-              <YStack ai="center" jc="center" py="$8">
+              <YStack
+                alignItems="center"
+                justifyContent="center"
+                paddingVertical="$8">
                 <NoResults />
               </YStack>
             }
