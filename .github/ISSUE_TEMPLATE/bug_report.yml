@@ -50,5 +50,7 @@ body:
           required: true
         - label: "I'm a GSSOC'24 contributor"
           required: false
+        - label: "I'm a IEEE IGDTUW contributor"
+          required: false
         - label: "I want to work on this issue"
           required: false

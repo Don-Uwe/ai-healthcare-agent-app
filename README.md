@@ -79,6 +79,15 @@ Managing content at scale requires a clear and controlled workflow to ensure qua
       <th>Event Description</th>
    </tr>
 
+ <tr>
+      <td><img src="https://github.com/user-attachments/assets/e0a40d06-f5b8-42a7-a5a0-033280f842be" width="200" height="auto" loading="lazy" alt="IEEE IGDTUW Open Source Week"/></td>
+      <td> IEEE IGDTUW Open Source Week</td>
+      <td>
+       IEEE IGDTUW Open Source Week is a week-long event aimed at fostering collaboration and skill-building in open-source.
+       Event Dates: November 12 - November 18
+      </td>
+   </tr>
+   
    <tr>
       <td><img src="https://github.com/user-attachments/assets/2b03167c-a598-48be-9f93-66130e58ec00" width="200" height="auto" loading="lazy" alt="Vultr Cloud Innovate Hackathon"/></td>
       <td>Vultr Cloud Innovate Hackathon</td>
