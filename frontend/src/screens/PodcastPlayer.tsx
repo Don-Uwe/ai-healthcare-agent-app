@@ -17,6 +17,7 @@ import {useAudioPlayer} from 'expo-audio';
 import {Button, Circle, Theme, XStack, YStack, Text} from 'tamagui';
 import {AntDesign, Entypo, Ionicons} from '@expo/vector-icons';
 import {PRIMARY_COLOR} from '../helper/Theme';
+import LottieView from 'lottie-react-native';
 
 const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
   const {uploadImage, loading, error: imageError} = useUploadImage();
@@ -338,7 +339,7 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
 
         <YStack alignItems="center" marginTop="$4">
           <Circle
-            size={220}
+            size={100}
             backgroundColor="#0D1A33"
             shadowColor="#00D1FF"
             shadowOffset={{width: 0, height: 0}}
@@ -349,6 +350,21 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
             <AntDesign name="cloud-upload" size={75} color={'#72D8FF'} />
           </Circle>
         </YStack>
+
+      {player.currentStatus.playing && (
+          <LottieView
+            source={require("../assets/LottieAnimation/sound-voice-waves.json")}
+            autoPlay
+            loop
+            style={{
+              width: "100%",
+              height: 150,
+            }}
+            />
+          )
+        }
+        
+
 
         <YStack marginTop="$1">
           <Slider

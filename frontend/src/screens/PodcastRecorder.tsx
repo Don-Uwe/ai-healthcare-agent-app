@@ -1,36 +1,15 @@
-import {useCallback, useEffect, useRef, useState} from 'react';
-import {
-  PermissionsAndroid,
-  Platform,
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  DeviceEventEmitter,
-  Alert,
-} from 'react-native';
-//import AudioRecorderPlayer from 'react-native-audio-recorder-player';
-import SoundWave from '../components/SoundWave';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {StyleSheet, Alert} from 'react-native';
+
 import {PodcastRecorderScreenProps} from '../type';
 import RNFS from 'react-native-fs';
-import AmplitudeWave from '../components/AmplitudeWave';
-import {useMutation} from '@tanstack/react-query';
-import {useSelector} from 'react-redux';
-import axios from 'axios';
-import Icon from '@expo/vector-icons/MaterialCommunityIcons';
-import Snackbar from 'react-native-snackbar';
 
-import {UPLOAD_PODCAST} from '../helper/APIUtils';
-import useUploadImage from '../../hooks/useUploadImage';
-import ImageResizer from '@bam.tech/react-native-image-resizer';
-import useUploadAudio from '../../hooks/useUploadAudio';
-import Slider from '@react-native-community/slider';
-import {BUTTON_COLOR} from '../helper/Theme';
+import Icon from '@expo/vector-icons/MaterialCommunityIcons';
+
 
 //const {AudioModule} = NativeModules;
 //const AudioModule = NativeModules.AudioModule;
 //const emitter = new NativeEventEmitter(AudioModule);
-import {requireNativeModule} from 'expo-modules-core';
 
 import {
   useAudioRecorder,
@@ -40,33 +19,34 @@ import {
   useAudioRecorderState,
 } from 'expo-audio';
 import audioModule from '@/modules/audio-module';
-import { useFocusEffect } from '@react-navigation/native';
+import {useFocusEffect} from '@react-navigation/native';
+import {Circle, Theme, XStack, YStack, Text} from 'tamagui';
+import LottieView from 'lottie-react-native';
 
 //const AudioModule = requireNativeModule('AudioModule');
 
 const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
   const [recording, setRecording] = useState(false);
 
-    const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+  const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const recorderState = useAudioRecorderState(audioRecorder);
   const [recordTime, setRecordTime] = useState('00:00:00');
   const {title, description, selectedGenres, imageUtils} = route.params;
   const [filePath, setFilePath] = useState<string | null>(null);
-  //const [elapsedMs, setElapsedMs] = useState(0);
-  const {user_token, user_id} = useSelector((state: any) => state.user);
+
   const [amplitudes, setAmplitudes] = useState<number[]>([]);
-  //const [currentAmplitude, setCurrentAmplitude] = useState<number>(0);
+
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
   const recordStartTimeRef = useRef<number | null>(null);
-  const timerRef = useRef(null);
+ 
 
+  useFocusEffect(
+    useCallback(() => {
+      handleUpload();
+    }, []),
+  );
 
-useFocusEffect(
-  useCallback(() => {
-    handleUpload();
-  }, [])
-);
-
- const record = async () => {
+  const record = async () => {
     await audioRecorder.prepareToRecordAsync();
     audioRecorder.record();
     startTimer();
@@ -76,8 +56,8 @@ useFocusEffect(
     // The recording will be available on `audioRecorder.uri`.
     await audioRecorder.stop();
     setRecording(false);
-      stopTimer();
-      setFilePath(audioModule.uri);
+    stopTimer();
+    setFilePath(audioModule.uri);
   };
 
   useEffect(() => {
@@ -93,7 +73,7 @@ useFocusEffect(
       });
     })();
   }, []);
- 
+
   const formatTime = (ms: number) => {
     const totalSec = Math.floor(ms / 1000);
     const hours = String(Math.floor(totalSec / 3600)).padStart(2, '0');
@@ -102,18 +82,15 @@ useFocusEffect(
     return `${hours}:${minutes}:${seconds}`;
   };
 
-
-
   const startTimer = () => {
     recordStartTimeRef.current = Date.now();
-    if (timerRef && timerRef.current) {
-      timerRef.current = setInterval(() => {
-        if (recordStartTimeRef.current) {
-          const elapsed = Date.now() - recordStartTimeRef.current;
-          setRecordTime(formatTime(elapsed));
-        }
-      }, 1000);
-    }
+
+    timerRef.current = setInterval(() => {
+      if (!recordStartTimeRef.current) return;
+
+      const elapsed = Date.now() - recordStartTimeRef.current;
+      setRecordTime(formatTime(elapsed));
+    }, 1000);
   };
 
   const stopTimer = () => {
@@ -121,7 +98,6 @@ useFocusEffect(
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-
     recordStartTimeRef.current = null;
   };
 
@@ -152,10 +128,8 @@ useFocusEffect(
   //   }
   // };
 
-
-
   // UI State: 'idle' | 'recording' | 'review' | 'playing' | 'paused' | 'uploading'
-  
+
   const [uiState, setUiState] = useState<
     'idle' | 'recording' | 'review' | 'playing' | 'paused' | 'uploading'
   >('idle');
@@ -165,14 +139,13 @@ useFocusEffect(
   const handleStartRecording = async () => {
     await record();
     setUiState('recording');
+    setRecording(true);
   };
 
   const handleStopRecording = async () => {
     await stopRecording();
     setUiState('review');
   };
-
-
 
   const handleReRecord = async () => {
     if (filePath) {
@@ -206,7 +179,7 @@ useFocusEffect(
       }
     }
   }, [filePath]);
-  
+
   const handleUpload = useCallback(async () => {
     setUploading(false);
     setUiState('idle');
@@ -214,9 +187,7 @@ useFocusEffect(
     setAmplitudes([]);
     setRecordTime('00:00:00');
     await unlinkFile();
-  },[unlinkFile]);
-
-
+  }, [unlinkFile]);
 
   // useEffect(() => {
   //   // const stopSub = AudioModule.addListener('recStop', (data:any) => {
@@ -258,97 +229,131 @@ useFocusEffect(
   //     audioWaveSubscription.remove();
   //   };
   // }, []);
-  
+
   useEffect(() => {
     return () => {
       stopTimer();
     };
   }, []);
 
-
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Podcast Recorder</Text>
-      <View style={styles.iconContainer}>
-        <View
-          style={[
-            styles.micButton,
-            recording && styles.micButtonActive,
-            {marginBottom: 0},
-          ]}>
-          <Icon name="microphone" size={38} color="white" />
-        </View>
-      </View>
-      <Text style={styles.timer}>{recordTime}</Text>
-
-      <View style={styles.waveContainer}>
-        {amplitudes.length > 0 ? (
-          <AmplitudeWave audioWaves={amplitudes} />
-        ) : (
-          <SoundWave />
-        )}
-      </View>
-
-      {/* Action Buttons */}
-      <View style={{flexDirection: 'row', marginTop: 24, gap: 16}}>
-        {/* Record/Stop */}
-        {uiState === 'idle' || uiState === 'review' ? (
-          <TouchableOpacity
-            style={[styles.circularButton, styles.record]}
-            onPress={handleStartRecording}
-            disabled={recording || uploading}>
-            <Icon name="record-circle" size={28} color="white" />
-            <Text style={styles.actionButtonText}>Record</Text>
-          </TouchableOpacity>
-        ) : null}
-        {uiState === 'recording' && (
-          <TouchableOpacity
-            style={[styles.circularButton, styles.stop]}
-            onPress={handleStopRecording}
-            disabled={uploading}>
-            <Icon name="stop-circle" size={28} color="white" />
-            <Text style={styles.actionButtonText}>Stop</Text>
-          </TouchableOpacity>
-        )}
-        {/* Play/Pause/Stop */}
-        {uiState === 'review' && audioRecorder.uri && (
-          <TouchableOpacity
-            style={[styles.circularButton, styles.play]}
-            onPress={()=>{
-              navigation.navigate("PodcastPlayer", {
-                title: title,
-                description: description,
-                imageUtils: imageUtils,
-                selectedGenres: selectedGenres,
-                filePath: audioRecorder.uri 
-              });
-            }}
-            disabled={uploading}>
-            <Icon name="play-circle" size={28} color="white" />
-            <Text style={styles.actionButtonText}>Play</Text>
-          </TouchableOpacity>
-        )}
-    
-        {/* Re-record */}
-        {uiState === 'review' && (
-          <TouchableOpacity
-            style={[styles.circularButton, styles.rerecord]}
-            onPress={handleReRecord}
-            disabled={uploading}>
-            <Icon name="refresh" size={28} color="white" />
-            <Text style={styles.actionButtonText}>Rerecord</Text>
-          </TouchableOpacity>
-        )}
-      
-      </View>
-
-      {/* File Path */}
-      {filePath && (
-        <Text style={styles.pathText} numberOfLines={1} ellipsizeMode="middle">
-          Saved at: {filePath}
+    <Theme name="dark">
+      <YStack flex={1} bg="#071225" ai="center" jc="center" px="$4" space="$6">
+        {/* Header */}
+        <Text color="white" fontSize={28} fontWeight="700" marginBottom="$2">
+          Podcast Recorder
         </Text>
-      )}
-    </View>
+
+        {/* Waveform Top */}
+        <YStack ai="center" jc="center" space="$3">
+          <YStack
+            w={120}
+            h={120}
+            bg={recording ? '#38bdf8' : '#0a1e3a'}
+            ai="center"
+            jc="center"
+            borderRadius={60}
+          >
+            <Icon name="microphone" size={48} color={recording ? "#0a1e3a" : "#3bc9f7"}  />
+          </YStack>
+        </YStack>
+
+        {/* Timer */}
+        <Text
+          fontSize={48}
+          color="#3bc9f7"
+          fontWeight="700"
+          mt="$3"
+          letterSpacing={2}>
+          {recordTime}
+        </Text>
+
+        {/* Mid Wave */}
+        {/**
+     *    <YStack w="100%" h={80} ai="center" jc="center" mt="$2">
+        <AmplitudeWave audioWaves={amplitudes} />
+      </YStack>
+     */}
+     {recording && (
+    <LottieView
+      source={require("../assets/LottieAnimation/sound-voice-waves.json")}
+      autoPlay
+      loop
+      style={{
+        width: 150,
+        height: 150,
+      }}
+    />
+)}
+
+
+        {/* Action Controls */}
+        <XStack jc="center" ai="center" space="$5" mt="$4">
+          {/* Play preview */}
+          {uiState === 'review' && (
+            <Circle
+              size={60}
+              bg="#1c3a63"
+              ai="center"
+              jc="center"
+              onPress={() =>
+                navigation.navigate('PodcastPlayer', {
+                  title,
+                  description,
+                  imageUtils,
+                  selectedGenres,
+                  filePath: audioRecorder.uri,
+                })
+              }>
+              <Icon name="play" size={32} color="white" />
+            </Circle>
+          )}
+
+          {/* Record/Stop main button */}
+          <Circle
+            size={110}
+            ai="center"
+            jc="center"
+            bg="transparent"
+            borderWidth={4}
+            borderColor="#32c2f1"
+            onPress={
+              uiState === 'idle' || uiState === 'review'
+                ? handleStartRecording
+                : handleStopRecording
+            }>
+            <Circle
+              size={70}
+              bg={uiState === 'recording' ? '#d32626' : '#32c2f1'}
+              ai="center"
+              jc="center">
+              <Icon
+                name={uiState === 'recording' ? 'stop' : 'record-circle'}
+                size={40}
+                color="white"
+              />
+            </Circle>
+          </Circle>
+
+          {/* Re-record */}
+          {uiState === 'review' && (
+            <Circle
+              size={60}
+              bg="#1c3a63"
+              ai="center"
+              jc="center"
+              onPress={handleReRecord}>
+              <Icon name="refresh" size={32} color="white" />
+            </Circle>
+          )}
+        </XStack>
+
+        {/* Footer */}
+        <Text color="#8ea6c1" fontSize={19} marginTop="$2">
+          Title: {title}
+        </Text>
+      </YStack>
+    </Theme>
   );
 };
 
