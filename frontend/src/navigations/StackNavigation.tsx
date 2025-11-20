@@ -451,11 +451,14 @@ const StackNavigation = () => {
         name="PodcastDiscussion"
         component={PodcastDiscussion}
         options={({navigation}) => ({
-          headerShown: true,
-          headerTitle: '',
-          headerTransparent: true,
+            headerShown: true,
+          headerTitle: 'Start Discussion',
+          headerTintColor: 'white',
+          headerTransparent: false,
+          headerStyle: {
+            backgroundColor: '#000A60',
+          },
           headerBackTitleVisible: false,
-          // eslint-disable-next-line react/no-unstable-nested-components
           headerLeft: () => (
             <TouchableOpacity
               style={styles.headerLeftButtonCommentScreen}
@@ -463,7 +466,7 @@ const StackNavigation = () => {
                 queryClient.invalidateQueries({queryKey: ['get-user-socials']});
                 navigation.goBack();
               }}>
-              <FontAwesome6 size={25} name="arrow-left" color={PRIMARY_COLOR} />
+              <FontAwesome6 size={25} name="arrow-left" color={'white'} />
             </TouchableOpacity>
           ),
         })}

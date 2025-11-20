@@ -126,7 +126,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
   const loginMutation = useMutation({
     mutationKey: ['login'],
     mutationFn: async () => {
-      console.log("LOGIN", LOGIN_API);
+      console.log("LOGIN", LOGIN_API, email, password);
       const res = await axios.post(LOGIN_API, {
         email: email,
         password: password,
@@ -311,7 +311,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
       <YStack
         flex={1}
         paddingTop={inset.top + 60}
-        paddingHorizontal="$4"
+        paddingHorizontal="$2"
         paddingBottom="$6"
         space="$5">
         {/* Logo Section */}

@@ -35,13 +35,12 @@ import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {hp} from '../helper/Metric';
 import {useSocket} from '../../SocketContext';
 import {Feather} from '@expo/vector-icons';
-import { Asset } from 'expo-asset';
 import Loader from '../components/Loader';
 
 const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   //const [progress, setProgress] = useState(10);
   const insets = useSafeAreaInsets();
-  const {trackId} = route.params;
+  const {trackId, audioUrl} = route.params;
 
   const socket = useSocket();
   const {user_token, user_id, user_handle} = useSelector(
@@ -85,23 +84,13 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
     },
   });
 
-  const [source, setSource] = useState<string  | null>(null);
+ // const [source, setSource] = useState<string  | null>(null);
 
-  useEffect(() => {
-    let mounted = true;
-    // eslint-disable-next-line no-unused-expressions
-    (async () => {
-      if (podcast?.audio_url) {
-        if (mounted) setSource(`${GET_IMAGE}/${podcast.audio_url}`);
-      } 
-    })
-    return () => {
-      mounted = false;
-    };
-  }, [podcast]);
+const source = audioUrl?.startsWith("http")? audioUrl : `${GET_IMAGE}/${audioUrl}`;
 
+console.log("source", source)
   // only initialize once a valid uri exists
-  const player = useAudioPlayer(source ??   require("../../assets/sounds/funny-cartoon-sound-397415.mp3") );
+  const player = useAudioPlayer( source ??   require("../../assets/sounds/funny-cartoon-sound-397415.mp3") );
 
   
   useEffect(() => {

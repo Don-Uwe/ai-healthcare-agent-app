@@ -1,28 +1,51 @@
-import {FC, useEffect, useRef, useState} from 'react';
+import {FC, useEffect, useMemo, useRef, useState} from 'react';
 import {
-  View,
-  Text,
-  Image,
   TouchableOpacity,
   StyleSheet,
   FlatList,
   Alert,
   Pressable,
+  KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  TextInput,
+  Keyboard,
+  Platform,
 } from 'react-native';
-import {PodcastDiscussionProp, User} from '../type';
+// eslint-disable-next-line import/no-duplicates
+import {PodcastData, PodcastDiscussionProp, User, Comment} from '../type';
 import {PRIMARY_COLOR} from '../helper/Theme';
 //import io from 'socket.io-client';
-import {Comment} from '../type';
 import {useSelector} from 'react-redux';
 import Loader from '../components/Loader';
 import CommentItem from '../components/CommentItem';
 import {useSocket} from '../../SocketContext';
 import {
-  MentionInput,
-  MentionSuggestionsProps,
-  replaceMentionValues,
+  useMentions,
+  replaceTriggerValues,
+  TriggersConfig,
+  PatternsConfig,
+  SuggestionsProvidedProps,
+  parseValue,
 } from 'react-native-controlled-mentions';
-import {GET_STORAGE_DATA} from '../helper/APIUtils';
+import {
+  GET_IMAGE,
+  GET_PODCAST_DETAILS,
+  GET_STORAGE_DATA,
+} from '../helper/APIUtils';
+import {
+  Button,
+  H3,
+  Paragraph,
+  ScrollView,
+  YStack,
+  Text,
+  View,
+  Image,
+} from 'tamagui';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {wp} from '../helper/Metric';
+import {useQuery} from '@tanstack/react-query';
+import axios from 'axios';
 
 const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
   const socket = useSocket();
@@ -30,7 +53,7 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const flatListRef = useRef<FlatList<Comment>>(null);
-  const {user_id} = useSelector((state: any) => state.user);
+  const {user_id, user_token} = useSelector((state: any) => state.user);
   const [selectedCommentId, setSelectedCommentId] = useState<string>('');
   const [editMode, setEditMode] = useState<Boolean>(false);
   const [editCommentId, setEditCommentId] = useState<string | null>(null);
@@ -38,9 +61,62 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
   const [commentLikeLoading, setCommentLikeLoading] = useState<Boolean>(false);
   const [mentions, setMentions] = useState<User[]>([]);
 
-  const renderSuggestions: FC<MentionSuggestionsProps> = ({
+  const {data: podcast, refetch} = useQuery({
+    queryKey: ['get-podcast-details'],
+    queryFn: async () => {
+      try {
+        if (user_token === '') {
+          throw new Error('No token found');
+        }
+        const response = await axios.get(
+          `${GET_PODCAST_DETAILS}?podcast_id=${podcastId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${user_token}`,
+            },
+          },
+        );
+        return response.data as PodcastData;
+      } catch (err) {
+        console.error('Error fetching podcast:', err);
+      }
+    },
+  });
+
+  // mention triggers for v3
+  // Create as constants outside component or memoize with useMemo
+  const triggersConfig: TriggersConfig<'mention' | 'hashtag'> = {
+    mention: {
+      trigger: '@',
+      textStyle: {fontWeight: 'bold', color: 'blue'},
+    },
+    hashtag: {
+      trigger: '#',
+      allowedSpacesCount: 0,
+      textStyle: {fontWeight: 'bold', color: 'grey'},
+    },
+  };
+
+  const patternsConfig: PatternsConfig = {
+    url: {
+      pattern:
+        /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi,
+      textStyle: {color: 'blue'},
+    },
+  };
+
+  // useMentions hook for v3
+  const {textInputProps, triggers} = useMentions({
+    value: newComment,
+    onChange: setNewComment,
+    triggersConfig,
+    patternsConfig,
+  });
+
+  const Suggestions: FC<SuggestionsProvidedProps & {suggestions: User[]}> = ({
     keyword,
-    onSuggestionPress,
+    onSelect,
+    suggestions,
   }) => {
     if (keyword == null) {
       return null;
@@ -48,21 +124,17 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
 
     return (
       <View>
-        {mentionedUsers
-          .filter(
-            one =>
-              one.user_handle
-                .toLocaleLowerCase()
-                .includes(keyword.toLocaleLowerCase()) ||
-              one.user_name
-                .toLocaleLowerCase()
-                .includes(keyword.toLocaleLowerCase()),
+        {suggestions
+          .filter(one =>
+            one.user_handle
+              .toLocaleLowerCase()
+              .includes(keyword.toLocaleLowerCase()),
           )
           .map(one => (
             <Pressable
               key={one._id}
               onPress={() => {
-                onSuggestionPress({id: one._id, name: one.user_handle});
+                onSelect({id: one._id, name: one.user_handle});
                 setMentions(prev => [...prev, one]);
               }}
               style={{flex: 0, padding: 12, flexDirection: 'row'}}>
@@ -99,6 +171,88 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
       </View>
     );
   };
+
+  const usedUserIds = useMemo(
+    () =>
+      parseValue(newComment, [triggersConfig.mention]).parts.reduce(
+        (acc, part) => {
+          if (part.data?.id) {
+            acc.push(part.data.id);
+          }
+          return acc;
+        },
+        [] as string[],
+      ),
+    [newComment, triggersConfig.mention],
+  );
+
+  const filteredUsers = useMemo(
+    () => mentionedUsers.filter(user => !usedUserIds.includes(user._id)),
+    [mentionedUsers, usedUserIds],
+  );
+
+  // const renderSuggestions: FC<MentionSuggestionsProps> = ({
+  //   keyword,
+  //   onSuggestionPress,
+  // }) => {
+  //   if (keyword == null) {
+  //     return null;
+  //   }
+
+  //   return (
+  //     <View>
+  //       {mentionedUsers
+  //         .filter(
+  //           one =>
+  //             one.user_handle
+  //               .toLocaleLowerCase()
+  //               .includes(keyword.toLocaleLowerCase()) ||
+  //             one.user_name
+  //               .toLocaleLowerCase()
+  //               .includes(keyword.toLocaleLowerCase()),
+  //         )
+  //         .map(one => (
+  //           <Pressable
+  //             key={one._id}
+  //             onPress={() => {
+  //               onSuggestionPress({id: one._id, name: one.user_handle});
+  //               setMentions(prev => [...prev, one]);
+  //             }}
+  //             style={{flex: 0, padding: 12, flexDirection: 'row'}}>
+  //             {one.Profile_image ? (
+  //               <Image
+  //                 source={{
+  //                   uri: one.Profile_image.startsWith('https')
+  //                     ? one.Profile_image
+  //                     : `${GET_STORAGE_DATA}/${one.Profile_image}`,
+  //                 }}
+  //                 style={[
+  //                   styles.profileImage2,
+  //                   !one.Profile_image && {
+  //                     borderWidth: 0.5,
+  //                     borderColor: 'black',
+  //                   },
+  //                 ]}
+  //               />
+  //             ) : (
+  //               <Image
+  //                 source={{
+  //                   uri: 'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
+  //                 }}
+  //                 style={[
+  //                   styles.profileImage2,
+  //                   {borderWidth: 0.5, borderColor: 'black'},
+  //                 ]}
+  //               />
+  //             )}
+
+  //             <Text style={styles.username2}>{one.user_handle}</Text>
+  //           </Pressable>
+  //         ))}
+  //     </View>
+  //   );
+  // };
+
   useEffect(() => {
     //console.log('Fetching comments for articleId:', route.params.articleId);
     socket.emit('fetch-comments', {podcastId: route.params.podcastId});
@@ -115,7 +269,7 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
       setCommentLikeLoading(data);
     });
 
-    socket.on('error', (data) => {
+    socket.on('error', data => {
       console.log('connection error', data);
     });
 
@@ -266,10 +420,11 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
         Alert.alert('Error: Comment Not Found');
       }
     } else {
+      const formatted = replaceTriggerValues(newComment, ({name}) => `@${name}`);
       const newCommentObj = {
         userId: user_id,
         podcastId: route.params.podcastId,
-        content: replaceMentionValues(newComment, ({name}) => `@${name}`),
+        content: formatted,
         parentCommentId: null,
         mentionedUsers: mentions,
       };
@@ -278,7 +433,7 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
       // Emit the new comment to the backend via socket
       socket.emit('comment', newCommentObj);
 
-      setNewComment(''); 
+      setNewComment('');
     }
   };
 
@@ -287,7 +442,7 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
       articleId: '',
       authorId: authorId,
       commentId: commentId,
-      podcastId: podcastId
+      podcastId: podcastId,
     });
   };
   if (commentLoading) {
@@ -295,53 +450,108 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>💬 Start Discussion</Text>
+    <ScrollView
+      style={{flex: 1}}
+      contentContainerStyle={{
+        flexGrow: 1,
+        paddingBottom: 120,
+        paddingHorizontal: 10,
+        backgroundColor: '#f8f9fb',
+      }}
+      showsVerticalScrollIndicator={false}>
+      <KeyboardAvoidingView
+        style={{flex: 1}}
+        behavior="padding"
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <SafeAreaView
+            style={{flex: 1, backgroundColor: '#f8f9fb', padding: wp(0.2)}}>
+            {/* Header Section */}
+            <YStack space="$3">
+              <H3 fontSize={19} color="black" fontWeight={'600'}>
+                {podcast?.title}
+              </H3>
 
-      {/* Comments List */}
-      <FlatList
-        ref={flatListRef}
-        data={comments}
-        renderItem={({item}) => (
-          <CommentItem
-            item={item}
-            isSelected={selectedCommentId === item._id}
-            userId={user_id}
-            setSelectedCommentId={setSelectedCommentId}
-            handleEditAction={handleEditAction}
-            deleteAction={handleDeleteAction}
-            handleLikeAction={handleLikeAction}
-            commentLikeLoading={commentLikeLoading}
-            handleMentionClick={handleMentionClick}
-            handleReportAction={handleReportAction}
-          />
-        )}
-        keyExtractor={item => item._id}
-        style={styles.commentsList}
-      />
+              <Image
+                source={{
+                  uri: podcast?.cover_image.startsWith('http')
+                    ? podcast?.cover_image
+                    : `${GET_IMAGE}/${podcast?.cover_image}`,
+                }}
+                style={{
+                  width: '100%',
+                  height: 180,
+                  borderRadius: 8,
+                }}
+              />
 
-      <MentionInput
-        value={newComment}
-        onChange={setNewComment}
-        style={styles.textInput}
-        placeholder="Add a comment..."
-        partTypes={[
-          {
-            trigger: '@', // Should be a single character like '@' or '#'
-            renderSuggestions,
-            textStyle: {fontWeight: 'bold', color: 'blue'},
-          },
-        ]}
-      />
-      {/* New Comment Input */}
+              <Button
+                onPress={() =>
+                  navigation.navigate('PodcastDetail', {
+                    trackId: podcastId,
+                    audioUrl: podcast?.audio_url ?? '',
+                  })
+                }
+                backgroundColor={PRIMARY_COLOR}
+                pressStyle={{opacity: 0.9}}
+                borderRadius="$4"
+                size={'$6'}
+                marginTop="$2"
+                paddingVertical={'$3'}
+                elevation="$2">
+                <Text color="white" fontWeight="600" fontSize={16}>
+                  View Full Podcast Details
+                </Text>
+              </Button>
+              <Paragraph color="$gray10" fontSize={17}>
+                {podcast?.description}
+              </Paragraph>
 
-      {/* Submit Button */}
-      <TouchableOpacity
-        style={styles.submitButton}
-        onPress={handleCommentSubmit}>
-        <Text style={styles.submitButtonText}>⏩ Submit Comment</Text>
-      </TouchableOpacity>
-    </View>
+              <Suggestions suggestions={filteredUsers} {...triggers.mention} />
+
+              <TextInput
+                {...textInputProps}
+                style={styles.textInput}
+                placeholder="Add a comment..."
+                multiline
+              />
+
+              {newComment.length > 0 && (
+                <TouchableOpacity
+                  style={styles.submitButton}
+                  onPress={handleCommentSubmit}>
+                  <Text style={styles.submitButtonText}>
+                    {editMode ? '✏️ Update Comment' : '⏩ Submit Comment'}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              <YStack marginTop="$4" space="$3">
+                <Text fontWeight="600" fontSize={20}>
+                  {comments.length} Comments
+                </Text>
+
+                {comments.map(item => (
+                  <CommentItem
+                    key={item._id}
+                    item={item}
+                    isSelected={selectedCommentId === item._id}
+                    userId={user_id}
+                    setSelectedCommentId={setSelectedCommentId}
+                    handleEditAction={handleEditAction}
+                    deleteAction={handleDeleteAction}
+                    handleLikeAction={handleLikeAction}
+                    commentLikeLoading={commentLikeLoading}
+                    handleMentionClick={handleMentionClick}
+                    handleReportAction={handleReportAction}
+                    isFromArticle={false}
+                  />
+                ))}
+              </YStack>
+            </YStack>
+          </SafeAreaView>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
+    </ScrollView>
   );
 };
 
@@ -427,6 +637,7 @@ const styles = StyleSheet.create({
   textInput: {
     height: 100,
     borderColor: '#ccc',
+    fontSize: wp(5),
     borderWidth: 1,
     borderRadius: 8,
     padding: 10,
@@ -449,5 +660,3 @@ const styles = StyleSheet.create({
 });
 
 export default PodcastDiscussion;
-
-

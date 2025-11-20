@@ -201,6 +201,7 @@ const NotificationScreen = ({navigation}) => {
     ) {
       navigation.navigate('PodcastDetail', {
         trackId: item.podcastId._id,
+        audioUrl: item.podcastId.audio_url,
       });
     }
     else if(item.type === NotificationType.ArticleCommentLike){

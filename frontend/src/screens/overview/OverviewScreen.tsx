@@ -57,6 +57,7 @@ export default function OverviewScreen({navigation}: OverviewScreenProps) {
     } else {
       navigation.navigate('PodcastDetail', {
         trackId: item._id,
+        audioUrl: item.audio_url
       });
     }
   };

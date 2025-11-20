@@ -92,6 +92,7 @@ export type RootStackParamList = {
   };
   PodcastDetail: {
     trackId: string;
+    audioUrl: string | null;
   };
   OfflinePodcastList: undefined;
   OfflinePodcastDetail: {

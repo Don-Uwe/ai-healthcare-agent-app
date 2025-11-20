@@ -16,13 +16,10 @@ import {
 
 import {
   YStack,
-  XStack,
   H3,
   Paragraph,
-  Input,
   Button,
   Image,
-  Separator,
   Text,
 } from 'tamagui';
 import {CommentScreenProp, User, Comment} from '../type';
@@ -91,7 +88,7 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
     socket.emit('fetch-comments', {articleId: route.params.articleId});
 
     socket.on('connect', () => console.log('connection established'));
-    socket.on('comment-processing', (data: boolean) => setCommentLoading(data));
+   // socket.on('comment-processing', (data: boolean) => setCommentLoading(data));
     socket.on('like-comment-processing', (data: boolean) =>
       setCommentLikeLoading(data),
     );
@@ -322,7 +319,7 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
       contentContainerStyle={{
         flexGrow: 1,
         paddingBottom: 120,
-        paddingHorizontal: 16,
+        paddingHorizontal: 10,
         backgroundColor: '#f8f9fb',
       }}
       showsVerticalScrollIndicator={false}>
@@ -332,7 +329,7 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <SafeAreaView
-            style={{flex: 1, backgroundColor: '#f8f9fb', padding: wp(1)}}>
+            style={{flex: 1, backgroundColor: '#f8f9fb', padding: wp(0.2)}}>
             {/* Header Section */}
             <YStack space="$3">
             
@@ -379,7 +376,7 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
 
              
 
-              <Separator />
+            
 
               <Suggestions suggestions={filteredUsers} {...triggers.mention} />
 

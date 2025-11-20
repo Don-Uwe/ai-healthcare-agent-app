@@ -170,6 +170,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
     onSuccess: data => {
       navigation.navigate('PodcastDetail', {
         trackId: data._id,
+        audioUrl: data.audio_url
       });
     },
     onError: err => {

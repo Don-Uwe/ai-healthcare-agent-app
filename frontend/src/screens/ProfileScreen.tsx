@@ -21,7 +21,6 @@ import {useFocusEffect} from '@react-navigation/native';
 import Snackbar from 'react-native-snackbar';
 import {useSocket} from '../../SocketContext';
 import {setSocialUserId, setUserHandle} from '../store/UserSlice';
-import {StatusEnum} from '../helper/Utils';
 
 const ProfileScreen = ({navigation}: ProfileScreenProps) => {
   const {user_handle, user_id, user_token} = useSelector(
@@ -35,9 +34,6 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
   const [repostItem, setRepostItem] = useState<ArticleData | null>(null);
   const socket = useSocket();
   const dispatch = useDispatch();
-
-  //const fallback_profile = require('../assets/avatar.jpg');
-  //const user_fallback_profile = Image.resolveAssetSource(fallback_profile).uri;
 
   const {
     data: user,
@@ -103,8 +99,6 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
       return res.data.article as ArticleData;
     },
     onSuccess: async data => {
-      //  console.log('Article Id', articleId);
-      //  console.log('Author Id', authorId);
 
       navigation.navigate('ArticleScreen', {
         articleId: Number(articleId),
@@ -118,28 +112,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
       Alert.alert('Internal server error, try again!');
     },
   });
-  /*
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('beforeRemove', e => {
-      e.preventDefault();
-      Alert.alert(
-        'Warning',
-        'Do you want to exit',
-        [
-          {text: 'No', onPress: () => null},
-          {
-            text: 'Yes',
-            onPress: () => {
-              BackHandler.exitApp();
-            },
-          },
-        ],
-        {cancelable: true},
-      );
-    });
-    return unsubscribe;
-  }, [navigation]);
-  */
+  
 
   const isDoctor = user !== undefined ? user.isDoctor : false;
   const bottomBarHeight = useBottomTabBarHeight();
@@ -248,7 +221,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
         />
       );
     },
-    [navigation, selectedCardId, onRefresh],
+    [selectedCardId, navigation, onRefresh, handleRepostAction, handleReportAction],
   );
 
   const onFollowerClick = () => {
@@ -276,7 +249,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
   const renderHeader = () => {
     if (user === undefined) {
       return null;
-    } // Safeguard to prevent rendering if user is undefined
+    }
 
     return (
       <ProfileHeader
@@ -356,33 +329,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
             </Tabs.ScrollView>
           </Tabs.Tab>
           {/* Tab 2 */}
-          {/**
-         *    <Tabs.Tab name="Articles">
-            <Tabs.FlatList
-              data={
-                user !== undefined
-                  ? user.articles.filter(
-                      article => article.status === StatusEnum.PUBLISHED,
-                    )
-                  : []
-              }
-              renderItem={renderItem}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={[
-                styles.flatListContentContainer,
-                {paddingBottom: bottomBarHeight + 15},
-              ]}
-              keyExtractor={item => item?._id}
-              refreshing={refreshing}
-              ListEmptyComponent={
-                <View style={styles.emptyContainer}>
-                  <Text style={styles.message}>No Article Found</Text>
-                </View>
-              }
-            />
-          </Tabs.Tab>
-         */}
-
+      
           <Tabs.Tab name={`Reposts (${user?.repostArticles.length})`}>
             <Tabs.FlatList
               data={user !== undefined ? user.repostArticles : []}
