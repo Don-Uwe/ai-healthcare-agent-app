@@ -286,7 +286,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
     );
   };
 
-  const renderTabBar = props => {
+  const renderTabBar = (props:any) => {
     return (
       <MaterialTabBar
         {...props}

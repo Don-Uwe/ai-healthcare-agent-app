@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   Image,
   TouchableOpacity,
@@ -36,11 +35,15 @@ import {hp} from '../helper/Metric';
 import {useSocket} from '../../SocketContext';
 import {Feather} from '@expo/vector-icons';
 import Loader from '../components/Loader';
+import {Button, Circle, Theme, XStack, YStack, Text} from 'tamagui';
+import LottieView from 'lottie-react-native';
 
 const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   //const [progress, setProgress] = useState(10);
   const insets = useSafeAreaInsets();
   const {trackId, audioUrl} = route.params;
+
+  const[playing, setIsPlaying] = useState(false);
 
   const socket = useSocket();
   const {user_token, user_id, user_handle} = useSelector(
@@ -84,15 +87,18 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
     },
   });
 
- // const [source, setSource] = useState<string  | null>(null);
+  // const [source, setSource] = useState<string  | null>(null);
 
-const source = audioUrl?.startsWith("http")? audioUrl : `${GET_IMAGE}/${audioUrl}`;
+  const source = audioUrl?.startsWith('http')
+    ? audioUrl
+    : `${GET_IMAGE}/${audioUrl}`;
 
-console.log("source", source)
+  console.log('source', source);
   // only initialize once a valid uri exists
-  const player = useAudioPlayer( source ??   require("../../assets/sounds/funny-cartoon-sound-397415.mp3") );
+  const player = useAudioPlayer(
+    source ?? require('../../assets/sounds/funny-cartoon-sound-397415.mp3'),
+  );
 
-  
   useEffect(() => {
     const interval = setInterval(() => {
       if (player.playing) {
@@ -112,6 +118,47 @@ console.log("source", source)
     }
   };
 
+  const SKIP_TIME = 5; // seconds
+
+  const handleForward = async () => {
+    if (!player) return;
+
+    let next = position + SKIP_TIME;
+
+    if (next > duration) {
+      next = duration;
+    }
+
+    await player.seekTo(next);
+    setPosition(next);
+  };
+
+  const handleBackward = async () => {
+    if (!player) return;
+
+    let next = position - SKIP_TIME;
+
+    if (next < 0) {
+      next = 0;
+    }
+
+    await player.seekTo(next);
+    setPosition(next);
+  };
+
+  const formatSecTime = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+
+    if (hours > 0) {
+      return `${hours}:${mins < 10 ? '0' : ''}${mins}:${
+        secs < 10 ? '0' : ''
+      }${secs}`;
+    } else {
+      return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+  };
   // For position update
 
   useEffect(() => {
@@ -194,230 +241,368 @@ console.log("source", source)
     }
   };
 
+  const handlePlay = async () => {
+    console.log('Play called');
+    if (!player) {
+      console.log('enter');
+      return;
+    }
+    //await player.seekTo(0);
+    player.play();
+    //setUiState('playing');
+    setIsPlaying(true);
+  };
 
-  if(isLoading){
-    return (
-      <Loader/>
-    )
+  const handlePause = async () => {
+    console.log('Pause called');
+    if (!player) return;
+
+    player.pause();
+  //  setUiState('paused');
+    setIsPlaying(false);
+  };
+
+  if (isLoading) {
+    return <Loader />;
   }
 
+  // return (
+  //   <SafeAreaView style={styles.container}>
+  //     <ScrollView>
+  //       {podcast && podcast.cover_image ? (
+  //         <Image
+  //           source={{
+  //             uri: podcast?.cover_image.startsWith('http')
+  //               ? podcast?.cover_image
+  //               : `${GET_STORAGE_DATA}/${podcast?.cover_image}`,
+  //           }}
+  //           style={styles.podcastImage}
+  //         />
+  //       ) : (
+  //         <Image
+  //           source={{
+  //             uri: 'https://t3.ftcdn.net/jpg/05/10/75/30/360_F_510753092_f4AOmCJAczuGgRLCmHxmowga2tC9VYQP.jpg',
+  //           }}
+  //           style={styles.podcastImage}
+  //         />
+  //       )}
+
+  //       <View
+  //         style={[
+  //           styles.footer,
+  //           {
+  //             paddingBottom:
+  //               Platform.OS === 'ios' ? insets.bottom : insets.bottom + 20,
+  //           },
+  //         ]}>
+  //         <View style={styles.authorContainer}>
+  //           <TouchableOpacity
+  //             onPress={() => {
+  //               //  if (article && article?.authorId) {
+  //               //navigation.navigate('UserProfileScreen', {
+  //               //  authorId: authorId,
+  //               // });
+  //             }}>
+  //             {podcast?.user_id.Profile_image ? (
+  //               <Image
+  //                 source={{
+  //                   uri: podcast?.user_id.Profile_image.startsWith('http')
+  //                     ? `${podcast?.user_id.Profile_image}`
+  //                     : `${GET_STORAGE_DATA}/${podcast?.user_id.Profile_image}`,
+  //                 }}
+  //                 style={styles.authorImage}
+  //               />
+  //             ) : (
+  //               <Image
+  //                 source={{
+  //                   uri: 'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
+  //                 }}
+  //                 style={styles.authorImage}
+  //               />
+  //             )}
+  //           </TouchableOpacity>
+  //           <View>
+  //             <Text style={styles.authorName}>
+  //               {podcast ? podcast?.user_id.user_name : ''}
+  //             </Text>
+  //             <Text style={styles.authorFollowers}>
+  //               {podcast?.user_id.followers
+  //                 ? podcast?.user_id.followers.length > 1
+  //                   ? `${podcast?.user_id.followers.length} followers`
+  //                   : `${podcast?.user_id.followers.length} follower`
+  //                 : '0 follower'}
+  //             </Text>
+  //           </View>
+  //         </View>
+  //       </View>
+
+  //       <View style={styles.footerOptions}>
+  //         {updateLikeCountMutation.isPending ? (
+  //           <ActivityIndicator size="small" color={PRIMARY_COLOR} />
+  //         ) : (
+  //           <TouchableOpacity
+  //             style={styles.footerItem}
+  //             onPress={() => {
+  //               updateLikeCountMutation.mutate(trackId);
+  //             }}>
+  //             {podcast?.likedUsers.includes(user_id) ? (
+  //               <AntDesign name="heart" size={24} color={PRIMARY_COLOR} />
+  //             ) : (
+  //               <Feather name="heart" size={24} color={'black'} />
+  //             )}
+
+  //             <Text style={styles.likeCount}>
+  //               {podcast?.likedUsers?.length
+  //                 ? formatCount(podcast?.likedUsers?.length)
+  //                 : 0}
+  //             </Text>
+  //           </TouchableOpacity>
+  //         )}
+  //         {isLoading ? (
+  //           <ActivityIndicator size="small" color={PRIMARY_COLOR} />
+  //         ) : (
+  //           <TouchableOpacity
+  //             onPress={async () => {
+  //               if (podcast) {
+  //                 setLoading(true);
+  //                 const res = await downloadAudio(podcast);
+  //                 setLoading(false);
+  //                 Snackbar.show({
+  //                   text: res.message,
+  //                   duration: Snackbar.LENGTH_SHORT,
+  //                 });
+  //               } else {
+  //                 Snackbar.show({
+  //                   text: 'Something went wrong! try again',
+  //                   duration: Snackbar.LENGTH_SHORT,
+  //                 });
+  //               }
+  //             }}>
+  //             <Ionicons name="download-outline" size={27} color="#1E1E1E" />
+  //           </TouchableOpacity>
+  //         )}
+
+  //         <TouchableOpacity
+  //           style={styles.footerItem}
+  //           onPress={() => {
+  //             if (isConnected) {
+  //               if (podcast) {
+  //                 navigation.navigate('PodcastDiscussion', {
+  //                   podcastId: podcast?._id,
+  //                   mentionedUsers: podcast?.mentionedUsers,
+  //                 });
+  //               }
+  //             } else {
+  //               Snackbar.show({
+  //                 text: 'You are currently offline',
+  //                 duration: Snackbar.LENGTH_SHORT,
+  //               });
+  //             }
+  //           }}>
+  //           <Ionicons name="chatbubble-outline" size={24} color="#1E1E1E" />
+  //           <Text style={styles.likeCount}>
+  //             {podcast?.commentCount ? formatCount(podcast?.commentCount) : 0}
+  //           </Text>
+  //         </TouchableOpacity>
+
+  //         <TouchableOpacity onPress={handleShare}>
+  //           <Ionicons name="share-outline" size={27} color="#1E1E1E" />
+  //         </TouchableOpacity>
+  //       </View>
+
+  //       <Text style={styles.episodeTitle}>{podcast?.title}</Text>
+  //       <View>
+  //         <Text
+  //           style={styles.podcastTitle}
+  //           numberOfLines={isExpanded ? undefined : 3}
+  //           ellipsizeMode="tail">
+  //           {podcast?.description}
+  //         </Text>
+  //         {podcast &&
+  //           podcast.description &&
+  //           podcast?.description?.length > 100 && (
+  //             <TouchableOpacity onPress={() => setIsExpanded(!isExpanded)}>
+  //               <Text style={styles.readMoreText}>
+  //                 {isExpanded ? 'Read Less ' : 'Read More '}
+  //               </Text>
+  //             </TouchableOpacity>
+  //           )}
+  //       </View>
+
+  //       <View style={styles.tagsContainer}>
+  //         {podcast?.tags?.map((tag, index) => (
+  //           <Text key={index} style={styles.tagText}>
+  //             #{tag.name}
+  //           </Text>
+  //         ))}
+  //       </View>
+
+  //       <View style={styles.metaInfo}>
+  //         <Text style={styles.metaText}>
+  //           {moment(podcast?.updated_at).format('MMMM Do YYYY, h:mm A')}
+  //         </Text>
+  //         {podcast && (
+  //           <Text style={styles.metaText}>
+  //             {podcast?.viewUsers.length <= 1
+  //               ? `${podcast?.viewUsers.length} view`
+  //               : `${formatCount(podcast?.viewUsers.length ?? 0)} views`}
+  //           </Text>
+  //         )}
+  //       </View>
+
+  //       <Slider
+  //         style={styles.slider}
+  //         minimumValue={0}
+  //         maximumValue={duration}
+  //         value={player.currentStatus.currentTime}
+  //         minimumTrackTintColor={PRIMARY_COLOR}
+  //         maximumTrackTintColor="#ccc"
+  //         thumbTintColor={PRIMARY_COLOR}
+  //         onSlidingComplete={handleSeek}
+  //       />
+
+  //       <View style={styles.timeRow}>
+  //         <Text style={styles.time}>{formatTime(position)}</Text>
+  //         <Text style={styles.time}>{formatTime(duration)}</Text>
+  //       </View>
+
+  //       {player.currentStatus.isBuffering && (
+  //         <Text style={styles.bufferingText}>⏳ Buffering... please wait</Text>
+  //       )}
+
+  //       <TouchableOpacity
+  //         style={[
+  //           styles.listenButton,
+  //           player.currentStatus.isBuffering && styles.listenButtonDisabled,
+  //         ]}
+  //         onPress={handleListenPress}
+  //         disabled={player.currentStatus.isBuffering}>
+  //         <Text style={styles.listenText}>
+  //           {player.currentStatus.playing ? '⏸️Pause' : '🎧 Listen Now'}
+  //         </Text>
+  //       </TouchableOpacity>
+  //     </ScrollView>
+  //   </SafeAreaView>
+  // );
+
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView>
-        {podcast && podcast.cover_image ? (
-          <Image
-            source={{
-              uri: podcast?.cover_image.startsWith('http')
-                ? podcast?.cover_image
-                : `${GET_STORAGE_DATA}/${podcast?.cover_image}`,
+    <Theme name="dark">
+      <YStack
+        flex={1}
+        backgroundColor="#0B1425"
+        padding="$6"
+        paddingTop="$10"
+        justifyContent="space-between">
+        <YStack>
+          <Text color="white" fontSize={42} fontWeight="700">
+            {podcast?.title}
+          </Text>
+        </YStack>
+
+        <YStack alignItems="center" marginTop="$4">
+          <Circle
+            size={100}
+            backgroundColor="#0D1A33"
+            shadowColor="#00D1FF"
+            shadowOffset={{width: 0, height: 0}}
+            shadowRadius={40}
+            onPress={()=>{
+
             }}
-            style={styles.podcastImage}
-          />
-        ) : (
-          <Image
-            source={{
-              uri: 'https://t3.ftcdn.net/jpg/05/10/75/30/360_F_510753092_f4AOmCJAczuGgRLCmHxmowga2tC9VYQP.jpg',
+            alignSelf="center"
+            justifyContent="center">
+            <AntDesign name="cloud-upload" size={75} color={'#72D8FF'} />
+          </Circle>
+        </YStack>
+
+        {playing && (
+          <LottieView
+            source={require('../assets/LottieAnimation/sound-voice-waves.json')}
+            autoPlay
+            loop
+            style={{
+              width: '100%',
+              height: 150,
             }}
-            style={styles.podcastImage}
           />
         )}
 
-        <View
-          style={[
-            styles.footer,
-            {
-              paddingBottom:
-                Platform.OS === 'ios' ? insets.bottom : insets.bottom + 20,
-            },
-          ]}>
-          <View style={styles.authorContainer}>
-            <TouchableOpacity
-              onPress={() => {
-                //  if (article && article?.authorId) {
-                //navigation.navigate('UserProfileScreen', {
-                //  authorId: authorId,
-                // });
-              }}>
-              {podcast?.user_id.Profile_image ? (
-                <Image
-                  source={{
-                    uri: podcast?.user_id.Profile_image.startsWith('http')
-                      ? `${podcast?.user_id.Profile_image}`
-                      : `${GET_STORAGE_DATA}/${podcast?.user_id.Profile_image}`,
-                  }}
-                  style={styles.authorImage}
-                />
-              ) : (
-                <Image
-                  source={{
-                    uri: 'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-                  }}
-                  style={styles.authorImage}
-                />
-              )}
-            </TouchableOpacity>
-            <View>
-              <Text style={styles.authorName}>
-                {podcast ? podcast?.user_id.user_name : ''}
-              </Text>
-              <Text style={styles.authorFollowers}>
-                {podcast?.user_id.followers
-                  ? podcast?.user_id.followers.length > 1
-                    ? `${podcast?.user_id.followers.length} followers`
-                    : `${podcast?.user_id.followers.length} follower`
-                  : '0 follower'}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.footerOptions}>
-          {updateLikeCountMutation.isPending ? (
-            <ActivityIndicator size="small" color={PRIMARY_COLOR} />
-          ) : (
-            <TouchableOpacity
-              style={styles.footerItem}
-              onPress={() => {
-                updateLikeCountMutation.mutate(trackId);
-              }}>
-              {podcast?.likedUsers.includes(user_id) ? (
-                <AntDesign name="heart" size={24} color={PRIMARY_COLOR} />
-              ) : (
-                <Feather name="heart" size={24} color={'black'} />
-              )}
-
-              <Text style={styles.likeCount}>
-                {podcast?.likedUsers?.length
-                  ? formatCount(podcast?.likedUsers?.length)
-                  : 0}
-              </Text>
-            </TouchableOpacity>
-          )}
-          {isLoading ? (
-            <ActivityIndicator size="small" color={PRIMARY_COLOR} />
-          ) : (
-            <TouchableOpacity
-              onPress={async () => {
-                if (podcast) {
-                  setLoading(true);
-                  const res = await downloadAudio(podcast);
-                  setLoading(false);
-                  Snackbar.show({
-                    text: res.message,
-                    duration: Snackbar.LENGTH_SHORT,
-                  });
-                } else {
-                  Snackbar.show({
-                    text: 'Something went wrong! try again',
-                    duration: Snackbar.LENGTH_SHORT,
-                  });
-                }
-              }}>
-              <Ionicons name="download-outline" size={27} color="#1E1E1E" />
-            </TouchableOpacity>
-          )}
-
-          <TouchableOpacity
-            style={styles.footerItem}
-            onPress={() => {
-              if (isConnected) {
-                if (podcast) {
-                  navigation.navigate('PodcastDiscussion', {
-                    podcastId: podcast?._id,
-                    mentionedUsers: podcast?.mentionedUsers,
-                  });
-                }
-              } else {
-                Snackbar.show({
-                  text: 'You are currently offline',
-                  duration: Snackbar.LENGTH_SHORT,
-                });
+        <YStack marginTop="$1">
+          <Slider
+            style={styles.slider}
+            minimumValue={0}
+            maximumValue={duration}
+            value={position}
+            minimumTrackTintColor={PRIMARY_COLOR}
+            maximumTrackTintColor="#ccc"
+            thumbTintColor={PRIMARY_COLOR}
+            onSlidingComplete={async (value: number) => {
+              if (player) {
+                await player.seekTo(value);
+                setPosition(value);
               }
-            }}>
-            <Ionicons name="chatbubble-outline" size={24} color="#1E1E1E" />
-            <Text style={styles.likeCount}>
-              {podcast?.commentCount ? formatCount(podcast?.commentCount) : 0}
-            </Text>
-          </TouchableOpacity>
+            }}
+          />
 
-          <TouchableOpacity onPress={handleShare}>
-            <Ionicons name="share-outline" size={27} color="#1E1E1E" />
-          </TouchableOpacity>
-        </View>
+          <XStack justifyContent="space-between" marginTop="$3">
+            <Text color="#C0C9DA">{formatSecTime(position)}</Text>
+            <Text color="#C0C9DA">{formatSecTime(duration)}</Text>
+          </XStack>
+        </YStack>
 
-        <Text style={styles.episodeTitle}>{podcast?.title}</Text>
-        <View>
-          <Text
-            style={styles.podcastTitle}
-            numberOfLines={isExpanded ? undefined : 3}
-            ellipsizeMode="tail">
-            {podcast?.description}
-          </Text>
-          {podcast &&
-            podcast.description &&
-            podcast?.description?.length > 100 && (
-              <TouchableOpacity onPress={() => setIsExpanded(!isExpanded)}>
-                <Text style={styles.readMoreText}>
-                  {isExpanded ? 'Read Less ' : 'Read More '}
-                </Text>
-              </TouchableOpacity>
-            )}
-        </View>
+        <XStack
+          justifyContent="space-around"
+          alignItems="center"
+          marginTop="$4">
+          <Button
+            height={90}
+            chromeless
+            onPress={handleBackward}
+            icon={<Ionicons name="play-back" size={26} color="#9BB3C8" />}
+          />
+          <Button
+            width={90}
+            height={90}
+            borderRadius={45}
+            onPress={() => {
+              if (player.currentStatus.playing) {
+                handlePause();
+              } else {
+                handlePlay();
+              }
+            }}
+            backgroundColor="#4ACDFF"
+            icon={
+              playing ? (
+                <Ionicons name="pause" size={50} color="white" />
+              ) : (
+                <Ionicons name="play" size={50} color="white" />
+              )
+            }
+            elevate
+            shadowColor="#4ACDFF"
+            shadowRadius={30}
+            shadowOffset={{width: 0, height: 0}}
+          />
 
-        <View style={styles.tagsContainer}>
-          {podcast?.tags?.map((tag, index) => (
-            <Text key={index} style={styles.tagText}>
-              #{tag.name}
-            </Text>
-          ))}
-        </View>
+          <Button
+            height={90}
+            chromeless
+            onPress={handleForward}
+            icon={<Ionicons name="play-forward" size={26} color="#9BB3C8" />}
+          />
+        </XStack>
 
-        <View style={styles.metaInfo}>
-          <Text style={styles.metaText}>
-            {moment(podcast?.updated_at).format('MMMM Do YYYY, h:mm A')}
-          </Text>
-          {podcast && (
-            <Text style={styles.metaText}>
-              {podcast?.viewUsers.length <= 1
-                ? `${podcast?.viewUsers.length} view`
-                : `${formatCount(podcast?.viewUsers.length ?? 0)} views`}
-            </Text>
-          )}
-        </View>
-
-        <Slider
-          style={styles.slider}
-          minimumValue={0}
-          maximumValue={duration}
-          value={player.currentStatus.currentTime}
-          minimumTrackTintColor={PRIMARY_COLOR}
-          maximumTrackTintColor="#ccc"
-          thumbTintColor={PRIMARY_COLOR}
-          onSlidingComplete={handleSeek}
-        />
-
-        <View style={styles.timeRow}>
-          <Text style={styles.time}>{formatTime(position)}</Text>
-          <Text style={styles.time}>{formatTime(duration)}</Text>
-        </View>
-
-        {player.currentStatus.isBuffering && (
-          <Text style={styles.bufferingText}>⏳ Buffering... please wait</Text>
-        )}
-
-        <TouchableOpacity
-          style={[
-            styles.listenButton,
-            player.currentStatus.isBuffering && styles.listenButtonDisabled,
-          ]}
-          onPress={handleListenPress}
-          disabled={player.currentStatus.isBuffering}>
-          <Text style={styles.listenText}>
-            {player.currentStatus.playing ? '⏸️Pause' : '🎧 Listen Now'}
-          </Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </SafeAreaView>
+        <Text
+          marginTop="$4"
+          marginBottom="$6"
+          textAlign="center"
+          color="#8FA3BB"
+          fontSize={13}>
+          Saved at:
+        </Text>
+      </YStack>
+    </Theme>
   );
 };
 
