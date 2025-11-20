@@ -356,7 +356,7 @@ const StackNavigation = () => {
         name="PodcastDetail"
         component={PodcastDetail}
         options={({navigation}) => ({
-          headerShown: true,
+          headerShown: false,
           headerTitle: '',
           headerTransparent: true,
           headerBackTitleVisible: false,

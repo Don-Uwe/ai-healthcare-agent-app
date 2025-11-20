@@ -266,6 +266,9 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
     return <Loader />;
   }
 
+        
+
+
   // return (
   //   <SafeAreaView style={styles.container}>
   //     <ScrollView>
@@ -485,125 +488,200 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   //   </SafeAreaView>
   // );
 
-  return (
-    <Theme name="dark">
-      <YStack
-        flex={1}
-        backgroundColor="#0B1425"
-        padding="$6"
-        paddingTop="$10"
-        justifyContent="space-between">
-        <YStack>
-          <Text color="white" fontSize={42} fontWeight="700">
-            {podcast?.title}
-          </Text>
-        </YStack>
+return (
+  <Theme name="dark">
+    <YStack
+      flex={1}
+      backgroundColor="#0B1425"
+      padding="$6"
+      paddingTop="$10"
+      justifyContent="space-between"
+    >
 
-        <YStack alignItems="center" marginTop="$4">
-          <Circle
-            size={100}
-            backgroundColor="#0D1A33"
-            shadowColor="#00D1FF"
-            shadowOffset={{width: 0, height: 0}}
-            shadowRadius={40}
-            onPress={()=>{
+      {/* TITLE */}
+      <YStack>
+        <Text color="white" fontSize={38} fontWeight="700">
+          {podcast?.title}
+        </Text>
+      </YStack>
 
-            }}
-            alignSelf="center"
-            justifyContent="center">
-            <AntDesign name="cloud-upload" size={75} color={'#72D8FF'} />
-          </Circle>
-        </YStack>
+      {/* MAIN WAVE */}
+      <YStack alignItems="center" mt="$4">
+        <LottieView
+          source={require('../assets/LottieAnimation/wave-loop.json')}
+          autoPlay
+          loop
+          style={{ width: '100%', height: 150 }}
+        />
+      </YStack>
 
-        {playing && (
+      {/* PLAYING VISUALIZER */}
+      {playing && (
+        <YStack alignItems="center" mt="$2">
           <LottieView
             source={require('../assets/LottieAnimation/sound-voice-waves.json')}
             autoPlay
             loop
-            style={{
-              width: '100%',
-              height: 150,
-            }}
+            style={{ width: '100%', height: 150 }}
           />
+        </YStack>
+      )}
+
+      {/* SLIDER + TIME */}
+      <YStack mt="$2">
+        <Slider
+          style={styles.slider}
+          minimumValue={0}
+          maximumValue={duration}
+          value={position}
+          minimumTrackTintColor={PRIMARY_COLOR}
+          maximumTrackTintColor="#ccc"
+          thumbTintColor={PRIMARY_COLOR}
+          onSlidingComplete={async v => {
+            if (player) {
+              await player.seekTo(v);
+              setPosition(v);
+            }
+          }}
+        />
+
+        <XStack justifyContent="space-between" mt="$3">
+          <Text color="#C0C9DA">{formatSecTime(position)}</Text>
+          <Text color="#C0C9DA">{formatSecTime(duration)}</Text>
+        </XStack>
+      </YStack>
+
+      {/* PLAYER BUTTONS */}
+      <XStack justifyContent="space-around" alignItems="center" mt="$4">
+        <Button
+          height={90}
+          chromeless
+          onPress={handleBackward}
+          icon={<Ionicons name="play-back" size={26} color="#9BB3C8" />}
+        />
+
+        <Button
+          width={90}
+          height={90}
+          borderRadius={45}
+          bg="#4ACDFF"
+          onPress={() =>
+            player.currentStatus.playing ? handlePause() : handlePlay()
+          }
+          icon={
+            playing ? (
+              <Ionicons name="pause" size={50} color="white" />
+            ) : (
+              <Ionicons name="play" size={50} color="white" />
+            )
+          }
+          elevate
+          shadowColor="#4ACDFF"
+          shadowRadius={30}
+          shadowOffset={{ width: 0, height: 0 }}
+        />
+
+        <Button
+          height={90}
+          chromeless
+          onPress={handleForward}
+          icon={<Ionicons name="play-forward" size={26} color="#9BB3C8" />}
+        />
+      </XStack>
+
+      {/* FOOTER OPTIONS */}
+      <XStack
+        style={styles.footerOptions}
+        alignItems="center"
+        justifyContent="space-evenly"
+      >
+        {/* LIKE */}
+        {updateLikeCountMutation.isPending ? (
+          <ActivityIndicator size="small" color={PRIMARY_COLOR} />
+        ) : (
+          <TouchableOpacity
+            style={styles.footerItem}
+            onPress={() => updateLikeCountMutation.mutate(trackId)}
+          >
+            {podcast?.likedUsers.includes(user_id) ? (
+              <AntDesign name="heart" size={24} color={PRIMARY_COLOR} />
+            ) : (
+              <Feather name="heart" size={24} color="white" />
+            )}
+
+            <Text style={styles.likeCount}>
+              {podcast?.likedUsers?.length
+                ? formatCount(podcast.likedUsers.length)
+                : 0}
+            </Text>
+          </TouchableOpacity>
         )}
 
-        <YStack marginTop="$1">
-          <Slider
-            style={styles.slider}
-            minimumValue={0}
-            maximumValue={duration}
-            value={position}
-            minimumTrackTintColor={PRIMARY_COLOR}
-            maximumTrackTintColor="#ccc"
-            thumbTintColor={PRIMARY_COLOR}
-            onSlidingComplete={async (value: number) => {
-              if (player) {
-                await player.seekTo(value);
-                setPosition(value);
+        {/* DOWNLOAD */}
+        {isLoading ? (
+          <ActivityIndicator size="small" color={PRIMARY_COLOR} />
+        ) : (
+          <TouchableOpacity
+            onPress={async () => {
+              if (!podcast) {
+                Snackbar.show({
+                  text: 'Something went wrong! try again',
+                  duration: Snackbar.LENGTH_SHORT,
+                });
+                return;
               }
-            }}
-          />
 
-          <XStack justifyContent="space-between" marginTop="$3">
-            <Text color="#C0C9DA">{formatSecTime(position)}</Text>
-            <Text color="#C0C9DA">{formatSecTime(duration)}</Text>
-          </XStack>
-        </YStack>
+              setLoading(true);
+              const res = await downloadAudio(podcast);
+              setLoading(false);
 
-        <XStack
-          justifyContent="space-around"
-          alignItems="center"
-          marginTop="$4">
-          <Button
-            height={90}
-            chromeless
-            onPress={handleBackward}
-            icon={<Ionicons name="play-back" size={26} color="#9BB3C8" />}
-          />
-          <Button
-            width={90}
-            height={90}
-            borderRadius={45}
-            onPress={() => {
-              if (player.currentStatus.playing) {
-                handlePause();
-              } else {
-                handlePlay();
-              }
+              Snackbar.show({
+                text: res.message,
+                duration: Snackbar.LENGTH_SHORT,
+              });
             }}
-            backgroundColor="#4ACDFF"
-            icon={
-              playing ? (
-                <Ionicons name="pause" size={50} color="white" />
-              ) : (
-                <Ionicons name="play" size={50} color="white" />
-              )
+          >
+            <Ionicons name="download-outline" size={27} color="white" />
+          </TouchableOpacity>
+        )}
+
+        {/* COMMENTS */}
+        <TouchableOpacity
+          style={styles.footerItem}
+          onPress={() => {
+            if (!isConnected) {
+              Snackbar.show({
+                text: 'You are currently offline',
+                duration: Snackbar.LENGTH_SHORT,
+              });
+              return;
             }
-            elevate
-            shadowColor="#4ACDFF"
-            shadowRadius={30}
-            shadowOffset={{width: 0, height: 0}}
-          />
 
-          <Button
-            height={90}
-            chromeless
-            onPress={handleForward}
-            icon={<Ionicons name="play-forward" size={26} color="#9BB3C8" />}
-          />
-        </XStack>
+            if (podcast) {
+              navigation.navigate('PodcastDiscussion', {
+                podcastId: podcast._id,
+                mentionedUsers: podcast.mentionedUsers,
+              });
+            }
+          }}
+        >
+          <Ionicons name="chatbubble-outline" size={24} color="white" />
+          <Text style={styles.likeCount}>
+            {podcast?.commentCount
+              ? formatCount(podcast.commentCount)
+              : 0}
+          </Text>
+        </TouchableOpacity>
 
-        <Text
-          marginTop="$4"
-          marginBottom="$6"
-          textAlign="center"
-          color="#8FA3BB"
-          fontSize={13}>
-          Saved at:
-        </Text>
-      </YStack>
-    </Theme>
-  );
+        {/* SHARE */}
+        <TouchableOpacity onPress={handleShare}>
+          <Ionicons name="share-outline" size={27} color="white" />
+        </TouchableOpacity>
+      </XStack>
+    </YStack>
+  </Theme>
+);
+
 };
 
 export default PodcastDetail;
@@ -721,7 +799,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-evenly',
     alignItems: 'center',
     marginTop: 10,
-    marginBottom: 12,
+    marginBottom: hp(6),
     paddingHorizontal: 12,
   },
   footer: {
@@ -775,6 +853,6 @@ const styles = StyleSheet.create({
   likeCount: {
     marginLeft: 4,
     fontSize: 14,
-    color: '#333',
+    color: '#fff',
   },
 });

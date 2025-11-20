@@ -420,7 +420,10 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
         Alert.alert('Error: Comment Not Found');
       }
     } else {
-      const formatted = replaceTriggerValues(newComment, ({name}) => `@${name}`);
+      const formatted = replaceTriggerValues(
+        newComment,
+        ({name}) => `@${name}`,
+      );
       const newCommentObj = {
         userId: user_id,
         podcastId: route.params.podcastId,
@@ -465,7 +468,7 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <SafeAreaView
-            style={{flex: 1, backgroundColor: '#f8f9fb', padding: wp(0.2)}}>
+            style={{flex: 1, backgroundColor: '#f8f9fb', padding: wp(0.1)}}>
             {/* Header Section */}
             <YStack space="$3">
               <H3 fontSize={19} color="black" fontWeight={'600'}>
@@ -500,12 +503,52 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
                 paddingVertical={'$3'}
                 elevation="$2">
                 <Text color="white" fontWeight="600" fontSize={16}>
-                  View Full Podcast Details
+                  🎧 Listen Now
                 </Text>
               </Button>
               <Paragraph color="$gray10" fontSize={17}>
                 {podcast?.description}
               </Paragraph>
+
+              <View style={styles.authorContainer}>
+                <TouchableOpacity
+                  onPress={() => {
+                    //  if (article && article?.authorId) {
+                    //navigation.navigate('UserProfileScreen', {
+                    //  authorId: authorId,
+                    // });
+                  }}>
+                  {podcast?.user_id.Profile_image ? (
+                    <Image
+                      source={{
+                        uri: podcast?.user_id.Profile_image.startsWith('http')
+                          ? `${podcast?.user_id.Profile_image}`
+                          : `${GET_STORAGE_DATA}/${podcast?.user_id.Profile_image}`,
+                      }}
+                      style={styles.authorImage}
+                    />
+                  ) : (
+                    <Image
+                      source={{
+                        uri: 'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
+                      }}
+                      style={styles.authorImage}
+                    />
+                  )}
+                </TouchableOpacity>
+                <View>
+                  <Text style={styles.authorName}>
+                    {podcast ? podcast?.user_id.user_name : ''}
+                  </Text>
+                  <Text style={styles.authorFollowers}>
+                    {podcast?.user_id.followers
+                      ? podcast?.user_id.followers.length > 1
+                        ? `${podcast?.user_id.followers.length} followers`
+                        : `${podcast?.user_id.followers.length} follower`
+                      : '0 follower'}
+                  </Text>
+                </View>
+              </View>
 
               <Suggestions suggestions={filteredUsers} {...triggers.mention} />
 
@@ -571,6 +614,38 @@ const styles = StyleSheet.create({
   commentsList: {
     flex: 1,
     marginBottom: 20,
+  },
+
+  authorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+    marginVertical: 10
+  },
+  authorImage: {
+    height: 45,
+    width: 45,
+    borderRadius: 45,
+  },
+  authorName: {
+    fontWeight: '700',
+    fontSize: 15,
+  },
+  authorFollowers: {
+    fontWeight: '400',
+    fontSize: 13,
+  },
+  followButton: {
+    backgroundColor: PRIMARY_COLOR,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    paddingVertical: 8,
+  },
+  followButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
   },
   commentContainer: {
     flexDirection: 'row',
