@@ -471,7 +471,7 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
             style={{flex: 1, backgroundColor: '#f8f9fb', padding: wp(0.1)}}>
             {/* Header Section */}
             <YStack space="$3">
-              <H3 fontSize={19} color="black" fontWeight={'600'}>
+              <H3 fontSize={19} color="black"  fontWeight={'600'}>
                 {podcast?.title}
               </H3>
 

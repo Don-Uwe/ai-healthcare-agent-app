@@ -32,28 +32,30 @@ const TabNavigation = () => {
           },
         }}
       />
-     <Tab.Screen
-  name="Podcasts"
-  component={PodcastsScreen}
-  options={({ navigation }) => ({
-    headerShown: true,
-    headerTitle: '🎧 Podcasts',
-    headerTransparent: true,
-    headerStyle: {
-       backgroundColor:"#000A60"
-    },
-    headerTitleStyle: {
-      fontSize: 23,
-      marginBottom: 12,
-       color:"white"
-    },
-    headerRight: () => (
-      <HeaderRightMenu onClick={()=>{
-        navigation.navigate('PodcastSearch');
-      }} />
-    ),
-  })}
-/>
+      <Tab.Screen
+        name="Podcasts"
+        component={PodcastsScreen}
+        options={({navigation}) => ({
+          headerShown: true,
+          headerTitle: '🎧 Podcasts',
+          headerTransparent: true,
+          headerStyle: {
+            backgroundColor: '#000A60',
+          },
+          headerTitleStyle: {
+            fontSize: 23,
+            marginBottom: 12,
+            color: 'white',
+          },
+          headerRight: () => (
+            <HeaderRightMenu
+              onClick={() => {
+                navigation.navigate('PodcastSearch');
+              }}
+            />
+          ),
+        })}
+      />
 
       <Tab.Screen
         name="Chatbot"
@@ -86,13 +88,23 @@ const TabNavigation = () => {
               <FontAwesome6 size={20} name="arrow-left" color="black" />
             </TouchableOpacity>
           ),
-
         })}
       />
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
-        options={{headerShown: false}}
+        options={{
+          headerShown: true,
+          headerTransparent: true,
+          headerStyle: {
+            backgroundColor: '#000A60',
+          },
+          headerTitleStyle: {
+            fontSize: 23,
+            marginBottom: 12,
+            color: 'white',
+          },
+        }}
       />
     </Tab.Navigator>
   );

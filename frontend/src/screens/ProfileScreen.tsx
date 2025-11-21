@@ -20,7 +20,7 @@ import Loader from '../components/Loader';
 import {useFocusEffect} from '@react-navigation/native';
 import Snackbar from 'react-native-snackbar';
 import {useSocket} from '../../SocketContext';
-import {setSocialUserId, setUserHandle} from '../store/UserSlice';
+import {setUserHandle} from '../store/UserSlice';
 
 const ProfileScreen = ({navigation}: ProfileScreenProps) => {
   const {user_handle, user_id, user_token} = useSelector(
