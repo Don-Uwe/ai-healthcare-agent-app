@@ -1,23 +1,14 @@
 import {StyleSheet, Alert, Dimensions} from 'react-native';
 import {useCallback, useEffect, useState} from 'react';
 
-import {
-  YStack,
-  XStack,
-  Text,
-  Card,
-  ScrollView,
-  Image,
-  Select,
-  View,
-} from 'tamagui';
+import {YStack, XStack, Text, Card, ScrollView, Image, View} from 'tamagui';
 
-import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
+import {PRIMARY_COLOR} from '../helper/Theme';
 //import {LineChart} from 'react-native-gifted-charts';
 import {LineChart} from 'react-native-chart-kit';
 import {useQuery} from '@tanstack/react-query';
 import moment from 'moment';
-import {fp} from '../helper/Metric';
+import {fp, hp} from '../helper/Metric';
 import {useSelector} from 'react-redux';
 import axios from 'axios';
 import {
@@ -474,10 +465,10 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
     <Loader />;
   }
 
-   const processData = data => {
-   if (!Array.isArray(data) || data.length === 0) {
-    return [0,0,0,0,0,0,0,0,0,0,0,0];
-  }
+  const processData = data => {
+    if (!Array.isArray(data) || data.length === 0) {
+      return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    }
 
     /*
     console.log('data', data.map(item => ({
@@ -502,10 +493,40 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
     }
 
     //console.log("Label data", data)
-    
+
     return data.map(item => item.date?.substring(8) ?? '-');
   };
 
+  const getTrendMessage = () => {
+    const monthNames = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+
+    // If month selected
+    if (selectedMonth !== -1) {
+      const monthName = monthNames[selectedMonth];
+      const year = moment().year(); // current year
+      return `Your ${userState === 0? "Reading" : "Writing"} activity for ${monthName} ${year}`;
+    }
+
+    // If year selected
+    if (selectedYear !== -1) {
+      return `Your ${userState === 0? "Reading" : "Writing"} activity for the year ${selectedYear}`;
+    }
+
+    return '';
+  };
 
   // const screenWidth = Dimensions.get('window').width;
 
@@ -854,11 +875,11 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
   const screenWidth = Dimensions.get('window').width;
 
   return (
-    <ScrollView flex={1} backgroundColor={ON_PRIMARY_COLOR} paddingBottom="$12">
+    <ScrollView flex={1} backgroundColor="$background" paddingBottom="$12">
       {/* Filters */}
       <YStack paddingHorizontal="$2" marginTop="$4" gap="$3">
         {/* Read / Write */}
-        <View style={styles.rowContainer}>
+        {/* <View style={styles.rowContainer}>
           <Dropdown
             style={styles.dropdown}
             //placeholderStyle={styles.placeholderStyle}
@@ -886,64 +907,125 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
           <Text style={styles.btnText}>
             {moment(new Date()).format('DD MMM, YYYY')}
           </Text>
-        </View>
+        </View> */}
 
-        <View style={styles.rowContainer}>
+        {/* Read / Write Toggle Buttons */}
+        <XStack
+          paddingHorizontal="$1"
+          marginTop="$4"
+          gap="$3"
+          justifyContent="space-between">
+          <XStack
+            flex={1}
+            backgroundColor="$background"
+            borderRadius="$4"
+            borderWidth={1}
+            borderColor="#c1c1c1"
+            overflow="hidden">
+            {/* Read Button */}
+            <YStack
+              flex={1}
+              paddingVertical="$3"
+              justifyContent="center"
+              alignItems="center"
+              backgroundColor={userState === 0 ? PRIMARY_COLOR : 'transparent'}
+              onPress={() => setUserState(0)}
+              pressStyle={{scale: 0.97}}>
+              <Text
+                fontSize={16}
+                fontWeight="700"
+                color={userState === 0 ? 'white' : 'black'}>
+                Read
+              </Text>
+            </YStack>
+
+            {/* Write Button */}
+            <YStack
+              flex={1}
+              paddingVertical="$3"
+              justifyContent="center"
+              alignItems="center"
+              backgroundColor={userState === 1 ? PRIMARY_COLOR : 'transparent'}
+              onPress={() => setUserState(1)}
+              pressStyle={{scale: 0.97}}>
+              <Text
+                fontSize={16}
+                fontWeight="700"
+                color={userState === 1 ? 'white' : 'black'}>
+                Write
+              </Text>
+            </YStack>
+          </XStack>
+        </XStack>
+
+        <View
+          style={{
+            ...styles.rowContainer,
+            paddingHorizontal: 10,
+            marginTop: 10,
+            gap: 10,
+          }}>
+          {/* MONTH DROPDOWN */}
           <Dropdown
             style={{
               ...styles.button,
-              backgroundColor: selectedMonth === -1 ? '#c1c1c1' : PRIMARY_COLOR,
+              flex: 1,
+              borderRadius: 10,
+              borderWidth: 0.6,
+              backgroundColor: selectedMonth === -1 ? '#EFEFEF' : PRIMARY_COLOR,
             }}
-            //placeholderStyle={styles.placeholderStyle}
-
+            itemTextStyle={{
+              fontSize: 15,
+              fontWeight: '600',
+            }}
+            placeholderStyle={{
+              fontSize: 15,
+              fontWeight: '600',
+              color: '#555',
+            }}
             data={monthlyDrops}
             labelField="label"
             valueField="value"
-            //placeholder={!isFocus ? 'Select your role' : '...'}
-            itemTextStyle={{
-              fontSize: 14,
-            }}
             value={selectedMonth}
             onFocus={() => setIsFocus(true)}
             onBlur={() => setIsFocus(false)}
             onChange={item => {
               setSelectedMonth(item.value);
-              // setSelectedDay(-1);
               setSelectedYear(-1);
               setIsFocus(false);
-              //if (userState === 0) {
-              // refetchMonthReadReport();
-              //} else {
               refetchMonthWriteReport();
-              // }
             }}
             placeholder={'Monthly'}
           />
+
+          {/* YEAR DROPDOWN */}
           <Dropdown
             style={{
               ...styles.button,
-              backgroundColor: selectedYear === -1 ? '#c1c1c1' : PRIMARY_COLOR,
+              flex: 1,
+              borderRadius: 10,
+              borderWidth: 0.6,
+              backgroundColor: selectedYear === -1 ? '#EFEFEF' : PRIMARY_COLOR,
             }}
-            //placeholderStyle={styles.placeholderStyle}
-            //placeholderStyle={styles.placeholderStyle}
+            placeholderStyle={{
+              fontSize: 15,
+              fontWeight: '600',
+              color: '#555',
+            }}
+            itemTextStyle={{
+              fontSize: 15,
+              fontWeight: '600',
+            }}
             data={yearlyDrops}
             labelField="label"
             valueField="value"
-            //placeholder={!isFocus ? 'Select your role' : '...'}
             value={selectedYear}
             onFocus={() => setIsFocus(true)}
             onBlur={() => setIsFocus(false)}
             onChange={item => {
               setSelectedYear(item.value);
-              // setSelectedDay(-1);
               setSelectedMonth(-1);
               setIsFocus(false);
-
-              // if (userState === 0) {
-              //  refetchYearlyReadReport();
-              // } else {
-              // refetchYearlyWriteReport();
-              // }
             }}
             placeholder={'Yearly'}
           />
@@ -954,16 +1036,21 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
       {(selectedMonth !== -1 || selectedYear !== -1) && (
         <ScrollView horizontal marginTop="$5" px="$3">
           <Card
-            elevate
+            //elevate
             padding="$4"
             borderRadius="$4"
             backgroundColor="$background"
             bordered
             // boc="$color3"
             borderWidth={0.6}>
-            <Text fontSize={17} fontWeight="700" marginBottom="$3">
+            <Text fontSize={19} fontWeight="700" marginBottom="$3">
               {userState === 0 ? 'Reading Trend' : 'Writing Trend'}
             </Text>
+
+            <Text fontSize={14} color="#6A6A6A" marginBottom="$3">
+              {getTrendMessage()}
+            </Text>
+
             {/* <LineChart
               data={{
                 labels:
@@ -1022,7 +1109,7 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
               bezier
               withInnerLines={false}
             /> */}
-         
+
             <LineChart
               data={{
                 labels: processLabels(
@@ -1033,7 +1120,7 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
                     : userState === 0
                     ? monthlyReadReport
                     : monthlyWriteReport,
-                ), 
+                ),
 
                 datasets: [
                   {
@@ -1051,30 +1138,30 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
                   },
                 ],
               }}
-              width={Math.max(
-                ((userState === 0
-                  ? selectedYear !== -1
-                    ? yearlyReadReport?.length
-                    : monthlyReadReport?.length
-                  : selectedYear !== -1
-                  ? yearlyWriteReport?.length
-                  : monthlyWriteReport?.length) ?? 0) * 40,
-                330,
-              )} 
-            //  width={screenWidth - 40}
+              // width={Math.max(
+              //   ((userState === 0
+              //     ? selectedYear !== -1
+              //       ? yearlyReadReport?.length
+              //       : monthlyReadReport?.length
+              //     : selectedYear !== -1
+              //     ? yearlyWriteReport?.length
+              //     : monthlyWriteReport?.length) ?? 0) * 40,
+              //   330,
+              // )}
+              width={screenWidth - 40}
               height={350}
               withInnerLines={false}
               withOuterLines={false}
               withHorizontalLabels={true}
               withVerticalLabels={false}
-              bezier={false} 
+              bezier={false}
               yAxisSuffix=""
               //yAxisInterval={1}
               chartConfig={{
                 backgroundColor: '#fff',
                 backgroundGradientFrom: '#fff',
                 backgroundGradientTo: '#fff',
-               // decimalPlaces: 0,
+                // decimalPlaces: 0,
                 color: opacity => `rgba(0,0,0,${opacity})`,
                 labelColor: () => '#6A6A6A',
                 propsForDots: {
@@ -1089,7 +1176,7 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
                   key={index}
                   style={{
                     position: 'absolute',
-                    top: y - 20, 
+                    top: y - 20,
                     left: x - 10,
                     fontSize: 12,
                     fontWeight: '600',
@@ -1232,6 +1319,7 @@ const styles = StyleSheet.create({
 
   button: {
     width: '45%',
+    height: hp(6),
     padding: 8,
     borderRadius: 8,
     margin: 2,

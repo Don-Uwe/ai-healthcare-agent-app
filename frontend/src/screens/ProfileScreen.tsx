@@ -384,16 +384,16 @@ const styles = StyleSheet.create({
   },
   innerContainer: {
     flex: 1,
-    backgroundColor: ON_PRIMARY_COLOR,
+  //  backgroundColor: ON_PRIMARY_COLOR,
   },
   tabsContainer: {
-    backgroundColor: ON_PRIMARY_COLOR,
+  //  backgroundColor: ON_PRIMARY_COLOR,
     overflow: 'hidden',
   },
   scrollViewContentContainer: {
-    paddingHorizontal: 16,
-    marginTop: 16,
-    backgroundColor: ON_PRIMARY_COLOR,
+    paddingHorizontal: 6,
+    marginTop: 6,
+    //backgroundColor: ON_PRIMARY_COLOR,
   },
   flatListContentContainer: {
     paddingHorizontal: 16,
@@ -410,7 +410,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   tabBarStyle: {
-    backgroundColor: ON_PRIMARY_COLOR,
+    //backgroundColor: ON_PRIMARY_COLOR,
   },
   labelStyle: {
     fontWeight: '600',

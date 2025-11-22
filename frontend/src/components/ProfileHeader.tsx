@@ -73,7 +73,7 @@ const ProfileHeader = ({
         />
         <Text style={styles.nameText}>{username}</Text>
         <Text style={[styles.usernameText, {color: PRIMARY_COLOR}]}>
-          {userhandle}
+          @{userhandle}
         </Text>
         {isDoctor && (
           <View style={styles.experienceContainer}>
@@ -222,7 +222,7 @@ export default ProfileHeader;
 const styles = StyleSheet.create({
   container: {
     //marginBottom: 20,
-    backgroundColor: ON_PRIMARY_COLOR,
+   // backgroundColor: ON_PRIMARY_COLOR,
   },
   ellipseSvg: {
     position: 'absolute',
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
   contentContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: hp(5),
+    marginTop: hp(1.5),
     // backgroundColor: ON_PRIMARY_COLOR
   },
   profileImage: {
