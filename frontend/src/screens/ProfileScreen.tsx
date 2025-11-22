@@ -21,6 +21,7 @@ import {useFocusEffect} from '@react-navigation/native';
 import Snackbar from 'react-native-snackbar';
 import {useSocket} from '../../SocketContext';
 import {setUserHandle} from '../store/UserSlice';
+import { StatusBar } from 'expo-status-bar';
 
 const ProfileScreen = ({navigation}: ProfileScreenProps) => {
   const {user_handle, user_id, user_token} = useSelector(
@@ -310,6 +311,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
 
   return (
     <View style={styles.container}>
+  
       <View style={[styles.innerContainer, {paddingTop: insets.top}]}>
         <Tabs.Container
           renderHeader={renderHeader}
@@ -378,7 +380,7 @@ export default ProfileScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0CAFFF',
+  //  backgroundColor: '#0CAFFF',
   },
   innerContainer: {
     flex: 1,

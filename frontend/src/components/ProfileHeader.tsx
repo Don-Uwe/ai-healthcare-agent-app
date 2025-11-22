@@ -210,21 +210,7 @@ const ProfileHeader = ({
           </TouchableOpacity>
         </View>
         <View style={styles.infoContainer}>
-          <TouchableOpacity style={styles.infoBlock}>
-            <Text style={[styles.infoText2, {color: PRIMARY_COLOR}]}>
-              {improvementPublished > 1
-                ? `${improvementPublished} Improvements`
-                : `${improvementPublished} Improvement`}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.infoBlock}>
-            <Text style={[styles.infoText2, {color: PRIMARY_COLOR}]}>
-              {articlesPosted > 1
-                ? `${articlesPosted} Articles`
-                : `${articlesPosted} Article`}
-            </Text>
-          </TouchableOpacity>
+          
         </View>
       </View>
     </View>

@@ -94,7 +94,7 @@ const TabNavigation = () => {
         name="Profile"
         component={ProfileScreen}
         options={{
-          headerShown: true,
+          headerShown: false,
           headerTransparent: true,
           headerStyle: {
             backgroundColor: '#000A60',

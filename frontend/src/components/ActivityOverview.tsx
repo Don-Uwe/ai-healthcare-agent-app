@@ -1,15 +1,18 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  ScrollView,
-  Pressable,
-  Alert,
-} from 'react-native';
+import {StyleSheet, Alert, Dimensions} from 'react-native';
 import {useCallback, useEffect, useState} from 'react';
+
+import {
+  YStack,
+  XStack,
+  Text,
+  Card,
+  ScrollView,
+  Image,
+  Select,
+  View,
+} from 'tamagui';
+
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
-import {Dropdown} from 'react-native-element-dropdown';
 //import {LineChart} from 'react-native-gifted-charts';
 import {LineChart} from 'react-native-chart-kit';
 import {useQuery} from '@tanstack/react-query';
@@ -39,7 +42,7 @@ import {
 import Loader from './Loader';
 
 import {useFocusEffect} from '@react-navigation/native';
-import {formatCount} from '../helper/Utils';
+import {Dropdown} from 'react-native-element-dropdown';
 
 interface Props {
   onArticleViewed: ({
@@ -55,11 +58,7 @@ interface Props {
   others: boolean;
   articlePosted: number;
 }
-const ActivityOverview = ({
-  onArticleViewed,
-  userId,
-  others,
-}: Props) => {
+const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
   const [userState, setUserState] = useState<number>(0);
   const {user_token, user_id} = useSelector((state: any) => state.user);
   const [isFocus, setIsFocus] = useState<boolean>(false);
@@ -88,14 +87,11 @@ const ActivityOverview = ({
   const yearlyDrops = [
     {label: 'Yearly', value: -1},
     {label: '2024', value: 2024},
-    //{label: '2025', value: 2025},
+    {label: '2025', value: 2025},
   ];
 
   // GET MONTHLY READ REPORT
-  const {
-    data: monthlyReadReport,
-    refetch: refetchMonthReadReport,
-  } = useQuery({
+  const {data: monthlyReadReport, refetch: refetchMonthReadReport} = useQuery({
     queryKey: ['get-month-read-reports'],
     queryFn: async () => {
       try {
@@ -137,56 +133,52 @@ const ActivityOverview = ({
     enabled: !!(user_token && selectedMonth !== -1 && (userId || !others)),
   });
 
-  const {
-    data: monthlyWriteReport,
-    refetch: refetchMonthWriteReport,
-  } = useQuery({
-    queryKey: ['get-month-write-reports'],
-    queryFn: async () => {
-      try {
-        if (selectedMonth === -1) {
-          return [];
-        }
-        if (user_token === '') {
-          Alert.alert('No token found');
-          return [];
-        }
-        if (!userId) {
-          if (others) {
-            // user id not found for others profile
+  const {data: monthlyWriteReport, refetch: refetchMonthWriteReport} = useQuery(
+    {
+      queryKey: ['get-month-write-reports'],
+      queryFn: async () => {
+        try {
+          if (selectedMonth === -1) {
+            return [];
+          }
+          if (user_token === '') {
+            Alert.alert('No token found');
+            return [];
+          }
+          if (!userId) {
+            if (others) {
+              // user id not found for others profile
+              Alert.alert('No user id found');
+              return [];
+            }
+          }
+          if (user_id === '' && !others) {
+            // user id not found for own profile
             Alert.alert('No user id found');
             return [];
           }
-        }
-        if (user_id === '' && !others) {
-          // user id not found for own profile
-          Alert.alert('No user id found');
-          return [];
-        }
 
-        let url = others
-          ? `${GET_MONTHLY_WRITES_REPORT}?userId=${userId}&month=${selectedMonth}`
-          : `${GET_MONTHLY_WRITES_REPORT}?userId=${user_id}&month=${selectedMonth}`;
-        // console.log('URL', url);
-        const response = await axios.get(url, {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        });
+          let url = others
+            ? `${GET_MONTHLY_WRITES_REPORT}?userId=${userId}&month=${selectedMonth}`
+            : `${GET_MONTHLY_WRITES_REPORT}?userId=${user_id}&month=${selectedMonth}`;
+          // console.log('URL', url);
+          const response = await axios.get(url, {
+            headers: {
+              Authorization: `Bearer ${user_token}`,
+            },
+          });
 
-        return response.data.monthlyWrites as MonthStatus[];
-      } catch (err) {
-        console.error('Error fetching articles writes monthly:', err);
-      }
+          return response.data.monthlyWrites as MonthStatus[];
+        } catch (err) {
+          console.error('Error fetching articles writes monthly:', err);
+        }
+      },
+      enabled: !!(user_token && selectedMonth !== -1 && (userId || !others)),
     },
-    enabled: !!(user_token && selectedMonth !== -1 && (userId || !others)),
-  });
+  );
 
   // GET YEARLY READ REPORT
-  const {
-    data: yearlyReadReport,
-    refetch: refetchYearlyReadReport,
-  } = useQuery({
+  const {data: yearlyReadReport, refetch: refetchYearlyReadReport} = useQuery({
     queryKey: ['get-yearly-read-reports'],
     queryFn: async () => {
       try {
@@ -229,57 +221,53 @@ const ActivityOverview = ({
 
   // GET YEARLY WRITE REPORT
 
-  const {
-    data: yearlyWriteReport,
-    refetch: refetchYearlyWriteReport,
-  } = useQuery({
-    queryKey: ['get-yearly-write-reports'],
-    queryFn: async () => {
-      try {
-        if (selectedYear === -1) {
-          return [];
-        }
-        if (user_token === '') {
-          Alert.alert('No token found');
-          return [];
-        }
-        if (!userId) {
-          if (others) {
-            // user id not found for others profile
+  const {data: yearlyWriteReport, refetch: refetchYearlyWriteReport} = useQuery(
+    {
+      queryKey: ['get-yearly-write-reports'],
+      queryFn: async () => {
+        try {
+          if (selectedYear === -1) {
+            return [];
+          }
+          if (user_token === '') {
+            Alert.alert('No token found');
+            return [];
+          }
+          if (!userId) {
+            if (others) {
+              // user id not found for others profile
+              Alert.alert('No user id found');
+              return [];
+            }
+          }
+          if (user_id === '' && !others) {
+            // user id not found for own profile
             Alert.alert('No user id found');
             return [];
           }
+
+          let url = others
+            ? `${GET_YEARLY_WRITES_REPORT}?userId=${userId}&year=${selectedYear}`
+            : `${GET_YEARLY_WRITES_REPORT}?userId=${user_id}&year=${selectedYear}`;
+
+          const response = await axios.get(url, {
+            headers: {
+              Authorization: `Bearer ${user_token}`,
+            },
+          });
+
+          return response.data.yearlyWrites as YearStatus[];
+        } catch (err) {
+          console.error('Error fetching articles reads yearly:', err);
         }
-        if (user_id === '' && !others) {
-          // user id not found for own profile
-          Alert.alert('No user id found');
-          return [];
-        }
+      },
 
-        let url = others
-          ? `${GET_YEARLY_WRITES_REPORT}?userId=${userId}&year=${selectedYear}`
-          : `${GET_YEARLY_WRITES_REPORT}?userId=${user_id}&year=${selectedYear}`;
-
-        const response = await axios.get(url, {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        });
-
-        return response.data.yearlyWrites as YearStatus[];
-      } catch (err) {
-        console.error('Error fetching articles reads yearly:', err);
-      }
+      enabled: !!(user_token && selectedYear !== -1 && (userId || !others)),
     },
-
-    enabled: !!(user_token && selectedYear !== -1 && (userId || !others)),
-  });
+  );
 
   // GET MOST VIEWED ARTICLE
-  const {
-    data: article,
-    isLoading: isArticleLoading,
-  } = useQuery({
+  const {data: article, isLoading: isArticleLoading} = useQuery({
     queryKey: ['get-most-viewed-articles'],
     queryFn: async () => {
       try {
@@ -319,9 +307,7 @@ const ActivityOverview = ({
 
   // GET USER STATUS FOR LIKE AND VIEW COUNT
 
-  const {
-    isLoading: likeViewStatDataLoading,
-  } = useQuery({
+  const {isLoading: likeViewStatDataLoading} = useQuery({
     queryKey: ['get-like-view-status'],
     queryFn: async () => {
       try {
@@ -362,9 +348,7 @@ const ActivityOverview = ({
 
   // GET TOTAL READ STATUS
 
-  const {
-    isLoading: readStatDataLoading,
-  } = useQuery({
+  const {isLoading: readStatDataLoading} = useQuery({
     queryKey: ['get-read-status'],
     queryFn: async () => {
       try {
@@ -405,9 +389,7 @@ const ActivityOverview = ({
 
   // GET TOTAL WRITE STATUS
 
-  const {
-    isLoading: writeStatDataLoading,
-  } = useQuery({
+  const {isLoading: writeStatDataLoading} = useQuery({
     queryKey: ['get-write-status'],
     queryFn: async () => {
       try {
@@ -446,7 +428,6 @@ const ActivityOverview = ({
     },
   });
 
-
   useFocusEffect(
     useCallback(() => {
       if (userState === 0) {
@@ -462,7 +443,12 @@ const ActivityOverview = ({
     } else {
       refetchMonthWriteReport();
     }
-  }, [refetchMonthReadReport, refetchMonthWriteReport, selectedMonth, userState]);
+  }, [
+    refetchMonthReadReport,
+    refetchMonthWriteReport,
+    selectedMonth,
+    userState,
+  ]);
 
   useEffect(() => {
     // This will run when selectedMonth changes
@@ -471,7 +457,12 @@ const ActivityOverview = ({
     } else {
       refetchYearlyWriteReport();
     }
-  }, [refetchYearlyReadReport, refetchYearlyWriteReport, selectedYear, userState]);
+  }, [
+    refetchYearlyReadReport,
+    refetchYearlyWriteReport,
+    selectedYear,
+    userState,
+  ]);
 
   if (
     isArticleLoading ||
@@ -479,10 +470,11 @@ const ActivityOverview = ({
     writeStatDataLoading ||
     readStatDataLoading
   ) {
+    // eslint-disable-next-line no-unused-expressions
     <Loader />;
   }
 
-  const processData = data => {
+   const processData = data => {
    if (!Array.isArray(data) || data.length === 0) {
     return [0,0,0,0,0,0,0,0,0,0,0,0];
   }
@@ -500,7 +492,7 @@ const ActivityOverview = ({
     */
 
     return data.map(item =>
-      Number.isFinite(Number(item.value)) ? Math.round(Number(item.value)) : 0,
+      Number.isFinite(Number(item.value)) ? Number(item.value) : 0,
     );
   };
 
@@ -509,466 +501,670 @@ const ActivityOverview = ({
       return [];
     }
 
+    //console.log("Label data", data)
+    
     return data.map(item => item.date?.substring(8) ?? '-');
   };
 
- // const screenWidth = Dimensions.get('window').width;
 
+  // const screenWidth = Dimensions.get('window').width;
+
+  // return (
+  //   <ScrollView
+  //     style={{
+  //       flex: 1,
+  //       marginBottom: 120,
+  //       backgroundColor: ON_PRIMARY_COLOR,
+  //     }}>
+
+  //     {/**
+  //      *   {selectedDay !== -1 && (
+  //       <View style={{marginTop: 10}}>
+  //         <LineChart data={chartData} areaChart />
+  //       </View>
+  //     )}
+  //      */}
+
+  //     {selectedMonth !== -1 && (
+  //       <ScrollView horizontal>
+  //         <LineChart
+  //           data={{
+  //             labels:
+  //               userState === 0
+  //                 ? processLabels(monthlyReadReport)
+  //                 : processLabels(monthlyWriteReport),
+
+  //             datasets: [
+  //               {
+  //                 data:
+  //                   userState === 0
+  //                     ? processData(monthlyReadReport)
+  //                     : processData(monthlyWriteReport),
+  //                 strokeWidth: 1,
+  //                 color: (opacity = 1) => `rgba(33, 150, 243, ${opacity})`,
+  //               },
+  //             ],
+  //           }}
+  //           width={Math.max(
+  //             (userState === 0
+  //               ? monthlyReadReport? monthlyReadReport?.length : 0
+  //               : monthlyWriteReport? monthlyWriteReport?.length : 0) * 40,
+  //             300,
+  //           )} // Fallback width
+  //           height={350}
+  //           chartConfig={{
+  //             backgroundGradientFrom: ON_PRIMARY_COLOR,
+  //             backgroundGradientTo: ON_PRIMARY_COLOR,
+  //             color: (opacity = 1) => `rgba(0,0,0,${opacity})`,
+  //             labelColor: () => '#999',
+  //             formatYLabel: y => parseInt(y).toString(),
+  //             propsForDots: {
+  //               r: '3',
+  //               strokeWidth: '2',
+  //               stroke: PRIMARY_COLOR,
+  //             },
+  //           }}
+  //           bezier
+  //           withInnerLines={false}
+  //           style={{
+  //             marginVertical: 2,
+  //             borderRadius: 12,
+  //           }}
+  //         />
+  //       </ScrollView>
+  //     )}
+
+  //     {selectedYear !== -1 && (
+  //       <ScrollView horizontal>
+  //         <LineChart
+  //           data={{
+  //             labels:
+  //               userState === 0
+  //                 ? processLabels(yearlyReadReport)
+  //                 : processLabels(yearlyWriteReport),
+
+  //             datasets: [
+  //               {
+  //                 data:
+  //                   userState === 0
+  //                     ? processData(yearlyReadReport)
+  //                     : processData(yearlyWriteReport),
+  //                 strokeWidth: 1,
+  //                 color: (opacity = 1) => `rgba(33, 150, 243, ${opacity})`,
+  //               },
+  //             ],
+  //           }}
+  //           width={Math.max(
+  //             (userState === 0
+  //               ? yearlyReadReport? yearlyReadReport?.length : 0
+  //               : yearlyWriteReport? yearlyWriteReport?.length : 0) * 40,
+  //             300,
+  //           )} // Fallback width
+  //           height={350}
+  //           chartConfig={{
+  //             backgroundGradientFrom: ON_PRIMARY_COLOR,
+  //             backgroundGradientTo: ON_PRIMARY_COLOR,
+  //             color: (opacity = 1) => `rgba(0,0,0,${opacity})`,
+  //             labelColor: () => '#999',
+  //             formatYLabel: y => parseInt(y).toString(),
+  //             propsForDots: {
+  //               r: '3',
+  //               strokeWidth: '2',
+  //               stroke: PRIMARY_COLOR,
+  //             },
+  //           }}
+  //           bezier
+  //           withInnerLines={false}
+  //           style={{
+  //             marginVertical: 2,
+  //             borderRadius: 12,
+  //           }}
+  //         />
+  //       </ScrollView>
+  //     )}
+
+  //     {
+  //       /**
+  //        * <View style={{marginTop: 10}}>
+  //         <LineChart
+  //           data={
+  //             userState === 0
+  //               ? yearlyReadReport?.map(item => ({
+  //                   value: item.value,
+  //                   label: moment(item.month).format('MMM'),
+  //                 }))
+  //               : yearlyWriteReport?.map(item => ({
+  //                   value: item.value,
+  //                   label: moment(item.month).format('MMM'),
+  //                 }))
+  //           }
+  //           // isAnimated={true}
+  //           // animationDuration={500}
+  //           minYValue={0}
+  //           // minXValue={0}
+  //           areaChart
+  //         />
+  //       </View>
+  //        */
+  //     }
+
+  //     {/**
+  //        *
+  //        * <Image
+  //       source={{
+  //         uri: 'https://i.ibb.co/T2WNVJZ/Whats-App-Image-2024-07-14-at-12-46-02-AM-1.jpg',
+  //       }}
+  //       style={{width: '95%', height: 600, resizeMode: 'contain'}}
+  //     />
+  //        */}
+
+  //     <View
+  //       style={{
+  //         height: 0.8,
+  //         width: '96%',
+  //         margin: 10,
+  //         backgroundColor: '#c1c1c1',
+  //       }}
+  //     />
+
+  //     {/**
+  //      *
+  //      *  <View style={styles.box}>
+  //         <Text style={styles.titleText}> Total Reads</Text>
+
+  //         <Text style={styles.valueText}>{readStat?.progress}%</Text>
+
+  //         <Progress.Bar
+  //           progress={readStat?.progress ? readStat?.progress : 0}
+  //           width={140}
+  //           borderColor={PRIMARY_COLOR}
+  //           borderWidth={1}
+  //           color={
+  //             readStat?.progress
+  //               ? readStat?.progress < 0.4
+  //                 ? colorList[0]
+  //                 : readStat?.progress < 0.8
+  //                 ? colorList[1]
+  //                 : colorList[2]
+  //               : 'black'
+  //           }
+  //           borderRadius={4}
+  //           style={{marginTop: 2}}
+  //         />
+  //       </View>
+  //      *    <View style={styles.box}>
+  //         <Text style={styles.titleText}> Total Writes</Text>
+
+  //         <Text style={styles.valueText}>{writeStat?.progress}%</Text>
+
+  //         <Progress.Bar
+  //           progress={writeStat?.progress ? writeStat?.progress : 0}
+  //           width={140}
+  //           borderColor={PRIMARY_COLOR}
+  //           borderWidth={1}
+  //           color={
+  //             writeStat?.progress
+  //               ? writeStat?.progress < 0.4
+  //                 ? colorList[0]
+  //                 : writeStat?.progress < 0.8
+  //                 ? colorList[1]
+  //                 : colorList[2]
+  //               : 'black'
+  //           }
+  //           borderRadius={4}
+  //           style={{marginTop: 4}}
+  //         />
+  //       </View>
+
+  //       <View style={styles.box}>
+  //         <Text style={styles.titleText}> Total Likes</Text>
+  //         <Text style={{...styles.valueText, marginStart: 8}}>
+  //           {likeViewStat?.likeProgress}%
+  //         </Text>
+
+  //         <Progress.Bar
+  //           progress={
+  //             likeViewStat?.likeProgress ? likeViewStat?.likeProgress : 0
+  //           }
+  //           width={140}
+  //           borderColor={PRIMARY_COLOR}
+  //           borderWidth={1}
+  //           color={
+  //             likeViewStat?.likeProgress
+  //               ? likeViewStat?.likeProgress < 0.4
+  //                 ? colorList[0]
+  //                 : likeViewStat?.likeProgress < 0.8
+  //                 ? colorList[1]
+  //                 : colorList[2]
+  //               : 'black'
+  //           }
+  //           borderRadius={4}
+  //           style={{marginTop: 4}}
+  //         />
+  //       </View>
+
+  //       <View style={styles.box}>
+  //         <Text style={styles.titleText}> Total Views</Text>
+
+  //         <Text style={{...styles.valueText, marginStart: 1}}>
+  //           {likeViewStat?.viewProgress}%
+  //         </Text>
+
+  //         <Progress.Bar
+  //           progress={
+  //             likeViewStat?.viewProgress ? likeViewStat.viewProgress : 0
+  //           }
+  //           width={140}
+  //           borderColor={PRIMARY_COLOR}
+  //           borderWidth={1}
+  //           color={
+  //             likeViewStat?.viewProgress
+  //               ? likeViewStat?.viewProgress < 0.4
+  //                 ? colorList[0]
+  //                 : likeViewStat?.viewProgress < 0.8
+  //                 ? colorList[1]
+  //                 : colorList[2]
+  //               : 'black'
+  //           }
+  //           borderRadius={4}
+  //           style={{marginTop: 4}}
+  //         />
+  //       </View>
+  //     </View>
+
+  //     <View
+  //       style={{
+  //         height: 0.8,
+  //         width: '96%',
+  //         margin: 10,
+  //         backgroundColor: '#c1c1c1',
+  //       }}
+  //     />
+  //      */}
+
+  //     {others && (
+  //       <>
+  //         <Text
+  //           style={{
+  //             ...styles.btnText,
+  //             marginVertical: 10,
+  //             fontWeight: '700',
+  //             fontSize: 17,
+  //             marginStart: 10,
+  //           }}>
+  //           Most viewed articles
+  //         </Text>
+  //         {article &&
+  //           article.map((item, index) => {
+  //             return (
+  //               <Pressable
+  //                 key={index}
+  //                 onPress={() => {
+  //                   onArticleViewed({
+  //                     articleId: Number(item._id),
+  //                     authorId: item.authorId ?? '',
+  //                     recordId: item.pb_recordId,
+  //                   });
+  //                 }}>
+  //                 <View style={styles.cardContainer}>
+  //                   {item?.imageUtils[0] && item?.imageUtils[0].length !== 0 ? (
+  //                     <Image
+  //                       source={{
+  //                         uri: item?.imageUtils[0].startsWith('http')
+  //                           ? item?.imageUtils[0]
+  //                           : `${GET_IMAGE}/${item?.imageUtils[0]}`,
+  //                       }}
+  //                       style={styles.image}
+  //                     />
+  //                   ) : (
+  //                     <Image
+  //                       source={require('../../assets/images/no_results.jpg')}
+  //                       style={styles.image}
+  //                     />
+  //                   )}
+
+  //                   <View style={styles.textContainer}>
+  //                     <Text style={styles.footerText}>
+  //                       {item?.tags.map(tag => tag.name).join(' | ')}
+  //                     </Text>
+  //                     <Text style={styles.title}>{item?.title}</Text>
+
+  //                     <Text style={{...styles.footerText, marginBottom: 3}}>
+  //                       {item?.viewUsers
+  //                         ? item?.viewUsers.length > 1
+  //                           ? `${formatCount(item?.viewUsers.length)} views`
+  //                           : `${item?.viewUsers.length} view`
+  //                         : '0 view'}
+  //                     </Text>
+  //                     <Text style={styles.footerText}>
+  //                       Last updated: {''}
+  //                       {moment(new Date(item?.lastUpdated)).format(
+  //                         'DD/MM/YYYY',
+  //                       )}
+  //                     </Text>
+  //                   </View>
+  //                 </View>
+  //               </Pressable>
+  //             );
+  //           })}
+  //       </>
+  //     )}
+  //   </ScrollView>
+  // );
+  const screenWidth = Dimensions.get('window').width;
 
   return (
-    <ScrollView
-      style={{
-        flex: 1,
-        marginBottom: 120,
-        backgroundColor: ON_PRIMARY_COLOR,
-      }}>
-      <View style={styles.rowContainer}>
-        <Dropdown
-          style={styles.dropdown}
-          //placeholderStyle={styles.placeholderStyle}
-          itemTextStyle={{
-            fontSize: 17,
-            fontWeight: '700',
-          }}
-          data={[
-            {label: 'Read', value: 0},
-            {label: 'Write', value: 1},
-          ]}
-          labelField="label"
-          valueField="value"
-          //placeholder={!isFocus ? 'Select your role' : '...'}
-          value={userState}
-          onFocus={() => setIsFocus(true)}
-          onBlur={() => setIsFocus(false)}
-          onChange={item => {
-            setUserState(item.value);
-            setIsFocus(false);
-          }}
-          placeholder={undefined}
-        />
-
-        <Text style={styles.btnText}>
-          {moment(new Date()).format('DD MMM, YYYY')}
-        </Text>
-      </View>
-
-      <View style={styles.rowContainer}>
-        {/**
-         *
-         *  <Dropdown
-          style={{
-            ...styles.button,
-            backgroundColor: selectedDay === -1 ? '#c1c1c1' : PRIMARY_COLOR,
-          }}
-          //placeholderStyle={styles.placeholderStyle}
-          data={dailyDrops}
-          labelField="label"
-          valueField="value"
-          //placeholder={!isFocus ? 'Select your role' : '...'}
-          value={selectedDay}
-          onFocus={() => setIsFocus(true)}
-          onBlur={() => setIsFocus(false)}
-          onChange={item => {
-            setSelectedDay(item.value);
-            setSelectedMonth(-1);
-            setSelectedYear(-1);
-            setIsFocus(false);
-          }}
-          placeholder={'Daily'}
-        />
-         */}
-
-        <Dropdown
-          style={{
-            ...styles.button,
-            backgroundColor: selectedMonth === -1 ? '#c1c1c1' : PRIMARY_COLOR,
-          }}
-          //placeholderStyle={styles.placeholderStyle}
-
-          data={monthlyDrops}
-          labelField="label"
-          valueField="value"
-          //placeholder={!isFocus ? 'Select your role' : '...'}
-          itemTextStyle={{
-            fontSize: 14,
-          }}
-          value={selectedMonth}
-          onFocus={() => setIsFocus(true)}
-          onBlur={() => setIsFocus(false)}
-          onChange={item => {
-            setSelectedMonth(item.value);
-            // setSelectedDay(-1);
-            setSelectedYear(-1);
-            setIsFocus(false);
-            //if (userState === 0) {
-            // refetchMonthReadReport();
-            //} else {
-            refetchMonthWriteReport();
-            // }
-          }}
-          placeholder={'Monthly'}
-        />
-        <Dropdown
-          style={{
-            ...styles.button,
-            backgroundColor: selectedYear === -1 ? '#c1c1c1' : PRIMARY_COLOR,
-          }}
-          //placeholderStyle={styles.placeholderStyle}
-          //placeholderStyle={styles.placeholderStyle}
-          data={yearlyDrops}
-          labelField="label"
-          valueField="value"
-          //placeholder={!isFocus ? 'Select your role' : '...'}
-          value={selectedYear}
-          onFocus={() => setIsFocus(true)}
-          onBlur={() => setIsFocus(false)}
-          onChange={item => {
-            setSelectedYear(item.value);
-            // setSelectedDay(-1);
-            setSelectedMonth(-1);
-            setIsFocus(false);
-
-            // if (userState === 0) {
-            //  refetchYearlyReadReport();
-            // } else {
-            // refetchYearlyWriteReport();
-            // }
-          }}
-          placeholder={'Yearly'}
-        />
-      </View>
-
-      {/**
-       *   {selectedDay !== -1 && (
-        <View style={{marginTop: 10}}>
-          <LineChart data={chartData} areaChart />
-        </View>
-      )}
-       */}
-
-      {selectedMonth !== -1 && (
-        <ScrollView horizontal>
-          <LineChart
-            data={{
-              labels:
-                userState === 0
-                  ? processLabels(monthlyReadReport)
-                  : processLabels(monthlyWriteReport),
-
-              datasets: [
-                {
-                  data:
-                    userState === 0
-                      ? processData(monthlyReadReport)
-                      : processData(monthlyWriteReport),
-                  strokeWidth: 1,
-                  color: (opacity = 1) => `rgba(33, 150, 243, ${opacity})`,
-                },
-              ],
-            }}
-            width={Math.max(
-              (userState === 0
-                ? monthlyReadReport? monthlyReadReport?.length : 0
-                : monthlyWriteReport? monthlyWriteReport?.length : 0) * 40,
-              300,
-            )} // Fallback width
-            height={350}
-            chartConfig={{
-              backgroundGradientFrom: ON_PRIMARY_COLOR,
-              backgroundGradientTo: ON_PRIMARY_COLOR,
-              color: (opacity = 1) => `rgba(0,0,0,${opacity})`,
-              labelColor: () => '#999',
-              formatYLabel: y => parseInt(y).toString(),
-              propsForDots: {
-                r: '3',
-                strokeWidth: '2',
-                stroke: PRIMARY_COLOR,
-              },
-            }}
-            bezier
-            withInnerLines={false}
-            style={{
-              marginVertical: 2,
-              borderRadius: 12,
-            }}
-          />
-        </ScrollView>
-      )}
-
-      {selectedYear !== -1 && (
-        <ScrollView horizontal>
-          <LineChart
-            data={{
-              labels:
-                userState === 0
-                  ? processLabels(yearlyReadReport)
-                  : processLabels(yearlyWriteReport),
-
-              datasets: [
-                {
-                  data:
-                    userState === 0
-                      ? processData(yearlyReadReport)
-                      : processData(yearlyWriteReport),
-                  strokeWidth: 1,
-                  color: (opacity = 1) => `rgba(33, 150, 243, ${opacity})`,
-                },
-              ],
-            }}
-            width={Math.max(
-              (userState === 0
-                ? yearlyReadReport? yearlyReadReport?.length : 0
-                : yearlyWriteReport? yearlyWriteReport?.length : 0) * 40,
-              300,
-            )} // Fallback width
-            height={350}
-            chartConfig={{
-              backgroundGradientFrom: ON_PRIMARY_COLOR,
-              backgroundGradientTo: ON_PRIMARY_COLOR,
-              color: (opacity = 1) => `rgba(0,0,0,${opacity})`,
-              labelColor: () => '#999',
-              formatYLabel: y => parseInt(y).toString(),
-              propsForDots: {
-                r: '3',
-                strokeWidth: '2',
-                stroke: PRIMARY_COLOR,
-              },
-            }}
-            bezier
-            withInnerLines={false}
-            style={{
-              marginVertical: 2,
-              borderRadius: 12,
-            }}
-          />
-        </ScrollView>
-      )}
-
-      {
-        /**
-         * <View style={{marginTop: 10}}>
-          <LineChart
-            data={
-              userState === 0
-                ? yearlyReadReport?.map(item => ({
-                    value: item.value,
-                    label: moment(item.month).format('MMM'),
-                  }))
-                : yearlyWriteReport?.map(item => ({
-                    value: item.value,
-                    label: moment(item.month).format('MMM'),
-                  }))
-            }
-            // isAnimated={true}
-            // animationDuration={500}
-            minYValue={0}
-            // minXValue={0}
-            areaChart
-          />
-        </View>
-         */
-      }
-
-      {/**
-         *
-         * <Image
-        source={{
-          uri: 'https://i.ibb.co/T2WNVJZ/Whats-App-Image-2024-07-14-at-12-46-02-AM-1.jpg',
-        }}
-        style={{width: '95%', height: 600, resizeMode: 'contain'}}
-      />
-         */}
-
-      <View
-        style={{
-          height: 0.8,
-          width: '96%',
-          margin: 10,
-          backgroundColor: '#c1c1c1',
-        }}
-      />
-
-      {/**
-       * 
-       *  <View style={styles.box}>
-          <Text style={styles.titleText}> Total Reads</Text>
-
-          <Text style={styles.valueText}>{readStat?.progress}%</Text>
-
-          <Progress.Bar
-            progress={readStat?.progress ? readStat?.progress : 0}
-            width={140}
-            borderColor={PRIMARY_COLOR}
-            borderWidth={1}
-            color={
-              readStat?.progress
-                ? readStat?.progress < 0.4
-                  ? colorList[0]
-                  : readStat?.progress < 0.8
-                  ? colorList[1]
-                  : colorList[2]
-                : 'black'
-            }
-            borderRadius={4}
-            style={{marginTop: 2}}
-          />
-        </View>
-       *    <View style={styles.box}>
-          <Text style={styles.titleText}> Total Writes</Text>
-
-          <Text style={styles.valueText}>{writeStat?.progress}%</Text>
-
-          <Progress.Bar
-            progress={writeStat?.progress ? writeStat?.progress : 0}
-            width={140}
-            borderColor={PRIMARY_COLOR}
-            borderWidth={1}
-            color={
-              writeStat?.progress
-                ? writeStat?.progress < 0.4
-                  ? colorList[0]
-                  : writeStat?.progress < 0.8
-                  ? colorList[1]
-                  : colorList[2]
-                : 'black'
-            }
-            borderRadius={4}
-            style={{marginTop: 4}}
-          />
-        </View>
-
-        <View style={styles.box}>
-          <Text style={styles.titleText}> Total Likes</Text>
-          <Text style={{...styles.valueText, marginStart: 8}}>
-            {likeViewStat?.likeProgress}%
-          </Text>
-
-          <Progress.Bar
-            progress={
-              likeViewStat?.likeProgress ? likeViewStat?.likeProgress : 0
-            }
-            width={140}
-            borderColor={PRIMARY_COLOR}
-            borderWidth={1}
-            color={
-              likeViewStat?.likeProgress
-                ? likeViewStat?.likeProgress < 0.4
-                  ? colorList[0]
-                  : likeViewStat?.likeProgress < 0.8
-                  ? colorList[1]
-                  : colorList[2]
-                : 'black'
-            }
-            borderRadius={4}
-            style={{marginTop: 4}}
-          />
-        </View>
-
-        <View style={styles.box}>
-          <Text style={styles.titleText}> Total Views</Text>
-
-          <Text style={{...styles.valueText, marginStart: 1}}>
-            {likeViewStat?.viewProgress}%
-          </Text>
-
-          <Progress.Bar
-            progress={
-              likeViewStat?.viewProgress ? likeViewStat.viewProgress : 0
-            }
-            width={140}
-            borderColor={PRIMARY_COLOR}
-            borderWidth={1}
-            color={
-              likeViewStat?.viewProgress
-                ? likeViewStat?.viewProgress < 0.4
-                  ? colorList[0]
-                  : likeViewStat?.viewProgress < 0.8
-                  ? colorList[1]
-                  : colorList[2]
-                : 'black'
-            }
-            borderRadius={4}
-            style={{marginTop: 4}}
-          />
-        </View>
-      </View>
-
-      <View
-        style={{
-          height: 0.8,
-          width: '96%',
-          margin: 10,
-          backgroundColor: '#c1c1c1',
-        }}
-      />
-       */}
-
-      {others && (
-        <>
-          <Text
-            style={{
-              ...styles.btnText,
-              marginVertical: 10,
-              fontWeight: '700',
+    <ScrollView flex={1} backgroundColor={ON_PRIMARY_COLOR} paddingBottom="$12">
+      {/* Filters */}
+      <YStack paddingHorizontal="$2" marginTop="$4" gap="$3">
+        {/* Read / Write */}
+        <View style={styles.rowContainer}>
+          <Dropdown
+            style={styles.dropdown}
+            //placeholderStyle={styles.placeholderStyle}
+            itemTextStyle={{
               fontSize: 17,
-              marginStart: 10,
-            }}>
-            Most viewed articles
+              fontWeight: '700',
+            }}
+            data={[
+              {label: 'Read', value: 0},
+              {label: 'Write', value: 1},
+            ]}
+            labelField="label"
+            valueField="value"
+            //placeholder={!isFocus ? 'Select your role' : '...'}
+            value={userState}
+            onFocus={() => setIsFocus(true)}
+            onBlur={() => setIsFocus(false)}
+            onChange={item => {
+              setUserState(item.value);
+              setIsFocus(false);
+            }}
+            placeholder={undefined}
+          />
+
+          <Text style={styles.btnText}>
+            {moment(new Date()).format('DD MMM, YYYY')}
           </Text>
-          {article &&
-            article.map((item, index) => {
-              return (
-                <Pressable
+        </View>
+
+        <View style={styles.rowContainer}>
+          <Dropdown
+            style={{
+              ...styles.button,
+              backgroundColor: selectedMonth === -1 ? '#c1c1c1' : PRIMARY_COLOR,
+            }}
+            //placeholderStyle={styles.placeholderStyle}
+
+            data={monthlyDrops}
+            labelField="label"
+            valueField="value"
+            //placeholder={!isFocus ? 'Select your role' : '...'}
+            itemTextStyle={{
+              fontSize: 14,
+            }}
+            value={selectedMonth}
+            onFocus={() => setIsFocus(true)}
+            onBlur={() => setIsFocus(false)}
+            onChange={item => {
+              setSelectedMonth(item.value);
+              // setSelectedDay(-1);
+              setSelectedYear(-1);
+              setIsFocus(false);
+              //if (userState === 0) {
+              // refetchMonthReadReport();
+              //} else {
+              refetchMonthWriteReport();
+              // }
+            }}
+            placeholder={'Monthly'}
+          />
+          <Dropdown
+            style={{
+              ...styles.button,
+              backgroundColor: selectedYear === -1 ? '#c1c1c1' : PRIMARY_COLOR,
+            }}
+            //placeholderStyle={styles.placeholderStyle}
+            //placeholderStyle={styles.placeholderStyle}
+            data={yearlyDrops}
+            labelField="label"
+            valueField="value"
+            //placeholder={!isFocus ? 'Select your role' : '...'}
+            value={selectedYear}
+            onFocus={() => setIsFocus(true)}
+            onBlur={() => setIsFocus(false)}
+            onChange={item => {
+              setSelectedYear(item.value);
+              // setSelectedDay(-1);
+              setSelectedMonth(-1);
+              setIsFocus(false);
+
+              // if (userState === 0) {
+              //  refetchYearlyReadReport();
+              // } else {
+              // refetchYearlyWriteReport();
+              // }
+            }}
+            placeholder={'Yearly'}
+          />
+        </View>
+      </YStack>
+
+      {/* Chart Section */}
+      {(selectedMonth !== -1 || selectedYear !== -1) && (
+        <ScrollView horizontal marginTop="$5" px="$3">
+          <Card
+            elevate
+            padding="$4"
+            borderRadius="$4"
+            backgroundColor="$background"
+            bordered
+            // boc="$color3"
+            borderWidth={0.6}>
+            <Text fontSize={17} fontWeight="700" marginBottom="$3">
+              {userState === 0 ? 'Reading Trend' : 'Writing Trend'}
+            </Text>
+            {/* <LineChart
+              data={{
+                labels:
+                  userState === 0
+                    ? processLabels(
+                        selectedYear !== -1
+                          ? yearlyReadReport
+                          : monthlyReadReport,
+                      )
+                    : processLabels(
+                        selectedYear !== -1
+                          ? yearlyWriteReport
+                          : monthlyWriteReport,
+                      ),
+
+                datasets: [
+                  {
+                    data:
+                      userState === 0
+                        ? processData(
+                            selectedYear !== -1
+                              ? yearlyReadReport
+                              : monthlyReadReport,
+                          )
+                        : processData(
+                            selectedYear !== -1
+                              ? yearlyWriteReport
+                              : monthlyWriteReport,
+                          ),
+                  },
+                ],
+              }}
+              width={screenWidth - 40}
+              // width={Math.max(
+              //   ((userState === 0
+              //     ? selectedYear !== -1
+              //       ? yearlyReadReport?.length
+              //       : monthlyReadReport?.length
+              //     : selectedYear !== -1
+              //     ? yearlyWriteReport?.length
+              //     : monthlyWriteReport?.length) ?? 0) * 40,
+              //   330,
+              // )}
+                bezier={false}
+              height={280}
+              chartConfig={{
+                backgroundGradientFrom: '#ffffff',
+                backgroundGradientTo: '#ffffff',
+                color: o => `rgba(0,0,0,${o})`,
+                propsForDots: {
+                  r: '4',
+                  strokeWidth: '1',
+                  stroke: '#6A85F1',
+                },
+              }}
+              bezier
+              withInnerLines={false}
+            /> */}
+         
+            <LineChart
+              data={{
+                labels: processLabels(
+                  selectedYear !== -1
+                    ? userState === 0
+                      ? yearlyReadReport
+                      : yearlyWriteReport
+                    : userState === 0
+                    ? monthlyReadReport
+                    : monthlyWriteReport,
+                ), 
+
+                datasets: [
+                  {
+                    data: processData(
+                      selectedYear !== -1
+                        ? userState === 0
+                          ? yearlyReadReport
+                          : yearlyWriteReport
+                        : userState === 0
+                        ? monthlyReadReport
+                        : monthlyWriteReport,
+                    ),
+                    strokeWidth: 2,
+                    color: () => '#6A85F1',
+                  },
+                ],
+              }}
+              width={Math.max(
+                ((userState === 0
+                  ? selectedYear !== -1
+                    ? yearlyReadReport?.length
+                    : monthlyReadReport?.length
+                  : selectedYear !== -1
+                  ? yearlyWriteReport?.length
+                  : monthlyWriteReport?.length) ?? 0) * 40,
+                330,
+              )} 
+            //  width={screenWidth - 40}
+              height={350}
+              withInnerLines={false}
+              withOuterLines={false}
+              withHorizontalLabels={true}
+              withVerticalLabels={false}
+              bezier={false} 
+              yAxisSuffix=""
+              //yAxisInterval={1}
+              chartConfig={{
+                backgroundColor: '#fff',
+                backgroundGradientFrom: '#fff',
+                backgroundGradientTo: '#fff',
+               // decimalPlaces: 0,
+                color: opacity => `rgba(0,0,0,${opacity})`,
+                labelColor: () => '#6A6A6A',
+                propsForDots: {
+                  r: '5',
+                  strokeWidth: '2',
+                  stroke: '#6A85F1',
+                  fill: '#6A85F1',
+                },
+              }}
+              renderDotContent={({x, y, index, indexData}) => (
+                <Text
                   key={index}
-                  onPress={() => {
-                    onArticleViewed({
-                      articleId: Number(item._id),
-                      authorId: item.authorId ?? '',
-                      recordId: item.pb_recordId,
-                    });
+                  style={{
+                    position: 'absolute',
+                    top: y - 20, 
+                    left: x - 10,
+                    fontSize: 12,
+                    fontWeight: '600',
+                    color: '#000',
                   }}>
-                  <View style={styles.cardContainer}>
-                    {item?.imageUtils[0] && item?.imageUtils[0].length !== 0 ? (
-                      <Image
-                        source={{
-                          uri: item?.imageUtils[0].startsWith('http')
-                            ? item?.imageUtils[0]
-                            : `${GET_IMAGE}/${item?.imageUtils[0]}`,
-                        }}
-                        style={styles.image}
-                      />
-                    ) : (
-                      <Image
-                        source={require('../../assets/images/no_results.jpg')}
-                        style={styles.image}
-                      />
-                    )}
+                  {indexData}
+                </Text>
+              )}
+            />
+          </Card>
+        </ScrollView>
+      )}
 
-                    <View style={styles.textContainer}>
-                      <Text style={styles.footerText}>
-                        {item?.tags.map(tag => tag.name).join(' | ')}
-                      </Text>
-                      <Text style={styles.title}>{item?.title}</Text>
+      {/* Most Viewed */}
+      {others && (
+        <YStack paddingHorizontal="$4" marginTop="$6">
+          <Text fontSize={19} fontWeight="800" marginBottom="$3">
+            Most Viewed Articles
+          </Text>
 
-                      <Text style={{...styles.footerText, marginBottom: 3}}>
-                        {item?.viewUsers
-                          ? item?.viewUsers.length > 1
-                            ? `${formatCount(item?.viewUsers.length)} views`
-                            : `${item?.viewUsers.length} view`
-                          : '0 view'}
-                      </Text>
-                      <Text style={styles.footerText}>
-                        Last updated: {''}
-                        {moment(new Date(item?.lastUpdated)).format(
-                          'DD/MM/YYYY',
-                        )}
-                      </Text>
-                    </View>
-                  </View>
-                </Pressable>
-              );
-            })}
-        </>
+          {article &&
+            article.map((item: ArticleData, index: number) => (
+              <Card
+                key={index}
+                elevate
+                bordered
+                borderWidth={0.6}
+                // boc="$color3"
+                borderRadius="$10"
+                //mb="$4"
+                pressStyle={{scale: 0.98}}
+                onPress={() =>
+                  onArticleViewed({
+                    articleId: Number(item._id),
+                    authorId: item.authorId.toString() ?? '',
+                    recordId: item.pb_recordId,
+                  })
+                }>
+                <XStack>
+                  <Image
+                    source={{
+                      uri: item?.imageUtils[0]?.startsWith('http')
+                        ? item?.imageUtils[0]
+                        : `${GET_IMAGE}/${item?.imageUtils[0]}`,
+                    }}
+                    w={130}
+                    h={130}
+                    br="$8"
+                  />
+
+                  <YStack flex={1} padding="$3">
+                    <Text fontSize={12} color="$gray10">
+                      {item?.tags.map(t => t.name).join(' | ')}
+                    </Text>
+
+                    <Text
+                      fontSize={17}
+                      fontWeight="700"
+                      marginTop="$1"
+                      marginBottom="$1">
+                      {item?.title}
+                    </Text>
+
+                    <Text fontSize={13} color="$gray10">
+                      {item?.viewUsers?.length ?? 0} views
+                    </Text>
+
+                    <Text fontSize={12} color="$gray8" marginTop="$1">
+                      Updated: {moment(item.lastUpdated).format('DD/MM/YYYY')}
+                    </Text>
+                  </YStack>
+                </XStack>
+              </Card>
+            ))}
+        </YStack>
       )}
     </ScrollView>
   );
@@ -979,7 +1175,7 @@ const styles = StyleSheet.create({
     flex: 0,
     width: '100%',
     flexDirection: 'row',
-    padding: 6,
+    padding: 2,
     justifyContent: 'space-between',
     alignItems: 'center',
   },
@@ -1023,20 +1219,20 @@ const styles = StyleSheet.create({
   },
 
   dropdown: {
-    height: 30,
-    width: '35%',
+    height: 40,
+    width: '45%',
     borderColor: '#c1c1c1',
     borderWidth: 0.4,
     borderRadius: 5,
-    paddingHorizontal: 6,
+    paddingHorizontal: 10,
     marginVertical: 3,
     paddingRight: 2,
     marginStart: 4,
   },
 
   button: {
-    width: '40%',
-    padding: 6,
+    width: '45%',
+    padding: 8,
     borderRadius: 8,
     margin: 2,
     marginTop: 4,

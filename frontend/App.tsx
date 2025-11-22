@@ -6,9 +6,9 @@
  */
 
 import React, {useEffect} from 'react';
-import {Platform, StatusBar, useColorScheme, View} from 'react-native';
+import {Platform,  useColorScheme, View} from 'react-native';
 //import {Colors} from 'react-native/Libraries/NewAppScreen';
-import {PRIMARY_COLOR, SECONDARY_COLOR} from './src/helper/Theme';
+import {ON_PRIMARY_COLOR, PRIMARY_COLOR, SECONDARY_COLOR} from './src/helper/Theme';
 import {NavigationContainer} from '@react-navigation/native';
 import StackNavigation from './src/navigations/StackNavigation';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
@@ -25,6 +25,7 @@ import { Provider as PaperProvider } from 'react-native-paper';
 import { TamaguiProvider } from 'tamagui';
 import config from './tamagui.config';
 import { FirebaseProvider } from './hooks/FirebaseContext';
+import { StatusBar } from 'expo-status-bar';
 
 const queryClient = new QueryClient();
 
@@ -37,7 +38,7 @@ declare module '@tamagui/core' {
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
   const backgroundStyle = {
-    backgroundColor: isDarkMode ? '#000' : SECONDARY_COLOR,
+    backgroundColor: isDarkMode ? '#000' : ON_PRIMARY_COLOR,
   };
 
   const BarStyle = Platform.OS === 'ios' ? 'dark-content' : 'light-content';
@@ -161,12 +162,7 @@ function App(): React.JSX.Element {
           <PaperProvider>
           <View
             style={{flex: 1, backgroundColor: backgroundStyle.backgroundColor}}>
-            <StatusBar
-              barStyle={isDarkMode ? 'light-content' : BarStyle}
-              backgroundColor={
-                isDarkMode ? backgroundStyle.backgroundColor : PRIMARY_COLOR
-              }
-            />
+            <StatusBar style="dark" backgroundColor={PRIMARY_COLOR} />
             <NavigationContainer>
               <StackNavigation />
             </NavigationContainer>
