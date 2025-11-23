@@ -81,7 +81,7 @@ const ImprovementCard = ({item, onNavigate}: ImprovementCardProps) => {
               }}>
               <Text style={styles.viewText}>View</Text>
               <AntDesign
-                name="arrowright"
+                name="arrow-right"
                 size={16}
                 color={PRIMARY_COLOR}
                 style={{marginTop: 2}}

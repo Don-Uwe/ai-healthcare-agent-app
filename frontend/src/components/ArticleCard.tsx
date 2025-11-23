@@ -10,13 +10,12 @@ import {
   Platform,
 } from 'react-native';
 import {useEffect, useState} from 'react';
-import {fp, hp} from '../helper/Metric';
+import {fp} from '../helper/Metric';
 import {ArticleCardProps, ArticleData, User} from '../type';
 import moment from 'moment';
-import {useDispatch, useSelector} from 'react-redux';
+import {useSelector} from 'react-redux';
 import axios from 'axios';
 import AntDesign from '@expo/vector-icons/AntDesign';
-import MaterialCommunityIcon from '@expo/vector-icons/MaterialCommunityIcons';
 import IonIcons from '@expo/vector-icons/Ionicons';
 import {useMutation, useQuery} from '@tanstack/react-query';
 import {
@@ -26,9 +25,9 @@ import {
   LIKE_ARTICLE,
   SAVE_ARTICLE,
 } from '../helper/APIUtils';
-import {BUTTON_COLOR, PRIMARY_COLOR} from '../helper/Theme';
+import { PRIMARY_COLOR} from '../helper/Theme';
 import {formatCount} from '../helper/Utils';
-import Animated, {
+import  {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -38,8 +37,8 @@ import ArticleFloatingMenu from './ArticleFloatingMenu';
 import Entypo from '@expo/vector-icons/Entypo';
 import Share from 'react-native-share';
 import RNFS from 'react-native-fs';
-import RNHTMLtoPDF from 'react-native-html-to-pdf';
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+//import {RNHTMLtoPDF} from 'react-native-html-to-pdf';
+import { generatePDF } from 'react-native-html-to-pdf';
 import {useSocket} from '../../SocketContext';
 import EditRequestModal from './EditRequestModal';
 import { FontAwesome } from '@expo/vector-icons';
@@ -53,17 +52,20 @@ const ArticleCard = ({
   handleRepostAction,
   handleReportAction,
   handleEditRequestAction,
+  source
 }: ArticleCardProps) => {
   const {user_token, user_id} = useSelector((state: any) => state.user);
 
   //const socket = io('http://51.20.1.81:8084');
-  const dispatch = useDispatch();
+//  const dispatch = useDispatch();
   const socket = useSocket();
   const width = useSharedValue(0);
   const yValue = useSharedValue(60);
   const [requestModalVisible, setRequestModalVisible] =
     useState<boolean>(false);
   const [menuVisible, setMenuVisible] = useState(false);
+
+  //console.log("Repost users", item.repostUsers);
   const menuStyle = useAnimatedStyle(() => {
     return {
       width: width.value,
@@ -219,7 +221,7 @@ const ArticleCard = ({
 
       if (response.data.htmlContent) {
         const htmlContent = response.data.htmlContent;
-        generatePDF(title, htmlContent);
+        generatePDFData(title, htmlContent);
       }
     } catch (error) {
       console.error('Error generating PDF:', error);
@@ -227,7 +229,7 @@ const ArticleCard = ({
     }
   };
 
-  const generatePDF = async (title: string, htmlContent: string) => {
+  const generatePDFData = async (title: string, htmlContent: string) => {
     try {
       const safeTitle = title.substring(0, 15).replace(/[^a-zA-Z0-9]/g, '_');
       const fileName = `${safeTitle}.pdf`;
@@ -249,9 +251,10 @@ const ArticleCard = ({
         html: htmlContent,
         fileName: safeTitle,
         directory: '',
+        base64: true,
       };
 
-      const file = await RNHTMLtoPDF.convert(options);
+      const file = await generatePDF(options);
 
       await RNFS.moveFile(file.filePath, filePath);
 
@@ -295,7 +298,9 @@ const ArticleCard = ({
         <View style={styles.textContainer}>
           {/* Share Icon */}
           
-          
+          {
+            source === 'home' && (
+              
               <ArticleFloatingMenu
                 items={[
                   {
@@ -351,15 +356,20 @@ const ArticleCard = ({
                  setMenuVisible(false);
                 } }              
                 />
+            )
+          }
             
-          
-
+  
           {/* Icon for more options */}
-          <TouchableOpacity
+          {
+            source === 'home' && (
+              <TouchableOpacity
             style={styles.shareIconContainer}
             onPress={onChange}>
             <Entypo name="dots-three-vertical" size={20} color={'black'} />
           </TouchableOpacity>
+            )
+          }
 
           {/* Title & Footer Text */}
           <Text style={styles.footerText}>
@@ -437,7 +447,9 @@ const ArticleCard = ({
              
             </TouchableOpacity>
 
-            <TouchableOpacity
+            {
+              source === 'home' && (
+                  <TouchableOpacity
               onPress={() => {
                // width.value = withTiming(0, {duration: 300});
                // yValue.value = withTiming(100, {duration: 300});
@@ -450,6 +462,8 @@ const ArticleCard = ({
                 {formatCount(item.repostUsers.length)}
               </Text>
             </TouchableOpacity>
+              )
+            }
 
             {updateSaveStatusMutation.isPending ? (
               <ActivityIndicator size="small" color={PRIMARY_COLOR} />

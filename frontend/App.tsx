@@ -162,7 +162,7 @@ function App(): React.JSX.Element {
           <PaperProvider>
           <View
             style={{flex: 1, backgroundColor: backgroundStyle.backgroundColor}}>
-            <StatusBar style="dark" backgroundColor={PRIMARY_COLOR} />
+            <StatusBar style="dark" backgroundColor={'#000A60'} />
             <NavigationContainer>
               <StackNavigation />
             </NavigationContainer>

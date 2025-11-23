@@ -28,6 +28,7 @@
     "@tamagui/sheet": "^1.135.6",
     "@tamagui/themes": "^1.135.6",
     "@tanstack/react-query": "^5.90.5",
+    "@types/react-native-html-to-pdf": "^0.8.3",
     "audio-module": "file:modules/audio-module",
     "axios": "^1.12.2",
     "date-fns": "^4.1.0",

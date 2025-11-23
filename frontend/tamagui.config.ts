@@ -197,5 +197,6 @@ const config:TamaguiConfig = createTamagui({
   },
 })
 
+export type TamaguiCnfig = typeof config
 
-export default config;
+export default  config;

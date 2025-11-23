@@ -5,7 +5,7 @@ import {
   Pressable,
   TouchableOpacity,
 } from 'react-native';
-import React from 'react';
+import React, { useState } from 'react';
 import {fp, hp} from '../helper/Metric';
 import {ReviewCardProps} from '../type';
 import moment from 'moment';
@@ -32,6 +32,8 @@ const ReviewCard = ({
   //const socket = useSocket();
   const width = useSharedValue(0);
   const yValue = useSharedValue(60);
+
+  const [menuVisible, setMenuVisible] = useState(false);
   const backgroundColor =
     item?.status === StatusEnum.PUBLISHED
       ? 'green'
@@ -78,9 +80,8 @@ const ReviewCard = ({
 
         <View style={styles.textContainer}>
           {/* Share Icon */}
-          {isSelected && (
-            <Animated.View style={[menuStyle, styles.shareIconContainer]}>
-              <ArticleFloatingMenu
+       
+             <ArticleFloatingMenu
                 items={[
                   {
                     name: 'Request to edit',
@@ -90,14 +91,19 @@ const ReviewCard = ({
                     icon: 'edit',
                   },
                 ]}
+                visible={menuVisible} 
+                onDismiss={()=>{
+                 setMenuVisible(false);
+                } }  
               />
-            </Animated.View>
-          )}
+         
 
           {/* Icon for more options */}
           <TouchableOpacity
             style={styles.shareIconContainer}
-            onPress={() => handleAnimation()}>
+            onPress={() => {
+              setMenuVisible(true)
+            }}>
             <Entypo name="dots-three-vertical" size={20} color={'black'} />
           </TouchableOpacity>
 
@@ -142,7 +148,7 @@ const ReviewCard = ({
               }}>
               <Text style={styles.viewText}>View</Text>
               <AntDesign
-                name="arrowright"
+                name="arrow-right"
                 size={16}
                 color={PRIMARY_COLOR}
                 style={{marginTop: 2}}

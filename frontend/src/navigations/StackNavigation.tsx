@@ -618,7 +618,7 @@ const StackNavigation = () => {
           headerShown: true,
           // headerTitle: 'Followers',
           //headerTransparent: true,
-          //headerTitleAlign: 'center',
+          headerTitleAlign: 'center',
           headerBackTitleVisible: false,
           headerStyle: {
             elevation: 4, // Elevation for Android
@@ -713,7 +713,7 @@ const styles = StyleSheet.create({
   },
 
   headerLeftButtonCommentScreen: {
-    marginHorizontal: 15,
+    marginStart: 15,
     //backgroundColor: '#ffffff',
     paddingHorizontal: 10,
     paddingVertical: 4,

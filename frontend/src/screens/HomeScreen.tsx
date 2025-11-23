@@ -327,6 +327,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
             articleRecordId: item.pb_recordId,
           });
         }}
+        source= 'home'
       />
     );
   };
@@ -543,6 +544,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      
       <HomeScreenHeader
         handlePresentModalPress={handlePresentModalPress}
         onTextInputChange={handleSearch}

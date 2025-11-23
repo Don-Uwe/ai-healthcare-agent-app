@@ -313,7 +313,7 @@ export type ArticleCardProps = {
     index: number,
     reason: string,
   ) => void;
-
+ source: string;
 };
 
 export type ReviewCardProps = {

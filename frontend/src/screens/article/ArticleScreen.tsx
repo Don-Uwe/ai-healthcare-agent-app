@@ -25,6 +25,7 @@ import {
   FOLLOW_USER,
   GET_ARTICLE_BY_ID,
   GET_ARTICLE_CONTENT,
+  GET_IMAGE,
   GET_PROFILE_API,
   GET_PROFILE_IMAGE_BY_ID,
   GET_STORAGE_DATA,
@@ -97,6 +98,11 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     },
   });
 
+  useEffect(()=>{
+  refetch();
+  },[articleId, refetch])
+
+  
   const {data: user} = useQuery({
     queryKey: ['get-my-profile'],
     queryFn: async () => {
@@ -158,6 +164,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     },
   });
 
+  console.log("Image utils", `${GET_IMAGE}/${article?.imageUtils[0]}`);
   // console.log('View Users', article?.viewUsers);
    //const noDataHtml = '<p>No data available</p>';
 
@@ -501,7 +508,9 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
         <View style={styles.imageContainer}>
           {article && article?.imageUtils && article?.imageUtils.length > 0 ? (
             <Image
-              source={{uri: article?.imageUtils[0]}}
+              source={{uri: article?.imageUtils[0].startsWith('http')? article?.imageUtils[0] :
+                `${GET_IMAGE}/${article?.imageUtils[0]}`
+              }}
               style={styles.image}
             />
           ) : (

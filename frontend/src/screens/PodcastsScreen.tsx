@@ -31,6 +31,7 @@ import {BUTTON_COLOR, ON_PRIMARY_COLOR} from '../helper/Theme';
 
 import CreateIcon from '../components/CreateIcon';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 
 const {WavAudioRecorder} = NativeModules;
 const recorderEvents = new NativeEventEmitter(WavAudioRecorder);
@@ -215,6 +216,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
 
   return (
     <SafeAreaView style={styles.container}>
+        <StatusBar style="light" backgroundColor={'#000A60'} />
       <ScrollView
         showsVerticalScrollIndicator={false}
         onScroll={handleScroll}

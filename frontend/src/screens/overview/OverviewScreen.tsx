@@ -103,7 +103,7 @@ export default function OverviewScreen({navigation}: OverviewScreenProps) {
             <ArticleWorkSpace handleClickAction={handleClickAction} />
           </Tabs.Tab>
 
-          <Tabs.Tab name="Improvements">
+          <Tabs.Tab name="Revisions">
             <ImprovementWorkspace
               handleImprovementClick={handleImprovementClick}
             />

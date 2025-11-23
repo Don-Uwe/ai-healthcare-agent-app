@@ -24,8 +24,8 @@ const TabNavigation = () => {
         component={HomeScreen}
         options={{
           headerShown: false,
-          headerStyle: {
-            backgroundColor: PRIMARY_COLOR,
+           headerStyle: {
+            backgroundColor: '#000A60',
           },
           headerTitleStyle: {
             color: 'white',

@@ -27,6 +27,7 @@ import {hp, wp} from '../../helper/Metric';
 import {
   GET_ARTICLE_BY_ID,
   GET_ARTICLE_CONTENT,
+  GET_IMAGE,
   GET_PROFILE_API,
   GET_STORAGE_DATA,
   SOCKET_PROD,
@@ -47,7 +48,7 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
   const insets = useSafeAreaInsets();
   const {articleId, authorId, recordId} = route.params;
   const {user_token} = useSelector((state: any) => state.user);
-  const RichText = useRef();
+  const RichText = useRef(null);
   const [feedback, setFeedback] = useState('');
   const [loading, setLoading] = useState(false);
   const [webviewHeight, setWebViewHeight] = useState(0);
@@ -78,8 +79,9 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
       // );
     });
   }
-  const {data: article} = useQuery({
+  const {data: article, refetch} = useQuery({
     queryKey: ['get-article-by-id'],
+
     queryFn: async () => {
       const response = await axios.get(`${GET_ARTICLE_BY_ID}/${articleId}`, {
         headers: {
@@ -91,6 +93,13 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
     },
   });
 
+
+  useEffect(()=>{
+
+    refetch();
+  },[articleId, refetch]);
+
+  
   const {data: user} = useQuery({
     queryKey: ['get-my-profile'],
     queryFn: async () => {
@@ -236,6 +245,8 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
   };
   */
 
+  console.log("Image utils", `${GET_IMAGE}/${article?.imageUtils[0]}`);
+
   return (
     <View style={styles.container}>
       <ScrollView
@@ -244,7 +255,8 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
         <View style={styles.imageContainer}>
           {article && article?.imageUtils && article?.imageUtils.length > 0 ? (
             <Image
-              source={{uri: article?.imageUtils[0]}}
+              source={{uri: article?.imageUtils[0].startsWith('https') ? article?.imageUtils[0] :
+                `${GET_IMAGE}/${article?.imageUtils[0]}`}}
               style={styles.image}
             />
           ) : (

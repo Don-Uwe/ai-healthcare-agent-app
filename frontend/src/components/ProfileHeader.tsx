@@ -7,6 +7,7 @@ import {
   Linking,
   Platform,
   Alert,
+  Pressable,
 } from 'react-native';
 import React from 'react';
 import EllipseSvg from '../../assets/svg/EllipseSvg';
@@ -191,23 +192,23 @@ const ProfileHeader = ({
           </View>
         )}
         <View style={styles.infoContainer}>
-          <TouchableOpacity onPress={onFollowerPress} style={styles.infoBlock}>
+          <Pressable onPress={onFollowerPress} style={styles.infoBlock}>
             <Text style={[styles.infoText, {color: PRIMARY_COLOR}]}>
               {followers}
             </Text>
             <Text style={styles.infoLabel}>
               {followers > 1 ? 'Followers' : 'Follower'}
             </Text>
-          </TouchableOpacity>
+          </Pressable>
 
-          <TouchableOpacity onPress={onFollowingPress} style={styles.infoBlock}>
+          <Pressable onPress={onFollowingPress} style={styles.infoBlock}>
             <Text style={[styles.infoText, {color: PRIMARY_COLOR}]}>
               {followings}
             </Text>
             <Text style={styles.infoLabel}>
               {followings > 1 ? 'Followings' : 'Following'}
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
         <View style={styles.infoContainer}>
           

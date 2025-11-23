@@ -1,4 +1,4 @@
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {
   FlatList,
   TouchableOpacity,
@@ -33,12 +33,10 @@ export default function ImprovementWorkspace({
   const [progressLabel, setProgressLabel] = useState('Progress');
   const [discardLabel, setDiscardLabel] = useState('Discard');
   const [improvementData, setImprovementData] = useState<EditRequest[]>([]);
+  const [pageLoading, setPageLoading] = useState(false);
 
-  const {
-    isLoading,
-    refetch,
-  } = useQuery({
-    queryKey: ['get-all-improvements-for-review', page, selectedStatus],
+  const {isLoading, refetch} = useQuery({
+    queryKey: ['get-all-improvements-for-review'],
     queryFn: async () => {
       try {
         const response = await axios.get(
@@ -85,8 +83,12 @@ export default function ImprovementWorkspace({
     enabled: !!user_token && !!page,
   });
 
+  useEffect(() => {
+    refetch();
+    setPageLoading(false);
+  }, [page, selectedStatus, refetch]);
 
-   const categories = [
+  const categories = [
     {
       label: publishedLabel,
       status: 1,
@@ -100,7 +102,6 @@ export default function ImprovementWorkspace({
       status: 3,
     },
   ];
-
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -117,10 +118,6 @@ export default function ImprovementWorkspace({
     },
     [handleImprovementClick],
   );
-
-  if (isLoading) {
-    return <Loader />;
-  }
 
   return (
     <View style={{flex: 1, backgroundColor: ON_PRIMARY_COLOR}}>
@@ -139,6 +136,8 @@ export default function ImprovementWorkspace({
               onPress={() => {
                 setSelectedStatus(item.status);
                 setPage(1);
+                setImprovementData([]);
+                setPageLoading(true);
               }}>
               <Text
                 style={{
@@ -155,31 +154,35 @@ export default function ImprovementWorkspace({
           ))}
         </View>
 
-        <View style={styles.articleContainer}>
-          <FlatList
-            data={improvementData ? improvementData : []}
-            renderItem={renderItem}
-            keyExtractor={item => item._id.toString()}
-            contentContainerStyle={styles.flatListContentContainer}
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            ListEmptyComponent={
-              <View style={styles.emptyContainer}>
-                <Image
-                  source={require('../../../assets/images/no_results.jpg')}
-                  style={styles.image}
-                />
-                <Text style={styles.message}>No Improvements Found</Text>
-              </View>
-            }
-            onEndReached={() => {
-              if (page < totalPages) {
-                setPage(prev => prev + 1);
+        {isLoading || pageLoading ? (
+          <Loader />
+        ) : (
+          <View style={styles.articleContainer}>
+            <FlatList
+              data={improvementData ? improvementData : []}
+              renderItem={renderItem}
+              keyExtractor={item => item._id.toString()}
+              contentContainerStyle={styles.flatListContentContainer}
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              ListEmptyComponent={
+                <View style={styles.emptyContainer}>
+                  <Image
+                    source={require('../../../assets/images/no_results.jpg')}
+                    style={styles.image}
+                  />
+                  <Text style={styles.message}>No Improvements Found</Text>
+                </View>
               }
-            }}
-            onEndReachedThreshold={0.5}
-          />
-        </View>
+              onEndReached={() => {
+                if (page < totalPages) {
+                  setPage(prev => prev + 1);
+                }
+              }}
+              onEndReachedThreshold={0.5}
+            />
+          </View>
+        )}
       </View>
     </View>
   );

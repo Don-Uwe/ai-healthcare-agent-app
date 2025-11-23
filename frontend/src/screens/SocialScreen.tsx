@@ -64,7 +64,7 @@ export default function Socialcreen({navigation, route}: SocialScreenProps) {
     queryClient.invalidateQueries({queryKey: ['get-user-socials']});
     navigation.setOptions({
       headerTitle:
-        type == 1 ? 'Follower' : type == 2 ? 'Followings' : 'Contributors',
+        type === 1 ? 'Follower' : type === 2 ? 'Followings' : 'Contributors',
       headerTitleAlign: 'center',
     });
   }, [navigation, queryClient, type]);

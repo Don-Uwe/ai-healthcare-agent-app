@@ -85,8 +85,8 @@ const ProfileEditScreen = ({navigation}) => {
         `${UPDATE_USER_GENERAL_DETAILS}`,
         {
           username: username,
-          userHandle: userHandle,
-          email: email,
+         // userHandle: userHandle,
+          //email: email,
           about: about,
         },
         {
@@ -469,9 +469,9 @@ const ProfileEditScreen = ({navigation}) => {
   }, [user]); // Runs when the `user` data changes
 
   // showing loading state when fetching data
-  if (isLoading) {
-    return <Loader />;
-  }
+  // if (isLoading) {
+  //   return <Loader />;
+  // }
   // Boolean to check if the user is a doctor
   const isDoctor = user ? user?.isDoctor! : false;
   // Function to handle tab selection

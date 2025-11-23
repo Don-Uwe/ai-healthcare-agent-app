@@ -3597,6 +3597,11 @@
   dependencies:
     undici-types "~7.16.0"
 
+"@types/react-native-html-to-pdf@^0.8.3":
+  version "0.8.3"
+  resolved "https://registry.yarnpkg.com/@types/react-native-html-to-pdf/-/react-native-html-to-pdf-0.8.3.tgz#0e41b666c711b114957e42f7a7c665fb2fea8045"
+  integrity sha512-KjyR1F9KhcmX8p9y/8WYMiaK4DV/cYBUO1XHEzD9dDVZBkY9ujbdMLYO7ZvmAffNT2Q484Qvg+t6szgVcnN22g==
+
 "@types/react@~19.1.0":
   version "19.1.17"
   resolved "https://registry.yarnpkg.com/@types/react/-/react-19.1.17.tgz#8be0b9c546cede389b930a98eb3fad1897f209c3"

@@ -1,6 +1,6 @@
 import {StyleSheet, View, Text, Alert} from 'react-native';
 import React, {useCallback, useState} from 'react';
-import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
+import {PRIMARY_COLOR} from '../helper/Theme';
 import ActivityOverview from '../components/ActivityOverview';
 import {Tabs, MaterialTabBar} from 'react-native-collapsible-tab-view';
 import ArticleCard from '../components/ArticleCard';
@@ -21,7 +21,6 @@ import {useFocusEffect} from '@react-navigation/native';
 import Snackbar from 'react-native-snackbar';
 import {useSocket} from '../../SocketContext';
 import {setUserHandle} from '../store/UserSlice';
-import { StatusBar } from 'expo-status-bar';
 
 const ProfileScreen = ({navigation}: ProfileScreenProps) => {
   const {user_handle, user_id, user_token} = useSelector(
@@ -219,6 +218,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
           handleRepostAction={handleRepostAction}
           handleReportAction={handleReportAction}
           handleEditRequestAction={() => {}}
+          source='profile'
         />
       );
     },

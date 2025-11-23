@@ -1,8 +1,8 @@
 import React from 'react';
 import { Input, XStack, YStack, Button, Text, View } from 'tamagui';
 import { Feather, AntDesign, Ionicons } from '@expo/vector-icons';
-import { PRIMARY_COLOR } from '../helper/Theme';
 import { HomeScreenHeaderProps } from '../type';
+import { StatusBar } from 'expo-status-bar';
 
 export const HomeScreenHeader = ({
   handlePresentModalPress,
@@ -11,19 +11,20 @@ export const HomeScreenHeader = ({
   unreadCount,
 }: HomeScreenHeaderProps) => {
   return (
-    <YStack bg="#000A60" w="100%" px="$4" py="$3" elevation={1}>
-      <XStack ai="center" jc="space-between" space="$3">
+    <YStack backgroundColor="#000A60" width="100%" paddingHorizontal="$3" paddingVertical="$3" elevation={1}>
+      <XStack alignItems="center" justifyContent="space-between" space="$3">
+        <StatusBar style="dark" backgroundColor={'#000A60'} />
         {/* Search Bar */}
         <XStack
           flex={1}
-          ai="center"
-          bg="white"
+          alignItems="center"
+          backgroundColor="white"
           borderWidth={1.5}
           borderColor={'#4D6360'}
           borderRadius={10}
-          px="$2"
-          py="$0.5"
-          jc="space-between"
+          paddingHorizontal="$2"
+          paddingVertical="$0.5"
+          justifyContent="space-between"
           shadowColor="rgba(0,0,0,0.05)"
         >
           <Feather name="search" size={18} color="#778599" />
