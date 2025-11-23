@@ -12,6 +12,7 @@ import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import BotScreen from '../screens/BotScreen';
 import {BUTTON_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import HeaderRightMenu from '../components/HeaderRightMenu';
+import ChatbotScreen from '../screens/ChatbotScreen';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 const TabNavigation = () => {
@@ -59,7 +60,7 @@ const TabNavigation = () => {
 
       <Tab.Screen
         name="Chatbot"
-        component={BotScreen}
+        component={ChatbotScreen}
         options={({navigation}) => ({
           headerTitleAlign: 'center',
           title: 'Chatbot',
