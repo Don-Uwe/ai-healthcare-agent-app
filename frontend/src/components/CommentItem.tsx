@@ -29,13 +29,13 @@ export default function CommentItem({
   isFromArticle,
 }: {
   item: Comment;
-  isSelected: Boolean;
+  isSelected: boolean;
   userId: string;
   setSelectedCommentId: (id: string) => void;
   handleEditAction: (comment: Comment) => void;
   deleteAction: (comment: Comment) => void;
   handleLikeAction: (comment: Comment) => void;
-  commentLikeLoading: Boolean;
+  commentLikeLoading: boolean;
   handleMentionClick: (user_handle: string) => void;
   handleReportAction: (commentId: string, authorId: string) => void;
   isFromArticle: boolean | undefined;

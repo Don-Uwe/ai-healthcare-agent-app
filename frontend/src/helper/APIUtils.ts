@@ -81,6 +81,8 @@ const DISCARDED_PODCASTS = `${PROD_URL}/podcast/discarded`;
 const PENDING_PODCASTS = `${PROD_URL}/podcast/user-pending`;
 const USER_PUBLISHED_PODCASTS = `${PROD_URL}/podcast/user-published`;
 
+const LOAD_REVIEW_COMMENTS = `${PROD_URL}/review/load`;
+
 
 export {
   LOGIN_API,
@@ -155,5 +157,6 @@ export {
   USER_PUBLISHED_PODCASTS,
   PROD_URL,
   SOCKET_PROD,
-  CONTENT_CHECKER_PROD
+  CONTENT_CHECKER_PROD,
+  LOAD_REVIEW_COMMENTS
 };

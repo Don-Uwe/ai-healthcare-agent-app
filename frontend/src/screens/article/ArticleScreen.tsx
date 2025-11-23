@@ -15,7 +15,7 @@ import {
 import {useEffect, useMemo, useRef, useState} from 'react';
 import {useQuery, useMutation} from '@tanstack/react-query';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import {PRIMARY_COLOR} from '../../helper/Theme';
+import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {ArticleData, ArticleScreenProp, User} from '../../type';
 import {useDispatch, useSelector} from 'react-redux';
@@ -962,7 +962,7 @@ const styles = StyleSheet.create({
     textAlign: 'justify',
   },
   footer: {
-    backgroundColor: '#EDE9E9',
+    backgroundColor: ON_PRIMARY_COLOR,
     position: 'relative',
     bottom: 0,
     zIndex: 10,

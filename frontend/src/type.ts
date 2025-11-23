@@ -325,6 +325,8 @@ export type ReviewCardProps = {
 export type Admin = {
   _id: string;
   user_name: string;
+  Profile_avtar: string;
+  user_handle: string;
   email: string;
 };
 
@@ -625,6 +627,7 @@ export type Comment = {
   id: string;
   articleId: number;
   userId: User;
+  adminId: Admin;
   content: string;
   createdAt: string;
   updatedAt: string;
