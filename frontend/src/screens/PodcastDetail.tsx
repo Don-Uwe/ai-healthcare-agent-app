@@ -26,7 +26,7 @@ import {
 } from '../helper/APIUtils';
 import {useSelector} from 'react-redux';
 import moment from 'moment';
-import {downloadAudio, formatCount} from '../helper/Utils';
+import {downloadAudio, formatCount, StatusEnum} from '../helper/Utils';
 import Snackbar from 'react-native-snackbar';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Share from 'react-native-share';
@@ -266,227 +266,7 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
     return <Loader />;
   }
 
-        
-
-
-  // return (
-  //   <SafeAreaView style={styles.container}>
-  //     <ScrollView>
-  //       {podcast && podcast.cover_image ? (
-  //         <Image
-  //           source={{
-  //             uri: podcast?.cover_image.startsWith('http')
-  //               ? podcast?.cover_image
-  //               : `${GET_STORAGE_DATA}/${podcast?.cover_image}`,
-  //           }}
-  //           style={styles.podcastImage}
-  //         />
-  //       ) : (
-  //         <Image
-  //           source={{
-  //             uri: 'https://t3.ftcdn.net/jpg/05/10/75/30/360_F_510753092_f4AOmCJAczuGgRLCmHxmowga2tC9VYQP.jpg',
-  //           }}
-  //           style={styles.podcastImage}
-  //         />
-  //       )}
-
-  //       <View
-  //         style={[
-  //           styles.footer,
-  //           {
-  //             paddingBottom:
-  //               Platform.OS === 'ios' ? insets.bottom : insets.bottom + 20,
-  //           },
-  //         ]}>
-  //         <View style={styles.authorContainer}>
-  //           <TouchableOpacity
-  //             onPress={() => {
-  //               //  if (article && article?.authorId) {
-  //               //navigation.navigate('UserProfileScreen', {
-  //               //  authorId: authorId,
-  //               // });
-  //             }}>
-  //             {podcast?.user_id.Profile_image ? (
-  //               <Image
-  //                 source={{
-  //                   uri: podcast?.user_id.Profile_image.startsWith('http')
-  //                     ? `${podcast?.user_id.Profile_image}`
-  //                     : `${GET_STORAGE_DATA}/${podcast?.user_id.Profile_image}`,
-  //                 }}
-  //                 style={styles.authorImage}
-  //               />
-  //             ) : (
-  //               <Image
-  //                 source={{
-  //                   uri: 'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-  //                 }}
-  //                 style={styles.authorImage}
-  //               />
-  //             )}
-  //           </TouchableOpacity>
-  //           <View>
-  //             <Text style={styles.authorName}>
-  //               {podcast ? podcast?.user_id.user_name : ''}
-  //             </Text>
-  //             <Text style={styles.authorFollowers}>
-  //               {podcast?.user_id.followers
-  //                 ? podcast?.user_id.followers.length > 1
-  //                   ? `${podcast?.user_id.followers.length} followers`
-  //                   : `${podcast?.user_id.followers.length} follower`
-  //                 : '0 follower'}
-  //             </Text>
-  //           </View>
-  //         </View>
-  //       </View>
-
-  //       <View style={styles.footerOptions}>
-  //         {updateLikeCountMutation.isPending ? (
-  //           <ActivityIndicator size="small" color={PRIMARY_COLOR} />
-  //         ) : (
-  //           <TouchableOpacity
-  //             style={styles.footerItem}
-  //             onPress={() => {
-  //               updateLikeCountMutation.mutate(trackId);
-  //             }}>
-  //             {podcast?.likedUsers.includes(user_id) ? (
-  //               <AntDesign name="heart" size={24} color={PRIMARY_COLOR} />
-  //             ) : (
-  //               <Feather name="heart" size={24} color={'black'} />
-  //             )}
-
-  //             <Text style={styles.likeCount}>
-  //               {podcast?.likedUsers?.length
-  //                 ? formatCount(podcast?.likedUsers?.length)
-  //                 : 0}
-  //             </Text>
-  //           </TouchableOpacity>
-  //         )}
-  //         {isLoading ? (
-  //           <ActivityIndicator size="small" color={PRIMARY_COLOR} />
-  //         ) : (
-  //           <TouchableOpacity
-  //             onPress={async () => {
-  //               if (podcast) {
-  //                 setLoading(true);
-  //                 const res = await downloadAudio(podcast);
-  //                 setLoading(false);
-  //                 Snackbar.show({
-  //                   text: res.message,
-  //                   duration: Snackbar.LENGTH_SHORT,
-  //                 });
-  //               } else {
-  //                 Snackbar.show({
-  //                   text: 'Something went wrong! try again',
-  //                   duration: Snackbar.LENGTH_SHORT,
-  //                 });
-  //               }
-  //             }}>
-  //             <Ionicons name="download-outline" size={27} color="#1E1E1E" />
-  //           </TouchableOpacity>
-  //         )}
-
-  //         <TouchableOpacity
-  //           style={styles.footerItem}
-  //           onPress={() => {
-  //             if (isConnected) {
-  //               if (podcast) {
-  //                 navigation.navigate('PodcastDiscussion', {
-  //                   podcastId: podcast?._id,
-  //                   mentionedUsers: podcast?.mentionedUsers,
-  //                 });
-  //               }
-  //             } else {
-  //               Snackbar.show({
-  //                 text: 'You are currently offline',
-  //                 duration: Snackbar.LENGTH_SHORT,
-  //               });
-  //             }
-  //           }}>
-  //           <Ionicons name="chatbubble-outline" size={24} color="#1E1E1E" />
-  //           <Text style={styles.likeCount}>
-  //             {podcast?.commentCount ? formatCount(podcast?.commentCount) : 0}
-  //           </Text>
-  //         </TouchableOpacity>
-
-  //         <TouchableOpacity onPress={handleShare}>
-  //           <Ionicons name="share-outline" size={27} color="#1E1E1E" />
-  //         </TouchableOpacity>
-  //       </View>
-
-  //       <Text style={styles.episodeTitle}>{podcast?.title}</Text>
-  //       <View>
-  //         <Text
-  //           style={styles.podcastTitle}
-  //           numberOfLines={isExpanded ? undefined : 3}
-  //           ellipsizeMode="tail">
-  //           {podcast?.description}
-  //         </Text>
-  //         {podcast &&
-  //           podcast.description &&
-  //           podcast?.description?.length > 100 && (
-  //             <TouchableOpacity onPress={() => setIsExpanded(!isExpanded)}>
-  //               <Text style={styles.readMoreText}>
-  //                 {isExpanded ? 'Read Less ' : 'Read More '}
-  //               </Text>
-  //             </TouchableOpacity>
-  //           )}
-  //       </View>
-
-  //       <View style={styles.tagsContainer}>
-  //         {podcast?.tags?.map((tag, index) => (
-  //           <Text key={index} style={styles.tagText}>
-  //             #{tag.name}
-  //           </Text>
-  //         ))}
-  //       </View>
-
-  //       <View style={styles.metaInfo}>
-  //         <Text style={styles.metaText}>
-  //           {moment(podcast?.updated_at).format('MMMM Do YYYY, h:mm A')}
-  //         </Text>
-  //         {podcast && (
-  //           <Text style={styles.metaText}>
-  //             {podcast?.viewUsers.length <= 1
-  //               ? `${podcast?.viewUsers.length} view`
-  //               : `${formatCount(podcast?.viewUsers.length ?? 0)} views`}
-  //           </Text>
-  //         )}
-  //       </View>
-
-  //       <Slider
-  //         style={styles.slider}
-  //         minimumValue={0}
-  //         maximumValue={duration}
-  //         value={player.currentStatus.currentTime}
-  //         minimumTrackTintColor={PRIMARY_COLOR}
-  //         maximumTrackTintColor="#ccc"
-  //         thumbTintColor={PRIMARY_COLOR}
-  //         onSlidingComplete={handleSeek}
-  //       />
-
-  //       <View style={styles.timeRow}>
-  //         <Text style={styles.time}>{formatTime(position)}</Text>
-  //         <Text style={styles.time}>{formatTime(duration)}</Text>
-  //       </View>
-
-  //       {player.currentStatus.isBuffering && (
-  //         <Text style={styles.bufferingText}>⏳ Buffering... please wait</Text>
-  //       )}
-
-  //       <TouchableOpacity
-  //         style={[
-  //           styles.listenButton,
-  //           player.currentStatus.isBuffering && styles.listenButtonDisabled,
-  //         ]}
-  //         onPress={handleListenPress}
-  //         disabled={player.currentStatus.isBuffering}>
-  //         <Text style={styles.listenText}>
-  //           {player.currentStatus.playing ? '⏸️Pause' : '🎧 Listen Now'}
-  //         </Text>
-  //       </TouchableOpacity>
-  //     </ScrollView>
-  //   </SafeAreaView>
-  // );
+      
 
 return (
   <Theme name="dark">
@@ -590,7 +370,9 @@ return (
       </XStack>
 
       {/* FOOTER OPTIONS */}
-      <XStack
+      {
+        podcast && podcast.status === StatusEnum.PUBLISHED ? (
+        <XStack
         style={styles.footerOptions}
         alignItems="center"
         justifyContent="space-evenly"
@@ -677,7 +459,13 @@ return (
         <TouchableOpacity onPress={handleShare}>
           <Ionicons name="share-outline" size={27} color="white" />
         </TouchableOpacity>
-      </XStack>
+       </XStack>
+        ): (
+          <XStack>
+            
+          </XStack>
+        )
+      }
     </YStack>
   </Theme>
 );
@@ -688,7 +476,7 @@ export default PodcastDetail;
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    // flex: 1,
     backgroundColor: ON_PRIMARY_COLOR,
     paddingHorizontal: 12,
     paddingTop: Platform.OS === 'android' ? 12 : 0,

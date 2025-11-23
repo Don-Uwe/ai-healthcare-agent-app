@@ -93,7 +93,7 @@ const PodcastCard = ({
 
   return (
     
-    <CardContainer>
+    <CardContainer onPress={handleClick}>
       <XStack space="$3" ai="center" jc="space-between">
         {/* Left section: Image + Text */}
         <XStack flex={1} space="$3" ai="flex-start">

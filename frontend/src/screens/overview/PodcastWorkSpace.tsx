@@ -317,7 +317,8 @@ const styles = StyleSheet.create({
   articleContainer: {
     flex: 1,
     width: '100%',
-    paddingHorizontal: 0,
+    paddingHorizontal: hp(1),
+    marginBottom: hp(13)
     //zIndex: -2,
   },
   flatListContentContainer: {

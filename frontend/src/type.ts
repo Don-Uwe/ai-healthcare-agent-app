@@ -58,7 +58,7 @@ export type RootStackParamList = {
     articleRecordId: string;
   };
   OverviewScreen: undefined;
-  ConversationScreen: undefined;
+ // ConversationScreen: undefined;
   SocialScreen: {
     type: number;
     articleId: number | undefined;
@@ -258,10 +258,10 @@ export type OverviewScreenProps = StackScreenProps<
   RootStackParamList,
   'OverviewScreen'
 >;
-export type ConversationScreenProps = StackScreenProps<
-  RootStackParamList,
-  'ConversationScreen'
->;
+// export type ConversationScreenProps = StackScreenProps<
+//   RootStackParamList,
+//   'ConversationScreen'
+// >;
 
 export type SocialScreenProps = StackScreenProps<
   RootStackParamList,

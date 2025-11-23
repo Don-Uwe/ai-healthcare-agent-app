@@ -1,9 +1,7 @@
-/* eslint-disable react-native/no-inline-styles */
 import {
   Image,
   Platform,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
   ScrollView,
@@ -15,11 +13,8 @@ import {useQuery} from '@tanstack/react-query';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {EditRequest, ImpvReviewScreenProp, User} from '../../type';
-import Feather from '@expo/vector-icons/Feather';
-import Entypo from '@expo/vector-icons/Entypo';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
+import {EditRequest, ImpvReviewScreenProp, User, Comment} from '../../type';
+
 import {useDispatch, useSelector} from 'react-redux';
 import WebView from 'react-native-webview';
 import {hp, wp} from '../../helper/Metric';
@@ -28,6 +23,7 @@ import {
   GET_IMPROVEMENT_CONTENT,
   GET_PROFILE_API,
   GET_STORAGE_DATA,
+  LOAD_REVIEW_COMMENTS,
 } from '../../helper/APIUtils';
 import axios from 'axios';
 
@@ -36,20 +32,19 @@ import axios from 'axios';
 import {useSocket} from '../../../SocketContext';
 //import CommentScreen from '../CommentScreen';
 import {setUserHandle} from '../../store/UserSlice';
-import {actions, RichEditor, RichToolbar} from 'react-native-pell-rich-editor';
-import {createFeebackHTMLStructure, StatusEnum} from '../../helper/Utils';
+import {StatusEnum} from '../../helper/Utils';
 import ReviewItem from '../../components/ReviewItem';
+import {Button, Spinner, TextArea, YStack, Text} from 'tamagui';
 
 const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
   const insets = useSafeAreaInsets();
   const {requestId, authorId, recordId, articleRecordId} = route.params; // requestId
   const {user_token, user_handle} = useSelector((state: any) => state.user);
-  const RichText = useRef();
   const [feedback, setFeedback] = useState('');
   const [webviewHeight, setWebViewHeight] = useState(0);
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} = Dimensions.get('window');
   const baseHeight = SCREEN_HEIGHT * 0.1;
-
+  const [loading, setLoading] = useState(false);
 
   const socket = useSocket();
   const dispatch = useDispatch();
@@ -60,18 +55,10 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
 
   const webViewRef = useRef<WebView>(null);
 
-  function handleHeightChange(_height) {
-    // console.log("editor height change:", height);
-  }
-
-  function editorInitializedCallback() {
-    RichText.current?.registerToolbar(function (_items) {});
-  }
   // editrequest
   const {data: improvement} = useQuery({
     queryKey: ['get-improvement-by-id'],
     queryFn: async () => {
-
       const response = await axios.get(
         `${GET_IMPROVEMENT_BY_ID}/${requestId}`,
         {
@@ -115,7 +102,27 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
     },
   });
 
-  console.log('html-content', htmlContent);
+  //console.log('html-content', htmlContent);
+
+  const {isLoading} = useQuery({
+    queryKey: ['get-improvement-review-comments'],
+
+    queryFn: async () => {
+      const response = await axios.get(
+        `${LOAD_REVIEW_COMMENTS}?requestId=${requestId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${user_token}`,
+          },
+        },
+      );
+
+      setComments(response.data);
+      //console.log('Comments', response.data);
+
+      return response.data as Comment[];
+    },
+  });
 
   const noDataHtml = '<p>No Data found</p>';
 
@@ -124,7 +131,7 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
   }
 
   useEffect(() => {
-    socket.emit('load-review-comments', {requestId: route.params.requestId});
+    // socket.emit('load-review-comments', {requestId: route.params.requestId});
 
     socket.on('connect', () => {
       console.log('connection established');
@@ -135,8 +142,8 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
     });
 
     socket.on('review-comments', data => {
-      console.log('comment loaded', data);
-      setComments(data);
+      // console.log('comment loaded', data);
+      // setComments(data);
     });
 
     // Listen for new comments
@@ -186,16 +193,19 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
   `;
 
   const scalePerChar = 1 / 1000;
-    const maxMultiplier = 4.3;
-    const baseMultiplier = 0.8;
-  
-    const minHeight = useMemo(() => {
-      let content = htmlContent ?? "";
-      const scaleFactor = Math.min(content.length * scalePerChar, maxMultiplier);
-      const scaledHeight = SCREEN_HEIGHT * (baseMultiplier + scaleFactor);
-      const cappedHeight = Math.min(content.length + 27, Math.min(scaledHeight, SCREEN_HEIGHT * 6));
-      return cappedHeight;
-    }, [SCREEN_HEIGHT, htmlContent, scalePerChar]);
+  const maxMultiplier = 4.3;
+  const baseMultiplier = 0.8;
+
+  const minHeight = useMemo(() => {
+    let content = htmlContent ?? '';
+    const scaleFactor = Math.min(content.length * scalePerChar, maxMultiplier);
+    const scaledHeight = SCREEN_HEIGHT * (baseMultiplier + scaleFactor);
+    const cappedHeight = Math.min(
+      content.length + 27,
+      Math.min(scaledHeight, SCREEN_HEIGHT * 6),
+    );
+    return cappedHeight;
+  }, [SCREEN_HEIGHT, htmlContent, scalePerChar]);
   return (
     <View style={styles.container}>
       <ScrollView
@@ -230,7 +240,7 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
                     requestId: improvement?._id,
                     pb_record_id: improvement?.pb_recordId,
                     authorName: user_handle,
-                    htmlContent: htmlContent? htmlContent: noDataHtml
+                    htmlContent: htmlContent ? htmlContent : noDataHtml,
                   });
                 }
               }}
@@ -263,7 +273,7 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
               style={{
                 padding: 7,
                 //width: '99%',
-                 minHeight:minHeight,
+                minHeight: minHeight,
                 // flex:7,
                 justifyContent: 'center',
                 alignItems: 'center',
@@ -277,134 +287,191 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
           </View>
         </View>
         {improvement?.status !== StatusEnum.DISCARDED && (
-          <View style={styles.inputContainer}>
-            <RichToolbar
-              style={[styles.richBar]}
-              editor={RichText}
-              disabled={false}
-              iconTint={'white'}
-              selectedIconTint={'black'}
-              disabledIconTint={'purple'}
-              iconSize={30}
-              actions={[
-                actions.setBold,
-                actions.setItalic,
-                actions.setUnderline,
-                actions.setStrikethrough,
-                actions.heading1,
-                actions.heading2,
-                actions.heading3,
-                actions.heading4,
-                actions.heading5,
-                actions.heading6,
-                actions.alignLeft,
-                actions.alignCenter,
-                actions.alignRight,
-                actions.insertBulletsList,
-                actions.insertOrderedList,
-                actions.insertLink,
-                actions.table,
-                actions.undo,
-                actions.redo,
-                actions.blockquote,
-              ]}
-              iconMap={{
-                [actions.setStrikethrough]: ({tintColor}) => (
-                  <FontAwesome
-                    name="strikethrough"
-                    color={tintColor}
-                    size={26}
-                  />
-                ),
-                [actions.alignLeft]: ({tintColor}) => (
-                  <Feather name="align-left" color={tintColor} size={35} />
-                ),
-                [actions.alignCenter]: ({tintColor}) => (
-                  <Feather name="align-center" color={tintColor} size={35} />
-                ),
-                [actions.alignRight]: ({tintColor}) => (
-                  <Feather name="align-right" color={tintColor} size={35} />
-                ),
-                [actions.undo]: ({tintColor}) => (
-                  <Ionicons name="arrow-undo" color={tintColor} size={35} />
-                ),
-                [actions.redo]: ({tintColor}) => (
-                  <Ionicons name="arrow-redo" color={tintColor} size={35} />
-                ),
-                [actions.heading1]: ({tintColor}) => (
-                  <Text style={[styles.tib, {color: tintColor}]}>H1</Text>
-                ),
-                [actions.heading2]: ({tintColor}) => (
-                  <Text style={[styles.tib, {color: tintColor}]}>H2</Text>
-                ),
-                [actions.heading3]: ({tintColor}) => (
-                  <Text style={[styles.tib, {color: tintColor}]}>H3</Text>
-                ),
-                [actions.heading4]: ({tintColor}) => (
-                  <Text style={[styles.tib, {color: tintColor}]}>H4</Text>
-                ),
-                [actions.heading5]: ({tintColor}) => (
-                  <Text style={[styles.tib, {color: tintColor}]}>H5</Text>
-                ),
-                [actions.heading6]: ({tintColor}) => (
-                  <Text style={[styles.tib, {color: tintColor}]}>H6</Text>
-                ),
-                [actions.blockquote]: ({tintColor}) => (
-                  <Entypo name="quote" color={tintColor} size={35} />
-                ),
-              }}
-            />
-            <RichEditor
-              disabled={false}
-              containerStyle={styles.editor}
-              ref={RichText}
-              style={styles.rich}
-              placeholder={'Start conversation with admin'}
-              initialContentHTML={feedback}
-              onChange={text => setFeedback(text)}
-              editorInitializedCallback={editorInitializedCallback}
-              onHeightChange={handleHeightChange}
-              initialHeight={300}
+          // <View style={styles.inputContainer}>
+          //   <RichToolbar
+          //     style={[styles.richBar]}
+          //     editor={RichText}
+          //     disabled={false}
+          //     iconTint={'white'}
+          //     selectedIconTint={'black'}
+          //     disabledIconTint={'purple'}
+          //     iconSize={30}
+          //     actions={[
+          //       actions.setBold,
+          //       actions.setItalic,
+          //       actions.setUnderline,
+          //       actions.setStrikethrough,
+          //       actions.heading1,
+          //       actions.heading2,
+          //       actions.heading3,
+          //       actions.heading4,
+          //       actions.heading5,
+          //       actions.heading6,
+          //       actions.alignLeft,
+          //       actions.alignCenter,
+          //       actions.alignRight,
+          //       actions.insertBulletsList,
+          //       actions.insertOrderedList,
+          //       actions.insertLink,
+          //       actions.table,
+          //       actions.undo,
+          //       actions.redo,
+          //       actions.blockquote,
+          //     ]}
+          //     iconMap={{
+          //       [actions.setStrikethrough]: ({tintColor}) => (
+          //         <FontAwesome
+          //           name="strikethrough"
+          //           color={tintColor}
+          //           size={26}
+          //         />
+          //       ),
+          //       [actions.alignLeft]: ({tintColor}) => (
+          //         <Feather name="align-left" color={tintColor} size={35} />
+          //       ),
+          //       [actions.alignCenter]: ({tintColor}) => (
+          //         <Feather name="align-center" color={tintColor} size={35} />
+          //       ),
+          //       [actions.alignRight]: ({tintColor}) => (
+          //         <Feather name="align-right" color={tintColor} size={35} />
+          //       ),
+          //       [actions.undo]: ({tintColor}) => (
+          //         <Ionicons name="arrow-undo" color={tintColor} size={35} />
+          //       ),
+          //       [actions.redo]: ({tintColor}) => (
+          //         <Ionicons name="arrow-redo" color={tintColor} size={35} />
+          //       ),
+          //       [actions.heading1]: ({tintColor}) => (
+          //         <Text style={[styles.tib, {color: tintColor}]}>H1</Text>
+          //       ),
+          //       [actions.heading2]: ({tintColor}) => (
+          //         <Text style={[styles.tib, {color: tintColor}]}>H2</Text>
+          //       ),
+          //       [actions.heading3]: ({tintColor}) => (
+          //         <Text style={[styles.tib, {color: tintColor}]}>H3</Text>
+          //       ),
+          //       [actions.heading4]: ({tintColor}) => (
+          //         <Text style={[styles.tib, {color: tintColor}]}>H4</Text>
+          //       ),
+          //       [actions.heading5]: ({tintColor}) => (
+          //         <Text style={[styles.tib, {color: tintColor}]}>H5</Text>
+          //       ),
+          //       [actions.heading6]: ({tintColor}) => (
+          //         <Text style={[styles.tib, {color: tintColor}]}>H6</Text>
+          //       ),
+          //       [actions.blockquote]: ({tintColor}) => (
+          //         <Entypo name="quote" color={tintColor} size={35} />
+          //       ),
+          //     }}
+          //   />
+          //   <RichEditor
+          //     disabled={false}
+          //     containerStyle={styles.editor}
+          //     ref={RichText}
+          //     style={styles.rich}
+          //     placeholder={'Start conversation with admin'}
+          //     initialContentHTML={feedback}
+          //     onChange={text => setFeedback(text)}
+          //     editorInitializedCallback={editorInitializedCallback}
+          //     onHeightChange={handleHeightChange}
+          //     initialHeight={300}
+          //   />
+
+          //   {feedback.length > 0 && (
+          //     <TouchableOpacity
+          //       style={styles.submitButton}
+          //       onPress={() => {
+          //         // emit socket event for feedback
+          //         const ans = createFeebackHTMLStructure(feedback);
+          //         socket.emit('add-review-comment', {
+          //           requestId: improvement?._id,
+          //           reviewer_id: improvement?.reviewer_id,
+          //           feedback: ans,
+          //           isReview: false,
+          //           isNote: true,
+          //         });
+          //       }}>
+          //       <Text style={styles.submitButtonText}>Post</Text>
+          //     </TouchableOpacity>
+          //   )}
+          // </View>
+
+          <YStack
+            padding={wp(4)}
+            marginTop={hp(1.2)} // reduced from hp(3)
+            borderRadius={10}
+            space="$3">
+            <TextArea
+              placeholder="Ask your doubt"
+              value={feedback}
+              onChangeText={setFeedback}
+              multiline
+              height={hp(19)}
+              fontSize={wp(4.8)}
+              paddingVertical={10}
+              paddingHorizontal={12}
+              borderRadius={8}
+              borderWidth={1.5}
+              borderColor={PRIMARY_COLOR}
+              backgroundColor="#fff"
+              textAlignVertical="top"
             />
 
             {feedback.length > 0 && (
-              <TouchableOpacity
-                style={styles.submitButton}
-                onPress={() => {
-                  // emit socket event for feedback
-                  const ans = createFeebackHTMLStructure(feedback);
-                  socket.emit('add-review-comment', {
-                    requestId: improvement?._id,
-                    reviewer_id: improvement?.reviewer_id,
-                    feedback: ans,
-                    isReview: false,
-                    isNote: true,
-                  });
-                }}>
-                <Text style={styles.submitButtonText}>Post</Text>
-              </TouchableOpacity>
+              <YStack alignItems="flex-end" marginTop={hp(0.5)}>
+                {loading ? (
+                  <Spinner size="large" color={PRIMARY_COLOR} />
+                ) : (
+                  <Button
+                    size="$4"
+                    width="45%"
+                    height={44}
+                    backgroundColor={PRIMARY_COLOR}
+                    color="#fff"
+                    borderRadius={8}
+                    onPress={() => {
+                      setLoading(true);
+
+                      //  const ans = createFeebackHTMLStructure(feedback);
+                      socket.emit('add-review-comment', {
+                        requestId: improvement?._id,
+                        reviewer_id: improvement?.reviewer_id,
+                        feedback: feedback,
+                        isReview: false,
+                        isNote: true,
+                      });
+
+                      setFeedback('');
+                    }}>
+                    <Text color="#ffffff" fontSize={17}>
+                      Post
+                    </Text>
+                  </Button>
+                )}
+              </YStack>
             )}
-          </View>
+          </YStack>
         )}
 
-        {/**
-             * {article?.reviewer_id === null ? (
-          <View style={{padding: wp(6), marginTop: hp(4.5)}}>
-            <Text style={{...styles.authorName, marginBottom: 5}}>
-              {' '}
-              Test Conversations
+        {/* LOADING SECTION */}
+        {isLoading ? (
+          <YStack
+            padding={wp(4)}
+            marginTop={hp(1)} // reduced
+            alignItems="center"
+            space="$2">
+            <Spinner size="small" color="#8FA3C0" />
+            <Text color="#8FA3C0" fontSize={wp(4)} fontWeight="500">
+              Loading comments...
             </Text>
-            {commentTests?.map((item, index) => (
+          </YStack>
+        ) : (
+          <YStack padding={wp(4)} marginTop={hp(0.5)}>
+            {comments?.map((item, index) => (
               <ReviewItem key={index} item={item} />
             ))}
-          </View>
-        )
-             */}
-        <View style={{padding: wp(6), marginTop: hp(4.5)}}>
-          {comments?.map((item, index) => (
-            <ReviewItem key={index} item={item} />
-          ))}
-        </View>
+          </YStack>
+        )}
       </ScrollView>
       <View
         style={[
@@ -565,7 +632,7 @@ const styles = StyleSheet.create({
     textAlign: 'justify',
   },
   footer: {
-    backgroundColor: '#EDE9E9',
+    backgroundColor: ON_PRIMARY_COLOR,
     position: 'relative',
     bottom: 0,
     zIndex: 10,

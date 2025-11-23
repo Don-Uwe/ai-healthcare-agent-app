@@ -40,7 +40,7 @@ import Snackbar from 'react-native-snackbar';
 
 //import io from 'socket.io-client';
 import {Comment} from '../../type';
-import {formatCount} from '../../helper/Utils';
+import {formatCount, StatusEnum} from '../../helper/Utils';
 //import CommentScreen from '../CommentScreen';
 import Tts from 'react-native-tts';
 import CommentItem from '../../components/CommentItem';
@@ -499,7 +499,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
           if (windowHeight + offset >= height) {
             //ScrollEnd,
             // console.log('ScrollEnd');
-            if (article && !readEventSave) {
+            if (article && !readEventSave && article.status === StatusEnum.PUBLISHED) {
               updateReadEventMutation.mutate();
             }
           }

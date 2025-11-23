@@ -204,8 +204,8 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    right: 20,
-    bottom: 20,
+    right: hp(4),
+    bottom: hp(8),
     borderRadius: hp(20),
     backgroundColor: BUTTON_COLOR, // Customize color
   },

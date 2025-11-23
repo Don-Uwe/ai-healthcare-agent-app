@@ -31,7 +31,6 @@ import {PRIMARY_COLOR} from '../helper/Theme';
 import LogoutScreen from '../screens/auth/LogoutScreen';
 import {useNavigation, NavigationProp} from '@react-navigation/native';
 import OverviewScreen from '../screens/overview/OverviewScreen';
-import ConversationScreen from '../screens/overview/ConversationScreen';
 import ReviewScreen from '../screens/overview/ReviewScreen';
 import ImprovementReviewScreen from '../screens/overview/ImprovementReviewScreen';
 import SocialScreen from '../screens/SocialScreen';
@@ -603,13 +602,13 @@ const StackNavigation = () => {
         })}
       />
 
-      <Stack.Screen
+      {/* <Stack.Screen
         name="ConversationScreen"
         component={ConversationScreen}
         options={{
           headerShown: false,
         }}
-      />
+      /> */}
 
       <Stack.Screen
         name="SocialScreen"
