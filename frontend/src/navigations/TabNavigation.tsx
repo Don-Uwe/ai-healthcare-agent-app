@@ -9,8 +9,7 @@ import TabBar from './TabBar';
 import {TouchableOpacity} from 'react-native';
 import {TabParamList} from '../type';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import BotScreen from '../screens/BotScreen';
-import {BUTTON_COLOR, PRIMARY_COLOR} from '../helper/Theme';
+import {BUTTON_COLOR} from '../helper/Theme';
 import HeaderRightMenu from '../components/HeaderRightMenu';
 import ChatbotScreen from '../screens/ChatbotScreen';
 
@@ -64,7 +63,7 @@ const TabNavigation = () => {
         options={({navigation}) => ({
           headerTitleAlign: 'center',
           title: 'Chatbot',
-          headerShown: true,
+          headerShown: false,
           headerBackTitleVisible: false,
           headerStyle: {
             backgroundColor: BUTTON_COLOR,
