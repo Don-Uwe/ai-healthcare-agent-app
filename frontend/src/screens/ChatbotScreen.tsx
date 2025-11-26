@@ -19,15 +19,16 @@ import {
 import Ionicons from '@expo/vector-icons/Ionicons';
 import {useMutation, useQuery} from '@tanstack/react-query';
 import {
+  CHAT_URL,
   GET_PROFILE_API,
   GET_STORAGE_DATA,
   VULTR_CHAT_URL,
 } from '../helper/APIUtils';
 import axios, {AxiosError} from 'axios';
-import {ChatBotScreenProps, User} from '../type';
+import {ChatBotScreenProps, Message, User} from '../type';
 import {hp} from '../helper/Metric';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {AntDesign, MaterialCommunityIcons} from '@expo/vector-icons';
+import {MaterialCommunityIcons} from '@expo/vector-icons';
 
 interface ChatbotResponse {
   id: string;
@@ -49,17 +50,28 @@ interface Choice {
   finish_reason: string;
 }
 
-interface Message {
-  role: string;
-  content: string;
-}
-
 const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
   const {user_id, user_token} = useSelector((state: any) => state.user);
 
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [isTyping, setIsTyping] = useState<boolean>(true);
   const token = 'GPMFAQIV2BGXCWYMCVQ3IPVXSOOLI53H5NYA'; //token
+
+  const convertToGiftedFormat = (items: Message[]): IMessage[] => {
+    return items.map(m => ({
+      _id: m._id,
+      text: m.text,
+      createdAt: new Date(m.timestamp),
+      user: {
+        _id: m.role === 'user' ? 1 : 2,
+        avatar: m.profileImage
+          ? `${GET_STORAGE_DATA}/${m.profileImage}`
+          : m.role === 'assistant'
+          ? 'https://static.vecteezy.com/system/resources/previews/026/309/247/non_2x/robot-chat-or-chat-bot-logo-modern-conversation-automatic-technology-logo-design-template-vector.jpg'
+          : undefined,
+      },
+    }));
+  };
 
   const {
     data: user,
@@ -74,6 +86,28 @@ const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
         },
       });
       return response.data.profile as User;
+    },
+  });
+
+  const {
+    data: messageRes,
+    refetch: refetchMessage,
+    isLoading: isMessageLoading,
+  } = useQuery({
+    queryKey: ['load-user-conversations'],
+    queryFn: async () => {
+      
+      const response = await axios.get(`${CHAT_URL}`, {
+        headers: {
+          Authorization: `Bearer ${user_token}`,
+        },
+      });
+
+      const d = response.data.messages as Message[];
+      const refined = convertToGiftedFormat(d);
+      setMessages(refined);
+
+      return response.data.messages as Message[];
     },
   });
 

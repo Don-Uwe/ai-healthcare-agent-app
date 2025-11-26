@@ -58,7 +58,7 @@ export type RootStackParamList = {
     articleRecordId: string;
   };
   OverviewScreen: undefined;
- // ConversationScreen: undefined;
+  // ConversationScreen: undefined;
   SocialScreen: {
     type: number;
     articleId: number | undefined;
@@ -69,10 +69,10 @@ export type RootStackParamList = {
     mentionedUsers: User[];
     article: ArticleData;
   };
-  PodcastDiscussion:{
+  PodcastDiscussion: {
     podcastId: string;
     mentionedUsers: User[];
-  }
+  };
   ReportScreen: {
     articleId: string;
     authorId: string;
@@ -96,7 +96,7 @@ export type RootStackParamList = {
   };
   OfflinePodcastList: undefined;
   OfflinePodcastDetail: {
-    podcast: PodcastData
+    podcast: PodcastData;
   };
   PodcastSearch: undefined;
   PodcastForm: undefined;
@@ -107,15 +107,25 @@ export type RootStackParamList = {
     imageUtils: string;
   };
 
-  PodcastPlayer:{
+  PodcastPlayer: {
     filePath: string;
     title: string;
     description: string;
     selectedGenres: Category[];
     imageUtils: string;
-  }
+  };
 
   //ChatbotScreen: undefined;
+};
+
+export type Message = {
+  _id: number;
+  text: string;
+  role: string;
+  conversationId: string;
+  timestamp: string;
+  userHandle: string | null; // for bot null
+  profileImage: string | null; // for bot null
 };
 
 export type UserDetail = {
@@ -141,9 +151,10 @@ export type NewPasswordScreenProp = StackScreenProps<
   'NewPasswordScreen'
 >;
 
-export type UserProfileScreenProp =
-   StackScreenProps<RootStackParamList, 'UserProfileScreen'>;
-
+export type UserProfileScreenProp = StackScreenProps<
+  RootStackParamList,
+  'UserProfileScreen'
+>;
 
 export type OtpScreenProp = StackScreenProps<RootStackParamList, 'OtpScreen'>;
 
@@ -187,18 +198,18 @@ export type ReviewScreenProp = StackScreenProps<
 >;
 
 export type PodcastSearchProp = StackScreenProps<
- RootStackParamList,
- 'PodcastSearch'
+  RootStackParamList,
+  'PodcastSearch'
 >;
 
 export type OfflinePodcastListProp = StackScreenProps<
- RootStackParamList,
- 'OfflinePodcastList'
+  RootStackParamList,
+  'OfflinePodcastList'
 >;
 
 export type OfflinePodcastDetailProp = StackScreenProps<
- RootStackParamList,
- 'OfflinePodcastDetail'
+  RootStackParamList,
+  'OfflinePodcastDetail'
 >;
 
 export type ImpvReviewScreenProp = StackScreenProps<
@@ -214,7 +225,6 @@ export type PodcastDiscussionProp = StackScreenProps<
   RootStackParamList,
   'PodcastDiscussion'
 >;
-
 
 export type ReportScreenProp = StackScreenProps<
   RootStackParamList,
@@ -269,8 +279,8 @@ export type SocialScreenProps = StackScreenProps<
 >;
 
 export type PodcastScreenProps = CompositeScreenProps<
-  | BottomTabScreenProps<TabParamList, 'Podcasts'>,
-  | StackScreenProps<RootStackParamList, 'PodcastDetail'>
+  BottomTabScreenProps<TabParamList, 'Podcasts'>,
+  StackScreenProps<RootStackParamList, 'PodcastDetail'>
 >;
 export type ProfileScreenProps = CompositeScreenProps<
   BottomTabScreenProps<TabParamList, 'Profile'>,
@@ -287,8 +297,6 @@ export type PodcastPlayerScreenProps = StackScreenProps<
   RootStackParamList,
   'PodcastPlayer'
 >;
-
-
 
 export type HomeScreenHeaderProps = {
   handlePresentModalPress: () => void;
@@ -313,7 +321,7 @@ export type ArticleCardProps = {
     index: number,
     reason: string,
   ) => void;
- source: string;
+  source: string;
 };
 
 export type ReviewCardProps = {
@@ -347,7 +355,6 @@ export type Notification = {
 };
 
 export enum NotificationType {
-
   PodcastCommentMention = 'podcastCommentMention',
   ArticleCommentMention = 'articleCommentMention',
   ArticleRepost = 'articleRepost',
@@ -523,12 +530,11 @@ export type PodcastData = {
   status: string;
   admin_id: string | null;
   updated_at: string;
-  filePath: string | undefined,
-  downloadAt: Date| null,
-  commentCount: number|0,
+  filePath: string | undefined;
+  downloadAt: Date | null;
+  commentCount: number | 0;
   //podcasts: string[];
 };
-
 
 export type UserStatus = {
   totalLikes: number;
@@ -672,5 +678,4 @@ export type PlayList = {
   podcasts: Podcast[] | string[];
   created_at: Date;
   updated_at: Date;
-
-}
+};

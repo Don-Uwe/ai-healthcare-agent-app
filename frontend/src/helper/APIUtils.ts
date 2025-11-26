@@ -83,6 +83,9 @@ const USER_PUBLISHED_PODCASTS = `${PROD_URL}/podcast/user-published`;
 
 const LOAD_REVIEW_COMMENTS = `${PROD_URL}/review/load`;
 
+// chat url
+const CHAT_URL = `${PROD_URL}/gemini/messages`;
+
 
 export {
   LOGIN_API,
@@ -122,6 +125,7 @@ export {
   GET_YEARLY_READ_REPORT,
   GET_YEARLY_WRITES_REPORT,
   VULTR_CHAT_URL,
+  CHAT_URL,
   REPOST_ARTICLE,
   CHECK_USER_HANDLE,
   GET_REPORT_REASONS,
