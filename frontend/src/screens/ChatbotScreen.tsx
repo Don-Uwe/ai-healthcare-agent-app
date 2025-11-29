@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {
   Bubble,
   GiftedChat,
@@ -22,7 +22,7 @@ import {
   CHAT_URL,
   GET_PROFILE_API,
   GET_STORAGE_DATA,
-  VULTR_CHAT_URL,
+  SEND_MESSAGE_TO_GEMINI,
 } from '../helper/APIUtils';
 import axios, {AxiosError} from 'axios';
 import {ChatBotScreenProps, Message, User} from '../type';
@@ -30,32 +30,34 @@ import {hp} from '../helper/Metric';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {MaterialCommunityIcons} from '@expo/vector-icons';
 
-interface ChatbotResponse {
-  id: string;
-  created: number;
-  model: string;
-  choices: Choice[];
-  usage: Usage;
-}
+// interface ChatbotResponse {
+//   id: string;
+//   created: number;
+//   model: string;
+//   choices: Choice[];
+//   usage: Usage;
+// }
 
-interface Usage {
-  prompt_tokens: number;
-  completion_tokens: number;
-  total_tokens: number;
-}
+// interface Usage {
+//   prompt_tokens: number;
+//   completion_tokens: number;
+//   total_tokens: number;
+// }
 
-interface Choice {
-  index: number;
-  message: Message;
-  finish_reason: string;
-}
+// interface Choice {
+//   index: number;
+//   message: Message;
+//   finish_reason: string;
+// }
 
 const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
   const {user_id, user_token} = useSelector((state: any) => state.user);
 
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [isTyping, setIsTyping] = useState<boolean>(true);
-  const token = 'GPMFAQIV2BGXCWYMCVQ3IPVXSOOLI53H5NYA'; //token
+  // const token = 'GPMFAQIV2BGXCWYMCVQ3IPVXSOOLI53H5NYA'; //token
+
+  //console.log("User Token", user_token);
 
   const convertToGiftedFormat = (items: Message[]): IMessage[] => {
     return items.map(m => ({
@@ -89,14 +91,9 @@ const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
     },
   });
 
-  const {
-    data: messageRes,
-    refetch: refetchMessage,
-    isLoading: isMessageLoading,
-  } = useQuery({
+  useQuery({
     queryKey: ['load-user-conversations'],
     queryFn: async () => {
-      
       const response = await axios.get(`${CHAT_URL}`, {
         headers: {
           Authorization: `Bearer ${user_token}`,
@@ -105,74 +102,59 @@ const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
 
       const d = response.data.messages as Message[];
       const refined = convertToGiftedFormat(d);
-      setMessages(refined);
-
-      return response.data.messages as Message[];
-    },
-  });
-
-  useEffect(() => {
-    navigation.setOptions({tabBarVisible: false});
-    setTimeout(() => {
-      setIsTyping(false);
       setMessages([
         {
-          _id: 1,
+          _id: refined.length + 1,
           text: "Hello! 👋 I'm here to assist you. How can I help you today?",
           createdAt: new Date(),
           user: {
             _id: 2,
-            avatar:
-              'https://static.vecteezy.com/system/resources/previews/026/309/247/non_2x/robot-chat-or-chat-bot-logo-modern-conversation-automatic-technology-logo-design-template-vector.jpg',
+            avatar: 'https://static.vecteezy.com/system/resources/previews/026/309/247/non_2x/robot-chat-or-chat-bot-logo-modern-conversation-automatic-technology-logo-design-template-vector.jpg',
           },
         },
+        ...refined.reverse(),
+        
       ]);
-    }, 3000);
-  }, [navigation]);
 
-  const sendChatbotRequestMutation = useMutation<
-    ChatbotResponse,
-    AxiosError,
-    string
-  >({
+      setIsTyping(false);
+      return response.data.messages as Message[];
+    },
+  });
+
+  const sendChatbotRequestMutation = useMutation<Message, AxiosError, string>({
     mutationKey: ['chatbot-response'],
     mutationFn: async (message: string) => {
       const response = await axios.post(
-        `${VULTR_CHAT_URL}`,
+        `${SEND_MESSAGE_TO_GEMINI}`,
         {
-          model: 'zephyr-7b-beta-f32',
-          collection: 'care_companion',
-          messages: [
-            {
-              role: 'user',
-              content: message,
-            },
-          ],
+          text: message,
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${user_token}`,
           },
         },
       );
-      return response.data;
+      return response.data.message as Message;
     },
-    onSuccess: (responseData: ChatbotResponse) => {
+    onSuccess: (responseData: Message) => {
       setMessages(previousMessages =>
-        GiftedChat.append(previousMessages, {
-          _id: responseData.id,
-          text: responseData.choices[0].message.content,
-          createdAt: new Date(),
-          user: {
-            _id: 2,
-            avatar:
-              'https://static.vecteezy.com/system/resources/previews/026/309/247/non_2x/robot-chat-or-chat-bot-logo-modern-conversation-automatic-technology-logo-design-template-vector.jpg',
+        GiftedChat.append(previousMessages, [
+          {
+            _id: responseData._id,
+            text: responseData.text,
+            createdAt: new Date(),
+            user: {
+              _id: 2,
+              avatar:
+                'https://static.vecteezy.com/system/resources/previews/026/309/247/non_2x/robot-chat-or-chat-bot-logo-modern-conversation-automatic-technology-logo-design-template-vector.jpg',
+            },
           },
-        }),
+        ]),
       );
     },
     onError: (error: AxiosError) => {
-      //console.log('Error', error);
+      console.log('Error', error);
       if (error.response) {
         const statusCode = error.response.status;
         switch (statusCode) {
@@ -185,6 +167,23 @@ const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
               'Invalid request. Please check your input.',
             );
             break;
+          case 429:
+            setMessages(previousMessages =>
+              GiftedChat.append(previousMessages, [
+                {
+                  _id: previousMessages.length + 1,
+                  text: 'You’ve reached your daily limit. You can ask up to 5 questions per day',
+                  createdAt: new Date(),
+                  user: {
+                    _id: 2,
+                    avatar:
+                      'https://static.vecteezy.com/system/resources/previews/026/309/247/non_2x/robot-chat-or-chat-bot-logo-modern-conversation-automatic-technology-logo-design-template-vector.jpg',
+                  },
+                },
+              ]),
+            );
+            break;
+
           case 500:
             Alert.alert(
               'Server Error',

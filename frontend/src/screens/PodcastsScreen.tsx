@@ -9,8 +9,7 @@ import {
   RefreshControl,
 } from 'react-native';
 
-import {YStack, XStack, H5, Input} from 'tamagui';
-import {Feather} from '@expo/vector-icons';
+import {YStack, H5} from 'tamagui';
 import axios from 'axios';
 import PodcastCard from '../components/PodcastCard';
 import {hp} from '../helper/Metric';
@@ -27,7 +26,7 @@ import {differenceInDays} from 'date-fns';
 import Snackbar from 'react-native-snackbar';
 import {setaddedPodcastId, setPodcasts} from '../store/dataSlice';
 import CreatePlaylist from '../components/CreatePlaylist';
-import {BUTTON_COLOR, ON_PRIMARY_COLOR} from '../helper/Theme';
+import {ON_PRIMARY_COLOR} from '../helper/Theme';
 
 import CreateIcon from '../components/CreateIcon';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -129,18 +128,18 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
     );
 
     // Step 3: take top 5–10 as recommended
-    const recommended = withViews.slice(0, 2);
+    const recommended = withViews.slice(0, 5);
 
-    const latestIds = new Set(latest.map(p => p._id));
-    const recommendedIds = new Set(recommended.map(p => p._id));
-    const all = podcasts.filter(
-      p => !latestIds.has(p._id) && !recommendedIds.has(p._id),
-    );
-
+   // const latestIds = new Set(latest.map(p => p._id));
+   // const recommendedIds = new Set(recommended.map(p => p._id));
+    // const all = podcasts.filter(
+    //   p => !latestIds.has(p._id) && !recommendedIds.has(p._id),
+    // );
+    
     return {
       latestPodcasts: latest,
       recommendedPodcasts: recommended,
-      allPodcasts: all,
+      allPodcasts: podcasts,
     };
   }, [podcasts]);
 
@@ -216,7 +215,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
 
   return (
     <SafeAreaView style={styles.container}>
-        <StatusBar style="light" backgroundColor={'#000A60'} />
+      <StatusBar style="light" backgroundColor={'#000A60'} />
       <ScrollView
         showsVerticalScrollIndicator={false}
         onScroll={handleScroll}

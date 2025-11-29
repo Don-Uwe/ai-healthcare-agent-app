@@ -85,6 +85,7 @@ const LOAD_REVIEW_COMMENTS = `${PROD_URL}/review/load`;
 
 // chat url
 const CHAT_URL = `${PROD_URL}/gemini/messages`;
+const SEND_MESSAGE_TO_GEMINI = `${PROD_URL}/gemini/send`;
 
 
 export {
@@ -162,5 +163,6 @@ export {
   PROD_URL,
   SOCKET_PROD,
   CONTENT_CHECKER_PROD,
-  LOAD_REVIEW_COMMENTS
+  LOAD_REVIEW_COMMENTS,
+  SEND_MESSAGE_TO_GEMINI
 };
