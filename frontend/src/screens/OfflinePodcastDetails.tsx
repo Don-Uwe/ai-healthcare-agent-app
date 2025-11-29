@@ -19,7 +19,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 
 import {formatCount, updateOfflinePodcastLikeStatus} from '../helper/Utils';
-import {useSelector} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import {useCallback, useEffect, useState} from 'react';
 import {useMutation} from '@tanstack/react-query';
 import axios from 'axios';
@@ -31,6 +31,7 @@ import Icon from '@expo/vector-icons/MaterialIcons';
 import {useSocket} from '../../SocketContext';
 import {Feather} from '@expo/vector-icons';
 import {useAudioPlayer} from 'expo-audio';
+import {showAlert} from '../store/alertSlice';
 
 export default function OfflinePodcastDetail({
   route,
@@ -51,6 +52,7 @@ export default function OfflinePodcastDetail({
   //const [isLoading, setLoading] = useState<boolean>(false);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [currentPodcast, setCurrentPodcast] = useState<PodcastData>(podcast);
+  const dispatch = useDispatch();
 
   const player = useAudioPlayer(`file://${podcast.filePath}`);
 
@@ -96,7 +98,13 @@ export default function OfflinePodcastDetail({
       //console.log(result);
     } catch (error) {
       console.log('Error sharing:', error);
-      Alert.alert('Error', 'Something went wrong while sharing.');
+      // Alert.alert('Error', 'Something went wrong while sharing.');
+      dispatch(
+        showAlert({
+          title: 'Error!',
+          message: 'Something went wrong while sharing.',
+        }),
+      );
     }
   };
 
@@ -349,7 +357,7 @@ export default function OfflinePodcastDetail({
         <Text style={styles.time}>{formatTime(player.duration || 1)}</Text>
       </View>
 
-      { player.currentStatus.isBuffering && (
+      {player.currentStatus.isBuffering && (
         <Text style={styles.bufferingText}>⏳ Buffering... please wait</Text>
       )}
 

@@ -14,17 +14,10 @@ import {
   Keyboard,
 } from 'react-native';
 
-import {
-  YStack,
-  H3,
-  Paragraph,
-  Button,
-  Image,
-  Text,
-} from 'tamagui';
+import {YStack, H3, Paragraph, Button, Image, Text} from 'tamagui';
 import {CommentScreenProp, User, Comment} from '../type';
 import {PRIMARY_COLOR} from '../helper/Theme';
-import {useSelector} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import Loader from '../components/Loader';
 import CommentItem from '../components/CommentItem';
 import {useSocket} from '../../SocketContext';
@@ -39,6 +32,7 @@ import {
 import {GET_IMAGE, GET_STORAGE_DATA} from '../helper/APIUtils';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {wp} from '../helper/Metric';
+import {showAlert} from '../store/alertSlice';
 
 const CommentScreen = ({navigation, route}: CommentScreenProp) => {
   const socket = useSocket();
@@ -53,6 +47,7 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
   const [commentLoading, setCommentLoading] = useState<boolean>(false);
   const [commentLikeLoading, setCommentLikeLoading] = useState<boolean>(false);
   const [mentions, setMentions] = useState<User[]>([]);
+  const dispatch = useDispatch();
 
   // mention triggers for v3
   // Create as constants outside component or memoize with useMemo
@@ -88,7 +83,7 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
     socket.emit('fetch-comments', {articleId: route.params.articleId});
 
     socket.on('connect', () => console.log('connection established'));
-   // socket.on('comment-processing', (data: boolean) => setCommentLoading(data));
+    // socket.on('comment-processing', (data: boolean) => setCommentLoading(data));
     socket.on('like-comment-processing', (data: boolean) =>
       setCommentLikeLoading(data),
     );
@@ -196,7 +191,14 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
 
   const handleCommentSubmit = () => {
     if (!newComment.trim()) {
-      Alert.alert('Please enter a comment before submitting.');
+      dispatch(
+        showAlert({
+          title: 'Alert!',
+          message: 'Please enter a comment before submitting.',
+        }),
+      );
+      // Alert.alert('Please enter a comment before submitting.');
+      
       return;
     }
 
@@ -332,8 +334,6 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
             style={{flex: 1, backgroundColor: '#f8f9fb', padding: wp(0.2)}}>
             {/* Header Section */}
             <YStack space="$3">
-            
-
               <H3 fontSize={19} color="black" fontWeight={'600'}>
                 {article.title}
               </H3>
@@ -362,9 +362,9 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
                 backgroundColor={PRIMARY_COLOR}
                 pressStyle={{opacity: 0.9}}
                 borderRadius="$4"
-                size={"$6"}
+                size={'$6'}
                 mt="$2"
-                paddingVertical={"$3"}
+                paddingVertical={'$3'}
                 elevation="$2">
                 <Text color="white" fontWeight="600" fontSize={16}>
                   View Full Article
@@ -373,10 +373,6 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
               <Paragraph color="$gray10" fontSize={17}>
                 {article.description}
               </Paragraph>
-
-             
-
-            
 
               <Suggestions suggestions={filteredUsers} {...triggers.mention} />
 
@@ -387,17 +383,15 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
                 multiline
               />
 
-             {
-              newComment.length > 0 && (
-                 <TouchableOpacity
-                style={styles.submitButton}
-                onPress={handleCommentSubmit}>
-                <Text style={styles.submitButtonText}>
-                  {editMode ? '✏️ Update Comment' : '⏩ Submit Comment'}
-                </Text>
-              </TouchableOpacity>
-              )
-             }
+              {newComment.length > 0 && (
+                <TouchableOpacity
+                  style={styles.submitButton}
+                  onPress={handleCommentSubmit}>
+                  <Text style={styles.submitButtonText}>
+                    {editMode ? '✏️ Update Comment' : '⏩ Submit Comment'}
+                  </Text>
+                </TouchableOpacity>
+              )}
               <YStack marginTop="$4" space="$3">
                 <Text fontWeight="600" fontSize={20}>
                   {comments.length} Comments

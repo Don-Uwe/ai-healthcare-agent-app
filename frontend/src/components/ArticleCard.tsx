@@ -13,7 +13,7 @@ import {useEffect, useState} from 'react';
 import {fp} from '../helper/Metric';
 import {ArticleCardProps, ArticleData, User} from '../type';
 import moment from 'moment';
-import {useSelector} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import axios from 'axios';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import IonIcons from '@expo/vector-icons/Ionicons';
@@ -25,9 +25,9 @@ import {
   LIKE_ARTICLE,
   SAVE_ARTICLE,
 } from '../helper/APIUtils';
-import { PRIMARY_COLOR} from '../helper/Theme';
+import {PRIMARY_COLOR} from '../helper/Theme';
 import {formatCount} from '../helper/Utils';
-import  {
+import {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -38,10 +38,11 @@ import Entypo from '@expo/vector-icons/Entypo';
 import Share from 'react-native-share';
 import RNFS from 'react-native-fs';
 //import {RNHTMLtoPDF} from 'react-native-html-to-pdf';
-import { generatePDF } from 'react-native-html-to-pdf';
+import {generatePDF} from 'react-native-html-to-pdf';
 import {useSocket} from '../../SocketContext';
 import EditRequestModal from './EditRequestModal';
-import { FontAwesome } from '@expo/vector-icons';
+import {FontAwesome} from '@expo/vector-icons';
+import {showAlert} from '../store/alertSlice';
 
 const ArticleCard = ({
   item,
@@ -52,12 +53,12 @@ const ArticleCard = ({
   handleRepostAction,
   handleReportAction,
   handleEditRequestAction,
-  source
+  source,
 }: ArticleCardProps) => {
   const {user_token, user_id} = useSelector((state: any) => state.user);
 
   //const socket = io('http://51.20.1.81:8084');
-//  const dispatch = useDispatch();
+  const dispatch = useDispatch();
   const socket = useSocket();
   const width = useSharedValue(0);
   const yValue = useSharedValue(60);
@@ -85,7 +86,13 @@ const ArticleCard = ({
       console.log(result);
     } catch (error) {
       console.log('Error sharing:', error);
-      Alert.alert('Error', 'Something went wrong while sharing.');
+      // Alert.alert('Error', 'Something went wrong while sharing.');
+      dispatch(
+        showAlert({
+          title: 'Error!',
+          message: 'Something went wrong while sharing.',
+        }),
+      );
     }
   };
 
@@ -94,9 +101,7 @@ const ArticleCard = ({
       console.log('connection established');
     });
   }, [socket]);
-  const {
-    data: user,
-  } = useQuery({
+  const {data: user} = useQuery({
     queryKey: ['get-my-profile'],
     queryFn: async () => {
       const response = await axios.get(`${GET_PROFILE_API}`, {
@@ -112,7 +117,13 @@ const ArticleCard = ({
     mutationKey: ['update-view-count'],
     mutationFn: async () => {
       if (user_token === '') {
-        Alert.alert('No token found');
+        //Alert.alert('No token found');
+        dispatch(
+          showAlert({
+            title: 'Alert!',
+            message: 'No token found',
+          }),
+        );
         return;
       }
       const res = await axios.post(
@@ -135,7 +146,13 @@ const ArticleCard = ({
 
     onError: () => {
       //console.log('Update View Count Error', error);
-      Alert.alert('Internal server error, try again!');
+      // Alert.alert('Internal server error, try again!');
+      dispatch(
+        showAlert({
+          title: 'Server error',
+          message: 'Try again!',
+        }),
+      );
     },
   });
 
@@ -144,7 +161,13 @@ const ArticleCard = ({
 
     mutationFn: async () => {
       if (user_token === '') {
-        Alert.alert('No token found');
+        // Alert.alert('No token found');
+        dispatch(
+          showAlert({
+            title: 'Alert!',
+            message: 'No token found',
+          }),
+        );
         return;
       }
       const res = await axios.post(
@@ -166,7 +189,7 @@ const ArticleCard = ({
     },
 
     onSuccess: data => {
-       //dispatch(setArticle({article: data}));
+      //dispatch(setArticle({article: data}));
 
       //console.log('author', data);
       if (data?.likeStatus) {
@@ -187,8 +210,14 @@ const ArticleCard = ({
     },
 
     onError: () => {
-      Alert.alert('Try Again!');
+      // Alert.alert('Try Again!');
       //console.log('Like Error', err);
+      dispatch(
+        showAlert({
+          title: 'Server error',
+          message: 'Please try again',
+        }),
+      );
     },
   });
 
@@ -204,10 +233,10 @@ const ArticleCard = ({
     }
   };
 
-  const onChange = ()=>{
-    console.log("Menu visible")
+  const onChange = () => {
+    console.log('Menu visible');
     setMenuVisible(true);
-  }
+  };
 
   const generatePDFFromUrl = async (recordId: string, title: string) => {
     // setLoading(true);
@@ -225,7 +254,13 @@ const ArticleCard = ({
       }
     } catch (error) {
       console.error('Error generating PDF:', error);
-      Alert.alert('Error', 'Something went wrong while creating the PDF.');
+      // Alert.alert('Error', 'Something went wrong while creating the PDF.');
+      dispatch(
+        showAlert({
+          title: 'Error!',
+          message: 'Something went wrong while creating the PDF.',
+        }),
+      );
     }
   };
 
@@ -258,10 +293,22 @@ const ArticleCard = ({
 
       await RNFS.moveFile(file.filePath, filePath);
 
-      Alert.alert('PDF created successfully!', `Saved at: ${filePath}`);
+      //Alert.alert('PDF created successfully!', `Saved at: ${filePath}`);
+      dispatch(
+        showAlert({
+          title: 'PDF created successfully!',
+          message: `Saved at: ${filePath}`,
+        }),
+      );
     } catch (error) {
       console.error('Error generating PDF:', error);
-      Alert.alert('Error', 'Something went wrong while creating the PDF.');
+      //Alert.alert('Error', 'Something went wrong while creating the PDF.');
+      dispatch(
+        showAlert({
+          title: 'Error!',
+          message: `Something went wrong while creating the PDF.`,
+        }),
+      );
     }
   };
 
@@ -297,79 +344,72 @@ const ArticleCard = ({
 
         <View style={styles.textContainer}>
           {/* Share Icon */}
-          
-          {
-            source === 'home' && (
-              
-              <ArticleFloatingMenu
-                items={[
-                  {
-                    name: 'Share this post',
-                    action: () => {
-                      handleShare();
-                      //handleAnimation();
-                      setMenuVisible(false);
-                    },
-                    icon: 'share-alt',
+
+          {source === 'home' && (
+            <ArticleFloatingMenu
+              items={[
+                {
+                  name: 'Share this post',
+                  action: () => {
+                    handleShare();
+                    //handleAnimation();
+                    setMenuVisible(false);
                   },
-                  {
-                    name: 'Repost in your feed',
-                    action: () => {
-                      handleRepostAction(item);
-                      //handleAnimation();
-                      setMenuVisible(false);
-                    },
-                    icon: 'fork',
+                  icon: 'share-alt',
+                },
+                {
+                  name: 'Repost in your feed',
+                  action: () => {
+                    handleRepostAction(item);
+                    //handleAnimation();
+                    setMenuVisible(false);
                   },
-                  {
-                    name: 'Download as pdf',
-                    action: () => {
-                      //handleAnimation();
-                      setMenuVisible(false);
-                      generatePDFFromUrl(item?.pb_recordId, item?.title);
-                    },
-                    icon: 'download',
+                  icon: 'fork',
+                },
+                {
+                  name: 'Download as pdf',
+                  action: () => {
+                    //handleAnimation();
+                    setMenuVisible(false);
+                    generatePDFFromUrl(item?.pb_recordId, item?.title);
                   },
-                  {
-                    name: 'Request to edit',
-                    action: () => {
-                       setMenuVisible(false);
-                      setRequestModalVisible(true);
-                      console.log('modal visible', requestModalVisible);
-                     // handleAnimation();
-                      
-                    },
-                    icon: 'edit',
+                  icon: 'download',
+                },
+                {
+                  name: 'Request to edit',
+                  action: () => {
+                    setMenuVisible(false);
+                    setRequestModalVisible(true);
+                    console.log('modal visible', requestModalVisible);
+                    // handleAnimation();
                   },
-                  {
-                    name: 'Report this post',
-                    action: () => {
-                       setMenuVisible(false);
-                      handleReportAction(item);
-                     // handleAnimation();
-                    },
-                    icon: 'aim',
+                  icon: 'edit',
+                },
+                {
+                  name: 'Report this post',
+                  action: () => {
+                    setMenuVisible(false);
+                    handleReportAction(item);
+                    // handleAnimation();
                   },
-                ]} 
-                visible={menuVisible} 
-                onDismiss={()=>{
-                 setMenuVisible(false);
-                } }              
-                />
-            )
-          }
-            
-  
+                  icon: 'aim',
+                },
+              ]}
+              visible={menuVisible}
+              onDismiss={() => {
+                setMenuVisible(false);
+              }}
+            />
+          )}
+
           {/* Icon for more options */}
-          {
-            source === 'home' && (
-              <TouchableOpacity
-            style={styles.shareIconContainer}
-            onPress={onChange}>
-            <Entypo name="dots-three-vertical" size={20} color={'black'} />
-          </TouchableOpacity>
-            )
-          }
+          {source === 'home' && (
+            <TouchableOpacity
+              style={styles.shareIconContainer}
+              onPress={onChange}>
+              <Entypo name="dots-three-vertical" size={20} color={'black'} />
+            </TouchableOpacity>
+          )}
 
           {/* Title & Footer Text */}
           <Text style={styles.footerText}>
@@ -416,12 +456,22 @@ const ArticleCard = ({
                   updateLikeMutation.mutate();
                 }}
                 style={styles.likeSaveChildContainer}>
-                {item.likedUsers.some(it=> (it._id &&  it._id.toString() === user_id) || (it.toString() === user_id)) ? (
+                {item.likedUsers.some(
+                  it =>
+                    (it._id && it._id.toString() === user_id) ||
+                    it.toString() === user_id,
+                ) ? (
                   <AntDesign name="heart" size={24} color={PRIMARY_COLOR} />
                 ) : (
                   <FontAwesome name="heart-o" size={24} color={'black'} />
                 )}
-                <Text style={{...styles.title, marginStart: 3, fontWeight:'500', color:"black"}}>
+                <Text
+                  style={{
+                    ...styles.title,
+                    marginStart: 3,
+                    fontWeight: '500',
+                    color: 'black',
+                  }}>
                   {formatCount(item.likedUsers.length)}
                 </Text>
               </TouchableOpacity>
@@ -434,36 +484,33 @@ const ArticleCard = ({
                   mentionedUsers: item.mentionedUsers
                     ? item.mentionedUsers
                     : [],
-                  article: item
+                  article: item,
                 });
               }}
               style={styles.likeSaveChildContainer}>
-              <FontAwesome
-                name="comment-o"
-                size={24}
-                color={'black'}
-              />
-
-             
+              <FontAwesome name="comment-o" size={24} color={'black'} />
             </TouchableOpacity>
 
-            {
-              source === 'home' && (
-                  <TouchableOpacity
-              onPress={() => {
-               // width.value = withTiming(0, {duration: 300});
-               // yValue.value = withTiming(100, {duration: 300});
-                handleRepostAction(item);
-              }}
-              style={styles.likeSaveChildContainer}>
-              <AntDesign name="fork" size={22} color={'black'} />
-              <Text
-                style={{...styles.title, fontWeight:'500', marginStart: 3, color: 'black'}}>
-                {formatCount(item.repostUsers.length)}
-              </Text>
-            </TouchableOpacity>
-              )
-            }
+            {source === 'home' && (
+              <TouchableOpacity
+                onPress={() => {
+                  // width.value = withTiming(0, {duration: 300});
+                  // yValue.value = withTiming(100, {duration: 300});
+                  handleRepostAction(item);
+                }}
+                style={styles.likeSaveChildContainer}>
+                <AntDesign name="fork" size={22} color={'black'} />
+                <Text
+                  style={{
+                    ...styles.title,
+                    fontWeight: '500',
+                    marginStart: 3,
+                    color: 'black',
+                  }}>
+                  {formatCount(item.repostUsers.length)}
+                </Text>
+              </TouchableOpacity>
+            )}
 
             {updateSaveStatusMutation.isPending ? (
               <ActivityIndicator size="small" color={PRIMARY_COLOR} />
@@ -486,8 +533,6 @@ const ArticleCard = ({
         </View>
       </View>
     </Pressable>
-
-
   );
 };
 
@@ -498,41 +543,41 @@ const styles = StyleSheet.create({
     width: '100%',
     backgroundColor: '#ffffff',
     flexDirection: 'row',
-    marginVertical: 10, 
+    marginVertical: 10,
     borderRadius: 12,
     overflow: 'hidden',
-    elevation: 2, 
-    borderWidth: 1, 
+    elevation: 2,
+    borderWidth: 1,
     borderColor: '#E0E0E0',
   },
   image: {
-    flex: 0.4, 
-    height: '100%', 
+    flex: 0.4,
+    height: '100%',
     resizeMode: 'cover',
   },
   textContainer: {
-    flex: 0.6, 
+    flex: 0.6,
     backgroundColor: 'white',
     paddingHorizontal: 12,
     paddingVertical: 12,
-    justifyContent: 'space-between', 
+    justifyContent: 'space-between',
   },
 
   title: {
     fontSize: fp(5.5),
-    fontWeight: '700', 
-    color: '#191C1B', 
+    fontWeight: '700',
+    color: '#191C1B',
     marginBottom: 4,
   },
   footerText: {
     fontSize: fp(3.5),
     fontWeight: '600',
-    color: PRIMARY_COLOR, 
+    color: PRIMARY_COLOR,
     marginBottom: 3,
   },
   footerText1: {
     fontSize: fp(3.5),
-    fontWeight: '400', 
+    fontWeight: '400',
     color: '#778599',
     marginBottom: 2,
   },
@@ -540,14 +585,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     width: '100%',
     marginTop: 10,
-    justifyContent: 'space-between', 
+    justifyContent: 'space-between',
   },
   likeSaveChildContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   shareIconContainer: {
-
     position: 'absolute',
     top: 5,
     right: 5,

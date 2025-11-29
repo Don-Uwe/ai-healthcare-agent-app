@@ -188,7 +188,12 @@ export default function CreatePlaylist({visible, dismiss}: Props) {
       dismiss();
     },
     onError: err => {
-      Alert.alert(err.message);
+
+      Snackbar.show({
+        text: err.message,
+        duration: Snackbar.LENGTH_SHORT,
+      });
+      //Alert.alert(err.message);
       //setInputValue('');
       clear();
     },

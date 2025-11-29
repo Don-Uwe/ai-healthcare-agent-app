@@ -9,6 +9,8 @@ import PodcastActions from './PodcastActions';
 import Share from 'react-native-share';
 import {GET_STORAGE_DATA} from '../helper/APIUtils';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { showAlert } from '../store/alertSlice';
+import { useDispatch } from 'react-redux';
 
 interface PodcastProps {
   id: string;
@@ -42,6 +44,7 @@ const PodcastCard = ({
   playlistAct,
 }: PodcastProps) => {
   const sheetRef = useRef<BottomSheetModal>(null);
+  const dispatch = useDispatch();
 
   const handleOpenSheet = () => {
     // onSelect(id);
@@ -60,7 +63,11 @@ const PodcastCard = ({
       console.log(result);
     } catch (error) {
       console.log('Error sharing:', error);
-      Alert.alert('Error', 'Something went wrong while sharing.');
+    //  Alert.alert('Error', 'Something went wrong while sharing.');
+      dispatch(showAlert({
+        title: "Error",
+        message: 'Something went wrong while sharing.'
+      }));
     }
   };
 

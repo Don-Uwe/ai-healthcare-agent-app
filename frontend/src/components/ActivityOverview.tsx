@@ -9,7 +9,7 @@ import {LineChart} from 'react-native-chart-kit';
 import {useQuery} from '@tanstack/react-query';
 import moment from 'moment';
 import {fp, hp} from '../helper/Metric';
-import {useSelector} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import axios from 'axios';
 import {
   GET_IMAGE,
@@ -34,6 +34,7 @@ import Loader from './Loader';
 
 import {useFocusEffect} from '@react-navigation/native';
 import {Dropdown} from 'react-native-element-dropdown';
+import {showAlert} from '../store/alertSlice';
 
 interface Props {
   onArticleViewed: ({
@@ -52,6 +53,7 @@ interface Props {
 const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
   const [userState, setUserState] = useState<number>(0);
   const {user_token, user_id} = useSelector((state: any) => state.user);
+  const dispatch = useDispatch();
   const [isFocus, setIsFocus] = useState<boolean>(false);
   // const [selectedDay, setSelectedDay] = useState<number>(new Date().getDay());
   const [selectedMonth, setSelectedMonth] = useState<number>(
@@ -90,19 +92,37 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
           return [];
         }
         if (user_token === '') {
-          Alert.alert('No token found');
+          // Alert.alert('No token found');
+          dispatch(
+            showAlert({
+              title: 'Alert!',
+              message: 'No token found',
+            }),
+          );
           return [];
         }
         if (!userId) {
           if (others) {
             // user id not found for others profile
-            Alert.alert('No user id found');
+            // Alert.alert('No user id found');
+            dispatch(
+              showAlert({
+                title: 'Alert!',
+                message: 'No user id found',
+              }),
+            );
             return [];
           }
         }
         if (user_id === '' && !others) {
           // user id not found for own profile
-          Alert.alert('No user id found');
+          // Alert.alert('No user id found');
+          dispatch(
+            showAlert({
+              title: 'Alert!',
+              message: 'No user  id found',
+            }),
+          );
           return [];
         }
 
@@ -133,19 +153,37 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
             return [];
           }
           if (user_token === '') {
-            Alert.alert('No token found');
+            //Alert.alert('No token found');
+            dispatch(
+              showAlert({
+                title: 'Alert!',
+                message: 'No token found',
+              }),
+            );
             return [];
           }
           if (!userId) {
             if (others) {
               // user id not found for others profile
-              Alert.alert('No user id found');
+              //Alert.alert('No user id found');
+              dispatch(
+                showAlert({
+                  title: 'Alert!',
+                  message: 'No user id found',
+                }),
+              );
               return [];
             }
           }
           if (user_id === '' && !others) {
             // user id not found for own profile
-            Alert.alert('No user id found');
+            // Alert.alert('No user id found');
+            dispatch(
+              showAlert({
+                title: 'Alert!',
+                message: 'No user id found',
+              }),
+            );
             return [];
           }
 
@@ -177,19 +215,37 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
           return [];
         }
         if (user_token === '') {
-          Alert.alert('No token found');
+          /// Alert.alert('No token found');
+          dispatch(
+            showAlert({
+              title: 'Alert!',
+              message: 'No token found',
+            }),
+          );
           return [];
         }
         if (!userId) {
           if (others) {
             // user id not found for others profile
-            Alert.alert('No user id found');
+            //  Alert.alert('No user id found');
+            dispatch(
+              showAlert({
+                title: 'Alert!',
+                message: 'No user id found',
+              }),
+            );
             return [];
           }
         }
         if (user_id === '' && !others) {
           // user id not found for own profile
-          Alert.alert('No user id found');
+          //Alert.alert('No user id found');
+          dispatch(
+            showAlert({
+              title: 'Alert!',
+              message: 'No user id found',
+            }),
+          );
           return [];
         }
 
@@ -221,19 +277,37 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
             return [];
           }
           if (user_token === '') {
-            Alert.alert('No token found');
+            // Alert.alert('No token found');
+            dispatch(
+              showAlert({
+                title: 'Alert!',
+                message: 'No token found',
+              }),
+            );
             return [];
           }
           if (!userId) {
             if (others) {
               // user id not found for others profile
-              Alert.alert('No user id found');
+              // Alert.alert('No user id found');
+              dispatch(
+                showAlert({
+                  title: 'Alert!',
+                  message: 'No user id found',
+                }),
+              );
               return [];
             }
           }
           if (user_id === '' && !others) {
             // user id not found for own profile
-            Alert.alert('No user id found');
+            //Alert.alert('No user id found');
+            dispatch(
+              showAlert({
+                title: 'Alert!',
+                message: 'No user id found',
+              }),
+            );
             return [];
           }
 
@@ -263,19 +337,37 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
     queryFn: async () => {
       try {
         if (user_token === '') {
-          Alert.alert('No token found');
+          //  Alert.alert('No token found');
+          dispatch(
+            showAlert({
+              title: 'Alert!',
+              message: 'No token found',
+            }),
+          );
           return '';
         }
         if (!userId) {
           if (others) {
             // user id not found for others profile
-            Alert.alert('No user id found');
+            // Alert.alert('No user id found');
+            dispatch(
+              showAlert({
+                title: 'Alert!',
+                message: 'No user id found',
+              }),
+            );
             return '';
           }
         }
         if (user_id === '' && !others) {
           // user id not found for own profile
-          Alert.alert('No user id found');
+          // Alert.alert('No user id found');
+          dispatch(
+            showAlert({
+              title: 'Alert!',
+              message: 'No user id found',
+            }),
+          );
           return '';
         }
 
@@ -303,19 +395,37 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
     queryFn: async () => {
       try {
         if (user_token === '') {
-          Alert.alert('No token found');
+          // Alert.alert('No token found');
+          dispatch(
+            showAlert({
+              title: 'Alert!',
+              message: 'No token found',
+            }),
+          );
           return '';
         }
         if (!userId) {
           if (others) {
             // user id not found for others profile
-            Alert.alert('No user id found');
+            // Alert.alert('No user id found');
+            dispatch(
+              showAlert({
+                title: 'Alert!',
+                message: 'No user id found',
+              }),
+            );
             return '';
           }
         }
         if (user_id === '' && !others) {
           // user id not found for own profile
-          Alert.alert('No user id found');
+          //Alert.alert('No user id found');
+          dispatch(
+            showAlert({
+              title: 'Alert!',
+              message: 'No user id found',
+            }),
+          );
           return '';
         }
 
@@ -344,19 +454,35 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
     queryFn: async () => {
       try {
         if (user_token === '') {
-          Alert.alert('No token found');
+          // Alert.alert('No token found');
+          dispatch(
+            showAlert({
+              title: 'Alert!',
+              message: 'No token found',
+            }),
+          );
           return '';
         }
         if (!userId) {
           if (others) {
             // user id not found for others profile
-            Alert.alert('No user id found');
+            //  Alert.alert('No user id found');
+            dispatch(
+              showAlert({
+                title: 'Alert!',
+                message: 'No user id found',
+              }),
+            );
             return '';
           }
         }
         if (user_id === '' && !others) {
           // user id not found for own profile
-          Alert.alert('No user id found');
+         // Alert.alert('No user id found');
+          dispatch(showAlert({
+               title: "Alert!",
+               message: 'No user id found'
+              }));
           return '';
         }
 
@@ -385,19 +511,31 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
     queryFn: async () => {
       try {
         if (user_token === '') {
-          Alert.alert('No token found');
+          //Alert.alert('No token found');
+           dispatch(showAlert({
+               title: "Alert!",
+               message: 'No token found'
+              }));
           return '';
         }
         if (!userId) {
           if (others) {
             // user id not found for others profile
-            Alert.alert('No user id found');
+          //  Alert.alert('No user id found');
+           dispatch(showAlert({
+               title: "Alert!",
+               message: 'No user id found'
+              }));
             return '';
           }
         }
         if (user_id === '' && !others) {
           // user id not found for own profile
-          Alert.alert('No user id found');
+          //Alert.alert('No user id found');
+           dispatch(showAlert({
+               title: "Alert!",
+               message: 'No user id found'
+              }));
           return '';
         }
 
@@ -517,12 +655,16 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
     if (selectedMonth !== -1) {
       const monthName = monthNames[selectedMonth];
       const year = moment().year(); // current year
-      return `Your ${userState === 0? "Reading" : "Writing"} activity for ${monthName} ${year}`;
+      return `Your ${
+        userState === 0 ? 'Reading' : 'Writing'
+      } activity for ${monthName} ${year}`;
     }
 
     // If year selected
     if (selectedYear !== -1) {
-      return `Your ${userState === 0? "Reading" : "Writing"} activity for the year ${selectedYear}`;
+      return `Your ${
+        userState === 0 ? 'Reading' : 'Writing'
+      } activity for the year ${selectedYear}`;
     }
 
     return '';

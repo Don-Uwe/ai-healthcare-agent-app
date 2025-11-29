@@ -3,7 +3,7 @@ import {Alert, StyleSheet} from 'react-native';
 import {PodcastPlayerScreenProps} from '../type';
 import RNFS from 'react-native-fs';
 import {useMutation} from '@tanstack/react-query';
-import {useSelector} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import axios from 'axios';
 import Snackbar from 'react-native-snackbar';
 
@@ -18,6 +18,7 @@ import {Button, Circle, Theme, XStack, YStack, Text} from 'tamagui';
 import {AntDesign, Entypo, Ionicons} from '@expo/vector-icons';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import LottieView from 'lottie-react-native';
+import {showAlert} from '../store/alertSlice';
 
 const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
   const {uploadImage, loading, error: imageError} = useUploadImage();
@@ -25,6 +26,7 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [position, setPosition] = useState(0);
   const [duration, setDuration] = useState(0);
+  const dispatch = useDispatch();
 
   const {title, description, selectedGenres, imageUtils, filePath} =
     route.params;
@@ -216,9 +218,17 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
 
   const handlePostSubmit = async () => {
     if (!filePath || !imageUtils) {
-      Alert.alert(
-        'Error',
-        'Please record a podcast and select an image before uploading.',
+      // Alert.alert(
+      //   'Error',
+      //   'Please record a podcast and select an image before uploading.',
+      // );
+
+      dispatch(
+        showAlert({
+          title: 'Error',
+          message:
+            'Please record a podcast and select an image before uploading.',
+        }),
       );
       return;
     }
@@ -227,7 +237,7 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
       // Show confirmation alert
       const confirmation = await showConfirmationAlert();
       if (!confirmation) {
-        Alert.alert('Post discarded');
+        //Alert.alert('Post discarded');
         await unlinkFile();
         navigation.navigate('TabNavigation');
         return;
@@ -252,11 +262,25 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
           cover_image: uploadedUrl,
         });
       } else {
-        Alert.alert('Error', 'Could not upload the podcast. Please try again.');
+       // Alert.alert('Error', 'Could not upload the podcast. Please try again.');
+        dispatch(
+        showAlert({
+          title: 'Error',
+          message:
+            'Could not upload the podcast. Please try again.',
+        }),
+      );
       }
     } catch (err) {
       console.error('Image processing failed:', err);
-      Alert.alert('Error', 'Could not process the images.');
+      //Alert.alert('Error', 'Could not process the images.');
+      dispatch(
+        showAlert({
+          title: 'Error',
+          message:
+            'Could not process the images.',
+        }),
+      );
       await handleUpload();
     }
   };
@@ -351,20 +375,17 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
           </Circle>
         </YStack>
 
-      {player.currentStatus.playing && (
+        {player.currentStatus.playing && (
           <LottieView
-            source={require("../assets/LottieAnimation/sound-voice-waves.json")}
+            source={require('../assets/LottieAnimation/sound-voice-waves.json')}
             autoPlay
             loop
             style={{
-              width: "100%",
+              width: '100%',
               height: 150,
             }}
-            />
-          )
-        }
-        
-
+          />
+        )}
 
         <YStack marginTop="$1">
           <Slider
@@ -425,14 +446,19 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
           />
 
           <Button
-          height={90}
+            height={90}
             chromeless
             onPress={handleForward}
             icon={<Ionicons name="play-forward" size={26} color="#9BB3C8" />}
           />
         </XStack>
 
-        <Text marginTop="$4" marginBottom="$6" textAlign="center" color="#8FA3BB" fontSize={13}>
+        <Text
+          marginTop="$4"
+          marginBottom="$6"
+          textAlign="center"
+          color="#8FA3BB"
+          fontSize={13}>
           Saved at:{filePath}
         </Text>
       </YStack>

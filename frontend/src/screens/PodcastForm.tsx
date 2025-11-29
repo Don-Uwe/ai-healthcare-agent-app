@@ -9,7 +9,7 @@ import {
   Image,
   Alert,
 } from 'react-native';
-import {useSelector} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import {PodcastFormProp, Category} from '../type';
 import Ionicon from '@expo/vector-icons/Ionicons';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
@@ -21,6 +21,7 @@ import {
 import ImageResizer from '@bam.tech/react-native-image-resizer';
 import {hp} from '../helper/Metric';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {showAlert} from '../store/alertSlice';
 
 const PodcastForm = ({navigation, route}: PodcastFormProp) => {
   const [title, setTitle] = useState('');
@@ -29,6 +30,7 @@ const PodcastForm = ({navigation, route}: PodcastFormProp) => {
   const {categories} = useSelector((state: any) => state.data);
   const [imageUtils, setImageUtils] = useState('');
   // console.log(categories);
+  const dispatch = useDispatch();
 
   const handleGenrePress = (genre: Category) => {
     if (isSelected(genre)) {
@@ -43,19 +45,43 @@ const PodcastForm = ({navigation, route}: PodcastFormProp) => {
 
   const handleCreatePost = () => {
     if (title === '') {
-      Alert.alert('Title section is required');
+      // Alert.alert('Title section is required');
+      dispatch(
+        showAlert({
+          title: 'Error',
+          message: 'Title section is required',
+        }),
+      );
       return;
     } else if (description === '') {
-      Alert.alert('Please give proper description');
+      // Alert.alert('Please give proper description');
+      dispatch(
+        showAlert({
+          title: 'Error',
+          message: 'Please give proper description',
+        }),
+      );
       return;
     } else if (selectedGenres.length === 0) {
-      Alert.alert('Please select at least one suitable tags for your podcast.');
+      // Alert.alert('Please select at least one suitable tags for your podcast.');
+      dispatch(
+        showAlert({
+          title: 'Error',
+          message: 'Please select at least one suitable tags for your podcast.',
+        }),
+      );
       return;
     }
 
     // Later purpose
     else if (imageUtils.length === 0) {
-      Alert.alert('Please upload one cover image for your podcast.');
+      // Alert.alert('Please upload one cover image for your podcast.');
+      dispatch(
+        showAlert({
+          title: 'Error',
+          message: 'Please upload one cover image for your podcast.',
+        }),
+      );
       return;
     }
 
@@ -83,7 +109,13 @@ const PodcastForm = ({navigation, route}: PodcastFormProp) => {
 
         // Check file size (1 MB limit)
         if (fileSize && fileSize > 1024 * 1024) {
-          Alert.alert('Error', 'File size exceeds 1 MB.');
+          //Alert.alert('Error', 'File size exceeds 1 MB.');
+          dispatch(
+            showAlert({
+              title: 'Error',
+              message: 'File size exceeds 1 MB.',
+            }),
+          );
           return;
         }
 
@@ -94,7 +126,13 @@ const PodcastForm = ({navigation, route}: PodcastFormProp) => {
           })
           .catch(err => {
             console.log(err);
-            Alert.alert('Error', 'Could not resize the image.');
+            // Alert.alert('Error', 'Could not resize the image.');
+            dispatch(
+              showAlert({
+                title: 'Error',
+                message: 'Could not resize the image.',
+              }),
+            );
           });
 
         setImageUtils(uri ? uri : '');

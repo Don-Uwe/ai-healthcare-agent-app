@@ -67,7 +67,7 @@ const PodcastPlayer = ({}) => {
       Tts.setDucking(true); // Enable ducking (lower other audio)
       Tts.setIgnoreSilentSwitch('ignore'); // Ignore silent switch on iOS
     } else {
-      Alert.alert('Error playing the audio');
+      ('Error playing the audio');
       setisPlaying(false);
     }
   };

@@ -2,10 +2,13 @@ import { useState } from 'react';
 import { Alert } from 'react-native';
 import { UPLOAD_STORAGE } from '../src/helper/APIUtils';
 import { getMimeTypes } from '../src/helper/Utils';
+import { showAlert } from "../src/store/alertSlice";
+import { useDispatch } from 'react-redux';
 
 const useUploadAudio = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  const dispatch = useDispatch();
 
   const uploadAudio = async (uri: string) => {
     let type = '';
@@ -56,7 +59,12 @@ const useUploadAudio = () => {
 
     } catch (err) {
       console.log('Audio upload failed', err);
-      Alert.alert('Upload failed', 'Unable to upload audio. Please check your connection.');
+     // Alert.alert('Upload failed', 'Unable to upload audio. Please check your connection.');
+     dispatch(showAlert({
+      title: "Upload falied",
+      message: 'Unable to upload audio. Please check your connection.'
+     }));
+     
       setError(true);
     } finally {
       setLoading(false);

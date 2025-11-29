@@ -24,7 +24,7 @@ import {
   GET_STORAGE_DATA,
   LIKE_PODCAST,
 } from '../helper/APIUtils';
-import {useSelector} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import moment from 'moment';
 import {downloadAudio, formatCount, StatusEnum} from '../helper/Utils';
 import Snackbar from 'react-native-snackbar';
@@ -37,13 +37,14 @@ import {Feather} from '@expo/vector-icons';
 import Loader from '../components/Loader';
 import {Button, Circle, Theme, XStack, YStack, Text} from 'tamagui';
 import LottieView from 'lottie-react-native';
+import {showAlert} from '../store/alertSlice';
 
 const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   //const [progress, setProgress] = useState(10);
   const insets = useSafeAreaInsets();
   const {trackId, audioUrl} = route.params;
 
-  const[playing, setIsPlaying] = useState(false);
+  const [playing, setIsPlaying] = useState(false);
 
   const socket = useSocket();
   const {user_token, user_id, user_handle} = useSelector(
@@ -54,6 +55,7 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [duration, setDuration] = useState(0);
   const [position, setPosition] = useState(0);
+  const dispatch = useDispatch();
 
   const handleListenPress = async () => {
     if (!player) return;
@@ -237,7 +239,13 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
       console.log(result);
     } catch (error) {
       console.log('Error sharing:', error);
-      Alert.alert('Error', 'Something went wrong while sharing.');
+      // Alert.alert('Error', 'Something went wrong while sharing.');
+      dispatch(
+        showAlert({
+          title: 'Error!',
+          message: 'Something went wrong while sharing.',
+        }),
+      );
     }
   };
 
@@ -258,7 +266,7 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
     if (!player) return;
 
     player.pause();
-  //  setUiState('paused');
+    //  setUiState('paused');
     setIsPlaying(false);
   };
 
@@ -266,210 +274,195 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
     return <Loader />;
   }
 
-      
+  return (
+    <Theme name="dark">
+      <YStack
+        flex={1}
+        backgroundColor="#0B1425"
+        padding="$6"
+        paddingTop="$10"
+        justifyContent="space-between">
+        {/* TITLE */}
+        <YStack>
+          <Text color="white" fontSize={38} fontWeight="700">
+            {podcast?.title}
+          </Text>
+        </YStack>
 
-return (
-  <Theme name="dark">
-    <YStack
-      flex={1}
-      backgroundColor="#0B1425"
-      padding="$6"
-      paddingTop="$10"
-      justifyContent="space-between"
-    >
-
-      {/* TITLE */}
-      <YStack>
-        <Text color="white" fontSize={38} fontWeight="700">
-          {podcast?.title}
-        </Text>
-      </YStack>
-
-      {/* MAIN WAVE */}
-      <YStack alignItems="center" mt="$4">
-        <LottieView
-          source={require('../assets/LottieAnimation/wave-loop.json')}
-          autoPlay
-          loop
-          style={{ width: '100%', height: 150 }}
-        />
-      </YStack>
-
-      {/* PLAYING VISUALIZER */}
-      {playing && (
-        <YStack alignItems="center" mt="$2">
+        {/* MAIN WAVE */}
+        <YStack alignItems="center" mt="$4">
           <LottieView
-            source={require('../assets/LottieAnimation/sound-voice-waves.json')}
+            source={require('../assets/LottieAnimation/wave-loop.json')}
             autoPlay
             loop
-            style={{ width: '100%', height: 150 }}
+            style={{width: '100%', height: 150}}
           />
         </YStack>
-      )}
 
-      {/* SLIDER + TIME */}
-      <YStack mt="$2">
-        <Slider
-          style={styles.slider}
-          minimumValue={0}
-          maximumValue={duration}
-          value={position}
-          minimumTrackTintColor={PRIMARY_COLOR}
-          maximumTrackTintColor="#ccc"
-          thumbTintColor={PRIMARY_COLOR}
-          onSlidingComplete={async v => {
-            if (player) {
-              await player.seekTo(v);
-              setPosition(v);
+        {/* PLAYING VISUALIZER */}
+        {playing && (
+          <YStack alignItems="center" mt="$2">
+            <LottieView
+              source={require('../assets/LottieAnimation/sound-voice-waves.json')}
+              autoPlay
+              loop
+              style={{width: '100%', height: 150}}
+            />
+          </YStack>
+        )}
+
+        {/* SLIDER + TIME */}
+        <YStack mt="$2">
+          <Slider
+            style={styles.slider}
+            minimumValue={0}
+            maximumValue={duration}
+            value={position}
+            minimumTrackTintColor={PRIMARY_COLOR}
+            maximumTrackTintColor="#ccc"
+            thumbTintColor={PRIMARY_COLOR}
+            onSlidingComplete={async v => {
+              if (player) {
+                await player.seekTo(v);
+                setPosition(v);
+              }
+            }}
+          />
+
+          <XStack justifyContent="space-between" mt="$3">
+            <Text color="#C0C9DA">{formatSecTime(position)}</Text>
+            <Text color="#C0C9DA">{formatSecTime(duration)}</Text>
+          </XStack>
+        </YStack>
+
+        {/* PLAYER BUTTONS */}
+        <XStack justifyContent="space-around" alignItems="center" mt="$4">
+          <Button
+            height={90}
+            chromeless
+            onPress={handleBackward}
+            icon={<Ionicons name="play-back" size={26} color="#9BB3C8" />}
+          />
+
+          <Button
+            width={90}
+            height={90}
+            borderRadius={45}
+            bg="#4ACDFF"
+            onPress={() =>
+              player.currentStatus.playing ? handlePause() : handlePlay()
             }
-          }}
-        />
+            icon={
+              playing ? (
+                <Ionicons name="pause" size={50} color="white" />
+              ) : (
+                <Ionicons name="play" size={50} color="white" />
+              )
+            }
+            elevate
+            shadowColor="#4ACDFF"
+            shadowRadius={30}
+            shadowOffset={{width: 0, height: 0}}
+          />
 
-        <XStack justifyContent="space-between" mt="$3">
-          <Text color="#C0C9DA">{formatSecTime(position)}</Text>
-          <Text color="#C0C9DA">{formatSecTime(duration)}</Text>
+          <Button
+            height={90}
+            chromeless
+            onPress={handleForward}
+            icon={<Ionicons name="play-forward" size={26} color="#9BB3C8" />}
+          />
         </XStack>
-      </YStack>
 
-      {/* PLAYER BUTTONS */}
-      <XStack justifyContent="space-around" alignItems="center" mt="$4">
-        <Button
-          height={90}
-          chromeless
-          onPress={handleBackward}
-          icon={<Ionicons name="play-back" size={26} color="#9BB3C8" />}
-        />
-
-        <Button
-          width={90}
-          height={90}
-          borderRadius={45}
-          bg="#4ACDFF"
-          onPress={() =>
-            player.currentStatus.playing ? handlePause() : handlePlay()
-          }
-          icon={
-            playing ? (
-              <Ionicons name="pause" size={50} color="white" />
+        {/* FOOTER OPTIONS */}
+        {podcast && podcast.status === StatusEnum.PUBLISHED ? (
+          <XStack
+            style={styles.footerOptions}
+            alignItems="center"
+            justifyContent="space-evenly">
+            {/* LIKE */}
+            {updateLikeCountMutation.isPending ? (
+              <ActivityIndicator size="small" color={PRIMARY_COLOR} />
             ) : (
-              <Ionicons name="play" size={50} color="white" />
-            )
-          }
-          elevate
-          shadowColor="#4ACDFF"
-          shadowRadius={30}
-          shadowOffset={{ width: 0, height: 0 }}
-        />
+              <TouchableOpacity
+                style={styles.footerItem}
+                onPress={() => updateLikeCountMutation.mutate(trackId)}>
+                {podcast?.likedUsers.includes(user_id) ? (
+                  <AntDesign name="heart" size={24} color={PRIMARY_COLOR} />
+                ) : (
+                  <Feather name="heart" size={24} color="white" />
+                )}
 
-        <Button
-          height={90}
-          chromeless
-          onPress={handleForward}
-          icon={<Ionicons name="play-forward" size={26} color="#9BB3C8" />}
-        />
-      </XStack>
-
-      {/* FOOTER OPTIONS */}
-      {
-        podcast && podcast.status === StatusEnum.PUBLISHED ? (
-        <XStack
-        style={styles.footerOptions}
-        alignItems="center"
-        justifyContent="space-evenly"
-      >
-        {/* LIKE */}
-        {updateLikeCountMutation.isPending ? (
-          <ActivityIndicator size="small" color={PRIMARY_COLOR} />
-        ) : (
-          <TouchableOpacity
-            style={styles.footerItem}
-            onPress={() => updateLikeCountMutation.mutate(trackId)}
-          >
-            {podcast?.likedUsers.includes(user_id) ? (
-              <AntDesign name="heart" size={24} color={PRIMARY_COLOR} />
-            ) : (
-              <Feather name="heart" size={24} color="white" />
+                <Text style={styles.likeCount}>
+                  {podcast?.likedUsers?.length
+                    ? formatCount(podcast.likedUsers.length)
+                    : 0}
+                </Text>
+              </TouchableOpacity>
             )}
 
-            <Text style={styles.likeCount}>
-              {podcast?.likedUsers?.length
-                ? formatCount(podcast.likedUsers.length)
-                : 0}
-            </Text>
-          </TouchableOpacity>
-        )}
+            {/* DOWNLOAD */}
+            {isLoading ? (
+              <ActivityIndicator size="small" color={PRIMARY_COLOR} />
+            ) : (
+              <TouchableOpacity
+                onPress={async () => {
+                  if (!podcast) {
+                    Snackbar.show({
+                      text: 'Something went wrong! try again',
+                      duration: Snackbar.LENGTH_SHORT,
+                    });
+                    return;
+                  }
 
-        {/* DOWNLOAD */}
-        {isLoading ? (
-          <ActivityIndicator size="small" color={PRIMARY_COLOR} />
-        ) : (
-          <TouchableOpacity
-            onPress={async () => {
-              if (!podcast) {
-                Snackbar.show({
-                  text: 'Something went wrong! try again',
-                  duration: Snackbar.LENGTH_SHORT,
-                });
-                return;
-              }
+                  setLoading(true);
+                  const res = await downloadAudio(podcast);
+                  setLoading(false);
 
-              setLoading(true);
-              const res = await downloadAudio(podcast);
-              setLoading(false);
+                  Snackbar.show({
+                    text: res.message,
+                    duration: Snackbar.LENGTH_SHORT,
+                  });
+                }}>
+                <Ionicons name="download-outline" size={27} color="white" />
+              </TouchableOpacity>
+            )}
 
-              Snackbar.show({
-                text: res.message,
-                duration: Snackbar.LENGTH_SHORT,
-              });
-            }}
-          >
-            <Ionicons name="download-outline" size={27} color="white" />
-          </TouchableOpacity>
-        )}
+            {/* COMMENTS */}
+            <TouchableOpacity
+              style={styles.footerItem}
+              onPress={() => {
+                if (!isConnected) {
+                  Snackbar.show({
+                    text: 'You are currently offline',
+                    duration: Snackbar.LENGTH_SHORT,
+                  });
+                  return;
+                }
 
-        {/* COMMENTS */}
-        <TouchableOpacity
-          style={styles.footerItem}
-          onPress={() => {
-            if (!isConnected) {
-              Snackbar.show({
-                text: 'You are currently offline',
-                duration: Snackbar.LENGTH_SHORT,
-              });
-              return;
-            }
+                if (podcast) {
+                  navigation.navigate('PodcastDiscussion', {
+                    podcastId: podcast._id,
+                    mentionedUsers: podcast.mentionedUsers,
+                  });
+                }
+              }}>
+              <Ionicons name="chatbubble-outline" size={24} color="white" />
+              <Text style={styles.likeCount}>
+                {podcast?.commentCount ? formatCount(podcast.commentCount) : 0}
+              </Text>
+            </TouchableOpacity>
 
-            if (podcast) {
-              navigation.navigate('PodcastDiscussion', {
-                podcastId: podcast._id,
-                mentionedUsers: podcast.mentionedUsers,
-              });
-            }
-          }}
-        >
-          <Ionicons name="chatbubble-outline" size={24} color="white" />
-          <Text style={styles.likeCount}>
-            {podcast?.commentCount
-              ? formatCount(podcast.commentCount)
-              : 0}
-          </Text>
-        </TouchableOpacity>
-
-        {/* SHARE */}
-        <TouchableOpacity onPress={handleShare}>
-          <Ionicons name="share-outline" size={27} color="white" />
-        </TouchableOpacity>
-       </XStack>
-        ): (
-          <XStack>
-            
+            {/* SHARE */}
+            <TouchableOpacity onPress={handleShare}>
+              <Ionicons name="share-outline" size={27} color="white" />
+            </TouchableOpacity>
           </XStack>
-        )
-      }
-    </YStack>
-  </Theme>
-);
-
+        ) : (
+          <XStack></XStack>
+        )}
+      </YStack>
+    </Theme>
+  );
 };
 
 export default PodcastDetail;

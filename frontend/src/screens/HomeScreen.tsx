@@ -9,7 +9,7 @@ import {
   ScrollView,
 } from 'react-native';
 import {useCallback, useEffect, useRef, useState} from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import AddIcon from '../components/AddIcon';
 import ArticleCard from '../components/ArticleCard';
@@ -47,8 +47,9 @@ import Snackbar from 'react-native-snackbar';
 import {useSocket} from '../../SocketContext';
 import {useFocusEffect} from '@react-navigation/native';
 import InactiveUserModal from '../components/InactiveUserModal';
-import { StatusBar } from 'expo-status-bar';
-import { wp } from '../helper/Metric';
+import {StatusBar} from 'expo-status-bar';
+import {wp} from '../helper/Metric';
+import {showAlert} from '../store/alertSlice';
 
 // Here The purpose of using Redux is to maintain filter state throughout the app session. globally
 const HomeScreen = ({navigation}: HomeScreenProps) => {
@@ -60,7 +61,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const [selectedCardId, setSelectedCardId] = useState<string>('');
   const [repostItem, setRepostItem] = useState<ArticleData | null>(null);
   const [selectCategoryList, setSelectCategoryList] = useState<Category[]>([]);
-  const[filterLoading, setFilterLoading] = useState<boolean>(false);
+  const [filterLoading, setFilterLoading] = useState<boolean>(false);
   const {
     filteredArticles,
     searchedArticles,
@@ -97,7 +98,13 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
 
   const getAllCategories = useCallback(async () => {
     if (user_token === '') {
-      Alert.alert('No token found');
+      dispatch(
+        showAlert({
+          title: 'Error!',
+          message: 'No token found',
+        }),
+      );
+      // Alert.alert('No token found');
       return;
     }
     const {data: categoryData} = await axios.get(
@@ -207,7 +214,13 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       //  authorId: string;
     }) => {
       if (user_token === '') {
-        Alert.alert('No token found');
+        // Alert.alert('No token found');
+        dispatch(
+          showAlert({
+            title: 'Error!',
+            message: 'No token found',
+          }),
+        );
         return;
       }
       const res = await axios.post(
@@ -259,7 +272,13 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
 
     onError: error => {
       console.log('Repost Error', error);
-      Alert.alert('Internal server error, try again!');
+      // Alert.alert('Internal server error, try again!');
+      dispatch(
+        showAlert({
+          title: 'Server Error!',
+          message: 'Try again!',
+        }),
+      );
     },
   });
 
@@ -274,8 +293,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       reason: string;
       articleRecordId: string;
     }) => {
-   
-
       const res = await axios.post(
         REQUEST_EDIT,
         {
@@ -293,11 +310,23 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       return res.data.message as string;
     },
     onSuccess: data => {
-      Alert.alert(data);
+      //Alert.alert(data);
+      dispatch(
+        showAlert({
+          title: '',
+          message: data,
+        }),
+      );
     },
     onError: err => {
       console.log(err);
-      Alert.alert('Try again');
+      //Alert.alert('Try again');
+       dispatch(
+        showAlert({
+          title: '',
+          message: 'Try again',
+        }),
+      );
     },
   });
 
@@ -327,7 +356,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
             articleRecordId: item.pb_recordId,
           });
         }}
-        source= 'home'
+        source="home"
       />
     );
   };
@@ -349,22 +378,21 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     // Update Redux State Variables
     console.log('enter');
     if (selectCategoryList.length > 0) {
-    //   console.log("enter")
+      //   console.log("enter")
       dispatch(setSelectedTags({selectedTags: selectCategoryList}));
     } else {
-       //console.log("enter ele", articleCategories);
+      //console.log("enter ele", articleCategories);
 
       dispatch(
         setSelectedTags({
           selectedTags: articleCategories,
         }),
       );
-
     }
 
-   if(sortingType && sortingType !== ''){
-      console.log("Sort type", sortType);
-     dispatch(setSortType({sortType: sortingType}));
+    if (sortingType && sortingType !== '') {
+      console.log('Sort type', sortType);
+      dispatch(setSortType({sortType: sortingType}));
     }
 
     updateArticles(articleData);
@@ -378,7 +406,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     }
 
     let filtered = articleData;
-   // console.log('sort type', sortType);
+    // console.log('sort type', sortType);
     //console.log('Filtered before', filtered);
     if (selectedTags.length > 0) {
       filtered = filtered.filter(article =>
@@ -387,7 +415,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         ),
       );
     }
-   //  console.log('Filtered before sort', filtered);
+    //  console.log('Filtered before sort', filtered);
     if (sortType && sortType === 'recent' && filtered.length > 1) {
       filtered = filtered.sort(
         (a, b) =>
@@ -401,7 +429,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     } else if (sortType && sortType === 'popular' && filtered.length > 1) {
       filtered.sort((a, b) => b.viewCount - a.viewCount);
     }
-   // console.log('Filtered', filtered);
+    // console.log('Filtered', filtered);
     //console.log('Article Data', articleData);
     dispatch(setFilteredArticles({filteredArticles: filtered}));
     setFilterLoading(false);
@@ -416,12 +444,9 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     queryKey: ['get-all-articles', page],
     queryFn: async () => {
       try {
-        const response = await axios.get(
-          `${PROD_URL}/articles?page=${page}`,
-          {
-            headers: {Authorization: `Bearer ${user_token}`},
-          },
-        );
+        const response = await axios.get(`${PROD_URL}/articles?page=${page}`, {
+          headers: {Authorization: `Bearer ${user_token}`},
+        });
 
         const d: ArticleData[] = response.data.articles;
 
@@ -507,9 +532,13 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
                   style={{
                     ...styles.button,
                     backgroundColor:
-                      selectedCategory && selectedCategory._id !== item._id ? 'white' : PRIMARY_COLOR,
+                      selectedCategory && selectedCategory._id !== item._id
+                        ? 'white'
+                        : PRIMARY_COLOR,
                     borderColor:
-                      selectedCategory && selectedCategory._id !== item._id ? PRIMARY_COLOR : 'white',
+                      selectedCategory && selectedCategory._id !== item._id
+                        ? PRIMARY_COLOR
+                        : 'white',
                   }}
                   onPress={() => {
                     handleCategoryClick(item);
@@ -517,7 +546,10 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
                   <Text
                     style={{
                       ...styles.labelStyle,
-                      color: selectedCategory && selectedCategory._id !== item._id ? 'black' : 'white',
+                      color:
+                        selectedCategory && selectedCategory._id !== item._id
+                          ? 'black'
+                          : 'white',
                     }}>
                     {item.name}
                   </Text>
@@ -544,7 +576,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      
       <HomeScreenHeader
         handlePresentModalPress={handlePresentModalPress}
         onTextInputChange={handleSearch}
@@ -578,9 +609,13 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
                 style={{
                   ...styles.button,
                   backgroundColor:
-                    selectedCategory && selectedCategory._id !== item._id ? 'white' : '#000A60',
+                    selectedCategory && selectedCategory._id !== item._id
+                      ? 'white'
+                      : '#000A60',
                   borderColor:
-                    selectedCategory && selectedCategory._id !== item._id ? PRIMARY_COLOR : 'white',
+                    selectedCategory && selectedCategory._id !== item._id
+                      ? PRIMARY_COLOR
+                      : 'white',
                 }}
                 onPress={() => {
                   handleCategoryClick(item);
@@ -588,7 +623,10 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
                 <Text
                   style={{
                     ...styles.labelStyle,
-                    color: selectedCategory && selectedCategory._id !== item._id ? 'black' : 'white',
+                    color:
+                      selectedCategory && selectedCategory._id !== item._id
+                        ? 'black'
+                        : 'white',
                   }}>
                   {item.name}
                 </Text>
@@ -601,12 +639,14 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           searchedArticles.length > 0) && (
           <FlatList
             data={
-              searchMode 
+              searchMode
                 ? searchedArticles
                 : filteredArticles.filter(
                     article =>
                       article.tags &&
-                      article.tags.some(tag => tag.name === selectedCategory?.name),
+                      article.tags.some(
+                        tag => tag.name === selectedCategory?.name,
+                      ),
                   )
             }
             renderItem={renderItem}
@@ -620,7 +660,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
                   source={require('../assets/images/no_results.jpg')}
                   style={styles.emptyImgStyle}
                 />
-                 
+
                 <Text style={styles.message}>No Article Found</Text>
               </View>
             }
@@ -645,19 +685,17 @@ export default HomeScreen;
 
 const styles = StyleSheet.create({
   container: {
-  flex: 1,
-  backgroundColor: '#F0F8FF',
-  justifyContent: 'flex-start',
-  alignItems: 'stretch',
-},
-
+    flex: 1,
+    backgroundColor: '#F0F8FF',
+    justifyContent: 'flex-start',
+    alignItems: 'stretch',
+  },
 
   blockContainer: {
     flex: 0,
     backgroundColor: '#F0F8FF',
     justifyContent: 'center',
     //alignItems: 'center',
-
   },
   buttonContainer: {
     marginTop: wp(3),

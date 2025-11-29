@@ -1,10 +1,12 @@
 import {useState} from 'react';
 import {UPLOAD_STORAGE} from '../src/helper/APIUtils';
-import {Alert} from 'react-native';
+import { showAlert } from '@/src/store/alertSlice';
+import { useDispatch } from 'react-redux';
 
 const useUploadImage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<boolean>(false);
+  const dispatch = useDispatch();
 
   const uploadImage = async (uri: string) => {
 
@@ -43,7 +45,11 @@ const useUploadImage = () => {
     } catch (err) {
    
       console.log('Image upload failed', err);
-      Alert.alert('Low network connection, failed to upload image');
+     // Alert.alert('Low network connection, failed to upload image');
+     dispatch(showAlert({
+           title: "Upload falied",
+           message: 'Unable to upload image. Please check your connection.'
+          }));
       setError(true);
       //throw err;
     } finally {

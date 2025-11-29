@@ -7,7 +7,7 @@ import {
   Send,
 } from 'react-native-gifted-chat';
 import {PRIMARY_COLOR} from '../helper/Theme';
-import {useSelector} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import {
   Alert,
   View,
@@ -29,6 +29,7 @@ import {ChatBotScreenProps, Message, User} from '../type';
 import {hp} from '../helper/Metric';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {MaterialCommunityIcons} from '@expo/vector-icons';
+import {showAlert} from '../store/alertSlice';
 
 // interface ChatbotResponse {
 //   id: string;
@@ -55,6 +56,7 @@ const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
 
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [isTyping, setIsTyping] = useState<boolean>(true);
+  const dispatch = useDispatch();
   // const token = 'GPMFAQIV2BGXCWYMCVQ3IPVXSOOLI53H5NYA'; //token
 
   //console.log("User Token", user_token);
@@ -109,11 +111,11 @@ const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
           createdAt: new Date(),
           user: {
             _id: 2,
-            avatar: 'https://static.vecteezy.com/system/resources/previews/026/309/247/non_2x/robot-chat-or-chat-bot-logo-modern-conversation-automatic-technology-logo-design-template-vector.jpg',
+            avatar:
+              'https://static.vecteezy.com/system/resources/previews/026/309/247/non_2x/robot-chat-or-chat-bot-logo-modern-conversation-automatic-technology-logo-design-template-vector.jpg',
           },
         },
         ...refined.reverse(),
-        
       ]);
 
       setIsTyping(false);
@@ -159,12 +161,24 @@ const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
         const statusCode = error.response.status;
         switch (statusCode) {
           case 401:
-            Alert.alert('Authentication Error', 'Unauthorized Access');
+            // Alert.alert('Authentication Error', 'Unauthorized Access');
+            dispatch(
+              showAlert({
+                title: 'Authentication Error',
+                message: 'Unauthorized access',
+              }),
+            );
             break;
           case 422:
-            Alert.alert(
-              'Bad Request',
-              'Invalid request. Please check your input.',
+            // Alert.alert(
+            //   'Bad Request',
+            //   'Invalid request. Please check your input.',
+            // );
+            dispatch(
+              showAlert({
+                title: 'Bad Request',
+                message: 'Invalid request. Please check your input.',
+              }),
             );
             break;
           case 429:
@@ -185,25 +199,52 @@ const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
             break;
 
           case 500:
-            Alert.alert(
-              'Server Error',
-              'An internal server error occurred. Please try again later.',
+            //Alert.alert(
+            // 'Server Error',
+            // 'An internal server error occurred. Please try again later.',
+            //);
+            dispatch(
+              showAlert({
+                title: 'Server Error',
+                message:
+                  'An internal server error occurred. Please try again later.',
+              }),
             );
             break;
           default:
-            Alert.alert(
-              'Unknown Error',
-              'An unexpected error occurred. Please try again later.',
+            // Alert.alert(
+            //   'Unknown Error',
+            //   'An unexpected error occurred. Please try again later.',
+            // );
+            dispatch(
+              showAlert({
+                title: 'Unknown Error',
+                message:
+                  'An unexpected error occurred. Please try again later.',
+              }),
             );
         }
       } else {
         if (error.message === 'Network Error') {
-          Alert.alert(
-            'Network Error',
-            'Unable to connect. Please check your internet connection and try again.',
+          // Alert.alert(
+          //   'Network Error',
+          //   'Unable to connect. Please check your internet connection and try again.',
+          // );
+
+          dispatch(
+            showAlert({
+              title: 'Network Error',
+              message: 'Unable to connect. Please check your internet connection and try again.',
+            }),
           );
         } else {
-          Alert.alert('Error', 'Something went wrong. Please try again.');
+         // Alert.alert('Error', 'Something went wrong. Please try again.');
+         dispatch(
+            showAlert({
+              title: 'Error',
+              message: 'Something went wrong. Please try again.',
+            }),
+          );
         }
       }
     },

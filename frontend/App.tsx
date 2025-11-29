@@ -26,6 +26,7 @@ import { TamaguiProvider } from 'tamagui';
 import config from './tamagui.config';
 import { FirebaseProvider } from './hooks/FirebaseContext';
 import { StatusBar } from 'expo-status-bar';
+import { CustomAlertDialog } from './src/components/CustomAlert';
 
 const queryClient = new QueryClient();
 
@@ -166,6 +167,7 @@ function App(): React.JSX.Element {
             <NavigationContainer>
               <StackNavigation />
             </NavigationContainer>
+             <CustomAlertDialog /> 
           </View>
           </PaperProvider>
         

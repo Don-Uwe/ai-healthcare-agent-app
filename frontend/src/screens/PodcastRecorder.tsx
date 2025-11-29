@@ -6,7 +6,6 @@ import RNFS from 'react-native-fs';
 
 import Icon from '@expo/vector-icons/MaterialCommunityIcons';
 
-
 //const {AudioModule} = NativeModules;
 //const AudioModule = NativeModules.AudioModule;
 //const emitter = new NativeEventEmitter(AudioModule);
@@ -22,11 +21,14 @@ import audioModule from '@/modules/audio-module';
 import {useFocusEffect} from '@react-navigation/native';
 import {Circle, Theme, XStack, YStack, Text} from 'tamagui';
 import LottieView from 'lottie-react-native';
+import {showAlert} from '../store/alertSlice';
+import { useDispatch } from 'react-redux';
 
 //const AudioModule = requireNativeModule('AudioModule');
 
 const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
   const [recording, setRecording] = useState(false);
+  const dispatch = useDispatch();
 
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const recorderState = useAudioRecorderState(audioRecorder);
@@ -38,7 +40,6 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const recordStartTimeRef = useRef<number | null>(null);
- 
 
   useFocusEffect(
     useCallback(() => {
@@ -64,7 +65,14 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
     (async () => {
       const status = await AudioModule.requestRecordingPermissionsAsync();
       if (!status.granted) {
-        Alert.alert('Permission to access microphone was denied');
+        //Alert.alert('Permission to access microphone was denied');
+
+        dispatch(
+          showAlert({
+            title: 'Error',
+            message: 'Permission to access microphone was denied',
+          }),
+        );
       }
 
       setAudioModeAsync({
@@ -252,9 +260,12 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
             bg={recording ? '#38bdf8' : '#0a1e3a'}
             ai="center"
             jc="center"
-            borderRadius={60}
-          >
-            <Icon name="microphone" size={48} color={recording ? "#0a1e3a" : "#3bc9f7"}  />
+            borderRadius={60}>
+            <Icon
+              name="microphone"
+              size={48}
+              color={recording ? '#0a1e3a' : '#3bc9f7'}
+            />
           </YStack>
         </YStack>
 
@@ -274,18 +285,17 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
         <AmplitudeWave audioWaves={amplitudes} />
       </YStack>
      */}
-     {recording && (
-    <LottieView
-      source={require("../assets/LottieAnimation/sound-voice-waves.json")}
-      autoPlay
-      loop
-      style={{
-        width: 150,
-        height: 150,
-      }}
-    />
-)}
-
+        {recording && (
+          <LottieView
+            source={require('../assets/LottieAnimation/sound-voice-waves.json')}
+            autoPlay
+            loop
+            style={{
+              width: 150,
+              height: 150,
+            }}
+          />
+        )}
 
         {/* Action Controls */}
         <XStack jc="center" ai="center" space="$5" mt="$4">

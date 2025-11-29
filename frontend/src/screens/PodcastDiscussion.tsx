@@ -15,7 +15,7 @@ import {
 import {PodcastData, PodcastDiscussionProp, User, Comment} from '../type';
 import {PRIMARY_COLOR} from '../helper/Theme';
 //import io from 'socket.io-client';
-import {useSelector} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import Loader from '../components/Loader';
 import CommentItem from '../components/CommentItem';
 import {useSocket} from '../../SocketContext';
@@ -46,9 +46,11 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {wp} from '../helper/Metric';
 import {useQuery} from '@tanstack/react-query';
 import axios from 'axios';
+import {showAlert} from '../store/alertSlice';
 
 const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
   const socket = useSocket();
+  const dispatch = useDispatch();
   const {podcastId, mentionedUsers} = route.params;
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
@@ -395,7 +397,13 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
 
   const handleCommentSubmit = () => {
     if (!newComment.trim()) {
-      Alert.alert('Please enter a comment before submitting.');
+      // Alert.alert('Please enter a comment before submitting.');
+      dispatch(
+        showAlert({
+          title: '',
+          message: 'Please enter a comment before submitting.',
+        }),
+      );
       return;
     }
 
@@ -417,7 +425,13 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
         setEditCommentId(null);
         setEditMode(false);
       } else {
-        Alert.alert('Error: Comment Not Found');
+       // Alert.alert('Error: Comment Not Found');
+        dispatch(
+        showAlert({
+          title: 'Error!',
+          message: 'Comment not found',
+        }),
+      );
       }
     } else {
       const formatted = replaceTriggerValues(
@@ -471,7 +485,7 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
             style={{flex: 1, backgroundColor: '#f8f9fb', padding: wp(0.1)}}>
             {/* Header Section */}
             <YStack space="$3">
-              <H3 fontSize={19} color="black"  fontWeight={'600'}>
+              <H3 fontSize={19} color="black" fontWeight={'600'}>
                 {podcast?.title}
               </H3>
 
@@ -621,7 +635,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     flex: 1,
-    marginVertical: 10
+    marginVertical: 10,
   },
   authorImage: {
     height: 45,
