@@ -167,7 +167,7 @@ function App(): React.JSX.Element {
             <NavigationContainer>
               <StackNavigation />
             </NavigationContainer>
-             <CustomAlertDialog /> 
+             <CustomAlertDialog key={'alert'} /> 
           </View>
           </PaperProvider>
         

@@ -56,6 +56,7 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
   const dispatch = useDispatch();
   const [isFocus, setIsFocus] = useState<boolean>(false);
   // const [selectedDay, setSelectedDay] = useState<number>(new Date().getDay());
+  const {isConnected} = useSelector((state: any) => state.user);
   const [selectedMonth, setSelectedMonth] = useState<number>(
     new Date().getMonth(),
   );
@@ -92,37 +93,37 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
           return [];
         }
         if (user_token === '') {
-          // Alert.alert('No token found');
-          dispatch(
-            showAlert({
-              title: 'Alert!',
-              message: 'No token found',
-            }),
-          );
+         Alert.alert('No token found');
+          // dispatch(
+          //   showAlert({
+          //     title: 'Alert!',
+          //     message: 'No token found',
+          //   }),
+          // );
           return [];
         }
         if (!userId) {
           if (others) {
             // user id not found for others profile
-            // Alert.alert('No user id found');
-            dispatch(
-              showAlert({
-                title: 'Alert!',
-                message: 'No user id found',
-              }),
-            );
+             Alert.alert('No user id found');
+            // dispatch(
+            //   showAlert({
+            //     title: 'Alert!',
+            //     message: 'No user id found',
+            //   }),
+            // );
             return [];
           }
         }
         if (user_id === '' && !others) {
           // user id not found for own profile
-          // Alert.alert('No user id found');
-          dispatch(
-            showAlert({
-              title: 'Alert!',
-              message: 'No user  id found',
-            }),
-          );
+           Alert.alert('No user id found');
+          // dispatch(
+          //   showAlert({
+          //     title: 'Alert!',
+          //     message: 'No user  id found',
+          //   }),
+          // );
           return [];
         }
 
@@ -141,7 +142,7 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
         console.error('Error fetching articles reads monthly:', err);
       }
     },
-    enabled: !!(user_token && selectedMonth !== -1 && (userId || !others)),
+    enabled: !!isConnected && !!(user_token && selectedMonth !== -1 && (userId || !others)),
   });
 
   const {data: monthlyWriteReport, refetch: refetchMonthWriteReport} = useQuery(
@@ -153,37 +154,37 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
             return [];
           }
           if (user_token === '') {
-            //Alert.alert('No token found');
-            dispatch(
-              showAlert({
-                title: 'Alert!',
-                message: 'No token found',
-              }),
-            );
+            Alert.alert('No token found');
+            // dispatch(
+            //   showAlert({
+            //     title: 'Alert!',
+            //     message: 'No token found',
+            //   }),
+            // );
             return [];
           }
           if (!userId) {
             if (others) {
               // user id not found for others profile
-              //Alert.alert('No user id found');
-              dispatch(
-                showAlert({
-                  title: 'Alert!',
-                  message: 'No user id found',
-                }),
-              );
+              Alert.alert('No user id found');
+              // dispatch(
+              //   showAlert({
+              //     title: 'Alert!',
+              //     message: 'No user id found',
+              //   }),
+              // );
               return [];
             }
           }
           if (user_id === '' && !others) {
             // user id not found for own profile
-            // Alert.alert('No user id found');
-            dispatch(
-              showAlert({
-                title: 'Alert!',
-                message: 'No user id found',
-              }),
-            );
+             Alert.alert('No user id found');
+            // dispatch(
+            //   showAlert({
+            //     title: 'Alert!',
+            //     message: 'No user id found',
+            //   }),
+            // );
             return [];
           }
 
@@ -202,7 +203,7 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
           console.error('Error fetching articles writes monthly:', err);
         }
       },
-      enabled: !!(user_token && selectedMonth !== -1 && (userId || !others)),
+      enabled: !!isConnected && !!(user_token && selectedMonth !== -1 && (userId || !others)),
     },
   );
 
@@ -215,37 +216,37 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
           return [];
         }
         if (user_token === '') {
-          /// Alert.alert('No token found');
-          dispatch(
-            showAlert({
-              title: 'Alert!',
-              message: 'No token found',
-            }),
-          );
+           Alert.alert('No token found');
+          // dispatch(
+          //   showAlert({
+          //     title: 'Alert!',
+          //     message: 'No token found',
+          //   }),
+          // );
           return [];
         }
         if (!userId) {
           if (others) {
             // user id not found for others profile
-            //  Alert.alert('No user id found');
-            dispatch(
-              showAlert({
-                title: 'Alert!',
-                message: 'No user id found',
-              }),
-            );
+              Alert.alert('No user id found');
+            // dispatch(
+            //   showAlert({
+            //     title: 'Alert!',
+            //     message: 'No user id found',
+            //   }),
+            // );
             return [];
           }
         }
         if (user_id === '' && !others) {
           // user id not found for own profile
-          //Alert.alert('No user id found');
-          dispatch(
-            showAlert({
-              title: 'Alert!',
-              message: 'No user id found',
-            }),
-          );
+          Alert.alert('No user id found');
+          // dispatch(
+          //   showAlert({
+          //     title: 'Alert!',
+          //     message: 'No user id found',
+          //   }),
+          // );
           return [];
         }
 
@@ -263,7 +264,7 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
         console.error('Error fetching articles reads yearly:', err);
       }
     },
-    enabled: !!(user_token && selectedYear !== -1 && (userId || !others)),
+    enabled: !!isConnected && !!(user_token && selectedYear !== -1 && (userId || !others)),
   });
 
   // GET YEARLY WRITE REPORT
@@ -277,37 +278,37 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
             return [];
           }
           if (user_token === '') {
-            // Alert.alert('No token found');
-            dispatch(
-              showAlert({
-                title: 'Alert!',
-                message: 'No token found',
-              }),
-            );
+             Alert.alert('No token found');
+            // dispatch(
+            //   showAlert({
+            //     title: 'Alert!',
+            //     message: 'No token found',
+            //   }),
+            // );
             return [];
           }
           if (!userId) {
             if (others) {
               // user id not found for others profile
-              // Alert.alert('No user id found');
-              dispatch(
-                showAlert({
-                  title: 'Alert!',
-                  message: 'No user id found',
-                }),
-              );
+               Alert.alert('No user id found');
+              // dispatch(
+              //   showAlert({
+              //     title: 'Alert!',
+              //     message: 'No user id found',
+              //   }),
+              // );
               return [];
             }
           }
           if (user_id === '' && !others) {
             // user id not found for own profile
-            //Alert.alert('No user id found');
-            dispatch(
-              showAlert({
-                title: 'Alert!',
-                message: 'No user id found',
-              }),
-            );
+            Alert.alert('No user id found');
+            // dispatch(
+            //   showAlert({
+            //     title: 'Alert!',
+            //     message: 'No user id found',
+            //   }),
+            // );
             return [];
           }
 
@@ -327,7 +328,7 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
         }
       },
 
-      enabled: !!(user_token && selectedYear !== -1 && (userId || !others)),
+      enabled: !!isConnected && !!(user_token && selectedYear !== -1 && (userId || !others)),
     },
   );
 
@@ -337,37 +338,37 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
     queryFn: async () => {
       try {
         if (user_token === '') {
-          //  Alert.alert('No token found');
-          dispatch(
-            showAlert({
-              title: 'Alert!',
-              message: 'No token found',
-            }),
-          );
+            Alert.alert('No token found');
+          // dispatch(
+          //   showAlert({
+          //     title: 'Alert!',
+          //     message: 'No token found',
+          //   }),
+          // );
           return '';
         }
         if (!userId) {
           if (others) {
             // user id not found for others profile
-            // Alert.alert('No user id found');
-            dispatch(
-              showAlert({
-                title: 'Alert!',
-                message: 'No user id found',
-              }),
-            );
+             Alert.alert('No user id found');
+            // dispatch(
+            //   showAlert({
+            //     title: 'Alert!',
+            //     message: 'No user id found',
+            //   }),
+            // );
             return '';
           }
         }
         if (user_id === '' && !others) {
           // user id not found for own profile
-          // Alert.alert('No user id found');
-          dispatch(
-            showAlert({
-              title: 'Alert!',
-              message: 'No user id found',
-            }),
-          );
+           Alert.alert('No user id found');
+          // dispatch(
+          //   showAlert({
+          //     title: 'Alert!',
+          //     message: 'No user id found',
+          //   }),
+          // );
           return '';
         }
 
@@ -386,6 +387,7 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
         console.error('Error fetching articles:', err);
       }
     },
+    enabled: !!isConnected && !!user_token
   });
 
   // GET USER STATUS FOR LIKE AND VIEW COUNT
@@ -395,37 +397,37 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
     queryFn: async () => {
       try {
         if (user_token === '') {
-          // Alert.alert('No token found');
-          dispatch(
-            showAlert({
-              title: 'Alert!',
-              message: 'No token found',
-            }),
-          );
+           Alert.alert('No token found');
+          // dispatch(
+          //   showAlert({
+          //     title: 'Alert!',
+          //     message: 'No token found',
+          //   }),
+          // );
           return '';
         }
         if (!userId) {
           if (others) {
             // user id not found for others profile
-            // Alert.alert('No user id found');
-            dispatch(
-              showAlert({
-                title: 'Alert!',
-                message: 'No user id found',
-              }),
-            );
+             Alert.alert('No user id found');
+            // dispatch(
+            //   showAlert({
+            //     title: 'Alert!',
+            //     message: 'No user id found',
+            //   }),
+            // );
             return '';
           }
         }
         if (user_id === '' && !others) {
           // user id not found for own profile
-          //Alert.alert('No user id found');
-          dispatch(
-            showAlert({
-              title: 'Alert!',
-              message: 'No user id found',
-            }),
-          );
+          Alert.alert('No user id found');
+          // dispatch(
+          //   showAlert({
+          //     title: 'Alert!',
+          //     message: 'No user id found',
+          //   }),
+          // );
           return '';
         }
 
@@ -445,6 +447,7 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
         console.error('Error fetching articles:', err);
       }
     },
+    enabled: !!isConnected && !!user_token
   });
 
   // GET TOTAL READ STATUS
@@ -454,35 +457,35 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
     queryFn: async () => {
       try {
         if (user_token === '') {
-          // Alert.alert('No token found');
-          dispatch(
-            showAlert({
-              title: 'Alert!',
-              message: 'No token found',
-            }),
-          );
+           Alert.alert('No token found');
+          // dispatch(
+          //   showAlert({
+          //     title: 'Alert!',
+          //     message: 'No token found',
+          //   }),
+          // );
           return '';
         }
         if (!userId) {
           if (others) {
             // user id not found for others profile
-            //  Alert.alert('No user id found');
-            dispatch(
-              showAlert({
-                title: 'Alert!',
-                message: 'No user id found',
-              }),
-            );
+            Alert.alert('No user id found');
+            // dispatch(
+            //   showAlert({
+            //     title: 'Alert!',
+            //     message: 'No user id found',
+            //   }),
+            // );
             return '';
           }
         }
         if (user_id === '' && !others) {
           // user id not found for own profile
-         // Alert.alert('No user id found');
-          dispatch(showAlert({
-               title: "Alert!",
-               message: 'No user id found'
-              }));
+          Alert.alert('No user id found');
+          // dispatch(showAlert({
+          //      title: "Alert!",
+          //      message: 'No user id found'
+          //     }));
           return '';
         }
 
@@ -502,6 +505,7 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
         console.error('Error fetching articles:', err);
       }
     },
+    enabled : !!isConnected && !!user_token
   });
 
   // GET TOTAL WRITE STATUS
@@ -511,31 +515,31 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
     queryFn: async () => {
       try {
         if (user_token === '') {
-          //Alert.alert('No token found');
-           dispatch(showAlert({
-               title: "Alert!",
-               message: 'No token found'
-              }));
+          Alert.alert('No token found');
+          //  dispatch(showAlert({
+          //      title: "Alert!",
+          //      message: 'No token found'
+          //     }));
           return '';
         }
         if (!userId) {
           if (others) {
             // user id not found for others profile
-          //  Alert.alert('No user id found');
-           dispatch(showAlert({
-               title: "Alert!",
-               message: 'No user id found'
-              }));
+            Alert.alert('No user id found');
+          //  dispatch(showAlert({
+          //      title: "Alert!",
+          //      message: 'No user id found'
+          //     }));
             return '';
           }
         }
         if (user_id === '' && !others) {
           // user id not found for own profile
-          //Alert.alert('No user id found');
-           dispatch(showAlert({
-               title: "Alert!",
-               message: 'No user id found'
-              }));
+          Alert.alert('No user id found');
+          //  dispatch(showAlert({
+          //      title: "Alert!",
+          //      message: 'No user id found'
+          //     }));
           return '';
         }
 
@@ -555,6 +559,7 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
         console.error('Error fetching articles:', err);
       }
     },
+    enabled: !!isConnected && !!user_token
   });
 
   useFocusEffect(

@@ -40,11 +40,10 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
   const {user_token, user_id} = useSelector((state: any) => state.user);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const {podcasts} = useSelector((state: any) => state.data);
+  const {isConnected} = useSelector((state: any) => state.network);
   const [playlistModalOpen, setPlaylistModalOpen] = useState<boolean>(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-
-  // const [playlistIds, setPlaylistIds] = useState<string[]>([]);
 
   const openPlaylist = (id: string) => {
     // setPlaylistIds([id]);
@@ -93,7 +92,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
         console.error('Error fetching podcasts:', err);
       }
     },
-    enabled: !!user_token && !!page,
+    enabled: isConnected && !!user_token && !!page,
   });
 
   const onRefresh = () => {
@@ -127,15 +126,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
       (a, b) => (b.viewUsers?.length || 0) - (a.viewUsers?.length || 0),
     );
 
-    // Step 3: take top 5–10 as recommended
     const recommended = withViews.slice(0, 5);
-
-   // const latestIds = new Set(latest.map(p => p._id));
-   // const recommendedIds = new Set(recommended.map(p => p._id));
-    // const all = podcasts.filter(
-    //   p => !latestIds.has(p._id) && !recommendedIds.has(p._id),
-    // );
-    
     return {
       latestPodcasts: latest,
       recommendedPodcasts: recommended,
@@ -199,7 +190,15 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
         downloaded={false}
         display={true}
         downLoadAudio={async () => {
-          await downloadAudio(item);
+          if(isConnected){
+           await downloadAudio(item);
+          }else{
+            Snackbar.show({
+              text: "Internet connection required",
+              duration: Snackbar.LENGTH_SHORT
+            });
+          }
+         
         }}
         handleClick={() => {
           updateViewCountMutation.mutate(item._id);

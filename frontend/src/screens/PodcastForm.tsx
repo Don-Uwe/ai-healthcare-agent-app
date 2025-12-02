@@ -45,43 +45,43 @@ const PodcastForm = ({navigation, route}: PodcastFormProp) => {
 
   const handleCreatePost = () => {
     if (title === '') {
-      // Alert.alert('Title section is required');
-      dispatch(
-        showAlert({
-          title: 'Error',
-          message: 'Title section is required',
-        }),
-      );
+       Alert.alert('Title section is required');
+      // dispatch(
+      //   showAlert({
+      //     title: 'Error',
+      //     message: 'Title section is required',
+      //   }),
+      // );
       return;
     } else if (description === '') {
-      // Alert.alert('Please give proper description');
-      dispatch(
-        showAlert({
-          title: 'Error',
-          message: 'Please give proper description',
-        }),
-      );
+       Alert.alert('Please give proper description');
+      // dispatch(
+      //   showAlert({
+      //     title: 'Error',
+      //     message: 'Please give proper description',
+      //   }),
+      // );
       return;
     } else if (selectedGenres.length === 0) {
-      // Alert.alert('Please select at least one suitable tags for your podcast.');
-      dispatch(
-        showAlert({
-          title: 'Error',
-          message: 'Please select at least one suitable tags for your podcast.',
-        }),
-      );
+       Alert.alert('Please select at least one suitable tags for your podcast.');
+      // dispatch(
+      //   showAlert({
+      //     title: 'Error',
+      //     message: 'Please select at least one suitable tags for your podcast.',
+      //   }),
+      // );
       return;
     }
 
     // Later purpose
     else if (imageUtils.length === 0) {
-      // Alert.alert('Please upload one cover image for your podcast.');
-      dispatch(
-        showAlert({
-          title: 'Error',
-          message: 'Please upload one cover image for your podcast.',
-        }),
-      );
+       Alert.alert('Please upload one cover image for your podcast.');
+      // dispatch(
+      //   showAlert({
+      //     title: 'Error',
+      //     message: 'Please upload one cover image for your podcast.',
+      //   }),
+      // );
       return;
     }
 
@@ -109,13 +109,13 @@ const PodcastForm = ({navigation, route}: PodcastFormProp) => {
 
         // Check file size (1 MB limit)
         if (fileSize && fileSize > 1024 * 1024) {
-          //Alert.alert('Error', 'File size exceeds 1 MB.');
-          dispatch(
-            showAlert({
-              title: 'Error',
-              message: 'File size exceeds 1 MB.',
-            }),
-          );
+          Alert.alert('Error', 'File size exceeds 1 MB.');
+          // dispatch(
+          //   showAlert({
+          //     title: 'Error',
+          //     message: 'File size exceeds 1 MB.',
+          //   }),
+          // );
           return;
         }
 
@@ -126,13 +126,13 @@ const PodcastForm = ({navigation, route}: PodcastFormProp) => {
           })
           .catch(err => {
             console.log(err);
-            // Alert.alert('Error', 'Could not resize the image.');
-            dispatch(
-              showAlert({
-                title: 'Error',
-                message: 'Could not resize the image.',
-              }),
-            );
+             Alert.alert('Error', 'Could not resize the image.');
+            // dispatch(
+            //   showAlert({
+            //     title: 'Error',
+            //     message: 'Could not resize the image.',
+            //   }),
+            // );
           });
 
         setImageUtils(uri ? uri : '');

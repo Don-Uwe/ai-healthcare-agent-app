@@ -32,7 +32,7 @@ export default function CreatePlaylist({visible, dismiss}: Props) {
   // const [selectedPlaylistId, setSelectedPlaylistId] = useState<string>('');
   const [inputValue, setInputValue] = useState<string>('');
   const {addedPodcastId} = useSelector((state: any) => state.data);
-  const {isConnected} = useSelector((state: any) => state.data);
+  const {isConnected} = useSelector((state: any) => state.network);
   const [addedPlaylistIds, setAddedPlaylistIds] = useState<string[]>([]);
   const [removePlaylistIds, setRemovePlaylistIds] = useState<string[]>([]);
 

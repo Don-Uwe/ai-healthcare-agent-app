@@ -28,6 +28,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   const {user_id, user_handle, user_token} = useSelector(
     (state: any) => state.user,
   );
+  const {isConnected} = useSelector((state: any) => state.network);
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
   const [articleId, setArticleId] = useState<number>();
@@ -85,27 +86,44 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   //const bottomBarHeight = useBottomTabBarHeight();
   const insets = useSafeAreaInsets();
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleRepostAction = (item: ArticleData) => {
-    setRepostItem(item);
-    repostMutation.mutate({
-      articleId: Number(item._id),
-    });
+    if (isConnected) {
+      // updateLikeMutation.mutate();
+      setRepostItem(item);
+
+      repostMutation.mutate({
+        articleId: Number(item._id),
+      });
+    } else {
+      Snackbar.show({
+        text: 'Please check your network connection',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+    }
   };
 
   const onArticleViewed = ({
     articleId,
-    recordId
+    recordId,
   }: {
     articleId: number;
     authorId: string;
     recordId: string;
   }) => {
-    setArticleId(articleId);
-    //setAuthorId(authorId);
-    setRecordId(recordId);
-    updateViewCountMutation.mutate({
-      articleId: Number(articleId),
-    });
+    if (isConnected) {
+      setArticleId(articleId);
+      //setAuthorId(authorId);
+      setRecordId(recordId);
+      updateViewCountMutation.mutate({
+        articleId: Number(articleId),
+      });
+    } else {
+      Snackbar.show({
+        text: 'Please check your internet connection!',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+    }
   };
 
   const repostMutation = useMutation({
@@ -203,7 +221,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
       navigation.navigate('ArticleScreen', {
         articleId: Number(articleId),
         authorId: authorId,
-        recordId: recordId
+        recordId: recordId,
       });
     },
 
@@ -218,7 +236,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
     refetch();
 
     setRefreshing(false);
-  },[refetch]);
+  }, [refetch]);
 
   useFocusEffect(
     useCallback(() => {
@@ -227,14 +245,17 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
     }, [refetch, authorId]), // Ensure authorId is a stable value
   );
 
-  const handleReportAction = useCallback((item: ArticleData) => {
-    navigation.navigate('ReportScreen', {
-      articleId: item._id,
-      authorId: item.authorId as string,
-      commentId: null,
-      podcastId: null
-    });
-  }, [navigation]);
+  const handleReportAction = useCallback(
+    (item: ArticleData) => {
+      navigation.navigate('ReportScreen', {
+        articleId: item._id,
+        authorId: item.authorId as string,
+        commentId: null,
+        podcastId: null,
+      });
+    },
+    [navigation],
+  );
 
   const submitEditRequestMutation = useMutation({
     mutationKey: ['submit-edit-request-user'],
@@ -284,16 +305,32 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
           handleRepostAction={handleRepostAction}
           handleReportAction={handleReportAction}
           handleEditRequestAction={(item, index, reason) => {
-            submitEditRequestMutation.mutate({
+
+            if(isConnected){
+             submitEditRequestMutation.mutate({
               articleId: item._id,
               reason: reason,
             });
+            }else{
+              Snackbar.show({
+                text: "Please check your internet connection!",
+                duration: Snackbar.LENGTH_SHORT
+              });
+            }
+           
           }}
-          source='user-profile'
+          source="user-profile"
         />
       );
     },
-    [handleReportAction, handleRepostAction, navigation, onRefresh, selectedCardId, submitEditRequestMutation],
+    [
+      handleReportAction,
+      handleRepostAction,
+      navigation,
+      onRefresh,
+      selectedCardId,
+      submitEditRequestMutation,
+    ],
   );
 
   const onFollowerClick = () => {
@@ -308,18 +345,32 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   };
 
   const onFollowingClick = () => {
-    if (user && user.followings.length > 0) {
-      // dispatch(setSocialUserId(user._id));
-      navigation.navigate('SocialScreen', {
-        type: 2,
-        articleId: undefined,
-        social_user_id: user._id,
+    if (isConnected) {
+      if (user && user.followings.length > 0) {
+        // dispatch(setSocialUserId(user._id));
+        navigation.navigate('SocialScreen', {
+          type: 2,
+          articleId: undefined,
+          social_user_id: user._id,
+        });
+      }
+    } else {
+      Snackbar.show({
+        text: 'Please check your internet connection!',
+        duration: Snackbar.LENGTH_SHORT,
       });
     }
   };
 
   const handleFollow = () => {
-    updateFollowMutation.mutate();
+    if (isConnected) {
+      updateFollowMutation.mutate();
+    } else {
+      Snackbar.show({
+        text: 'Please check your internet connection!',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+    }
   };
 
   const updateFollowMutation = useMutation({

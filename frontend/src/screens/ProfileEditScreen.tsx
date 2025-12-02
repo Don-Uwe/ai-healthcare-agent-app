@@ -38,6 +38,7 @@ import {
 import ImageResizer from '@bam.tech/react-native-image-resizer';
 import useUploadImage from '../../hooks/useUploadImage';
 import {showAlert} from '../store/alertSlice';
+import Snackbar from 'react-native-snackbar';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 let validator = require('email-validator');
 let expr = /^(0|91)?[6-9][0-9]{9}$/;
@@ -71,7 +72,9 @@ const ProfileEditScreen = ({navigation}) => {
   const [new_password, setNewPassword] = useState('');
   const [confirm_password, setConfirmPassword] = useState('');
   const {user_token} = useSelector((state: any) => state.user);
-  const {data: user, isLoading} = useQuery({
+  const {isConnected} = useSelector((state: any) => state.network);
+
+  const {data: user} = useQuery({
     queryKey: ['get-user-details-by-id'],
     queryFn: async () => {
       const response = await axios.get(`${GET_USER_DETAILS_API}`, {
@@ -82,6 +85,7 @@ const ProfileEditScreen = ({navigation}) => {
 
       return response.data.profile as User;
     },
+    enabled: !!isConnected,
   });
   const userGeneralDetailsMutation = useMutation({
     mutationKey: ['user-general-details-updation'],
@@ -103,14 +107,14 @@ const ProfileEditScreen = ({navigation}) => {
       return response.data as any;
     },
     onSuccess: _data => {
-      //Alert.alert('Success', 'Details submitted successfully');
+      Alert.alert('Success', 'Details submitted successfully');
 
-      dispatch(
-        showAlert({
-          title: 'Success',
-          message: 'Details submitted successfully',
-        }),
-      );
+      // dispatch(
+      //   showAlert({
+      //     title: 'Success',
+      //     message: 'Details submitted successfully',
+      //   }),
+      // );
       navigation.goBack();
     },
 
@@ -120,84 +124,84 @@ const ProfileEditScreen = ({navigation}) => {
         switch (statusCode) {
           case 400:
             // Handle bad request errors (missing fields or email/user handle already in use)
-            // Alert.alert(
-            //   'Update Failed',
-            //   err?.response?.data?.error ||
-            //     'Please fill in all fields correctly.',
-            // );
-            dispatch(
-              showAlert({
-                title: 'Update failed',
-                message: 'Please fill in all fields correctly.',
-              }),
+            Alert.alert(
+              'Update Failed',
+              err?.response?.data?.error ||
+                'Please fill in all fields correctly.',
             );
+            // dispatch(
+            //   showAlert({
+            //     title: 'Update failed',
+            //     message: 'Please fill in all fields correctly.',
+            //   }),
+            // );
             break;
           case 404:
             // Handle user not found
-            // Alert.alert(
-            //   'Update Failed',
-            //   'User not found. Please check your information.',
-            // );
-            dispatch(
-              showAlert({
-                title: 'Update failed',
-                message: 'User not found. Please check your information.',
-              }),
+            Alert.alert(
+              'Update Failed',
+              'User not found. Please check your information.',
             );
+            // dispatch(
+            //   showAlert({
+            //     title: 'Update failed',
+            //     message: 'User not found. Please check your information.',
+            //   }),
+            // );
             break;
           case 409:
             // Handle conflict errors (duplicate email/user handle)
-            // Alert.alert(
-            //   'Update Failed',
-            //   'Email or user handle already exists.',
-            // );
-            dispatch(
-              showAlert({
-                title: 'Update failed',
-                message: 'Email or user handle already exists.',
-              }),
+            Alert.alert(
+              'Update Failed',
+              'Email or user handle already exists.',
             );
+            // dispatch(
+            //   showAlert({
+            //     title: 'Update failed',
+            //     message: 'Email or user handle already exists.',
+            //   }),
+            // );
             break;
           case 500:
             // Handle internal server errors
-            // Alert.alert(
-            //   'Update Failed',
-            //   'Internal server error. Please try again later.',
-            // );
-
-            dispatch(
-              showAlert({
-                title: 'Update failed',
-                message: 'Internal server error. Please try again later.',
-              }),
+            Alert.alert(
+              'Update Failed',
+              'Internal server error. Please try again later.',
             );
+
+            // dispatch(
+            //   showAlert({
+            //     title: 'Update failed',
+            //     message: 'Internal server error. Please try again later.',
+            //   }),
+            // );
             break;
           default:
             // Handle any other errors
-            // Alert.alert(
-            //   'Update Failed',
-            //   'Something went wrong. Please try again later.',
-            // );
-            dispatch(
-              showAlert({
-                title: 'Update failed',
-                message: 'Something went wrong. Please try again later.',
-              }),
+            Alert.alert(
+              'Update Failed',
+              'Something went wrong. Please try again later.',
             );
+          // dispatch(
+          //   showAlert({
+          //     title: 'Update failed',
+          //     message: 'Something went wrong. Please try again later.',
+          //   }),
+          // );
         }
       } else {
         // Handle network errors
         console.log('General Update Error', err);
-        // Alert.alert(
-        //   'Update Failed',
-        //   'Network error. Please check your connection.',
-        // );
-        dispatch(
-          showAlert({
-            title: 'Update failed',
-            message: 'Network error. Please check your connection.',
-          }),
+        Alert.alert(
+          'Update Failed',
+          'Network error. Please check your connection.',
         );
+        // dispatch(
+        //   showAlert({
+        //     title: 'Update failed',
+        //     message: 'Network error. Please check your connection.',
+        //   }),
+        // );
       }
     },
   });
@@ -219,13 +223,13 @@ const ProfileEditScreen = ({navigation}) => {
       return response.data as any;
     },
     onSuccess: _data => {
-      //Alert.alert('Success', 'Details submitted successfully');
-      dispatch(
-        showAlert({
-          title: 'Success',
-          message: 'Details submitted successfully.',
-        }),
-      );
+      Alert.alert('Success', 'Details submitted successfully');
+      // dispatch(
+      //   showAlert({
+      //     title: 'Success',
+      //     message: 'Details submitted successfully.',
+      //   }),
+      // );
       navigation.goBack();
     },
 
@@ -235,83 +239,83 @@ const ProfileEditScreen = ({navigation}) => {
         switch (statusCode) {
           case 400:
             // Handle bad request errors (missing fields or email/user handle already in use)
-            // Alert.alert(
-            //   'Update Failed',
-            //   err?.response?.data?.error ||
-            //     'Please fill in all fields correctly.',
-            // );
-            dispatch(
-              showAlert({
-                title: 'Update Failed',
-                message: 'Please fill in all fields correctly.',
-              }),
+            Alert.alert(
+              'Update Failed',
+              err?.response?.data?.error ||
+                'Please fill in all fields correctly.',
             );
+            // dispatch(
+            //   showAlert({
+            //     title: 'Update Failed',
+            //     message: 'Please fill in all fields correctly.',
+            //   }),
+            // );
             break;
           case 404:
             // Handle user not found
-            // Alert.alert(
-            //   'Update Failed',
-            //   'User not found. Please check your information.',
-            // );
-            dispatch(
-              showAlert({
-                title: 'Update Failed',
-                message: 'User not found. Please check your information.',
-              }),
+            Alert.alert(
+              'Update Failed',
+              'User not found. Please check your information.',
             );
+            // dispatch(
+            //   showAlert({
+            //     title: 'Update Failed',
+            //     message: 'User not found. Please check your information.',
+            //   }),
+            // );
             break;
           case 409:
             // Handle conflict errors (duplicate email/user handle)
-            // Alert.alert(
-            //   'Update Failed',
-            //   'Email or user handle already exists.',
-            // );
-            dispatch(
-              showAlert({
-                title: 'Update Failed',
-                message: 'Email or user handle already exists.',
-              }),
+            Alert.alert(
+              'Update Failed',
+              'Email or user handle already exists.',
             );
+            // dispatch(
+            //   showAlert({
+            //     title: 'Update Failed',
+            //     message: 'Email or user handle already exists.',
+            //   }),
+            // );
             break;
           case 500:
             // Handle internal server errors
-            // Alert.alert(
-            //   'Update Failed',
-            //   'Internal server error. Please try again later.',
-            // );
-            dispatch(
-              showAlert({
-                title: 'Update Failed',
-                message: 'Internal server error. Please try again later.',
-              }),
+            Alert.alert(
+              'Update Failed',
+              'Internal server error. Please try again later.',
             );
+            // dispatch(
+            //   showAlert({
+            //     title: 'Update Failed',
+            //     message: 'Internal server error. Please try again later.',
+            //   }),
+            // );
             break;
           default:
             // Handle any other errors
-            // Alert.alert(
-            //   'Update Failed',
-            //   'Something went wrong. Please try again later.',
-            // );
-            dispatch(
-              showAlert({
-                title: 'Update Failed',
-                message: 'Something went wrong. Please try again later.',
-              }),
+            Alert.alert(
+              'Update Failed',
+              'Something went wrong. Please try again later.',
             );
+          // dispatch(
+          //   showAlert({
+          //     title: 'Update Failed',
+          //     message: 'Something went wrong. Please try again later.',
+          //   }),
+          // );
         }
       } else {
         // Handle network errors
         console.log('General Update Error', err);
-        // Alert.alert(
-        //   'Update Failed',
-        //   'Network error. Please check your connection.',
-        // );
-        dispatch(
-          showAlert({
-            title: 'Update Failed',
-            message: 'Network error. Please check your connection.',
-          }),
+        Alert.alert(
+          'Update Failed',
+          'Network error. Please check your connection.',
         );
+        // dispatch(
+        //   showAlert({
+        //     title: 'Update Failed',
+        //     message: 'Network error. Please check your connection.',
+        //   }),
+        // );
       }
     },
   });
@@ -334,13 +338,13 @@ const ProfileEditScreen = ({navigation}) => {
       return response.data as any;
     },
     onSuccess: _data => {
-      //  Alert.alert('Success', 'Details submitted successfully');
-      dispatch(
-        showAlert({
-          title: 'Success',
-          message: 'Details submitted successfully.',
-        }),
-      );
+      Alert.alert('Success', 'Details submitted successfully');
+      // dispatch(
+      //   showAlert({
+      //     title: 'Success',
+      //     message: 'Details submitted successfully.',
+      //   }),
+      // );
       navigation.goBack();
     },
 
@@ -350,70 +354,70 @@ const ProfileEditScreen = ({navigation}) => {
         switch (statusCode) {
           case 400:
             // Handle bad request errors (missing fields or email/user handle already in use)
-            // Alert.alert(
-            //   'Update Failed',
-            //   err?.response?.data?.error ||
-            //     'Please fill in all fields correctly.',
-            // );
-            dispatch(
-              showAlert({
-                title: 'Update Failed',
-                message: 'Please fill in all fields correctly.',
-              }),
+            Alert.alert(
+              'Update Failed',
+              err?.response?.data?.error ||
+                'Please fill in all fields correctly.',
             );
+            // dispatch(
+            //   showAlert({
+            //     title: 'Update Failed',
+            //     message: 'Please fill in all fields correctly.',
+            //   }),
+            // );
             break;
           case 404:
             // Handle user not found
-            // Alert.alert(
-            //   'Update Failed',
-            //   'User not found. Please check your information.',
-            // );
-            dispatch(
-              showAlert({
-                title: 'Update Failed',
-                message: 'User not found. Please check your information.',
-              }),
+            Alert.alert(
+              'Update Failed',
+              'User not found. Please check your information.',
             );
+            // dispatch(
+            //   showAlert({
+            //     title: 'Update Failed',
+            //     message: 'User not found. Please check your information.',
+            //   }),
+            // );
             break;
           case 500:
             // Handle internal server errors
-            // Alert.alert(
-            //   'Update Failed',
-            //   'Internal server error. Please try again later.',
-            // );
-            dispatch(
-              showAlert({
-                title: 'Update Failed',
-                message: 'Internal server error. Please try again later.',
-              }),
+            Alert.alert(
+              'Update Failed',
+              'Internal server error. Please try again later.',
             );
+            // dispatch(
+            //   showAlert({
+            //     title: 'Update Failed',
+            //     message: 'Internal server error. Please try again later.',
+            //   }),
+            // );
             break;
           default:
             // Handle any other errors
-            // Alert.alert(
-            //   'Update Failed',
-            //   'Something went wrong. Please try again later.',
-            // );
-            dispatch(
-              showAlert({
-                title: 'Update Failed',
-                message: 'Something went wrong. Please try again later.',
-              }),
+            Alert.alert(
+              'Update Failed',
+              'Something went wrong. Please try again later.',
             );
+          // dispatch(
+          //   showAlert({
+          //     title: 'Update Failed',
+          //     message: 'Something went wrong. Please try again later.',
+          //   }),
+          // );
         }
       } else {
         // Handle network errors
         console.log('General Update Error', err);
-        // Alert.alert(
-        //   'Update Failed',
-        //   'Network error. Please check your connection.',
-        // );
-        dispatch(
-          showAlert({
-            title: 'Update Failed',
-            message: 'Network error. Please check your connection.',
-          }),
+        Alert.alert(
+          'Update Failed',
+          'Network error. Please check your connection.',
         );
+        // dispatch(
+        //   showAlert({
+        //     title: 'Update Failed',
+        //     message: 'Network error. Please check your connection.',
+        //   }),
+        // );
       }
     },
   });
@@ -434,13 +438,13 @@ const ProfileEditScreen = ({navigation}) => {
       return response.data as any;
     },
     onSuccess: _data => {
-      //Alert.alert('Success', 'Profile updated successfully');
-      dispatch(
-        showAlert({
-          title: 'Success',
-          message: 'Profile updated successfully',
-        }),
-      );
+      Alert.alert('Success', 'Profile updated successfully');
+      // dispatch(
+      //   showAlert({
+      //     title: 'Success',
+      //     message: 'Profile updated successfully',
+      //   }),
+      // );
     },
     onError: (err: AxiosError) => {
       if (err.response) {
@@ -451,150 +455,150 @@ const ProfileEditScreen = ({navigation}) => {
           case 400:
             // Handle validation errors (like invalid image format, file too large)
             if (errorMessage?.includes('File too large')) {
-              // Alert.alert(
-              //   'Update Failed',
-              //   'The image file exceeds the size limit of 1 MB. Please select a smaller image.',
-              // );
-
-              dispatch(
-                showAlert({
-                  title: 'Update Failed',
-                  message:
-                    'The image file exceeds the size limit of 1 MB. Please select a smaller image.',
-                }),
+              Alert.alert(
+                'Update Failed',
+                'The image file exceeds the size limit of 1 MB. Please select a smaller image.',
               );
+
+              // dispatch(
+              //   showAlert({
+              //     title: 'Update Failed',
+              //     message:
+              //       'The image file exceeds the size limit of 1 MB. Please select a smaller image.',
+              //   }),
+              // );
             } else if (errorMessage?.includes('Invalid image format')) {
-              // Alert.alert(
-              //   'Update Failed',
-              //   'The image format is invalid. Please upload a valid image (JPEG, PNG, etc.).',
-              // );
-
-              dispatch(
-                showAlert({
-                  title: 'Update Failed',
-                  message:
-                    'The image format is invalid. Please upload a valid image (JPEG, PNG, etc.).',
-                }),
+              Alert.alert(
+                'Update Failed',
+                'The image format is invalid. Please upload a valid image (JPEG, PNG, etc.).',
               );
+
+              // dispatch(
+              //   showAlert({
+              //     title: 'Update Failed',
+              //     message:
+              //       'The image format is invalid. Please upload a valid image (JPEG, PNG, etc.).',
+              //   }),
+              // );
             } else {
-              // Alert.alert(
-              //   'Update Failed',
-              //   errorMessage ||
-              //     'Please ensure the image is valid and all fields are filled correctly.',
-              // );
-
-              dispatch(
-                showAlert({
-                  title: 'Update Failed',
-                  message:
-                    'Please ensure the image is valid and all fields are filled correctly.',
-                }),
+              Alert.alert(
+                'Update Failed',
+                errorMessage ||
+                  'Please ensure the image is valid and all fields are filled correctly.',
               );
+
+              // dispatch(
+              //   showAlert({
+              //     title: 'Update Failed',
+              //     message:
+              //       'Please ensure the image is valid and all fields are filled correctly.',
+              //   }),
+              // );
             }
             break;
 
           case 401:
             // Handle unauthorized access (e.g., expired token)
-            // Alert.alert(
-            //   'Update Failed',
-            //   'You are not authorized to update the profile image. Please log in again.',
-            // );
-            dispatch(
-              showAlert({
-                title: 'Update Failed',
-                message:
-                  'You are not authorized to update the profile image. Please log in again.',
-              }),
+            Alert.alert(
+              'Update Failed',
+              'You are not authorized to update the profile image. Please log in again.',
             );
+            // dispatch(
+            //   showAlert({
+            //     title: 'Update Failed',
+            //     message:
+            //       'You are not authorized to update the profile image. Please log in again.',
+            //   }),
+            // );
             break;
 
           case 404:
             // Handle user not found errors
-            // Alert.alert(
-            //   'Update Failed',
-            //   'User not found. Please ensure your account information is correct.',
-            // );
-            dispatch(
-              showAlert({
-                title: 'Update Failed',
-                message:
-                  'User not found. Please ensure your account information is correct.',
-              }),
+            Alert.alert(
+              'Update Failed',
+              'User not found. Please ensure your account information is correct.',
             );
+            // dispatch(
+            //   showAlert({
+            //     title: 'Update Failed',
+            //     message:
+            //       'User not found. Please ensure your account information is correct.',
+            //   }),
+            // );
             break;
 
           case 413:
             // Handle payload too large errors (typically for image uploads)
-            // Alert.alert(
-            //   'Update Failed',
-            //   'The uploaded image is too large. Please select an image under 1 MB.',
-            // );
-            dispatch(
-              showAlert({
-                title: 'Update Failed',
-                message:
-                  'User not found. Please ensure your account information is correct.',
-              }),
+            Alert.alert(
+              'Update Failed',
+              'The uploaded image is too large. Please select an image under 1 MB.',
             );
+            // dispatch(
+            //   showAlert({
+            //     title: 'Update Failed',
+            //     message:
+            //       'User not found. Please ensure your account information is correct.',
+            //   }),
+            // );
             break;
 
           case 500:
             // Handle server-side errors
-            // Alert.alert(
-            //   'Update Failed',
-            //   'An internal server error occurred. Please try again later.',
-            // );
-            dispatch(
-              showAlert({
-                title: 'Update Failed',
-                message:
-                  'An internal server error occurred. Please try again later.',
-              }),
+            Alert.alert(
+              'Update Failed',
+              'An internal server error occurred. Please try again later.',
             );
+            // dispatch(
+            //   showAlert({
+            //     title: 'Update Failed',
+            //     message:
+            //       'An internal server error occurred. Please try again later.',
+            //   }),
+            // );
             break;
 
           default:
             // Handle unexpected errors
-            // Alert.alert(
-            //   'Update Failed',
-            //   'An unexpected error occurred. Please try again later.',
-            // );
-            dispatch(
-              showAlert({
-                title: 'Update Failed',
-                message:
-                  'An unexpected error occurred. Please try again later.',
-              }),
+            Alert.alert(
+              'Update Failed',
+              'An unexpected error occurred. Please try again later.',
             );
+          // dispatch(
+          //   showAlert({
+          //     title: 'Update Failed',
+          //     message:
+          //       'An unexpected error occurred. Please try again later.',
+          //   }),
+          // );
         }
       } else {
         // Handle network errors or other Axios-related issues
         if (err.message === 'Network Error') {
-          // Alert.alert(
-          //   'Update Failed',
-          //   'A network error occurred. Please check your internet connection and try again.',
-          // );
-
-          dispatch(
-            showAlert({
-              title: 'Update Failed',
-              message:
-                'A network error occurred. Please check your internet connection and try again.',
-            }),
+          Alert.alert(
+            'Update Failed',
+            'A network error occurred. Please check your internet connection and try again.',
           );
+
+          // dispatch(
+          //   showAlert({
+          //     title: 'Update Failed',
+          //     message:
+          //       'A network error occurred. Please check your internet connection and try again.',
+          //   }),
+          // );
         } else {
           console.log('General Update Error:', err);
-          // Alert.alert(
-          //   'Update Failed',
-          //   'Something went wrong. Please try again.',
-          // );
-
-          dispatch(
-            showAlert({
-              title: 'Update Failed',
-              message: 'Something went wrong. Please try again.',
-            }),
+          Alert.alert(
+            'Update Failed',
+            'Something went wrong. Please try again.',
           );
+
+          // dispatch(
+          //   showAlert({
+          //     title: 'Update Failed',
+          //     message: 'Something went wrong. Please try again.',
+          //   }),
+          // );
         }
       }
     },
@@ -617,13 +621,13 @@ const ProfileEditScreen = ({navigation}) => {
       return response.data as any;
     },
     onSuccess: _data => {
-      //Alert.alert('Success', 'Password updated sucessfully');
-      dispatch(
-        showAlert({
-          title: 'Success',
-          message: 'Password updated sucessfully',
-        }),
-      );
+      Alert.alert('Success', 'Password updated sucessfully');
+      // dispatch(
+      //   showAlert({
+      //     title: 'Success',
+      //     message: 'Password updated sucessfully',
+      //   }),
+      // );
       setOldPassword('');
       setNewPassword('');
       setConfirmPassword('');
@@ -634,68 +638,68 @@ const ProfileEditScreen = ({navigation}) => {
         const statusCode = err.response.status;
         switch (statusCode) {
           case 400:
-            // Alert.alert('Password Update Failed', err?.response?.data?.error);
-            dispatch(
-              showAlert({
-                title: 'Password Update Failed',
-                message: err?.response?.data?.error,
-              }),
-            );
+            Alert.alert('Password Update Failed', err?.response?.data?.error);
+            // dispatch(
+            //   showAlert({
+            //     title: 'Password Update Failed',
+            //     message: err?.response?.data?.error,
+            //   }),
+            // );
             break;
           case 401:
-            //Alert.alert('Password Update Failed', 'Old password is incorrect.');
-            dispatch(
-              showAlert({
-                title: 'Password Update Failed',
-                message: 'Old password is incorrect.',
-              }),
-            );
+            Alert.alert('Password Update Failed', 'Old password is incorrect.');
+            // dispatch(
+            //   showAlert({
+            //     title: 'Password Update Failed',
+            //     message: 'Old password is incorrect.',
+            //   }),
+            // );
             break;
           case 404:
-            //  Alert.alert('Password Update Failed', 'User not found.');
-            dispatch(
-              showAlert({
-                title: 'Password Update Failed',
-                message: 'User not found.',
-              }),
-            );
+            Alert.alert('Password Update Failed', 'User not found.');
+            // dispatch(
+            //   showAlert({
+            //     title: 'Password Update Failed',
+            //     message: 'User not found.',
+            //   }),
+            // );
             break;
           case 500:
-            //Alert.alert(
-            //  'Password Update Failed',
-            //   'Internal server error. Please try again later.',
-            //  );
-            dispatch(
-              showAlert({
-                title: 'Password Update Failed',
-                message: 'Internal server error. Please try again later.',
-              }),
+            Alert.alert(
+              'Password Update Failed',
+              'Internal server error. Please try again later.',
             );
+            // dispatch(
+            //   showAlert({
+            //     title: 'Password Update Failed',
+            //     message: 'Internal server error. Please try again later.',
+            //   }),
+            // );
             break;
           default:
-            // Alert.alert(
-            //   'Password Update Failed',
-            //   'Something went wrong. Please try again later.',
-            // );
-            dispatch(
-              showAlert({
-                title: 'Password Update Failed',
-                message: 'Something went wrong. Please try again later.',
-              }),
+            Alert.alert(
+              'Password Update Failed',
+              'Something went wrong. Please try again later.',
             );
+          // dispatch(
+          //   showAlert({
+          //     title: 'Password Update Failed',
+          //     message: 'Something went wrong. Please try again later.',
+          //   }),
+          // );
         }
       } else {
         // console.log('Password Update Error', err);
-        // Alert.alert(
-        //   'Password Update Failed',
-        //   'Network error. Please check your connection.',
-        // );
-        dispatch(
-          showAlert({
-            title: 'Password Update Failed',
-            message: 'Something went wrong. Please try again later.',
-          }),
+        Alert.alert(
+          'Password Update Failed',
+          'Network error. Please check your connection.',
         );
+        // dispatch(
+        //   showAlert({
+        //     title: 'Password Update Failed',
+        //     message: 'Something went wrong. Please try again later.',
+        //   }),
+        // );
       }
     },
   });
@@ -715,12 +719,7 @@ const ProfileEditScreen = ({navigation}) => {
       setQualification(user.qualification || '');
       setExperience(user.Years_of_experience || '');
     }
-  }, [user]); // Runs when the `user` data changes
-
-  // showing loading state when fetching data
-  // if (isLoading) {
-  //   return <Loader />;
-  // }
+  }, [user]);
   // Boolean to check if the user is a doctor
   const isDoctor = user ? user?.isDoctor! : false;
   // Function to handle tab selection
@@ -770,6 +769,13 @@ const ProfileEditScreen = ({navigation}) => {
     return null; // No errors
   };
   const handleSubmitGeneralDetails = () => {
+    if (!isConnected) {
+      Snackbar.show({
+        text: 'Please check your internet connection!',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+      return;
+    }
     const errorMessage = validateGeneralFields();
     if (errorMessage) {
       Alert.alert('Validation Error', errorMessage);
@@ -778,6 +784,13 @@ const ProfileEditScreen = ({navigation}) => {
     userGeneralDetailsMutation.mutate();
   };
   const handleSubmitContactDetails = () => {
+    if (!isConnected) {
+      Snackbar.show({
+        text: 'Please check your internet connection!',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+      return;
+    }
     const errorMessage = validateContactFields();
     if (errorMessage) {
       Alert.alert('Validation Error', errorMessage);
@@ -787,6 +800,13 @@ const ProfileEditScreen = ({navigation}) => {
     userConatctDetailsMutation.mutate();
   };
   const handleSubmitProfessionalDetails = () => {
+    if (!isConnected) {
+      Snackbar.show({
+        text: 'Please check your internet connection!',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+      return;
+    }
     const errorMessage = validateProfessionalFields();
     if (errorMessage) {
       Alert.alert('Validation Error', errorMessage);
@@ -796,6 +816,14 @@ const ProfileEditScreen = ({navigation}) => {
     userProfessionalDetailsMutation.mutate();
   };
   const handleSubmitPassword = () => {
+    if (!isConnected) {
+      Snackbar.show({
+        text: 'Please check your internet connection!',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+      return;
+    }
+
     if (old_password === '') {
       Alert.alert('Error', 'Please enter your current password.');
       return;
@@ -871,13 +899,18 @@ const ProfileEditScreen = ({navigation}) => {
                     text: 'OK',
                     onPress: async () => {
                       try {
-                        //console.log("Image uri", resizedImageUri.uri);
-                        // Upload the resized image
-                        const result = await uploadImage(resizedImageUri.uri);
-                        // console.log('Image uploaded:', result);
-                        // After uploading, update the profile image with the returned URL
-                        userProfileImageMutation.mutate(result);
-                      } catch (err) {
+            
+                        if (isConnected) {
+                          const result = await uploadImage(resizedImageUri.uri);
+                          userProfileImageMutation.mutate(result);
+                        }else{
+                          Snackbar.show({
+                            text: "Please check your internet connection!",
+                            duration: Snackbar.LENGTH_SHORT
+                          });
+                          return;
+                        }
+                      } catch (err:any) {
                         console.error('Upload failed');
                         Alert.alert('Error', 'Upload failed');
                       }

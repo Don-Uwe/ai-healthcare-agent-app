@@ -31,7 +31,7 @@ export const HomeScreenHeader = ({
           <Input
             unstyled
             flex={1}
-            marginLeft="$2"
+            marginLeft="$1"
             placeholder="Search articles..."
             placeholderTextColor="#778599"
             onChangeText={onTextInputChange}

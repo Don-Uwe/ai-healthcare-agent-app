@@ -65,14 +65,14 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
     (async () => {
       const status = await AudioModule.requestRecordingPermissionsAsync();
       if (!status.granted) {
-        //Alert.alert('Permission to access microphone was denied');
+        Alert.alert('Permission to access microphone was denied');
 
-        dispatch(
-          showAlert({
-            title: 'Error',
-            message: 'Permission to access microphone was denied',
-          }),
-        );
+        // dispatch(
+        //   showAlert({
+        //     title: 'Error',
+        //     message: 'Permission to access microphone was denied',
+        //   }),
+        // );
       }
 
       setAudioModeAsync({

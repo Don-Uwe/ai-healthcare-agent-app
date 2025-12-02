@@ -72,7 +72,7 @@ const PodcastActions = React.forwardRef(
           <ActionItem icon="share" label="Share" onPress={() => handleAction(onShare)} />
           <ActionItem icon="flag" label="Report" onPress={() => handleAction(onReport)} />
           <ActionItem icon="file-download" label={downloaded ? 'Remove from downloads' : 'Download'} onPress={() => handleAction(onDownload)} />
-          <ActionItem icon="playlist-add" label="Save to Playlist" onPress={() => handleAction(onSave)} />
+          {/* <ActionItem icon="playlist-add" label="Save to Playlist" onPress={() => handleAction(onSave)} /> */}
         </BottomSheetView>
       </BottomSheetModal>
     );

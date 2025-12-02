@@ -20,6 +20,8 @@ import {fp, hp, wp} from '../helper/Metric';
 import {ProfileHeaderProps} from '../type';
 
 import {GET_STORAGE_DATA} from '../helper/APIUtils';
+import {useSelector} from 'react-redux';
+import Snackbar from 'react-native-snackbar';
 
 const ProfileHeader = ({
   isDoctor,
@@ -43,6 +45,8 @@ const ProfileHeader = ({
   onOverviewClick,
   improvementPublished,
 }: ProfileHeaderProps) => {
+  const {isConnected} = useSelector((state: any) => state.network);
+
   const handleCall = phone => {
     let phoneNumber = phone;
     if (Platform.OS !== 'android') {
@@ -162,10 +166,17 @@ const ProfileHeader = ({
 
         <TouchableOpacity
           onPress={() => {
-            navigation.navigate('LogoutScreen', {
-              profile_image: profileImg,
-              username: username,
-            });
+            if (isConnected) {
+              navigation.navigate('LogoutScreen', {
+                profile_image: profileImg,
+                username: username,
+              });
+            } else {
+              Snackbar.show({
+                text: 'Please check your internet connection!',
+                duration: Snackbar.LENGTH_SHORT,
+              });
+            }
           }}>
           {other && (
             <View style={styles.btnSM}>
@@ -210,9 +221,7 @@ const ProfileHeader = ({
             </Text>
           </Pressable>
         </View>
-        <View style={styles.infoContainer}>
-          
-        </View>
+        <View style={styles.infoContainer}></View>
       </View>
     </View>
   );
@@ -223,7 +232,7 @@ export default ProfileHeader;
 const styles = StyleSheet.create({
   container: {
     //marginBottom: 20,
-   // backgroundColor: ON_PRIMARY_COLOR,
+    // backgroundColor: ON_PRIMARY_COLOR,
   },
   ellipseSvg: {
     position: 'absolute',

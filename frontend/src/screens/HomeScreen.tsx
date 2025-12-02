@@ -3,14 +3,13 @@ import {
   View,
   Alert,
   Text,
-  Image,
   TouchableOpacity,
   FlatList,
   ScrollView,
 } from 'react-native';
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {PRIMARY_COLOR} from '../helper/Theme';
+import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import AddIcon from '../components/AddIcon';
 import ArticleCard from '../components/ArticleCard';
 import HomeScreenHeader from '../components/HomeScreenHeader';
@@ -49,7 +48,6 @@ import {useFocusEffect} from '@react-navigation/native';
 import InactiveUserModal from '../components/InactiveUserModal';
 import {StatusBar} from 'expo-status-bar';
 import {wp} from '../helper/Metric';
-import {showAlert} from '../store/alertSlice';
 
 // Here The purpose of using Redux is to maintain filter state throughout the app session. globally
 const HomeScreen = ({navigation}: HomeScreenProps) => {
@@ -57,6 +55,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const [articleCategories, setArticleCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<Category>();
   const [sortingType, setSortingType] = useState<string>('');
+  const {isConnected} = useSelector((state: any) => state.network);
   //const [loading, setLoading] = useState(true);
   const [selectedCardId, setSelectedCardId] = useState<string>('');
   const [repostItem, setRepostItem] = useState<ArticleData | null>(null);
@@ -77,9 +76,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
 
-  //console.log('User Token', user_token);
-  //console.log('User Id', user_id);
-  //console.log('BASE URL', PROD_URL);
+
 
   const handleCategorySelection = (category: CategoryType) => {
     // Update Redux State
@@ -97,14 +94,17 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   }, []);
 
   const getAllCategories = useCallback(async () => {
+    if (!isConnected) {
+      return;
+    }
     if (user_token === '') {
-      dispatch(
-        showAlert({
-          title: 'Error!',
-          message: 'No token found',
-        }),
-      );
-      // Alert.alert('No token found');
+      // dispatch(
+      //   showAlert({
+      //     title: 'Error!',
+      //     message: 'No token found',
+      //   }),
+      // );
+      Alert.alert('No token found');
       return;
     }
     const {data: categoryData} = await axios.get(
@@ -161,6 +161,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         console.error('Error fetching articles:', err);
       }
     },
+    enabled: isConnected && !!user_token,
   });
 
   const {
@@ -177,14 +178,23 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       });
       return response.data.profile as User;
     },
+    enabled: !!isConnected && !!user_token,
   });
 
   useFocusEffect(
     useCallback(() => {
-      refetchUser();
-      refetchUnreadCount();
-    }, [refetchUnreadCount, refetchUser]),
+      if (isConnected && user_token) {
+        refetchUser();
+        refetchUnreadCount();
+      } else {
+        Alert.alert(
+          'No Internet 😶‍🌫️',
+          'Offline mode will be available in the next update.',
+        );
+      }
+    }, [isConnected, user_token, refetchUser, refetchUnreadCount]),
   );
+
   const handleNoteIconClick = () => {
     //navigation.navigate('EditorScreen');
     navigation.navigate('ArticleDescriptionScreen', {
@@ -198,10 +208,19 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   };
 
   const handleRepostAction = (item: ArticleData) => {
-    setRepostItem(item);
-    repostMutation.mutate({
-      articleId: Number(item._id),
-    });
+    if (isConnected) {
+      // updateLikeMutation.mutate();
+      setRepostItem(item);
+
+      repostMutation.mutate({
+        articleId: Number(item._id),
+      });
+    } else {
+      Snackbar.show({
+        text: 'Please check your network connection',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+    }
   };
 
   const repostMutation = useMutation({
@@ -214,13 +233,13 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       //  authorId: string;
     }) => {
       if (user_token === '') {
-        // Alert.alert('No token found');
-        dispatch(
-          showAlert({
-            title: 'Error!',
-            message: 'No token found',
-          }),
-        );
+        Alert.alert('No token found');
+        // dispatch(
+        //   showAlert({
+        //     title: 'Error!',
+        //     message: 'No token found',
+        //   }),
+        // );
         return;
       }
       const res = await axios.post(
@@ -272,13 +291,13 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
 
     onError: error => {
       console.log('Repost Error', error);
-      // Alert.alert('Internal server error, try again!');
-      dispatch(
-        showAlert({
-          title: 'Server Error!',
-          message: 'Try again!',
-        }),
-      );
+      Alert.alert('Internal server error, try again!');
+      // dispatch(
+      //   showAlert({
+      //     title: 'Server Error!',
+      //     message: 'Try again!',
+      //   }),
+      // );
     },
   });
 
@@ -310,23 +329,23 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       return res.data.message as string;
     },
     onSuccess: data => {
-      //Alert.alert(data);
-      dispatch(
-        showAlert({
-          title: '',
-          message: data,
-        }),
-      );
+      Alert.alert(data);
+      // dispatch(
+      //   showAlert({
+      //     title: '',
+      //     message: data,
+      //   }),
+      // );
     },
     onError: err => {
       console.log(err);
-      //Alert.alert('Try again');
-       dispatch(
-        showAlert({
-          title: '',
-          message: 'Try again',
-        }),
-      );
+      Alert.alert('Try again');
+      //  dispatch(
+      //   showAlert({
+      //     title: '',
+      //     message: 'Try again',
+      //   }),
+      // );
     },
   });
 
@@ -350,6 +369,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         handleReportAction={handleReportAction}
         handleEditRequestAction={(item, index, reason) => {
           // submitRequest
+
           submitEditRequestMutation.mutate({
             articleId: item._id,
             reason: reason,
@@ -406,8 +426,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     }
 
     let filtered = articleData;
-    // console.log('sort type', sortType);
-    //console.log('Filtered before', filtered);
+
     if (selectedTags.length > 0) {
       filtered = filtered.filter(article =>
         selectedTags.some(tag =>
@@ -429,8 +448,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     } else if (sortType && sortType === 'popular' && filtered.length > 1) {
       filtered.sort((a, b) => b.viewCount - a.viewCount);
     }
-    // console.log('Filtered', filtered);
-    //console.log('Article Data', articleData);
     dispatch(setFilteredArticles({filteredArticles: filtered}));
     setFilterLoading(false);
   };
@@ -466,14 +483,22 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         return [];
       }
     },
-    enabled: !!user_token && !!page,
+    enabled: isConnected && !!user_token && !!page,
   });
 
   const onRefresh = () => {
-    setRefreshing(true);
-    refetch();
-    refetchUnreadCount();
-    setRefreshing(false);
+    console.log('is connected', isConnected);
+    if (isConnected) {
+      setRefreshing(true);
+      refetch();
+      refetchUnreadCount();
+      setRefreshing(false);
+    } else {
+      Snackbar.show({
+        text: 'Please check your network connection',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+    }
   };
   const handleSearch = (textInput: string) => {
     //console.log('Search Input', textInput);
@@ -497,7 +522,23 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   };
 
   if (isError || !articleData || articleData.length === 0) {
-    return <Text style={styles.message}>No Article Found</Text>;
+    return (
+      <SafeAreaView style={styles.container}>
+        <HomeScreenHeader
+          handlePresentModalPress={handlePresentModalPress}
+          onTextInputChange={handleSearch}
+          onNotificationClick={() => navigation.navigate('NotificationScreen')}
+          unreadCount={unreadCount || 0}
+        />
+
+        <View style={styles.emptyContainer}>
+        
+          <Text style={styles.message}>
+            📡 Please be online to view articles
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
   }
 
   if (isLoading || submitEditRequestMutation.isPending || isUserLoading) {
@@ -656,11 +697,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
             onRefresh={onRefresh}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                <Image
-                  source={require('../assets/images/no_results.jpg')}
-                  style={styles.emptyImgStyle}
-                />
-
                 <Text style={styles.message}>No Article Found</Text>
               </View>
             }
@@ -737,22 +773,23 @@ const styles = StyleSheet.create({
 
   message: {
     fontSize: 16,
-    color: '#fff',
+    color: '#000',
     fontFamily: 'bold',
     textAlign: 'center',
   },
   emptyContainer: {
     flex: 1,
+    backgroundColor: ON_PRIMARY_COLOR,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    top: 70,
+    top: 30,
   },
   emptyImgStyle: {
-    width: 300,
+    width: 100,
     height: 200,
     borderRadius: 8,
-    marginBottom: 10,
+    marginBottom: 1,
     resizeMode: 'contain',
   },
 });

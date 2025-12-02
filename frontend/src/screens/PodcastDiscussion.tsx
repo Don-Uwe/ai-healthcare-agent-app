@@ -397,13 +397,13 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
 
   const handleCommentSubmit = () => {
     if (!newComment.trim()) {
-      // Alert.alert('Please enter a comment before submitting.');
-      dispatch(
-        showAlert({
-          title: '',
-          message: 'Please enter a comment before submitting.',
-        }),
-      );
+       Alert.alert('Please enter a comment before submitting.');
+      // dispatch(
+      //   showAlert({
+      //     title: '',
+      //     message: 'Please enter a comment before submitting.',
+      //   }),
+      // );
       return;
     }
 
@@ -425,13 +425,13 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
         setEditCommentId(null);
         setEditMode(false);
       } else {
-       // Alert.alert('Error: Comment Not Found');
-        dispatch(
-        showAlert({
-          title: 'Error!',
-          message: 'Comment not found',
-        }),
-      );
+        Alert.alert('Error: Comment Not Found');
+      //   dispatch(
+      //   showAlert({
+      //     title: 'Error!',
+      //     message: 'Comment not found',
+      //   }),
+      // );
       }
     } else {
       const formatted = replaceTriggerValues(

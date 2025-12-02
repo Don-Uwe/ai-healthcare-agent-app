@@ -191,13 +191,13 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
 
   const handleCommentSubmit = () => {
     if (!newComment.trim()) {
-      dispatch(
-        showAlert({
-          title: 'Alert!',
-          message: 'Please enter a comment before submitting.',
-        }),
-      );
-      // Alert.alert('Please enter a comment before submitting.');
+      // dispatch(
+      //   showAlert({
+      //     title: 'Alert!',
+      //     message: 'Please enter a comment before submitting.',
+      //   }),
+      // );
+       Alert.alert('Please enter a comment before submitting.');
       
       return;
     }

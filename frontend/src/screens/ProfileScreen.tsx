@@ -27,6 +27,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
     (state: any) => state.user,
   );
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const {isConnected} = useSelector((state: any) => state.network);
   const [articleId, setArticleId] = useState<number>();
   const [authorId, setAuthorId] = useState<string>('');
   const [recordId, setRecordId] = useState<string>('');
@@ -49,6 +50,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
       });
       return response.data.profile as User;
     },
+    enabled: !!isConnected && !!user_token,
   });
 
   if (user) {
@@ -57,19 +59,26 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
   const onArticleViewed = ({
     articleId,
     authorId,
-    recordId
+    recordId,
   }: {
     articleId: number;
     authorId: string;
-    recordId: string
+    recordId: string;
   }) => {
-    setArticleId(articleId);
-    setAuthorId(authorId);
-    setRecordId(recordId);
+    if (isConnected) {
+      setArticleId(articleId);
+      setAuthorId(authorId);
+      setRecordId(recordId);
 
-    updateViewCountMutation.mutate({
-      articleId: Number(articleId),
-    });
+      updateViewCountMutation.mutate({
+        articleId: Number(articleId),
+      });
+    } else {
+      Snackbar.show({
+        text: 'Please check your internet connection!',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+    }
   };
   const updateViewCountMutation = useMutation({
     mutationKey: ['update-view-count'],
@@ -99,11 +108,10 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
       return res.data.article as ArticleData;
     },
     onSuccess: async data => {
-
       navigation.navigate('ArticleScreen', {
         articleId: Number(articleId),
         authorId: authorId,
-        recordId: recordId
+        recordId: recordId,
       });
     },
 
@@ -112,7 +120,6 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
       Alert.alert('Internal server error, try again!');
     },
   });
-  
 
   const isDoctor = user !== undefined ? user.isDoctor : false;
   const bottomBarHeight = useBottomTabBarHeight();
@@ -130,11 +137,21 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
     }, [refetch]),
   );
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleRepostAction = (item: ArticleData) => {
-    setRepostItem(item);
-    repostMutation.mutate({
-      articleId: Number(item._id),
-    });
+    if (isConnected) {
+      // updateLikeMutation.mutate();
+      setRepostItem(item);
+
+      repostMutation.mutate({
+        articleId: Number(item._id),
+      });
+    } else {
+      Snackbar.show({
+        text: 'Please check your network connection',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+    }
   };
 
   const repostMutation = useMutation({
@@ -203,7 +220,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
       articleId: item._id,
       authorId: item.authorId as string,
       commentId: null,
-      podcastId: null
+      podcastId: null,
     });
   };
   const renderItem = useCallback(
@@ -218,31 +235,51 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
           handleRepostAction={handleRepostAction}
           handleReportAction={handleReportAction}
           handleEditRequestAction={() => {}}
-          source='profile'
+          source="profile"
         />
       );
     },
-    [selectedCardId, navigation, onRefresh, handleRepostAction, handleReportAction],
+    [
+      selectedCardId,
+      navigation,
+      onRefresh,
+      handleRepostAction,
+      handleReportAction,
+    ],
   );
 
   const onFollowerClick = () => {
-    if (user && user.followers.length > 0) {
-      //dispatch(setSocialUserId(''));
-      navigation.navigate('SocialScreen', {
-        type: 1,
-        articleId: undefined,
-        social_user_id: undefined,
+    if (isConnected) {
+      if (user && user.followers.length > 0) {
+        //dispatch(setSocialUserId(''));
+        navigation.navigate('SocialScreen', {
+          type: 1,
+          articleId: undefined,
+          social_user_id: undefined,
+        });
+      }
+    } else {
+      Snackbar.show({
+        text: 'Please check your internet connection!',
+        duration: Snackbar.LENGTH_SHORT,
       });
     }
   };
 
   const onFollowingClick = () => {
-    if (user && user.followings.length > 0) {
-      // dispatch(setSocialUserId(''));
-      navigation.navigate('SocialScreen', {
-        type: 2,
-        articleId: undefined,
-        social_user_id: undefined,
+    if (isConnected) {
+      if (user && user.followings.length > 0) {
+        // dispatch(setSocialUserId(''));
+        navigation.navigate('SocialScreen', {
+          type: 2,
+          articleId: undefined,
+          social_user_id: undefined,
+        });
+      }
+    } else {
+      Snackbar.show({
+        text: 'Please check your internet connection!',
+        duration: Snackbar.LENGTH_SHORT,
       });
     }
   };
@@ -278,8 +315,14 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
         onFollowClick={() => {}}
         onOverviewClick={() => {
           if (user) {
-            //navigation.navigate('OverviewScreen', {articles: user.articles});
-            navigation.navigate('OverviewScreen');
+            if (isConnected) {
+              navigation.navigate('OverviewScreen');
+            } else {
+              Snackbar.show({
+                text: 'Please check your internet connection!',
+                duration: Snackbar.LENGTH_SHORT,
+              });
+            }
           }
         }}
         improvementPublished={user ? user.improvements.length : 0}
@@ -287,7 +330,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
     );
   };
 
-  const renderTabBar = (props:any) => {
+  const renderTabBar = (props: any) => {
     return (
       <MaterialTabBar
         {...props}
@@ -311,7 +354,6 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
 
   return (
     <View style={styles.container}>
-  
       <View style={[styles.innerContainer, {paddingTop: insets.top}]}>
         <Tabs.Container
           renderHeader={renderHeader}
@@ -331,8 +373,8 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
             </Tabs.ScrollView>
           </Tabs.Tab>
           {/* Tab 2 */}
-      
-          <Tabs.Tab name={`Reposts (${user?.repostArticles.length})`}>
+
+          <Tabs.Tab name={`Reposts (${user?.repostArticles.length || 0})`}>
             <Tabs.FlatList
               data={user !== undefined ? user.repostArticles : []}
               renderItem={renderItem}
@@ -351,7 +393,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
             />
           </Tabs.Tab>
           {/* Tab 3 */}
-          <Tabs.Tab name={`Saved(${user?.savedArticles.length})`}>
+          <Tabs.Tab name={`Saved(${user?.savedArticles.length || 0})`}>
             <Tabs.FlatList
               data={user !== undefined ? user.savedArticles : []}
               renderItem={renderItem}
@@ -380,14 +422,14 @@ export default ProfileScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  //  backgroundColor: '#0CAFFF',
+    //  backgroundColor: '#0CAFFF',
   },
   innerContainer: {
     flex: 1,
-  //  backgroundColor: ON_PRIMARY_COLOR,
+    //  backgroundColor: ON_PRIMARY_COLOR,
   },
   tabsContainer: {
-  //  backgroundColor: ON_PRIMARY_COLOR,
+    //  backgroundColor: ON_PRIMARY_COLOR,
     overflow: 'hidden',
   },
   scrollViewContentContainer: {

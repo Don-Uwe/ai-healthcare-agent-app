@@ -52,10 +52,10 @@ export default function EmailInputBottomSheet({
       dismissOnSnapToBottom={false}
       dismissOnOverlayPress={false}
       snapPoints={[85, 50, 25]}
-      animation="medium"
+      //animation="medium"
       zIndex={1000}
     >
-      <Sheet.Overlay backgroundColor="rgba(0, 0, 0, 0.1)" pointerEvents="none" />
+      {/* <Sheet.Overlay backgroundColor="rgba(0, 0, 0, 0.1)" pointerEvents="none" /> */}
       <Sheet.Handle />
       <Sheet.Frame padding="$4" justifyContent="center" alignItems="center" gap="$4">
         <ScrollView

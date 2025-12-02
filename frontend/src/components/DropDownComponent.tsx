@@ -13,12 +13,12 @@ const DropDownComponent = ({data}) => {
 
   const handleAddSpecialization = (specialization: string) => {
     if (!specialization) {
-      //Alert.alert('Please eneter specialization before submitting!');
+      Alert.alert('Please eneter specialization before submitting!');
 
-      dispatch(showAlert({
-        title: "Alert!",
-        message: 'Please eneter specialization before submitting!'
-      }));
+      // dispatch(showAlert({
+      //   title: "Alert!",
+      //   message: 'Please eneter specialization before submitting!'
+      // }));
       return null;
     }
     const isAlreadyExist = specializationData.filter(
@@ -27,11 +27,11 @@ const DropDownComponent = ({data}) => {
     );
     //console.log(isAlreadyExist);
     if (isAlreadyExist.length > 0) {
-    //  Alert.alert('Entered specialization already present!');
-      dispatch(showAlert({
-        title: "Alert!",
-        message: 'Entered specialization already present!'
-      }));
+      Alert.alert('Entered specialization already present!');
+      // dispatch(showAlert({
+      //   title: "Alert!",
+      //   message: 'Entered specialization already present!'
+      // }));
       
     } else {
       // make a api call to save the specialization

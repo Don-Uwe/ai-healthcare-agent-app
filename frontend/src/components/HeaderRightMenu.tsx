@@ -192,8 +192,13 @@ const HeaderRightMenu = ({ onClick }: Props) => {
         handleFilterReset={handleFilterReset}
         handleFilterApply={() => {
           if (isConnected) {
-            if (selectCategoryList.length > 0) {
+            if (selectCategoryList.length > 0 && isConnected) {
               updateFilterMutation.mutate();
+            }else{
+              Snackbar.show({
+                text: "Please check your internet connection!",
+                duration: Snackbar.LENGTH_SHORT
+              });
             }
           } else {
             Snackbar.show({

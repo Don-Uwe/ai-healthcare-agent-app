@@ -63,11 +63,11 @@ const PodcastCard = ({
       console.log(result);
     } catch (error) {
       console.log('Error sharing:', error);
-    //  Alert.alert('Error', 'Something went wrong while sharing.');
-      dispatch(showAlert({
-        title: "Error",
-        message: 'Something went wrong while sharing.'
-      }));
+      Alert.alert('Error', 'Something went wrong while sharing.');
+      // dispatch(showAlert({
+      //   title: "Error",
+      //   message: 'Something went wrong while sharing.'
+      // }));
     }
   };
 

@@ -161,25 +161,25 @@ const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
         const statusCode = error.response.status;
         switch (statusCode) {
           case 401:
-            // Alert.alert('Authentication Error', 'Unauthorized Access');
-            dispatch(
-              showAlert({
-                title: 'Authentication Error',
-                message: 'Unauthorized access',
-              }),
-            );
+             Alert.alert('Authentication Error', 'Unauthorized Access');
+            // dispatch(
+            //   showAlert({
+            //     title: 'Authentication Error',
+            //     message: 'Unauthorized access',
+            //   }),
+            // );
             break;
           case 422:
-            // Alert.alert(
-            //   'Bad Request',
-            //   'Invalid request. Please check your input.',
-            // );
-            dispatch(
-              showAlert({
-                title: 'Bad Request',
-                message: 'Invalid request. Please check your input.',
-              }),
+            Alert.alert(
+              'Bad Request',
+              'Invalid request. Please check your input.',
             );
+            // dispatch(
+            //   showAlert({
+            //     title: 'Bad Request',
+            //     message: 'Invalid request. Please check your input.',
+            //   }),
+            // );
             break;
           case 429:
             setMessages(previousMessages =>
@@ -199,52 +199,52 @@ const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
             break;
 
           case 500:
-            //Alert.alert(
-            // 'Server Error',
-            // 'An internal server error occurred. Please try again later.',
-            //);
-            dispatch(
-              showAlert({
-                title: 'Server Error',
-                message:
-                  'An internal server error occurred. Please try again later.',
-              }),
+            Alert.alert(
+            'Server Error',
+            'An internal server error occurred. Please try again later.',
             );
+            // dispatch(
+            //   showAlert({
+            //     title: 'Server Error',
+            //     message:
+            //       'An internal server error occurred. Please try again later.',
+            //   }),
+            // );
             break;
           default:
-            // Alert.alert(
-            //   'Unknown Error',
-            //   'An unexpected error occurred. Please try again later.',
-            // );
-            dispatch(
-              showAlert({
-                title: 'Unknown Error',
-                message:
-                  'An unexpected error occurred. Please try again later.',
-              }),
+            Alert.alert(
+              'Unknown Error',
+              'An unexpected error occurred. Please try again later.',
             );
+            // dispatch(
+            //   showAlert({
+            //     title: 'Unknown Error',
+            //     message:
+            //       'An unexpected error occurred. Please try again later.',
+            //   }),
+            // );
         }
       } else {
         if (error.message === 'Network Error') {
-          // Alert.alert(
-          //   'Network Error',
-          //   'Unable to connect. Please check your internet connection and try again.',
-          // );
+          Alert.alert(
+            'Network Error',
+            'Unable to connect. Please check your internet connection and try again.',
+          );
 
-          dispatch(
-            showAlert({
-              title: 'Network Error',
-              message: 'Unable to connect. Please check your internet connection and try again.',
-            }),
-          );
+          // dispatch(
+          //   showAlert({
+          //     title: 'Network Error',
+          //     message: 'Unable to connect. Please check your internet connection and try again.',
+          //   }),
+          // );
         } else {
-         // Alert.alert('Error', 'Something went wrong. Please try again.');
-         dispatch(
-            showAlert({
-              title: 'Error',
-              message: 'Something went wrong. Please try again.',
-            }),
-          );
+          Alert.alert('Error', 'Something went wrong. Please try again.');
+        //  dispatch(
+        //     showAlert({
+        //       title: 'Error',
+        //       message: 'Something went wrong. Please try again.',
+        //     }),
+        //   );
         }
       }
     },

@@ -48,12 +48,13 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
   const [imageUtil, setImageUtil] = useState<string>('');
   const [imageUtils, setImageUtils] = useState<string[]>([]);
 
-
   const webViewRef = useRef<WebView>(null);
   const {user_token, user_id} = useSelector((state: any) => state.user);
   const {suggestion, suggestionAccepted} = useSelector(
     (state: any) => state.data,
   );
+
+  const {isConnected} = useSelector((state: any) => state.network);
   const dispatch = useDispatch();
 
   const {uploadImage, loading} = useUploadImage();
@@ -66,7 +67,14 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
           style={styles.button}
           onPress={() => {
             //createPostMutation.mutate();
-            handlePostSubmit();
+            if (isConnected) {
+              handlePostSubmit();
+            } else {
+              Snackbar.show({
+                text: 'Please check your internet connection',
+                duration: Snackbar.LENGTH_SHORT,
+              });
+            }
           }}>
           <Text style={styles.textWhite}>Submit</Text>
         </TouchableOpacity>
@@ -203,8 +211,6 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
       article: string;
       recordId: string;
     }) => {
-
-      
       const response = await axios.post(
         POST_ARTICLE,
         {
@@ -310,7 +316,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
           requestId: requestId,
           edited_content: edited_content,
           pb_recordId: recordId,
-          imageUtils: imageUtils
+          imageUtils: imageUtils,
         },
         {
           headers: {
@@ -485,7 +491,14 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
         <TouchableOpacity
           style={styles.continueButton}
           onPress={() => {
-            renderSuggestionMutation.mutate();
+            if (isConnected) {
+              renderSuggestionMutation.mutate();
+            } else {
+              Snackbar.show({
+                text: 'Please check your internet connection',
+                duration: Snackbar.LENGTH_SHORT,
+              });
+            }
           }}>
           <Text style={styles.continueButtonText}>Continue</Text>
         </TouchableOpacity>

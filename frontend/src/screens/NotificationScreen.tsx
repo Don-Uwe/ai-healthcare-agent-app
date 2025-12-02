@@ -20,6 +20,7 @@ const NotificationScreen = ({navigation}) => {
   const [refreshing, setRefreshing] = React.useState(false);
   const [page, setPage] = React.useState(1);
   const [totalPages, setTotalPages] = React.useState(0);
+  const {isConnected} = useSelector((state: any) => state.network);
   const [notificationsData, setNotificationsData] =
     React.useState<Notification[]>();
 
@@ -57,7 +58,7 @@ const NotificationScreen = ({navigation}) => {
         console.error('Error fetching articles:', err);
       }
     },
-    enabled: !!user_token && !!page,
+    enabled: isConnected && !!user_token && !!page,
   });
 
   // Mark Notification as read api integration
@@ -65,13 +66,13 @@ const NotificationScreen = ({navigation}) => {
     mutationKey: ['mark-notification-as-read'],
     mutationFn: async () => {
       if (user_token === '') {
-        //Alert.alert('No token found');
-        dispatch(
-          showAlert({
-            title: 'Error!',
-            message: 'No token found',
-          }),
-        );
+        Alert.alert('No token found');
+        // dispatch(
+        //   showAlert({
+        //     title: 'Error!',
+        //     message: 'No token found',
+        //   }),
+        // );
         return;
       }
       const res = await axios.put(
@@ -110,13 +111,13 @@ const NotificationScreen = ({navigation}) => {
     mutationKey: ['delete-notification-by-id'],
     mutationFn: async ({id}: {id: string}) => {
       if (user_token === '') {
-       // Alert.alert('No token found');
-        dispatch(
-          showAlert({
-            title: 'Error!',
-            message: 'No token found',
-          }),
-        );
+        Alert.alert('No token found');
+        // dispatch(
+        //   showAlert({
+        //     title: 'Error!',
+        //     message: 'No token found',
+        //   }),
+        // );
         return;
       }
       const res = await axios.delete(
@@ -150,6 +151,7 @@ const NotificationScreen = ({navigation}) => {
   });
 
   useEffect(() => {
+    
     markNotificationMutation.mutate();
 
     return () => {};

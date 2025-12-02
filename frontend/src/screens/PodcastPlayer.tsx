@@ -33,6 +33,7 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
 
   //const [elapsedMs, setElapsedMs] = useState(0);
   const {user_token, user_id} = useSelector((state: any) => state.user);
+  const {isConnected} = useSelector((state: any) => state.network);
   const [amplitudes, setAmplitudes] = useState<number[]>([]);
   //const [currentAmplitude, setCurrentAmplitude] = useState<number>(0);
   const timerRef = useRef(null);
@@ -217,19 +218,25 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
   });
 
   const handlePostSubmit = async () => {
-    if (!filePath || !imageUtils) {
-      // Alert.alert(
-      //   'Error',
-      //   'Please record a podcast and select an image before uploading.',
-      // );
 
-      dispatch(
-        showAlert({
-          title: 'Error',
-          message:
-            'Please record a podcast and select an image before uploading.',
-        }),
+    if(isConnected){
+      Alert.alert('Please check your internet and try again!');
+      return;
+    }
+  
+    if (!filePath || !imageUtils) {
+      Alert.alert(
+        'Error',
+        'Please record a podcast and select an image before uploading.',
       );
+
+      // dispatch(
+      //   showAlert({
+      //     title: 'Error',
+      //     message:
+      //       'Please record a podcast and select an image before uploading.',
+      //   }),
+      // );
       return;
     }
 
@@ -262,25 +269,25 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
           cover_image: uploadedUrl,
         });
       } else {
-       // Alert.alert('Error', 'Could not upload the podcast. Please try again.');
-        dispatch(
-        showAlert({
-          title: 'Error',
-          message:
-            'Could not upload the podcast. Please try again.',
-        }),
-      );
+        Alert.alert('Error', 'Could not upload the podcast. Please try again.');
+        //   dispatch(
+        //   showAlert({
+        //     title: 'Error',
+        //     message:
+        //       'Could not upload the podcast. Please try again.',
+        //   }),
+        // );
       }
     } catch (err) {
       console.error('Image processing failed:', err);
-      //Alert.alert('Error', 'Could not process the images.');
-      dispatch(
-        showAlert({
-          title: 'Error',
-          message:
-            'Could not process the images.',
-        }),
-      );
+      Alert.alert('Error', 'Could not process the images.');
+      // dispatch(
+      //   showAlert({
+      //     title: 'Error',
+      //     message:
+      //       'Could not process the images.',
+      //   }),
+      // );
       await handleUpload();
     }
   };
@@ -373,6 +380,16 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
             justifyContent="center">
             <AntDesign name="cloud-upload" size={75} color={'#72D8FF'} />
           </Circle>
+          <Text
+            style={{
+              marginTop: 12,
+              color: '#72D8FF',
+              fontSize: 16,
+              fontWeight: 'bold',
+              textAlign: 'center',
+            }}>
+            Tap to upload
+          </Text>
         </YStack>
 
         {player.currentStatus.playing && (

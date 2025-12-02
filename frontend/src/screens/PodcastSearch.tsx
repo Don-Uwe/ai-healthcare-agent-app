@@ -16,6 +16,7 @@ import {Feather} from '@expo/vector-icons';
 export default function PodcastSearch({navigation}: PodcastSearchProp) {
   const [query, setQuery] = useState<string>('');
   const {user_token} = useSelector((state: any) => state.user);
+  const {isConnected} = useSelector((state: any) => state.network);
   // const [results, setResults] = useState<PodcastData>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
@@ -50,7 +51,7 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
 
       return res.data.matchPodcasts as PodcastData[];
     },
-    enabled: !!query && !!user_token,
+    enabled: isConnected && !!query && !!user_token,
   });
 
   const updateViewCountMutation = useMutation({

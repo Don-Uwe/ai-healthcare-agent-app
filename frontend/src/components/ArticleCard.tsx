@@ -42,7 +42,7 @@ import {generatePDF} from 'react-native-html-to-pdf';
 import {useSocket} from '../../SocketContext';
 import EditRequestModal from './EditRequestModal';
 import {FontAwesome} from '@expo/vector-icons';
-import {showAlert} from '../store/alertSlice';
+import Snackbar from 'react-native-snackbar';
 
 const ArticleCard = ({
   item,
@@ -56,6 +56,7 @@ const ArticleCard = ({
   source,
 }: ArticleCardProps) => {
   const {user_token, user_id} = useSelector((state: any) => state.user);
+  const {isConnected} = useSelector((state: any) => state.network);
 
   //const socket = io('http://51.20.1.81:8084');
   const dispatch = useDispatch();
@@ -84,15 +85,17 @@ const ArticleCard = ({
         subject: 'React Native Post',
       });
       console.log(result);
+      setMenuVisible(false);
     } catch (error) {
       console.log('Error sharing:', error);
-      // Alert.alert('Error', 'Something went wrong while sharing.');
-      dispatch(
-        showAlert({
-          title: 'Error!',
-          message: 'Something went wrong while sharing.',
-        }),
-      );
+      Alert.alert('Error', 'Something went wrong while sharing.');
+      // dispatch(
+      //   showAlert({
+      //     title: 'Error!',
+      //     message: 'Something went wrong while sharing.',
+      //   }),
+      // );
+      setMenuVisible(false);
     }
   };
 
@@ -117,13 +120,13 @@ const ArticleCard = ({
     mutationKey: ['update-view-count'],
     mutationFn: async () => {
       if (user_token === '') {
-        //Alert.alert('No token found');
-        dispatch(
-          showAlert({
-            title: 'Alert!',
-            message: 'No token found',
-          }),
-        );
+        Alert.alert('No token found');
+        // dispatch(
+        //   showAlert({
+        //     title: 'Alert!',
+        //     message: 'No token found',
+        //   }),
+        // );
         return;
       }
       const res = await axios.post(
@@ -146,13 +149,13 @@ const ArticleCard = ({
 
     onError: () => {
       //console.log('Update View Count Error', error);
-      // Alert.alert('Internal server error, try again!');
-      dispatch(
-        showAlert({
-          title: 'Server error',
-          message: 'Try again!',
-        }),
-      );
+      Alert.alert('Internal server error, try again!');
+      // dispatch(
+      //   showAlert({
+      //     title: 'Server error',
+      //     message: 'Try again!',
+      //   }),
+      // );
     },
   });
 
@@ -161,13 +164,13 @@ const ArticleCard = ({
 
     mutationFn: async () => {
       if (user_token === '') {
-        // Alert.alert('No token found');
-        dispatch(
-          showAlert({
-            title: 'Alert!',
-            message: 'No token found',
-          }),
-        );
+        Alert.alert('No token found');
+        // dispatch(
+        //   showAlert({
+        //     title: 'Alert!',
+        //     message: 'No token found',
+        //   }),
+        // );
         return;
       }
       const res = await axios.post(
@@ -210,14 +213,14 @@ const ArticleCard = ({
     },
 
     onError: () => {
-      // Alert.alert('Try Again!');
+      Alert.alert('Try Again!');
       //console.log('Like Error', err);
-      dispatch(
-        showAlert({
-          title: 'Server error',
-          message: 'Please try again',
-        }),
-      );
+      // dispatch(
+      //   showAlert({
+      //     title: 'Server error',
+      //     message: 'Please try again',
+      //   }),
+      // );
     },
   });
 
@@ -240,8 +243,15 @@ const ArticleCard = ({
 
   const generatePDFFromUrl = async (recordId: string, title: string) => {
     // setLoading(true);
-
+    console.log('pdf clicked');
     try {
+      if (!isConnected) {
+        Snackbar.show({
+          text: 'Please check your internet connection!',
+          duration: Snackbar.LENGTH_SHORT,
+        });
+        return;
+      }
       const response = await axios.get(`${GET_ARTICLE_CONTENT}/${recordId}`, {
         headers: {
           Authorization: `Bearer ${user_token}`,
@@ -249,18 +259,20 @@ const ArticleCard = ({
       });
 
       if (response.data.htmlContent) {
+        console.log('Response', response.data.htmlContent);
         const htmlContent = response.data.htmlContent;
-        generatePDFData(title, htmlContent);
+        await generatePDFData(title, htmlContent);
+        setMenuVisible(false);
       }
     } catch (error) {
       console.error('Error generating PDF:', error);
-      // Alert.alert('Error', 'Something went wrong while creating the PDF.');
-      dispatch(
-        showAlert({
-          title: 'Error!',
-          message: 'Something went wrong while creating the PDF.',
-        }),
-      );
+      Alert.alert('Error', 'Something went wrong while creating the PDF.');
+      // dispatch(
+      //   showAlert({
+      //     title: 'Error!',
+      //     message: 'Something went wrong while creating the PDF.',
+      //   }),
+      // );
     }
   };
 
@@ -289,40 +301,54 @@ const ArticleCard = ({
         base64: true,
       };
 
+      console.log('File flow reach upto now');
       const file = await generatePDF(options);
 
       await RNFS.moveFile(file.filePath, filePath);
+      console.log('File flow reach upto move');
 
-      //Alert.alert('PDF created successfully!', `Saved at: ${filePath}`);
-      dispatch(
-        showAlert({
-          title: 'PDF created successfully!',
-          message: `Saved at: ${filePath}`,
-        }),
-      );
+      Alert.alert('PDF created successfully!', `Saved at: ${filePath}`);
+      // dispatch(
+      //   showAlert({
+      //     title: 'PDF created successfully!',
+      //     message: `Saved at: ${filePath}`,
+      //   }),
+      // );
     } catch (error) {
       console.error('Error generating PDF:', error);
-      //Alert.alert('Error', 'Something went wrong while creating the PDF.');
-      dispatch(
-        showAlert({
-          title: 'Error!',
-          message: `Something went wrong while creating the PDF.`,
-        }),
-      );
+      Alert.alert('Error', 'Something went wrong while creating the PDF.');
+      // dispatch(
+      //   showAlert({
+      //     title: 'Error!',
+      //     message: `Something went wrong while creating the PDF.`,
+      //   }),
+      // );
     }
   };
 
   return (
     <Pressable
       onPress={() => {
-        width.value = withTiming(0, {duration: 250});
-        yValue.value = withTiming(100, {duration: 250});
-        setSelectedCardId('');
-        navigation.navigate('ArticleScreen', {
-          articleId: Number(item._id),
-          authorId: item.authorId,
-          recordId: item.pb_recordId,
-        });
+        if (isConnected) {
+          width.value = withTiming(0, {duration: 250});
+          yValue.value = withTiming(100, {duration: 250});
+          setSelectedCardId('');
+          navigation.navigate('ArticleScreen', {
+            articleId: Number(item._id),
+            authorId: item.authorId,
+            recordId: item.pb_recordId,
+          });
+        } else {
+          Snackbar.show({
+            text: 'Please connect to the internet to view this article.',
+            duration: Snackbar.LENGTH_LONG,
+          });
+          Alert.alert(
+            'No Internet 🚫',
+            'Internet connection required. Offline mode will be available in the next update.',
+            [{text: 'OK'}],
+          );
+        }
       }}>
       <View style={styles.cardContainer}>
         {/* Image Section */}
@@ -349,15 +375,16 @@ const ArticleCard = ({
             <ArticleFloatingMenu
               items={[
                 {
+                  articleId: item._id,
                   name: 'Share this post',
                   action: () => {
                     handleShare();
                     //handleAnimation();
-                    setMenuVisible(false);
                   },
                   icon: 'share-alt',
                 },
                 {
+                  articleId: item._id,
                   name: 'Repost in your feed',
                   action: () => {
                     handleRepostAction(item);
@@ -367,17 +394,28 @@ const ArticleCard = ({
                   icon: 'fork',
                 },
                 {
+                  articleId: item._id,
                   name: 'Download as pdf',
                   action: () => {
                     //handleAnimation();
-                    setMenuVisible(false);
+                    console.log('click card');
+
                     generatePDFFromUrl(item?.pb_recordId, item?.title);
                   },
                   icon: 'download',
                 },
                 {
+                  articleId: item._id,
                   name: 'Request to edit',
                   action: () => {
+                    if (!isConnected) {
+                      console.log('click improvement');
+                      Snackbar.show({
+                        text: 'Please check your internet connection',
+                        duration: Snackbar.LENGTH_SHORT,
+                      });
+                      return;
+                    }
                     setMenuVisible(false);
                     setRequestModalVisible(true);
                     console.log('modal visible', requestModalVisible);
@@ -386,6 +424,7 @@ const ArticleCard = ({
                   icon: 'edit',
                 },
                 {
+                  articleId: item._id,
                   name: 'Report this post',
                   action: () => {
                     setMenuVisible(false);
@@ -451,9 +490,16 @@ const ArticleCard = ({
             ) : (
               <TouchableOpacity
                 onPress={() => {
-                  width.value = withTiming(0, {duration: 250});
-                  yValue.value = withTiming(100, {duration: 250});
-                  updateLikeMutation.mutate();
+                  //width.value = withTiming(0, {duration: 250});
+                  //yValue.value = withTiming(100, {duration: 250});
+                  if (isConnected) {
+                    updateLikeMutation.mutate();
+                  } else {
+                    Snackbar.show({
+                      text: 'Please check your network connection',
+                      duration: Snackbar.LENGTH_SHORT,
+                    });
+                  }
                 }}
                 style={styles.likeSaveChildContainer}>
                 {item.likedUsers.some(
@@ -517,9 +563,16 @@ const ArticleCard = ({
             ) : (
               <TouchableOpacity
                 onPress={() => {
-                  width.value = withTiming(0, {duration: 250});
-                  yValue.value = withTiming(100, {duration: 250});
-                  updateSaveStatusMutation.mutate();
+                  if (isConnected) {
+                    width.value = withTiming(0, {duration: 250});
+                    yValue.value = withTiming(100, {duration: 250});
+                    updateSaveStatusMutation.mutate();
+                  } else {
+                    Snackbar.show({
+                      text: 'Please check your network connection',
+                      duration: Snackbar.LENGTH_SHORT,
+                    });
+                  }
                 }}
                 style={styles.likeSaveChildContainer}>
                 {item.savedUsers.includes(user_id) ? (

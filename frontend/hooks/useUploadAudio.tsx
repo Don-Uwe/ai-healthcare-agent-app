@@ -59,11 +59,11 @@ const useUploadAudio = () => {
 
     } catch (err) {
       console.log('Audio upload failed', err);
-     // Alert.alert('Upload failed', 'Unable to upload audio. Please check your connection.');
-     dispatch(showAlert({
-      title: "Upload falied",
-      message: 'Unable to upload audio. Please check your connection.'
-     }));
+      Alert.alert('Upload failed', 'Unable to upload audio. Please check your connection.');
+    //  dispatch(showAlert({
+    //   title: "Upload falied",
+    //   message: 'Unable to upload audio. Please check your connection.'
+    //  }));
      
       setError(true);
     } finally {

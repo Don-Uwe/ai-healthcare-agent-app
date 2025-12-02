@@ -84,6 +84,7 @@ const ReviewCard = ({
              <ArticleFloatingMenu
                 items={[
                   {
+                    articleId: item._id,
                     name: 'Request to edit',
                     action: () => {
                       handleAnimation();
