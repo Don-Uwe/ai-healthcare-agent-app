@@ -26,7 +26,7 @@ import {
   SAVE_ARTICLE,
 } from '../helper/APIUtils';
 import {PRIMARY_COLOR} from '../helper/Theme';
-import {formatCount} from '../helper/Utils';
+import {formatCount, requestStoragePermissions} from '../helper/Utils';
 import {
   useAnimatedStyle,
   useSharedValue,
@@ -242,9 +242,12 @@ const ArticleCard = ({
   };
 
   const generatePDFFromUrl = async (recordId: string, title: string) => {
-    // setLoading(true);
-    console.log('pdf clicked');
     try {
+      const storageGranted = await requestStoragePermissions();
+      if (!storageGranted) {
+        Alert.alert('Storage permission denied');
+        return;
+      }
       if (!isConnected) {
         Snackbar.show({
           text: 'Please check your internet connection!',

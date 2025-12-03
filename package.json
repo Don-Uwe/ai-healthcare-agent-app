@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "react-native-gifted-chat": "^3.0.0",
-    "react-native-keyboard-controller": "^1.19.6"
-  }
-}

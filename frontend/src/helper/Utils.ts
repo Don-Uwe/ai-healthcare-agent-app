@@ -2,7 +2,7 @@ import NetInfo from '@react-native-community/netinfo';
 import {Category, CategoryType, PodcastData} from '../type';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {GET_STORAGE_DATA} from './APIUtils';
-import {Platform} from 'react-native';
+import {Alert, PermissionsAndroid, Platform} from 'react-native';
 import RNFS from 'react-native-fs';
 
 export const checkInternetConnection = (
@@ -304,8 +304,39 @@ ${body}
 // We will ensure that, there will be no copyrighted content, or we can't give access to download
 // copyrighted content, as per ultimatehealth system
 /** Download podcast */
+export async function requestStoragePermissions() {
+  if (Platform.OS !== 'android') return true;
+
+  if (Platform.Version <= 32) {
+    // Android 12 or below
+    const granted = await PermissionsAndroid.requestMultiple([
+      PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+      PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+    ]);
+
+    return (
+      granted['android.permission.READ_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED &&
+      granted['android.permission.WRITE_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED
+    );
+  } else {
+    // Android 13+ (API 33+)
+    const granted = await PermissionsAndroid.requestMultiple([
+      PermissionsAndroid.PERMISSIONS.READ_MEDIA_AUDIO,
+      PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES, 
+      PermissionsAndroid.PERMISSIONS.READ_MEDIA_VIDEO,
+    ]);
+
+    return granted['android.permission.READ_MEDIA_AUDIO'] === PermissionsAndroid.RESULTS.GRANTED;
+  }
+}
 export const downloadAudio = async (_podcast: PodcastData) => {
+
   // Check for existing downloads
+    const storageGranted = await requestStoragePermissions();
+    if (!storageGranted) {
+      Alert.alert('Storage permission denied');
+      return;
+    }
   const existingPodcastsStr = await retrieveItem('DOWNLOAD_PODCAST_DATA');
   try {
     let existingPodcasts = existingPodcastsStr
@@ -367,6 +398,7 @@ export const downloadAudio = async (_podcast: PodcastData) => {
 };
 
 const downloadFile = async (key: string, title: string) => {
+
   const safeTitle = title.substring(0, 15).replace(/[^a-zA-Z0-9]/g, '_');
   const fileName = `${safeTitle}_${Date.now()}.mp3`;
   const downloadUrl = `${GET_STORAGE_DATA}/${key}`;
