@@ -34,7 +34,9 @@
         "POST_NOTIFICATIONS",
         "READ_MEDIA_AUDIO",
         "READ_MEDIA_IMAGES",
-        "READ_MEDIA_VIDEO"
+        "READ_MEDIA_VIDEO",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
       ],
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
@@ -44,7 +46,8 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.UltimateHealth"
+      "package": "com.anonymous.UltimateHealth",
+      "versionCode": 18
     },
     "web": {
       "output": "static",
@@ -64,7 +67,7 @@
           }
         }
       ],
-       [
+      [
         "expo-audio",
         {
           "microphonePermission": "Allow UltimateHealth to access your microphone."
@@ -74,6 +77,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "bdd3feee-d70b-4f27-9be5-33edb8b864f4"
+      }
     }
   }
 }
