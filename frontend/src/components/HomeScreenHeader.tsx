@@ -4,7 +4,7 @@ import { Feather, AntDesign, Ionicons } from '@expo/vector-icons';
 import { HomeScreenHeaderProps } from '../type';
 import { StatusBar } from 'expo-status-bar';
 
-export const HomeScreenHeader = ({
+ const HomeScreenHeader = ({
   handlePresentModalPress,
   onTextInputChange,
   onNotificationClick,

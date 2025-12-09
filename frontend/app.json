@@ -46,7 +46,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.UltimateHealth",
+      "package": "com.ultimatehealth",
       "versionCode": 19
     },
     "web": {

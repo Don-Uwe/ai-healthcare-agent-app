@@ -1,5 +1,5 @@
-import {useEffect, useState} from 'react';
-import React from 'react';
+import React, {useEffect, useState} from 'react';
+//import React from 'react';
 import {Alert, Image, useColorScheme} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {StatusBar} from 'expo-status-bar';
@@ -73,14 +73,18 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
       console.log('Failed to get FCM Token');
       return null;
     }
+    return fcmToken;
   }
 
   const validateAndSubmit = async () => {
     if (validate()) {
-      await getFCMToken();
+      const fcmToken = await getFCMToken();
       setPasswordMessage(false);
       setEmailMessage(false);
-      loginMutation.mutate();
+      //console.log("email, password", email,password)
+      loginMutation.mutate({
+        token: fcmToken ?? "not found"
+      });
     } else {
       setOutput(true);
       setPasswordMessage(false);
@@ -125,12 +129,12 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
 
   const loginMutation = useMutation({
     mutationKey: ['login'],
-    mutationFn: async () => {
-      console.log("LOGIN", LOGIN_API, email, password);
+    mutationFn: async ({token}:{token: string}) => {
+      console.log("LOGIN", LOGIN_API, email, password, token);
       const res = await axios.post(LOGIN_API, {
         email: email,
         password: password,
-        fcmToken: fcmToken,
+        fcmToken: token,
       });
 
       return res.data.user as User;
@@ -323,7 +327,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
           padding="$5"
           borderRadius="$5"
           space="$4"
-          elevation={2}>
+          elevation={1}>
           <Image
             source={require('../../../assets/images/icon.png')}
             style={{
@@ -352,7 +356,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
             </Text>
           )}
 
-          <XStack ai="center" position="relative">
+          <XStack alignItems ="center" position="relative">
             <Icon
               name="mail"
               size={22}

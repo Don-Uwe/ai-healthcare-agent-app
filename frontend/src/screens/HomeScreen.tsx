@@ -12,6 +12,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import AddIcon from '../components/AddIcon';
 import ArticleCard from '../components/ArticleCard';
+
 import HomeScreenHeader from '../components/HomeScreenHeader';
 import {
   ArticleData,
@@ -541,7 +542,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     );
   }
 
-  if (isLoading || submitEditRequestMutation.isPending || isUserLoading) {
+  if (isLoading || submitEditRequestMutation.isPending) {
     return <Loader />;
   }
 

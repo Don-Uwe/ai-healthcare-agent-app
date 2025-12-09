@@ -87,9 +87,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.anonymous.UltimateHealth'
+    namespace 'com.ultimatehealth'
     defaultConfig {
-        applicationId 'com.anonymous.UltimateHealth'
+        applicationId 'com.ultimatehealth'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 19

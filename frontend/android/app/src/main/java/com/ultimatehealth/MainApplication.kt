@@ -1,4 +1,4 @@
-package com.anonymous.UltimateHealth
+package com.ultimatehealth
 
 import android.app.Application
 import android.content.res.Configuration
