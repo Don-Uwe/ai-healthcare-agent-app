@@ -2,7 +2,7 @@
   "expo": {
     "name": "UltimateHealth",
     "slug": "UltimateHealth",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "ultimatehealth",
@@ -46,8 +46,8 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.ultimatehealth",
-      "versionCode": 19
+      "package": "com.anonymous.UltimateHealth",
+      "versionCode": 20
     },
     "web": {
       "output": "static",
