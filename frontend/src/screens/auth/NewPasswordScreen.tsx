@@ -139,15 +139,15 @@ export default function NewPasswordScreen({
   return (
    <Theme name="light">
   <SafeAreaView style={{ flex: 1, backgroundColor: '#f7f6fb' }}>
-    <YStack f={1} jc="center" ai="center" px="$4" p="$6">
+    <YStack flex={1} justifyContent="center" alignItems="center" paddingHorizontal="$4" padding="$6">
       <Card
         elevate
         bordered
         bg="white"
-        width="100%"  // Card should stretch across full width
-        maxWidth={400} // Limits the card's width (you can adjust this value)
-        height="auto" // Card's height adjusts based on content
-        p="$6" // Reduced padding for more space
+        width="100%" 
+        maxWidth={400} 
+        height="auto" 
+        p="$6" 
         br="$8"
         shadowColor="#00000020"
         ai="center"

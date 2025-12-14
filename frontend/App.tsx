@@ -27,6 +27,8 @@ import config from './tamagui.config';
 import { FirebaseProvider } from './hooks/FirebaseContext';
 import { StatusBar } from 'expo-status-bar';
 import { CustomAlertDialog } from './src/components/CustomAlert';
+import { firebaseInit } from './src/helper/firebase';
+import { useNotificationListeners } from './hooks/useNotificationListener';
 
 const queryClient = new QueryClient();
 
@@ -49,55 +51,20 @@ function App(): React.JSX.Element {
  
 
   useEffect(() => {
+    firebaseInit();
     cleanUpDownloads();
   }, []);
 
+  useNotificationListeners();
+
   useEffect(() => {
-    /*
-    PushNotification.configure({
-      onRegister: token => {
-        console.log('FCM Token:', token);
-      },
-
-      onNotification: () => {
-        // Handle notification action here
-      },
-      requestPermissions: true, // Automatically request permissions on iOS
-    });
-
-    // Create notification channels (Android specific)
-    PushNotification.createChannel(
-      {
-        channelId: 'default-channel',
-        channelName: 'Default Channel',
-        channelDescription: 'UltimateHealth Notifications',
-        playSound: true,
-        soundName: 'default',
-        importance: 4,
-        vibrate: true,
-      },
-      created => console.log(`createChannel returned '${created}'`),
-    );
-    */
+   
     const unsubscribe = messaging().onMessage(async remoteMessage => {
       console.log(
         'Foreground notification received from message:',
         remoteMessage,
       );
-      //const data = remoteMessage.data;
-      // handleNotification(data);
-
-      /*
-      PushNotification.localNotification({
-        channelId: 'default-channel',
-        title: remoteMessage?.notification?.title,
-        message: remoteMessage?.notification?.body,
-        playSound: true,
-        soundName: 'default',
-        priority: 'high',
-        visibility: 'public',
-      });
-      */
+   
     });
 
     messaging().setBackgroundMessageHandler(async remoteMessage => {
@@ -127,32 +94,7 @@ function App(): React.JSX.Element {
     };
   }, [dispatch]);
 
-  /*
-  const handleNotification = data => {
-    if (!navigationContainerRef.current) {
-      return;
-    }
-    if (data?.action === 'openPost') {
-      navigationContainerRef.current.navigate('ArticleScreen', {
-        articleId: Number(data?.postId),
-        authorId: data?.authorId.toString(),
-      });
-    } else if (data?.action === 'likePost') {
-      navigationContainerRef.current.navigate('NotificationScreen');
-    } else if (data?.action === 'commentPost') {
-      navigationContainerRef.current.navigate('CommentScreen', {
-        articleId: Number(data?.postId),
-      });
-    } else if (data?.action === 'commentLikePost') {
-      navigationContainerRef.current.navigate('NotificationScreen');
-    } else if (data?.action === 'userFollow') {
-      navigationContainerRef.current.navigate('NotificationScreen');
-    } else {
-      navigationContainerRef.current.navigate('NotificationScreen');
-    }
-  };
-  */
-
+ 
   return (
     <TamaguiProvider config={config}>
     <QueryClientProvider client={queryClient}>
