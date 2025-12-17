@@ -138,7 +138,7 @@ export default function NewPasswordScreen({
   }
   return (
    <Theme name="light">
-  <SafeAreaView style={{ flex: 1, backgroundColor: '#f7f6fb' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#f7f6fb' }}>
     <YStack flex={1} justifyContent="center" alignItems="center" paddingHorizontal="$4" padding="$6">
       <Card
         elevate
