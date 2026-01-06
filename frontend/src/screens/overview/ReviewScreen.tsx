@@ -155,7 +155,7 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
     socket.on('new-feedback', data => {
       setLoading(false);
 
-      console.log('new comment loaded', data);
+      //console.log('new comment loaded', data);
       //if (data.articleId === route.params.articleId) {
       setComments(prevComments => {
         const newComments = [data, ...prevComments];

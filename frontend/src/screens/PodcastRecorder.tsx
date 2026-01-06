@@ -21,7 +21,6 @@ import audioModule from '@/modules/audio-module';
 import {useFocusEffect} from '@react-navigation/native';
 import {Circle, Theme, XStack, YStack, Text} from 'tamagui';
 import LottieView from 'lottie-react-native';
-import {showAlert} from '../store/alertSlice';
 import {useDispatch} from 'react-redux';
 import {requestStoragePermissions} from '../helper/Utils';
 
