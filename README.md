@@ -41,12 +41,10 @@
 
 [![Download Latest APK](https://img.shields.io/badge/Download-APK-blue.svg)](https://drive.google.com/file/d/19pRw_TWU4R3wcXjffOPBy1JGBDGnlaEh/view?usp=sharing)
 
-## Expected Release Date: 1st to 7th Dec, 2025
 
 ### 🚀Update: UltimateHealth Review Status
 
-The app has now been submitted to Google for review. Since it’s a health-related application, Google may take a little extra time to complete the review.
-As soon as it goes live, I’ll share the link.
+Both app links will be shared soon.
 
 ---
 
