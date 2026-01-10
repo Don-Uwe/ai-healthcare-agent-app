@@ -1,11 +1,20 @@
 import {StyleSheet, Alert, Dimensions} from 'react-native';
 import {useCallback, useEffect, useState} from 'react';
 
-import {YStack, XStack, Text, Card, ScrollView, Image, View} from 'tamagui';
+import {
+  YStack,
+  XStack,
+  Text,
+  Card,
+  ScrollView,
+  Image,
+  View,
+  Separator,
+} from 'tamagui';
 
 import {PRIMARY_COLOR} from '../helper/Theme';
 //import {LineChart} from 'react-native-gifted-charts';
-import {LineChart} from 'react-native-chart-kit';
+import {LineChart, Barchart, BarChart} from 'react-native-chart-kit';
 import {useQuery} from '@tanstack/react-query';
 import moment from 'moment';
 import {fp, hp} from '../helper/Metric';
@@ -34,7 +43,11 @@ import Loader from './Loader';
 
 import {useFocusEffect} from '@react-navigation/native';
 import {Dropdown} from 'react-native-element-dropdown';
-import {showAlert} from '../store/alertSlice';
+
+type LineDataItem = {
+  label: string;
+  value: number;
+};
 
 interface Props {
   onArticleViewed: ({
@@ -93,37 +106,22 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
           return [];
         }
         if (user_token === '') {
-         Alert.alert('No token found');
-          // dispatch(
-          //   showAlert({
-          //     title: 'Alert!',
-          //     message: 'No token found',
-          //   }),
-          // );
+          Alert.alert('No token found');
+
           return [];
         }
         if (!userId) {
           if (others) {
             // user id not found for others profile
-             Alert.alert('No user id found');
-            // dispatch(
-            //   showAlert({
-            //     title: 'Alert!',
-            //     message: 'No user id found',
-            //   }),
-            // );
+            Alert.alert('No user id found');
+
             return [];
           }
         }
         if (user_id === '' && !others) {
           // user id not found for own profile
-           Alert.alert('No user id found');
-          // dispatch(
-          //   showAlert({
-          //     title: 'Alert!',
-          //     message: 'No user  id found',
-          //   }),
-          // );
+          Alert.alert('No user id found');
+
           return [];
         }
 
@@ -142,7 +140,9 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
         console.error('Error fetching articles reads monthly:', err);
       }
     },
-    enabled: !!isConnected && !!(user_token && selectedMonth !== -1 && (userId || !others)),
+    enabled:
+      !!isConnected &&
+      !!(user_token && selectedMonth !== -1 && (userId || !others)),
   });
 
   const {data: monthlyWriteReport, refetch: refetchMonthWriteReport} = useQuery(
@@ -178,7 +178,7 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
           }
           if (user_id === '' && !others) {
             // user id not found for own profile
-             Alert.alert('No user id found');
+            Alert.alert('No user id found');
             // dispatch(
             //   showAlert({
             //     title: 'Alert!',
@@ -203,7 +203,9 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
           console.error('Error fetching articles writes monthly:', err);
         }
       },
-      enabled: !!isConnected && !!(user_token && selectedMonth !== -1 && (userId || !others)),
+      enabled:
+        !!isConnected &&
+        !!(user_token && selectedMonth !== -1 && (userId || !others)),
     },
   );
 
@@ -216,7 +218,7 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
           return [];
         }
         if (user_token === '') {
-           Alert.alert('No token found');
+          Alert.alert('No token found');
           // dispatch(
           //   showAlert({
           //     title: 'Alert!',
@@ -228,7 +230,7 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
         if (!userId) {
           if (others) {
             // user id not found for others profile
-              Alert.alert('No user id found');
+            Alert.alert('No user id found');
             // dispatch(
             //   showAlert({
             //     title: 'Alert!',
@@ -264,7 +266,9 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
         console.error('Error fetching articles reads yearly:', err);
       }
     },
-    enabled: !!isConnected && !!(user_token && selectedYear !== -1 && (userId || !others)),
+    enabled:
+      !!isConnected &&
+      !!(user_token && selectedYear !== -1 && (userId || !others)),
   });
 
   // GET YEARLY WRITE REPORT
@@ -278,7 +282,7 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
             return [];
           }
           if (user_token === '') {
-             Alert.alert('No token found');
+            Alert.alert('No token found');
             // dispatch(
             //   showAlert({
             //     title: 'Alert!',
@@ -290,7 +294,7 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
           if (!userId) {
             if (others) {
               // user id not found for others profile
-               Alert.alert('No user id found');
+              Alert.alert('No user id found');
               // dispatch(
               //   showAlert({
               //     title: 'Alert!',
@@ -328,7 +332,9 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
         }
       },
 
-      enabled: !!isConnected && !!(user_token && selectedYear !== -1 && (userId || !others)),
+      enabled:
+        !!isConnected &&
+        !!(user_token && selectedYear !== -1 && (userId || !others)),
     },
   );
 
@@ -338,7 +344,7 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
     queryFn: async () => {
       try {
         if (user_token === '') {
-            Alert.alert('No token found');
+          Alert.alert('No token found');
           // dispatch(
           //   showAlert({
           //     title: 'Alert!',
@@ -350,7 +356,7 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
         if (!userId) {
           if (others) {
             // user id not found for others profile
-             Alert.alert('No user id found');
+            Alert.alert('No user id found');
             // dispatch(
             //   showAlert({
             //     title: 'Alert!',
@@ -362,7 +368,7 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
         }
         if (user_id === '' && !others) {
           // user id not found for own profile
-           Alert.alert('No user id found');
+          Alert.alert('No user id found');
           // dispatch(
           //   showAlert({
           //     title: 'Alert!',
@@ -387,7 +393,7 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
         console.error('Error fetching articles:', err);
       }
     },
-    enabled: !!isConnected && !!user_token
+    enabled: !!isConnected && !!user_token,
   });
 
   // GET USER STATUS FOR LIKE AND VIEW COUNT
@@ -397,7 +403,7 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
     queryFn: async () => {
       try {
         if (user_token === '') {
-           Alert.alert('No token found');
+          Alert.alert('No token found');
           // dispatch(
           //   showAlert({
           //     title: 'Alert!',
@@ -409,7 +415,7 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
         if (!userId) {
           if (others) {
             // user id not found for others profile
-             Alert.alert('No user id found');
+            Alert.alert('No user id found');
             // dispatch(
             //   showAlert({
             //     title: 'Alert!',
@@ -447,7 +453,7 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
         console.error('Error fetching articles:', err);
       }
     },
-    enabled: !!isConnected && !!user_token
+    enabled: !!isConnected && !!user_token,
   });
 
   // GET TOTAL READ STATUS
@@ -457,7 +463,7 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
     queryFn: async () => {
       try {
         if (user_token === '') {
-           Alert.alert('No token found');
+          Alert.alert('No token found');
           // dispatch(
           //   showAlert({
           //     title: 'Alert!',
@@ -505,7 +511,7 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
         console.error('Error fetching articles:', err);
       }
     },
-    enabled : !!isConnected && !!user_token
+    enabled: !!isConnected && !!user_token,
   });
 
   // GET TOTAL WRITE STATUS
@@ -526,10 +532,10 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
           if (others) {
             // user id not found for others profile
             Alert.alert('No user id found');
-          //  dispatch(showAlert({
-          //      title: "Alert!",
-          //      message: 'No user id found'
-          //     }));
+            //  dispatch(showAlert({
+            //      title: "Alert!",
+            //      message: 'No user id found'
+            //     }));
             return '';
           }
         }
@@ -559,7 +565,7 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
         console.error('Error fetching articles:', err);
       }
     },
-    enabled: !!isConnected && !!user_token
+    enabled: !!isConnected && !!user_token,
   });
 
   useFocusEffect(
@@ -675,386 +681,226 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
     return '';
   };
 
-  // const screenWidth = Dimensions.get('window').width;
-
-  // return (
-  //   <ScrollView
-  //     style={{
-  //       flex: 1,
-  //       marginBottom: 120,
-  //       backgroundColor: ON_PRIMARY_COLOR,
-  //     }}>
-
-  //     {/**
-  //      *   {selectedDay !== -1 && (
-  //       <View style={{marginTop: 10}}>
-  //         <LineChart data={chartData} areaChart />
-  //       </View>
-  //     )}
-  //      */}
-
-  //     {selectedMonth !== -1 && (
-  //       <ScrollView horizontal>
-  //         <LineChart
-  //           data={{
-  //             labels:
-  //               userState === 0
-  //                 ? processLabels(monthlyReadReport)
-  //                 : processLabels(monthlyWriteReport),
-
-  //             datasets: [
-  //               {
-  //                 data:
-  //                   userState === 0
-  //                     ? processData(monthlyReadReport)
-  //                     : processData(monthlyWriteReport),
-  //                 strokeWidth: 1,
-  //                 color: (opacity = 1) => `rgba(33, 150, 243, ${opacity})`,
-  //               },
-  //             ],
-  //           }}
-  //           width={Math.max(
-  //             (userState === 0
-  //               ? monthlyReadReport? monthlyReadReport?.length : 0
-  //               : monthlyWriteReport? monthlyWriteReport?.length : 0) * 40,
-  //             300,
-  //           )} // Fallback width
-  //           height={350}
-  //           chartConfig={{
-  //             backgroundGradientFrom: ON_PRIMARY_COLOR,
-  //             backgroundGradientTo: ON_PRIMARY_COLOR,
-  //             color: (opacity = 1) => `rgba(0,0,0,${opacity})`,
-  //             labelColor: () => '#999',
-  //             formatYLabel: y => parseInt(y).toString(),
-  //             propsForDots: {
-  //               r: '3',
-  //               strokeWidth: '2',
-  //               stroke: PRIMARY_COLOR,
-  //             },
-  //           }}
-  //           bezier
-  //           withInnerLines={false}
-  //           style={{
-  //             marginVertical: 2,
-  //             borderRadius: 12,
-  //           }}
-  //         />
-  //       </ScrollView>
-  //     )}
-
-  //     {selectedYear !== -1 && (
-  //       <ScrollView horizontal>
-  //         <LineChart
-  //           data={{
-  //             labels:
-  //               userState === 0
-  //                 ? processLabels(yearlyReadReport)
-  //                 : processLabels(yearlyWriteReport),
-
-  //             datasets: [
-  //               {
-  //                 data:
-  //                   userState === 0
-  //                     ? processData(yearlyReadReport)
-  //                     : processData(yearlyWriteReport),
-  //                 strokeWidth: 1,
-  //                 color: (opacity = 1) => `rgba(33, 150, 243, ${opacity})`,
-  //               },
-  //             ],
-  //           }}
-  //           width={Math.max(
-  //             (userState === 0
-  //               ? yearlyReadReport? yearlyReadReport?.length : 0
-  //               : yearlyWriteReport? yearlyWriteReport?.length : 0) * 40,
-  //             300,
-  //           )} // Fallback width
-  //           height={350}
-  //           chartConfig={{
-  //             backgroundGradientFrom: ON_PRIMARY_COLOR,
-  //             backgroundGradientTo: ON_PRIMARY_COLOR,
-  //             color: (opacity = 1) => `rgba(0,0,0,${opacity})`,
-  //             labelColor: () => '#999',
-  //             formatYLabel: y => parseInt(y).toString(),
-  //             propsForDots: {
-  //               r: '3',
-  //               strokeWidth: '2',
-  //               stroke: PRIMARY_COLOR,
-  //             },
-  //           }}
-  //           bezier
-  //           withInnerLines={false}
-  //           style={{
-  //             marginVertical: 2,
-  //             borderRadius: 12,
-  //           }}
-  //         />
-  //       </ScrollView>
-  //     )}
-
-  //     {
-  //       /**
-  //        * <View style={{marginTop: 10}}>
-  //         <LineChart
-  //           data={
-  //             userState === 0
-  //               ? yearlyReadReport?.map(item => ({
-  //                   value: item.value,
-  //                   label: moment(item.month).format('MMM'),
-  //                 }))
-  //               : yearlyWriteReport?.map(item => ({
-  //                   value: item.value,
-  //                   label: moment(item.month).format('MMM'),
-  //                 }))
-  //           }
-  //           // isAnimated={true}
-  //           // animationDuration={500}
-  //           minYValue={0}
-  //           // minXValue={0}
-  //           areaChart
-  //         />
-  //       </View>
-  //        */
-  //     }
-
-  //     {/**
-  //        *
-  //        * <Image
-  //       source={{
-  //         uri: 'https://i.ibb.co/T2WNVJZ/Whats-App-Image-2024-07-14-at-12-46-02-AM-1.jpg',
-  //       }}
-  //       style={{width: '95%', height: 600, resizeMode: 'contain'}}
-  //     />
-  //        */}
-
-  //     <View
-  //       style={{
-  //         height: 0.8,
-  //         width: '96%',
-  //         margin: 10,
-  //         backgroundColor: '#c1c1c1',
-  //       }}
-  //     />
-
-  //     {/**
-  //      *
-  //      *  <View style={styles.box}>
-  //         <Text style={styles.titleText}> Total Reads</Text>
-
-  //         <Text style={styles.valueText}>{readStat?.progress}%</Text>
-
-  //         <Progress.Bar
-  //           progress={readStat?.progress ? readStat?.progress : 0}
-  //           width={140}
-  //           borderColor={PRIMARY_COLOR}
-  //           borderWidth={1}
-  //           color={
-  //             readStat?.progress
-  //               ? readStat?.progress < 0.4
-  //                 ? colorList[0]
-  //                 : readStat?.progress < 0.8
-  //                 ? colorList[1]
-  //                 : colorList[2]
-  //               : 'black'
-  //           }
-  //           borderRadius={4}
-  //           style={{marginTop: 2}}
-  //         />
-  //       </View>
-  //      *    <View style={styles.box}>
-  //         <Text style={styles.titleText}> Total Writes</Text>
-
-  //         <Text style={styles.valueText}>{writeStat?.progress}%</Text>
-
-  //         <Progress.Bar
-  //           progress={writeStat?.progress ? writeStat?.progress : 0}
-  //           width={140}
-  //           borderColor={PRIMARY_COLOR}
-  //           borderWidth={1}
-  //           color={
-  //             writeStat?.progress
-  //               ? writeStat?.progress < 0.4
-  //                 ? colorList[0]
-  //                 : writeStat?.progress < 0.8
-  //                 ? colorList[1]
-  //                 : colorList[2]
-  //               : 'black'
-  //           }
-  //           borderRadius={4}
-  //           style={{marginTop: 4}}
-  //         />
-  //       </View>
-
-  //       <View style={styles.box}>
-  //         <Text style={styles.titleText}> Total Likes</Text>
-  //         <Text style={{...styles.valueText, marginStart: 8}}>
-  //           {likeViewStat?.likeProgress}%
-  //         </Text>
-
-  //         <Progress.Bar
-  //           progress={
-  //             likeViewStat?.likeProgress ? likeViewStat?.likeProgress : 0
-  //           }
-  //           width={140}
-  //           borderColor={PRIMARY_COLOR}
-  //           borderWidth={1}
-  //           color={
-  //             likeViewStat?.likeProgress
-  //               ? likeViewStat?.likeProgress < 0.4
-  //                 ? colorList[0]
-  //                 : likeViewStat?.likeProgress < 0.8
-  //                 ? colorList[1]
-  //                 : colorList[2]
-  //               : 'black'
-  //           }
-  //           borderRadius={4}
-  //           style={{marginTop: 4}}
-  //         />
-  //       </View>
-
-  //       <View style={styles.box}>
-  //         <Text style={styles.titleText}> Total Views</Text>
-
-  //         <Text style={{...styles.valueText, marginStart: 1}}>
-  //           {likeViewStat?.viewProgress}%
-  //         </Text>
-
-  //         <Progress.Bar
-  //           progress={
-  //             likeViewStat?.viewProgress ? likeViewStat.viewProgress : 0
-  //           }
-  //           width={140}
-  //           borderColor={PRIMARY_COLOR}
-  //           borderWidth={1}
-  //           color={
-  //             likeViewStat?.viewProgress
-  //               ? likeViewStat?.viewProgress < 0.4
-  //                 ? colorList[0]
-  //                 : likeViewStat?.viewProgress < 0.8
-  //                 ? colorList[1]
-  //                 : colorList[2]
-  //               : 'black'
-  //           }
-  //           borderRadius={4}
-  //           style={{marginTop: 4}}
-  //         />
-  //       </View>
-  //     </View>
-
-  //     <View
-  //       style={{
-  //         height: 0.8,
-  //         width: '96%',
-  //         margin: 10,
-  //         backgroundColor: '#c1c1c1',
-  //       }}
-  //     />
-  //      */}
-
-  //     {others && (
-  //       <>
-  //         <Text
-  //           style={{
-  //             ...styles.btnText,
-  //             marginVertical: 10,
-  //             fontWeight: '700',
-  //             fontSize: 17,
-  //             marginStart: 10,
-  //           }}>
-  //           Most viewed articles
-  //         </Text>
-  //         {article &&
-  //           article.map((item, index) => {
-  //             return (
-  //               <Pressable
-  //                 key={index}
-  //                 onPress={() => {
-  //                   onArticleViewed({
-  //                     articleId: Number(item._id),
-  //                     authorId: item.authorId ?? '',
-  //                     recordId: item.pb_recordId,
-  //                   });
-  //                 }}>
-  //                 <View style={styles.cardContainer}>
-  //                   {item?.imageUtils[0] && item?.imageUtils[0].length !== 0 ? (
-  //                     <Image
-  //                       source={{
-  //                         uri: item?.imageUtils[0].startsWith('http')
-  //                           ? item?.imageUtils[0]
-  //                           : `${GET_IMAGE}/${item?.imageUtils[0]}`,
-  //                       }}
-  //                       style={styles.image}
-  //                     />
-  //                   ) : (
-  //                     <Image
-  //                       source={require('../../assets/images/no_results.jpg')}
-  //                       style={styles.image}
-  //                     />
-  //                   )}
-
-  //                   <View style={styles.textContainer}>
-  //                     <Text style={styles.footerText}>
-  //                       {item?.tags.map(tag => tag.name).join(' | ')}
-  //                     </Text>
-  //                     <Text style={styles.title}>{item?.title}</Text>
-
-  //                     <Text style={{...styles.footerText, marginBottom: 3}}>
-  //                       {item?.viewUsers
-  //                         ? item?.viewUsers.length > 1
-  //                           ? `${formatCount(item?.viewUsers.length)} views`
-  //                           : `${item?.viewUsers.length} view`
-  //                         : '0 view'}
-  //                     </Text>
-  //                     <Text style={styles.footerText}>
-  //                       Last updated: {''}
-  //                       {moment(new Date(item?.lastUpdated)).format(
-  //                         'DD/MM/YYYY',
-  //                       )}
-  //                     </Text>
-  //                   </View>
-  //                 </View>
-  //               </Pressable>
-  //             );
-  //           })}
-  //       </>
-  //     )}
-  //   </ScrollView>
-  // );
   const screenWidth = Dimensions.get('window').width;
+
+  const dayToWeekData = (data: MonthStatus[]): LineDataItem[] => {
+    if (!data || !Array.isArray(data) || data.length === 0) return [];
+
+    const monthlyData = data.map(item => ({
+      value: item.value,
+      label: item.date.substring(8),
+    }));
+    const weeks: LineDataItem[] = [];
+    let weekIndex = 1;
+
+    for (let i = 0; i < monthlyData.length; i += 7) {
+      const chunk = monthlyData.slice(i, i + 7);
+
+      const weekSum = chunk.reduce(
+        (sum, day) => sum + Number(day.value || 0),
+        0,
+      );
+
+      weeks.push({
+        label: `W${weekIndex}`,
+        value: weekSum,
+      });
+
+      weekIndex++;
+    }
+
+    return weeks;
+  };
+
+  const MONTH_LABELS = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+
+  const groupYearlyData = (data: YearStatus[]) => {
+    const map = new Map<string, number>();
+
+    data.forEach(item => {
+      map.set(item.month.toString(), item.value || 0);
+    });
+
+    const normalized = MONTH_LABELS.map((month, index) => ({
+      label: month,
+      value: map.get(month) ?? map.get((index + 1).toString()) ?? 0,
+    }));
+
+    return [
+      normalized.slice(0, 3), // Q1
+      normalized.slice(3, 6), // Q2
+      normalized.slice(6, 9), // Q3
+      normalized.slice(9, 12), // Q4
+    ];
+  };
+
+  const YearlyChartSection = () => {
+    const yearlyData =
+      userState === 0 ? yearlyReadReport ?? [] : yearlyWriteReport ?? [];
+    const groupedData = groupYearlyData(yearlyData);
+
+    const CHART_HORIZONTAL_PADDING = 32;
+    const chartWidth = screenWidth - CHART_HORIZONTAL_PADDING - 16;
+
+    const QUARTER_LABELS = ['Jan – Mar', 'Apr – Jun', 'Jul – Sep', 'Oct – Dec'];
+
+    return (
+      <ScrollView
+        contentContainerStyle={{
+          paddingHorizontal: 2,
+          paddingBottom: 32,
+          // backgroundColor: '#fff',
+        }}
+        showsVerticalScrollIndicator={false}>
+        <Card
+          padding={16}
+          borderRadius={16}
+          backgroundColor="#fff"
+          overflow="hidden"
+          bordered
+          borderWidth={0.6}>
+          <Text
+            fontSize={15}
+            color="$gray700"
+            textAlign="center"
+            fontWeight={'700'}
+            marginBottom={12}>
+            {getTrendMessage()}
+          </Text>
+          {groupedData.map((group, index) => {
+            const isLast = index === groupedData.length - 1;
+
+            return (
+              <View key={index}>
+                {/* Quarter Title */}
+                <Text
+                  fontSize={15}
+                  fontWeight="600"
+                  color="#000"
+                  marginBottom={8}>
+                  {QUARTER_LABELS[index]}
+                </Text>
+
+                {/* Chart */}
+                <View>
+                  <BarChart
+                    yAxisLabel=""
+                    yAxisSuffix=""
+                    width={chartWidth}
+                    height={170}
+                    fromZero
+                    withInnerLines={false}
+                    style={{
+                      marginLeft: -8,
+                      backgroundColor: '#fff',
+                    }}
+                    chartConfig={{
+                      backgroundGradientFrom: '#fff',
+                      backgroundGradientTo: '#fff',
+                      decimalPlaces: 1,
+                      formatYLabel: y => Number(y).toFixed(1),
+                      color: () => PRIMARY_COLOR,
+                      labelColor: () => '#9CA3AF',
+                      barPercentage: 0.5,
+                      propsForBackgroundLines: {strokeWidth: 0},
+                    }}
+                    data={{
+                      labels: group.map(i => i.label),
+                      datasets: [{data: group.map(i => i.value)}],
+                    }}
+                  />
+                </View>
+
+                {/* Separator only between groups */}
+                {!isLast && <Separator marginVertical={20} opacity={0.6} />}
+              </View>
+            );
+          })}
+        </Card>
+      </ScrollView>
+    );
+  };
+
+  const WeeklyChartSection = () => {
+    const rawMonthlyData =
+      userState === 0 ? monthlyReadReport ?? [] : monthlyWriteReport ?? [];
+
+    const weeklyData = dayToWeekData(rawMonthlyData);
+
+    const labels = weeklyData.map(w => w.label);
+    const values = weeklyData.map(w => w.value);
+
+    return (
+      <Card
+        padding={18}
+        borderRadius={16}
+        backgroundColor="#fff"
+        overflow="hidden"
+        bordered
+        borderWidth={0.6}>
+        <Text
+          fontSize={15}
+          color="$gray700"
+          fontWeight={'700'}
+          textAlign="center"
+          marginBottom={12}>
+          {getTrendMessage()}
+        </Text>
+
+        <BarChart
+          yAxisLabel=""
+          yAxisSuffix=""
+          data={{labels, datasets: [{data: values}]}}
+          width={screenWidth - 64}
+          height={220}
+          fromZero
+          withInnerLines={false}
+          showValuesOnTopOfBars={false}
+          style={{marginLeft: -8}}
+          chartConfig={{
+            backgroundGradientFrom: '#fff',
+            backgroundGradientTo: '#fff',
+            decimalPlaces: 1,
+            formatYLabel: y => Number(y).toFixed(1),
+            color: () => PRIMARY_COLOR,
+            labelColor: () => '#9CA3AF',
+            barPercentage: 0.45,
+            propsForBackgroundLines: {strokeWidth: 0},
+          }}
+        />
+      </Card>
+    );
+  };
+
+  const BarChartSection = () => {
+    return (
+      <View background="$background" paddingHorizontal="$4" marginTop="$6">
+        <Text fontSize={19} fontWeight="700" marginBottom="$3">
+              {userState === 0 ? 'Reading Trend' : 'Writing Trend'}
+            </Text>
+        {selectedMonth !== -1 ? <WeeklyChartSection /> : <YearlyChartSection />}
+      </View>
+    );
+  };
 
   return (
     <ScrollView flex={1} backgroundColor="$background" paddingBottom="$12">
       {/* Filters */}
       <YStack paddingHorizontal="$2" marginTop="$4" gap="$3">
         {/* Read / Write */}
-        {/* <View style={styles.rowContainer}>
-          <Dropdown
-            style={styles.dropdown}
-            //placeholderStyle={styles.placeholderStyle}
-            itemTextStyle={{
-              fontSize: 17,
-              fontWeight: '700',
-            }}
-            data={[
-              {label: 'Read', value: 0},
-              {label: 'Write', value: 1},
-            ]}
-            labelField="label"
-            valueField="value"
-            //placeholder={!isFocus ? 'Select your role' : '...'}
-            value={userState}
-            onFocus={() => setIsFocus(true)}
-            onBlur={() => setIsFocus(false)}
-            onChange={item => {
-              setUserState(item.value);
-              setIsFocus(false);
-            }}
-            placeholder={undefined}
-          />
-
-          <Text style={styles.btnText}>
-            {moment(new Date()).format('DD MMM, YYYY')}
-          </Text>
-        </View> */}
 
         {/* Read / Write Toggle Buttons */}
         <XStack
@@ -1181,160 +1027,13 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
 
       {/* Chart Section */}
       {(selectedMonth !== -1 || selectedYear !== -1) && (
-        <ScrollView horizontal marginTop="$5" px="$3">
-          <Card
-            //elevate
-            padding="$4"
-            borderRadius="$4"
-            backgroundColor="$background"
-            bordered
-            // boc="$color3"
-            borderWidth={0.6}>
-            <Text fontSize={19} fontWeight="700" marginBottom="$3">
-              {userState === 0 ? 'Reading Trend' : 'Writing Trend'}
-            </Text>
+     
+         <>
+            
 
-            <Text fontSize={14} color="#6A6A6A" marginBottom="$3">
-              {getTrendMessage()}
-            </Text>
-
-            {/* <LineChart
-              data={{
-                labels:
-                  userState === 0
-                    ? processLabels(
-                        selectedYear !== -1
-                          ? yearlyReadReport
-                          : monthlyReadReport,
-                      )
-                    : processLabels(
-                        selectedYear !== -1
-                          ? yearlyWriteReport
-                          : monthlyWriteReport,
-                      ),
-
-                datasets: [
-                  {
-                    data:
-                      userState === 0
-                        ? processData(
-                            selectedYear !== -1
-                              ? yearlyReadReport
-                              : monthlyReadReport,
-                          )
-                        : processData(
-                            selectedYear !== -1
-                              ? yearlyWriteReport
-                              : monthlyWriteReport,
-                          ),
-                  },
-                ],
-              }}
-              width={screenWidth - 40}
-              // width={Math.max(
-              //   ((userState === 0
-              //     ? selectedYear !== -1
-              //       ? yearlyReadReport?.length
-              //       : monthlyReadReport?.length
-              //     : selectedYear !== -1
-              //     ? yearlyWriteReport?.length
-              //     : monthlyWriteReport?.length) ?? 0) * 40,
-              //   330,
-              // )}
-                bezier={false}
-              height={280}
-              chartConfig={{
-                backgroundGradientFrom: '#ffffff',
-                backgroundGradientTo: '#ffffff',
-                color: o => `rgba(0,0,0,${o})`,
-                propsForDots: {
-                  r: '4',
-                  strokeWidth: '1',
-                  stroke: '#6A85F1',
-                },
-              }}
-              bezier
-              withInnerLines={false}
-            /> */}
-
-            <LineChart
-              data={{
-                labels: processLabels(
-                  selectedYear !== -1
-                    ? userState === 0
-                      ? yearlyReadReport
-                      : yearlyWriteReport
-                    : userState === 0
-                    ? monthlyReadReport
-                    : monthlyWriteReport,
-                ),
-
-                datasets: [
-                  {
-                    data: processData(
-                      selectedYear !== -1
-                        ? userState === 0
-                          ? yearlyReadReport
-                          : yearlyWriteReport
-                        : userState === 0
-                        ? monthlyReadReport
-                        : monthlyWriteReport,
-                    ),
-                    strokeWidth: 2,
-                    color: () => '#6A85F1',
-                  },
-                ],
-              }}
-              // width={Math.max(
-              //   ((userState === 0
-              //     ? selectedYear !== -1
-              //       ? yearlyReadReport?.length
-              //       : monthlyReadReport?.length
-              //     : selectedYear !== -1
-              //     ? yearlyWriteReport?.length
-              //     : monthlyWriteReport?.length) ?? 0) * 40,
-              //   330,
-              // )}
-              width={screenWidth - 40}
-              height={350}
-              withInnerLines={false}
-              withOuterLines={false}
-              withHorizontalLabels={true}
-              withVerticalLabels={false}
-              bezier={false}
-              yAxisSuffix=""
-              //yAxisInterval={1}
-              chartConfig={{
-                backgroundColor: '#fff',
-                backgroundGradientFrom: '#fff',
-                backgroundGradientTo: '#fff',
-                // decimalPlaces: 0,
-                color: opacity => `rgba(0,0,0,${opacity})`,
-                labelColor: () => '#6A6A6A',
-                propsForDots: {
-                  r: '5',
-                  strokeWidth: '2',
-                  stroke: '#6A85F1',
-                  fill: '#6A85F1',
-                },
-              }}
-              renderDotContent={({x, y, index, indexData}) => (
-                <Text
-                  key={index}
-                  style={{
-                    position: 'absolute',
-                    top: y - 20,
-                    left: x - 10,
-                    fontSize: 12,
-                    fontWeight: '600',
-                    color: '#000',
-                  }}>
-                  {indexData}
-                </Text>
-              )}
-            />
-          </Card>
-        </ScrollView>
+            <BarChartSection />
+          </>   
+      
       )}
 
       {/* Most Viewed */}
