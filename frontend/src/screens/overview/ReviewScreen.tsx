@@ -39,17 +39,16 @@ import ReviewItem from '../../components/ReviewItem';
 //import {Comment} from '../../type';
 import {io} from 'socket.io-client';
 import {Button, Spinner, Text, YStack, TextArea} from 'tamagui';
+import AutoHeightWebView from '@brown-bear/react-native-autoheight-webview';
 
 const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
   const insets = useSafeAreaInsets();
   const {articleId, authorId, recordId} = route.params;
   const {user_token} = useSelector((state: any) => state.user);
-  const RichText = useRef(null);
+
   const [feedback, setFeedback] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [webviewHeight, setWebViewHeight] = useState(0);
-
-  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} = Dimensions.get('window');
 
   //const scalePerChar = SCREEN_HEIGHT * 0.002;
 
@@ -60,7 +59,6 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
 
   const flatListRef = useRef<FlatList<Comment>>(null);
 
-  const webViewRef = useRef<WebView>(null);
 
   const {data: article, refetch} = useQuery({
     queryKey: ['get-article-by-id'],
@@ -75,9 +73,6 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
       return response.data.article as ArticleData;
     },
   });
-
-  // console.log("Comment url", `${LOAD_REVIEW_COMMENTS}?articleId=${articleId}`);
-  // console.log("user token", user_token);
 
   const {isLoading} = useQuery({
     queryKey: ['get-review-comments'],
@@ -184,58 +179,6 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
     }
   }, [htmlContent]);
 
-  // console.log('author id', authorId);
-
-  const cssCode = `
-    const style = document.createElement('style');
-    style.innerHTML = \`
-      body {
-        font-size: 46px;
-        line-height: 1.5;
-        color: #333;
-      }
-    \`;
-    document.head.appendChild(style);
-  `;
-
-  const scalePerChar = 1 / 1000;
-  const maxMultiplier = 4.3;
-  const baseMultiplier = 0.8;
-
-  const minHeight = useMemo(() => {
-    const content = htmlContent ?? '';
-    const scaleFactor = Math.min(content.length * scalePerChar, maxMultiplier);
-    const scaledHeight = SCREEN_HEIGHT * (baseMultiplier + scaleFactor);
-    const cappedHeight = Math.min(
-      content.length,
-      Math.min(scaledHeight, SCREEN_HEIGHT * 6),
-    );
-    return cappedHeight;
-  }, [SCREEN_HEIGHT, htmlContent, scalePerChar]);
-
-  //const contentSource = article?.content?.endsWith('.html')
-  //   ? {uri: `${GET_STORAGE_DATA}/${article.content}`}
-  //   : {html: article?.content};
-
-  /*
-  const getContentLength = async contentSource => {
-    if (contentSource.uri) {
-      try {
-        const response = await fetch(contentSource.uri);
-        const content = await response.text();
-        return content.length - 4000;
-      } catch (error) {
-        console.error('Error fetching URI:', error);
-        return 0;
-      }
-    } else if (contentSource.html) {
-      return contentSource.html.length;
-    }
-    return 0; // Return 0 if no valid content source
-  };
-  */
-
-  console.log('Image utils', `${GET_IMAGE}/${article?.imageUtils[0]}`);
 
   return (
     <View style={styles.container}>
@@ -290,7 +233,7 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
             </>
           )}
           <View style={styles.descriptionContainer}>
-            <WebView
+            {/* <WebView
               style={{
                 padding: 7,
                 //width: '99%',
@@ -304,6 +247,26 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
               injectedJavaScript={cssCode}
               source={{html: htmlContent ? htmlContent : noDataHtml}}
               textZoom={100}
+            /> */}
+
+             <AutoHeightWebView
+              style={{
+                width: Dimensions.get('window').width - 15,
+                marginTop: 35,
+              }}
+              customStyle={`* { font-family: 'Times New Roman'; } p { font-size: 16px; }`}
+              onSizeUpdated={size => console.log(size.height)}
+              files={[
+                {
+                  href: 'cssfileaddress',
+                  type: 'text/css',
+                  rel: 'stylesheet',
+                },
+              ]}
+              originWhitelist={['*']}
+              source={{html: htmlContent ?? noDataHtml}}
+              scalesPageToFit={true}
+              viewportContent={'width=device-width, user-scalable=no'}
             />
           </View>
         </View>

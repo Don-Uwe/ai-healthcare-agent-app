@@ -35,6 +35,7 @@ import {setUserHandle} from '../../store/UserSlice';
 import {StatusEnum} from '../../helper/Utils';
 import ReviewItem from '../../components/ReviewItem';
 import {Button, Spinner, TextArea, YStack, Text} from 'tamagui';
+import AutoHeightWebView from '@brown-bear/react-native-autoheight-webview';
 
 const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
   const insets = useSafeAreaInsets();
@@ -42,8 +43,7 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
   const {user_token, user_handle} = useSelector((state: any) => state.user);
   const [feedback, setFeedback] = useState('');
   const [webviewHeight, setWebViewHeight] = useState(0);
-  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} = Dimensions.get('window');
-  const baseHeight = SCREEN_HEIGHT * 0.1;
+
   const [loading, setLoading] = useState(false);
 
   const socket = useSocket();
@@ -53,7 +53,6 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
 
   const flatListRef = useRef<FlatList<Comment>>(null);
 
-  const webViewRef = useRef<WebView>(null);
 
   // editrequest
   const {data: improvement} = useQuery({
@@ -180,32 +179,6 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
 
   // console.log('author id', authorId);
 
-  const cssCode = `
-    const style = document.createElement('style');
-    style.innerHTML = \`
-      body {
-        font-size: 46px;
-        line-height: 1.5;
-        color: #333;
-      }
-    \`;
-    document.head.appendChild(style);
-  `;
-
-  const scalePerChar = 1 / 1000;
-  const maxMultiplier = 4.3;
-  const baseMultiplier = 0.8;
-
-  const minHeight = useMemo(() => {
-    let content = htmlContent ?? '';
-    const scaleFactor = Math.min(content.length * scalePerChar, maxMultiplier);
-    const scaledHeight = SCREEN_HEIGHT * (baseMultiplier + scaleFactor);
-    const cappedHeight = Math.min(
-      content.length + 27,
-      Math.min(scaledHeight, SCREEN_HEIGHT * 6),
-    );
-    return cappedHeight;
-  }, [SCREEN_HEIGHT, htmlContent, scalePerChar]);
   return (
     <View style={styles.container}>
       <ScrollView
@@ -269,7 +242,7 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
             </>
           )}
           <View style={styles.descriptionContainer}>
-            <WebView
+            {/* <WebView
               style={{
                 padding: 7,
                 //width: '99%',
@@ -283,6 +256,26 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
               injectedJavaScript={cssCode}
               source={{html: htmlContent ? htmlContent : noDataHtml}}
               textZoom={100}
+            /> */}
+
+             <AutoHeightWebView
+              style={{
+                width: Dimensions.get('window').width - 15,
+                marginTop: 35,
+              }}
+              customStyle={`* { font-family: 'Times New Roman'; } p { font-size: 16px; }`}
+              onSizeUpdated={size => console.log(size.height)}
+              files={[
+                {
+                  href: 'cssfileaddress',
+                  type: 'text/css',
+                  rel: 'stylesheet',
+                },
+              ]}
+              originWhitelist={['*']}
+              source={{html: htmlContent ?? noDataHtml}}
+              scalesPageToFit={true}
+              viewportContent={'width=device-width, user-scalable=no'}
             />
           </View>
         </View>

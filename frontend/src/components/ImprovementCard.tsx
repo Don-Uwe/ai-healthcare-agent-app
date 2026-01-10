@@ -4,6 +4,7 @@ import {
   View,
   Pressable,
   TouchableOpacity,
+  Dimensions,
 } from 'react-native';
 import React from 'react';
 import {fp, hp} from '../helper/Metric';
@@ -13,7 +14,8 @@ import {BUTTON_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import {StatusEnum} from '../helper/Utils';
 //import io from 'socket.io-client';
 import AntDesign from '@expo/vector-icons/AntDesign';
-import WebView from 'react-native-webview';
+import AutoHeightWebView from '@brown-bear/react-native-autoheight-webview';
+
 
 const ImprovementCard = ({item, onNavigate}: ImprovementCardProps) => {
   const backgroundColor =
@@ -48,11 +50,31 @@ const ImprovementCard = ({item, onNavigate}: ImprovementCardProps) => {
           <Text style={styles.title}>{'Request Reason: '}</Text>
 
           <View style={{height: 50, marginBottom: 10}}>
-            <WebView
+            {/* <WebView
               originWhitelist={['*']}
               source={{html: `${item?.edit_reason}`}}
               style={{flex: 1}}
               scrollEnabled={true}
+            /> */}
+
+            <AutoHeightWebView
+              style={{
+                width: Dimensions.get('window').width - 15,
+                marginTop: 35,
+              }}
+              customStyle={`* { font-family: 'Times New Roman'; } p { font-size: 16px; }`}
+              onSizeUpdated={size => console.log(size.height)}
+              files={[
+                {
+                  href: 'cssfileaddress',
+                  type: 'text/css',
+                  rel: 'stylesheet',
+                },
+              ]}
+              originWhitelist={['*']}
+              source={{html: item?.edit_reason || '<p>No reason provided.</p>'}}
+              scalesPageToFit={true}
+              viewportContent={'width=device-width, user-scalable=no'}
             />
           </View>
 

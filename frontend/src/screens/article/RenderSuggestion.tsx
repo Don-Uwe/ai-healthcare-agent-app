@@ -1,12 +1,19 @@
-import {View, StyleSheet, TouchableOpacity, Text} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  Text,
+  Dimensions,
+} from 'react-native';
 import {RenderSuggestionProp} from '../../type';
 import WebView from 'react-native-webview';
 import {createHTMLStructure} from '../../helper/Utils';
 import {useRef} from 'react';
 import {useDispatch} from 'react-redux';
 import {setSuggestionAccepted} from '../../store/dataSlice';
-import { hp } from '@/src/helper/Metric';
-import { BUTTON_COLOR } from '@/src/helper/Theme';
+import {hp} from '@/src/helper/Metric';
+import {BUTTON_COLOR} from '@/src/helper/Theme';
+import AutoHeightWebView from '@brown-bear/react-native-autoheight-webview';
 
 export default function RenderSuggestion({
   navigation,
@@ -14,8 +21,7 @@ export default function RenderSuggestion({
 }: RenderSuggestionProp) {
   const {htmlContent} = route.params;
   const dispatch = useDispatch();
-  const webViewRef = useRef<WebView>(null);
-
+ 
   const handleAccept = () => {
     dispatch(setSuggestionAccepted({selection: true}));
     navigation.goBack();
@@ -28,7 +34,7 @@ export default function RenderSuggestion({
 
   return (
     <View style={styles.container}>
-      <WebView
+      {/* <WebView
         style={{
           padding: 20,
           margin: 10,
@@ -42,6 +48,26 @@ export default function RenderSuggestion({
           html: createHTMLStructure('', htmlContent, [], '', ''),
         }} // author name required
         javaScriptEnabled={true}
+      /> */}
+
+      <AutoHeightWebView
+        style={{
+          width: Dimensions.get('window').width - 15,
+          marginTop: 35,
+        }}
+        customStyle={`* { font-family: 'Times New Roman'; } p { font-size: 16px; }`}
+        onSizeUpdated={size => console.log(size.height)}
+        files={[
+          {
+            href: 'cssfileaddress',
+            type: 'text/css',
+            rel: 'stylesheet',
+          },
+        ]}
+        originWhitelist={['*']}
+        source={{html: createHTMLStructure('', htmlContent, [], '', '')}}
+        scalesPageToFit={true}
+        viewportContent={'width=device-width, user-scalable=no'}
       />
 
       <View style={styles.buttonContainer}>

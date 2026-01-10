@@ -1,7 +1,13 @@
-import React, {useRef, useState} from 'react';
-import {Alert, StyleSheet, Text, View, TouchableOpacity} from 'react-native';
-import {WebView} from 'react-native-webview';
-import {BUTTON_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
+import React, {useState} from 'react';
+import {
+  Alert,
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Dimensions,
+} from 'react-native';
+import {BUTTON_COLOR} from '../../helper/Theme';
 import {
   ArticleData,
   ContentSuggestionResponse,
@@ -29,6 +35,7 @@ import {useDispatch, useSelector} from 'react-redux';
 import useUploadImage from '../../../hooks/useUploadImage';
 import {setSuggestion} from '../../store/dataSlice';
 import Snackbar from 'react-native-snackbar';
+import AutoHeightWebView from '@brown-bear/react-native-autoheight-webview';
 
 //import io from 'socket.io-client';
 
@@ -48,7 +55,6 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
   const [imageUtil, setImageUtil] = useState<string>('');
   const [imageUtils, setImageUtils] = useState<string[]>([]);
 
-  const webViewRef = useRef<WebView>(null);
   const {user_token, user_id} = useSelector((state: any) => state.user);
   const {suggestion, suggestionAccepted} = useSelector(
     (state: any) => state.data,
@@ -236,17 +242,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
 
     onSuccess: data => {
       // User will not get notified, until the article published
-      /*
-      socket.emit('notification', {
-        type: 'openPost',
-        postId: data._id,
-        authorId: user?._id,
-        message: {
-          title: `${user?.user_handle} posted a new article`,
-          body: title,
-        },
-      });
-      */
+      
       Alert.alert('Article added sucessfully');
 
       navigation.navigate('TabNavigation');
@@ -503,7 +499,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
           <Text style={styles.continueButtonText}>Continue</Text>
         </TouchableOpacity>
       </View>
-      <WebView
+      {/* <WebView
         style={{
           padding: 20,
           margin: 10,
@@ -523,6 +519,34 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
           ),
         }} // author name required
         javaScriptEnabled={true}
+      /> */}
+
+      <AutoHeightWebView
+        style={{
+          width: Dimensions.get('window').width - 15,
+          marginTop: 35,
+        }}
+        customStyle={`* { font-family: 'Times New Roman'; } p { font-size: 16px; }`}
+        onSizeUpdated={size => console.log(size.height)}
+        files={[
+          {
+            href: 'cssfileaddress',
+            type: 'text/css',
+            rel: 'stylesheet',
+          },
+        ]}
+        originWhitelist={['*']}
+        source={{
+          html: createHTMLStructure(
+            title,
+            article,
+            selectedGenres,
+            '',
+            user ? user?.user_name : '',
+          ),
+        }}
+        scalesPageToFit={true}
+        viewportContent={'width=device-width, user-scalable=no'}
       />
     </View>
   );

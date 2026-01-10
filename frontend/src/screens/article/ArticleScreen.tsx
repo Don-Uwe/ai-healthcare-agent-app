@@ -19,8 +19,7 @@ import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {ArticleData, ArticleScreenProp, User} from '../../type';
 import {useDispatch, useSelector} from 'react-redux';
-import WebView from 'react-native-webview';
-import {hp, wp} from '../../helper/Metric';
+import {hp} from '../../helper/Metric';
 import {
   FOLLOW_USER,
   GET_ARTICLE_BY_ID,
@@ -38,15 +37,15 @@ import axios from 'axios';
 import Loader from '../../components/Loader';
 import Snackbar from 'react-native-snackbar';
 
-//import io from 'socket.io-client';
-import {Comment} from '../../type';
+
 import {formatCount, StatusEnum} from '../../helper/Utils';
 //import CommentScreen from '../CommentScreen';
 import Tts from 'react-native-tts';
-import CommentItem from '../../components/CommentItem';
+
 import {setUserHandle} from '../../store/UserSlice';
 import {io} from 'socket.io-client';
 import { Feather } from '@expo/vector-icons';
+import AutoHeightWebView from '@brown-bear/react-native-autoheight-webview';
 
 const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const insets = useSafeAreaInsets();
@@ -56,28 +55,14 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
 
   const socket = io(`${SOCKET_PROD}`);
   const dispatch = useDispatch();
-
-  const {height: SCREEN_HEIGHT} = Dimensions.get('window');
-  const baseHeight = SCREEN_HEIGHT * 0.1;
-  //const scalePerChar = SCREEN_HEIGHT * 0.2;
-
-
- 
   const [webviewHeight, setWebViewHeight] = useState(0);
   const [speechingMode, setSpeechingMode] = useState(false);
 
-  const webViewRef = useRef<WebView>(null);
 
   useEffect(() => {
     updateViewCountMutation.mutate();
-
-    // Tts.requestInstallData();
-    // const subscription = Tts.addEventListener('Tts-finish', event => {
-    //finishEvent();
-    //});
     return () => {
       Tts.stop();
-      // subscription;
     };
   }, []);
 
@@ -115,7 +100,6 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     },
   });
 
-  //console.log('Recordid', recordId);
   const {data: htmlContent} = useQuery({
     queryKey: ['get-publish-article-content'],
     queryFn: async () => {
@@ -164,23 +148,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     },
   });
 
-  console.log("Image utils", `${GET_IMAGE}/${article?.imageUtils[0]}`);
-  // console.log('View Users', article?.viewUsers);
-   //const noDataHtml = '<p>No data available</p>';
-
-  const contentLength = htmlContent?.length ?? noDataHtml.length;
 
   // --- Settings ---
-  const scalePerChar = 1 / 1000;
-  const maxMultiplier = 4.3;
-  const baseMultiplier = 0.8;
-
-  const minHeight = useMemo(() => {
-    const scaleFactor = Math.min(contentLength * scalePerChar, maxMultiplier);
-    const scaledHeight = SCREEN_HEIGHT * (baseMultiplier + scaleFactor);
-    const cappedHeight = Math.min(scaledHeight, SCREEN_HEIGHT * 6);
-    return cappedHeight;
-  }, [SCREEN_HEIGHT, contentLength, scalePerChar]);
 
   const handleLike = () => {
     if (article) {
@@ -237,7 +206,6 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     onError: err => {
       console.log('Update Follow mutation error', err);
       Alert.alert('Try Again!');
-      //console.log('Follow Error', err);
     },
   });
 
@@ -343,35 +311,13 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
 
   useEffect(() => {
     if (htmlContent) {
-      /*
-      let source = article?.content?.endsWith('.html')
-        ? {uri: `${GET_STORAGE_DATA}/${article.content}`}
-        : {html: article?.content};
-
-      const fetchContentLength = async () => {
-        const length = await getContentLength(source);
-        console.log('Content Length:', length);
-
-        setWebViewHeight(length); //Add some buffer to the height calculation
-      };
-
-      fetchContentLength();
-      */
+      
       setWebViewHeight(htmlContent.length);
     } else {
       setWebViewHeight(noDataHtml.length);
     }
   }, [htmlContent]);
 
-  //const handleEditAction = (comment: Comment) => {
-  // setNewComment(comment.content);
-  // setEditMode(true);
-  //setEditCommentId(comment._id);
-  //};
-
-
-
-  // console.log('author id', authorId);
 
   const {data: profile_image} = useQuery({
     queryKey: ['author_profile_image'],
@@ -409,11 +355,6 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     // Tts.requestInstallData();
     Tts.setDefaultPitch(0.6);
 
-    //if (content.endsWith('.html')) {
-    //const response = await fetch(`${GET_STORAGE_DATA}/${content}`);
-    // content = await response.text();
-    //}
-
     const res = await convertHtmlToPlainText(content);
 
     if (res) {
@@ -445,49 +386,11 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     }
   };
 
-  const cssCode = `
-  const style = document.createElement('style');
-  style.innerHTML = \`
-    body {
-      font-size: 46px;
-      line-height: 1.5;
-      color: #333;
-    }
-  \`;
-  document.head.appendChild(style);
-`;
-
-  // const contentSource = article?.content?.endsWith('.html')
-  //  ? {uri: `${GET_STORAGE_DATA}/${article.content}`}
-  //  : {html: article?.content};
-
-  // Function to get the content length based on the type of content (URI or HTML)
-
-  /*
-  const getContentLength = async contentSource => {
-    if (contentSource.uri) {
-      try {
-        const response = await fetch(contentSource.uri);
-        const content = await response.text();
-        return content.length - 4000;
-      } catch (error) {
-        console.error('Error fetching URI:', error);
-        return 0;
-      }
-    } else if (contentSource.html) {
-      return contentSource.html.length;
-    }
-    return 0; // Return 0 if no valid content source
-  };
-  */
-
-//  console.log('Content', htmlContent);
 
   if (isLoading) {
     return <Loader />;
   }
 
-  //console.log('Comment', comments);
   return (
     <View style={styles.container}>
       <ScrollView
@@ -738,7 +641,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
             </>
           )}
           <View style={styles.descriptionContainer}>
-            <WebView
+            {/* <WebView
               style={{
                 padding: 7,
                 //width: '99%',
@@ -752,6 +655,26 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
               injectedJavaScript={cssCode}
               source={{html: htmlContent ? htmlContent : noDataHtml}}
               textZoom={100}
+            /> */}
+
+            <AutoHeightWebView
+              style={{
+                width: Dimensions.get('window').width - 15,
+                marginTop: 35,
+              }}
+              customStyle={`* { font-family: 'Times New Roman'; } p { font-size: 16px; }`}
+              onSizeUpdated={size => console.log(size.height)}
+              files={[
+                {
+                  href: 'cssfileaddress',
+                  type: 'text/css',
+                  rel: 'stylesheet',
+                },
+              ]}
+              originWhitelist={['*']}
+              source={{html: htmlContent ?? noDataHtml}}
+              scalesPageToFit={true}
+              viewportContent={'width=device-width, user-scalable=no'}
             />
           </View>
         </View>
