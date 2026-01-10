@@ -95,6 +95,7 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
     {label: 'Yearly', value: -1},
     {label: '2024', value: 2024},
     {label: '2025', value: 2025},
+    {label: '2026', value: 2026},
   ];
 
   // GET MONTHLY READ REPORT
@@ -683,23 +684,35 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
 
   const screenWidth = Dimensions.get('window').width;
 
-  const dayToWeekData = (data: MonthStatus[]): LineDataItem[] => {
-    if (!data || !Array.isArray(data) || data.length === 0) return [];
 
-    const monthlyData = data.map(item => ({
-      value: item.value,
-      label: item.date.substring(8),
-    }));
-    const weeks: LineDataItem[] = [];
-    let weekIndex = 1;
+ const dayToWeekData = (data: MonthStatus[]): LineDataItem[] => {
+  if (!Array.isArray(data) || data.length === 0) return [];
 
-    for (let i = 0; i < monthlyData.length; i += 7) {
-      const chunk = monthlyData.slice(i, i + 7);
+  // Sort (safe guard)
+  const sorted = [...data].sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
 
-      const weekSum = chunk.reduce(
-        (sum, day) => sum + Number(day.value || 0),
-        0,
+  const weeks: LineDataItem[] = [];
+  let currentWeek: MonthStatus[] = [];
+  let weekIndex = 1;
+
+  const getWeekDay = (date: string) => new Date(date).getDay(); // 0 = Sun
+
+  sorted.forEach((item, index) => {
+    currentWeek.push(item);
+
+    const isSaturday = getWeekDay(item.date) === 6;
+    const isLastDay = index === sorted.length - 1;
+
+    if (isSaturday || isLastDay) {
+      const weekSum = currentWeek.reduce(
+        (sum, d) => sum + Number(d.value || 0),
+        0
       );
+
+      //const startDay = currentWeek[0].date.slice(8);
+      //const endDay = currentWeek[currentWeek.length - 1].date.slice(8);
 
       weeks.push({
         label: `W${weekIndex}`,
@@ -707,10 +720,13 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
       });
 
       weekIndex++;
+      currentWeek = [];
     }
+  });
 
-    return weeks;
-  };
+  return weeks;
+};
+
 
   const MONTH_LABELS = [
     'Jan',
@@ -727,30 +743,34 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
     'Dec',
   ];
 
-  const groupYearlyData = (data: YearStatus[]) => {
-    const map = new Map<string, number>();
+ const groupYearlyData = (data: YearStatus[]) => {
+  const map = new Map<number, number>();
 
-    data.forEach(item => {
-      map.set(item.month.toString(), item.value || 0);
-    });
+  data.forEach(item => {
+    const monthNumber = Number(item.month.split('-')[1]); // "01" -> 1
+    map.set(monthNumber, item.value || 0);
+  });
 
-    const normalized = MONTH_LABELS.map((month, index) => ({
-      label: month,
-      value: map.get(month) ?? map.get((index + 1).toString()) ?? 0,
-    }));
+  const normalized = MONTH_LABELS.map((label, index) => ({
+    label,
+    value: map.get(index + 1) ?? 0,
+  }));
 
-    return [
-      normalized.slice(0, 3), // Q1
-      normalized.slice(3, 6), // Q2
-      normalized.slice(6, 9), // Q3
-      normalized.slice(9, 12), // Q4
-    ];
-  };
+  return [
+    normalized.slice(0, 3),   // Q1
+    normalized.slice(3, 6),   // Q2
+    normalized.slice(6, 9),   // Q3
+    normalized.slice(9, 12),  // Q4
+  ];
+};
+
 
   const YearlyChartSection = () => {
     const yearlyData =
       userState === 0 ? yearlyReadReport ?? [] : yearlyWriteReport ?? [];
+        console.log('Raw yearly Data:', yearlyData);
     const groupedData = groupYearlyData(yearlyData);
+        console.log('Grouped yearly Data:', groupedData);
 
     const CHART_HORIZONTAL_PADDING = 32;
     const chartWidth = screenWidth - CHART_HORIZONTAL_PADDING - 16;
@@ -835,10 +855,16 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
   };
 
   const WeeklyChartSection = () => {
+
+
     const rawMonthlyData =
       userState === 0 ? monthlyReadReport ?? [] : monthlyWriteReport ?? [];
+    
+      console.log('Raw Monthly Data:', rawMonthlyData);
 
     const weeklyData = dayToWeekData(rawMonthlyData);
+
+    console.log('Weekly Data:', weeklyData);
 
     const labels = weeklyData.map(w => w.label);
     const values = weeklyData.map(w => w.value);
