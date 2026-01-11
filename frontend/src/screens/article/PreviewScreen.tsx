@@ -526,7 +526,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
           width: Dimensions.get('window').width - 15,
           marginTop: 35,
         }}
-        customStyle={`* { font-family: 'Times New Roman'; } p { font-size: 16px; }`}
+        customStyle={`* { font-family: 'Times New Roman'; } p { font-size: 14px; }`}
         onSizeUpdated={size => console.log(size.height)}
         files={[
           {

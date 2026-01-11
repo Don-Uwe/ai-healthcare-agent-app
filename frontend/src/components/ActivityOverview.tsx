@@ -58,12 +58,14 @@ interface Props {
     articleId: number;
     authorId: string;
     recordId: string;
+   
   }) => void;
   userId?: string;
   others: boolean;
   articlePosted: number;
+  user_handle?: string;
 }
-const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
+const ActivityOverview = ({onArticleViewed, userId, others, user_handle}: Props) => {
   const [userState, setUserState] = useState<number>(0);
   const {user_token, user_id} = useSelector((state: any) => state.user);
   const dispatch = useDispatch();
@@ -667,14 +669,14 @@ const ActivityOverview = ({onArticleViewed, userId, others}: Props) => {
     if (selectedMonth !== -1) {
       const monthName = monthNames[selectedMonth];
       const year = moment().year(); // current year
-      return `Your ${
+      return `${user_handle}'s ${
         userState === 0 ? 'Reading' : 'Writing'
       } activity for ${monthName} ${year}`;
     }
 
     // If year selected
     if (selectedYear !== -1) {
-      return `Your ${
+      return `${user_handle}'s ${
         userState === 0 ? 'Reading' : 'Writing'
       } activity for the year ${selectedYear}`;
     }

@@ -219,7 +219,7 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
 
   const handlePostSubmit = async () => {
 
-    if(isConnected){
+    if(!isConnected){
       Alert.alert('Please check your internet and try again!');
       return;
     }

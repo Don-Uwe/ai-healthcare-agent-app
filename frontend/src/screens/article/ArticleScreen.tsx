@@ -353,7 +353,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
 
   const speakSection = async (_language = 'en-US', content: string) => {
     // Tts.requestInstallData();
-    Tts.setDefaultPitch(0.6);
+    Tts.setDefaultPitch(0.4);
 
     const res = await convertHtmlToPlainText(content);
 
@@ -698,12 +698,12 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
                 author_handle: undefined,
               });
             }}>
-            {profile_image && profile_image !== '' ? (
+            {authorId.Profile_image && authorId.Profile_image !== '' ? (
               <Image
                 source={{
-                  uri: profile_image.startsWith('http')
-                    ? `${profile_image}`
-                    : `${GET_STORAGE_DATA}/${profile_image}`,
+                  uri: authorId.Profile_image.startsWith('http')
+                    ? `${authorId.Profile_image}`
+                    : `${GET_STORAGE_DATA}/${authorId.Profile_image}`,
                 }}
                 style={styles.authorImage}
               />

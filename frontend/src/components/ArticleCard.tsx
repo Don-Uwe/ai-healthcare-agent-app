@@ -26,7 +26,7 @@ import {
   SAVE_ARTICLE,
 } from '../helper/APIUtils';
 import {PRIMARY_COLOR} from '../helper/Theme';
-import {formatCount, requestStoragePermissions} from '../helper/Utils';
+import {formatCount, requestStoragePermissions, StatusEnum} from '../helper/Utils';
 import {
   useAnimatedStyle,
   useSharedValue,
@@ -224,17 +224,6 @@ const ArticleCard = ({
     },
   });
 
-  const handleAnimation = () => {
-    if (width.value === 0) {
-      width.value = withTiming(250, {duration: 250});
-      yValue.value = withTiming(-1, {duration: 250});
-      setSelectedCardId(item._id);
-    } else {
-      width.value = withTiming(0, {duration: 250});
-      yValue.value = withTiming(100, {duration: 250});
-      setSelectedCardId('');
-    }
-  };
 
   const onChange = () => {
     console.log('Menu visible');
@@ -374,7 +363,7 @@ const ArticleCard = ({
         <View style={styles.textContainer}>
           {/* Share Icon */}
 
-          {source === 'home' && (
+          {source === 'home' && item.status === StatusEnum.PUBLISHED &&  (
             <ArticleFloatingMenu
               items={[
                 {
@@ -445,7 +434,7 @@ const ArticleCard = ({
           )}
 
           {/* Icon for more options */}
-          {source === 'home' && (
+          {source === 'home' && item.status === StatusEnum.PUBLISHED && (
             <TouchableOpacity
               style={styles.shareIconContainer}
               onPress={onChange}>

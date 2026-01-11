@@ -40,6 +40,7 @@
         "MODIFY_AUDIO_SETTINGS"
       ],
       "googleServicesFile": "./google-services.json",
+      
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/adaptive-icon.png",

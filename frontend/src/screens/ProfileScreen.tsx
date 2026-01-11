@@ -215,6 +215,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
       Alert.alert('Internal server error, try again!');
     },
   });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleReportAction = (item: ArticleData) => {
     navigation.navigate('ReportScreen', {
       articleId: item._id,
@@ -368,6 +369,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
               <ActivityOverview
                 onArticleViewed={onArticleViewed}
                 others={false}
+                user_handle={user?.user_handle || ''}
                 articlePosted={user?.articles ? user.articles.length : 0}
               />
             </Tabs.ScrollView>
