@@ -43,10 +43,11 @@ import {
   Image,
 } from 'tamagui';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {wp} from '../helper/Metric';
+import {hp, wp} from '../helper/Metric';
 import {useQuery} from '@tanstack/react-query';
 import axios from 'axios';
 import {showAlert} from '../store/alertSlice';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 
 const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
   const socket = useSocket();
@@ -397,7 +398,7 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
 
   const handleCommentSubmit = () => {
     if (!newComment.trim()) {
-       Alert.alert('Please enter a comment before submitting.');
+      Alert.alert('Please enter a comment before submitting.');
       // dispatch(
       //   showAlert({
       //     title: '',
@@ -426,12 +427,12 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
         setEditMode(false);
       } else {
         Alert.alert('Error: Comment Not Found');
-      //   dispatch(
-      //   showAlert({
-      //     title: 'Error!',
-      //     message: 'Comment not found',
-      //   }),
-      // );
+        //   dispatch(
+        //   showAlert({
+        //     title: 'Error!',
+        //     message: 'Comment not found',
+        //   }),
+        // );
       }
     } else {
       const formatted = replaceTriggerValues(
@@ -467,148 +468,144 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
   }
 
   return (
-    <ScrollView
-      style={{flex: 1}}
+    <KeyboardAwareScrollView
+      style={{width: '100%', flex: 1}}
+      // contentContainerStyle={{paddingHorizontal: 6, paddingBottom: 24}}
+      bottomOffset={50}
+      showsVerticalScrollIndicator={false}
+      extraKeyboardSpace={40}
       contentContainerStyle={{
         flexGrow: 1,
-        paddingBottom: 120,
+        paddingBottom: hp(18),
         paddingHorizontal: 10,
         backgroundColor: '#f8f9fb',
-      }}
-      showsVerticalScrollIndicator={false}>
-      <KeyboardAvoidingView
-        style={{flex: 1}}
-        behavior="padding"
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}>
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <SafeAreaView
-            style={{flex: 1, backgroundColor: '#f8f9fb', padding: wp(0.1)}}>
-            {/* Header Section */}
-            <YStack space="$3">
-              <H3 fontSize={19} color="black" fontWeight={'600'}>
-                {podcast?.title}
-              </H3>
+      }}>
+      <SafeAreaView
+        style={{flex: 1, backgroundColor: '#f8f9fb', padding: wp(0.1)}}>
+        {/* Header Section */}
+        <YStack gap="$3">
+          <H3 fontSize={19} color="black" fontWeight={'600'}>
+            {podcast?.title}
+          </H3>
 
-              <Image
-                source={{
-                  uri: podcast?.cover_image.startsWith('http')
-                    ? podcast?.cover_image
-                    : `${GET_IMAGE}/${podcast?.cover_image}`,
-                }}
-                style={{
-                  width: '100%',
-                  height: 180,
-                  borderRadius: 8,
-                }}
-              />
+          <Image
+            source={{
+              uri: podcast?.cover_image.startsWith('http')
+                ? podcast?.cover_image
+                : `${GET_IMAGE}/${podcast?.cover_image}`,
+            }}
+            style={{
+              width: '100%',
+              height: 180,
+              borderRadius: 8,
+            }}
+          />
 
-              <Button
-                onPress={() =>
-                  navigation.navigate('PodcastDetail', {
-                    trackId: podcastId,
-                    audioUrl: podcast?.audio_url ?? '',
-                  })
-                }
-                backgroundColor={PRIMARY_COLOR}
-                pressStyle={{opacity: 0.9}}
-                borderRadius="$4"
-                size={'$6'}
-                marginTop="$2"
-                paddingVertical={'$3'}
-                elevation="$2">
-                <Text color="white" fontWeight="600" fontSize={16}>
-                  🎧 Listen Now
-                </Text>
-              </Button>
-              <Paragraph color="$gray10" fontSize={17}>
-                {podcast?.description}
-              </Paragraph>
+          <Button
+            onPress={() =>
+              navigation.navigate('PodcastDetail', {
+                trackId: podcastId,
+                audioUrl: podcast?.audio_url ?? '',
+              })
+            }
+            backgroundColor={PRIMARY_COLOR}
+            pressStyle={{opacity: 0.9}}
+            borderRadius="$4"
+            size={'$6'}
+            marginTop="$2"
+            paddingVertical={'$3'}
+            elevation="$2">
+            <Text color="white" fontWeight="600" fontSize={16}>
+              🎧 Listen Now
+            </Text>
+          </Button>
+          <Paragraph color="$gray10" fontSize={17}>
+            {podcast?.description}
+          </Paragraph>
 
-              <View style={styles.authorContainer}>
-                <TouchableOpacity
-                  onPress={() => {
-                    //  if (article && article?.authorId) {
-                    //navigation.navigate('UserProfileScreen', {
-                    //  authorId: authorId,
-                    // });
-                  }}>
-                  {podcast?.user_id.Profile_image ? (
-                    <Image
-                      source={{
-                        uri: podcast?.user_id.Profile_image.startsWith('http')
-                          ? `${podcast?.user_id.Profile_image}`
-                          : `${GET_STORAGE_DATA}/${podcast?.user_id.Profile_image}`,
-                      }}
-                      style={styles.authorImage}
-                    />
-                  ) : (
-                    <Image
-                      source={{
-                        uri: 'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-                      }}
-                      style={styles.authorImage}
-                    />
-                  )}
-                </TouchableOpacity>
-                <View>
-                  <Text style={styles.authorName}>
-                    {podcast ? podcast?.user_id.user_name : ''}
-                  </Text>
-                  <Text style={styles.authorFollowers}>
-                    {podcast?.user_id.followers
-                      ? podcast?.user_id.followers.length > 1
-                        ? `${podcast?.user_id.followers.length} followers`
-                        : `${podcast?.user_id.followers.length} follower`
-                      : '0 follower'}
-                  </Text>
-                </View>
-              </View>
-
-              <Suggestions suggestions={filteredUsers} {...triggers.mention} />
-
-              <TextInput
-                {...textInputProps}
-                style={styles.textInput}
-                placeholder="Add a comment..."
-                multiline
-              />
-
-              {newComment.length > 0 && (
-                <TouchableOpacity
-                  style={styles.submitButton}
-                  onPress={handleCommentSubmit}>
-                  <Text style={styles.submitButtonText}>
-                    {editMode ? '✏️ Update Comment' : '⏩ Submit Comment'}
-                  </Text>
-                </TouchableOpacity>
+          <View style={styles.authorContainer}>
+            <TouchableOpacity
+              onPress={() => {
+                //  if (article && article?.authorId) {
+                //navigation.navigate('UserProfileScreen', {
+                //  authorId: authorId,
+                // });
+              }}>
+              {podcast?.user_id.Profile_image ? (
+                <Image
+                  source={{
+                    uri: podcast?.user_id.Profile_image.startsWith('http')
+                      ? `${podcast?.user_id.Profile_image}`
+                      : `${GET_STORAGE_DATA}/${podcast?.user_id.Profile_image}`,
+                  }}
+                  style={styles.authorImage}
+                />
+              ) : (
+                <Image
+                  source={{
+                    uri: 'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
+                  }}
+                  style={styles.authorImage}
+                />
               )}
-              <YStack marginTop="$4" space="$3">
-                <Text fontWeight="600" fontSize={20}>
-                  {comments.length} Comments
-                </Text>
+            </TouchableOpacity>
+            <View>
+              <Text style={styles.authorName}>
+                {podcast ? podcast?.user_id.user_name : ''}
+              </Text>
+              <Text style={styles.authorFollowers}>
+                {podcast?.user_id.followers
+                  ? podcast?.user_id.followers.length > 1
+                    ? `${podcast?.user_id.followers.length} followers`
+                    : `${podcast?.user_id.followers.length} follower`
+                  : '0 follower'}
+              </Text>
+            </View>
+          </View>
 
-                {comments.map(item => (
-                  <CommentItem
-                    key={item._id}
-                    item={item}
-                    isSelected={selectedCommentId === item._id}
-                    userId={user_id}
-                    setSelectedCommentId={setSelectedCommentId}
-                    handleEditAction={handleEditAction}
-                    deleteAction={handleDeleteAction}
-                    handleLikeAction={handleLikeAction}
-                    commentLikeLoading={commentLikeLoading}
-                    handleMentionClick={handleMentionClick}
-                    handleReportAction={handleReportAction}
-                    isFromArticle={false}
-                  />
-                ))}
-              </YStack>
-            </YStack>
-          </SafeAreaView>
-        </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
-    </ScrollView>
+          <Suggestions suggestions={filteredUsers} {...triggers.mention} />
+
+          <TextInput
+            {...textInputProps}
+            style={styles.textInput}
+            placeholder="Add a comment..."
+            multiline
+          />
+
+          {newComment.length > 0 && (
+            <TouchableOpacity
+              style={styles.submitButton}
+              onPress={handleCommentSubmit}>
+              <Text style={styles.submitButtonText}>
+                {editMode ? '✏️ Update Comment' : '⏩ Submit Comment'}
+              </Text>
+            </TouchableOpacity>
+          )}
+          <YStack marginTop="$4" space="$3">
+            <Text fontWeight="600" fontSize={20}>
+              {comments.length} Comments
+            </Text>
+
+            {comments.map(item => (
+              <CommentItem
+                key={item._id}
+                item={item}
+                isSelected={selectedCommentId === item._id}
+                userId={user_id}
+                setSelectedCommentId={setSelectedCommentId}
+                handleEditAction={handleEditAction}
+                deleteAction={handleDeleteAction}
+                handleLikeAction={handleLikeAction}
+                commentLikeLoading={commentLikeLoading}
+                handleMentionClick={handleMentionClick}
+                handleReportAction={handleReportAction}
+                isFromArticle={false}
+              />
+            ))}
+          </YStack>
+        </YStack>
+      </SafeAreaView>
+    </KeyboardAwareScrollView>
   );
 };
 

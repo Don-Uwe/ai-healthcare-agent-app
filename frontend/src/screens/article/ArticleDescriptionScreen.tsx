@@ -21,6 +21,8 @@ import {
 } from 'react-native-image-picker';
 import ImageResizer from '@bam.tech/react-native-image-resizer';
 import {hp} from '../../helper/Metric';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const ArticleDescriptionScreen = ({
   navigation,
@@ -129,8 +131,20 @@ const ArticleDescriptionScreen = ({
     });
   };
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.form}>
+       <KeyboardAwareScrollView
+      style={{width: '100%', flex: 1}}
+      // contentContainerStyle={{paddingHorizontal: 6, paddingBottom: 24}}
+      bottomOffset={50}
+      showsVerticalScrollIndicator={false}
+      extraKeyboardSpace={20}
+      contentContainerStyle={{
+        flexGrow: 1,
+        paddingBottom: hp(18),
+        paddingHorizontal: 10,
+        backgroundColor: '#f8f9fb',
+      }}>
+    {/* <ScrollView style={styles.container}> */}
+      <SafeAreaView style={styles.form}>
         {/* Image Upload */}
         <View style={styles.input}>
           {imageUtils ? (
@@ -247,8 +261,9 @@ const ArticleDescriptionScreen = ({
           onPress={handleCreatePost}>
           <Text style={styles.submitButtonText}>Continue</Text>
         </TouchableOpacity>
-      </View>
-    </ScrollView>
+      </SafeAreaView>
+    {/* </ScrollView> */}
+    </KeyboardAwareScrollView>
   );
 };
 

@@ -31,8 +31,9 @@ import {
 } from 'react-native-controlled-mentions';
 import {GET_IMAGE, GET_STORAGE_DATA} from '../helper/APIUtils';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {wp} from '../helper/Metric';
+import {hp, wp} from '../helper/Metric';
 import {showAlert} from '../store/alertSlice';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 
 const CommentScreen = ({navigation, route}: CommentScreenProp) => {
   const socket = useSocket();
@@ -197,8 +198,8 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
       //     message: 'Please enter a comment before submitting.',
       //   }),
       // );
-       Alert.alert('Please enter a comment before submitting.');
-      
+      Alert.alert('Please enter a comment before submitting.');
+
       return;
     }
 
@@ -316,109 +317,105 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
   if (commentLoading) return <Loader />;
 
   return (
-    <ScrollView
-      style={{flex: 1}}
+    <KeyboardAwareScrollView
+      style={{width: '100%', flex: 1}}
+      // contentContainerStyle={{paddingHorizontal: 6, paddingBottom: 24}}
+      bottomOffset={50}
+      showsVerticalScrollIndicator={false}
+      extraKeyboardSpace={20}
       contentContainerStyle={{
         flexGrow: 1,
-        paddingBottom: 120,
+        paddingBottom: hp(18),
         paddingHorizontal: 10,
         backgroundColor: '#f8f9fb',
-      }}
-      showsVerticalScrollIndicator={false}>
-      <KeyboardAvoidingView
-        style={{flex: 1}}
-        behavior="padding"
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}>
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <SafeAreaView
-            style={{flex: 1, backgroundColor: '#f8f9fb', padding: wp(0.2)}}>
-            {/* Header Section */}
-            <YStack space="$3">
-              <H3 fontSize={19} color="black" fontWeight={'600'}>
-                {article.title}
-              </H3>
+      }}>
+      <SafeAreaView
+        style={{flex: 1, backgroundColor: '#f8f9fb', padding: wp(0.2)}}>
+        {/* Header Section */}
+        <YStack gap="$3">
+          <H3 fontSize={19} color="black" fontWeight={'600'}>
+            {article.title}
+          </H3>
 
-              <Image
-                source={{
-                  uri: article?.imageUtils[0].startsWith('http')
-                    ? article?.imageUtils[0]
-                    : `${GET_IMAGE}/${article?.imageUtils[0]}`,
-                }}
-                style={{
-                  width: '100%',
-                  height: 180,
-                  borderRadius: 8,
-                }}
+          <Image
+            source={{
+              uri: article?.imageUtils[0].startsWith('http')
+                ? article?.imageUtils[0]
+                : `${GET_IMAGE}/${article?.imageUtils[0]}`,
+            }}
+            style={{
+              width: '100%',
+              height: 180,
+              borderRadius: 8,
+            }}
+          />
+
+          <Button
+            onPress={() =>
+              navigation.navigate('ArticleScreen', {
+                articleId: Number(article._id),
+                authorId: article.authorId.toString(),
+                recordId: article.pb_recordId,
+              })
+            }
+            backgroundColor={PRIMARY_COLOR}
+            pressStyle={{opacity: 0.9}}
+            borderRadius="$4"
+            size={'$6'}
+            mt="$2"
+            paddingVertical={'$3'}
+            elevation="$2">
+            <Text color="white" fontWeight="600" fontSize={16}>
+              View Full Article
+            </Text>
+          </Button>
+          <Paragraph color="$gray10" fontSize={17}>
+            {article.description}
+          </Paragraph>
+
+          <Suggestions suggestions={filteredUsers} {...triggers.mention} />
+
+          <TextInput
+            {...textInputProps}
+            style={styles.textInput}
+            placeholder="Add a comment..."
+            multiline
+          />
+
+          {newComment.length > 0 && (
+            <TouchableOpacity
+              style={styles.submitButton}
+              onPress={handleCommentSubmit}>
+              <Text style={styles.submitButtonText}>
+                {editMode ? '✏️ Update Comment' : '⏩ Submit Comment'}
+              </Text>
+            </TouchableOpacity>
+          )}
+          <YStack marginTop="$4" space="$3">
+            <Text fontWeight="600" fontSize={20}>
+              {comments.length} Comments
+            </Text>
+
+            {comments.map(item => (
+              <CommentItem
+                key={item._id}
+                item={item}
+                isSelected={selectedCommentId === item._id}
+                userId={user_id}
+                setSelectedCommentId={setSelectedCommentId}
+                handleEditAction={handleEditAction}
+                deleteAction={handleDeleteAction}
+                handleLikeAction={handleLikeAction}
+                commentLikeLoading={commentLikeLoading}
+                handleMentionClick={handleMentionClick}
+                handleReportAction={handleReportAction}
+                isFromArticle={false}
               />
-
-              <Button
-                onPress={() =>
-                  navigation.navigate('ArticleScreen', {
-                    articleId: Number(article._id),
-                    authorId: article.authorId.toString(),
-                    recordId: article.pb_recordId,
-                  })
-                }
-                backgroundColor={PRIMARY_COLOR}
-                pressStyle={{opacity: 0.9}}
-                borderRadius="$4"
-                size={'$6'}
-                mt="$2"
-                paddingVertical={'$3'}
-                elevation="$2">
-                <Text color="white" fontWeight="600" fontSize={16}>
-                  View Full Article
-                </Text>
-              </Button>
-              <Paragraph color="$gray10" fontSize={17}>
-                {article.description}
-              </Paragraph>
-
-              <Suggestions suggestions={filteredUsers} {...triggers.mention} />
-
-              <TextInput
-                {...textInputProps}
-                style={styles.textInput}
-                placeholder="Add a comment..."
-                multiline
-              />
-
-              {newComment.length > 0 && (
-                <TouchableOpacity
-                  style={styles.submitButton}
-                  onPress={handleCommentSubmit}>
-                  <Text style={styles.submitButtonText}>
-                    {editMode ? '✏️ Update Comment' : '⏩ Submit Comment'}
-                  </Text>
-                </TouchableOpacity>
-              )}
-              <YStack marginTop="$4" space="$3">
-                <Text fontWeight="600" fontSize={20}>
-                  {comments.length} Comments
-                </Text>
-
-                {comments.map(item => (
-                  <CommentItem
-                    key={item._id}
-                    item={item}
-                    isSelected={selectedCommentId === item._id}
-                    userId={user_id}
-                    setSelectedCommentId={setSelectedCommentId}
-                    handleEditAction={handleEditAction}
-                    deleteAction={handleDeleteAction}
-                    handleLikeAction={handleLikeAction}
-                    commentLikeLoading={commentLikeLoading}
-                    handleMentionClick={handleMentionClick}
-                    handleReportAction={handleReportAction}
-                    isFromArticle={false}
-                  />
-                ))}
-              </YStack>
-            </YStack>
-          </SafeAreaView>
-        </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
-    </ScrollView>
+            ))}
+          </YStack>
+        </YStack>
+      </SafeAreaView>
+    </KeyboardAwareScrollView>
   );
 };
 
