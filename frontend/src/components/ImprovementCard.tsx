@@ -25,6 +25,15 @@ const ImprovementCard = ({item, onNavigate}: ImprovementCardProps) => {
       ? 'red'
       : BUTTON_COLOR;
 
+ // console.log('ImprovementCard item:', item);
+
+  const extractBody = (html: string) => {
+  if (!html) return '<p>No reason provided.</p>';
+
+  const match = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+  return match ? match[1] : html;
+};
+
   return (
     <Pressable
       onPress={() => {
@@ -62,7 +71,7 @@ const ImprovementCard = ({item, onNavigate}: ImprovementCardProps) => {
                 width: Dimensions.get('window').width - 15,
                 marginTop: 35,
               }}
-              customStyle={`* { font-family: 'Times New Roman'; } p { font-size: 16px; }`}
+              customStyle={`* { font-family: 'Times New Roman'; } p { font-size: 16px; color: #121a26; }`}
               onSizeUpdated={size => console.log(size.height)}
               files={[
                 {
@@ -72,7 +81,7 @@ const ImprovementCard = ({item, onNavigate}: ImprovementCardProps) => {
                 },
               ]}
               originWhitelist={['*']}
-              source={{html: item?.edit_reason || '<p>No reason provided.</p>'}}
+              source={{html: extractBody(item?.edit_reason) || '<p>No reason provided.</p>'}}
               scalesPageToFit={true}
               viewportContent={'width=device-width, user-scalable=no'}
             />

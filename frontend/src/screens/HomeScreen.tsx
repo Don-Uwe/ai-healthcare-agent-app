@@ -77,8 +77,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
 
-
-
   const handleCategorySelection = (category: CategoryType) => {
     // Update Redux State
     setSelectCategoryList(prevList => {
@@ -132,7 +130,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     }
     setArticleCategories(categoryData);
     dispatch(setTags({tags: categoryData}));
-  }, [dispatch, selectedTags, user_token]);
+  }, [dispatch, isConnected, selectedTags, user_token]);
 
   useEffect(() => {
     getAllCategories();
@@ -362,6 +360,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     return (
       <ArticleCard
         item={item}
+
         isSelected={selectedCardId === item._id}
         setSelectedCardId={setSelectedCardId}
         navigation={navigation}
@@ -486,6 +485,8 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     },
     enabled: isConnected && !!user_token && !!page,
   });
+
+  console.log("Filtered Articles", articleData);
 
   const onRefresh = () => {
     console.log('is connected', isConnected);
