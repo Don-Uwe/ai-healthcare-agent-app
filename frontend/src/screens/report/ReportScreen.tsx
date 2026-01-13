@@ -23,7 +23,7 @@ export default function ReportScreen({navigation, route}: ReportScreenProp) {
   const {articleId, commentId, authorId, podcastId} = route.params;
   const {user_token, user_id} = useSelector((state: any) => state.user);
   const {isConnected} = useSelector((state: any) => state.network);
-  const [selectedReasonId, setSelectedReasonId] = useState<String>('');
+  const [selectedReasonId, setSelectedReasonId] = useState<string>('');
 
   const {data: reasons, isLoading} = useQuery({
     queryKey: ['get-report-reasons'],
