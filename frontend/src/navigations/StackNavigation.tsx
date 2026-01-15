@@ -44,6 +44,7 @@ import PodcastSearch from '../screens/PodcastSearch';
 import PodcastRecorder from '../screens/PodcastRecorder';
 import PodcastForm from '../screens/PodcastForm';
 import PodcastPlayer from '../screens/PodcastPlayer';
+import PodcastProfile from '../screens/PodcastProfile';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -452,6 +453,31 @@ const StackNavigation = () => {
         options={({navigation}) => ({
             headerShown: true,
           headerTitle: 'Start Discussion',
+          headerTintColor: 'white',
+          headerTransparent: false,
+          headerStyle: {
+            backgroundColor: '#000A60',
+          },
+          headerBackTitleVisible: false,
+          headerLeft: () => (
+            <TouchableOpacity
+              style={styles.headerLeftButtonCommentScreen}
+              onPress={() => {
+                queryClient.invalidateQueries({queryKey: ['get-user-socials']});
+                navigation.goBack();
+              }}>
+              <FontAwesome6 size={25} name="arrow-left" color={'white'} />
+            </TouchableOpacity>
+          ),
+        })}
+      />
+
+        <Stack.Screen
+        name="PodcastProfile"
+        component={PodcastProfile}
+        options={({navigation}) => ({
+            headerShown: true,
+          headerTitle: 'Profile',
           headerTintColor: 'white',
           headerTransparent: false,
           headerStyle: {

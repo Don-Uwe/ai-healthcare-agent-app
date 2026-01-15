@@ -486,7 +486,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     enabled: isConnected && !!user_token && !!page,
   });
 
-  console.log("Filtered Articles", articleData);
+ // console.log("Filtered Articles", articleData);
 
   const onRefresh = () => {
     console.log('is connected', isConnected);

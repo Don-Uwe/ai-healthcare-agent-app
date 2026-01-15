@@ -46,6 +46,7 @@ export type RootStackParamList = {
     authorId: string;
     recordId: string;
   };
+  PodcastProfile: undefined;
   ReviewScreen: {
     articleId: number;
     authorId: string;
@@ -166,6 +167,11 @@ export type SignUpScreenFirstProp = StackScreenProps<
 export type SignUpScreenSecondProp = StackScreenProps<
   RootStackParamList,
   'SignUpScreenSecond'
+>;
+
+export type PodcastProfileProp = StackScreenProps<
+  RootStackParamList,
+  'PodcastProfile'
 >;
 
 export type ArticleDescriptionProp = StackScreenProps<

@@ -29,18 +29,18 @@ const HeaderRightMenu = ({ onClick }: Props) => {
   const { user_token } = useSelector((state: any) => state.user);
   const { isConnected } = useSelector((state: any) => state.network);
   const dispatch = useDispatch();
-  const theme = useTheme();
 
-  const menuItemProps = {
-    ai: 'center',
-    jc: 'space-between', 
-    py: '$2.5',
-    px: '$3',
-    br: '$4',
-   // hoverStyle: { bg: theme.gray12.val },
-    pressStyle: { opacity: 0.8 },
-    animation: 'quick',
-  };
+
+  // const menuItemProps = {
+  //   ai: 'center',
+  //   jc: 'space-between', 
+  //   py: '$2.5',
+  //   px: '$3',
+  //   br: '$4',
+  //  // hoverStyle: { bg: theme.gray12.val },
+  //   pressStyle: { opacity: 0.8 },
+  //   animation: 'quick',
+  // };
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
 
   const handlePresentModalPress = useCallback(() => {
@@ -78,7 +78,7 @@ const HeaderRightMenu = ({ onClick }: Props) => {
     setSelectedCategoryList((prevList) =>
       prevList.some((p: Category) => p.id === category.id)
         ? prevList.filter((item) => item.id !== category.id)
-        : [...prevList, category]
+        : [...prevList, category as Category]
     );
   };
 
@@ -90,12 +90,12 @@ const HeaderRightMenu = ({ onClick }: Props) => {
   return (
 
     <SafeAreaView>
-    <XStack ai="center" space="$3" mr="$3">
+    <XStack alignItems="center" space="$3" marginRight="$3">
 
       <Button
         size="$4"
         circular
-        bg={ON_PRIMARY_COLOR}
+        backgroundColor={ON_PRIMARY_COLOR}
         icon={<Feather name="search" size={20} color="#333" />}
         onPress={onClick}
         pressStyle={{ opacity: 0.7 }}
@@ -107,17 +107,17 @@ const HeaderRightMenu = ({ onClick }: Props) => {
           <Button
             size="$4"
             circular
-            bg={ON_PRIMARY_COLOR}
+            backgroundColor={ON_PRIMARY_COLOR}
             icon={<MaterialCommunityIcons name="dots-vertical" size={20} color="#333" />}
             pressStyle={{ opacity: 0.7 }}
           />
         </Popover.Trigger>
 
         <Popover.Content
-          bg={ON_PRIMARY_COLOR}
+          backgroundColor={ON_PRIMARY_COLOR}
           borderRadius="$4"
           elevation="$3"
-          p="$1"
+          padding="$1"
           width={150}
           shadowColor="rgba(0,0,0,0.15)"
         >
@@ -126,14 +126,14 @@ const HeaderRightMenu = ({ onClick }: Props) => {
             <XStack
               alignItems="flex-start"
               justifyContent="space-between"
-              py="$2"
-              px="$2"
-              br="$4"
-              hoverStyle={{ bg: 'rgba(0,0,0,0.05)' }}
+              paddingVertical="$2"
+              paddingHorizontal="$2"
+              borderRadius="$4"
+              hoverStyle={{ backgroundColor: 'rgba(0,0,0,0.05)' }}
               pressStyle={{ opacity: 0.8 }}
               onPress={() => {
                 setMenuOpen(false);
-                // navigation.navigate('Profile');
+                 navigation.navigate('PodcastProfile');
               }}
             >
               <Text fontSize={15} color="#333">
@@ -146,9 +146,9 @@ const HeaderRightMenu = ({ onClick }: Props) => {
             <XStack
               alignItems="flex-start"
               justifyContent="space-between"
-              py="$2"
-              px="$1"
-              br="$4"
+              paddingVertical="$2"
+              paddingHorizontal="$1"
+              borderRadius="$4"
               hoverStyle={{ backgroundColor: 'rgba(0,0,0,0.05)' }}
               pressStyle={{ opacity: 0.8 }}
               onPress={() => {
@@ -162,16 +162,16 @@ const HeaderRightMenu = ({ onClick }: Props) => {
               <Feather name="download" size={17} color="#555" />
             </XStack>
 
-            <Separator my="$1" />
+            <Separator marginVertical="$1" />
 
             {/* Menu Row: Filter */}
             <XStack
-              ai="center"
-              jc="space-between"
-              py="$3"
-              px="$3"
-              br="$4"
-              hoverStyle={{ bg: 'rgba(0,0,0,0.05)' }}
+              alignItems="center"
+              justifyContent="space-between"
+              paddingVertical="$3"
+              paddingHorizontal="$3"
+              borderRadius="$4"
+              hoverStyle={{ backgroundColor: 'rgba(0,0,0,0.05)' }}
               pressStyle={{ opacity: 0.8 }}
               onPress={handlePresentModalPress}
             >
