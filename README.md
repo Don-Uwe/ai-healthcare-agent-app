@@ -44,7 +44,7 @@
 
 ### 🚀Update: UltimateHealth Review Status
 
-Both app links will be shared soon.
+Both app links will be shared soon. (Coming next week, all set up done)
 
 ---
 
