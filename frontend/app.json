@@ -2,7 +2,7 @@
   "expo": {
     "name": "UltimateHealth",
     "slug": "UltimateHealth",
-    "version": "1.0.1",
+    "version": "1.1.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "ultimatehealth",
@@ -24,7 +24,6 @@
       }
     },
     "android": {
-
       "permissions": [
         "INTERNET",
         "READ_EXTERNAL_STORAGE",
@@ -36,11 +35,11 @@
         "READ_MEDIA_AUDIO",
         "READ_MEDIA_IMAGES",
         "READ_MEDIA_VIDEO",
-        
-        "MODIFY_AUDIO_SETTINGS"
+        "MODIFY_AUDIO_SETTINGS",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
       ],
       "googleServicesFile": "./google-services.json",
-      
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/adaptive-icon.png",
@@ -49,7 +48,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.UltimateHealth",
+      "package": "com.ultimatehealth.sb2318",
       "versionCode": 20
     },
     "web": {
@@ -86,7 +85,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "bdd3feee-d70b-4f27-9be5-33edb8b864f4"
+        "projectId": "1cfe3a17-5fbd-4fc7-8f02-30ff318eda86"
       }
     }
   }
