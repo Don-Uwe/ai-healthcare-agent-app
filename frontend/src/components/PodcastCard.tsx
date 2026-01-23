@@ -57,7 +57,7 @@ const PodcastCard = ({
         title: title,
         message: `${title} : Check out this podcast on UltimateHealth app!`,
         // Most Recent APK: 0.7.4
-        url: 'https://drive.google.com/file/d/19pRw_TWU4R3wcXjffOPBy1JGBDGnlaEh/view?usp=sharing',
+        url: 'https://play.google.com/store/apps/details?id=com.anonymous.UltimateHealth',
         subject: 'UltimateHealth Post',
       });
       console.log(result);
@@ -101,13 +101,16 @@ const PodcastCard = ({
   return (
     
     <CardContainer onPress={handleClick}>
-      <XStack space="$3" ai="center" jc="space-between">
+      <XStack gap="$3" alignItems="center" justifyContent="space-between">
         {/* Left section: Image + Text */}
-        <XStack flex={1} space="$3" ai="flex-start">
-          <Image source={{uri}} width={90} height={90} borderRadius={20} />
+        <XStack flex={1} gap="$3"  height="100%" alignItems="flex-start">
+          <Image source={{uri}} width={100} height="100%" borderRadius={20} 
+           resizeMode='cover'
+          />
 
-          <YStack f={1} space="$1" overflow="hidden">
+          <YStack flex={1} gap="$1" overflow="hidden">
             <Text
+            
               fontSize={16}
               fontWeight="700"
               numberOfLines={3}
@@ -119,17 +122,17 @@ const PodcastCard = ({
               {host}
             </Text>
 
-            <XStack flexWrap="wrap" space="$1" mt="$1">
+            <XStack flexWrap="wrap" gap="$1" marginTop="$1">
               {tags?.map((tag, i) => (
                 <TagText key={i}>#{tag.name}</TagText>
               ))}
             </XStack>
 
-            <XStack ai="center" mt="$1" space="$1">
+            <XStack alignItems="center" marginTop="$1" gap="$1">
               <Text color="$gray10">
                 {views <= 1 ? `${views} view` : `${formatCount(views)} views`}
               </Text>
-              <Text fontSize={14} color="$gray10" mt="$1">
+              <Text fontSize={14} color="$gray10" marginTop="$1">
                 {duration}
               </Text>
             </XStack>
@@ -137,7 +140,7 @@ const PodcastCard = ({
         </XStack>
 
         {/* Right section: Play button + duration */}
-        <YStack ai="center" jc="center" minWidth={50}>
+        <YStack alignItems="center" justifyContent="center" minWidth={50}>
           <TouchableOpacity onPress={handleClick}>
             <Feather name="chevrons-right" size={24} color="black" />
           </TouchableOpacity>

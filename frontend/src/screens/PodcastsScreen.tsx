@@ -222,7 +222,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }>
-        <YStack flex={1} p="$2">
+        <YStack flex={1} padding="$2">
           {/* Header */}
           <H5
             marginVertical="$2"
@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     marginVertical: hp(10),
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     backgroundColor: ON_PRIMARY_COLOR,
   },
 

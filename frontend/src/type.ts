@@ -116,7 +116,8 @@ export type RootStackParamList = {
     imageUtils: string;
   };
   Privacy: undefined;
-
+  ContributorPage: undefined;
+  OpenSourcePage: undefined;
   //ChatbotScreen: undefined;
 };
 
@@ -311,6 +312,16 @@ export type PodcastRecorderScreenProps = StackScreenProps<
 export type PrivacyPolicyScreenProps = StackScreenProps<
   RootStackParamList,
   'Privacy'
+>;
+
+export type ContributorScreenProps = StackScreenProps<
+  RootStackParamList,
+  'ContributorPage'
+>;
+
+export type OpenSourceScreenProps = StackScreenProps<
+  RootStackParamList,
+  'OpenSourcePage'
 >;
 
 export type PodcastPlayerScreenProps = StackScreenProps<

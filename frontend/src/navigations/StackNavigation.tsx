@@ -46,6 +46,8 @@ import PodcastForm from '../screens/PodcastForm';
 import PodcastPlayer from '../screens/PodcastPlayer';
 import PodcastProfile from '../screens/PodcastProfile';
 import PrivacyPolicyScreen from '../screens/PrivacyPolicy';
+import ContributorPage from '../screens/ContributorPage';
+import OpenSourcePage from '../screens/OpenSourcePage';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -398,6 +400,18 @@ const StackNavigation = () => {
       <Stack.Screen
         name="PodcastRecorder"
         component={PodcastRecorder}
+        options={{headerShown: false}}
+      />
+
+        <Stack.Screen
+        name="ContributorPage"
+        component={ContributorPage}
+        options={{headerShown: false}}
+      />
+
+        <Stack.Screen
+        name="OpenSourcePage"
+        component={OpenSourcePage}
         options={{headerShown: false}}
       />
 

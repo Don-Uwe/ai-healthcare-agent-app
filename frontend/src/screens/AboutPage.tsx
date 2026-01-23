@@ -201,7 +201,25 @@ const AboutScreen = ({navigation}:AboutScreenProps) => {
               </Text>
             }
             icon={<Ionicons name="people-outline" size={23} color="#a855f7" />}
-            onPress={() => {}}
+            onPress={() => {
+              navigation.navigate('ContributorPage');
+            }}
+          />
+
+           <ListItem
+            pressTheme
+            padding={14}
+            marginVertical={3}
+            borderRadius={10}
+            title={
+              <Text color="$gray700" fontWeight="700">
+               Open source programs
+              </Text>
+            }
+            icon={<FontAwesome6 name="github" size={23} color="#06402B" />}
+            onPress={() => {
+              navigation.navigate('OpenSourcePage');
+            }}
           />
 
           <ListItem
