@@ -115,6 +115,7 @@ export type RootStackParamList = {
     selectedGenres: Category[];
     imageUtils: string;
   };
+  Privacy: undefined;
 
   //ChatbotScreen: undefined;
 };
@@ -141,6 +142,7 @@ export type TabParamList = {
   Podcasts: undefined;
   Profile: undefined;
   Chatbot: undefined;
+  About: undefined;
 };
 
 export type SplashScreenProp =
@@ -294,9 +296,21 @@ export type ProfileScreenProps = CompositeScreenProps<
   | StackScreenProps<RootStackParamList, 'ArticleScreen'>
 >;
 
+
+export type AboutScreenProps =
+ CompositeScreenProps<
+  BottomTabScreenProps<TabParamList, 'About'>,
+  | StackScreenProps<RootStackParamList, 'Privacy'>
+>;
+
 export type PodcastRecorderScreenProps = StackScreenProps<
   RootStackParamList,
   'PodcastRecorder'
+>;
+
+export type PrivacyPolicyScreenProps = StackScreenProps<
+  RootStackParamList,
+  'Privacy'
 >;
 
 export type PodcastPlayerScreenProps = StackScreenProps<

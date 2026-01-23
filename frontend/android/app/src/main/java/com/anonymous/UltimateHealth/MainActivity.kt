@@ -1,4 +1,4 @@
-package com.ultimatehealth.sb2318
+package com.anonymous.UltimateHealth
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

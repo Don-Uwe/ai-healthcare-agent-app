@@ -45,6 +45,7 @@ import PodcastRecorder from '../screens/PodcastRecorder';
 import PodcastForm from '../screens/PodcastForm';
 import PodcastPlayer from '../screens/PodcastPlayer';
 import PodcastProfile from '../screens/PodcastProfile';
+import PrivacyPolicyScreen from '../screens/PrivacyPolicy';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -451,7 +452,7 @@ const StackNavigation = () => {
         name="PodcastDiscussion"
         component={PodcastDiscussion}
         options={({navigation}) => ({
-            headerShown: true,
+          headerShown: true,
           headerTitle: 'Start Discussion',
           headerTintColor: 'white',
           headerTransparent: false,
@@ -472,11 +473,11 @@ const StackNavigation = () => {
         })}
       />
 
-        <Stack.Screen
+      <Stack.Screen
         name="PodcastProfile"
         component={PodcastProfile}
         options={({navigation}) => ({
-            headerShown: true,
+          headerShown: true,
           headerTitle: 'Profile',
           headerTintColor: 'white',
           headerTransparent: false,
@@ -531,6 +532,39 @@ const StackNavigation = () => {
         })}
       />
 
+      <Stack.Screen
+        name="Privacy"
+        component={PrivacyPolicyScreen}
+        options={({navigation}) => ({
+          headerShown: true,
+          headerTitle: 'Terms and Conditions',
+          //headerTransparent: true,
+          headerTitleAlign: 'center',
+          headerBackTitleVisible: false,
+          headerTintColor: 'white',
+          headerTransparent: false,
+
+          headerStyle: {
+            elevation: 4,
+
+            backgroundColor: '#000A60',
+            shadowColor: '#000',
+            shadowOffset: {width: 0, height: 2},
+            shadowOpacity: 0.25,
+            shadowRadius: 3.5,
+          },
+          // eslint-disable-next-line react/no-unstable-nested-components
+          headerLeft: () => (
+            <TouchableOpacity
+              style={styles.headerLeftButtonCommentScreen}
+              onPress={() => {
+                navigation.goBack();
+              }}>
+              <FontAwesome6 size={25} name="arrow-left" color={'white'} />
+            </TouchableOpacity>
+          ),
+        })}
+      />
       <Stack.Screen
         name="ReportScreen"
         component={ReportScreen}

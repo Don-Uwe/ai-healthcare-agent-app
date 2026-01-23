@@ -48,7 +48,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.ultimatehealth.sb2318",
+      "package": "com.anonymous.UltimateHealth",
       "versionCode": 20
     },
     "web": {
@@ -85,7 +85,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "1cfe3a17-5fbd-4fc7-8f02-30ff318eda86"
+        "projectId": "bdd3feee-d70b-4f27-9be5-33edb8b864f4"
       }
     }
   }

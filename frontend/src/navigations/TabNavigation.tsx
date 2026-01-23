@@ -12,6 +12,7 @@ import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import {BUTTON_COLOR} from '../helper/Theme';
 import HeaderRightMenu from '../components/HeaderRightMenu';
 import ChatbotScreen from '../screens/ChatbotScreen';
+import AboutScreen from '../screens/AboutPage';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 const TabNavigation = () => {
@@ -93,6 +94,23 @@ const TabNavigation = () => {
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
+        options={{
+          headerShown: false,
+          headerTransparent: true,
+          headerStyle: {
+            backgroundColor: '#000A60',
+          },
+          headerTitleStyle: {
+            fontSize: 23,
+            marginBottom: 12,
+            color: 'white',
+          },
+        }}
+      />
+
+       <Tab.Screen
+        name="About"
+        component={AboutScreen}
         options={{
           headerShown: false,
           headerTransparent: true,

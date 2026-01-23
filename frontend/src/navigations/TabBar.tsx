@@ -108,6 +108,14 @@ const TabBar = ({state, descriptors, navigation}: any) => {
                     color={isFocused ? 'white' : isDarkMode ? 'white' : 'black'}
                   />
                 )}
+
+                {label === 'About' && (
+                  <FontAwesome
+                    name="info-circle"
+                    size={24}
+                    color={isFocused ? 'white' : isDarkMode ? 'white' : 'black'}
+                  />
+                )}
               </View>
             </Pressable>
           </View>

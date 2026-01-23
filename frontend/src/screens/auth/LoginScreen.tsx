@@ -221,6 +221,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
       navigateToOtpScreen();
     },
     onError: error => {
+      // eslint-disable-next-line import/no-named-as-default-member
       if (axios.isAxiosError(error)) {
         if (error.response) {
           if (error.response.status === 400) {
@@ -326,7 +327,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
           backgroundColor={isDarkMode ? '$black' : '$background'}
           padding="$5"
           borderRadius="$5"
-          space="$4"
+          gap="$4"
           elevation={1}>
           <Image
             source={require('../../../assets/images/icon.png')}
