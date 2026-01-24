@@ -39,12 +39,16 @@
 </div>
 <hr>
 
-[![Download Latest APK](https://img.shields.io/badge/Download-APK-blue.svg)](https://drive.google.com/file/d/19pRw_TWU4R3wcXjffOPBy1JGBDGnlaEh/view?usp=sharing)
+## Explore the platform: [uhsocial.in](https://uhsocial.in/)
 
 
-### 🚀Update: UltimateHealth Review Status
+### ❤️ Heartfelt Thank You
+Ultimate Health exists because of the passion, dedication, and collective intelligence of our community.
 
-Both app links will be shared soon. (Coming next week, all set up done)
+To every developer who squashed a bug, every translator who broke a language barrier, and every moderator who ensured content integrity—Thank You. You are building a healthier world, one contribution at a time.
+
+### 👥 All Contributors
+We are immensely grateful to everyone who has shaped this project.
 
 ---
 
