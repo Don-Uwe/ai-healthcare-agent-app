@@ -41,7 +41,7 @@ export default function ArticleFloatingMenuSheet({
       onOpenChange={handleOpenChange}
       dismissOnSnapToBottom
       snapPoints={[65, 30, 10]} 
-   
+      dismissOnOverlayPress={true}
     //  dismissOnSnapToBottom={false}
       //dismissOnOverlayPress={false}
      // animation="medium"

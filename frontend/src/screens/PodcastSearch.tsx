@@ -125,7 +125,7 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
       <XStack
         alignItems="center"
         justifyContent="space-between"
-        marginTop="$0.5"
+        marginTop="$5"
         padding="$2"
         borderRadius="$4"
         shadowOffset={{width: 0, height: 1}}
@@ -135,14 +135,15 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
           alignItems="center"
           width="100%"
           flex={1}
-          //backgroundColor="#EFEFEF"
+          backgroundColor="#FFFFFF"
           borderRadius="$2"
           paddingHorizontal="$3"
-          borderWidth={1}
+          borderWidth={0.5}
           borderColor={'$gray10'}
           paddingVertical="$1"
-          space="$3">
-          <Feather name="search" size={25} color={'$gray10'} />
+          background="transparent"
+          gap="$3">
+          <Feather name="search" size={25} color={'#808080'} />
           <Input
             flex={1}
             size="$2"
@@ -152,7 +153,7 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
             placeholder="Search..."
             placeholderTextColor={'#c1c1c1'}
             borderWidth={0}
-            bg="transparent"
+            background="transparent"
             onChangeText={setQuery}
             value={query}
             color={'black'}
@@ -167,7 +168,7 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
             onPress={() => {
               setQuery('');
             }}>
-            <Feather name="clock" size={25} color={'$gray10'} />
+            <Feather name="clock" size={25} color={'#808080'} />
           </Pressable>
         </XStack>
       </XStack>

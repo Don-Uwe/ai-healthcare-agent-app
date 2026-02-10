@@ -31,16 +31,7 @@ const HeaderRightMenu = ({ onClick }: Props) => {
   const dispatch = useDispatch();
 
 
-  // const menuItemProps = {
-  //   ai: 'center',
-  //   jc: 'space-between', 
-  //   py: '$2.5',
-  //   px: '$3',
-  //   br: '$4',
-  //  // hoverStyle: { bg: theme.gray12.val },
-  //   pressStyle: { opacity: 0.8 },
-  //   animation: 'quick',
-  // };
+
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
 
   const handlePresentModalPress = useCallback(() => {
@@ -93,7 +84,7 @@ const HeaderRightMenu = ({ onClick }: Props) => {
     <XStack alignItems="center" space="$3" marginRight="$3">
 
       <Button
-        size="$4"
+        size="$5"
         circular
         backgroundColor={ON_PRIMARY_COLOR}
         icon={<Feather name="search" size={20} color="#333" />}
@@ -105,7 +96,7 @@ const HeaderRightMenu = ({ onClick }: Props) => {
       <Popover open={menuOpen} onOpenChange={setMenuOpen}>
         <Popover.Trigger asChild>
           <Button
-            size="$4"
+            size="$5"
             circular
             backgroundColor={ON_PRIMARY_COLOR}
             icon={<MaterialCommunityIcons name="dots-vertical" size={20} color="#333" />}

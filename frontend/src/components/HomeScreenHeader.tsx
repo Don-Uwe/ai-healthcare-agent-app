@@ -12,7 +12,7 @@ import { StatusBar } from 'expo-status-bar';
 }: HomeScreenHeaderProps) => {
   return (
     <YStack backgroundColor="#000A60" width="100%" paddingHorizontal="$3" paddingVertical="$3" elevation={1}>
-      <XStack alignItems="center" justifyContent="space-between" space="$3">
+      <XStack alignItems="center" justifyContent="space-between" gap="$3">
         <StatusBar style="dark" backgroundColor={'#000A60'} />
         {/* Search Bar */}
         <XStack
@@ -22,7 +22,7 @@ import { StatusBar } from 'expo-status-bar';
           borderWidth={1.5}
           borderColor={'#4D6360'}
           borderRadius={10}
-          paddingHorizontal="$2"
+          paddingHorizontal="$1"
           paddingVertical="$0.5"
           justifyContent="space-between"
           shadowColor="rgba(0,0,0,0.05)"
@@ -31,7 +31,7 @@ import { StatusBar } from 'expo-status-bar';
           <Input
             unstyled
             flex={1}
-            marginLeft="$1"
+           // marginLeft="$1"
             placeholder="Search articles..."
             placeholderTextColor="#778599"
             onChangeText={onTextInputChange}

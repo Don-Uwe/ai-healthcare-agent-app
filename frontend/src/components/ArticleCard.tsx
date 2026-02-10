@@ -25,8 +25,12 @@ import {
   LIKE_ARTICLE,
   SAVE_ARTICLE,
 } from '../helper/APIUtils';
-import {PRIMARY_COLOR} from '../helper/Theme';
-import {formatCount, requestStoragePermissions, StatusEnum} from '../helper/Utils';
+import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
+import {
+  formatCount,
+  requestStoragePermissions,
+  StatusEnum,
+} from '../helper/Utils';
 import {
   useAnimatedStyle,
   useSharedValue,
@@ -41,7 +45,7 @@ import RNFS from 'react-native-fs';
 import {generatePDF} from 'react-native-html-to-pdf';
 import {useSocket} from '../../SocketContext';
 import EditRequestModal from './EditRequestModal';
-import {FontAwesome} from '@expo/vector-icons';
+import {FontAwesome, FontAwesome5, FontAwesome6} from '@expo/vector-icons';
 import Snackbar from 'react-native-snackbar';
 
 const ArticleCard = ({
@@ -224,7 +228,6 @@ const ArticleCard = ({
     },
   });
 
-
   const onChange = () => {
     console.log('Menu visible');
     setMenuVisible(true);
@@ -300,21 +303,9 @@ const ArticleCard = ({
       console.log('File flow reach upto move');
 
       Alert.alert('PDF created successfully!', `Saved at: ${filePath}`);
-      // dispatch(
-      //   showAlert({
-      //     title: 'PDF created successfully!',
-      //     message: `Saved at: ${filePath}`,
-      //   }),
-      // );
     } catch (error) {
       console.error('Error generating PDF:', error);
       Alert.alert('Error', 'Something went wrong while creating the PDF.');
-      // dispatch(
-      //   showAlert({
-      //     title: 'Error!',
-      //     message: `Something went wrong while creating the PDF.`,
-      //   }),
-      // );
     }
   };
 
@@ -344,26 +335,21 @@ const ArticleCard = ({
       }}>
       <View style={styles.cardContainer}>
         {/* Image Section */}
-        {item?.imageUtils[0] && item?.imageUtils[0].length !== 0 ? (
-          <Image
-            source={{
-              uri: item?.imageUtils[0].startsWith('http')
+        <Image
+          source={{
+            uri: item?.imageUtils[0]
+              ? item?.imageUtils[0].startsWith('http')
                 ? item?.imageUtils[0]
-                : `${GET_IMAGE}/${item?.imageUtils[0]}`,
-            }}
-            style={styles.image}
-          />
-        ) : (
-          <Image
-            source={require('../../assets/images/no_results.jpg')}
-            style={styles.image}
-          />
-        )}
+                : `${GET_IMAGE}/${item?.imageUtils[0]}`
+              : undefined,
+          }}
+          style={styles.coverImage}
+        />
 
-        <View style={styles.textContainer}>
+        <View style={styles.contentContainer}>
           {/* Share Icon */}
 
-          {source === 'home' && item.status === StatusEnum.PUBLISHED &&  (
+          {source === 'home' && item.status === StatusEnum.PUBLISHED && (
             <ArticleFloatingMenu
               items={[
                 {
@@ -433,35 +419,23 @@ const ArticleCard = ({
             />
           )}
 
-          {/* Icon for more options */}
-          {source === 'home' && item.status === StatusEnum.PUBLISHED && (
-            <TouchableOpacity
-              style={styles.shareIconContainer}
-              onPress={onChange}>
-              <Entypo name="dots-three-vertical" size={20} color={'black'} />
-            </TouchableOpacity>
-          )}
-
           {/* Title & Footer Text */}
           <Text style={styles.footerText}>
             {item?.tags.map(tag => tag.name).join(' | ')}
           </Text>
           <Text style={styles.title}>{item?.title}</Text>
 
-          <Text style={styles.footerText1}>
-            {item?.authorName} {''}
-          </Text>
-          <Text style={{...styles.footerText1, marginBottom: 3}}>
-            {item?.viewUsers
-              ? item?.viewUsers.length > 1
-                ? `${formatCount(item?.viewUsers.length)} views`
-                : `${item?.viewUsers.length} view`
-              : '0 view'}
-          </Text>
-          <Text style={styles.footerText1}>
-            Last updated: {''}
-            {moment(new Date(item?.lastUpdated)).format('DD/MM/YYYY')}
-          </Text>
+          <View style={styles.metaRow}>
+            <Text style={styles.footerText1}>{item?.authorName}</Text>
+            <Text style={styles.dot}>•</Text>
+            <Text style={styles.footerText1}>
+              {formatCount(item?.viewUsers?.length || 0)} views
+            </Text>
+            <Text style={styles.dot}>•</Text>
+            <Text style={styles.footerText1}>
+              {moment(item?.lastUpdated).format('DD MMM')}
+            </Text>
+          </View>
 
           <EditRequestModal
             visible={requestModalVisible}
@@ -526,7 +500,7 @@ const ArticleCard = ({
                 });
               }}
               style={styles.likeSaveChildContainer}>
-              <FontAwesome name="comment-o" size={24} color={'black'} />
+              <FontAwesome name="commenting" size={27} color={PRIMARY_COLOR} />
             </TouchableOpacity>
 
             {source === 'home' && (
@@ -537,7 +511,7 @@ const ArticleCard = ({
                   handleRepostAction(item);
                 }}
                 style={styles.likeSaveChildContainer}>
-                <AntDesign name="fork" size={22} color={'black'} />
+                <FontAwesome6 name="arrows-rotate" size={22} color={PRIMARY_COLOR} />
                 <Text
                   style={{
                     ...styles.title,
@@ -574,6 +548,14 @@ const ArticleCard = ({
                 )}
               </TouchableOpacity>
             )}
+
+            {source === 'home' && item.status === StatusEnum.PUBLISHED && (
+              <TouchableOpacity
+                style={styles.likeSaveChildContainer}
+                onPress={onChange}>
+                <Entypo name="dots-three-vertical" size={20} color={'black'} />
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       </View>
@@ -583,64 +565,144 @@ const ArticleCard = ({
 
 export default ArticleCard;
 
+// const styles = StyleSheet.create({
+//   cardContainer: {
+//     width: '100%',
+//     backgroundColor: '#ffffff',
+//     flexDirection: 'row',
+//     marginVertical: 10,
+//     borderRadius: 12,
+//     overflow: 'hidden',
+//     elevation: 2,
+//     borderWidth: 1,
+//     borderColor: '#E0E0E0',
+//   },
+//   image: {
+//     flex: 0.4,
+//     height: '100%',
+//     resizeMode: 'cover',
+//   },
+//   textContainer: {
+//     flex: 0.6,
+//     backgroundColor: 'white',
+//     paddingHorizontal: 12,
+//     paddingVertical: 12,
+//     justifyContent: 'space-between',
+//   },
+
+//   title: {
+//     fontSize: fp(5.5),
+//     fontWeight: '700',
+//     color: '#191C1B',
+//     marginBottom: 4,
+//   },
+//   footerText: {
+//     fontSize: fp(3.5),
+//     fontWeight: '600',
+//     color: PRIMARY_COLOR,
+//     marginBottom: 3,
+//   },
+//   footerText1: {
+//     fontSize: fp(3.5),
+//     fontWeight: '400',
+//     color: '#778599',
+//     marginBottom: 2,
+//   },
+//   likeSaveContainer: {
+//     flexDirection: 'row',
+//     width: '100%',
+//     marginTop: 10,
+//     justifyContent: 'space-between',
+//   },
+//   likeSaveChildContainer: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//   },
+//   shareIconContainer: {
+//     position: 'absolute',
+//     top: 5,
+//     right: 5,
+//     zIndex: 1,
+//   },
+// });
+
 const styles = StyleSheet.create({
   cardContainer: {
-    width: '100%',
-    backgroundColor: '#ffffff',
-    flexDirection: 'row',
-    marginVertical: 10,
-    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    marginVertical: 12,
     overflow: 'hidden',
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    shadowOffset: {width: 0, height: 4},
   },
-  image: {
-    flex: 0.4,
-    height: '100%',
+
+  coverImage: {
+    width: '100%',
+    height: 180,
     resizeMode: 'cover',
   },
-  textContainer: {
-    flex: 0.6,
-    backgroundColor: 'white',
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    justifyContent: 'space-between',
+
+  contentContainer: {
+    padding: 14,
+  },
+
+  footerText: {
+    fontSize: fp(3.4),
+    fontWeight: '600',
+    color: PRIMARY_COLOR,
+    marginBottom: 6,
   },
 
   title: {
-    fontSize: fp(5.5),
+    fontSize: fp(5.8),
     fontWeight: '700',
-    color: '#191C1B',
-    marginBottom: 4,
+    color: '#121212',
+    lineHeight: 26,
+    marginBottom: 6,
   },
-  footerText: {
-    fontSize: fp(3.5),
-    fontWeight: '600',
-    color: PRIMARY_COLOR,
-    marginBottom: 3,
-  },
+
   footerText1: {
     fontSize: fp(3.5),
-    fontWeight: '400',
-    color: '#778599',
+    color: '#7A869A',
     marginBottom: 2,
   },
+
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
+  },
+
+  dot: {
+    marginHorizontal: 6,
+    color: '#B0B0B0',
+  },
+
   likeSaveContainer: {
     flexDirection: 'row',
-    width: '100%',
-    marginTop: 10,
     justifyContent: 'space-between',
+    marginTop: 14,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#F0F0F0',
   },
+
   likeSaveChildContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 6,
   },
+
   shareIconContainer: {
     position: 'absolute',
-    top: 5,
-    right: 5,
-    zIndex: 1,
+    top: 2,
+    right: 12,
+    backgroundColor: ON_PRIMARY_COLOR,
+    padding: 6,
+    borderRadius: 20,
   },
 });
 

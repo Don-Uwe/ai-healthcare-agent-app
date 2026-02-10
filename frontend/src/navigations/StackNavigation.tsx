@@ -218,7 +218,7 @@ const StackNavigation = () => {
         name="PodcastSearch"
         component={PodcastSearch}
         options={{
-          headerShown: true,
+          headerShown: false,
           headerTitle: 'Search Podcast',
           headerStyle: {
             backgroundColor: '#000A60',

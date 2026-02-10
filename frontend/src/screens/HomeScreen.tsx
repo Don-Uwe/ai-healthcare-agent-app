@@ -57,7 +57,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const [selectedCategory, setSelectedCategory] = useState<Category>();
   const [sortingType, setSortingType] = useState<string>('');
   const {isConnected} = useSelector((state: any) => state.network);
-  //const [loading, setLoading] = useState(true);
   const [selectedCardId, setSelectedCardId] = useState<string>('');
   const [repostItem, setRepostItem] = useState<ArticleData | null>(null);
   const [selectCategoryList, setSelectCategoryList] = useState<Category[]>([]);
@@ -97,12 +96,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       return;
     }
     if (user_token === '') {
-      // dispatch(
-      //   showAlert({
-      //     title: 'Error!',
-      //     message: 'No token found',
-      //   }),
-      // );
       Alert.alert('No token found');
       return;
     }
@@ -118,7 +111,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       selectedTags === undefined ||
       (selectedTags && selectedTags.length === 0)
     ) {
-      //console.log('Category Data', categoryData);
       dispatch(
         setSelectedTags({
           selectedTags: categoryData,
@@ -154,7 +146,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           },
         );
 
-        // console.log('Notification Response', response);
         return response.data.unreadCount as number;
       } catch (err) {
         console.error('Error fetching articles:', err);
@@ -163,11 +154,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     enabled: isConnected && !!user_token,
   });
 
-  const {
-    data: user,
-    refetch: refetchUser,
-    isLoading: isUserLoading,
-  } = useQuery({
+  const {data: user, refetch: refetchUser} = useQuery({
     queryKey: ['get-my-profile'],
     queryFn: async () => {
       const response = await axios.get(`${GET_PROFILE_API}`, {
@@ -195,7 +182,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   );
 
   const handleNoteIconClick = () => {
-    //navigation.navigate('EditorScreen');
     navigation.navigate('ArticleDescriptionScreen', {
       article: null,
       htmlContent: undefined,
@@ -208,9 +194,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
 
   const handleRepostAction = (item: ArticleData) => {
     if (isConnected) {
-      // updateLikeMutation.mutate();
       setRepostItem(item);
-
       repostMutation.mutate({
         articleId: Number(item._id),
       });
@@ -233,12 +217,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     }) => {
       if (user_token === '') {
         Alert.alert('No token found');
-        // dispatch(
-        //   showAlert({
-        //     title: 'Error!',
-        //     message: 'No token found',
-        //   }),
-        // );
         return;
       }
       const res = await axios.post(
@@ -262,11 +240,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         duration: Snackbar.LENGTH_SHORT,
       });
 
-      // Emit notification
-
       if (repostItem) {
-        //emitNotification(repostItem);
-
         const body = {
           type: 'repost',
           userId: user_id,
@@ -283,7 +257,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           },
         };
 
-        // console.log('notification body', body);
         socket.emit('notification', body);
       }
     },
@@ -291,12 +264,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     onError: error => {
       console.log('Repost Error', error);
       Alert.alert('Internal server error, try again!');
-      // dispatch(
-      //   showAlert({
-      //     title: 'Server Error!',
-      //     message: 'Try again!',
-      //   }),
-      // );
     },
   });
 
@@ -329,22 +296,10 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     },
     onSuccess: data => {
       Alert.alert(data);
-      // dispatch(
-      //   showAlert({
-      //     title: '',
-      //     message: data,
-      //   }),
-      // );
     },
     onError: err => {
       console.log(err);
       Alert.alert('Try again');
-      //  dispatch(
-      //   showAlert({
-      //     title: '',
-      //     message: 'Try again',
-      //   }),
-      // );
     },
   });
 
@@ -360,7 +315,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     return (
       <ArticleCard
         item={item}
-
         isSelected={selectedCardId === item._id}
         setSelectedCardId={setSelectedCardId}
         navigation={navigation}
@@ -369,7 +323,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         handleReportAction={handleReportAction}
         handleEditRequestAction={(item, index, reason) => {
           // submitRequest
-
           submitEditRequestMutation.mutate({
             articleId: item._id,
             reason: reason,
@@ -398,11 +351,8 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     // Update Redux State Variables
     console.log('enter');
     if (selectCategoryList.length > 0) {
-      //   console.log("enter")
       dispatch(setSelectedTags({selectedTags: selectCategoryList}));
     } else {
-      //console.log("enter ele", articleCategories);
-
       dispatch(
         setSelectedTags({
           selectedTags: articleCategories,
@@ -486,8 +436,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     enabled: isConnected && !!user_token && !!page,
   });
 
- // console.log("Filtered Articles", articleData);
-
   const onRefresh = () => {
     console.log('is connected', isConnected);
     if (isConnected) {
@@ -523,7 +471,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     }
   };
 
-  if (isError || !articleData || articleData.length === 0) {
+  if (!articleData || articleData.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
         <HomeScreenHeader
@@ -534,9 +482,42 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         />
 
         <View style={styles.emptyContainer}>
-        
+          <Text style={styles.message}>📡 Article Loading...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (isError) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <HomeScreenHeader
+          handlePresentModalPress={handlePresentModalPress}
+          onTextInputChange={handleSearch}
+          onNotificationClick={() => navigation.navigate('NotificationScreen')}
+          unreadCount={unreadCount || 0}
+        />
+
+        <View style={styles.emptyContainer}>
+          <Text style={styles.message}>📡 No Article Found</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (isConnected === false) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <HomeScreenHeader
+          handlePresentModalPress={handlePresentModalPress}
+          onTextInputChange={handleSearch}
+          onNotificationClick={() => navigation.navigate('NotificationScreen')}
+          unreadCount={unreadCount || 0}
+        />
+
+        <View style={styles.emptyContainer}>
           <Text style={styles.message}>
-            📡 Please be online to view articles
+            📡 Please try to be online to view articles
           </Text>
         </View>
       </SafeAreaView>
@@ -569,7 +550,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
             {selectedTags &&
               selectedTags.length > 0 &&
               !searchMode &&
-              selectedTags.map((item, index) => (
+              selectedTags.map((item: Category, index: number) => (
                 <TouchableOpacity
                   key={index}
                   style={{
@@ -600,6 +581,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
               ))}
           </ScrollView>
         </View>
+        
         <InactiveUserModal
           open={true}
           onRequestAdmin={() => {
@@ -609,8 +591,8 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
             user.isBlockUser
               ? 'blocked'
               : user.isBannedUser
-              ? 'banned'
-              : undefined
+                ? 'banned'
+                : undefined
           }
         />
       </SafeAreaView>
@@ -745,7 +727,7 @@ const styles = StyleSheet.create({
     borderRadius: wp(4),
     marginHorizontal: 6,
     marginVertical: 4,
-    padding: wp(3.5),
+    padding: wp(3.1),
     borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',
