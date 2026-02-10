@@ -29,6 +29,8 @@ import { StatusBar } from 'expo-status-bar';
 import { CustomAlertDialog } from './src/components/CustomAlert';
 import { firebaseInit } from './src/helper/firebase';
 import { useNotificationListeners } from './hooks/useNotificationListener';
+import { useVersionCheck } from './hooks/useVersionCheck';
+import UpdateModal from './src/components/UpdateModal';
 
 const queryClient = new QueryClient();
 
@@ -39,6 +41,8 @@ declare module '@tamagui/core' {
 }
 
 function App(): React.JSX.Element {
+  
+  const { visible, storeUrl } = useVersionCheck();
   const isDarkMode = useColorScheme() === 'dark';
   const backgroundStyle = {
     backgroundColor: isDarkMode ? '#000' : ON_PRIMARY_COLOR,
@@ -110,6 +114,7 @@ function App(): React.JSX.Element {
               <StackNavigation />
             </NavigationContainer>
              <CustomAlertDialog key={'alert'} /> 
+              <UpdateModal visible={visible} storeUrl={storeUrl} />
           </View>
           </PaperProvider>
         
