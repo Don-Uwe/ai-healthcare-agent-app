@@ -33,6 +33,13 @@
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="ultimatehealth"/>
       </intent-filter>
+      <intent-filter android:autoVerify="true" data-generated="true">
+        <action android:name="android.intent.action.VIEW"/>
+        <data android:scheme="https" android:host="uhsocial.in" android:pathPrefix="/article"/>
+        <data android:scheme="https" android:host="uhsocial.in" android:pathPrefix="/podcast"/>
+        <category android:name="android.intent.category.BROWSABLE"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+      </intent-filter>
     </activity>
   </application>
 </manifest>
