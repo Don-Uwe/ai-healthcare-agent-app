@@ -236,6 +236,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
       <PodcastCard
         id={item._id}
         title={item.title}
+        audioUrl={item.audio_url}
         host={item.user_id.user_name}
         views={item.viewUsers.length}
         duration={`${msToTime(item.duration)}`}

@@ -88,12 +88,13 @@ export default function OfflinePodcastDetail({
 
   const handleShare = async () => {
     try {
+        const url = `https://uhsocial.in/podcast?trackId=${podcast._id}&audioUrl=${podcast.audio_url}`;
       await Share.open({
         title: podcast?.title,
-        message: `${podcast?.title} : Check out this podcast on UltimateHealth app!`,
+        message: `${podcast?.title} : Check out this awesome podcast on UltimateHealth app!`,
         // Most Recent APK: 0.7.4
-        url: 'https://drive.google.com/file/d/19pRw_TWU4R3wcXjffOPBy1JGBDGnlaEh/view?usp=sharing',
-        subject: 'UltimateHealth Post',
+        url: url,
+        subject: 'Podcast Sharing',
       });
       //console.log(result);
     } catch (error) {

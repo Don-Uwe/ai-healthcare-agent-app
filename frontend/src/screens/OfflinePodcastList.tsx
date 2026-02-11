@@ -80,6 +80,7 @@ export default function OfflinePodcastList({
       <PodcastCard
         id={item._id}
         title={item.title}
+        audioUrl={item.audioUrl}
         host={item.user_id.user_name}
         views={item.viewUsers.length}
         duration={`${msToTime(item.duration)}`}

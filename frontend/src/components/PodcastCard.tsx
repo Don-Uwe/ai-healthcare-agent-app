@@ -8,9 +8,7 @@ import {BottomSheetModal} from '@gorhom/bottom-sheet';
 import PodcastActions from './PodcastActions';
 import Share from 'react-native-share';
 import {GET_STORAGE_DATA} from '../helper/APIUtils';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { showAlert } from '../store/alertSlice';
-import { useDispatch } from 'react-redux';
+
 
 interface PodcastProps {
   id: string;
@@ -18,6 +16,7 @@ interface PodcastProps {
   display: boolean;
   title: string;
   host: string;
+  audioUrl: string;
   imageUri: string;
   views: number;
   tags: Category[];
@@ -36,6 +35,7 @@ const PodcastCard = ({
   views,
   duration,
   tags,
+  audioUrl,
   handleClick,
   downLoadAudio,
   handleReport,
@@ -44,7 +44,6 @@ const PodcastCard = ({
   playlistAct,
 }: PodcastProps) => {
   const sheetRef = useRef<BottomSheetModal>(null);
-  const dispatch = useDispatch();
 
   const handleOpenSheet = () => {
     // onSelect(id);
@@ -53,21 +52,20 @@ const PodcastCard = ({
 
   const handleShare = async () => {
     try {
+
+      const url = `https://uhsocial.in/podcast?trackId=${id}&audioUrl=${audioUrl}`;
+
       const result = await Share.open({
         title: title,
-        message: `${title} : Check out this podcast on UltimateHealth app!`,
+        message: `${title} : Check out this awesome podcast on UltimateHealth app!`,
         // Most Recent APK: 0.7.4
-        url: 'https://play.google.com/store/apps/details?id=com.anonymous.UltimateHealth',
-        subject: 'UltimateHealth Post',
+        url: url,
+        subject: 'Podcast Sharing',
       });
       console.log(result);
     } catch (error) {
       console.log('Error sharing:', error);
       Alert.alert('Error', 'Something went wrong while sharing.');
-      // dispatch(showAlert({
-      //   title: "Error",
-      //   message: 'Something went wrong while sharing.'
-      // }));
     }
   };
 
@@ -110,7 +108,6 @@ const PodcastCard = ({
 
           <YStack flex={1} gap="$1" overflow="hidden">
             <Text
-            
               fontSize={16}
               fontWeight="700"
               numberOfLines={3}

@@ -180,6 +180,7 @@ export default function PodcastWorkSpace({
       return (
         <PodcastCard
           id={item._id}
+          audioUrl={item.audio_url}
           title={item.title}
           host={user_handle}
           imageUri={item.cover_image}

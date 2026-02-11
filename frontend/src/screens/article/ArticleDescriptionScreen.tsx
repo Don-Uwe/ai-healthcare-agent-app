@@ -131,7 +131,7 @@ const ArticleDescriptionScreen = ({
     });
   };
   return (
-       <KeyboardAwareScrollView
+      <KeyboardAwareScrollView
       style={{width: '100%', flex: 1}}
       // contentContainerStyle={{paddingHorizontal: 6, paddingBottom: 24}}
       bottomOffset={50}

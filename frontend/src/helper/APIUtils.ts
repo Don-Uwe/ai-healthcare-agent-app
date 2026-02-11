@@ -82,6 +82,7 @@ const PENDING_PODCASTS = `${PROD_URL}/podcast/user-pending`;
 const USER_PUBLISHED_PODCASTS = `${PROD_URL}/podcast/user-published`;
 
 const LOAD_REVIEW_COMMENTS = `${PROD_URL}/review/load`;
+const GET_TOKEN_STATUS = `${PROD_URL}/tokenstatus`;
 
 // chat url
 const CHAT_URL = `${PROD_URL}/gemini/messages`;
@@ -112,6 +113,7 @@ export {
   UPDATE_USER_PROFESSIONAL_DETAILS,
   UPLOAD_STORAGE,
   GET_STORAGE_DATA,
+  GET_TOKEN_STATUS,
   UPDATE_PROFILE_IMAGE,
   GET_PROFILE_IMAGE_BY_ID,
   GET_IMAGE,

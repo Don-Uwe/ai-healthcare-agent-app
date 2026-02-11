@@ -604,6 +604,11 @@ export type CategoryType = {
   name: string;
 };
 
+export type TokenStatus = {
+  isValid: boolean;
+  message: string;
+};
+
 export type User = {
   Profile_image: string;
   Years_of_experience: null;

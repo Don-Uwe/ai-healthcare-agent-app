@@ -13,7 +13,7 @@ import {useEffect, useState} from 'react';
 import {fp} from '../helper/Metric';
 import {ArticleCardProps, ArticleData, User} from '../type';
 import moment from 'moment';
-import {useDispatch, useSelector} from 'react-redux';
+import {useSelector} from 'react-redux';
 import axios from 'axios';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import IonIcons from '@expo/vector-icons/Ionicons';
@@ -32,7 +32,6 @@ import {
   StatusEnum,
 } from '../helper/Utils';
 import {
-  useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -45,13 +44,12 @@ import RNFS from 'react-native-fs';
 import {generatePDF} from 'react-native-html-to-pdf';
 import {useSocket} from '../../SocketContext';
 import EditRequestModal from './EditRequestModal';
-import {FontAwesome, FontAwesome5, FontAwesome6} from '@expo/vector-icons';
+import {FontAwesome, FontAwesome6} from '@expo/vector-icons';
 import Snackbar from 'react-native-snackbar';
 
 const ArticleCard = ({
   item,
   navigation,
-  isSelected,
   setSelectedCardId,
   success,
   handleRepostAction,
@@ -63,7 +61,6 @@ const ArticleCard = ({
   const {isConnected} = useSelector((state: any) => state.network);
 
   //const socket = io('http://51.20.1.81:8084');
-  const dispatch = useDispatch();
   const socket = useSocket();
   const width = useSharedValue(0);
   const yValue = useSharedValue(60);
@@ -72,21 +69,20 @@ const ArticleCard = ({
   const [menuVisible, setMenuVisible] = useState(false);
 
   //console.log("Repost users", item.repostUsers);
-  const menuStyle = useAnimatedStyle(() => {
-    return {
-      width: width.value,
-      transform: [{translateY: yValue.value}],
-    };
-  });
   //console.log('Image Utils', item?.imageUtils[0]);
   const handleShare = async () => {
     try {
+      const url =
+        `https://uhsocial.in/article/${item._id}` +
+        `?authorId=${item.authorId}` +
+        `&recordId=${item.pb_recordId}`;
+
       const result = await Share.open({
         title: item.title,
         message: `${item.title} : Check out this awesome post on UltimateHealth app!`,
         // Most Recent APK: 0.7.4
-        url: 'https://drive.google.com/file/d/19pRw_TWU4R3wcXjffOPBy1JGBDGnlaEh/view?usp=sharing',
-        subject: 'React Native Post',
+        url: url,
+        subject: 'Article Post',
       });
       console.log(result);
       setMenuVisible(false);
@@ -511,7 +507,11 @@ const ArticleCard = ({
                   handleRepostAction(item);
                 }}
                 style={styles.likeSaveChildContainer}>
-                <FontAwesome6 name="arrows-rotate" size={22} color={PRIMARY_COLOR} />
+                <FontAwesome6
+                  name="arrows-rotate"
+                  size={22}
+                  color={PRIMARY_COLOR}
+                />
                 <Text
                   style={{
                     ...styles.title,

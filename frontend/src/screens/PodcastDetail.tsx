@@ -1,10 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {
-  View,
   StyleSheet,
-  Image,
   TouchableOpacity,
-  ScrollView,
   Alert,
   ActivityIndicator,
   Platform,
@@ -21,27 +18,25 @@ import axios from 'axios';
 import {
   GET_IMAGE,
   GET_PODCAST_DETAILS,
-  GET_STORAGE_DATA,
   LIKE_PODCAST,
 } from '../helper/APIUtils';
-import {useDispatch, useSelector} from 'react-redux';
-import moment from 'moment';
+import {useSelector} from 'react-redux';
+
 import {downloadAudio, formatCount, StatusEnum} from '../helper/Utils';
 import Snackbar from 'react-native-snackbar';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Share from 'react-native-share';
-import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {hp} from '../helper/Metric';
 import {useSocket} from '../../SocketContext';
 import {Feather} from '@expo/vector-icons';
 import Loader from '../components/Loader';
-import {Button, Circle, Theme, XStack, YStack, Text} from 'tamagui';
+import {Button, Theme, XStack, YStack, Text} from 'tamagui';
 import LottieView from 'lottie-react-native';
-import {showAlert} from '../store/alertSlice';
+
 
 const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   //const [progress, setProgress] = useState(10);
-  const insets = useSafeAreaInsets();
+ // const insets = useSafeAreaInsets();
   const {trackId, audioUrl} = route.params;
 
   const [playing, setIsPlaying] = useState(false);
@@ -52,20 +47,19 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   );
   const {isConnected} = useSelector((state: any) => state.network);
   const [isLoading, setLoading] = useState<boolean>(false);
-  const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [duration, setDuration] = useState(0);
   const [position, setPosition] = useState(0);
-  const dispatch = useDispatch();
 
-  const handleListenPress = async () => {
-    if (!player) return;
-    const status = player.currentStatus;
-    if (status.playing) {
-      player.pause();
-    } else {
-      player.play();
-    }
-  };
+
+  // const handleListenPress = async () => {
+  //   if (!player) return;
+  //   const status = player.currentStatus;
+  //   if (status.playing) {
+  //     player.pause();
+  //   } else {
+  //     player.play();
+  //   }
+  // };
 
   const {data: podcast, refetch} = useQuery({
     queryKey: ['get-podcast-details'],
@@ -113,12 +107,12 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
     return () => clearInterval(interval);
   }, [player.currentTime, player.duration, player.playing]);
 
-  const handleSeek = async (value: number) => {
-    if (player) {
-      await player.seekTo(value);
-      setPosition(value);
-    }
-  };
+  // const handleSeek = async (value: number) => {
+  //   if (player) {
+  //     await player.seekTo(value);
+  //     setPosition(value);
+  //   }
+  // };
 
   const SKIP_TIME = 5; // seconds
 
@@ -213,28 +207,15 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
     },
   });
 
-  const formatTime = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = Math.floor(seconds % 60);
-
-    if (hours > 0) {
-      return `${hours}:${mins < 10 ? '0' : ''}${mins}:${
-        secs < 10 ? '0' : ''
-      }${secs}`;
-    } else {
-      return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-    }
-  };
-  //console.log("Podcast liked users", podcast?.likedUsers);
   const handleShare = async () => {
     try {
+      const url = `https://uhsocial.in/podcast?trackId=${podcast?._id}&audioUrl=${podcast?.audio_url}`;
       const result = await Share.open({
         title: podcast?.title,
-        message: `${podcast?.title} : Check out this podcast on UltimateHealth app!`,
+        message: `${podcast?.title} : Check out this awesome podcast on UltimateHealth app!`,
         // Most Recent APK: 0.7.4
-        url: 'https://drive.google.com/file/d/19pRw_TWU4R3wcXjffOPBy1JGBDGnlaEh/view?usp=sharing',
-        subject: 'UltimateHealth Post',
+        url: url,
+        subject: 'Podcast Sharing',
       });
       console.log(result);
     } catch (error) {
@@ -291,7 +272,7 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
           </YStack>
 
           {/* MAIN WAVE */}
-          <YStack alignItems="center" mt="$4">
+          <YStack alignItems="center" marginTop="$4">
             <LottieView
               source={require('../assets/LottieAnimation/wave-loop.json')}
               autoPlay
@@ -302,7 +283,7 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
 
           {/* PLAYING VISUALIZER */}
           {playing && (
-            <YStack alignItems="center" mt="$2">
+            <YStack alignItems="center" marginTop="$2">
               <LottieView
                 source={require('../assets/LottieAnimation/sound-voice-waves.json')}
                 autoPlay
@@ -313,7 +294,7 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
           )}
 
           {/* SLIDER + TIME */}
-          <YStack mt="$2">
+          <YStack marginTop="$2">
             <Slider
               style={styles.slider}
               minimumValue={0}
@@ -330,14 +311,14 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
               }}
             />
 
-            <XStack justifyContent="space-between" mt="$3">
+            <XStack justifyContent="space-between" marginTop="$3">
               <Text color="#C0C9DA">{formatSecTime(position)}</Text>
               <Text color="#C0C9DA">{formatSecTime(duration)}</Text>
             </XStack>
           </YStack>
 
           {/* PLAYER BUTTONS */}
-          <XStack justifyContent="space-around" alignItems="center" mt="$4">
+          <XStack justifyContent="space-around" alignItems="center" marginTop="$4">
             <Button
               height={90}
               chromeless
@@ -349,7 +330,7 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
               width={90}
               height={90}
               borderRadius={45}
-              bg="#4ACDFF"
+              background="#4ACDFF"
               onPress={() =>
                 player.currentStatus.playing ? handlePause() : handlePlay()
               }
@@ -420,7 +401,7 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
                     setLoading(false);
 
                     Snackbar.show({
-                      text: res.message,
+                      text: res?.message ?? 'Audio downloaded successfully!',
                       duration: Snackbar.LENGTH_SHORT,
                     });
                   }}>

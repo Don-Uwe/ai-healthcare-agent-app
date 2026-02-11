@@ -2,6 +2,7 @@
   "expo": {
     "name": "UltimateHealth",
     "slug": "UltimateHealth",
+  
     "version": "1.2.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -38,6 +39,26 @@
         "MODIFY_AUDIO_SETTINGS",
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS"
+      ],
+
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "category": ["BROWSABLE", "DEFAULT"],
+          "data": [
+            {
+              "scheme": "https",
+              "host": "uhsocial.in",
+              "pathPrefix": "/article"
+            },
+            {
+              "scheme": "https",
+              "host": "uhsocial.in",
+              "pathPrefix": "/podcast"
+            }
+          ]
+        }
       ],
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {

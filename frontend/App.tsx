@@ -5,11 +5,11 @@
  * @format
  */
 
-import React, {useEffect} from 'react';
-import {Platform,  useColorScheme, View} from 'react-native';
+import React, {useEffect, useRef} from 'react';
+import {useColorScheme, View} from 'react-native';
 //import {Colors} from 'react-native/Libraries/NewAppScreen';
-import {ON_PRIMARY_COLOR, PRIMARY_COLOR, SECONDARY_COLOR} from './src/helper/Theme';
-import {NavigationContainer} from '@react-navigation/native';
+import {ON_PRIMARY_COLOR} from './src/helper/Theme';
+import {NavigationContainer, NavigationContainerRef} from '@react-navigation/native';
 import StackNavigation from './src/navigations/StackNavigation';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {addEventListener} from '@react-native-community/netinfo';
@@ -31,28 +31,33 @@ import { firebaseInit } from './src/helper/firebase';
 import { useNotificationListeners } from './hooks/useNotificationListener';
 import { useVersionCheck } from './hooks/useVersionCheck';
 import UpdateModal from './src/components/UpdateModal';
+import { useCheckTokenStatus } from './hooks/useGetTokenStatus';
+import { initDeepLinking } from './src/helper/DeepLinkService';
 
 const queryClient = new QueryClient();
 
-type Conf = typeof config
-
-declare module '@tamagui/core' {
-  interface TamaguiCustomConfig extends Conf {}
-}
-
-function App(): React.JSX.Element {
+function App() {
   
+  const navigationRef = useRef(null);
+
+  const {data: tokenRes = null, isLoading} = useCheckTokenStatus();
+
   const { visible, storeUrl } = useVersionCheck();
   const isDarkMode = useColorScheme() === 'dark';
   const backgroundStyle = {
     backgroundColor: isDarkMode ? '#000' : ON_PRIMARY_COLOR,
   };
 
-  const BarStyle = Platform.OS === 'ios' ? 'dark-content' : 'light-content';
   //const navigationContainerRef = useRef();
   const dispatch = useDispatch();
 
- 
+ useEffect(() => {
+
+   if (navigationRef.current && tokenRes) {
+      initDeepLinking(navigationRef.current, tokenRes?.isValid || false);
+    }
+
+ },[tokenRes, isLoading]);
 
   useEffect(() => {
     firebaseInit();
@@ -110,7 +115,7 @@ function App(): React.JSX.Element {
           <View
             style={{flex: 1, backgroundColor: backgroundStyle.backgroundColor}}>
             <StatusBar style="dark" backgroundColor={'#000A60'} />
-            <NavigationContainer>
+            <NavigationContainer ref={navigationRef}>
               <StackNavigation />
             </NavigationContainer>
              <CustomAlertDialog key={'alert'} /> 
