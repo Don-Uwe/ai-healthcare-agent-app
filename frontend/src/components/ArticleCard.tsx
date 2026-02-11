@@ -74,7 +74,7 @@ const ArticleCard = ({
     try {
       const url =
         `https://uhsocial.in/article/${item._id}` +
-        `?authorId=${item.authorId}` +
+        `?authorId=${item.authorId._id}` +
         `&recordId=${item.pb_recordId}`;
 
       const result = await Share.open({
