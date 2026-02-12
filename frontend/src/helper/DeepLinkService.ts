@@ -14,7 +14,7 @@ export const initDeepLinking =  (navigation: any, isAuthenticated: boolean) => {
       pendingRoute = {
         name: 'ArticleScreen',
         params: {
-          articleId: Number(parsed.pathname.split('/')[2]),
+          articleId: Number(parsed.searchParams.get("articleId")),
           authorId: parsed.searchParams.get('authorId'),
           recordId: parsed.searchParams.get('recordId'),
         },

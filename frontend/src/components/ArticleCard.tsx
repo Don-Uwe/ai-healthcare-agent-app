@@ -73,8 +73,8 @@ const ArticleCard = ({
   const handleShare = async () => {
     try {
       const url =
-        `https://uhsocial.in/api/share/article/${item._id}` +
-        `?authorId=${item.authorId._id}` +
+        `https://uhsocial.in/api/share/article?articleId=${item._id}` +
+        `&authorId=${item.authorId._id}` +
         `&recordId=${item.pb_recordId}`;
 
       const result = await Share.open({
