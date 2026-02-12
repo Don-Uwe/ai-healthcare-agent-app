@@ -10,7 +10,7 @@ export const initDeepLinking =  (navigation: any, isAuthenticated: boolean) => {
    
     const parsed = new URL(url);
 
-    if (parsed.pathname.startsWith('/article')) {
+    if (parsed.pathname.startsWith('/api/share/article')) {
       pendingRoute = {
         name: 'ArticleScreen',
         params: {
@@ -21,7 +21,7 @@ export const initDeepLinking =  (navigation: any, isAuthenticated: boolean) => {
       };
     }
 
-    if (parsed.pathname.startsWith('/podcast')) {
+    if (parsed.pathname.startsWith('/api/share/podcast')) {
       pendingRoute = {
         name: 'PodcastDetail',
         params: {

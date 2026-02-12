@@ -53,7 +53,7 @@ const PodcastCard = ({
   const handleShare = async () => {
     try {
 
-      const url = `https://uhsocial.in/podcast?trackId=${id}&audioUrl=${audioUrl}`;
+      const url = `https://uhsocial.in/api/share/podcast?trackId=${id}&audioUrl=${audioUrl}`;
 
       const result = await Share.open({
         title: title,

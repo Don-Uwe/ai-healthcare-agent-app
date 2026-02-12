@@ -50,12 +50,12 @@
             {
               "scheme": "https",
               "host": "uhsocial.in",
-              "pathPrefix": "/article"
+              "pathPrefix": "/api/share/article"
             },
             {
               "scheme": "https",
               "host": "uhsocial.in",
-              "pathPrefix": "/podcast"
+              "pathPrefix": "/api/share/podcast"
             }
           ]
         }
