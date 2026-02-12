@@ -4,10 +4,7 @@ import { Linking } from "react-native";
 let pendingRoute: any = null;
 export const initDeepLinking =  (navigation: any, isAuthenticated: boolean) => {
 
-  
-
   const handleUrl = (url: string) => {
-   
     const parsed = new URL(url);
 
     if (parsed.pathname.startsWith('/api/share/article')) {
@@ -30,8 +27,7 @@ export const initDeepLinking =  (navigation: any, isAuthenticated: boolean) => {
         },
       };
     }
-  
-
+    
     resolveNavigation(navigation, isAuthenticated);
   };
 

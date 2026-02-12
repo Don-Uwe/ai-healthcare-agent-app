@@ -4,10 +4,13 @@ import type {StackScreenProps} from '@react-navigation/stack';
 import {Dispatch, RefObject, SetStateAction} from 'react';
 import {BottomSheetModal} from '@gorhom/bottom-sheet'; // Adjust this import based on your actual BottomSheetModal component
 
+
+
 export type RootStackParamList = {
-  navigate(arg0: string): unknown;
   SplashScreen: undefined;
-  LoginScreen: undefined;
+  LoginScreen: {
+    redirectTo?: RedirectTo;
+  }
   TabNavigation: undefined;
   SignUpScreenFirst: undefined;
   SignUpScreenSecond: {user: UserDetail};
@@ -120,6 +123,14 @@ export type RootStackParamList = {
   OpenSourcePage: undefined;
   //ChatbotScreen: undefined;
 };
+
+export type RedirectTo = {
+  [K in keyof RootStackParamList]: {
+    name: K;
+    params: RootStackParamList[K];
+  };
+}[keyof RootStackParamList];
+
 
 export type Message = {
   _id: number;

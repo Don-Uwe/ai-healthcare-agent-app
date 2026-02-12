@@ -26,8 +26,9 @@ import messaging from '@react-native-firebase/messaging';
 import Entypo from '@expo/vector-icons/Entypo';
 import EmailInputBottomSheet from '../../components/EmailInputModal';
 
-const LoginScreen = ({navigation}: LoginScreenProp) => {
+const LoginScreen = ({navigation, route}: LoginScreenProp) => {
   const inset = useSafeAreaInsets();
+  const {redirectTo} = route.params || {};
   const dispatch = useDispatch();
   const isDarkMode = useColorScheme() === 'dark';
   const [emailInputVisible, setEmailInputVisible] = useState(false);
@@ -59,9 +60,9 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
     }
   }
 
-  useEffect(()=>{
-   console.log("Email modal visibility state", emailInputVisible);
-  },[emailInputVisible])
+  useEffect(() => {
+    console.log('Email modal visibility state', emailInputVisible);
+  }, [emailInputVisible]);
 
   async function getFCMToken() {
     await requestUserPermission();
@@ -83,7 +84,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
       setEmailMessage(false);
       //console.log("email, password", email,password)
       loginMutation.mutate({
-        token: fcmToken ?? "not found"
+        token: fcmToken ?? 'not found',
       });
     } else {
       setOutput(true);
@@ -105,7 +106,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
       return false;
     }
   };
-  const handlePassword = e => {
+  const handlePassword = (e: any) => {
     //let pass = e.nativeEvent.text;
     setPassword(e);
     setPasswordVerify(false);
@@ -116,7 +117,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
     }
   };
 
-  const handleEmail = e => {
+  const handleEmail = (e: any) => {
     //console.log("Event",e );
     //let email = e.nativeEvent.text;
     setEmail(e);
@@ -129,8 +130,8 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
 
   const loginMutation = useMutation({
     mutationKey: ['login'],
-    mutationFn: async ({token}:{token: string}) => {
-      console.log("LOGIN", LOGIN_API, email, password, token);
+    mutationFn: async ({token}: {token: string}) => {
+      console.log('LOGIN', LOGIN_API, email, password, token);
       const res = await axios.post(LOGIN_API, {
         email: email,
         password: password,
@@ -159,6 +160,14 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
           dispatch(setUserToken(auth.token));
           dispatch(setUserHandle(auth.user_handle));
           setTimeout(() => {
+            if (redirectTo) {
+              navigation.navigate({
+                name: redirectTo.name,
+                params: redirectTo.params,
+              });
+
+              return;
+            }
             navigation.reset({
               index: 0,
               routes: [{name: 'TabNavigation'}],
@@ -334,9 +343,9 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
             style={{
               height: 80,
               width: 80,
-             // borderRadius: 60,
+              // borderRadius: 60,
               alignSelf: 'center',
-              resizeMode:'cover'
+              resizeMode: 'cover',
             }}
           />
 
@@ -357,7 +366,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
             </Text>
           )}
 
-          <XStack alignItems ="center" position="relative">
+          <XStack alignItems="center" position="relative">
             <Icon
               name="mail"
               size={22}
@@ -388,7 +397,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
             </Text>
           )}
 
-          <XStack ai="center" position="relative">
+          <XStack alignItems="center" position="relative">
             <Entypo
               name="lock"
               size={22}
@@ -428,9 +437,9 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
           </XStack>
 
           <Button
-             backgroundColor="$blue10"
+            backgroundColor="$blue10"
             theme="blue"
-            mt="$6"
+            marginTop="$6"
             size="$6"
             fontWeight="700"
             alignSelf="center"
@@ -446,7 +455,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
             size="$5"
             alignSelf="center"
             onPress={() => {
-              console.log("Forgot Password clicked!");
+              console.log('Forgot Password clicked!');
               setEmailInputVisible(true);
               setRequestVerification(false);
             }}>
@@ -471,12 +480,12 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
             </Text>
           </Button>
 
-          <Separator my="$3" />
+          <Separator marginVertical="$3" />
 
           <Button
-            mt="$3"
+            marginTop="$3"
             size="$6"
-            bg="$gray3"
+            background="$gray3"
             color="$color"
             alignSelf="center"
             width="100%"
@@ -487,20 +496,20 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
           </Button>
         </YStack>
 
-       <EmailInputBottomSheet
-        visible={emailInputVisible}
-        callback={(email: string) => {
-          setOtpMail(email)
-          if (requestVerificationMode) {
-            requestVerification.mutate({ email1: email })
-          } else {
-            sendOtpMutation.mutate({ email })
-          }
-        }}
-        backButtonClick={handleEmailInputBack}
-        onDismiss={() => setEmailInputVisible(false)}
-        isRequestVerification={requestVerificationMode}
-      />
+        <EmailInputBottomSheet
+          visible={emailInputVisible}
+          callback={(email: string) => {
+            setOtpMail(email);
+            if (requestVerificationMode) {
+              requestVerification.mutate({email1: email});
+            } else {
+              sendOtpMutation.mutate({email});
+            }
+          }}
+          backButtonClick={handleEmailInputBack}
+          onDismiss={() => setEmailInputVisible(false)}
+          isRequestVerification={requestVerificationMode}
+        />
       </YStack>
     </ScrollView>
   );
