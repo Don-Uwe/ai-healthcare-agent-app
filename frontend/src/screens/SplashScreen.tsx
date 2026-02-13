@@ -1,82 +1,57 @@
 import React, {useEffect} from 'react';
-import {View, Text, StyleSheet, Image, Alert, BackHandler} from 'react-native';
-import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
-import {SplashScreenProp, User} from '../type';
-import {clearStorage, KEYS, retrieveItem} from '../helper/Utils';
+import {Image, StyleSheet} from 'react-native';
+import {YStack, Text, Button} from 'tamagui';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  Easing,
+} from 'react-native-reanimated';
+import {SplashScreenProp} from '../type';
 import {useDispatch} from 'react-redux';
-import {setUserHandle, setUserId, setUserToken} from '../store/UserSlice';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import axios, {AxiosError} from 'axios';
-import {GET_PROFILE_API} from '../helper/APIUtils';
+import {retrieveItem, KEYS, clearStorage} from '../helper/Utils';
+import {setUserId, setUserToken, setUserHandle} from '../store/UserSlice';
+import { useCheckTokenStatus } from '@/hooks/useGetTokenStatus';
 
-const SplashScreen = ({navigation}: SplashScreenProp) => {
+export default function SplashScreen({navigation}: SplashScreenProp) {
+  const opacity = useSharedValue(0);
+  const scale = useSharedValue(0.8);
+  const translateY = useSharedValue(20);
+
   const dispatch = useDispatch();
 
-  function isDateMoreThanSevenDaysOld(dateString: string) {
-    const inputDate = new Date(dateString).getTime();
-    const currentDate = new Date().getTime();
-    const timeDifference = currentDate - inputDate;
-    const daysDifference = timeDifference / (1000 * 3600 * 24);
-    return daysDifference >= 6;
-  }
+  const {data: tokenRes, isLoading} = useCheckTokenStatus();
 
-  const getUserData = async (user_token: string) => {
-    try {
-      const response = await axios.get(`${GET_PROFILE_API}`, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      });
-
-      return response.data.profile as User;
-    } catch (err) {
-      // Token is blacklisted
-      const status = err.response.status;
-      //console.log('lOGIN STATUS', status);
-
-      if (status === 403) {
-        Alert.alert(
-          'Session Expired',
-          'You have logged in from a different device. Please create a new login session. Your previous session has been terminated.',
-          [
-            {
-              text: 'continue',
-              onPress: () => {
-                navigation.reset({
-                  index: 0,
-                  routes: [{name: 'LoginScreen'}],
-                });
-              },
-            },
-            {
-              text: 'exit',
-              onPress: () => {
-                BackHandler.exitApp(); // This works on Android, for iOS it is not possible
-              },
-            },
-          ],
-          {cancelable: false},
-        );
-      }
+  useEffect(() => {
+    console.log('Token status:', tokenRes);
+    if (tokenRes) {
+      checkLoginStatus();
     }
-  };
+  }, [ tokenRes]);
+  // function isDateMoreThanSevenDaysOld(dateString: string) {
+  //   const inputDate = new Date(dateString).getTime();
+  //   const currentDate = new Date().getTime();
+  //   const timeDifference = currentDate - inputDate;
+  //   const daysDifference = timeDifference / (1000 * 3600 * 24);
+  //   return daysDifference >= 6;
+  // }
 
   const checkLoginStatus = async () => {
+
+    if(!tokenRes){
+      return;
+    }
     try {
       const userId = await retrieveItem(KEYS.USER_ID);
-      //console.log('User Id', userId);
       const user = await retrieveItem(KEYS.USER_TOKEN);
       const user_handle = await retrieveItem(KEYS.USER_HANDLE);
-      const expiryDate = await retrieveItem(KEYS.USER_TOKEN_EXPIRY_DATE);
       if (
-        user_handle &&
-        user &&
-        expiryDate &&
-        !isDateMoreThanSevenDaysOld(expiryDate)
+       // user_handle &&
+       // user &&
+       // expiryDate &&
+       // !isDateMoreThanSevenDaysOld(expiryDate)
+       tokenRes?.isValid
       ) {
-        // check if token blacklisted or not, later more than 7 days check will remove no need
-
-        await getUserData(user);
 
         dispatch(setUserId(userId));
         dispatch(setUserToken(user));
@@ -84,66 +59,99 @@ const SplashScreen = ({navigation}: SplashScreenProp) => {
 
         navigation.reset({
           index: 0,
-          routes: [{name: 'TabNavigation'}], // Send user to LoginScreen after logout
+          routes: [{name: 'TabNavigation'}],
         });
       } else {
         await clearStorage();
         navigation.reset({
           index: 0,
-          routes: [{name: 'LoginScreen'}], // Send user to LoginScreen after logout
+          routes: [{name: 'LoginScreen'}],
         });
       }
     } catch (error) {
       console.error('Error retrieving user data from storage', error);
       await clearStorage();
-      // navigation.navigate('LoginScreen'); // Navigate to LoginPage if there's an error
+      // navigation.navigate('LoginScreen');
       navigation.reset({
         index: 0,
-        routes: [{name: 'LoginScreen'}], // Send user to LoginScreen after logout
+        routes: [{name: 'LoginScreen'}],
       });
     }
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      checkLoginStatus();
-    }, 3000);
+    opacity.value = withTiming(1, {
+      duration: 1200,
+      easing: Easing.out(Easing.exp),
+    });
+    scale.value = withTiming(1, {
+      duration: 1000,
+      easing: Easing.out(Easing.ease),
+    });
+    translateY.value = withTiming(0, {
+      duration: 1000,
+      easing: Easing.out(Easing.ease),
+    });
+  }, [opacity, scale, translateY]);
 
-    return () => {
-      clearTimeout(timer);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigation]);
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [{scale: scale.value}, {translateY: translateY.value}],
+  }));
 
   return (
-    <View style={styles.container}>
-      <Image source={require('../assets/icon.png')} style={styles.icon} />
-      <Text style={styles.text}>Ultimate</Text>
-      <Text style={styles.text}>Health</Text>
-    </View>
+    <YStack
+      flex={1}
+      alignItems="center"
+      justifyContent="center"
+      //bg="$background"
+      padding="$6"
+      gap="$4">
+      <Animated.View style={animatedStyle}>
+        <Image
+          source={require('../../assets/images/icon.png')}
+          style={styles.icon}
+        />
+        <Text
+          marginTop="$4"
+          fontSize="$8"
+          fontWeight="800"
+          color="$color12"
+          letterSpacing={1}
+          textAlign="center">
+          Ultimate Health
+        </Text>
+        <Text marginTop="$2" fontSize="$4" color="$color10" textAlign="center" paddingHorizontal="$4">
+          Empowering wellness through knowledge
+        </Text>
+      </Animated.View>
+
+      <Button
+        marginTop="$6"
+        size="$7"
+        backgroundColor={isLoading ? '$color3' : '$color9'}
+        color="black"
+        paddingHorizontal="$9"
+        paddingVertical="$2"
+        borderRadius="$10"
+        elevation={4}
+        disabled={isLoading}
+
+        pressStyle={{scale: 0.96, opacity: 0.9}}
+        onPress={checkLoginStatus}>
+        <Text fontSize={16} color="black">
+          Continue
+        </Text>
+      </Button>
+    </YStack>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: PRIMARY_COLOR,
-  },
   icon: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    marginBottom: 10,
-  },
-  text: {
-    fontSize: 22,
-    // fontWeight: 'bold',
-    color: ON_PRIMARY_COLOR,
-    textAlign: 'center',
-    fontFamily: 'Lobster-Regular',
+    width: 130,
+    height: 130,
+    borderRadius: 65,
+    alignSelf: 'center',
   },
 });
-
-export default SplashScreen;

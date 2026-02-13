@@ -7,18 +7,21 @@ import {
   Linking,
   Platform,
   Alert,
+  Pressable,
 } from 'react-native';
 import React from 'react';
-import EllipseSvg from '../assets/svg/EllipseSvg';
+import EllipseSvg from '../../assets/svg/EllipseSvg';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons';
-import Feather from 'react-native-vector-icons/Feather';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import MaterialCommunityIcon from '@expo/vector-icons/MaterialCommunityIcons';
+import Feather from '@expo/vector-icons/Feather';
 import {fp, hp, wp} from '../helper/Metric';
 import {ProfileHeaderProps} from '../type';
 
 import {GET_STORAGE_DATA} from '../helper/APIUtils';
+import {useSelector} from 'react-redux';
+import Snackbar from 'react-native-snackbar';
 
 const ProfileHeader = ({
   isDoctor,
@@ -42,6 +45,8 @@ const ProfileHeader = ({
   onOverviewClick,
   improvementPublished,
 }: ProfileHeaderProps) => {
+  const {isConnected} = useSelector((state: any) => state.network);
+
   const handleCall = phone => {
     let phoneNumber = phone;
     if (Platform.OS !== 'android') {
@@ -73,7 +78,7 @@ const ProfileHeader = ({
         />
         <Text style={styles.nameText}>{username}</Text>
         <Text style={[styles.usernameText, {color: PRIMARY_COLOR}]}>
-          {userhandle}
+          @{userhandle}
         </Text>
         {isDoctor && (
           <View style={styles.experienceContainer}>
@@ -161,10 +166,17 @@ const ProfileHeader = ({
 
         <TouchableOpacity
           onPress={() => {
-            navigation.navigate('LogoutScreen', {
-              profile_image: profileImg,
-              username: username,
-            });
+            if (isConnected) {
+              navigation.navigate('LogoutScreen', {
+                profile_image: profileImg,
+                username: username,
+              });
+            } else {
+              Snackbar.show({
+                text: 'Please check your internet connection!',
+                duration: Snackbar.LENGTH_SHORT,
+              });
+            }
           }}>
           {other && (
             <View style={styles.btnSM}>
@@ -191,41 +203,25 @@ const ProfileHeader = ({
           </View>
         )}
         <View style={styles.infoContainer}>
-          <TouchableOpacity onPress={onFollowerPress} style={styles.infoBlock}>
+          <Pressable onPress={onFollowerPress} style={styles.infoBlock}>
             <Text style={[styles.infoText, {color: PRIMARY_COLOR}]}>
               {followers}
             </Text>
             <Text style={styles.infoLabel}>
               {followers > 1 ? 'Followers' : 'Follower'}
             </Text>
-          </TouchableOpacity>
+          </Pressable>
 
-          <TouchableOpacity onPress={onFollowingPress} style={styles.infoBlock}>
+          <Pressable onPress={onFollowingPress} style={styles.infoBlock}>
             <Text style={[styles.infoText, {color: PRIMARY_COLOR}]}>
               {followings}
             </Text>
             <Text style={styles.infoLabel}>
               {followings > 1 ? 'Followings' : 'Following'}
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
-        <View style={styles.infoContainer}>
-          <TouchableOpacity style={styles.infoBlock}>
-            <Text style={[styles.infoText2, {color: PRIMARY_COLOR}]}>
-              {improvementPublished > 1
-                ? `${improvementPublished} Improvements`
-                : `${improvementPublished} Improvement`}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.infoBlock}>
-            <Text style={[styles.infoText2, {color: PRIMARY_COLOR}]}>
-              {articlesPosted > 1
-                ? `${articlesPosted} Articles`
-                : `${articlesPosted} Article`}
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <View style={styles.infoContainer}></View>
       </View>
     </View>
   );
@@ -236,7 +232,7 @@ export default ProfileHeader;
 const styles = StyleSheet.create({
   container: {
     //marginBottom: 20,
-    backgroundColor: ON_PRIMARY_COLOR,
+    // backgroundColor: ON_PRIMARY_COLOR,
   },
   ellipseSvg: {
     position: 'absolute',
@@ -245,7 +241,7 @@ const styles = StyleSheet.create({
   contentContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: hp(5),
+    marginTop: hp(1.5),
     // backgroundColor: ON_PRIMARY_COLOR
   },
   profileImage: {

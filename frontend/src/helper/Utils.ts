@@ -2,10 +2,8 @@ import NetInfo from '@react-native-community/netinfo';
 import {Category, CategoryType, PodcastData} from '../type';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {GET_STORAGE_DATA} from './APIUtils';
-import {Platform} from 'react-native';
+import {Alert, Linking, PermissionsAndroid, Platform} from 'react-native';
 import RNFS from 'react-native-fs';
-
-
 
 export const checkInternetConnection = (
   callback: (isConnected: boolean) => void,
@@ -18,120 +16,119 @@ export const checkInternetConnection = (
 };
 
 export const getMimeTypes = (ext: string): string => {
+  let type = '';
 
-      let type = '';
-
-     switch (ext.toLowerCase()) {
-        case 'mp3':
-            type = 'audio/mpeg';
-            break;
-          case 'wav':
-            type = 'audio/wav';
-            break;
-          case 'x-wav':
-            type = 'audio/x-wav';
-            break;
-          case 'ogg':
-            type = 'audio/ogg';
-            break;
-          case 'opus':
-            type = 'audio/opus';
-            break;
-          case 'aac':
-            type = 'audio/aac';
-            break;
-          case 'x-aac':
-            type = 'audio/x-aac';
-            break;
-          case 'flac':
-            type = 'audio/flac';
-            break;
-          case 'x-flac':
-            type = 'audio/x-flac';
-            break;
-          case 'mp4':
-            type = 'audio/mp4';
-            break;
-          case 'm4a':
-            type = 'audio/x-m4a';
-            break;
-          case 'webm':
-            type = 'audio/webm';
-            break;
-          case 'x-midi':
-            type = 'audio/x-midi';
-            break;
-          case 'amr':
-            type = 'audio/amr';
-            break;
-          case '3gpp':
-            type = 'audio/3gpp';
-            break;
-          case '3gpp2':
-            type = 'audio/3gpp2';
-            break;
-          case 'basic':
-            type = 'audio/basic';
-            break;
-          case 'vnd.wave':
-            type = 'audio/vnd.wave';
-            break;
-          case 'vnd.rn-realaudio':
-            type = 'audio/vnd.rn-realaudio';
-            break;
-          case 'vnd.dts':
-            type = 'audio/vnd.dts';
-            break;
-          case 'vnd.dts.hd':
-            type = 'audio/vnd.dts.hd';
-            break;
-          case 'vnd.digital-winds':
-            type = 'audio/vnd.digital-winds';
-            break;
-          case 'vnd.lucent.voice':
-            type = 'audio/vnd.lucent.voice';
-            break;
-          case 'vnd.ms-playready.media.pya':
-            type = 'audio/vnd.ms-playready.media.pya';
-            break;
-          case 'vnd.nuera.ecelp4800':
-            type = 'audio/vnd.nuera.ecelp4800';
-            break;
-          case 'vnd.nuera.ecelp7470':
-            type = 'audio/vnd.nuera.ecelp7470';
-            break;
-          case 'vnd.nuera.ecelp9600':
-            type = 'audio/vnd.nuera.ecelp9600';
-            break;
-          case 'vnd.sealedmedia.softseal.mpeg':
-            type = 'audio/vnd.sealedmedia.softseal.mpeg';
-            break;
-          case 'x-ms-wma':
-            type = 'audio/x-ms-wma';
-            break;
-          case 'wav':
-            type = 'audio/wav';
-            break;
-          case 'ogg':
-            type = 'audio/ogg';
-          break;
-        case 'aac':
-          type = 'audio/aac';
-          break;
-        case 'flac':
-          type = 'audio/flac';
-          break;
-        case 'm4a':
-          type = 'audio/mp4';
-          break;
-        case 'webm':
-          type = 'audio/webm';
-          break;
-        default:
-          type = 'application/octet-stream';
-      }
-      return type;
-}
+  switch (ext.toLowerCase()) {
+    case 'mp3':
+      type = 'audio/mpeg';
+      break;
+    case 'wav':
+      type = 'audio/wav';
+      break;
+    case 'x-wav':
+      type = 'audio/x-wav';
+      break;
+    case 'ogg':
+      type = 'audio/ogg';
+      break;
+    case 'opus':
+      type = 'audio/opus';
+      break;
+    case 'aac':
+      type = 'audio/aac';
+      break;
+    case 'x-aac':
+      type = 'audio/x-aac';
+      break;
+    case 'flac':
+      type = 'audio/flac';
+      break;
+    case 'x-flac':
+      type = 'audio/x-flac';
+      break;
+    case 'mp4':
+      type = 'audio/mp4';
+      break;
+    case 'm4a':
+      type = 'audio/x-m4a';
+      break;
+    case 'webm':
+      type = 'audio/webm';
+      break;
+    case 'x-midi':
+      type = 'audio/x-midi';
+      break;
+    case 'amr':
+      type = 'audio/amr';
+      break;
+    case '3gpp':
+      type = 'audio/3gpp';
+      break;
+    case '3gpp2':
+      type = 'audio/3gpp2';
+      break;
+    case 'basic':
+      type = 'audio/basic';
+      break;
+    case 'vnd.wave':
+      type = 'audio/vnd.wave';
+      break;
+    case 'vnd.rn-realaudio':
+      type = 'audio/vnd.rn-realaudio';
+      break;
+    case 'vnd.dts':
+      type = 'audio/vnd.dts';
+      break;
+    case 'vnd.dts.hd':
+      type = 'audio/vnd.dts.hd';
+      break;
+    case 'vnd.digital-winds':
+      type = 'audio/vnd.digital-winds';
+      break;
+    case 'vnd.lucent.voice':
+      type = 'audio/vnd.lucent.voice';
+      break;
+    case 'vnd.ms-playready.media.pya':
+      type = 'audio/vnd.ms-playready.media.pya';
+      break;
+    case 'vnd.nuera.ecelp4800':
+      type = 'audio/vnd.nuera.ecelp4800';
+      break;
+    case 'vnd.nuera.ecelp7470':
+      type = 'audio/vnd.nuera.ecelp7470';
+      break;
+    case 'vnd.nuera.ecelp9600':
+      type = 'audio/vnd.nuera.ecelp9600';
+      break;
+    case 'vnd.sealedmedia.softseal.mpeg':
+      type = 'audio/vnd.sealedmedia.softseal.mpeg';
+      break;
+    case 'x-ms-wma':
+      type = 'audio/x-ms-wma';
+      break;
+    case 'wav':
+      type = 'audio/wav';
+      break;
+    case 'ogg':
+      type = 'audio/ogg';
+      break;
+    case 'aac':
+      type = 'audio/aac';
+      break;
+    case 'flac':
+      type = 'audio/flac';
+      break;
+    case 'm4a':
+      type = 'audio/mp4';
+      break;
+    case 'webm':
+      type = 'audio/webm';
+      break;
+    default:
+      type = 'application/octet-stream';
+  }
+  return type;
+};
 export function formatCount(count: number) {
   if (count < 1000) {
     return count.toString();
@@ -142,8 +139,20 @@ export function formatCount(count: number) {
   }
 }
 
+export const handleExternalClick = (request:any) => {
+    const { url } = request;
+
+    // External link
+    if (url.startsWith("http")) {
+      Linking.openURL(url);
+      return false;
+    }
+
+    return true;
+  };
+
 export function msToTime(ms: number): string {
-  let totalSeconds = Math.floor(ms / 1000);
+  let totalSeconds = Math.floor(ms);
   const hours = Math.floor(totalSeconds / 3600);
   totalSeconds %= 3600;
   const minutes = Math.floor(totalSeconds / 60);
@@ -307,8 +316,39 @@ ${body}
 // We will ensure that, there will be no copyrighted content, or we can't give access to download
 // copyrighted content, as per ultimatehealth system
 /** Download podcast */
+export async function requestStoragePermissions() {
+  if (Platform.OS !== 'android') return true;
+
+  if (Platform.Version <= 32) {
+    // Android 12 or below
+    const granted = await PermissionsAndroid.requestMultiple([
+      PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+      PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+    ]);
+
+    return (
+      granted['android.permission.READ_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED &&
+      granted['android.permission.WRITE_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED
+    );
+  } else {
+    // Android 13+ (API 33+)
+    const granted = await PermissionsAndroid.requestMultiple([
+      PermissionsAndroid.PERMISSIONS.READ_MEDIA_AUDIO,
+      PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES, 
+      PermissionsAndroid.PERMISSIONS.READ_MEDIA_VIDEO,
+    ]);
+
+    return granted['android.permission.READ_MEDIA_AUDIO'] === PermissionsAndroid.RESULTS.GRANTED;
+  }
+}
 export const downloadAudio = async (_podcast: PodcastData) => {
+
   // Check for existing downloads
+    const storageGranted = await requestStoragePermissions();
+    if (!storageGranted) {
+      Alert.alert('Storage permission denied');
+      return;
+    }
   const existingPodcastsStr = await retrieveItem('DOWNLOAD_PODCAST_DATA');
   try {
     let existingPodcasts = existingPodcastsStr
@@ -336,9 +376,15 @@ export const downloadAudio = async (_podcast: PodcastData) => {
       if (!Array.isArray(existingPodcasts)) {
         existingPodcasts = [];
       }
-      _podcast.filePath = path;
-      _podcast.downloadAt = new Date();
-      existingPodcasts.push(_podcast);
+
+      const newPodcast = {
+        ..._podcast,
+        filePath: path,
+        downloadAt: new Date(),
+      };
+      //_podcast.filePath = path;
+      //_podcast.downloadAt = new Date();
+      existingPodcasts.push(newPodcast);
       await storeItem(
         'DOWNLOAD_PODCAST_DATA',
         JSON.stringify(existingPodcasts),
@@ -364,6 +410,7 @@ export const downloadAudio = async (_podcast: PodcastData) => {
 };
 
 const downloadFile = async (key: string, title: string) => {
+
   const safeTitle = title.substring(0, 15).replace(/[^a-zA-Z0-9]/g, '_');
   const fileName = `${safeTitle}_${Date.now()}.mp3`;
   const downloadUrl = `${GET_STORAGE_DATA}/${key}`;
@@ -429,8 +476,7 @@ export const cleanUpDownloads = async () => {
   }
 };
 
-export const deleteFromDownloads = async (_podcast:PodcastData)=>{
-
+export const deleteFromDownloads = async (_podcast: PodcastData) => {
   const existingPodcastStr = await retrieveItem('DOWNLOAD_PODCAST_DATA');
   if (!existingPodcastStr) {
     return;
@@ -444,7 +490,7 @@ export const deleteFromDownloads = async (_podcast:PodcastData)=>{
       return;
     }
     const freshPodcasts = [];
- 
+
     for (const item of existingPodcasts) {
       if (item._id === _podcast._id) {
         // unlink
@@ -463,7 +509,7 @@ export const deleteFromDownloads = async (_podcast:PodcastData)=>{
     console.log('cleaned up error', err);
     return false;
   }
-}
+};
 
 export const updateOfflinePodcastLikeStatus = async (_podcast: PodcastData) => {
   const existingPodcastsStr = await retrieveItem('DOWNLOAD_PODCAST_DATA');

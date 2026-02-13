@@ -5,7 +5,7 @@ import {
   Pressable,
   TouchableOpacity,
 } from 'react-native';
-import React from 'react';
+import React, { useState } from 'react';
 import {fp, hp} from '../helper/Metric';
 import {ReviewCardProps} from '../type';
 import moment from 'moment';
@@ -18,8 +18,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import ArticleFloatingMenu from './ArticleFloatingMenu';
 //import io from 'socket.io-client';
-import Entypo from 'react-native-vector-icons/Entypo';
-import AntDesign from 'react-native-vector-icons/AntDesign';
+import Entypo from '@expo/vector-icons/Entypo';
+import AntDesign from '@expo/vector-icons/AntDesign';
 
 const ReviewCard = ({
   item,
@@ -32,6 +32,8 @@ const ReviewCard = ({
   //const socket = useSocket();
   const width = useSharedValue(0);
   const yValue = useSharedValue(60);
+
+  const [menuVisible, setMenuVisible] = useState(false);
   const backgroundColor =
     item?.status === StatusEnum.PUBLISHED
       ? 'green'
@@ -78,11 +80,11 @@ const ReviewCard = ({
 
         <View style={styles.textContainer}>
           {/* Share Icon */}
-          {isSelected && (
-            <Animated.View style={[menuStyle, styles.shareIconContainer]}>
-              <ArticleFloatingMenu
+       
+             <ArticleFloatingMenu
                 items={[
                   {
+                    articleId: item._id,
                     name: 'Request to edit',
                     action: () => {
                       handleAnimation();
@@ -90,14 +92,19 @@ const ReviewCard = ({
                     icon: 'edit',
                   },
                 ]}
+                visible={menuVisible} 
+                onDismiss={()=>{
+                 setMenuVisible(false);
+                } }  
               />
-            </Animated.View>
-          )}
+         
 
           {/* Icon for more options */}
           <TouchableOpacity
             style={styles.shareIconContainer}
-            onPress={() => handleAnimation()}>
+            onPress={() => {
+              setMenuVisible(true)
+            }}>
             <Entypo name="dots-three-vertical" size={20} color={'black'} />
           </TouchableOpacity>
 
@@ -142,7 +149,7 @@ const ReviewCard = ({
               }}>
               <Text style={styles.viewText}>View</Text>
               <AntDesign
-                name="arrowright"
+                name="arrow-right"
                 size={16}
                 color={PRIMARY_COLOR}
                 style={{marginTop: 2}}

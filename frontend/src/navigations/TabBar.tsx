@@ -1,9 +1,10 @@
 import React from 'react';
 import {View, Pressable, StyleSheet, useColorScheme, Image} from 'react-native';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import {VULTR_CHAT_PROFILE_AVTARS} from '../helper/Utils';
+import { hp } from '../helper/Metric';
 
 const TabBar = ({state, descriptors, navigation}: any) => {
   const isDarkMode = useColorScheme() === 'dark';
@@ -107,6 +108,14 @@ const TabBar = ({state, descriptors, navigation}: any) => {
                     color={isFocused ? 'white' : isDarkMode ? 'white' : 'black'}
                   />
                 )}
+
+                {label === 'About' && (
+                  <FontAwesome
+                    name="info-circle"
+                    size={24}
+                    color={isFocused ? 'white' : isDarkMode ? 'white' : 'black'}
+                  />
+                )}
               </View>
             </Pressable>
           </View>
@@ -123,7 +132,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
-    paddingBottom: 2,
+    paddingBottom: hp(6),
     backgroundColor: 'red',
     //borderWidth: 0.19,
     zIndex: 0,

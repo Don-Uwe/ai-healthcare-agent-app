@@ -1,8 +1,13 @@
-import React, {useRef, useState} from 'react';
-import {Alert, StyleSheet, Text, View} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
-import {WebView} from 'react-native-webview';
-import {PRIMARY_COLOR} from '../../helper/Theme';
+import React, {useState} from 'react';
+import {
+  Alert,
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Dimensions,
+} from 'react-native';
+import {BUTTON_COLOR} from '../../helper/Theme';
 import {
   ArticleData,
   ContentSuggestionResponse,
@@ -10,7 +15,7 @@ import {
   PreviewScreenProp,
   User,
 } from '../../type';
-import {createHTMLStructure} from '../../helper/Utils';
+import {createHTMLStructure, handleExternalClick} from '../../helper/Utils';
 import {useMutation, useQuery} from '@tanstack/react-query';
 import ImageResizer from '@bam.tech/react-native-image-resizer';
 
@@ -30,6 +35,7 @@ import {useDispatch, useSelector} from 'react-redux';
 import useUploadImage from '../../../hooks/useUploadImage';
 import {setSuggestion} from '../../store/dataSlice';
 import Snackbar from 'react-native-snackbar';
+import AutoHeightWebView from '@brown-bear/react-native-autoheight-webview';
 
 //import io from 'socket.io-client';
 
@@ -49,12 +55,12 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
   const [imageUtil, setImageUtil] = useState<string>('');
   const [imageUtils, setImageUtils] = useState<string[]>([]);
 
-
-  const webViewRef = useRef<WebView>(null);
   const {user_token, user_id} = useSelector((state: any) => state.user);
   const {suggestion, suggestionAccepted} = useSelector(
     (state: any) => state.data,
   );
+
+  const {isConnected} = useSelector((state: any) => state.network);
   const dispatch = useDispatch();
 
   const {uploadImage, loading} = useUploadImage();
@@ -67,9 +73,16 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
           style={styles.button}
           onPress={() => {
             //createPostMutation.mutate();
-            handlePostSubmit();
+            if (isConnected) {
+              handlePostSubmit();
+            } else {
+              Snackbar.show({
+                text: 'Please check your internet connection',
+                duration: Snackbar.LENGTH_SHORT,
+              });
+            }
           }}>
-          <Text style={styles.textWhite}>Post</Text>
+          <Text style={styles.textWhite}>Submit</Text>
         </TouchableOpacity>
       ),
     });
@@ -204,8 +217,6 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
       article: string;
       recordId: string;
     }) => {
-
-      
       const response = await axios.post(
         POST_ARTICLE,
         {
@@ -231,17 +242,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
 
     onSuccess: data => {
       // User will not get notified, until the article published
-      /*
-      socket.emit('notification', {
-        type: 'openPost',
-        postId: data._id,
-        authorId: user?._id,
-        message: {
-          title: `${user?.user_handle} posted a new article`,
-          body: title,
-        },
-      });
-      */
+      
       Alert.alert('Article added sucessfully');
 
       navigation.navigate('TabNavigation');
@@ -311,7 +312,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
           requestId: requestId,
           edited_content: edited_content,
           pb_recordId: recordId,
-          imageUtils: imageUtils
+          imageUtils: imageUtils,
         },
         {
           headers: {
@@ -478,7 +479,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
   return (
     <View style={styles.container}>
       <View style={styles.aiReviewBox}>
-        <Text style={styles.reviewTitle}>✅ Your Post Is Ready to Review</Text>
+        <Text style={styles.reviewTitle}> Your Post Is Ready to Review</Text>
         <Text style={styles.reviewSubtext}>
           Want to make it even better? Check your post with our AI Assistant’s
           suggestions.
@@ -486,12 +487,19 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
         <TouchableOpacity
           style={styles.continueButton}
           onPress={() => {
-            renderSuggestionMutation.mutate();
+            if (isConnected) {
+              renderSuggestionMutation.mutate();
+            } else {
+              Snackbar.show({
+                text: 'Please check your internet connection',
+                duration: Snackbar.LENGTH_SHORT,
+              });
+            }
           }}>
           <Text style={styles.continueButtonText}>Continue</Text>
         </TouchableOpacity>
       </View>
-      <WebView
+      {/* <WebView
         style={{
           padding: 20,
           margin: 10,
@@ -511,6 +519,35 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
           ),
         }} // author name required
         javaScriptEnabled={true}
+      /> */}
+
+      <AutoHeightWebView
+        style={{
+          width: Dimensions.get('window').width - 15,
+          marginTop: 35,
+        }}
+        customStyle={`* { font-family: 'Times New Roman'; } p { font-size: 14px; }`}
+        onSizeUpdated={size => console.log(size.height)}
+        files={[
+          {
+            href: 'cssfileaddress',
+            type: 'text/css',
+            rel: 'stylesheet',
+          },
+        ]}
+        originWhitelist={['*']}
+        source={{
+          html: createHTMLStructure(
+            title,
+            article,
+            selectedGenres,
+            '',
+            user ? user?.user_name : '',
+          ),
+        }}
+        scalesPageToFit={true}
+        viewportContent={'width=device-width, user-scalable=no'}
+        onShouldStartLoadWithRequest={handleExternalClick}
       />
     </View>
   );
@@ -538,7 +575,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
     paddingHorizontal: 8,
     paddingVertical: 7,
-    backgroundColor: PRIMARY_COLOR,
+    backgroundColor: BUTTON_COLOR,
     width: 75,
     padding: 6,
     justifyContent: 'center',

@@ -1,151 +1,150 @@
-import React, {useState} from 'react';
-import {
-  View,
-  Modal,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-} from 'react-native';
-import {PRIMARY_COLOR} from '../helper/Theme';
-import {EmailInputModalProp} from '../type';
-import {hp} from '../helper/Metric';
+import React, { useEffect, useState } from 'react';
+import { YStack, Button, Input, Spacer, H2, H4 , Text} from 'tamagui';
+import { Sheet } from '@tamagui/sheet';
+import { ScrollView } from 'react-native';
+import { EmailInputModalProp } from '../type';
 
-export default function EmailInputModal({
+export default function EmailInputBottomSheet({
   visible,
   callback,
   backButtonClick,
   onDismiss,
-  isRequestVerification
+  isRequestVerification,
 }: EmailInputModalProp) {
-  const [modelTitle, setModelTitle] = useState(true);
   const [email, setEmail] = useState('');
+  const [isValid, setIsValid] = useState(true);
+  const [open, setOpen] = useState(visible);
 
-  /** Back Button Click */
-  const handleBackClick = () => {
-    setModelTitle(true);
-    setEmail('');
-    backButtonClick();
-  };
+  useEffect(() => {
+    setOpen(visible);
+  }, [visible]);
 
-  /** Submit Button action click */
   const verifyEmail = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (!emailRegex.test(email)) {
-      setModelTitle(false);
-      //return;
-    } else {
+    const valid = emailRegex.test(email);
+    setIsValid(valid);
+    if (valid) {
       callback(email);
-      setModelTitle(true);
       setEmail('');
     }
+  };
 
-    // navigator.navigate('OtpScreen');
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen) {
+      handleBackClick();
+    }
+  };
+
+  const handleBackClick = () => {
+    setIsValid(true);
+    setEmail('');
+    backButtonClick();
+    setOpen(false);
+    onDismiss();
   };
 
   return (
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={visible}
-      onDismiss={onDismiss}>
-      <View style={styles.overlay}>
-        <View style={styles.modalContainer}>
-          <Text style={modelTitle ? styles.modalTitle : styles.modalTitleError}>
-            {modelTitle
-              ? isRequestVerification
-                ? 'Email Verification'
-                : 'Forgot password'
-              : 'Email is not valid'}
-          </Text>
-          <TextInput
-            autoCapitalize="none"
-            autoCorrect={false}
-            keyboardType="email-address"
-            placeholder="Enter your email"
-            placeholderTextColor="#000000"
-            value={email}
-            onChangeText={text => {
-              setEmail(text);
-              setModelTitle(true);
-            }}
-            style={modelTitle ? styles.modalInput : styles.modalInputError}
-          />
-          <TouchableOpacity style={styles.modalButton} onPress={verifyEmail}>
-            <Text style={styles.modalButtonText}>
-              {isRequestVerification ? 'Send Verification Link' : 'Send OTP'}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={{...styles.modalButton, backgroundColor: PRIMARY_COLOR}}
-            onPress={handleBackClick}>
-            <Text style={styles.modalButtonText}>Back</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </Modal>
+    <Sheet
+      modal
+      open={open}
+      onOpenChange={handleOpenChange}
+      dismissOnSnapToBottom={false}
+      dismissOnOverlayPress={false}
+      snapPoints={[85, 50, 25]}
+      //animation="medium"
+      zIndex={1000}
+    >
+      {/* <Sheet.Overlay backgroundColor="rgba(0, 0, 0, 0.1)" pointerEvents="none" /> */}
+      <Sheet.Handle />
+      <Sheet.Frame padding="$4" justifyContent="center" alignItems="center" gap="$4">
+        <ScrollView
+          style={{ width: '100%' }}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: 20 }} 
+        >
+          <YStack width="100%" gap="$4" alignItems="center">
+            {/* Title */}
+            <H2
+              color={isValid ? '$color12' : '$red10'}
+              textAlign="center"
+              fontSize={28}
+              marginBottom={10}
+            >
+              {isValid
+                ? isRequestVerification
+                  ? 'Email Verification'
+                  : 'Forgot Password'
+                : 'Email is not valid'}
+            </H2>
+
+            {/* Subheading */}
+            <H4 color="$color10" textAlign="center" fontSize={16}>
+              Please enter your registered email to continue.
+            </H4>
+
+            <Spacer size={16} />
+
+            {/* Email Input Field */}
+            <Input
+              size="$5"
+              height="$6"
+              width="100%"
+              padding="$3"
+              borderRadius="$3"
+              placeholder="Enter your email"
+              value={email}
+              onChangeText={(text) => {
+                setEmail(text);
+                setIsValid(true);
+              }}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              borderColor={isValid ? '$color6' : '$red8'}
+              backgroundColor={isValid ? '$color2' : '$red1'}
+             
+              onTouchStart={(e) => e.stopPropagation()}
+              marginBottom={20} 
+            />
+
+            {/* Action Buttons */}
+            <YStack gap="$3" width="100%" alignItems="center">
+              <Button
+               
+                size="$5"
+                height="$7"
+                padding="$3"
+                theme="blue"
+                onPress={verifyEmail}
+                width="100%"
+                borderRadius="$3"
+                // Styling for active state
+                backgroundColor={isValid ? '$blue10' : '$gray500'}
+                disabled={!isValid}
+              >
+              <Text fontSize={18} color="white">{isRequestVerification ? 'Send Verification Link' : 'Send OTP'}</Text>
+              </Button>
+
+              <Button
+                size="$5"
+                height="$7"
+                padding="$3"
+                theme="active"
+                variant="outlined"
+                onPress={handleBackClick}
+                width="100%"
+                borderRadius="$3"
+                backgroundColor="$color2"
+                color="$color10"
+                marginTop={10}
+              >
+                Back
+              </Button>
+            </YStack>
+          </YStack>
+        </ScrollView>
+      </Sheet.Frame>
+    </Sheet>
   );
 }
-
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent black overlay
-    justifyContent: 'center',
-
-    alignItems: 'center',
-  },
-  modalContainer: {
-    backgroundColor: 'white',
-    padding: 14,
-    borderRadius: 10,
-    marginHorizontal: 14,
-    width: '95%',
-    height: hp(45),
-    justifyContent: 'center',
-    // alignItems:"center"
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginVertical: 10,
-    //color:"black"
-  },
-  modalTitleError: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: 'red',
-  },
-  modalInput: {
-    height: 47,
-    borderColor: PRIMARY_COLOR,
-    borderWidth: 1,
-    backgroundColor: '#B6D0E2',
-    marginVertical: 10,
-    paddingHorizontal: 10,
-    borderRadius: 5,
-  },
-  modalInputError: {
-    height: 40,
-    borderColor: 'red',
-    borderWidth: 1,
-    marginBottom: 10,
-    paddingHorizontal: 10,
-    borderRadius: 5,
-  },
-  modalButton: {
-    padding: 10,
-    alignItems: 'center',
-    marginTop: 10,
-    backgroundColor: '#0F52BA',
-    borderRadius: 7,
-    marginVertical: 10,
-  },
-  modalButtonText: {
-    color: 'white',
-    fontWeight: '500',
-    fontSize: 16,
-  },
-});

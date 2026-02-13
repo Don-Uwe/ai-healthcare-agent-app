@@ -1,6 +1,6 @@
 import {StyleSheet, View, Text, Alert} from 'react-native';
 import React, {useCallback, useState} from 'react';
-import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
+import {PRIMARY_COLOR} from '../helper/Theme';
 import ActivityOverview from '../components/ActivityOverview';
 import {Tabs, MaterialTabBar} from 'react-native-collapsible-tab-view';
 import ArticleCard from '../components/ArticleCard';
@@ -20,14 +20,14 @@ import Loader from '../components/Loader';
 import {useFocusEffect} from '@react-navigation/native';
 import Snackbar from 'react-native-snackbar';
 import {useSocket} from '../../SocketContext';
-import {setSocialUserId, setUserHandle} from '../store/UserSlice';
-import {StatusEnum} from '../helper/Utils';
+import {setUserHandle} from '../store/UserSlice';
 
 const ProfileScreen = ({navigation}: ProfileScreenProps) => {
   const {user_handle, user_id, user_token} = useSelector(
     (state: any) => state.user,
   );
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const {isConnected} = useSelector((state: any) => state.network);
   const [articleId, setArticleId] = useState<number>();
   const [authorId, setAuthorId] = useState<string>('');
   const [recordId, setRecordId] = useState<string>('');
@@ -35,9 +35,6 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
   const [repostItem, setRepostItem] = useState<ArticleData | null>(null);
   const socket = useSocket();
   const dispatch = useDispatch();
-
-  //const fallback_profile = require('../assets/avatar.jpg');
-  //const user_fallback_profile = Image.resolveAssetSource(fallback_profile).uri;
 
   const {
     data: user,
@@ -53,6 +50,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
       });
       return response.data.profile as User;
     },
+    enabled: !!isConnected && !!user_token,
   });
 
   if (user) {
@@ -61,19 +59,26 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
   const onArticleViewed = ({
     articleId,
     authorId,
-    recordId
+    recordId,
   }: {
     articleId: number;
     authorId: string;
-    recordId: string
+    recordId: string;
   }) => {
-    setArticleId(articleId);
-    setAuthorId(authorId);
-    setRecordId(recordId);
+    if (isConnected) {
+      setArticleId(articleId);
+      setAuthorId(authorId);
+      setRecordId(recordId);
 
-    updateViewCountMutation.mutate({
-      articleId: Number(articleId),
-    });
+      updateViewCountMutation.mutate({
+        articleId: Number(articleId),
+      });
+    } else {
+      Snackbar.show({
+        text: 'Please check your internet connection!',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+    }
   };
   const updateViewCountMutation = useMutation({
     mutationKey: ['update-view-count'],
@@ -103,13 +108,10 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
       return res.data.article as ArticleData;
     },
     onSuccess: async data => {
-      //  console.log('Article Id', articleId);
-      //  console.log('Author Id', authorId);
-
       navigation.navigate('ArticleScreen', {
         articleId: Number(articleId),
         authorId: authorId,
-        recordId: recordId
+        recordId: recordId,
       });
     },
 
@@ -118,28 +120,6 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
       Alert.alert('Internal server error, try again!');
     },
   });
-  /*
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('beforeRemove', e => {
-      e.preventDefault();
-      Alert.alert(
-        'Warning',
-        'Do you want to exit',
-        [
-          {text: 'No', onPress: () => null},
-          {
-            text: 'Yes',
-            onPress: () => {
-              BackHandler.exitApp();
-            },
-          },
-        ],
-        {cancelable: true},
-      );
-    });
-    return unsubscribe;
-  }, [navigation]);
-  */
 
   const isDoctor = user !== undefined ? user.isDoctor : false;
   const bottomBarHeight = useBottomTabBarHeight();
@@ -157,11 +137,21 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
     }, [refetch]),
   );
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleRepostAction = (item: ArticleData) => {
-    setRepostItem(item);
-    repostMutation.mutate({
-      articleId: Number(item._id),
-    });
+    if (isConnected) {
+      // updateLikeMutation.mutate();
+      setRepostItem(item);
+
+      repostMutation.mutate({
+        articleId: Number(item._id),
+      });
+    } else {
+      Snackbar.show({
+        text: 'Please check your network connection',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+    }
   };
 
   const repostMutation = useMutation({
@@ -225,12 +215,13 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
       Alert.alert('Internal server error, try again!');
     },
   });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleReportAction = (item: ArticleData) => {
     navigation.navigate('ReportScreen', {
       articleId: item._id,
       authorId: item.authorId as string,
       commentId: null,
-      podcastId: null
+      podcastId: null,
     });
   };
   const renderItem = useCallback(
@@ -245,30 +236,51 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
           handleRepostAction={handleRepostAction}
           handleReportAction={handleReportAction}
           handleEditRequestAction={() => {}}
+          source="profile"
         />
       );
     },
-    [navigation, selectedCardId, onRefresh],
+    [
+      selectedCardId,
+      navigation,
+      onRefresh,
+      handleRepostAction,
+      handleReportAction,
+    ],
   );
 
   const onFollowerClick = () => {
-    if (user && user.followers.length > 0) {
-      //dispatch(setSocialUserId(''));
-      navigation.navigate('SocialScreen', {
-        type: 1,
-        articleId: undefined,
-        social_user_id: undefined,
+    if (isConnected) {
+      if (user && user.followers.length > 0) {
+        //dispatch(setSocialUserId(''));
+        navigation.navigate('SocialScreen', {
+          type: 1,
+          articleId: undefined,
+          social_user_id: undefined,
+        });
+      }
+    } else {
+      Snackbar.show({
+        text: 'Please check your internet connection!',
+        duration: Snackbar.LENGTH_SHORT,
       });
     }
   };
 
   const onFollowingClick = () => {
-    if (user && user.followings.length > 0) {
-      // dispatch(setSocialUserId(''));
-      navigation.navigate('SocialScreen', {
-        type: 2,
-        articleId: undefined,
-        social_user_id: undefined,
+    if (isConnected) {
+      if (user && user.followings.length > 0) {
+        // dispatch(setSocialUserId(''));
+        navigation.navigate('SocialScreen', {
+          type: 2,
+          articleId: undefined,
+          social_user_id: undefined,
+        });
+      }
+    } else {
+      Snackbar.show({
+        text: 'Please check your internet connection!',
+        duration: Snackbar.LENGTH_SHORT,
       });
     }
   };
@@ -276,7 +288,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
   const renderHeader = () => {
     if (user === undefined) {
       return null;
-    } // Safeguard to prevent rendering if user is undefined
+    }
 
     return (
       <ProfileHeader
@@ -304,8 +316,14 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
         onFollowClick={() => {}}
         onOverviewClick={() => {
           if (user) {
-            //navigation.navigate('OverviewScreen', {articles: user.articles});
-            navigation.navigate('OverviewScreen');
+            if (isConnected) {
+              navigation.navigate('OverviewScreen');
+            } else {
+              Snackbar.show({
+                text: 'Please check your internet connection!',
+                duration: Snackbar.LENGTH_SHORT,
+              });
+            }
           }
         }}
         improvementPublished={user ? user.improvements.length : 0}
@@ -313,7 +331,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
     );
   };
 
-  const renderTabBar = props => {
+  const renderTabBar = (props: any) => {
     return (
       <MaterialTabBar
         {...props}
@@ -351,39 +369,14 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
               <ActivityOverview
                 onArticleViewed={onArticleViewed}
                 others={false}
+                user_handle={user?.user_handle || ''}
                 articlePosted={user?.articles ? user.articles.length : 0}
               />
             </Tabs.ScrollView>
           </Tabs.Tab>
           {/* Tab 2 */}
-          {/**
-         *    <Tabs.Tab name="Articles">
-            <Tabs.FlatList
-              data={
-                user !== undefined
-                  ? user.articles.filter(
-                      article => article.status === StatusEnum.PUBLISHED,
-                    )
-                  : []
-              }
-              renderItem={renderItem}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={[
-                styles.flatListContentContainer,
-                {paddingBottom: bottomBarHeight + 15},
-              ]}
-              keyExtractor={item => item?._id}
-              refreshing={refreshing}
-              ListEmptyComponent={
-                <View style={styles.emptyContainer}>
-                  <Text style={styles.message}>No Article Found</Text>
-                </View>
-              }
-            />
-          </Tabs.Tab>
-         */}
 
-          <Tabs.Tab name={`Reposts (${user?.repostArticles.length})`}>
+          <Tabs.Tab name={`Reposts (${user?.repostArticles.length || 0})`}>
             <Tabs.FlatList
               data={user !== undefined ? user.repostArticles : []}
               renderItem={renderItem}
@@ -402,7 +395,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
             />
           </Tabs.Tab>
           {/* Tab 3 */}
-          <Tabs.Tab name={`Saved(${user?.savedArticles.length})`}>
+          <Tabs.Tab name={`Saved(${user?.savedArticles.length || 0})`}>
             <Tabs.FlatList
               data={user !== undefined ? user.savedArticles : []}
               renderItem={renderItem}
@@ -431,20 +424,20 @@ export default ProfileScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0CAFFF',
+    //  backgroundColor: '#0CAFFF',
   },
   innerContainer: {
     flex: 1,
-    backgroundColor: ON_PRIMARY_COLOR,
+    //  backgroundColor: ON_PRIMARY_COLOR,
   },
   tabsContainer: {
-    backgroundColor: ON_PRIMARY_COLOR,
+    //  backgroundColor: ON_PRIMARY_COLOR,
     overflow: 'hidden',
   },
   scrollViewContentContainer: {
-    paddingHorizontal: 16,
-    marginTop: 16,
-    backgroundColor: ON_PRIMARY_COLOR,
+    paddingHorizontal: 6,
+    marginTop: 6,
+    //backgroundColor: ON_PRIMARY_COLOR,
   },
   flatListContentContainer: {
     paddingHorizontal: 16,
@@ -461,7 +454,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   tabBarStyle: {
-    backgroundColor: ON_PRIMARY_COLOR,
+    //backgroundColor: ON_PRIMARY_COLOR,
   },
   labelStyle: {
     fontWeight: '600',

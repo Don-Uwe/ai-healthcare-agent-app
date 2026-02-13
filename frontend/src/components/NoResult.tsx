@@ -1,54 +1,32 @@
 // NoResults.js
+import {MaterialIcons} from '@expo/vector-icons';
 import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
-const NoResults = ({ query = '' }) => {
+import {YStack, Text} from 'tamagui';
+
+const NoResults = ({query = ''}) => {
   return (
-    <View style={styles.container}>
-      <Image
-        source={require('../assets/no_results.jpg')} 
-        style={styles.image}
-        resizeMode="contain"
-      />
-      <Text style={styles.title}>No results found</Text>
-      {query !== '' && (
-        <Text style={styles.subtitle}>
-          We couldn’t find anything for "{query}"
+    <SafeAreaView>
+      <YStack
+        flex={1}
+        justifyContent="center"
+        alignItems="center"
+        paddingHorizontal="$4"
+        gap="$2">
+        <MaterialIcons name="podcasts" size={64} color="#B0B0B0" />
+
+        <Text fontSize="$5" fontWeight="600" color="$gray10">
+          No podcasts found
         </Text>
-      )}
-      <Text style={styles.tips}>Try different keywords or check your spelling.</Text>
-    </View>
+
+        <Text fontSize="$3" color="$gray8" textAlign="center">
+          Try with different keywords or check back later.
+        </Text>
+      </YStack>
+      {/* Empty Result */}
+    </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    marginTop: 60,
-    paddingHorizontal: 24,
-  },
-  image: {
-    width: 150,
-    height: 150,
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#333',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginTop: 6,
-  },
-  tips: {
-    fontSize: 14,
-    color: '#888',
-    marginTop: 16,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-});
 
 export default NoResults;

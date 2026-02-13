@@ -9,7 +9,7 @@ import {
   BottomSheetModal,
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import Icon from '@expo/vector-icons/MaterialIcons';
 import { ON_PRIMARY_COLOR } from '../helper/Theme';
 
 const ActionItem = ({
@@ -36,6 +36,7 @@ interface Props {
    onSave: ()=> void;
    downloaded: boolean;
 }
+// eslint-disable-next-line react/display-name
 const PodcastActions = React.forwardRef(
   ({ onShare, onReport, onDownload, onSave, downloaded}: Props, ref: any) => {
     const snapPoints = useMemo(() => ['40%'], []);
@@ -65,13 +66,13 @@ const PodcastActions = React.forwardRef(
         index={0}
         backdropComponent={renderBackdrop}
         enablePanDownToClose
-        backgroundStyle={{ backgroundColor: ON_PRIMARY_COLOR }}
+        backgroundStyle={{ backgroundColor: 'white' }}
       >
         <BottomSheetView style={styles.sheetContent}>
           <ActionItem icon="share" label="Share" onPress={() => handleAction(onShare)} />
           <ActionItem icon="flag" label="Report" onPress={() => handleAction(onReport)} />
           <ActionItem icon="file-download" label={downloaded ? 'Remove from downloads' : 'Download'} onPress={() => handleAction(onDownload)} />
-          <ActionItem icon="playlist-add" label="Save to Playlist" onPress={() => handleAction(onSave)} />
+          {/* <ActionItem icon="playlist-add" label="Save to Playlist" onPress={() => handleAction(onSave)} /> */}
         </BottomSheetView>
       </BottomSheetModal>
     );

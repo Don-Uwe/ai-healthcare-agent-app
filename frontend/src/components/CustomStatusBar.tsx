@@ -1,6 +1,7 @@
 import React, {Fragment, ReactNode} from 'react';
-import {SafeAreaView, StatusBar, StatusBarStyle} from 'react-native';
-import {BUTTON_COLOR, PRIMARY_COLOR} from '../helper/Theme';
+import { StatusBar, StatusBarStyle} from 'react-native';
+import {PRIMARY_COLOR} from '../helper/Theme';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface CustomStatusBarProps {
   children: ReactNode;

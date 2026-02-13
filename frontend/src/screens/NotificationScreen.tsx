@@ -1,23 +1,17 @@
-import {
-  Alert,
-  FlatList,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View,
-  Image,
-} from 'react-native';
+import {Alert, FlatList, StyleSheet, Text, View, Image} from 'react-native';
 import React, {useEffect} from 'react';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import NotificationItem from '../components/NotificationItem';
-import {useSelector} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import {useMutation, useQuery} from '@tanstack/react-query';
 import axios from 'axios';
-import Config from 'react-native-config';
 import {Notification, NotificationType} from '../type';
 import Loader from '../components/Loader';
 import Snackbar from 'react-native-snackbar';
-import { hp } from '../helper/Metric';
+import {hp} from '../helper/Metric';
+import {PROD_URL} from '../helper/APIUtils';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {showAlert} from '../store/alertSlice';
 
 // PodcastsScreen component displays the list of podcasts and includes a PodcastPlayer
 const NotificationScreen = ({navigation}) => {
@@ -26,31 +20,35 @@ const NotificationScreen = ({navigation}) => {
   const [refreshing, setRefreshing] = React.useState(false);
   const [page, setPage] = React.useState(1);
   const [totalPages, setTotalPages] = React.useState(0);
-  const [notificationsData, setNotificationsData] = React.useState<Notification[]>();
+  const {isConnected} = useSelector((state: any) => state.network);
+  const [notificationsData, setNotificationsData] =
+    React.useState<Notification[]>();
 
- // console.log(user_token);
-//  console.log('user_token');
+  const dispatch = useDispatch();
 
-  const {
-    isLoading,
-    refetch,
-  } = useQuery({
+  // console.log(user_token);
+  //  console.log('user_token');
+
+  const {isLoading, refetch} = useQuery({
     queryKey: ['get-all-notifications', page],
     queryFn: async () => {
       try {
-        const response = await axios.get(`${Config.PROD_URL}/notifications?role=2&page=${page}`, {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
+        const response = await axios.get(
+          `${PROD_URL}/notifications?role=2&page=${page}`,
+          {
+            headers: {
+              Authorization: `Bearer ${user_token}`,
+            },
           },
-        });
+        );
 
-        if(Number(page) === 1){
-          if(response.data.totalPages){
-          const totalPage = response.data.totalPages;
-          setTotalPages(totalPage);
+        if (Number(page) === 1) {
+          if (response.data.totalPages) {
+            const totalPage = response.data.totalPages;
+            setTotalPages(totalPage);
           }
           setNotificationsData(response.data.notifications);
-        }else{
+        } else {
           const oldNotif = notificationsData ?? [];
           setNotificationsData([...oldNotif, ...response.data.notifications]);
         }
@@ -60,7 +58,7 @@ const NotificationScreen = ({navigation}) => {
         console.error('Error fetching articles:', err);
       }
     },
-    enabled: !!user_token && !!page,
+    enabled: isConnected && !!user_token && !!page,
   });
 
   // Mark Notification as read api integration
@@ -69,10 +67,16 @@ const NotificationScreen = ({navigation}) => {
     mutationFn: async () => {
       if (user_token === '') {
         Alert.alert('No token found');
+        // dispatch(
+        //   showAlert({
+        //     title: 'Error!',
+        //     message: 'No token found',
+        //   }),
+        // );
         return;
       }
       const res = await axios.put(
-        `${Config.PROD_URL}/notifications/mark-as-read?role=2`,
+        `${PROD_URL}/notifications/mark-as-read?role=2`,
         {
           role: 2,
         },
@@ -108,10 +112,16 @@ const NotificationScreen = ({navigation}) => {
     mutationFn: async ({id}: {id: string}) => {
       if (user_token === '') {
         Alert.alert('No token found');
+        // dispatch(
+        //   showAlert({
+        //     title: 'Error!',
+        //     message: 'No token found',
+        //   }),
+        // );
         return;
       }
       const res = await axios.delete(
-        `${Config.PROD_URL}/notification/${id}`,
+        `${PROD_URL}/notification/${id}`,
 
         {
           headers: {
@@ -141,6 +151,7 @@ const NotificationScreen = ({navigation}) => {
   });
 
   useEffect(() => {
+    
     markNotificationMutation.mutate();
 
     return () => {};
@@ -191,6 +202,7 @@ const NotificationScreen = ({navigation}) => {
         navigation.navigate('CommentScreen', {
           articleId: item.articleId._id,
           mentionedUsers: item.articleId.mentionedUsers,
+          article: item.articleId,
         });
       }
     } else if (
@@ -200,29 +212,26 @@ const NotificationScreen = ({navigation}) => {
     ) {
       navigation.navigate('PodcastDetail', {
         trackId: item.podcastId._id,
+        audioUrl: item.podcastId.audio_url,
       });
-    }
-    else if(item.type === NotificationType.ArticleCommentLike){
-      if(item.articleId){
+    } else if (item.type === NotificationType.ArticleCommentLike) {
+      if (item.articleId) {
         navigation.navigate('CommentScreen', {
-        articleId: item.articleId._id,
-        mentionedUsers: item.articleId.mentionedUsers,
-      });
+          articleId: item.articleId._id,
+          mentionedUsers: item.articleId.mentionedUsers,
+        });
       }
-    }
-    else if(item.type === NotificationType.ArticleReview){
-
-      if(item.articleId){
-        navigation.navigate('ReviewScreen',{
-        articleId: item.articleId._id,
-        authorId: item.articleId.authorId,
-        recordId: item.articleId.pb_recordId,
-      });
+    } else if (item.type === NotificationType.ArticleReview) {
+      if (item.articleId) {
+        navigation.navigate('ReviewScreen', {
+          articleId: item.articleId._id,
+          authorId: item.articleId.authorId,
+          recordId: item.articleId.pb_recordId,
+        });
       }
-    }
-    else if(item.type === NotificationType.ArticleRevisionReview){
-      if(item.revisonId){
-        navigation.navigate('ImprovementReviewScreen',{
+    } else if (item.type === NotificationType.ArticleRevisionReview) {
+      if (item.revisonId) {
+        navigation.navigate('ImprovementReviewScreen', {
           requestId: item.revisonId._id,
           authorId: item.revisonId.user_id,
           recordId: item.revisonId.pb_recordId,
@@ -265,20 +274,20 @@ const NotificationScreen = ({navigation}) => {
         onRefresh={onRefresh}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-              <Image
-                  source={require('../assets/no_results.jpg')}
-                  style={styles.emptyImgStyle}
-                />
+            <Image
+              source={require('../../assets/images/no_results.jpg')}
+              style={styles.emptyImgStyle}
+            />
 
             <Text style={styles.message}>No Notifications Found</Text>
           </View>
         }
-         onEndReached={() => {
-              if (page < totalPages) {
-                setPage(prev => prev + 1);
-              }
+        onEndReached={() => {
+          if (page < totalPages) {
+            setPage(prev => prev + 1);
+          }
         }}
-         onEndReachedThreshold={0.5}
+        onEndReachedThreshold={0.5}
       />
     </SafeAreaView>
   );
@@ -298,7 +307,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
-   // paddingBottom: hp(3),
+    // paddingBottom: hp(3),
   },
   content: {
     marginTop: hp(3),
@@ -337,7 +346,7 @@ const styles = StyleSheet.create({
 
   flatListContentContainer: {
     paddingHorizontal: 16,
-    marginTop: 40,
+    marginTop: 4,
     paddingBottom: 120,
   },
   emptyImgStyle: {

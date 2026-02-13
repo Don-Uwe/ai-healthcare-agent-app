@@ -11,24 +11,26 @@ import {
   ActivityIndicator,
   Dimensions,
   FlatList,
+  Linking,
 } from 'react-native';
 import {useEffect, useMemo, useRef, useState} from 'react';
 import {useQuery, useMutation} from '@tanstack/react-query';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import {PRIMARY_COLOR} from '../../helper/Theme';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {ArticleData, ArticleScreenProp, User} from '../../type';
 import {useDispatch, useSelector} from 'react-redux';
-import WebView from 'react-native-webview';
-import {hp, wp} from '../../helper/Metric';
+import {hp} from '../../helper/Metric';
 import {
   FOLLOW_USER,
   GET_ARTICLE_BY_ID,
   GET_ARTICLE_CONTENT,
+  GET_IMAGE,
   GET_PROFILE_API,
   GET_PROFILE_IMAGE_BY_ID,
   GET_STORAGE_DATA,
   LIKE_ARTICLE,
+  SOCKET_PROD,
   UPDATE_READ_EVENT,
   UPDATE_VIEW_COUNT,
 } from '../../helper/APIUtils';
@@ -36,15 +38,14 @@ import axios from 'axios';
 import Loader from '../../components/Loader';
 import Snackbar from 'react-native-snackbar';
 
-//import io from 'socket.io-client';
-import {Comment} from '../../type';
-import {formatCount} from '../../helper/Utils';
+import {formatCount, handleExternalClick, StatusEnum} from '../../helper/Utils';
 //import CommentScreen from '../CommentScreen';
 import Tts from 'react-native-tts';
-import CommentItem from '../../components/CommentItem';
+
 import {setUserHandle} from '../../store/UserSlice';
 import {io} from 'socket.io-client';
-import Config from 'react-native-config';
+import {Feather} from '@expo/vector-icons';
+import AutoHeightWebView from '@brown-bear/react-native-autoheight-webview';
 
 const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const insets = useSafeAreaInsets();
@@ -52,34 +53,15 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const {user_id, user_token} = useSelector((state: any) => state.user);
   const [readEventSave, setReadEventSave] = useState(false);
 
-  const socket = io(`${Config.SOCKET_PROD}`);
+  const socket = io(`${SOCKET_PROD}`);
   const dispatch = useDispatch();
-
-  const {height: SCREEN_HEIGHT} = Dimensions.get('window');
-  const baseHeight = SCREEN_HEIGHT * 0.1;
-  //const scalePerChar = SCREEN_HEIGHT * 0.2;
-
-  const [comments, setComments] = useState<Comment[]>([]);
-  // const [newComment, setNewComment] = useState('');
-  const flatListRef = useRef<FlatList<Comment>>(null);
-  // const {user_id} = useSelector((state: any) => state.user);
-  const [selectedCommentId, setSelectedCommentId] = useState<string>('');
-  const [commentLikeLoading, setCommentLikeLoading] = useState<Boolean>(false);
   const [webviewHeight, setWebViewHeight] = useState(0);
   const [speechingMode, setSpeechingMode] = useState(false);
 
-  const webViewRef = useRef<WebView>(null);
-
   useEffect(() => {
     updateViewCountMutation.mutate();
-
-    // Tts.requestInstallData();
-    // const subscription = Tts.addEventListener('Tts-finish', event => {
-    //finishEvent();
-    //});
     return () => {
       Tts.stop();
-      // subscription;
     };
   }, []);
 
@@ -100,6 +82,10 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     },
   });
 
+  useEffect(() => {
+    refetch();
+  }, [articleId, refetch]);
+
   const {data: user} = useQuery({
     queryKey: ['get-my-profile'],
     queryFn: async () => {
@@ -112,7 +98,6 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     },
   });
 
-  //console.log('Recordid', recordId);
   const {data: htmlContent} = useQuery({
     queryKey: ['get-publish-article-content'],
     queryFn: async () => {
@@ -161,22 +146,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     },
   });
 
-  // console.log('View Users', article?.viewUsers);
-   //const noDataHtml = '<p>No data available</p>';
-
-  const contentLength = htmlContent?.length ?? noDataHtml.length;
-
   // --- Settings ---
-  const scalePerChar = 1 / 1000;
-  const maxMultiplier = 4.3;
-  const baseMultiplier = 0.8;
-
-  const minHeight = useMemo(() => {
-    const scaleFactor = Math.min(contentLength * scalePerChar, maxMultiplier);
-    const scaledHeight = SCREEN_HEIGHT * (baseMultiplier + scaleFactor);
-    const cappedHeight = Math.min(scaledHeight, SCREEN_HEIGHT * 6);
-    return cappedHeight;
-  }, [SCREEN_HEIGHT, contentLength, scalePerChar]);
 
   const handleLike = () => {
     if (article) {
@@ -233,7 +203,6 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     onError: err => {
       console.log('Update Follow mutation error', err);
       Alert.alert('Try Again!');
-      //console.log('Follow Error', err);
     },
   });
 
@@ -336,182 +305,12 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   });
 
   useEffect(() => {
-    //console.log('Fetching comments for articleId:', route.params.articleId);
-    socket.emit('fetch-comments', {articleId: route.params.articleId});
-
-    socket.on('connect', () => {
-      console.log('connection established');
-    });
-
-    socket.on('comment-processing', () => {
-      // setCommentLoading(data);
-    });
-
-    socket.on('like-comment-processing', data => {
-      setCommentLikeLoading(data);
-    });
-
-    socket.on('error', () => {
-      console.log('connection error');
-    });
-
-    socket.on('fetch-comments', data => {
-      console.log('comment loaded');
-      if (data.articleId === route.params.articleId) {
-        setComments(data.comments);
-      }
-    });
-
-    // Listen for new comments
-    socket.on('comment', data => {
-      console.log('new comment loaded', data);
-      if (data.articleId === route.params.articleId) {
-        setComments(prevComments => {
-          const newComments = [data.comment, ...prevComments];
-          // Scroll to the first index after adding the new comment
-          if (flatListRef.current && newComments.length > 1) {
-            flatListRef?.current.scrollToIndex({index: 0, animated: true});
-          }
-
-          return newComments;
-        });
-      }
-    });
-
-    // Listen for new replies
-    socket.on('new-reply', data => {
-      if (data.articleId === route.params.articleId) {
-        setComments(prevComments => {
-          return prevComments.map(comment =>
-            comment._id === data.parentCommentId
-              ? {...comment, replies: [...comment.replies, data.reply]}
-              : comment,
-          );
-        });
-      }
-    });
-
-    // Listen to edit comment updates (e.g., when replies are added)
-    socket.on('edit-comment', data => {
-      setComments(prevComments => {
-        return prevComments.map(comment =>
-          comment._id === data._id
-            ? {...comment, ...data} // update the comment with new data
-            : comment,
-        );
-      });
-    });
-
-    // Listen to like and dislike comment
-    socket.on('like-comment', data => {
-      setComments(prevComments => {
-        return prevComments.map(comment =>
-          comment._id === data._id ? {...comment, ...data} : comment,
-        );
-      });
-    });
-
-    socket.on('delete-comment', data => {
-      //console.log('Delete Comment Data', data);
-
-      //console.log('Comments Length before', comments.length);
-      setComments(prevComments =>
-        prevComments.filter(comment => comment._id !== data.commentId),
-      );
-
-      //console.log('Comments Length', comments.length);
-    });
-
-    return () => {
-      socket.off('fetch-comments');
-      socket.off('comment');
-      socket.off('new-reply');
-      socket.off('edit-comment');
-      socket.off('delete-comment');
-      socket.off('like-comment');
-    };
-  }, [socket, route.params.articleId]);
-
-  useEffect(() => {
     if (htmlContent) {
-      /*
-      let source = article?.content?.endsWith('.html')
-        ? {uri: `${GET_STORAGE_DATA}/${article.content}`}
-        : {html: article?.content};
-
-      const fetchContentLength = async () => {
-        const length = await getContentLength(source);
-        console.log('Content Length:', length);
-
-        setWebViewHeight(length); //Add some buffer to the height calculation
-      };
-
-      fetchContentLength();
-      */
       setWebViewHeight(htmlContent.length);
     } else {
       setWebViewHeight(noDataHtml.length);
     }
   }, [htmlContent]);
-
-  //const handleEditAction = (comment: Comment) => {
-  // setNewComment(comment.content);
-  // setEditMode(true);
-  //setEditCommentId(comment._id);
-  //};
-
-  const handleMentionClick = (user_handle: string) => {
-    //console.log('user handle', user_handle);
-    navigation.navigate('UserProfileScreen', {
-      authorId: '',
-      author_handle: user_handle.substring(1),
-    });
-  };
-
-  const handleDeleteAction = (comment: Comment) => {
-    //commentId, articleId, userId
-    Alert.alert(
-      'Alert',
-      'Are you sure you want to delete this comment.',
-      [
-        {
-          text: 'Cancel',
-          onPress: () => console.log('Cancel Pressed'),
-          style: 'cancel',
-        },
-        {
-          text: 'OK',
-          onPress: () => {
-            socket.emit('delete-comment', {
-              commentId: comment._id,
-              articleId: route.params.articleId,
-              userId: user_id,
-            });
-          },
-        },
-      ],
-      {cancelable: false},
-    );
-  };
-
-  const handleLikeAction = (comment: Comment) => {
-    socket.emit('like-comment', {
-      commentId: comment._id,
-      articleId: route.params.articleId,
-      userId: user_id,
-    });
-  };
-
-  const handleReportAction = (commentId: string, authorId: string) => {
-    navigation.navigate('ReportScreen', {
-      articleId: articleId.toString(),
-      authorId: authorId,
-      commentId: commentId,
-      podcastId: null,
-    });
-  };
-
-  // console.log('author id', authorId);
 
   const {data: profile_image} = useQuery({
     queryKey: ['author_profile_image'],
@@ -531,7 +330,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
 
   async function convertHtmlToPlainText(html: string) {
     // Remove inline styles
-    var modifiedHtml = html.replace(/ style="[^"]*"/g, '');
+    let modifiedHtml = html.replace(/ style="[^"]*"/g, '');
 
     // Remove <style> blocks and their content
     modifiedHtml = modifiedHtml.replace(/<style[^>]*>[\s\S]*?<\/style>/g, '');
@@ -540,19 +339,48 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     modifiedHtml = modifiedHtml.replace(/&nbsp;/g, ' ');
 
     // Remove all other HTML tags
-    var plainText = modifiedHtml.replace(/<[^>]*>/g, '');
+    let plainText = modifiedHtml.replace(/<[^>]*>/g, '');
 
     return plainText;
   }
 
+  const ensureLanguageInstalled = async (lang: string) => {
+    Snackbar.show({
+      text: `Checking if language ${lang} is installed.`,
+      duration: Snackbar.LENGTH_SHORT,
+    });
+    const voices = await Tts.voices();
+
+    const voice = voices.find(v => v.language === lang && !v.notInstalled);
+
+    if (voice) {
+      await Tts.setDefaultVoice(voice.id);
+      return true;
+    }
+
+    if (Platform.OS === 'android') {
+      Tts.requestInstallData();
+    }
+
+    return false;
+  };
+
   const speakSection = async (_language = 'en-US', content: string) => {
     // Tts.requestInstallData();
-    Tts.setDefaultPitch(0.6);
 
-    //if (content.endsWith('.html')) {
-    //const response = await fetch(`${GET_STORAGE_DATA}/${content}`);
-    // content = await response.text();
-    //}
+    const ready = await ensureLanguageInstalled(_language);
+
+    if (!ready) {
+      Snackbar.show({
+        text: 'Language not installed. Please install the language pack to enable text-to-speech.',
+        duration: Snackbar.LENGTH_LONG,
+      });
+      console.log('Language not installed. Prompted user.');
+      return;
+    }
+    Tts.setDefaultPitch(0.4);
+    Tts.setDefaultRate(0.5);
+    Tts.setDefaultLanguage(_language);
 
     const res = await convertHtmlToPlainText(content);
 
@@ -585,61 +413,26 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     }
   };
 
-  const cssCode = `
-  const style = document.createElement('style');
-  style.innerHTML = \`
-    body {
-      font-size: 46px;
-      line-height: 1.5;
-      color: #333;
-    }
-  \`;
-  document.head.appendChild(style);
-`;
-
-  // const contentSource = article?.content?.endsWith('.html')
-  //  ? {uri: `${GET_STORAGE_DATA}/${article.content}`}
-  //  : {html: article?.content};
-
-  // Function to get the content length based on the type of content (URI or HTML)
-
-  /*
-  const getContentLength = async contentSource => {
-    if (contentSource.uri) {
-      try {
-        const response = await fetch(contentSource.uri);
-        const content = await response.text();
-        return content.length - 4000;
-      } catch (error) {
-        console.error('Error fetching URI:', error);
-        return 0;
-      }
-    } else if (contentSource.html) {
-      return contentSource.html.length;
-    }
-    return 0; // Return 0 if no valid content source
-  };
-  */
-
-//  console.log('Content', htmlContent);
-
   if (isLoading) {
     return <Loader />;
   }
 
-  //console.log('Comment', comments);
   return (
     <View style={styles.container}>
       <ScrollView
         style={styles.scrollView}
         onScroll={e => {
-          var windowHeight = Dimensions.get('window').height,
+          let windowHeight = Dimensions.get('window').height,
             height = e.nativeEvent.contentSize.height,
             offset = e.nativeEvent.contentOffset.y;
           if (windowHeight + offset >= height) {
             //ScrollEnd,
             // console.log('ScrollEnd');
-            if (article && !readEventSave) {
+            if (
+              article &&
+              !readEventSave &&
+              article.status === StatusEnum.PUBLISHED
+            ) {
               updateReadEventMutation.mutate();
             }
           }
@@ -648,12 +441,16 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
         <View style={styles.imageContainer}>
           {article && article?.imageUtils && article?.imageUtils.length > 0 ? (
             <Image
-              source={{uri: article?.imageUtils[0]}}
+              source={{
+                uri: article?.imageUtils[0].startsWith('http')
+                  ? article?.imageUtils[0]
+                  : `${GET_IMAGE}/${article?.imageUtils[0]}`,
+              }}
               style={styles.image}
             />
           ) : (
             <Image
-              source={require('../../assets/no_results.jpg')}
+              source={require('../../assets/images/no_results.jpg')}
               style={styles.image}
             />
           )}
@@ -690,7 +487,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
                 // setCartoonModalVisible(true);
                 // prepareSection();
                 if (htmlContent) {
-                  speakSection('en-US', htmlContent);
+                  const language = article?.language || 'en-In';
+                  speakSection(language, htmlContent);
                 }
               } else {
                 Tts.stop();
@@ -702,10 +500,10 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
                 backgroundColor: 'white',
               },
             ]}>
-            <FontAwesome
-              name={!speechingMode ? 'play' : 'pause'}
+            <Feather
+              name={speechingMode ? 'mic' : 'mic-off'}
               size={30}
-              color={PRIMARY_COLOR}
+              color={speechingMode ? PRIMARY_COLOR : 'black'}
             />
           </TouchableOpacity>
         </View>
@@ -876,7 +674,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
             </>
           )}
           <View style={styles.descriptionContainer}>
-            <WebView
+            {/* <WebView
               style={{
                 padding: 7,
                 //width: '99%',
@@ -890,29 +688,30 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
               injectedJavaScript={cssCode}
               source={{html: htmlContent ? htmlContent : noDataHtml}}
               textZoom={100}
+            /> */}
+
+            <AutoHeightWebView
+              style={{
+                width: Dimensions.get('window').width - 15,
+                marginTop: 30,
+                marginBottom: 40,
+              }}
+              customStyle={`* { font-family: 'Times New Roman'; } p { font-size: 16px; }`}
+              onSizeUpdated={size => console.log(size.height)}
+              files={[
+                {
+                  href: 'cssfileaddress',
+                  type: 'text/css',
+                  rel: 'stylesheet',
+                },
+              ]}
+              originWhitelist={['*']}
+              source={{html: htmlContent ?? noDataHtml}}
+              scalesPageToFit={true}
+              viewportContent={'width=device-width, user-scalable=no'}
+              onShouldStartLoadWithRequest={handleExternalClick}
             />
           </View>
-        </View>
-
-        <View style={{padding: wp(4), marginTop: hp(4.5)}}>
-          {comments?.map((item, index) => (
-            <CommentItem
-              key={index}
-              item={item}
-              isSelected={selectedCommentId === item._id}
-              userId={user_id}
-              setSelectedCommentId={setSelectedCommentId}
-              handleEditAction={() => {
-                //handleEditAction
-              }}
-              deleteAction={handleDeleteAction}
-              handleLikeAction={handleLikeAction}
-              commentLikeLoading={commentLikeLoading}
-              handleMentionClick={handleMentionClick}
-              handleReportAction={handleReportAction}
-              isFromArticle={true}
-            />
-          ))}
         </View>
       </ScrollView>
       <View
@@ -932,12 +731,12 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
                 author_handle: undefined,
               });
             }}>
-            {profile_image && profile_image !== '' ? (
+            {authorId.Profile_image && authorId.Profile_image !== '' ? (
               <Image
                 source={{
-                  uri: profile_image.startsWith('http')
-                    ? `${profile_image}`
-                    : `${GET_STORAGE_DATA}/${profile_image}`,
+                  uri: authorId.Profile_image.startsWith('http')
+                    ? `${authorId.Profile_image}`
+                    : `${GET_STORAGE_DATA}/${authorId.Profile_image}`,
                 }}
                 style={styles.authorImage}
               />
@@ -1119,7 +918,7 @@ const styles = StyleSheet.create({
     textAlign: 'justify',
   },
   footer: {
-    backgroundColor: '#EDE9E9',
+    backgroundColor: ON_PRIMARY_COLOR,
     position: 'relative',
     bottom: 0,
     zIndex: 10,

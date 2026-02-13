@@ -4,10 +4,13 @@ import type {StackScreenProps} from '@react-navigation/stack';
 import {Dispatch, RefObject, SetStateAction} from 'react';
 import {BottomSheetModal} from '@gorhom/bottom-sheet'; // Adjust this import based on your actual BottomSheetModal component
 
+
+
 export type RootStackParamList = {
-  navigate(arg0: string): unknown;
   SplashScreen: undefined;
-  LoginScreen: undefined;
+  LoginScreen: {
+    redirectTo?: RedirectTo;
+  }
   TabNavigation: undefined;
   SignUpScreenFirst: undefined;
   SignUpScreenSecond: {user: UserDetail};
@@ -46,6 +49,7 @@ export type RootStackParamList = {
     authorId: string;
     recordId: string;
   };
+  PodcastProfile: undefined;
   ReviewScreen: {
     articleId: number;
     authorId: string;
@@ -58,7 +62,7 @@ export type RootStackParamList = {
     articleRecordId: string;
   };
   OverviewScreen: undefined;
-  ConversationScreen: undefined;
+  // ConversationScreen: undefined;
   SocialScreen: {
     type: number;
     articleId: number | undefined;
@@ -67,11 +71,12 @@ export type RootStackParamList = {
   CommentScreen: {
     articleId: number;
     mentionedUsers: User[];
+    article: ArticleData;
   };
-  PodcastDiscussion:{
+  PodcastDiscussion: {
     podcastId: string;
     mentionedUsers: User[];
-  }
+  };
   ReportScreen: {
     articleId: string;
     authorId: string;
@@ -91,10 +96,11 @@ export type RootStackParamList = {
   };
   PodcastDetail: {
     trackId: string;
+    audioUrl: string | null;
   };
   OfflinePodcastList: undefined;
   OfflinePodcastDetail: {
-    podcast: PodcastData
+    podcast: PodcastData;
   };
   PodcastSearch: undefined;
   PodcastForm: undefined;
@@ -105,7 +111,35 @@ export type RootStackParamList = {
     imageUtils: string;
   };
 
+  PodcastPlayer: {
+    filePath: string;
+    title: string;
+    description: string;
+    selectedGenres: Category[];
+    imageUtils: string;
+  };
+  Privacy: undefined;
+  ContributorPage: undefined;
+  OpenSourcePage: undefined;
   //ChatbotScreen: undefined;
+};
+
+export type RedirectTo = {
+  [K in keyof RootStackParamList]: {
+    name: K;
+    params: RootStackParamList[K];
+  };
+}[keyof RootStackParamList];
+
+
+export type Message = {
+  _id: number;
+  text: string;
+  role: string;
+  conversationId: string;
+  timestamp: string;
+  userHandle: string | null; // for bot null
+  profileImage: string | null; // for bot null
 };
 
 export type UserDetail = {
@@ -120,6 +154,7 @@ export type TabParamList = {
   Podcasts: undefined;
   Profile: undefined;
   Chatbot: undefined;
+  About: undefined;
 };
 
 export type SplashScreenProp =
@@ -131,9 +166,10 @@ export type NewPasswordScreenProp = StackScreenProps<
   'NewPasswordScreen'
 >;
 
-export type UserProfileScreenProp =
-   StackScreenProps<RootStackParamList, 'UserProfileScreen'>;
-
+export type UserProfileScreenProp = StackScreenProps<
+  RootStackParamList,
+  'UserProfileScreen'
+>;
 
 export type OtpScreenProp = StackScreenProps<RootStackParamList, 'OtpScreen'>;
 
@@ -145,6 +181,11 @@ export type SignUpScreenFirstProp = StackScreenProps<
 export type SignUpScreenSecondProp = StackScreenProps<
   RootStackParamList,
   'SignUpScreenSecond'
+>;
+
+export type PodcastProfileProp = StackScreenProps<
+  RootStackParamList,
+  'PodcastProfile'
 >;
 
 export type ArticleDescriptionProp = StackScreenProps<
@@ -177,18 +218,18 @@ export type ReviewScreenProp = StackScreenProps<
 >;
 
 export type PodcastSearchProp = StackScreenProps<
- RootStackParamList,
- 'PodcastSearch'
+  RootStackParamList,
+  'PodcastSearch'
 >;
 
 export type OfflinePodcastListProp = StackScreenProps<
- RootStackParamList,
- 'OfflinePodcastList'
+  RootStackParamList,
+  'OfflinePodcastList'
 >;
 
 export type OfflinePodcastDetailProp = StackScreenProps<
- RootStackParamList,
- 'OfflinePodcastDetail'
+  RootStackParamList,
+  'OfflinePodcastDetail'
 >;
 
 export type ImpvReviewScreenProp = StackScreenProps<
@@ -204,7 +245,6 @@ export type PodcastDiscussionProp = StackScreenProps<
   RootStackParamList,
   'PodcastDiscussion'
 >;
-
 
 export type ReportScreenProp = StackScreenProps<
   RootStackParamList,
@@ -248,10 +288,10 @@ export type OverviewScreenProps = StackScreenProps<
   RootStackParamList,
   'OverviewScreen'
 >;
-export type ConversationScreenProps = StackScreenProps<
-  RootStackParamList,
-  'ConversationScreen'
->;
+// export type ConversationScreenProps = StackScreenProps<
+//   RootStackParamList,
+//   'ConversationScreen'
+// >;
 
 export type SocialScreenProps = StackScreenProps<
   RootStackParamList,
@@ -259,8 +299,8 @@ export type SocialScreenProps = StackScreenProps<
 >;
 
 export type PodcastScreenProps = CompositeScreenProps<
-  | BottomTabScreenProps<TabParamList, 'Podcasts'>,
-  | StackScreenProps<RootStackParamList, 'PodcastDetail'>
+  BottomTabScreenProps<TabParamList, 'Podcasts'>,
+  StackScreenProps<RootStackParamList, 'PodcastDetail'>
 >;
 export type ProfileScreenProps = CompositeScreenProps<
   BottomTabScreenProps<TabParamList, 'Profile'>,
@@ -268,11 +308,37 @@ export type ProfileScreenProps = CompositeScreenProps<
   | StackScreenProps<RootStackParamList, 'ArticleScreen'>
 >;
 
+
+export type AboutScreenProps =
+ CompositeScreenProps<
+  BottomTabScreenProps<TabParamList, 'About'>,
+  | StackScreenProps<RootStackParamList, 'Privacy'>
+>;
+
 export type PodcastRecorderScreenProps = StackScreenProps<
   RootStackParamList,
   'PodcastRecorder'
 >;
 
+export type PrivacyPolicyScreenProps = StackScreenProps<
+  RootStackParamList,
+  'Privacy'
+>;
+
+export type ContributorScreenProps = StackScreenProps<
+  RootStackParamList,
+  'ContributorPage'
+>;
+
+export type OpenSourceScreenProps = StackScreenProps<
+  RootStackParamList,
+  'OpenSourcePage'
+>;
+
+export type PodcastPlayerScreenProps = StackScreenProps<
+  RootStackParamList,
+  'PodcastPlayer'
+>;
 
 export type HomeScreenHeaderProps = {
   handlePresentModalPress: () => void;
@@ -288,7 +354,7 @@ export type ArticleCardProps = {
     | ProfileScreenProps['navigation']
     | UserProfileScreenProp['navigation'];
   success: () => void;
-  isSelected: Boolean;
+  isSelected: boolean;
   setSelectedCardId: (id: string) => void;
   handleRepostAction: (item: ArticleData) => void;
   handleReportAction: (item: ArticleData) => void;
@@ -297,17 +363,20 @@ export type ArticleCardProps = {
     index: number,
     reason: string,
   ) => void;
+  source: string;
 };
 
 export type ReviewCardProps = {
   item: ArticleData;
   onclick: (item: ArticleData) => void;
-  isSelected: Boolean;
+  isSelected: boolean;
   setSelectedCardId: (id: string) => void;
 };
 export type Admin = {
   _id: string;
   user_name: string;
+  Profile_avtar: string;
+  user_handle: string;
   email: string;
 };
 
@@ -328,7 +397,6 @@ export type Notification = {
 };
 
 export enum NotificationType {
-
   PodcastCommentMention = 'podcastCommentMention',
   ArticleCommentMention = 'articleCommentMention',
   ArticleRepost = 'articleRepost',
@@ -476,6 +544,7 @@ export type ArticleData = {
   likedUsers: User[];
   savedUsers: string[];
   mentionedUsers: User[];
+  language: string;
   assigned_date: string | null;
   discardReason: string;
   status: string;
@@ -504,12 +573,11 @@ export type PodcastData = {
   status: string;
   admin_id: string | null;
   updated_at: string;
-  filePath: string | undefined,
-  downloadAt: Date| null,
-  commentCount: number|0,
+  filePath: string | undefined;
+  downloadAt: Date | null;
+  commentCount: number | 0;
   //podcasts: string[];
 };
-
 
 export type UserStatus = {
   totalLikes: number;
@@ -546,6 +614,11 @@ export type WriteStatus = {
 export type CategoryType = {
   id: number;
   name: string;
+};
+
+export type TokenStatus = {
+  isValid: boolean;
+  message: string;
 };
 
 export type User = {
@@ -608,6 +681,7 @@ export type Comment = {
   id: string;
   articleId: number;
   userId: User;
+  adminId: Admin;
   content: string;
   createdAt: string;
   updatedAt: string;
@@ -615,9 +689,9 @@ export type Comment = {
   replies: Comment[];
   likedUsers: string[];
   status: string;
-  isEdited: Boolean;
-  isReview: Boolean;
-  isNote: Boolean;
+  isEdited: boolean;
+  isReview: boolean;
+  isNote: boolean;
 };
 
 export type EditRequest = {
@@ -652,5 +726,4 @@ export type PlayList = {
   podcasts: Podcast[] | string[];
   created_at: Date;
   updated_at: Date;
-
-}
+};

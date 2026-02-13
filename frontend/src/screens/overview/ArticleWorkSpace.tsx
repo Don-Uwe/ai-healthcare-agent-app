@@ -1,6 +1,6 @@
 import {useQuery} from '@tanstack/react-query';
 import axios from 'axios';
-import {useCallback, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {
   View,
   StyleSheet,
@@ -32,13 +32,15 @@ export default function ArticleWorkSpace({
   const [progressLabel, setProgressLabel] = useState('Progress');
   const [discardLabel, setDiscardLabel] = useState('Discard');
   const [articleData, setArticleData] = useState<ArticleData[]>([]);
+ 
+  const [pageLoading, setPageLoading] = useState(false);
 
   const {
     data: articles,
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: ['get-all-articles-for-user', page, selectedStatus],
+    queryKey: ['get-all-articles-for-user'],
     queryFn: async () => {
       try {
         const response = await axios.get(
@@ -50,7 +52,7 @@ export default function ArticleWorkSpace({
           },
         );
 
-        console.log('Article Response', response.data);
+        //console.log('Article Response', response.data);
         //let d = response.data.articles as ArticleData[];
         //updateArticles(d);
 
@@ -60,7 +62,7 @@ export default function ArticleWorkSpace({
         }else{
           if(response.data.articles && Array.isArray(response.data.articles)){
             const d = response.data.articles;
-            console.log("res", d);
+          //  console.log("res", d);
              setArticleData(prev => [...prev, ...d]);
           }
         }
@@ -90,6 +92,13 @@ export default function ArticleWorkSpace({
     },
     enabled: !!user_token && !!page,
   });
+
+
+  useEffect(()=>{
+    refetch();
+    setPageLoading(false);
+  },[page, refetch, selectedStatus]);
+
 
   const [selectedCardId, setSelectedCardId] = useState<string>('');
 
@@ -129,9 +138,7 @@ export default function ArticleWorkSpace({
     [handleClickAction, selectedCardId],
   );
 
-  if (isLoading) {
-    return <Loader />;
-  }
+
 
   return (
     <View style={{flex: 1, backgroundColor: ON_PRIMARY_COLOR}}>
@@ -150,6 +157,8 @@ export default function ArticleWorkSpace({
               onPress={() => {
                 setSelectedStatus(item.status);
                 setPage(1);
+                setArticleData([]);
+               setPageLoading(true);              
               }}>
               <Text
                 style={{
@@ -166,7 +175,11 @@ export default function ArticleWorkSpace({
           ))}
         </View>
 
-        <View style={styles.articleContainer}>
+        {
+          isLoading || pageLoading ? (
+            <Loader/>
+          ):(
+            <View style={styles.articleContainer}>
           <FlatList
             data={articleData ? articleData : []}
             renderItem={renderItem}
@@ -177,7 +190,7 @@ export default function ArticleWorkSpace({
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Image
-                  source={require('../../assets/no_results.jpg')}
+                  source={require('../../assets/images/no_results.jpg')}
                   style={styles.image}
                 />
                 <Text style={styles.message}>No Article Found</Text>
@@ -191,6 +204,8 @@ export default function ArticleWorkSpace({
             onEndReachedThreshold={0.5}
           />
         </View>
+          )
+        }
       </View>
     </View>
   );

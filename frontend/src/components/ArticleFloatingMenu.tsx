@@ -1,76 +1,86 @@
-import React from 'react';
-import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
-import AntDesign from 'react-native-vector-icons/AntDesign';
+import React, {useEffect, useState} from 'react';
+import {YStack, XStack, Text, Button} from 'tamagui';
+import {Sheet} from '@tamagui/sheet';
+import AntDesign from '@expo/vector-icons/AntDesign';
+import {ScrollView} from 'react-native';
 
 interface ArticleFloatingMenuProp {
+  visible: boolean;
   items: Item[];
-  top: number;
-  left: number; 
+  onDismiss: () => void;
 }
 
 interface Item {
   name: string;
+  articleId: string;
   action: () => void;
   icon: string;
 }
 
-export default function ArticleFloatingMenu(props: ArticleFloatingMenuProp) {
+export default function ArticleFloatingMenuSheet({
+  visible,
+  items,
+  onDismiss,
+}: ArticleFloatingMenuProp) {
+  const [open, setOpen] = useState(visible);
+
+  // keep open state in sync with visible prop
+  useEffect(() => {
+    setOpen(visible);
+  }, [visible]);
+
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen) onDismiss();
+  };
+
   return (
-    <View style={[styles.container, {top: props.top, left: props.left}]}>
-      <View style={styles.arrow} />
-      {props.items.map((item, index) => (
-        <TouchableOpacity key={index} style={styles.box} onPress={item.action}>
-          <AntDesign name={item.icon} size={20} color="#1F1F1F" />
-          <Text style={styles.text}>{item.name}</Text>
-        </TouchableOpacity>
-      ))}
-    </View>
+    <Sheet
+      modal
+      open={open}
+      onOpenChange={handleOpenChange}
+      dismissOnSnapToBottom
+      snapPoints={[65, 30, 10]} 
+      dismissOnOverlayPress={true}
+    //  dismissOnSnapToBottom={false}
+      //dismissOnOverlayPress={false}
+     // animation="medium"
+      zIndex={1000}>
+      {/* <Sheet.Overlay backgroundColor="rgba(0,0,0,0.05)" /> */}
+      <Sheet.Handle />
+      <Sheet.Frame padding="$4" backgroundColor="white" height="100%" >
+        <ScrollView
+          contentContainerStyle={{paddingBottom: 20}}
+          keyboardShouldPersistTaps="handled"
+          >
+          <YStack gap="$3">
+            {items.map((item, index) => (
+              <Button
+                key={`${item.name}-${item.articleId}-${index}`}
+                size="$5"
+                height={'21%'}
+                onPress={()=>{
+                  console.log('action click');
+                  item.action();
+                }}
+                justifyContent="flex-start"
+                backgroundColor="$gray2"
+                borderRadius="$4"
+                elevation={1}
+                paddingVertical="$3"
+                paddingHorizontal="$3"
+                pressStyle={{backgroundColor: '$gray4'}}>
+                <XStack alignItems="center" gap="$3">
+                  <AntDesign name={item.icon} size={20} color="black" />
+                  <Text fontSize={16} fontWeight="600" color="black">
+                    {item.name}
+                  </Text>
+                </XStack>
+              </Button>
+            ))}
+          </YStack>
+        </ScrollView>
+      </Sheet.Frame>
+    </Sheet>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    position: 'absolute',
-    width: '90%',
-    flexDirection: 'column',
-    backgroundColor: 'white',
-    borderRadius: 8,
-    padding: 6,
-    elevation: 5,
-    shadowColor: 'black',
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    shadowOffset: {width: 0, height: 2},
-  },
-  arrow: {
-    position: 'absolute',
-    top: -10, 
-    left: '30%',
-    marginLeft: -10, 
-    width: 0,
-    height: 0,
-    borderLeftWidth: 10,
-    borderRightWidth: 10,
-    borderBottomWidth: 10,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    borderBottomColor: 'white',
-  },
-  box: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    //borderWidth: 0.5,
-    borderRadius: 4,
-    borderColor: '#c1c1c1',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    marginBottom: 8,
-  },
-  text: {
-    fontSize: 16,
-    color: 'black',
-    fontWeight: '500',
-    marginLeft: 10, 
-  },
-});

@@ -1,5 +1,113 @@
 {
-  "name": "UltimateHealth",
+  "expo": {
+    "name": "UltimateHealth",
+    "slug": "UltimateHealth",
   
-  "displayName": "UltimateHealth"
+    "version": "1.3.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "ultimatehealth",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "androidStatusBar": {
+      "backgroundColor": "#00BFFF",
+      "barStyle": "light-content"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "App requires microphone access to record audio.",
+        "NSPhotoLibraryAddUsageDescription": "App needs access to save recordings.",
+        "NSPhotoLibraryUsageDescription": "App needs access to select or manage audio files.",
+        "UIBackgroundModes": [
+          "audio"
+        ]
+      }
+    },
+    "android": {
+      "permissions": [
+        "INTERNET",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "RECORD_AUDIO",
+        "VIBRATE",
+        "RECEIVE_BOOT_COMPLETED",
+        "POST_NOTIFICATIONS",
+        "READ_MEDIA_AUDIO",
+        "READ_MEDIA_IMAGES",
+        "READ_MEDIA_VIDEO",
+        "MODIFY_AUDIO_SETTINGS",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ],
+
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "category": ["BROWSABLE", "DEFAULT"],
+          "data": [
+            {
+              "scheme": "https",
+              "host": "uhsocial.in",
+              "pathPrefix": "/api/share/article"
+            },
+            {
+              "scheme": "https",
+              "host": "uhsocial.in",
+              "pathPrefix": "/api/share/podcast"
+            }
+          ]
+        }
+      ],
+      "googleServicesFile": "./google-services.json",
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundImage": "./assets/images/adaptive-icon.png",
+        "monochromeImage": "./assets/images/adaptive-icon.png"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "package": "com.anonymous.UltimateHealth",
+      "versionCode": 20
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "@react-native-firebase/app",
+      "expo-notifications",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/icon.png",
+          "imageWidth": 150,
+          "resizeMode": "contain",
+          "backgroundColor": "#00BFFF",
+          "dark": {
+            "backgroundColor": "#00BFFF"
+          }
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Allow UltimateHealth to access your microphone."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "bdd3feee-d70b-4f27-9be5-33edb8b864f4"
+      }
+    }
+  }
 }

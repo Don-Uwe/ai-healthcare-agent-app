@@ -7,7 +7,7 @@ import {
   Image,
 } from 'react-native';
 import React, {memo} from 'react';
-import Feather from 'react-native-vector-icons/Feather';
+import Feather from '@expo/vector-icons/Feather';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import {ProfileEditGeneralTab} from '../type';
 //import fallback_profile from '../assets/avatar.jpg';
@@ -63,9 +63,11 @@ const GeneralTab = ({
         </View>
 
         {/* User Handle Input */}
-        <View style={styles.input}>
+        {
+          <View style={styles.input}>
           <Text style={styles.inputLabel}>User handle</Text>
           <TextInput
+            editable={false}
             placeholder="Enter your userhandle"
             placeholderTextColor="#6b7280"
             style={styles.inputControl}
@@ -73,6 +75,8 @@ const GeneralTab = ({
             onChangeText={text => setUserHandle(text)}
           />
         </View>
+           
+        }
 
         {/* Email Input */}
         <View style={styles.input}>
@@ -82,6 +86,7 @@ const GeneralTab = ({
             placeholderTextColor="#6b7280"
             style={styles.inputControl}
             value={email}
+            editable={false}
             onChangeText={text => setEmail(text)}
           />
         </View>

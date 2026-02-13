@@ -60,7 +60,7 @@ export default function OfflinePodcastList({
     });
   };
 
-  const navigateToReport = podcastId => {
+  const navigateToReport = (podcastId: string)=> {
     navigation.navigate('ReportScreen', {
       articleId: '',
       authorId: user_id,
@@ -69,21 +69,7 @@ export default function OfflinePodcastList({
     });
   };
 
-  /*
-  const reportPodcastMutation = useMutation({
-    mutationKey:['report-podcast'],
-    mutationFn: async (podcast_id: string)=>{
-
-    },
-    onSuccess: async (data)=>{
-
-    },
-
-    onError: async (err)=>{
-
-    }
-  })
-    */
+ 
 
   const renderItem = ({item}: {item: any}) => (
     <Pressable
@@ -94,6 +80,7 @@ export default function OfflinePodcastList({
       <PodcastCard
         id={item._id}
         title={item.title}
+        audioUrl={item.audioUrl}
         host={item.user_id.user_name}
         views={item.viewUsers.length}
         duration={`${msToTime(item.duration)}`}
@@ -146,8 +133,9 @@ export default function OfflinePodcastList({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    marginTop: hp(5),
     paddingTop: hp(10),
-    paddingHorizontal: 16,
+    paddingHorizontal: hp(3),
     backgroundColor: ON_PRIMARY_COLOR,
     // backgroundColor:'#ffffff'
   },

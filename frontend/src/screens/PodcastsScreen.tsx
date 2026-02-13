@@ -1,111 +1,96 @@
-// PodcastsScreen component displays the list of podcasts and includes a PodcastPlayer
-/*
-const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
-  const headerHeight = useHeaderHeight();
-
-  // Effect to handle back navigation and show an exit confirmation alert
-  /*
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('beforeRemove', e => {
-      e.preventDefault();
-      Alert.alert(
-        'Warning',
-        'Do you want to exit',
-        [
-          {text: 'No', onPress: () => null},
-          {text: 'Yes', onPress: () => {
-            BackHandler.exitApp()
-          }},
-        ],
-        {cancelable: true},
-      );
-    });
-
-    return unsubscribe;
-  }, [navigation]);
-  */
-{
-  /**
-  return (
-    // Main container
-    <View style={styles.container}>
-        Header with PodcastPlayer }
-        <View style={[styles.header, {paddingTop: headerHeight}]}>
-        <PodcastPlayer />
-      </View>
-      {/* Content including recent podcasts list }
-      <View style={styles.content}>
-        <View style={styles.recentPodcastsHeader}>
-          <Text style={styles.recentPodcastsTitle}>Recent Podcasts</Text>
-          <TouchableOpacity>
-            <Text style={styles.seeMoreText}>See more</Text>
-          </TouchableOpacity>
-        </View>
-        {/* FlatList to display podcasts }
-        <FlatList
-          data={podcast}
-          renderItem={({item}) => (
-            <PodcastCard
-              imageUri={item.imageUri}
-              title={item.title}
-              host={item.host}
-              duration={item.duration}
-              likes={item.likes}
-            />
-          )}
-          contentInsetAdjustmentBehavior="always"
-          automaticallyAdjustContentInsets={true}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{
-            paddingBottom: Dimensions.get('screen').height - hp(40),
-          }}
-        />
-      </View>
-      }
-
-      <Text style={styles.recentPodcastsTitle}>Coming Soon</Text>
-    </View>
-  );
-  */
-}
-import {useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {
-  View,
-  FlatList,
   StyleSheet,
-  ActivityIndicator,
   Pressable,
   TouchableOpacity,
+  NativeModules,
+  ScrollView,
+  Alert,
+  Text,
+  FlatList,
 } from 'react-native';
+
+import {YStack, View} from 'tamagui';
 import axios from 'axios';
 import PodcastCard from '../components/PodcastCard';
-import {hp} from '../helper/Metric';
-import {PodcastData, PodcastScreenProps} from '../type';
+import {hp, wp} from '../helper/Metric';
+import {Category, PodcastData, PodcastScreenProps} from '../type';
 import {useDispatch, useSelector} from 'react-redux';
 import {useMutation, useQuery} from '@tanstack/react-query';
 import {downloadAudio, msToTime} from '../helper/Utils';
-import {GET_ALL_PODCASTS, UPDATE_PODCAST_VIEW_COUNT} from '../helper/APIUtils';
-import PodcastEmptyComponent from '../components/PodcastEmptyComponent';
+import {
+  ARTICLE_TAGS_API,
+  GET_ALL_PODCASTS,
+  PROD_URL,
+  UPDATE_PODCAST_VIEW_COUNT,
+} from '../helper/APIUtils';
 import Snackbar from 'react-native-snackbar';
-import {setaddedPodcastId, setPodcasts} from '../store/dataSlice';
+import {
+  setaddedPodcastId,
+  setPodcasts,
+  setSelectedTags,
+  setTags,
+} from '../store/dataSlice';
 import CreatePlaylist from '../components/CreatePlaylist';
-import {ON_PRIMARY_COLOR} from '../helper/Theme';
-import {NativeModules, NativeEventEmitter} from 'react-native';
+import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
+
 import CreateIcon from '../components/CreateIcon';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {StatusBar} from 'expo-status-bar';
+import {MaterialIcons} from '@expo/vector-icons';
 
 const {WavAudioRecorder} = NativeModules;
-const recorderEvents = new NativeEventEmitter(WavAudioRecorder);
+//const recorderEvents = new NativeEventEmitter(WavAudioRecorder);
 
 const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
   const dispatch = useDispatch();
   const {user_token, user_id} = useSelector((state: any) => state.user);
+  const {selectedTags, sortType} = useSelector((state: any) => state.data);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const {podcasts} = useSelector((state: any) => state.data);
+  const {isConnected} = useSelector((state: any) => state.network);
   const [playlistModalOpen, setPlaylistModalOpen] = useState<boolean>(false);
+  const [selectedCategory, setSelectedCategory] = useState<Category>();
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
 
-  // const [playlistIds, setPlaylistIds] = useState<string[]>([]);
+  const getAllCategories = useCallback(async () => {
+    if (!isConnected) {
+      return;
+    }
+    if (user_token === '') {
+      Alert.alert('No token found');
+      return;
+    }
+    const {data: categoryData} = await axios.get(
+      `${PROD_URL + ARTICLE_TAGS_API}`,
+      {
+        headers: {
+          Authorization: `Bearer ${user_token}`,
+        },
+      },
+    );
+
+    dispatch(
+      setSelectedTags({
+        selectedTags: categoryData,
+      }),
+    );
+    setSelectedCategory(categoryData[0]);
+
+    dispatch(setTags({tags: categoryData}));
+  }, [dispatch, isConnected, user_token]);
+
+  useEffect(() => {
+    if (
+      selectedTags === undefined ||
+      (selectedTags && selectedTags.length === 0)
+    ) {
+      getAllCategories();
+    }
+
+    return () => {};
+  }, [getAllCategories, selectedTags]);
 
   const openPlaylist = (id: string) => {
     // setPlaylistIds([id]);
@@ -113,13 +98,14 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
     // console.log('playlist ids', playlistIds);
     setPlaylistModalOpen(true);
   };
+
   const closePlaylist = () => {
     setPlaylistModalOpen(false);
     // setPlaylistIds([]);
     dispatch(setaddedPodcastId(''));
   };
 
-  const {isLoading, refetch} = useQuery({
+  const {refetch} = useQuery({
     queryKey: ['get-all-podcasts', page],
     queryFn: async () => {
       try {
@@ -134,11 +120,11 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
             const total = response.data.totalPages;
             setTotalPages(total);
           }
-          if(response.data.allPodcasts){
+          if (response.data.allPodcasts) {
             let data = response.data.allPodcasts as PodcastData[];
             dispatch(setPodcasts(data));
           }
-        }else{
+        } else {
           const oldPodcasts = podcasts;
           let data = response.data.allPodcasts as PodcastData[];
           dispatch(setPodcasts([...oldPodcasts, ...data]));
@@ -149,7 +135,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
         console.error('Error fetching podcasts:', err);
       }
     },
-    enabled : !!user_token && !!page,
+    enabled: isConnected && !!user_token && !!page,
   });
 
   const onRefresh = () => {
@@ -159,7 +145,49 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
     setRefreshing(false);
   };
 
-  const navigateToReport = podcastId => {
+  const handleScroll = ({nativeEvent}: {nativeEvent: any}) => {
+    const {layoutMeasurement, contentOffset, contentSize} = nativeEvent;
+    const isCloseToBottom =
+      layoutMeasurement.height + contentOffset.y >= contentSize.height - 20;
+
+    if (isCloseToBottom && page < totalPages) {
+      setPage(prev => prev + 1);
+    }
+  };
+
+  // const {latestPodcasts, recommendedPodcasts, allPodcasts} = useMemo(() => {
+  //   if (!podcasts?.length) {
+  //     return {latestPodcasts: [], recommendedPodcasts: [], allPodcasts: []};
+  //   }
+
+  //   const now = new Date();
+  //   const latest = podcasts.filter(
+  //     p => differenceInDays(now, new Date(p.updated_at)) <= 7,
+  //   );
+
+  //   const withViews = [...podcasts].sort(
+  //     (a, b) => (b.viewUsers?.length || 0) - (a.viewUsers?.length || 0),
+  //   );
+
+  //   const recommended = withViews.slice(0, 5);
+  //   return {
+  //     latestPodcasts: latest,
+  //     recommendedPodcasts: recommended,
+  //     allPodcasts: podcasts,
+  //   };
+  // }, [podcasts]);
+
+  const filteredPodcasts = selectedCategory
+  ? podcasts.filter(
+      (podcast: PodcastData) =>
+        podcast.tags?.some(
+          tag => tag.name === selectedCategory.name
+        )
+    )
+  : [];
+
+
+  const navigateToReport = (podcastId: string) => {
     navigation.navigate('ReportScreen', {
       articleId: '',
       authorId: user_id,
@@ -186,6 +214,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
     onSuccess: data => {
       navigation.navigate('PodcastDetail', {
         trackId: data._id,
+        audioUrl: data.audio_url,
       });
     },
     onError: err => {
@@ -199,6 +228,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
 
   const renderItem = ({item}: {item: PodcastData}) => (
     <Pressable
+      key={item._id}
       onPress={() => {
         //playPodcast(item);
         updateViewCountMutation.mutate(item._id);
@@ -206,6 +236,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
       <PodcastCard
         id={item._id}
         title={item.title}
+        audioUrl={item.audio_url}
         host={item.user_id.user_name}
         views={item.viewUsers.length}
         duration={`${msToTime(item.duration)}`}
@@ -213,7 +244,14 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
         downloaded={false}
         display={true}
         downLoadAudio={async () => {
-          await downloadAudio(item);
+          if (isConnected) {
+            await downloadAudio(item);
+          } else {
+            Snackbar.show({
+              text: 'Internet connection required',
+              duration: Snackbar.LENGTH_SHORT,
+            });
+          }
         }}
         handleClick={() => {
           updateViewCountMutation.mutate(item._id);
@@ -228,25 +266,90 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
   );
 
   return (
-    <View style={styles.container}>
-      {isLoading ? (
-        <ActivityIndicator size="large" />
-      ) : (
+    <SafeAreaView style={styles.container}>
+      <StatusBar style="light" backgroundColor={'#000A60'} />
+
+      <View style={styles.buttonContainer}>
+        <ScrollView
+         horizontal
+    showsHorizontalScrollIndicator={false}
+    contentContainerStyle={{ flexDirection: "row" }}
+        >
+          {selectedTags &&
+            selectedTags.length > 0 &&
+            selectedTags.map((item: Category, index: number) => (
+              <TouchableOpacity
+                key={index}
+                style={{
+                  ...styles.button,
+                  backgroundColor:
+                    selectedCategory && selectedCategory._id !== item._id
+                      ? 'white'
+                      : PRIMARY_COLOR,
+                  borderColor:
+                    selectedCategory && selectedCategory._id !== item._id
+                      ? PRIMARY_COLOR
+                      : 'white',
+                }}
+                onPress={() => {
+                  setSelectedCategory(item);
+                }}>
+                <Text
+                  style={{
+                    ...styles.labelStyle,
+                    color:
+                      selectedCategory && selectedCategory._id !== item._id
+                        ? 'black'
+                        : 'white',
+                  }}>
+                  {item.name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+        </ScrollView>
+      </View>
+
+      <YStack flex={1} padding="$2">
         <FlatList
-          data={podcasts ? podcasts : []}
-          keyExtractor={item => item._id.toString()}
+          data={
+            filteredPodcasts
+              ? filteredPodcasts.filter(
+                  (podcast: PodcastData) =>
+                    podcast.tags &&
+                    podcast.tags.some(
+                      tag => tag.name === selectedCategory?.name,
+                    ),
+                )
+              : []
+          }
+          
           renderItem={renderItem}
-          ListEmptyComponent={<PodcastEmptyComponent />}
+          keyExtractor={item => item._id.toString()}
+          contentContainerStyle={styles.flatListContentContainer}
           refreshing={refreshing}
           onRefresh={onRefresh}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <MaterialIcons
+                name="podcasts"
+                size={64}
+                color="#B0B0B0"
+                style={styles.icon}
+              />
+              <Text style={styles.message}>No podcasts found</Text>
+              <Text style={styles.subMessage}>
+                New episodes will appear here once added
+              </Text>
+            </View>
+          }
           onEndReached={() => {
             if (page < totalPages) {
               setPage(prev => prev + 1);
             }
           }}
-         onEndReachedThreshold={0.5}
+          onEndReachedThreshold={0.5}
         />
-      )}
+      </YStack>
 
       <CreatePlaylist visible={playlistModalOpen} dismiss={closePlaylist} />
 
@@ -263,7 +366,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
           }}
         />
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -272,71 +375,65 @@ export default PodcastsScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: hp(10),
-    paddingHorizontal: 12,
+    marginVertical: hp(10),
+    paddingHorizontal: 10,
     backgroundColor: ON_PRIMARY_COLOR,
-    //backgroundColor: '#ffffff',
   },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 12,
-  },
-  item: {
-    paddingVertical: 12,
-    borderBottomColor: '#ccc',
-    borderBottomWidth: 1,
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  artist: {
-    fontSize: 14,
-    color: '#666',
-  },
+
   homePlusIconview: {
-    bottom: 100,
+    bottom: hp(5),
     right: 25,
     position: 'absolute',
     zIndex: 10,
   },
-});
 
-/*
-// Styles for PodcastsScreen component
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: PRIMARY_COLOR,
-    justifyContent: 'center',
-  },
-  header: {
-    backgroundColor: PRIMARY_COLOR,
-    paddingHorizontal: 16,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    paddingBottom: 20,
-  },
-  content: {
-    marginTop: 15,
-    paddingHorizontal: 16,
-  },
-  recentPodcastsHeader: {
+  buttonContainer: {
+    marginTop: wp(3),
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    paddingHorizontal: 2,
+  },
+  button: {
+    flex: 0,
+    borderRadius: wp(3.5),
+    marginHorizontal: 6,
+    marginVertical: 4,
+    padding: wp(3.1),
+    borderWidth: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 15,
   },
-  recentPodcastsTitle: {
-    fontSize: 25,
+  labelStyle: {
     fontWeight: 'bold',
-    color: 'white',
-    alignSelf: 'center',
+    fontSize: 15,
+    textTransform: 'capitalize',
   },
-  seeMoreText: {
+
+  flatListContentContainer: {
+    paddingHorizontal: 16,
+    marginTop: 10,
+    paddingBottom: 120,
+  },
+
+  message: {
     fontSize: 16,
-    fontWeight: '600',
+    color: '#000',
+    fontFamily: 'bold',
+    textAlign: 'center',
+  },
+  emptyContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 40,
+  },
+  icon: {
+    marginBottom: 12,
+  },
+
+  subMessage: {
+    marginTop: 6,
+    fontSize: 13,
+    color: '#888',
+    textAlign: 'center',
   },
 });
-*/

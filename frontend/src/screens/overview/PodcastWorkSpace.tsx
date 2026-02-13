@@ -65,7 +65,8 @@ export default function PodcastWorkSpace({
           setPublishedPodcasts(response.data.publishedPodcasts);
         } else {
           if (response.data.publishedPodcasts) {
-            let oldPodcasts = (publishedPodcasts as PodcastData[]) ?? ([] as PodcastData[]);
+            let oldPodcasts =
+              (publishedPodcasts as PodcastData[]) ?? ([] as PodcastData[]);
             let newPodcasts = response.data.publishedPodcasts as PodcastData[];
             setPublishedPodcasts([...oldPodcasts, ...newPodcasts]);
           }
@@ -82,38 +83,40 @@ export default function PodcastWorkSpace({
     enabled: !!user_token && !!publishedPage,
   });
 
-  const {
-    isLoading: pendingPodcastsLoading,
-    refetch: pendingPodcastsRefetch,
-  } = useQuery({
-    queryKey: ['get-pending-podcasts-for-user', pendingPage],
-    queryFn: async () => {
-      try {
-        const response = await axios.get(`${PENDING_PODCASTS}?page=${pendingPage}`, {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        });
+  const {isLoading: pendingPodcastsLoading, refetch: pendingPodcastsRefetch} =
+    useQuery({
+      queryKey: ['get-pending-podcasts-for-user', pendingPage],
+      queryFn: async () => {
+        try {
+          const response = await axios.get(
+            `${PENDING_PODCASTS}?page=${pendingPage}`,
+            {
+              headers: {
+                Authorization: `Bearer ${user_token}`,
+              },
+            },
+          );
 
-        if (Number(pendingPage) === 1 && response.data.totalPages) {
-          let totalPage = response.data.totalPages;
-          setTotalPendingPages(totalPage);
+          if (Number(pendingPage) === 1 && response.data.totalPages) {
+            let totalPage = response.data.totalPages;
+            setTotalPendingPages(totalPage);
 
-          setPendingPodcasts(response.data.pendingPodcasts);
-        } else {
-          if (response.data.pendingPodcasts) {
-            let oldPodcasts = (pendingPodcasts as PodcastData[]) ?? ([] as PodcastData[]);
-            let newPodcasts = response.data.pendingPodcasts as PodcastData[];
-            setPendingPodcasts([...oldPodcasts, ...newPodcasts]);
+            setPendingPodcasts(response.data.pendingPodcasts);
+          } else {
+            if (response.data.pendingPodcasts) {
+              let oldPodcasts =
+                (pendingPodcasts as PodcastData[]) ?? ([] as PodcastData[]);
+              let newPodcasts = response.data.pendingPodcasts as PodcastData[];
+              setPendingPodcasts([...oldPodcasts, ...newPodcasts]);
+            }
           }
-        }
 
-        return response.data.pendingPodcasts as PodcastData[];
-      } catch (err) {
-        console.error('Error fetching podcasts:', err);
-      }
-    },
-  });
+          return response.data.pendingPodcasts as PodcastData[];
+        } catch (err) {
+          console.error('Error fetching podcasts:', err);
+        }
+      },
+    });
 
   const {
     isLoading: discardedPodcastsLoading,
@@ -122,11 +125,14 @@ export default function PodcastWorkSpace({
     queryKey: ['get-discarded-podcasts-for-user', discardedPage],
     queryFn: async () => {
       try {
-        const response = await axios.get(`${DISCARDED_PODCASTS}?page=${discardedPage}`, {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
+        const response = await axios.get(
+          `${DISCARDED_PODCASTS}?page=${discardedPage}`,
+          {
+            headers: {
+              Authorization: `Bearer ${user_token}`,
+            },
           },
-        });
+        );
 
         if (Number(discardedPage) === 1 && response.data.totalPages) {
           let totalPage = response.data.totalPages;
@@ -135,7 +141,8 @@ export default function PodcastWorkSpace({
           setDiscardedPodcasts(response.data.discardedPodcasts);
         } else {
           if (response.data.discardedPodcasts) {
-            let oldPodcasts = (discardedPodcasts as PodcastData[]) ?? ([] as PodcastData[]);
+            let oldPodcasts =
+              (discardedPodcasts as PodcastData[]) ?? ([] as PodcastData[]);
             let newPodcasts = response.data.discardedPodcasts as PodcastData[];
             setDiscardedPodcasts([...oldPodcasts, ...newPodcasts]);
           }
@@ -149,10 +156,8 @@ export default function PodcastWorkSpace({
   });
 
   //const [selectedCardId, setSelectedCardId] = useState<string>('');
- 
 
   const categories = [1, 2, 3];
-
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -175,6 +180,7 @@ export default function PodcastWorkSpace({
       return (
         <PodcastCard
           id={item._id}
+          audioUrl={item.audio_url}
           title={item.title}
           host={user_handle}
           imageUri={item.cover_image}
@@ -197,14 +203,6 @@ export default function PodcastWorkSpace({
     [handleClickAction, user_handle],
   );
 
-  if (
-    publishedPodcastsLoading ||
-    pendingPodcastsLoading ||
-    discardedPodcastsLoading
-  ) {
-    return <Loader />;
-  }
-
   return (
     <View style={{flex: 1, backgroundColor: ON_PRIMARY_COLOR}}>
       <View style={styles.container}>
@@ -216,8 +214,7 @@ export default function PodcastWorkSpace({
                 ...styles.button,
                 backgroundColor:
                   selectedStatus !== item ? 'white' : PRIMARY_COLOR,
-                borderColor:
-                  selectedStatus !== item ? PRIMARY_COLOR : 'white',
+                borderColor: selectedStatus !== item ? PRIMARY_COLOR : 'white',
               }}
               onPress={() => {
                 setSelectedStatus(item);
@@ -228,62 +225,67 @@ export default function PodcastWorkSpace({
                   ...styles.labelStyle,
                   color: selectedStatus !== item ? 'black' : 'white',
                 }}>
-                {item === 1 ?
-                `Published(${publishedPodcasts ? publishedPodcasts.length : 0})` :
-                item === 2 ?
-                `Pending(${pendingPodcasts ? pendingPodcasts.length : 0})`
-                : `Discarded(${discardedPodcasts ? discardedPodcasts.length : 0})`
-               }
+                {item === 1
+                  ? `Published(${
+                      publishedPodcasts ? publishedPodcasts.length : 0
+                    })`
+                  : item === 2
+                  ? `Pending(${pendingPodcasts ? pendingPodcasts.length : 0})`
+                  : `Discarded(${
+                      discardedPodcasts ? discardedPodcasts.length : 0
+                    })`}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        <View style={styles.articleContainer}>
-          <FlatList
-            data={
-              selectedStatus === 1
-                ? publishedPodcasts ?? []
-                : selectedStatus === 2
-                ? pendingPodcasts ?? []
-                : discardedPodcasts ?? []
-            }
-            renderItem={renderItem}
-            keyExtractor={item => item._id.toString()}
-            contentContainerStyle={styles.flatListContentContainer}
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            ListEmptyComponent={
-              <View style={styles.emptyContainer}>
-                <Image
-                  source={require('../../assets/no_results.jpg')}
-                  style={styles.image}
-                />
-                <Text style={styles.message}>No podcasts Found</Text>
-              </View>
-            }
-            onEndReached={() => {
-
-              if(selectedStatus === 1){
-                if(publishedPage < totalPublishPages){
-                  setPublishedPage(prev => prev + 1);
-                }
+        {publishedPodcastsLoading ||
+        pendingPodcastsLoading ||
+        discardedPodcastsLoading ? (
+          <Loader />
+        ) : (
+          <View style={styles.articleContainer}>
+            <FlatList
+              data={
+                selectedStatus === 1
+                  ? publishedPodcasts ?? []
+                  : selectedStatus === 2
+                  ? pendingPodcasts ?? []
+                  : discardedPodcasts ?? []
               }
-              else if(selectedStatus === 2){
-
-                if(pendingPage < totalPendingPages){
-                  setPendingPage(prev => prev + 1);
-                }
+              renderItem={renderItem}
+              keyExtractor={item => item._id.toString()}
+              contentContainerStyle={styles.flatListContentContainer}
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              ListEmptyComponent={
+                <View style={styles.emptyContainer}>
+                  <Image
+                    source={require('../../../assets/images/no_results.jpg')}
+                    style={styles.image}
+                  />
+                  <Text style={styles.message}>No podcasts Found</Text>
+                </View>
               }
-              else if(selectedStatus === 3){
-                if(discardedPage < totalDiscardedPages){
-                  setDiscardedPage(prev => prev + 1);
+              onEndReached={() => {
+                if (selectedStatus === 1) {
+                  if (publishedPage < totalPublishPages) {
+                    setPublishedPage(prev => prev + 1);
+                  }
+                } else if (selectedStatus === 2) {
+                  if (pendingPage < totalPendingPages) {
+                    setPendingPage(prev => prev + 1);
+                  }
+                } else if (selectedStatus === 3) {
+                  if (discardedPage < totalDiscardedPages) {
+                    setDiscardedPage(prev => prev + 1);
+                  }
                 }
-              }
-            }}
-            onEndReachedThreshold={0.5}
-          />
-        </View>
+              }}
+              onEndReachedThreshold={0.5}
+            />
+          </View>
+        )}
       </View>
     </View>
   );
@@ -316,7 +318,8 @@ const styles = StyleSheet.create({
   articleContainer: {
     flex: 1,
     width: '100%',
-    paddingHorizontal: 0,
+    paddingHorizontal: hp(1),
+    marginBottom: hp(13)
     //zIndex: -2,
   },
   flatListContentContainer: {

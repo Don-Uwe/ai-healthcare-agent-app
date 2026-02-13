@@ -1,15 +1,24 @@
 import {Alert, View} from 'react-native';
 import React, {useState} from 'react';
 import Dropdown from './Dropdown';
+import { useDispatch } from 'react-redux';
+import { showAlert } from '../store/alertSlice';
 
 const DropDownComponent = ({data}) => {
   const [specializationData, setspecializationData] = useState(data);
   const [specialization, setspecialization] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [visible, setVisible] = useState(false);
+  const dispatch = useDispatch();
+
   const handleAddSpecialization = (specialization: string) => {
     if (!specialization) {
       Alert.alert('Please eneter specialization before submitting!');
+
+      // dispatch(showAlert({
+      //   title: "Alert!",
+      //   message: 'Please eneter specialization before submitting!'
+      // }));
       return null;
     }
     const isAlreadyExist = specializationData.filter(
@@ -19,6 +28,11 @@ const DropDownComponent = ({data}) => {
     //console.log(isAlreadyExist);
     if (isAlreadyExist.length > 0) {
       Alert.alert('Entered specialization already present!');
+      // dispatch(showAlert({
+      //   title: "Alert!",
+      //   message: 'Entered specialization already present!'
+      // }));
+      
     } else {
       // make a api call to save the specialization
       setspecializationData([

@@ -5,11 +5,11 @@ import ActivityOverview from '../components/ActivityOverview';
 import {Tabs, MaterialTabBar} from 'react-native-collapsible-tab-view';
 import ArticleCard from '../components/ArticleCard';
 import {useSelector} from 'react-redux';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import ProfileHeader from '../components/ProfileHeader';
-import Config from 'react-native-config';
 import {
   FOLLOW_USER,
+  PROD_URL,
   REPOST_ARTICLE,
   REQUEST_EDIT,
   UPDATE_VIEW_COUNT,
@@ -17,7 +17,7 @@ import {
 import {ArticleData, UserProfileScreenProp, User} from '../type';
 import {useMutation, useQuery} from '@tanstack/react-query';
 import axios from 'axios';
-import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Loader from '../components/Loader';
 import {useFocusEffect} from '@react-navigation/native';
 import Snackbar from 'react-native-snackbar';
@@ -28,6 +28,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   const {user_id, user_handle, user_token} = useSelector(
     (state: any) => state.user,
   );
+  const {isConnected} = useSelector((state: any) => state.network);
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
   const [articleId, setArticleId] = useState<number>();
@@ -46,11 +47,11 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
     queryFn: async () => {
       let url: string;
       if (authorId) {
-        url = `${Config.PROD_URL}/user/getuserprofile?id=${authorId}`;
+        url = `${PROD_URL}/user/getuserprofile?id=${authorId._id}`;
       } else if (author_handle) {
-        url = `${Config.PROD_URL}/user/getuserprofile?handle=${author_handle}`;
+        url = `${PROD_URL}/user/getuserprofile?handle=${author_handle}`;
       } else {
-        url = `${Config.PROD_URL}/user/getuserprofile?id=${user_id}`;
+        url = `${PROD_URL}/user/getuserprofile?id=${user_id}`;
       }
       // console.log('User token', user_token);
       const response = await axios.get(url, {
@@ -62,50 +63,48 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
     },
   });
 
-  //console.log('User', user);
-  /*
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('beforeRemove', e => {
-      e.preventDefault();
-      Alert.alert(
-        'Warning',
-        'Do you want to exit',
-        [
-          {text: 'No', onPress: () => null},
-          {text: 'Yes', onPress: () => BackHandler.exitApp()},
-        ],
-        {cancelable: true},
-      );
-    });
-    return unsubscribe;
-  }, [navigation]);
-  */
-
   const isDoctor = user !== undefined ? user.isDoctor : false;
   //const bottomBarHeight = useBottomTabBarHeight();
   const insets = useSafeAreaInsets();
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleRepostAction = (item: ArticleData) => {
-    setRepostItem(item);
-    repostMutation.mutate({
-      articleId: Number(item._id),
-    });
+    if (isConnected) {
+      // updateLikeMutation.mutate();
+      setRepostItem(item);
+
+      repostMutation.mutate({
+        articleId: Number(item._id),
+      });
+    } else {
+      Snackbar.show({
+        text: 'Please check your network connection',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+    }
   };
 
   const onArticleViewed = ({
     articleId,
-    recordId
+    recordId,
   }: {
     articleId: number;
     authorId: string;
     recordId: string;
   }) => {
-    setArticleId(articleId);
-    //setAuthorId(authorId);
-    setRecordId(recordId);
-    updateViewCountMutation.mutate({
-      articleId: Number(articleId),
-    });
+    if (isConnected) {
+      setArticleId(articleId);
+      //setAuthorId(authorId);
+      setRecordId(recordId);
+      updateViewCountMutation.mutate({
+        articleId: Number(articleId),
+      });
+    } else {
+      Snackbar.show({
+        text: 'Please check your internet connection!',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+    }
   };
 
   const repostMutation = useMutation({
@@ -203,7 +202,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
       navigation.navigate('ArticleScreen', {
         articleId: Number(articleId),
         authorId: authorId,
-        recordId: recordId
+        recordId: recordId,
       });
     },
 
@@ -218,7 +217,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
     refetch();
 
     setRefreshing(false);
-  },[refetch]);
+  }, [refetch]);
 
   useFocusEffect(
     useCallback(() => {
@@ -227,14 +226,17 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
     }, [refetch, authorId]), // Ensure authorId is a stable value
   );
 
-  const handleReportAction = useCallback((item: ArticleData) => {
-    navigation.navigate('ReportScreen', {
-      articleId: item._id,
-      authorId: item.authorId as string,
-      commentId: null,
-      podcastId: null
-    });
-  }, [navigation]);
+  const handleReportAction = useCallback(
+    (item: ArticleData) => {
+      navigation.navigate('ReportScreen', {
+        articleId: item._id,
+        authorId: item.authorId as string,
+        commentId: null,
+        podcastId: null,
+      });
+    },
+    [navigation],
+  );
 
   const submitEditRequestMutation = useMutation({
     mutationKey: ['submit-edit-request-user'],
@@ -284,15 +286,31 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
           handleRepostAction={handleRepostAction}
           handleReportAction={handleReportAction}
           handleEditRequestAction={(item, index, reason) => {
-            submitEditRequestMutation.mutate({
-              articleId: item._id,
-              reason: reason,
-            });
+            if (isConnected) {
+              submitEditRequestMutation.mutate({
+                articleId: item._id,
+                reason: reason,
+              });
+            } else {
+              Snackbar.show({
+                text: 'Please check your internet connection!',
+                duration: Snackbar.LENGTH_SHORT,
+              });
+            }
           }}
+          source="user-profile"
         />
       );
     },
-    [handleReportAction, handleRepostAction, navigation, onRefresh, selectedCardId, submitEditRequestMutation],
+    [
+      handleReportAction,
+      handleRepostAction,
+      isConnected,
+      navigation,
+      onRefresh,
+      selectedCardId,
+      submitEditRequestMutation,
+    ],
   );
 
   const onFollowerClick = () => {
@@ -307,18 +325,32 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   };
 
   const onFollowingClick = () => {
-    if (user && user.followings.length > 0) {
-      // dispatch(setSocialUserId(user._id));
-      navigation.navigate('SocialScreen', {
-        type: 2,
-        articleId: undefined,
-        social_user_id: user._id,
+    if (isConnected) {
+      if (user && user.followings.length > 0) {
+        // dispatch(setSocialUserId(user._id));
+        navigation.navigate('SocialScreen', {
+          type: 2,
+          articleId: undefined,
+          social_user_id: user._id,
+        });
+      }
+    } else {
+      Snackbar.show({
+        text: 'Please check your internet connection!',
+        duration: Snackbar.LENGTH_SHORT,
       });
     }
   };
 
   const handleFollow = () => {
-    updateFollowMutation.mutate();
+    if (isConnected) {
+      updateFollowMutation.mutate();
+    } else {
+      Snackbar.show({
+        text: 'Please check your internet connection!',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+    }
   };
 
   const updateFollowMutation = useMutation({
@@ -378,10 +410,10 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
     return (
       <ProfileHeader
         isDoctor={isDoctor}
-        username={user.user_name || ''}
-        userhandle={user.user_handle || ''}
+        username={authorId.user_name || ''}
+        userhandle={authorId.user_handle || ''}
         profileImg={
-          user.Profile_image ||
+          authorId.Profile_image ||
           'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500'
         }
         articlesPosted={user.articles ? user.articles.length : 0}
@@ -432,7 +464,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <TouchableOpacity
         style={styles.headerLeftButtonEditorScreen}
         onPress={() => {
@@ -448,7 +480,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
           renderTabBar={renderTabBar}
           containerStyle={styles.tabsContainer}>
           {/* Tab 1 */}
-          <Tabs.Tab name="User Insights">
+          <Tabs.Tab name="User Insight">
             <Tabs.ScrollView
               automaticallyAdjustContentInsets={true}
               contentInsetAdjustmentBehavior="always"
@@ -456,13 +488,14 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
               <ActivityOverview
                 onArticleViewed={onArticleViewed}
                 others={true}
-                userId={user?._id}
+                userId={authorId ? authorId._id : user?._id}
+                user_handle={user?.user_handle || ''}
                 articlePosted={user?.articles ? user.articles.length : 0}
               />
             </Tabs.ScrollView>
           </Tabs.Tab>
           {/* Tab 2 */}
-          <Tabs.Tab name="User Articles">
+          <Tabs.Tab name="User Article">
             <Tabs.FlatList
               data={user !== undefined ? user.articles : []}
               renderItem={renderItem}
@@ -481,7 +514,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
             />
           </Tabs.Tab>
 
-          <Tabs.Tab name="Reposts">
+          <Tabs.Tab name="User Reposts">
             <Tabs.FlatList
               data={user !== undefined ? user.repostArticles : []}
               renderItem={renderItem}
@@ -501,7 +534,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
           </Tabs.Tab>
         </Tabs.Container>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -520,11 +553,11 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   scrollViewContentContainer: {
-    paddingHorizontal: 16,
+   // paddingHorizontal: 10,
     marginTop: 16,
   },
   flatListContentContainer: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 10,
   },
   indicatorStyle: {
     backgroundColor: 'white',
@@ -534,8 +567,8 @@ const styles = StyleSheet.create({
   },
   labelStyle: {
     fontWeight: '600',
-    fontSize: 14,
-    color: 'black',
+    fontSize: 13,
+    //color: 'black',
     textTransform: 'capitalize',
   },
   contentContainerStyle: {

@@ -1,18 +1,16 @@
 import React, {useState} from 'react';
 import {
   StyleSheet,
-  Text,
   View,
   TextInput,
   TouchableOpacity,
-  ScrollView,
-  Image,
   Alert,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+
+import {ScrollView, YStack, XStack, Text, Input, Button, Image} from 'tamagui';
+import Icon from '@expo/vector-icons/MaterialIcons';
 import {hp, wp} from '../../helper/Metric';
 import {PRIMARY_COLOR} from '../../helper/Theme';
-import AntIcon from 'react-native-vector-icons/AntDesign';
 import {Contactdetail, SignUpScreenSecondProp} from '../../type';
 import {useMutation} from '@tanstack/react-query';
 import axios, {AxiosError} from 'axios';
@@ -21,7 +19,8 @@ import EmailVerifiedModal from '../../components/VerifiedModal';
 import Loader from '../../components/Loader';
 import Snackbar from 'react-native-snackbar';
 import useUploadImage from '../../../hooks/useUploadImage';
-var validator = require('email-validator');
+import {SafeAreaView} from 'react-native-safe-area-context';
+let validator = require('email-validator');
 
 const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
   const {user} = route.params;
@@ -251,220 +250,160 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
     return <Loader />;
   }
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {/*
-      <TouchableOpacity
-        style={{flex: 0, backgroundColor: 'white', alignSelf:"flex-start"}}
-        onPress={() => {
-          navigation.goBack();
-        }}>
-        <AntIcon name="arrowleft" size={35} color="black" />
-      </TouchableOpacity>
-      */}
+    <ScrollView
+      backgroundColor="$background"
+      showsVerticalScrollIndicator={false}>
+      <SafeAreaView>
+        {/* Header Quote */}
+        <YStack
+          width="92%"
+          height={160}
+          borderRadius="$6"
+          marginTop="$6"
+          alignItems="center"
+          justifyContent="center"
+          backgroundColor="$blue10"
+          alignSelf="center"
+          paddingHorizontal="$4"
+          paddingVertical="$5"
+          elevation={3}>
+          <Text
+            fontSize={18}
+            color="white"
+            textAlign="center"
+            lineHeight={26}
+            fontWeight="600">
+            “Let me congratulate you on the choice of calling which offers a
+            combination of intellectual and moral interest found in no other
+            profession.”
+          </Text>
+          <Text fontSize={14} color="white" textAlign="center" marginTop="$2">
+            ~ Sir William Osler
+          </Text>
+        </YStack>
 
-      {/**
- * <View style={styles.header}>
-        <Text style={styles.title}>...let me congratulate on the</Text>
-        <Text style={styles.title}>choice of calling which offers a</Text>
-        <Text style={styles.title}>combination of intellectual and</Text>
-        <Text style={styles.title}>moral interest found in no other</Text>
-        <Text style={styles.title}>profession</Text>
-        <Text style={styles.subtitle}>...let me congratulate on the choice of calling which offers a
-       combination of intellectual and moral interest found in no other profession ~ Sir William Olser.</Text>
-      </View>
- */}
-
-      <View style={styles.footer}>
-        <View style={styles.form}>
-          {user.profile_image !== '' ? (
-            <View style={{alignSelf: 'center', marginBottom: 6}}>
+        {/* Form Section */}
+        <YStack
+          width="92%"
+          alignSelf="center"
+          backgroundColor="$background"
+          borderRadius="$6"
+          padding="$5"
+          marginTop="$6"
+          marginBottom="$10"
+          space="$5"
+          elevation={2}>
+          {/* Profile Image */}
+          {user.profile_image && (
+            <YStack
+              height={110}
+              width={110}
+              borderRadius={55}
+              backgroundColor="$blue10"
+              alignItems="center"
+              justifyContent="center"
+              overflow="hidden"
+              alignSelf="center"
+              marginBottom="$4">
               <Image
+                source={{uri: user.profile_image}}
                 style={{
-                  height: 80,
-                  width: 80,
-                  borderRadius: 40,
+                  height: '100%',
+                  width: '100%',
                   resizeMode: 'cover',
                 }}
-                source={{uri: user.profile_image}}
               />
-            </View>
-          ) : (
-            <Image
-              source={require('../../assets/icon.png')}
-              style={styles.logo}
-            />
+            </YStack>
           )}
 
-          <View style={styles.field}>
-            <TextInput
-              style={styles.input}
-              placeholder="What is your Specialization ?"
-              onChangeText={setSpecialization}
-              value={specialization}
-            />
-            <View style={styles.inputIcon}>
-              <Icon name="business" size={20} color="#000" />
-            </View>
-          </View>
+          {/* Input Fields */}
+          {[
+            {
+              placeholder: 'What is your Specialization?',
+              value: specialization,
+              onChangeText: setSpecialization,
+              icon: 'business',
+            },
+            {
+              placeholder: 'Educational Qualification',
+              value: education,
+              onChangeText: setEducation,
+              icon: 'school',
+            },
+            {
+              placeholder: 'Years of Experience',
+              value: experience,
+              onChangeText: setExperience,
+              icon: 'numbers',
+              keyboardType: 'numeric',
+              maxLength: 3,
+            },
+            {
+              placeholder: 'Professional Email',
+              value: businessEmail,
+              onChangeText: setBusinessEmail,
+              icon: 'email',
+              keyboardType: 'email-address',
+            },
+            {
+              placeholder: 'Phone number with country code',
+              value: phone,
+              onChangeText: setPhone,
+              icon: 'phone',
+              keyboardType: 'phone-pad',
+              maxLength: 14,
+            },
+          ].map((field, index) => (
+            <XStack key={index} position="relative">
+              <Input
+                flex={1}
+                height="$6"
+                borderColor="$blue10"
+                borderWidth={1}
+                borderRadius="$4"
+                paddingHorizontal="$4"
+                marginVertical="$2"
+                placeholder={field.placeholder}
+                value={field.value}
+                onChangeText={field.onChangeText}
+                keyboardType={field.keyboardType}
+                maxLength={field.maxLength}
+              />
+              <YStack position="absolute" right={14} top={12}>
+                <Icon name={field.icon} size={20} color="#000" />
+              </YStack>
+            </XStack>
+          ))}
 
-          <View style={styles.field}>
-            <TextInput
-              style={styles.input}
-              placeholder="Educational Qualification"
-              onChangeText={setEducation}
-              value={education}
-            />
-            <View style={styles.inputIcon}>
-              <Icon name="school" size={20} color="#000" />
-            </View>
-          </View>
+          {/* Submit Button */}
+          <Button
+            backgroundColor="$blue10"
+            borderRadius="$5"
+            alignSelf="center"
+            width="100%"
+            size="$6"
+            marginTop="$2"
+            onPress={handleSubmit}>
+            <Text color="white" fontWeight="700" fontSize={18}>
+              Register
+            </Text>
+          </Button>
 
-          <View style={styles.field}>
-            <TextInput
-              style={styles.input}
-              placeholder="Years of Experience"
-              onChangeText={setExperience}
-              value={experience}
-              keyboardType="numeric"
-              maxLength={3}
-            />
-            <View style={styles.inputIcon}>
-              <Icon name="numbers" size={20} color="#000" />
-            </View>
-          </View>
-
-          <View style={styles.field}>
-            <TextInput
-              style={styles.input}
-              placeholder="Professional Email"
-              onChangeText={setBusinessEmail}
-              value={businessEmail}
-            />
-            <View style={styles.inputIcon}>
-              <Icon name="email" size={20} color="#000" />
-            </View>
-          </View>
-
-          <View style={styles.field}>
-            <TextInput
-              style={styles.input}
-              placeholder="Phone number with country code"
-              onChangeText={setPhone}
-              value={phone}
-              keyboardType="phone-pad"
-              maxLength={14}
-            />
-            <View style={styles.inputIcon}>
-              <Icon name="phone" size={20} color="#000" />
-            </View>
-          </View>
-
-          <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-            <Text style={styles.buttonText}>Register</Text>
-          </TouchableOpacity>
-        </View>
-
-        <EmailVerifiedModal
-          visible={verifiedModalVisible}
-          onClick={handleVerifyModalCallback}
-          onClose={() => {
-            if (verifyBtntext !== 'Request Verification') {
-              setVerifiedModalVisible(false);
-            }
-          }}
-          message={verifyBtntext}
-        />
-      </View>
-
-      <View style={styles.header}>
-        <Text style={styles.subtitle}>
-          ...let me congratulate on the choice of calling which offers a
-          combination of intellectual and moral interest found in no other
-          profession ~ Sir William Olser.
-        </Text>
-      </View>
+          {/* Modal */}
+          <EmailVerifiedModal
+            visible={verifiedModalVisible}
+            onClick={handleVerifyModalCallback}
+            onClose={() => {
+              if (verifyBtntext !== 'Request Verification') {
+                setVerifiedModalVisible(false);
+              }
+            }}
+            message={verifyBtntext}
+          />
+        </YStack>
+      </SafeAreaView>
     </ScrollView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'white',
-    //justifyContent: 'center',
-    alignItems: 'center',
-  },
-  header: {
-    width: '90%',
-    height: hp(19),
-    borderRadius: 8,
-    marginTop: 2,
-    alignItems: 'center',
-    backgroundColor: PRIMARY_COLOR,
-  },
-  logo: {
-    height: hp(16),
-    width: wp(20),
-    borderRadius: 70,
-    resizeMode: 'cover',
-    alignSelf: 'center',
-  },
-  footer: {
-    flex: 0,
-    width: '98%',
-    //marginTop: hp(1),
-    alignSelf: 'center',
-    backgroundColor: 'white',
-    borderRadius: 10,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  subtitle: {
-    fontSize: 18,
-    color: '#fff',
-    textAlign: 'center',
-    marginTop: 10,
-  },
-  iconContainer: {
-    alignSelf: 'center',
-    marginTop: 20,
-  },
-  form: {
-    padding: 20,
-    marginTop: 15,
-  },
-  field: {},
-  input: {
-    height: 40,
-    borderColor: '#0CAFFF',
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    marginBottom: 10,
-    fontSize: 15,
-  },
-  inputIcon: {
-    position: 'absolute',
-    right: 14,
-    top: 12,
-  },
-  button: {
-    backgroundColor: '#0CAFFF',
-    padding: 10,
-    borderRadius: 4,
-    alignItems: 'center',
-    alignSelf: 'center',
-    marginTop: 20,
-    width: '99%',
-  },
-  buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 20,
-  },
-});
 
 export default SignupPageSecond;

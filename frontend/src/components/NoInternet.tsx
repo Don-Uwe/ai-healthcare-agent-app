@@ -8,12 +8,12 @@ const NoInternet = ({onRetry}) => {
     <View style={styles.wrapper}>
       <View style={styles.container}>
         <Image
-          source={require('../assets/no-internet-icon.png')}
+          source={require('../../assets/images/no-internet-icon.png')}
           style={styles.image_wifi}
           resizeMode="contain"
         />
         <Image
-          source={require('../assets/cloud-thunder-icon.png')}
+          source={require('../../assets/images/cloud-thunder-icon.png')}
           style={styles.image_cloud}
           resizeMode="contain"
         />

@@ -1,21 +1,24 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  ScrollView,
-  Pressable,
-  Alert,
-} from 'react-native';
+import {StyleSheet, Alert, Dimensions} from 'react-native';
 import {useCallback, useEffect, useState} from 'react';
-import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
-import {Dropdown} from 'react-native-element-dropdown';
+
+import {
+  YStack,
+  XStack,
+  Text,
+  Card,
+  ScrollView,
+  Image,
+  View,
+  Separator,
+} from 'tamagui';
+
+import {PRIMARY_COLOR} from '../helper/Theme';
 //import {LineChart} from 'react-native-gifted-charts';
-import {LineChart} from 'react-native-chart-kit';
+import {BarChart} from 'react-native-chart-kit';
 import {useQuery} from '@tanstack/react-query';
 import moment from 'moment';
-import {fp} from '../helper/Metric';
-import {useSelector} from 'react-redux';
+import {fp, hp} from '../helper/Metric';
+import { useSelector} from 'react-redux';
 import axios from 'axios';
 import {
   GET_IMAGE,
@@ -39,7 +42,12 @@ import {
 import Loader from './Loader';
 
 import {useFocusEffect} from '@react-navigation/native';
-import {formatCount} from '../helper/Utils';
+import {Dropdown} from 'react-native-element-dropdown';
+
+type LineDataItem = {
+  label: string;
+  value: number;
+};
 
 interface Props {
   onArticleViewed: ({
@@ -50,20 +58,19 @@ interface Props {
     articleId: number;
     authorId: string;
     recordId: string;
+   
   }) => void;
   userId?: string;
   others: boolean;
   articlePosted: number;
+  user_handle?: string;
 }
-const ActivityOverview = ({
-  onArticleViewed,
-  userId,
-  others,
-}: Props) => {
+const ActivityOverview = ({onArticleViewed, userId, others, user_handle}: Props) => {
   const [userState, setUserState] = useState<number>(0);
   const {user_token, user_id} = useSelector((state: any) => state.user);
-  const [isFocus, setIsFocus] = useState<boolean>(false);
+  const [, setIsFocus] = useState<boolean>(false);
   // const [selectedDay, setSelectedDay] = useState<number>(new Date().getDay());
+  const {isConnected} = useSelector((state: any) => state.user);
   const [selectedMonth, setSelectedMonth] = useState<number>(
     new Date().getMonth(),
   );
@@ -88,14 +95,12 @@ const ActivityOverview = ({
   const yearlyDrops = [
     {label: 'Yearly', value: -1},
     {label: '2024', value: 2024},
-    //{label: '2025', value: 2025},
+    {label: '2025', value: 2025},
+    {label: '2026', value: 2026},
   ];
 
   // GET MONTHLY READ REPORT
-  const {
-    data: monthlyReadReport,
-    refetch: refetchMonthReadReport,
-  } = useQuery({
+  const {data: monthlyReadReport, refetch: refetchMonthReadReport} = useQuery({
     queryKey: ['get-month-read-reports'],
     queryFn: async () => {
       try {
@@ -104,18 +109,21 @@ const ActivityOverview = ({
         }
         if (user_token === '') {
           Alert.alert('No token found');
+
           return [];
         }
         if (!userId) {
           if (others) {
             // user id not found for others profile
             Alert.alert('No user id found');
+
             return [];
           }
         }
         if (user_id === '' && !others) {
           // user id not found for own profile
           Alert.alert('No user id found');
+
           return [];
         }
 
@@ -134,59 +142,77 @@ const ActivityOverview = ({
         console.error('Error fetching articles reads monthly:', err);
       }
     },
-    enabled: !!(user_token && selectedMonth !== -1 && (userId || !others)),
+    enabled:
+      !!isConnected &&
+      !!(user_token && selectedMonth !== -1 && (userId || !others)),
   });
 
-  const {
-    data: monthlyWriteReport,
-    refetch: refetchMonthWriteReport,
-  } = useQuery({
-    queryKey: ['get-month-write-reports'],
-    queryFn: async () => {
-      try {
-        if (selectedMonth === -1) {
-          return [];
-        }
-        if (user_token === '') {
-          Alert.alert('No token found');
-          return [];
-        }
-        if (!userId) {
-          if (others) {
-            // user id not found for others profile
-            Alert.alert('No user id found');
+  const {data: monthlyWriteReport, refetch: refetchMonthWriteReport} = useQuery(
+    {
+      queryKey: ['get-month-write-reports'],
+      queryFn: async () => {
+        try {
+          if (selectedMonth === -1) {
             return [];
           }
-        }
-        if (user_id === '' && !others) {
-          // user id not found for own profile
-          Alert.alert('No user id found');
-          return [];
-        }
+          if (user_token === '') {
+            Alert.alert('No token found');
+            // dispatch(
+            //   showAlert({
+            //     title: 'Alert!',
+            //     message: 'No token found',
+            //   }),
+            // );
+            return [];
+          }
+          if (!userId) {
+            if (others) {
+              // user id not found for others profile
+              Alert.alert('No user id found');
+              // dispatch(
+              //   showAlert({
+              //     title: 'Alert!',
+              //     message: 'No user id found',
+              //   }),
+              // );
+              return [];
+            }
+          }
+          if (user_id === '' && !others) {
+            // user id not found for own profile
+            Alert.alert('No user id found');
+            // dispatch(
+            //   showAlert({
+            //     title: 'Alert!',
+            //     message: 'No user id found',
+            //   }),
+            // );
+            return [];
+          }
 
-        let url = others
-          ? `${GET_MONTHLY_WRITES_REPORT}?userId=${userId}&month=${selectedMonth}`
-          : `${GET_MONTHLY_WRITES_REPORT}?userId=${user_id}&month=${selectedMonth}`;
-        // console.log('URL', url);
-        const response = await axios.get(url, {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        });
+          let url = others
+            ? `${GET_MONTHLY_WRITES_REPORT}?userId=${userId}&month=${selectedMonth}`
+            : `${GET_MONTHLY_WRITES_REPORT}?userId=${user_id}&month=${selectedMonth}`;
+          // console.log('URL', url);
+          const response = await axios.get(url, {
+            headers: {
+              Authorization: `Bearer ${user_token}`,
+            },
+          });
 
-        return response.data.monthlyWrites as MonthStatus[];
-      } catch (err) {
-        console.error('Error fetching articles writes monthly:', err);
-      }
+          return response.data.monthlyWrites as MonthStatus[];
+        } catch (err) {
+          console.error('Error fetching articles writes monthly:', err);
+        }
+      },
+      enabled:
+        !!isConnected &&
+        !!(user_token && selectedMonth !== -1 && (userId || !others)),
     },
-    enabled: !!(user_token && selectedMonth !== -1 && (userId || !others)),
-  });
+  );
 
   // GET YEARLY READ REPORT
-  const {
-    data: yearlyReadReport,
-    refetch: refetchYearlyReadReport,
-  } = useQuery({
+  const {data: yearlyReadReport, refetch: refetchYearlyReadReport} = useQuery({
     queryKey: ['get-yearly-read-reports'],
     queryFn: async () => {
       try {
@@ -195,18 +221,36 @@ const ActivityOverview = ({
         }
         if (user_token === '') {
           Alert.alert('No token found');
+          // dispatch(
+          //   showAlert({
+          //     title: 'Alert!',
+          //     message: 'No token found',
+          //   }),
+          // );
           return [];
         }
         if (!userId) {
           if (others) {
             // user id not found for others profile
             Alert.alert('No user id found');
+            // dispatch(
+            //   showAlert({
+            //     title: 'Alert!',
+            //     message: 'No user id found',
+            //   }),
+            // );
             return [];
           }
         }
         if (user_id === '' && !others) {
           // user id not found for own profile
           Alert.alert('No user id found');
+          // dispatch(
+          //   showAlert({
+          //     title: 'Alert!',
+          //     message: 'No user id found',
+          //   }),
+          // );
           return [];
         }
 
@@ -224,79 +268,115 @@ const ActivityOverview = ({
         console.error('Error fetching articles reads yearly:', err);
       }
     },
-    enabled: !!(user_token && selectedYear !== -1 && (userId || !others)),
+    enabled:
+      !!isConnected &&
+      !!(user_token && selectedYear !== -1 && (userId || !others)),
   });
 
   // GET YEARLY WRITE REPORT
 
-  const {
-    data: yearlyWriteReport,
-    refetch: refetchYearlyWriteReport,
-  } = useQuery({
-    queryKey: ['get-yearly-write-reports'],
-    queryFn: async () => {
-      try {
-        if (selectedYear === -1) {
-          return [];
-        }
-        if (user_token === '') {
-          Alert.alert('No token found');
-          return [];
-        }
-        if (!userId) {
-          if (others) {
-            // user id not found for others profile
-            Alert.alert('No user id found');
+  const {data: yearlyWriteReport, refetch: refetchYearlyWriteReport} = useQuery(
+    {
+      queryKey: ['get-yearly-write-reports'],
+      queryFn: async () => {
+        try {
+          if (selectedYear === -1) {
             return [];
           }
+          if (user_token === '') {
+            Alert.alert('No token found');
+            // dispatch(
+            //   showAlert({
+            //     title: 'Alert!',
+            //     message: 'No token found',
+            //   }),
+            // );
+            return [];
+          }
+          if (!userId) {
+            if (others) {
+              // user id not found for others profile
+              Alert.alert('No user id found');
+              // dispatch(
+              //   showAlert({
+              //     title: 'Alert!',
+              //     message: 'No user id found',
+              //   }),
+              // );
+              return [];
+            }
+          }
+          if (user_id === '' && !others) {
+            // user id not found for own profile
+            Alert.alert('No user id found');
+            // dispatch(
+            //   showAlert({
+            //     title: 'Alert!',
+            //     message: 'No user id found',
+            //   }),
+            // );
+            return [];
+          }
+
+          let url = others
+            ? `${GET_YEARLY_WRITES_REPORT}?userId=${userId}&year=${selectedYear}`
+            : `${GET_YEARLY_WRITES_REPORT}?userId=${user_id}&year=${selectedYear}`;
+
+          const response = await axios.get(url, {
+            headers: {
+              Authorization: `Bearer ${user_token}`,
+            },
+          });
+
+          return response.data.yearlyWrites as YearStatus[];
+        } catch (err) {
+          console.error('Error fetching articles reads yearly:', err);
         }
-        if (user_id === '' && !others) {
-          // user id not found for own profile
-          Alert.alert('No user id found');
-          return [];
-        }
+      },
 
-        let url = others
-          ? `${GET_YEARLY_WRITES_REPORT}?userId=${userId}&year=${selectedYear}`
-          : `${GET_YEARLY_WRITES_REPORT}?userId=${user_id}&year=${selectedYear}`;
-
-        const response = await axios.get(url, {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        });
-
-        return response.data.yearlyWrites as YearStatus[];
-      } catch (err) {
-        console.error('Error fetching articles reads yearly:', err);
-      }
+      enabled:
+        !!isConnected &&
+        !!(user_token && selectedYear !== -1 && (userId || !others)),
     },
-
-    enabled: !!(user_token && selectedYear !== -1 && (userId || !others)),
-  });
+  );
 
   // GET MOST VIEWED ARTICLE
-  const {
-    data: article,
-    isLoading: isArticleLoading,
-  } = useQuery({
+  const {data: article, isLoading: isArticleLoading} = useQuery({
     queryKey: ['get-most-viewed-articles'],
     queryFn: async () => {
       try {
         if (user_token === '') {
           Alert.alert('No token found');
+          // dispatch(
+          //   showAlert({
+          //     title: 'Alert!',
+          //     message: 'No token found',
+          //   }),
+          // );
           return '';
         }
         if (!userId) {
           if (others) {
             // user id not found for others profile
             Alert.alert('No user id found');
+            // dispatch(
+            //   showAlert({
+            //     title: 'Alert!',
+            //     message: 'No user id found',
+            //   }),
+            // );
             return '';
           }
         }
         if (user_id === '' && !others) {
           // user id not found for own profile
           Alert.alert('No user id found');
+          // dispatch(
+          //   showAlert({
+          //     title: 'Alert!',
+          //     message: 'No user id found',
+          //   }),
+          // );
           return '';
         }
 
@@ -315,30 +395,47 @@ const ActivityOverview = ({
         console.error('Error fetching articles:', err);
       }
     },
+    enabled: !!isConnected && !!user_token,
   });
 
   // GET USER STATUS FOR LIKE AND VIEW COUNT
 
-  const {
-    isLoading: likeViewStatDataLoading,
-  } = useQuery({
+  const {isLoading: likeViewStatDataLoading} = useQuery({
     queryKey: ['get-like-view-status'],
     queryFn: async () => {
       try {
         if (user_token === '') {
           Alert.alert('No token found');
+          // dispatch(
+          //   showAlert({
+          //     title: 'Alert!',
+          //     message: 'No token found',
+          //   }),
+          // );
           return '';
         }
         if (!userId) {
           if (others) {
             // user id not found for others profile
             Alert.alert('No user id found');
+            // dispatch(
+            //   showAlert({
+            //     title: 'Alert!',
+            //     message: 'No user id found',
+            //   }),
+            // );
             return '';
           }
         }
         if (user_id === '' && !others) {
           // user id not found for own profile
           Alert.alert('No user id found');
+          // dispatch(
+          //   showAlert({
+          //     title: 'Alert!',
+          //     message: 'No user id found',
+          //   }),
+          // );
           return '';
         }
 
@@ -358,30 +455,45 @@ const ActivityOverview = ({
         console.error('Error fetching articles:', err);
       }
     },
+    enabled: !!isConnected && !!user_token,
   });
 
   // GET TOTAL READ STATUS
 
-  const {
-    isLoading: readStatDataLoading,
-  } = useQuery({
+  const {isLoading: readStatDataLoading} = useQuery({
     queryKey: ['get-read-status'],
     queryFn: async () => {
       try {
         if (user_token === '') {
           Alert.alert('No token found');
+          // dispatch(
+          //   showAlert({
+          //     title: 'Alert!',
+          //     message: 'No token found',
+          //   }),
+          // );
           return '';
         }
         if (!userId) {
           if (others) {
             // user id not found for others profile
             Alert.alert('No user id found');
+            // dispatch(
+            //   showAlert({
+            //     title: 'Alert!',
+            //     message: 'No user id found',
+            //   }),
+            // );
             return '';
           }
         }
         if (user_id === '' && !others) {
           // user id not found for own profile
           Alert.alert('No user id found');
+          // dispatch(showAlert({
+          //      title: "Alert!",
+          //      message: 'No user id found'
+          //     }));
           return '';
         }
 
@@ -401,30 +513,41 @@ const ActivityOverview = ({
         console.error('Error fetching articles:', err);
       }
     },
+    enabled: !!isConnected && !!user_token,
   });
 
   // GET TOTAL WRITE STATUS
 
-  const {
-    isLoading: writeStatDataLoading,
-  } = useQuery({
+  const {isLoading: writeStatDataLoading} = useQuery({
     queryKey: ['get-write-status'],
     queryFn: async () => {
       try {
         if (user_token === '') {
           Alert.alert('No token found');
+          //  dispatch(showAlert({
+          //      title: "Alert!",
+          //      message: 'No token found'
+          //     }));
           return '';
         }
         if (!userId) {
           if (others) {
             // user id not found for others profile
             Alert.alert('No user id found');
+            //  dispatch(showAlert({
+            //      title: "Alert!",
+            //      message: 'No user id found'
+            //     }));
             return '';
           }
         }
         if (user_id === '' && !others) {
           // user id not found for own profile
           Alert.alert('No user id found');
+          //  dispatch(showAlert({
+          //      title: "Alert!",
+          //      message: 'No user id found'
+          //     }));
           return '';
         }
 
@@ -444,8 +567,8 @@ const ActivityOverview = ({
         console.error('Error fetching articles:', err);
       }
     },
+    enabled: !!isConnected && !!user_token,
   });
-
 
   useFocusEffect(
     useCallback(() => {
@@ -462,7 +585,12 @@ const ActivityOverview = ({
     } else {
       refetchMonthWriteReport();
     }
-  }, [refetchMonthReadReport, refetchMonthWriteReport, selectedMonth, userState]);
+  }, [
+    refetchMonthReadReport,
+    refetchMonthWriteReport,
+    selectedMonth,
+    userState,
+  ]);
 
   useEffect(() => {
     // This will run when selectedMonth changes
@@ -471,7 +599,12 @@ const ActivityOverview = ({
     } else {
       refetchYearlyWriteReport();
     }
-  }, [refetchYearlyReadReport, refetchYearlyWriteReport, selectedYear, userState]);
+  }, [
+    refetchYearlyReadReport,
+    refetchYearlyWriteReport,
+    selectedYear,
+    userState,
+  ]);
 
   if (
     isArticleLoading ||
@@ -479,496 +612,519 @@ const ActivityOverview = ({
     writeStatDataLoading ||
     readStatDataLoading
   ) {
+    // eslint-disable-next-line no-unused-expressions
     <Loader />;
   }
 
-  const processData = data => {
-   if (!Array.isArray(data) || data.length === 0) {
-    return [0,0,0,0,0,0,0,0,0,0,0,0];
-  }
+  // const processData = data => {
+  //   if (!Array.isArray(data) || data.length === 0) {
+  //     return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  //   }
 
-    /*
-    console.log('data', data.map(item => ({
-      value: item.value, // Ensure the value is an integer
-      label: item.date.substring(8),
-    })));
+  //   /*
+  //   console.log('data', data.map(item => ({
+  //     value: item.value, // Ensure the value is an integer
+  //     label: item.date.substring(8),
+  //   })));
     
-    return data.map(item => ({
-      value: item.value, // Ensure the value is an integer
-      label: item.date.substring(8),
-    }));
-    */
+  //   return data.map(item => ({
+  //     value: item.value, // Ensure the value is an integer
+  //     label: item.date.substring(8),
+  //   }));
+  //   */
 
-    return data.map(item =>
-      Number.isFinite(Number(item.value)) ? Math.round(Number(item.value)) : 0,
+  //   return data.map(item =>
+  //     Number.isFinite(Number(item.value)) ? Number(item.value) : 0,
+  //   );
+  // };
+
+  // const processLabels = data => {
+  //   if (!data) {
+  //     return [];
+  //   }
+
+  //   //console.log("Label data", data)
+
+  //   return data.map(item => item.date?.substring(8) ?? '-');
+  // };
+
+  const getTrendMessage = () => {
+    const monthNames = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+
+    // If month selected
+    if (selectedMonth !== -1) {
+      const monthName = monthNames[selectedMonth];
+      const year = moment().year(); // current year
+      return `${user_handle}'s ${
+        userState === 0 ? 'Reading' : 'Writing'
+      } activity for ${monthName} ${year}`;
+    }
+
+    // If year selected
+    if (selectedYear !== -1) {
+      return `${user_handle}'s ${
+        userState === 0 ? 'Reading' : 'Writing'
+      } activity for the year ${selectedYear}`;
+    }
+
+    return '';
+  };
+
+  const screenWidth = Dimensions.get('window').width;
+
+
+ const dayToWeekData = (data: MonthStatus[]): LineDataItem[] => {
+  if (!Array.isArray(data) || data.length === 0) return [];
+
+  // Sort (safe guard)
+  const sorted = [...data].sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
+
+  const weeks: LineDataItem[] = [];
+  let currentWeek: MonthStatus[] = [];
+  let weekIndex = 1;
+
+  const getWeekDay = (date: string) => new Date(date).getDay(); // 0 = Sun
+
+  sorted.forEach((item, index) => {
+    currentWeek.push(item);
+
+    const isSaturday = getWeekDay(item.date) === 6;
+    const isLastDay = index === sorted.length - 1;
+
+    if (isSaturday || isLastDay) {
+      const weekSum = currentWeek.reduce(
+        (sum, d) => sum + Number(d.value || 0),
+        0
+      );
+
+      //const startDay = currentWeek[0].date.slice(8);
+      //const endDay = currentWeek[currentWeek.length - 1].date.slice(8);
+
+      weeks.push({
+        label: `W${weekIndex}`,
+        value: weekSum,
+      });
+
+      weekIndex++;
+      currentWeek = [];
+    }
+  });
+
+  return weeks;
+};
+
+
+  const MONTH_LABELS = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+
+ const groupYearlyData = (data: YearStatus[]) => {
+  const map = new Map<number, number>();
+
+  data.forEach(item => {
+    const monthNumber = Number(item.month.split('-')[1]); // "01" -> 1
+    map.set(monthNumber, item.value || 0);
+  });
+
+  const normalized = MONTH_LABELS.map((label, index) => ({
+    label,
+    value: map.get(index + 1) ?? 0,
+  }));
+
+  return [
+    normalized.slice(0, 3),   // Q1
+    normalized.slice(3, 6),   // Q2
+    normalized.slice(6, 9),   // Q3
+    normalized.slice(9, 12),  // Q4
+  ];
+};
+
+
+  const YearlyChartSection = () => {
+    const yearlyData =
+      userState === 0 ? yearlyReadReport ?? [] : yearlyWriteReport ?? [];
+        console.log('Raw yearly Data:', yearlyData);
+    const groupedData = groupYearlyData(yearlyData);
+        console.log('Grouped yearly Data:', groupedData);
+
+    const CHART_HORIZONTAL_PADDING = 32;
+    const chartWidth = screenWidth - CHART_HORIZONTAL_PADDING - 16;
+
+    const QUARTER_LABELS = ['Jan – Mar', 'Apr – Jun', 'Jul – Sep', 'Oct – Dec'];
+
+    return (
+      <ScrollView
+        contentContainerStyle={{
+          paddingHorizontal: 2,
+          paddingBottom: 32,
+          // backgroundColor: '#fff',
+        }}
+        showsVerticalScrollIndicator={false}>
+        <Card
+          padding={16}
+          borderRadius={16}
+          backgroundColor="#fff"
+          overflow="hidden"
+          bordered
+          borderWidth={0.6}>
+          <Text
+            fontSize={15}
+            color="$gray700"
+            textAlign="center"
+            fontWeight={'700'}
+            marginBottom={12}>
+            {getTrendMessage()}
+          </Text>
+          {groupedData.map((group, index) => {
+            const isLast = index === groupedData.length - 1;
+
+            return (
+              <View key={index}>
+                {/* Quarter Title */}
+                <Text
+                  fontSize={15}
+                  fontWeight="600"
+                  color="#000"
+                  marginBottom={8}>
+                  {QUARTER_LABELS[index]}
+                </Text>
+
+                {/* Chart */}
+                <View>
+                  <BarChart
+                    yAxisLabel=""
+                    yAxisSuffix=""
+                    width={chartWidth}
+                    height={170}
+                    fromZero
+                    withInnerLines={false}
+                    style={{
+                      marginLeft: -8,
+                      backgroundColor: '#fff',
+                    }}
+                    chartConfig={{
+                      backgroundGradientFrom: '#fff',
+                      backgroundGradientTo: '#fff',
+                      decimalPlaces: 1,
+                      formatYLabel: y => Number(y).toFixed(1),
+                      color: () => PRIMARY_COLOR,
+                      labelColor: () => '#9CA3AF',
+                      barPercentage: 0.5,
+                      propsForBackgroundLines: {strokeWidth: 0},
+                    }}
+                    data={{
+                      labels: group.map(i => i.label),
+                      datasets: [{data: group.map(i => i.value)}],
+                    }}
+                  />
+                </View>
+
+                {/* Separator only between groups */}
+                {!isLast && <Separator marginVertical={20} opacity={0.6} />}
+              </View>
+            );
+          })}
+        </Card>
+      </ScrollView>
     );
   };
 
-  const processLabels = data => {
-    if (!data) {
-      return [];
-    }
+  const WeeklyChartSection = () => {
 
-    return data.map(item => item.date?.substring(8) ?? '-');
+
+    const rawMonthlyData =
+      userState === 0 ? monthlyReadReport ?? [] : monthlyWriteReport ?? [];
+    
+      console.log('Raw Monthly Data:', rawMonthlyData);
+
+    const weeklyData = dayToWeekData(rawMonthlyData);
+
+    console.log('Weekly Data:', weeklyData);
+
+    const labels = weeklyData.map(w => w.label);
+    const values = weeklyData.map(w => w.value);
+
+    return (
+      <Card
+        padding={18}
+        borderRadius={16}
+        backgroundColor="#fff"
+        overflow="hidden"
+        bordered
+        borderWidth={0.6}>
+        <Text
+          fontSize={15}
+          color="$gray700"
+          fontWeight={'700'}
+          textAlign="center"
+          marginBottom={12}>
+          {getTrendMessage()}
+        </Text>
+
+        <BarChart
+          yAxisLabel=""
+          yAxisSuffix=""
+          data={{labels, datasets: [{data: values}]}}
+          width={screenWidth - 64}
+          height={220}
+          fromZero
+          withInnerLines={false}
+          showValuesOnTopOfBars={false}
+          style={{marginLeft: -8}}
+          chartConfig={{
+            backgroundGradientFrom: '#fff',
+            backgroundGradientTo: '#fff',
+            decimalPlaces: 1,
+            formatYLabel: y => Number(y).toFixed(1),
+            color: () => PRIMARY_COLOR,
+            labelColor: () => '#9CA3AF',
+            barPercentage: 0.45,
+            propsForBackgroundLines: {strokeWidth: 0},
+          }}
+        />
+      </Card>
+    );
   };
 
- // const screenWidth = Dimensions.get('window').width;
-
+  const BarChartSection = () => {
+    return (
+      <View background="$background" paddingHorizontal="$4" marginTop="$6">
+        <Text fontSize={19} fontWeight="700" marginBottom="$3">
+              {userState === 0 ? 'Reading Trend' : 'Writing Trend'}
+            </Text>
+        {selectedMonth !== -1 ? <WeeklyChartSection /> : <YearlyChartSection />}
+      </View>
+    );
+  };
 
   return (
-    <ScrollView
-      style={{
-        flex: 1,
-        marginBottom: 120,
-        backgroundColor: ON_PRIMARY_COLOR,
-      }}>
-      <View style={styles.rowContainer}>
-        <Dropdown
-          style={styles.dropdown}
-          //placeholderStyle={styles.placeholderStyle}
-          itemTextStyle={{
-            fontSize: 17,
-            fontWeight: '700',
-          }}
-          data={[
-            {label: 'Read', value: 0},
-            {label: 'Write', value: 1},
-          ]}
-          labelField="label"
-          valueField="value"
-          //placeholder={!isFocus ? 'Select your role' : '...'}
-          value={userState}
-          onFocus={() => setIsFocus(true)}
-          onBlur={() => setIsFocus(false)}
-          onChange={item => {
-            setUserState(item.value);
-            setIsFocus(false);
-          }}
-          placeholder={undefined}
-        />
+    <ScrollView flex={1} backgroundColor="$background" paddingBottom="$12">
+      {/* Filters */}
+      <YStack paddingHorizontal="$2" marginTop="$4" gap="$3">
+        {/* Read / Write */}
 
-        <Text style={styles.btnText}>
-          {moment(new Date()).format('DD MMM, YYYY')}
-        </Text>
-      </View>
+        {/* Read / Write Toggle Buttons */}
+        <XStack
+          paddingHorizontal="$1"
+          marginTop="$4"
+          gap="$3"
+          justifyContent="space-between">
+          <XStack
+            flex={1}
+            backgroundColor="$background"
+            borderRadius="$4"
+            borderWidth={1}
+            borderColor="#c1c1c1"
+            overflow="hidden">
+            {/* Read Button */}
+            <YStack
+              flex={1}
+              paddingVertical="$3"
+              justifyContent="center"
+              alignItems="center"
+              backgroundColor={userState === 0 ? PRIMARY_COLOR : 'transparent'}
+              onPress={() => setUserState(0)}
+              pressStyle={{scale: 0.97}}>
+              <Text
+                fontSize={16}
+                fontWeight="700"
+                color={userState === 0 ? 'white' : 'black'}>
+                Read
+              </Text>
+            </YStack>
 
-      <View style={styles.rowContainer}>
-        {/**
-         *
-         *  <Dropdown
+            {/* Write Button */}
+            <YStack
+              flex={1}
+              paddingVertical="$3"
+              justifyContent="center"
+              alignItems="center"
+              backgroundColor={userState === 1 ? PRIMARY_COLOR : 'transparent'}
+              onPress={() => setUserState(1)}
+              pressStyle={{scale: 0.97}}>
+              <Text
+                fontSize={16}
+                fontWeight="700"
+                color={userState === 1 ? 'white' : 'black'}>
+                Write
+              </Text>
+            </YStack>
+          </XStack>
+        </XStack>
+
+        <View
           style={{
-            ...styles.button,
-            backgroundColor: selectedDay === -1 ? '#c1c1c1' : PRIMARY_COLOR,
-          }}
-          //placeholderStyle={styles.placeholderStyle}
-          data={dailyDrops}
-          labelField="label"
-          valueField="value"
-          //placeholder={!isFocus ? 'Select your role' : '...'}
-          value={selectedDay}
-          onFocus={() => setIsFocus(true)}
-          onBlur={() => setIsFocus(false)}
-          onChange={item => {
-            setSelectedDay(item.value);
-            setSelectedMonth(-1);
-            setSelectedYear(-1);
-            setIsFocus(false);
-          }}
-          placeholder={'Daily'}
-        />
-         */}
-
-        <Dropdown
-          style={{
-            ...styles.button,
-            backgroundColor: selectedMonth === -1 ? '#c1c1c1' : PRIMARY_COLOR,
-          }}
-          //placeholderStyle={styles.placeholderStyle}
-
-          data={monthlyDrops}
-          labelField="label"
-          valueField="value"
-          //placeholder={!isFocus ? 'Select your role' : '...'}
-          itemTextStyle={{
-            fontSize: 14,
-          }}
-          value={selectedMonth}
-          onFocus={() => setIsFocus(true)}
-          onBlur={() => setIsFocus(false)}
-          onChange={item => {
-            setSelectedMonth(item.value);
-            // setSelectedDay(-1);
-            setSelectedYear(-1);
-            setIsFocus(false);
-            //if (userState === 0) {
-            // refetchMonthReadReport();
-            //} else {
-            refetchMonthWriteReport();
-            // }
-          }}
-          placeholder={'Monthly'}
-        />
-        <Dropdown
-          style={{
-            ...styles.button,
-            backgroundColor: selectedYear === -1 ? '#c1c1c1' : PRIMARY_COLOR,
-          }}
-          //placeholderStyle={styles.placeholderStyle}
-          //placeholderStyle={styles.placeholderStyle}
-          data={yearlyDrops}
-          labelField="label"
-          valueField="value"
-          //placeholder={!isFocus ? 'Select your role' : '...'}
-          value={selectedYear}
-          onFocus={() => setIsFocus(true)}
-          onBlur={() => setIsFocus(false)}
-          onChange={item => {
-            setSelectedYear(item.value);
-            // setSelectedDay(-1);
-            setSelectedMonth(-1);
-            setIsFocus(false);
-
-            // if (userState === 0) {
-            //  refetchYearlyReadReport();
-            // } else {
-            // refetchYearlyWriteReport();
-            // }
-          }}
-          placeholder={'Yearly'}
-        />
-      </View>
-
-      {/**
-       *   {selectedDay !== -1 && (
-        <View style={{marginTop: 10}}>
-          <LineChart data={chartData} areaChart />
-        </View>
-      )}
-       */}
-
-      {selectedMonth !== -1 && (
-        <ScrollView horizontal>
-          <LineChart
-            data={{
-              labels:
-                userState === 0
-                  ? processLabels(monthlyReadReport)
-                  : processLabels(monthlyWriteReport),
-
-              datasets: [
-                {
-                  data:
-                    userState === 0
-                      ? processData(monthlyReadReport)
-                      : processData(monthlyWriteReport),
-                  strokeWidth: 1,
-                  color: (opacity = 1) => `rgba(33, 150, 243, ${opacity})`,
-                },
-              ],
-            }}
-            width={Math.max(
-              (userState === 0
-                ? monthlyReadReport? monthlyReadReport?.length : 0
-                : monthlyWriteReport? monthlyWriteReport?.length : 0) * 40,
-              300,
-            )} // Fallback width
-            height={350}
-            chartConfig={{
-              backgroundGradientFrom: ON_PRIMARY_COLOR,
-              backgroundGradientTo: ON_PRIMARY_COLOR,
-              color: (opacity = 1) => `rgba(0,0,0,${opacity})`,
-              labelColor: () => '#999',
-              formatYLabel: y => parseInt(y).toString(),
-              propsForDots: {
-                r: '3',
-                strokeWidth: '2',
-                stroke: PRIMARY_COLOR,
-              },
-            }}
-            bezier
-            withInnerLines={false}
+            ...styles.rowContainer,
+            paddingHorizontal: 10,
+            marginTop: 10,
+            gap: 10,
+          }}>
+          {/* MONTH DROPDOWN */}
+          <Dropdown
             style={{
-              marginVertical: 2,
-              borderRadius: 12,
+              ...styles.button,
+              flex: 1,
+              borderRadius: 10,
+              borderWidth: 0.6,
+              backgroundColor: selectedMonth === -1 ? '#EFEFEF' : PRIMARY_COLOR,
             }}
+            itemTextStyle={{
+              fontSize: 15,
+              fontWeight: '600',
+            }}
+            placeholderStyle={{
+              fontSize: 15,
+              fontWeight: '600',
+              color: '#555',
+            }}
+            data={monthlyDrops}
+            labelField="label"
+            valueField="value"
+            value={selectedMonth}
+            onFocus={() => setIsFocus(true)}
+            onBlur={() => setIsFocus(false)}
+            onChange={item => {
+              setSelectedMonth(item.value);
+              setSelectedYear(-1);
+              setIsFocus(false);
+              refetchMonthWriteReport();
+            }}
+            placeholder={'Monthly'}
           />
-        </ScrollView>
-      )}
 
-      {selectedYear !== -1 && (
-        <ScrollView horizontal>
-          <LineChart
-            data={{
-              labels:
-                userState === 0
-                  ? processLabels(yearlyReadReport)
-                  : processLabels(yearlyWriteReport),
-
-              datasets: [
-                {
-                  data:
-                    userState === 0
-                      ? processData(yearlyReadReport)
-                      : processData(yearlyWriteReport),
-                  strokeWidth: 1,
-                  color: (opacity = 1) => `rgba(33, 150, 243, ${opacity})`,
-                },
-              ],
-            }}
-            width={Math.max(
-              (userState === 0
-                ? yearlyReadReport? yearlyReadReport?.length : 0
-                : yearlyWriteReport? yearlyWriteReport?.length : 0) * 40,
-              300,
-            )} // Fallback width
-            height={350}
-            chartConfig={{
-              backgroundGradientFrom: ON_PRIMARY_COLOR,
-              backgroundGradientTo: ON_PRIMARY_COLOR,
-              color: (opacity = 1) => `rgba(0,0,0,${opacity})`,
-              labelColor: () => '#999',
-              formatYLabel: y => parseInt(y).toString(),
-              propsForDots: {
-                r: '3',
-                strokeWidth: '2',
-                stroke: PRIMARY_COLOR,
-              },
-            }}
-            bezier
-            withInnerLines={false}
+          {/* YEAR DROPDOWN */}
+          <Dropdown
             style={{
-              marginVertical: 2,
-              borderRadius: 12,
+              ...styles.button,
+              flex: 1,
+              borderRadius: 10,
+              borderWidth: 0.6,
+              backgroundColor: selectedYear === -1 ? '#EFEFEF' : PRIMARY_COLOR,
             }}
+            placeholderStyle={{
+              fontSize: 15,
+              fontWeight: '600',
+              color: '#555',
+            }}
+            itemTextStyle={{
+              fontSize: 15,
+              fontWeight: '600',
+            }}
+            data={yearlyDrops}
+            labelField="label"
+            valueField="value"
+            value={selectedYear}
+            onFocus={() => setIsFocus(true)}
+            onBlur={() => setIsFocus(false)}
+            onChange={item => {
+              setSelectedYear(item.value);
+              setSelectedMonth(-1);
+              setIsFocus(false);
+            }}
+            placeholder={'Yearly'}
           />
-        </ScrollView>
+        </View>
+      </YStack>
+
+      {/* Chart Section */}
+      {(selectedMonth !== -1 || selectedYear !== -1) && (
+     
+         <>
+            
+
+            <BarChartSection />
+          </>   
+      
       )}
 
-      {
-        /**
-         * <View style={{marginTop: 10}}>
-          <LineChart
-            data={
-              userState === 0
-                ? yearlyReadReport?.map(item => ({
-                    value: item.value,
-                    label: moment(item.month).format('MMM'),
-                  }))
-                : yearlyWriteReport?.map(item => ({
-                    value: item.value,
-                    label: moment(item.month).format('MMM'),
-                  }))
-            }
-            // isAnimated={true}
-            // animationDuration={500}
-            minYValue={0}
-            // minXValue={0}
-            areaChart
-          />
-        </View>
-         */
-      }
-
-      {/**
-         *
-         * <Image
-        source={{
-          uri: 'https://i.ibb.co/T2WNVJZ/Whats-App-Image-2024-07-14-at-12-46-02-AM-1.jpg',
-        }}
-        style={{width: '95%', height: 600, resizeMode: 'contain'}}
-      />
-         */}
-
-      <View
-        style={{
-          height: 0.8,
-          width: '96%',
-          margin: 10,
-          backgroundColor: '#c1c1c1',
-        }}
-      />
-
-      {/**
-       * 
-       *  <View style={styles.box}>
-          <Text style={styles.titleText}> Total Reads</Text>
-
-          <Text style={styles.valueText}>{readStat?.progress}%</Text>
-
-          <Progress.Bar
-            progress={readStat?.progress ? readStat?.progress : 0}
-            width={140}
-            borderColor={PRIMARY_COLOR}
-            borderWidth={1}
-            color={
-              readStat?.progress
-                ? readStat?.progress < 0.4
-                  ? colorList[0]
-                  : readStat?.progress < 0.8
-                  ? colorList[1]
-                  : colorList[2]
-                : 'black'
-            }
-            borderRadius={4}
-            style={{marginTop: 2}}
-          />
-        </View>
-       *    <View style={styles.box}>
-          <Text style={styles.titleText}> Total Writes</Text>
-
-          <Text style={styles.valueText}>{writeStat?.progress}%</Text>
-
-          <Progress.Bar
-            progress={writeStat?.progress ? writeStat?.progress : 0}
-            width={140}
-            borderColor={PRIMARY_COLOR}
-            borderWidth={1}
-            color={
-              writeStat?.progress
-                ? writeStat?.progress < 0.4
-                  ? colorList[0]
-                  : writeStat?.progress < 0.8
-                  ? colorList[1]
-                  : colorList[2]
-                : 'black'
-            }
-            borderRadius={4}
-            style={{marginTop: 4}}
-          />
-        </View>
-
-        <View style={styles.box}>
-          <Text style={styles.titleText}> Total Likes</Text>
-          <Text style={{...styles.valueText, marginStart: 8}}>
-            {likeViewStat?.likeProgress}%
-          </Text>
-
-          <Progress.Bar
-            progress={
-              likeViewStat?.likeProgress ? likeViewStat?.likeProgress : 0
-            }
-            width={140}
-            borderColor={PRIMARY_COLOR}
-            borderWidth={1}
-            color={
-              likeViewStat?.likeProgress
-                ? likeViewStat?.likeProgress < 0.4
-                  ? colorList[0]
-                  : likeViewStat?.likeProgress < 0.8
-                  ? colorList[1]
-                  : colorList[2]
-                : 'black'
-            }
-            borderRadius={4}
-            style={{marginTop: 4}}
-          />
-        </View>
-
-        <View style={styles.box}>
-          <Text style={styles.titleText}> Total Views</Text>
-
-          <Text style={{...styles.valueText, marginStart: 1}}>
-            {likeViewStat?.viewProgress}%
-          </Text>
-
-          <Progress.Bar
-            progress={
-              likeViewStat?.viewProgress ? likeViewStat.viewProgress : 0
-            }
-            width={140}
-            borderColor={PRIMARY_COLOR}
-            borderWidth={1}
-            color={
-              likeViewStat?.viewProgress
-                ? likeViewStat?.viewProgress < 0.4
-                  ? colorList[0]
-                  : likeViewStat?.viewProgress < 0.8
-                  ? colorList[1]
-                  : colorList[2]
-                : 'black'
-            }
-            borderRadius={4}
-            style={{marginTop: 4}}
-          />
-        </View>
-      </View>
-
-      <View
-        style={{
-          height: 0.8,
-          width: '96%',
-          margin: 10,
-          backgroundColor: '#c1c1c1',
-        }}
-      />
-       */}
-
+      {/* Most Viewed */}
       {others && (
-        <>
-          <Text
-            style={{
-              ...styles.btnText,
-              marginVertical: 10,
-              fontWeight: '700',
-              fontSize: 17,
-              marginStart: 10,
-            }}>
-            Most viewed articles
+        <YStack paddingHorizontal="$4" marginTop="$6">
+          <Text fontSize={19} fontWeight="800" marginBottom="$3">
+            Most Viewed Articles
           </Text>
+
           {article &&
-            article.map((item, index) => {
-              return (
-                <Pressable
-                  key={index}
-                  onPress={() => {
-                    onArticleViewed({
-                      articleId: Number(item._id),
-                      authorId: item.authorId ?? '',
-                      recordId: item.pb_recordId,
-                    });
-                  }}>
-                  <View style={styles.cardContainer}>
-                    {item?.imageUtils[0] && item?.imageUtils[0].length !== 0 ? (
-                      <Image
-                        source={{
-                          uri: item?.imageUtils[0].startsWith('http')
-                            ? item?.imageUtils[0]
-                            : `${GET_IMAGE}/${item?.imageUtils[0]}`,
-                        }}
-                        style={styles.image}
-                      />
-                    ) : (
-                      <Image
-                        source={require('../assets/no_results.jpg')}
-                        style={styles.image}
-                      />
-                    )}
+            article.map((item: ArticleData, index: number) => (
+              <Card
+                key={index}
+                elevate
+                bordered
+                borderWidth={0.6}
+                // boc="$color3"
+                borderRadius="$10"
+                //mb="$4"
+                pressStyle={{scale: 0.98}}
+                onPress={() =>
+                  onArticleViewed({
+                    articleId: Number(item._id),
+                    authorId: item.authorId.toString() ?? '',
+                    recordId: item.pb_recordId,
+                  })
+                }>
+                <XStack>
+                  <Image
+                    source={{
+                      uri: item?.imageUtils[0]?.startsWith('http')
+                        ? item?.imageUtils[0]
+                        : `${GET_IMAGE}/${item?.imageUtils[0]}`,
+                    }}
+                    width={130}
+                    height={130}
+                    borderRadius={8}
+                  />
 
-                    <View style={styles.textContainer}>
-                      <Text style={styles.footerText}>
-                        {item?.tags.map(tag => tag.name).join(' | ')}
-                      </Text>
-                      <Text style={styles.title}>{item?.title}</Text>
+                  <YStack flex={1} padding="$3">
+                    <Text fontSize={12} color="$gray10">
+                      {item?.tags.map(t => t.name).join(' | ')}
+                    </Text>
 
-                      <Text style={{...styles.footerText, marginBottom: 3}}>
-                        {item?.viewUsers
-                          ? item?.viewUsers.length > 1
-                            ? `${formatCount(item?.viewUsers.length)} views`
-                            : `${item?.viewUsers.length} view`
-                          : '0 view'}
-                      </Text>
-                      <Text style={styles.footerText}>
-                        Last updated: {''}
-                        {moment(new Date(item?.lastUpdated)).format(
-                          'DD/MM/YYYY',
-                        )}
-                      </Text>
-                    </View>
-                  </View>
-                </Pressable>
-              );
-            })}
-        </>
+                    <Text
+                      fontSize={17}
+                      fontWeight="700"
+                      marginTop="$1"
+                      marginBottom="$1">
+                      {item?.title}
+                    </Text>
+
+                    <Text fontSize={13} color="$gray10">
+                      {item?.viewUsers?.length ?? 0} views
+                    </Text>
+
+                    <Text fontSize={12} color="$gray8" marginTop="$1">
+                      Updated: {moment(item.lastUpdated).format('DD/MM/YYYY')}
+                    </Text>
+                  </YStack>
+                </XStack>
+              </Card>
+            ))}
+        </YStack>
       )}
     </ScrollView>
   );
@@ -979,7 +1135,7 @@ const styles = StyleSheet.create({
     flex: 0,
     width: '100%',
     flexDirection: 'row',
-    padding: 6,
+    padding: 2,
     justifyContent: 'space-between',
     alignItems: 'center',
   },
@@ -1023,20 +1179,21 @@ const styles = StyleSheet.create({
   },
 
   dropdown: {
-    height: 30,
-    width: '35%',
+    height: 40,
+    width: '45%',
     borderColor: '#c1c1c1',
     borderWidth: 0.4,
     borderRadius: 5,
-    paddingHorizontal: 6,
+    paddingHorizontal: 10,
     marginVertical: 3,
     paddingRight: 2,
     marginStart: 4,
   },
 
   button: {
-    width: '40%',
-    padding: 6,
+    width: '45%',
+    height: hp(6),
+    padding: 8,
     borderRadius: 8,
     margin: 2,
     marginTop: 4,

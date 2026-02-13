@@ -14,7 +14,7 @@ import {
   Modal,
   View,
 } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import AddSpecializationModal from './AddSpecializationModal';
 
 interface Props {

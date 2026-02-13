@@ -1,24 +1,14 @@
-/**
- * @format
- */
-/**
- * @format
- */
-import {BottomSheetModalProvider} from '@gorhom/bottom-sheet';
-import {AppRegistry} from 'react-native';
-import App from './App';
-import {name as appName} from './app.json';
-import TrackPlayer from 'react-native-track-player';
-import {Provider} from 'react-redux';
+import { registerRootComponent } from 'expo';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { Provider } from 'react-redux';
 import store from './src/store/ReduxStore';
-import {GestureHandlerRootView} from 'react-native-gesture-handler';
-import { trackService } from './src/helper/trackPlayerService';
-
-TrackPlayer.registerPlaybackService(() => trackService);
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import App from './App';
+import { StyleSheet } from 'react-native';
 
 const AppWrapper = () => {
   return (
-    <GestureHandlerRootView>
+    <GestureHandlerRootView style={styles.container}>
       <BottomSheetModalProvider>
         <Provider store={store}>
           <App />
@@ -28,5 +18,10 @@ const AppWrapper = () => {
   );
 };
 
-//AppRegistry.registerComponent(appName, () => App);
-AppRegistry.registerComponent(appName, () => AppWrapper);
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
+
+registerRootComponent(AppWrapper);

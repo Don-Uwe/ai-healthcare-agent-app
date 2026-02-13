@@ -8,7 +8,7 @@ import {
 } from '../../helper/Theme';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {ArticleData, EditRequest, OverviewScreenProps, PodcastData} from '../../type';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import {StatusEnum} from '../../helper/Utils';
 import {FAB} from 'react-native-paper';
 import {hp} from '../../helper/Metric';
@@ -57,6 +57,7 @@ export default function OverviewScreen({navigation}: OverviewScreenProps) {
     } else {
       navigation.navigate('PodcastDetail', {
         trackId: item._id,
+        audioUrl: item.audio_url
       });
     }
   };
@@ -102,7 +103,7 @@ export default function OverviewScreen({navigation}: OverviewScreenProps) {
             <ArticleWorkSpace handleClickAction={handleClickAction} />
           </Tabs.Tab>
 
-          <Tabs.Tab name="Improvements">
+          <Tabs.Tab name="Revisions">
             <ImprovementWorkspace
               handleImprovementClick={handleImprovementClick}
             />
@@ -203,8 +204,8 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    right: 20,
-    bottom: 20,
+    right: hp(4),
+    bottom: hp(8),
     borderRadius: hp(20),
     backgroundColor: BUTTON_COLOR, // Customize color
   },

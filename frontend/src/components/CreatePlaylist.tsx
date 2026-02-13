@@ -15,9 +15,9 @@ import {useSelector} from 'react-redux';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import axios from 'axios';
 import {GET_PLAYLIST, UPDATE_PODCAST_PLAYLIST} from '../helper/APIUtils';
-import Entypo from 'react-native-vector-icons/Entypo';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import Feather from 'react-native-vector-icons/Feather';
+import Entypo from '@expo/vector-icons/Entypo';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import Feather from '@expo/vector-icons/Feather';
 import {PlayList} from '../type';
 import Snackbar from 'react-native-snackbar';
 import NoInternet from './NoInternet';
@@ -32,7 +32,7 @@ export default function CreatePlaylist({visible, dismiss}: Props) {
   // const [selectedPlaylistId, setSelectedPlaylistId] = useState<string>('');
   const [inputValue, setInputValue] = useState<string>('');
   const {addedPodcastId} = useSelector((state: any) => state.data);
-  const {isConnected} = useSelector((state: any) => state.data);
+  const {isConnected} = useSelector((state: any) => state.network);
   const [addedPlaylistIds, setAddedPlaylistIds] = useState<string[]>([]);
   const [removePlaylistIds, setRemovePlaylistIds] = useState<string[]>([]);
 
@@ -188,7 +188,12 @@ export default function CreatePlaylist({visible, dismiss}: Props) {
       dismiss();
     },
     onError: err => {
-      Alert.alert(err.message);
+
+      Snackbar.show({
+        text: err.message,
+        duration: Snackbar.LENGTH_SHORT,
+      });
+      //Alert.alert(err.message);
       //setInputValue('');
       clear();
     },

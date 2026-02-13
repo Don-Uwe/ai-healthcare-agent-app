@@ -1,25 +1,19 @@
-import React from 'react';
-import {
-  View,
-  Image,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-} from 'react-native';
-import {Comment} from '../type';
-import {GET_STORAGE_DATA} from '../helper/APIUtils';
-import moment from 'moment';
-
+import React, {useState} from 'react';
+import {ActivityIndicator, TouchableOpacity} from 'react-native';
+import {YStack, XStack, Text, Avatar, Paragraph, View} from 'tamagui';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import ArticleFloatingMenu from './ArticleFloatingMenu';
-import Entypo from 'react-native-vector-icons/Entypo';
-import AntDesign from 'react-native-vector-icons/AntDesign';
+import Entypo from '@expo/vector-icons/Entypo';
+import AntDesign from '@expo/vector-icons/AntDesign';
+import {FontAwesome, Fontisto} from '@expo/vector-icons';
+import moment from 'moment';
+import ArticleFloatingMenu from './AnimatedMenu';
 import {PRIMARY_COLOR} from '../helper/Theme';
+import {Comment} from '../type';
+import {GET_STORAGE_DATA} from '../helper/APIUtils';
 
 export default function CommentItem({
   item,
@@ -35,72 +29,96 @@ export default function CommentItem({
   isFromArticle,
 }: {
   item: Comment;
-  isSelected: Boolean;
+  isSelected: boolean;
   userId: string;
   setSelectedCommentId: (id: string) => void;
   handleEditAction: (comment: Comment) => void;
   deleteAction: (comment: Comment) => void;
   handleLikeAction: (comment: Comment) => void;
-  commentLikeLoading: Boolean;
-  handleMentionClick: (user_handle: string) => void; // on mention user handle click view profile
+  commentLikeLoading: boolean;
+  handleMentionClick: (user_handle: string) => void;
   handleReportAction: (commentId: string, authorId: string) => void;
   isFromArticle: boolean | undefined;
 }) {
   const width = useSharedValue(0);
   const yValue = useSharedValue(60);
+  const isMenuVisible = useSharedValue(false);
 
-  const menuStyle = useAnimatedStyle(() => {
-    return {
-      width: width.value,
-      transform: [{translateY: yValue.value}],
-    };
-  });
+  const menuStyle = useAnimatedStyle(() => ({
+    width: width.value,
+    transform: [{translateY: yValue.value}],
+  }));
+
+  //console.log("Item", item);
 
   const handleAnimation = () => {
-    if (width.value === 0) {
-      width.value = withTiming(300, {duration: 300});
-      yValue.value = withTiming(-1, {duration: 300});
+    if (!isMenuVisible.value) {
+      width.value = withTiming(280, {duration: 250});
+      yValue.value = withTiming(0, {duration: 250});
+      isMenuVisible.value = true;
       setSelectedCommentId(item._id);
     } else {
-      width.value = withTiming(0, {duration: 300});
-      yValue.value = withTiming(100, {duration: 300});
+      width.value = withTiming(0, {duration: 250});
+      yValue.value = withTiming(100, {duration: 250});
+      isMenuVisible.value = false;
       setSelectedCommentId('');
     }
   };
 
-  const formatWithOrdinal = date => {
-    return moment(date).format('D MMM, ddd, h:mm a');
-  };
+  const formatWithOrdinal = (date: string) =>
+    moment(date).format('D MMM, ddd, h:mm a');
 
-  // Function to render mentions and normal text in the same line
+  // Render mentions inline
   const renderTextWithMentions = (text: string) => {
-    const regex = /(@\w+)/g; // Match mentions starting with '@'
+    const regex = /(@\w+)/g;
     const parts = text.split(regex);
-
-    return parts.map((part, index) => {
-      if (part.match(regex)) {
-        // If it's a mention, style it differently
-
-        return (
-          <TouchableOpacity
-            key={index}
-            onPress={() => {
-              handleMentionClick(part);
-            }}>
-            <Text key={index} style={styles.mention}>
-              {part}
-            </Text>
-          </TouchableOpacity>
-        );
-      }
-      return <Text key={index}>{part}</Text>;
-    });
+    return parts.map((part, index) =>
+      regex.test(part) ? (
+        <TouchableOpacity key={index} onPress={() => handleMentionClick(part)}>
+          <Text color="$blue10" fontWeight="700">
+            {part}
+          </Text>
+        </TouchableOpacity>
+      ) : (
+        <Text key={index}>{part}</Text>
+      ),
+    );
   };
 
   return (
-    <View style={styles.commentContainer}>
-      <Animated.View style={[menuStyle, styles.shareIconContainer]}>
+    <YStack
+      space="$3"
+      marginBottom="$4"
+      elevation={3}
+      style={{
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 2},
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        backgroundColor: 'white',
+        borderRadius: 8, 
+      }}
+      paddingHorizontal={10}
+      paddingVertical={6}
+      shadowColor={'white'}
+      //borderBottomWidth={1}
+      //borderColor="$gray5"
+      mt="$2">
+      {/* Floating Menu */}
+      <Animated.View
+        pointerEvents={isMenuVisible.value ? 'auto' : 'none'}
+        style={[
+          menuStyle,
+          {
+            position: 'absolute',
+            top: 5,
+            right: 0,
+            zIndex: 10,
+            backgroundColor: 'transparent',
+          },
+        ]}>
         <ArticleFloatingMenu
+          isVisible={isMenuVisible.value}
           items={[
             {
               name: 'Report',
@@ -108,7 +126,7 @@ export default function CommentItem({
                 handleReportAction(item._id, item.userId._id);
                 handleAnimation();
               },
-              icon: 'infocirlce',
+              icon: 'aim',
             },
             ...(userId === item.userId._id && isSelected && !isFromArticle
               ? [
@@ -131,140 +149,80 @@ export default function CommentItem({
                 ]
               : []),
           ]}
+          top={1}
+          left={1}
         />
       </Animated.View>
 
-      <TouchableOpacity
-        style={styles.shareIconContainer}
-        onPress={() => handleAnimation()}>
-        <Entypo name="dots-three-vertical" size={20} color={'black'} />
-      </TouchableOpacity>
+      {/* Main Comment Layout */}
+      <XStack alignItems="flex-start" space="$3">
+        {/* Profile Image */}
+        <Avatar circular size="$5">
+          <Avatar.Image
+            accessibilityLabel={item.userId?.user_handle || 'User Avatar'}
+            src={
+              item.userId?.Profile_image
+                ? item.userId.Profile_image.startsWith('https')
+                  ? item.userId.Profile_image
+                  : `${GET_STORAGE_DATA}/${item.userId.Profile_image}`
+                : 'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500'
+            }
+          />
+          <Avatar.Fallback backgroundColor="#ccc" />
+        </Avatar>
 
-      {item.userId && item.userId.Profile_image ? (
-        <Image
-          source={{
-            uri: item.userId.Profile_image.startsWith('https')
-              ? item.userId.Profile_image
-              : `${GET_STORAGE_DATA}/${item.userId.Profile_image}`,
-          }}
-          style={[
-            styles.profileImage,
-            !item.userId.Profile_image && {
-              borderWidth: 0.5,
-              borderColor: 'black',
-            },
-          ]}
-        />
-      ) : (
-        <Image
-          source={{
-            uri: 'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-          }}
-          style={[
-            styles.profileImage,
-            {borderWidth: 0.5, borderColor: 'black'},
-          ]}
-        />
-      )}
-
-      <View style={styles.commentContent}>
-        <View style={{flexDirection: 'row', alignItems: 'flex-start'}}>
-          <Text style={styles.username}>{item.userId.user_handle}</Text>
-          {item.isEdited && (
-            <Text style={{...styles.comment, marginStart: 4, marginTop: 2}}>
-              (edited)
-            </Text>
-          )}
-        </View>
-
-        <Text style={styles.comment}>
-          {renderTextWithMentions(item.content)}
-        </Text>
-        <Text style={styles.timestamp}>
-          Last updated {formatWithOrdinal(item.updatedAt)}
-        </Text>
-
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'flex-start',
-            padding: 2,
-          }}>
-          {commentLikeLoading && isSelected ? (
-            <ActivityIndicator size="small" color={PRIMARY_COLOR} />
-          ) : (
-            <TouchableOpacity
-              onPress={() => {
-                width.value = withTiming(0, {duration: 300});
-                yValue.value = withTiming(100, {duration: 300});
-                setSelectedCommentId(item._id);
-                handleLikeAction(item);
-              }}>
-              {item.likedUsers.length > 0 &&
-              item.likedUsers.some(id => id === userId) ? (
-                <AntDesign name="like1" size={19} color={'black'} />
-              ) : (
-                <AntDesign name="like2" size={19} color={'black'} />
+        {/* Comment Content */}
+        <YStack flex={1} space="$1.5">
+          <XStack alignItems="center" justifyContent="space-between">
+            <XStack alignItems="center" space="$2">
+              <Text fontWeight="700" color="$gray12" fontSize={18}>
+                {item.userId.user_handle}
+              </Text>
+              {item.isEdited && (
+                <Text color="$gray9" fontSize={15}>
+                  (edited)
+                </Text>
               )}
+            </XStack>
+
+            <TouchableOpacity onPress={handleAnimation}>
+              <Entypo name="dots-three-vertical" size={18} color="#666" />
             </TouchableOpacity>
-          )}
-          <Text style={styles.likeCount}>{item.likedUsers.length}</Text>
-        </View>
-      </View>
-    </View>
+          </XStack>
+
+          <Paragraph color="$gray11" fontSize={16}>
+            {renderTextWithMentions(item.content)}
+          </Paragraph>
+
+          <Text color="$gray9" fontSize="$3">
+            Last updated {formatWithOrdinal(item.updatedAt)}
+          </Text>
+
+          {/* Like & Actions */}
+          <XStack alignItems="center" space="$2" marginTop="$2">
+            {commentLikeLoading && isSelected ? (
+              <ActivityIndicator size="small" color={PRIMARY_COLOR} />
+            ) : (
+              <TouchableOpacity
+                onPress={() => {
+                  width.value = withTiming(0, {duration: 250});
+                  yValue.value = withTiming(100, {duration: 250});
+                  setSelectedCommentId(item._id);
+                  handleLikeAction(item);
+                }}>
+                {item.likedUsers.some(id => id === userId) ? (
+                  <Fontisto name="heart" size={18} color={PRIMARY_COLOR} />
+                ) : (
+                  <FontAwesome name="heart-o" size={20} color={'#757575'} />
+                )}
+              </TouchableOpacity>
+            )}
+            <Text color="$gray10" fontSize="$4">
+              {item.likedUsers.length}
+            </Text>
+          </XStack>
+        </YStack>
+      </XStack>
+    </YStack>
   );
 }
-
-const styles = StyleSheet.create({
-  commentContainer: {
-    flexDirection: 'row',
-    marginBottom: 40,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
-    paddingBottom: 10,
-    marginTop: 5, // Reduced top margin
-  },
-  profileImage: {
-    height: 50,
-    width: 50,
-    borderRadius: 30,
-    objectFit: 'cover',
-    resizeMode: 'contain',
-    marginHorizontal: 6,
-  },
-  commentContent: {
-    flex: 1,
-  },
-  username: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-    marginEnd: 4, // Small gap between user handle and content
-  },
-  comment: {
-    fontSize: 15,
-    color: '#555',
-    marginVertical: 0, // Remove vertical margin for no extra space
-  },
-  likeCount: {
-    fontSize: 14,
-    color: '#666',
-    marginStart: 3,
-    marginVertical: 2,
-  },
-  timestamp: {
-    fontSize: 12,
-    color: '#888',
-  },
-  mention: {
-    color: 'blue', // Mention text color
-    fontWeight: 'bold',
-    paddingTop: 4,
-  },
-  shareIconContainer: {
-    position: 'absolute',
-    top: 1,
-    right: 7,
-    zIndex: 1,
-  },
-});

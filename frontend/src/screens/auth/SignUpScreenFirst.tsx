@@ -1,21 +1,20 @@
 import React, {useState} from 'react';
 import {
-  StyleSheet,
-  Text,
-  View,
-  Image,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  SafeAreaView,
   Alert,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import {
+  ScrollView,
+  YStack,
+  XStack,
+  Text,
+  Input,
+  Button,
+  Image,
+} from 'tamagui';
+import Icon from '@expo/vector-icons/MaterialIcons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {Dropdown} from 'react-native-element-dropdown';
-import AntDesign from 'react-native-vector-icons/AntDesign';
-import {hp} from '../../helper/Metric';
-import AntIcon from 'react-native-vector-icons/AntDesign';
-import {BUTTON_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
+import AntDesign from '@expo/vector-icons/AntDesign';
 import {SignUpScreenFirstProp, UserDetail} from '../../type';
 import {useMutation} from '@tanstack/react-query';
 import axios, {AxiosError} from 'axios';
@@ -34,7 +33,8 @@ import {
   launchImageLibrary,
   ImagePickerResponse,
 } from 'react-native-image-picker';
-var validator = require('email-validator');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+let validator = require('email-validator');
 
 const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
   const {uploadImage, loading} = useUploadImage();
@@ -300,13 +300,10 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
             try {
               // Upload the resized image
               const result = await uploadImage(user_profile_image);
-              // console.log('Image uploaded:', result);
-              // After uploading, update the profile image with the returned URL
-              //  userProfileImageMutation.mutate(result);
+             
               userRegisterMutation.mutate({
                 profile_url: result ? result : '',
               });
-              //setSubmitProfileUrl(result ? result : '');
             } catch (err) {
               console.error('Upload failed');
               Alert.alert('Error', 'Upload failed');
@@ -327,263 +324,218 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <SafeAreaView>
-        {/*
-          <View style={styles.header}>
-            <Text style={styles.title}>He who has health has hope and he</Text>
-            <Text style={styles.title}>who has hope has everything.</Text>
-            <Text style={styles.subtitle}> ~ Arabian Proverb.</Text>
-          </View>
+ 
+  <ScrollView backgroundColor="$background" showsVerticalScrollIndicator={false}>
+  <SafeAreaView>
+    {/* Header */}
+    <YStack
+      width="94%"
+      height={140}
+      alignItems="center"
+      justifyContent="center"
+      backgroundColor="$blue10"
+      alignSelf="center"
+      borderRadius="$4"
+      marginTop="$2"
+      padding="$3"
+      space="$2"
+    >
+      <Text fontSize={16} color="white" textAlign="center" fontWeight="600">
+        He who has health has hope and he who has hope has everything.
+      </Text>
+      <Text fontSize={16} color="white" textAlign="center" fontWeight="600">
+        ~ Arabian Proverb.
+      </Text>
+    </YStack>
 
-               <TouchableOpacity
-          style={{alignSelf: 'flex-start'}}
-          onPress={() => {
-            navigation.navigate('LoginScreen');
-          }}>
-          <AntIcon name="arrowleft" size={20} color="black" />
-        </TouchableOpacity>
-          */}
-
-        <View style={styles.header}>
-          <Text style={styles.subtitle}>
-            He who has health has hope and he who has hope has everything.
-          </Text>
-          <Text style={styles.subtitle}> ~ Arabian Proverb.</Text>
-        </View>
-
-        <ScrollView>
-          <TouchableOpacity onPress={selectImage} style={styles.iconContainer}>
-            {user_profile_image === '' ? (
-              <AntDesign
-                name="camera"
-                size={33}
-                color="#ffffff"
-                style={{transform: [{scaleX: -1}]}}
-              />
-            ) : (
-              <Image
-                style={{
-                  height: 80,
-                  width: 80,
-                  borderRadius: 40,
-                  resizeMode: 'cover',
-                }}
-                source={{uri: user_profile_image}}
-              />
-            )}
-          </TouchableOpacity>
-
-          <Text style={styles.title}>Sign up</Text>
-          <View style={styles.form}>
-            <View style={styles.field}>
-              <TextInput
-                style={styles.input}
-                placeholder="Name"
-                onChangeText={setName}
-                value={name}
-              />
-              <View style={styles.inputIcon}>
-                <Icon name="person" size={20} color="#000" />
-              </View>
-            </View>
-
-            {isHandleAvailable && (
-              <Text style={styles.error}>User handle is already in use.</Text>
-            )}
-            <View style={styles.field}>
-              <TextInput
-                style={styles.input}
-                placeholder="User Handle"
-                value={username}
-                onChangeText={handleUserHandleChange}
-              />
-
-              <View style={styles.inputIcon2}>
-                <Icon name="person" size={20} color="#000" />
-              </View>
-            </View>
-
-            <View style={styles.field}>
-              <TextInput
-                style={styles.input}
-                placeholder="Email"
-                onChangeText={setEmail}
-                value={email}
-                keyboardType="email-address"
-              />
-              <View style={styles.inputIcon}>
-                <Icon name="email" size={20} color="#000" />
-              </View>
-            </View>
-
-            <View style={styles.field}>
-              <TextInput
-                style={styles.input}
-                placeholder="Password"
-                onChangeText={setPassword}
-                value={password}
-                secureTextEntry={isSecureEntry}
-              />
-              <TouchableOpacity
-                style={styles.inputIcon}
-                onPress={() => setIsSecureEntry(!isSecureEntry)}>
-                <AntDesign
-                  name={isSecureEntry ? 'eyeo' : 'eye'}
-                  size={20}
-                  color="#000"
-                />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.field}>
-              <Dropdown
-                style={styles.dropdown}
-                placeholderStyle={styles.placeholderStyle}
-                data={data}
-                labelField="label"
-                valueField="value"
-                placeholder={!isFocus ? 'Select your role' : '...'}
-                value={role}
-                onFocus={() => setIsFocus(true)}
-                onBlur={() => setIsFocus(false)}
-                onChange={item => {
-                  setRole(item.value);
-                  setIsFocus(false);
-                }}
-              />
-            </View>
-
-            <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-              <Text style={styles.buttonText}>
-                {role === 'general' ? 'Register' : 'Continue'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          <EmailVerifiedModal
-            visible={verifiedModalVisible}
-            onClick={handleVerifyModalCallback}
-            onClose={() => {
-              if (verifyBtntext !== 'Request Verification') {
-                setVerifiedModalVisible(false);
-              }
-            }}
-            message={verifyBtntext}
+    {/* Profile Image */}
+    <YStack alignItems="center" marginTop="$4" marginBottom="$3">
+      <Button
+        circular
+        size="$9"
+        backgroundColor="$blue10"
+        onPress={selectImage}
+        padding="$3"
+      >
+        {user_profile_image === '' ? (
+          <AntDesign
+            name="camera"
+            size={26}
+            color="#ffffff"
+            style={{ transform: [{ scaleX: -1 }] }}
           />
-        </ScrollView>
-      </SafeAreaView>
-    </ScrollView>
+        ) : (
+          <Image
+            source={{ uri: user_profile_image }}
+            style={{
+              height: 80,
+              width: 80,
+              borderRadius: 40,
+              
+            }}
+          />
+        )}
+      </Button>
+    </YStack>
+
+    {/* Title */}
+    <Text
+      fontSize={20}
+      fontWeight="700"
+      color="$blue10"
+      textAlign="center"
+      textTransform="uppercase"
+    >
+      Sign up
+    </Text>
+
+    {/* Form */}
+    <YStack padding="$4" space="$4">
+      {/* Name */}
+      <XStack position="relative">
+        <Input
+          flex={1}
+          height="$5"
+          borderColor="$blue10"
+          borderWidth={1}
+          borderRadius="$3"
+          placeholder="Name"
+          value={name}
+          onChangeText={setName}
+        />
+        <YStack position="absolute" right={14} top={10}>
+          <Icon name="person" size={20} color="#000" />
+        </YStack>
+      </XStack>
+
+      {/* Handle Error */}
+      {isHandleAvailable && (
+        <Text color="red" fontSize={14}>
+          User handle is already in use.
+        </Text>
+      )}
+
+      {/* User Handle */}
+      <XStack position="relative">
+        <Input
+          flex={1}
+          height="$5"
+          borderColor="$blue10"
+          borderWidth={1}
+          borderRadius="$3"
+          placeholder="User Handle"
+          value={username}
+          onChangeText={handleUserHandleChange}
+        />
+        <YStack position="absolute" right={14} top={10}>
+          <Icon name="person" size={20} color="#000" />
+        </YStack>
+      </XStack>
+
+      {/* Email */}
+      <XStack position="relative">
+        <Input
+          flex={1}
+          height="$5"
+          borderColor="$blue10"
+          borderWidth={1}
+          borderRadius="$3"
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+        />
+        <YStack position="absolute" right={14} top={10}>
+          <Icon name="email" size={20} color="#000" />
+        </YStack>
+      </XStack>
+
+      {/* Password */}
+      <XStack position="relative">
+        <Input
+          flex={1}
+          height="$5"
+          borderColor="$blue10"
+          borderWidth={1}
+          borderRadius="$3"
+          placeholder="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry={isSecureEntry}
+        />
+        <Button
+          chromeless
+          position="absolute"
+          right={1}
+          top={8}
+          onPress={() => setIsSecureEntry(!isSecureEntry)}
+        >
+          <AntDesign
+            name={isSecureEntry ? 'eye-invisible' : 'eye'}
+            size={17}
+            color="#000"
+          />
+        </Button>
+      </XStack>
+
+      {/* Role Dropdown */}
+      <Dropdown
+        style={{
+          height: 40,
+          borderColor: '#0CAFFF',
+          borderWidth: 1,
+          borderRadius: 5,
+          paddingHorizontal: 10,
+          marginBottom: 20,
+        }}
+        placeholderStyle={{ fontSize: 15 }}
+        data={data}
+        labelField="label"
+        valueField="value"
+        placeholder={!isFocus ? 'Select your role' : '...'}
+        value={role}
+        onFocus={() => setIsFocus(true)}
+        onBlur={() => setIsFocus(false)}
+        onChange={item => {
+          setRole(item.value);
+          setIsFocus(false);
+        }}
+      />
+
+      {/* Submit Button */}
+      <Button
+        backgroundColor="$blue10"
+        size={"$7"}
+        padding="$3"
+        borderRadius="$4"
+        alignItems="center"
+        alignSelf="center"
+        width="100%"
+        onPress={handleSubmit}
+      >
+        <Text color="white" fontWeight="bold" fontSize={18}>
+          {role === 'general' ? 'Register' : 'Continue'}
+        </Text>
+      </Button>
+    </YStack>
+
+    {/* Modal */}
+    <EmailVerifiedModal
+      visible={verifiedModalVisible}
+      onClick={handleVerifyModalCallback}
+      onClose={() => {
+        if (verifyBtntext !== 'Request Verification') {
+          setVerifiedModalVisible(false);
+        }
+      }}
+      message={verifyBtntext}
+    />
+  </SafeAreaView>
+</ScrollView>
+
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'white',
-  },
-  header: {
-    width: '94%',
-    height: hp(14),
-    paddingTop: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: PRIMARY_COLOR,
-    alignSelf: 'center',
-    borderRadius: 7,
-    marginTop: hp(1),
-  },
-  footer: {
-    flex: 1,
-    width: '90%',
-    paddingTop: 20,
-    alignSelf: 'center',
-    backgroundColor: 'white',
-    marginTop: -60,
-    borderRadius: 10,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: PRIMARY_COLOR,
-    textAlign: 'center',
-    textTransform: 'uppercase',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: 'white',
-    textAlign: 'center',
-    marginTop: 4,
-    fontWeight: '600',
-    //textAlign:"center"
-  },
-  iconContainer: {
-    alignSelf: 'center',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: hp(2),
-    marginBottom: 10,
-    height: hp(11),
-    width: hp(11),
-    borderRadius: hp(5.5),
-    marginLeft: 10,
-    backgroundColor: PRIMARY_COLOR,
-  },
-  form: {
-    padding: 16,
-  },
-  field: {},
-  input: {
-    height: hp(7),
-    //width:'98%',
-    borderColor: '#0CAFFF',
-    borderWidth: 1,
-    borderRadius: 5,
-    paddingHorizontal: 6,
-    marginBottom: 20,
-    fontSize: 15,
-  },
-  error: {
-    color: 'red',
-    fontSize: 14,
-    marginBottom: 10,
-  },
-  inputIcon: {
-    position: 'absolute',
-    right: 14,
-    top: 12,
-  },
-  inputIcon2: {
-    position: 'absolute',
-    right: 14,
-    top: 8,
-  },
-  button: {
-    backgroundColor: '#0CAFFF',
-    padding: 10,
-    borderRadius: 10,
-    alignItems: 'center',
-    alignSelf: 'center',
-    marginTop: 20,
-    width: '100%',
-  },
-  buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 18,
-  },
-  dropdown: {
-    height: 40,
-    borderColor: '#0CAFFF',
-    borderWidth: 1,
-    borderRadius: 5,
-    paddingHorizontal: 10,
-    marginBottom: 20,
-    paddingRight: 12,
-  },
-  placeholderStyle: {
-    fontSize: 15,
-  },
-});
+
 
 export default SignupPageFirst;

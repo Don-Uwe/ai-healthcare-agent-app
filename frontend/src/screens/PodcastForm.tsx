@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {
   View,
   Text,
@@ -9,10 +9,9 @@ import {
   Image,
   Alert,
 } from 'react-native';
-// import {hp} from '../../helper/Metric';
-import {useSelector} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import {PodcastFormProp, Category} from '../type';
-import Ionicon from 'react-native-vector-icons/Ionicons';
+import Ionicon from '@expo/vector-icons/Ionicons';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import {
   ImageLibraryOptions,
@@ -21,19 +20,18 @@ import {
 } from 'react-native-image-picker';
 import ImageResizer from '@bam.tech/react-native-image-resizer';
 import {hp} from '../helper/Metric';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {showAlert} from '../store/alertSlice';
 
-const PodcastForm = ({
-  navigation,
-  route,
-}: PodcastFormProp) => {
+const PodcastForm = ({navigation, route}: PodcastFormProp) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [selectedGenres, setSelectedGenres] = useState<Category[]>([]);
   const {categories} = useSelector((state: any) => state.data);
   const [imageUtils, setImageUtils] = useState('');
   // console.log(categories);
+  const dispatch = useDispatch();
 
- 
   const handleGenrePress = (genre: Category) => {
     if (isSelected(genre)) {
       setSelectedGenres(selectedGenres.filter(item => item.id !== genre.id));
@@ -47,19 +45,43 @@ const PodcastForm = ({
 
   const handleCreatePost = () => {
     if (title === '') {
-      Alert.alert('Title section is required');
+       Alert.alert('Title section is required');
+      // dispatch(
+      //   showAlert({
+      //     title: 'Error',
+      //     message: 'Title section is required',
+      //   }),
+      // );
       return;
     } else if (description === '') {
-      Alert.alert('Please give proper description');
+       Alert.alert('Please give proper description');
+      // dispatch(
+      //   showAlert({
+      //     title: 'Error',
+      //     message: 'Please give proper description',
+      //   }),
+      // );
       return;
     } else if (selectedGenres.length === 0) {
-      Alert.alert('Please select at least one suitable tags for your podcast.');
+       Alert.alert('Please select at least one suitable tags for your podcast.');
+      // dispatch(
+      //   showAlert({
+      //     title: 'Error',
+      //     message: 'Please select at least one suitable tags for your podcast.',
+      //   }),
+      // );
       return;
     }
 
     // Later purpose
     else if (imageUtils.length === 0) {
-      Alert.alert('Please upload one cover image for your podcast.');
+       Alert.alert('Please upload one cover image for your podcast.');
+      // dispatch(
+      //   showAlert({
+      //     title: 'Error',
+      //     message: 'Please upload one cover image for your podcast.',
+      //   }),
+      // );
       return;
     }
 
@@ -88,6 +110,12 @@ const PodcastForm = ({
         // Check file size (1 MB limit)
         if (fileSize && fileSize > 1024 * 1024) {
           Alert.alert('Error', 'File size exceeds 1 MB.');
+          // dispatch(
+          //   showAlert({
+          //     title: 'Error',
+          //     message: 'File size exceeds 1 MB.',
+          //   }),
+          // );
           return;
         }
 
@@ -98,7 +126,13 @@ const PodcastForm = ({
           })
           .catch(err => {
             console.log(err);
-            Alert.alert('Error', 'Could not resize the image.');
+             Alert.alert('Error', 'Could not resize the image.');
+            // dispatch(
+            //   showAlert({
+            //     title: 'Error',
+            //     message: 'Could not resize the image.',
+            //   }),
+            // );
           });
 
         setImageUtils(uri ? uri : '');
@@ -107,129 +141,148 @@ const PodcastForm = ({
   };
 
   const WarningBox = () => {
-  return (
-    <View style={styles.warningContainer}>
-      <Ionicon name="alert-circle" size={24} color="#D9534F" style={{ marginRight: 8 }} />
-      <View style={{ flex: 1 }}>
-        <Text style={styles.warningTitle}>Important Submission Guidelines</Text>
-        <Text style={styles.warningText}>
-          Please ensure your podcast title, description, and tags are clear, relevant, 
-          and respectful. Avoid offensive, misleading, or unrelated content.  
-          Podcasts violating our community guidelines may be rejected by our review team.
-        </Text>
-      </View>
-    </View>
-  );
-};
-
-  return (
-    <ScrollView style={styles.container}>
-
-      <WarningBox/>
-      <View style={styles.form}>
-        {/* Image Upload */}
-        <View style={styles.input}>
-          {imageUtils ? (
-            <View style={styles.imageContainer}>
-              <Image source={{uri: imageUtils}} style={styles.image} />
-              <View style={styles.imageOverlay}>
-                <TouchableOpacity
-                  style={styles.changeButton}
-                  onPress={selectImage}>
-                  <Text style={styles.changeButtonText}>Change</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.deleteButton}
-                  onPress={() => setImageUtils('')}>
-                  <Text style={styles.deleteButtonText}>Delete</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          ) : (
-            <TouchableOpacity
-              style={styles.uploadContainer}
-              onPress={selectImage}>
-              <Ionicon name="cloud-upload" size={36} color={PRIMARY_COLOR} />
-              <Text style={styles.uploadText}>Upload Image</Text>
-              <Text style={styles.uploadHint}>Image should be of min 1MB</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {/* Title */}
-        <View style={styles.input}>
-          <Text style={styles.inputLabel}>Title</Text>
-          <TextInput
-            autoCapitalize="sentences"
-            autoCorrect={false}
-            keyboardType="default"
-            placeholder="Podcast Title"
-            placeholderTextColor="#6b7280"
-            style={styles.inputControl}
-            value={title}
-            onChangeText={setTitle}
-          />
-        </View>
-
-
-        {/* Description */}
-        <View style={styles.input}>
-          <Text style={styles.inputLabel}>Description</Text>
-          <TextInput
-            placeholder="Give a little description or overview"
-            placeholderTextColor="#6b7280"
-            textAlignVertical="top"
-            style={styles.aboutInput}
-            multiline
-            numberOfLines={4}
-            autoCapitalize="sentences"
-            value={description}
-            onChangeText={setDescription}
-          />
-        </View>
-
-        {/* Category */}
-        <View style={styles.input}>
-          <Text style={styles.inputLabel}>
-            Choose Tags for Your Podcast (Up to 5)
+    return (
+      <View style={styles.warningContainer}>
+        <Ionicon
+          name="alert-circle"
+          size={24}
+          color="#D9534F"
+          style={{marginRight: 8}}
+        />
+        <View style={{flex: 1}}>
+          <Text style={styles.warningTitle}>
+            Important Submission Guidelines
           </Text>
-          {selectedGenres.map((genre, index) => (
-            <Text key={index} style={styles.selectedGenreText}>
-              #{genre.name}
-            </Text>
-          ))}
+          <Text style={styles.warningText}>
+            Please ensure your podcast title, description, and tags are clear,
+            relevant, and respectful. Avoid offensive, misleading, or unrelated
+            content. Podcasts violating our community guidelines may be rejected
+            by our review team.
+          </Text>
+        </View>
+      </View>
+    );
+  };
 
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.genreContainer}>
-            {categories.map((genre, index) => (
+  return (
+    <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
+      <SafeAreaView>
+        <WarningBox />
+
+        <View style={styles.form}>
+          {/* Image Upload */}
+          <View style={styles.input}>
+            {imageUtils ? (
+              <View style={styles.imageContainer}>
+                <Image source={{uri: imageUtils}} style={styles.image} />
+                <View style={styles.imageOverlay}>
+                  <TouchableOpacity
+                    style={styles.changeButton}
+                    onPress={selectImage}>
+                    <Text style={styles.changeButtonText}>Change</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.deleteButton}
+                    onPress={() => setImageUtils('')}>
+                    <Text style={styles.deleteButtonText}>Delete</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ) : (
               <TouchableOpacity
-                key={index}
-                style={[
-                  styles.genreButton,
-                  isSelected(genre) &&
-                    styles.selectedGenreButton &&
-                    styles.selectedGenreButton,
-                ]}
-                onPress={() => handleGenrePress(genre)}>
-                <Text
-                  style={[
-                    styles.genreButtonText,
-                    isSelected(genre) && styles.selectedGenreButtonText,
-                  ]}>
-                  #{genre.name}
+                style={styles.uploadContainer}
+                onPress={selectImage}>
+                <Ionicon name="cloud-upload" size={36} color={PRIMARY_COLOR} />
+                <Text style={styles.uploadText}>Upload Image</Text>
+                <Text style={styles.uploadHint}>
+                  Image should be of min 1MB
                 </Text>
               </TouchableOpacity>
+            )}
+          </View>
+
+          {/* Title */}
+          <View style={styles.input}>
+            <Text style={styles.inputLabel}>Title</Text>
+            <TextInput
+              autoCapitalize="sentences"
+              autoCorrect={false}
+              keyboardType="default"
+              placeholder="Podcast Title"
+              placeholderTextColor="#6b7280"
+              style={styles.inputControl}
+              value={title}
+              onChangeText={setTitle}
+            />
+          </View>
+
+          {/* Description */}
+          <View style={styles.input}>
+            <Text style={styles.inputLabel}>Description</Text>
+
+            <TextInput
+              placeholder="Give a little description or overview"
+              placeholderTextColor="#6b7280"
+              textAlignVertical="top"
+              style={styles.aboutInput}
+              multiline
+              numberOfLines={4}
+              autoCapitalize="sentences"
+              value={description}
+              onChangeText={text => {
+                if (text.length <= 60) {
+                  setDescription(text);
+                }
+              }}
+            />
+
+            {/* Character Counter */}
+            <Text style={styles.charCounter}>{description.length}/60</Text>
+          </View>
+
+          {/* Category */}
+          <View style={styles.input}>
+            <Text style={styles.inputLabel}>
+              Choose Tags for Your Podcast (Up to 5)
+            </Text>
+            {selectedGenres.map((genre, index) => (
+              <Text key={index} style={styles.selectedGenreText}>
+                #{genre.name}
+              </Text>
             ))}
-          </ScrollView>
+
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.genreContainer}>
+              {categories.map((genre, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={[
+                    styles.genreButton,
+                    isSelected(genre) &&
+                      styles.selectedGenreButton &&
+                      styles.selectedGenreButton,
+                  ]}
+                  onPress={() => handleGenrePress(genre)}>
+                  <Text
+                    style={[
+                      styles.genreButtonText,
+                      isSelected(genre) && styles.selectedGenreButtonText,
+                    ]}>
+                    #{genre.name}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+          <TouchableOpacity
+            style={styles.submitButton}
+            onPress={handleCreatePost}>
+            <Text style={styles.submitButtonText}>Continue</Text>
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity
-          style={styles.submitButton}
-          onPress={handleCreatePost}>
-          <Text style={styles.submitButtonText}>Continue</Text>
-        </TouchableOpacity>
-      </View>
+      </SafeAreaView>
     </ScrollView>
   );
 };
@@ -240,7 +293,8 @@ const styles = StyleSheet.create({
     backgroundColor: ON_PRIMARY_COLOR,
   },
   form: {
-    marginVertical: 24,
+    marginTop: hp(3),
+
     paddingHorizontal: 16,
   },
   input: {
@@ -348,6 +402,14 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
     borderColor: PRIMARY_COLOR,
   },
+  charCounter: {
+    marginTop: 4,
+    marginStart: 6,
+    alignSelf: 'flex-start',
+    color: 'black',
+    fontSize: 15,
+  },
+
   uploadText: {
     color: 'black',
     fontWeight: '500',
@@ -388,6 +450,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#007bff',
     padding: 16,
     borderRadius: 8,
+    marginBottom: hp(8),
   },
   submitButtonText: {
     color: '#fff',
@@ -435,28 +498,28 @@ const styles = StyleSheet.create({
   },
 
   warningContainer: {
-  flexDirection: 'row',
-  backgroundColor: 'rgba(217, 83, 79, 0.1)',
-  borderLeftWidth: 4,
-  borderLeftColor: '#FF8C42',
-  padding: 12,
-  marginHorizontal: 16,
-  borderRadius: 8,
-  marginBottom: 16,
-  alignItems: 'flex-start',
-},
-warningTitle: {
-  fontSize: 18,
-  fontWeight: '700',
-  color: '#D9534F',
-  marginBottom: 4,
-},
-warningText: {
-  fontSize: 15,
-  color: '#444',
-  lineHeight: 20,
-},
-
+    flexDirection: 'row',
+    backgroundColor: 'rgba(217, 83, 79, 0.1)',
+    borderLeftWidth: 4,
+    borderLeftColor: '#FF8C42',
+    padding: 12,
+    marginTop: hp(0.5),
+    marginHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 16,
+    alignItems: 'flex-start',
+  },
+  warningTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#D9534F',
+    marginBottom: 4,
+  },
+  warningText: {
+    fontSize: 15,
+    color: '#444',
+    lineHeight: 20,
+  },
 });
 
 export default PodcastForm;

@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   StyleSheet,
-  SafeAreaView,
   View,
   Image,
   Text,
@@ -15,6 +14,7 @@ import axios, {AxiosError} from 'axios';
 import {resetUserState, setUserId, setUserToken} from '../../store/UserSlice';
 import {useDispatch, useSelector} from 'react-redux';
 import {clearStorage} from '../../helper/Utils';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const LogoutScreen = ({navigation, route}) => {
   const {profile_image, username} = route.params;

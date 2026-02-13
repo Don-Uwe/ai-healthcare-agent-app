@@ -1,30 +1,20 @@
-import {
-  Image,
-  StyleSheet,
-  Text,
-  View,
-  TextInput,
-  TouchableOpacity,
-  StatusBar,
-
-  
-  Alert,
-  useColorScheme,
-  ScrollView,
-} from 'react-native';
-import {useState} from 'react';
-import {
-  PRIMARY_COLOR,
-  BUTTON_COLOR,
-} from '../../helper/Theme';
+import React, {useEffect, useState} from 'react';
+//import React from 'react';
+import {Alert, Image, useColorScheme} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {fp, hp, wp} from '../../helper/Metric';
-import {Colors} from 'react-native/Libraries/NewAppScreen';
-// import {useNavigation} from '@react-navigation/native';
+import {StatusBar} from 'expo-status-bar';
+import {
+  YStack,
+  XStack,
+  ScrollView,
+  Input,
+  Button,
+  Text,
+  Separator,
+} from 'tamagui';
 import {KEYS, storeItem} from '../../helper/Utils';
-import EmailInputModal from '../../components/EmailInputModal';
-import Icon from 'react-native-vector-icons/Ionicons';
 
+import Icon from '@expo/vector-icons/Ionicons';
 import {AuthData, LoginScreenProp, User} from '../../type';
 import {useMutation} from '@tanstack/react-query';
 import axios, {AxiosError} from 'axios';
@@ -33,9 +23,12 @@ import {LOGIN_API, RESEND_VERIFICATION, SEND_OTP} from '../../helper/APIUtils';
 import Loader from '../../components/Loader';
 import {setUserHandle, setUserId, setUserToken} from '../../store/UserSlice';
 import messaging from '@react-native-firebase/messaging';
+import Entypo from '@expo/vector-icons/Entypo';
+import EmailInputBottomSheet from '../../components/EmailInputModal';
 
-const LoginScreen = ({navigation}: LoginScreenProp) => {
+const LoginScreen = ({navigation, route}: LoginScreenProp) => {
   const inset = useSafeAreaInsets();
+  const {redirectTo} = route.params || {};
   const dispatch = useDispatch();
   const isDarkMode = useColorScheme() === 'dark';
   const [emailInputVisible, setEmailInputVisible] = useState(false);
@@ -56,36 +49,6 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
     setSecureTextEntry(!secureTextEntry);
   };
 
-  /*
-  useEffect(() => {
-    const backHandler = navigation.addListener('beforeRemove', e => {
-      if (!navigation.canGoBack()) {
-        return;
-      }
-      e.preventDefault();
-      Alert.alert(
-        'Warning',
-        'Do you want to exit',
-        [
-          {text: 'No', onPress: () => null},
-          {
-            text: 'Yes',
-            onPress: () => {
-              BackHandler.exitApp();
-            },
-          },
-        ],
-        {cancelable: true},
-      );
-    });
-
-    // Cleanup the event listener when the component unmounts or when the user logs out
-    return () => {
-      backHandler.remove();
-    };
-  }, [navigation]);
-  */
-
   async function requestUserPermission() {
     const authStatus = await messaging().requestPermission();
     const enabled =
@@ -97,8 +60,12 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
     }
   }
 
+  useEffect(() => {
+    console.log('Email modal visibility state', emailInputVisible);
+  }, [emailInputVisible]);
+
   async function getFCMToken() {
-    await requestUserPermission(); // Ask for permission (iOS only)
+    await requestUserPermission();
     const fcmToken = await messaging().getToken();
     if (fcmToken) {
       console.log('FCM Token:', fcmToken);
@@ -107,14 +74,18 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
       console.log('Failed to get FCM Token');
       return null;
     }
+    return fcmToken;
   }
 
   const validateAndSubmit = async () => {
     if (validate()) {
-      await getFCMToken();
+      const fcmToken = await getFCMToken();
       setPasswordMessage(false);
       setEmailMessage(false);
-      loginMutation.mutate();
+      //console.log("email, password", email,password)
+      loginMutation.mutate({
+        token: fcmToken ?? 'not found',
+      });
     } else {
       setOutput(true);
       setPasswordMessage(false);
@@ -135,34 +106,36 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
       return false;
     }
   };
-  const handlePassword = e => {
-    let pass = e.nativeEvent.text;
-    setPassword(pass);
+  const handlePassword = (e: any) => {
+    //let pass = e.nativeEvent.text;
+    setPassword(e);
     setPasswordVerify(false);
 
-    if (/(?=.*[a-z]).{6,}/.test(pass)) {
-      setPassword(pass);
+    if (/(?=.*[a-z]).{6,}/.test(e)) {
+      setPassword(e);
       setPasswordVerify(true);
     }
   };
 
-  const handleEmail = e => {
-    let email = e.nativeEvent.text;
-    setEmail(email);
+  const handleEmail = (e: any) => {
+    //console.log("Event",e );
+    //let email = e.nativeEvent.text;
+    setEmail(e);
     setEmailVerify(false);
-    if (/^[\w.%+-]+@[\w.-]+\.[a-zA-Z]{2,}$/.test(email)) {
-      setEmail(email);
+    if (/^[\w.%+-]+@[\w.-]+\.[a-zA-Z]{2,}$/.test(e)) {
+      setEmail(e);
       setEmailVerify(true);
     }
   };
 
   const loginMutation = useMutation({
     mutationKey: ['login'],
-    mutationFn: async () => {
+    mutationFn: async ({token}: {token: string}) => {
+      console.log('LOGIN', LOGIN_API, email, password, token);
       const res = await axios.post(LOGIN_API, {
         email: email,
         password: password,
-        fcmToken: fcmToken,
+        fcmToken: token,
       });
 
       return res.data.user as User;
@@ -178,6 +151,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
         await storeItem(KEYS.USER_ID, auth.userId.toString());
         await storeItem(KEYS.USER_HANDLE, data?.user_handle);
         if (auth.token) {
+          console.log('Storing token:', auth.token);
           await storeItem(KEYS.USER_TOKEN, auth.token.toString());
           await storeItem(
             KEYS.USER_TOKEN_EXPIRY_DATE,
@@ -187,11 +161,18 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
           dispatch(setUserToken(auth.token));
           dispatch(setUserHandle(auth.user_handle));
           setTimeout(() => {
+            if (redirectTo) {
+              navigation.navigate({
+                name: redirectTo.name,
+                params: redirectTo.params,
+              });
+
+              return;
+            }
             navigation.reset({
               index: 0,
-              routes: [{name: 'TabNavigation'}], // Send user to LoginScreen after logout
+              routes: [{name: 'TabNavigation'}],
             });
-            //navigation.navigate('TabNavigation');
           }, 1000);
         } else {
           Alert.alert('Token not found');
@@ -250,6 +231,7 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
       navigateToOtpScreen();
     },
     onError: error => {
+      // eslint-disable-next-line import/no-named-as-default-member
       if (axios.isAxiosError(error)) {
         if (error.response) {
           if (error.response.status === 400) {
@@ -332,293 +314,206 @@ const LoginScreen = ({navigation}: LoginScreenProp) => {
     return <Loader />;
   }
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      flex={1}
+      backgroundColor={isDarkMode ? '$background' : '#fff'}
+      showsVerticalScrollIndicator={false}>
       <StatusBar
-        barStyle={isDarkMode ? 'dark-content' : 'light-content'}
-        backgroundColor={BUTTON_COLOR}
+        style={isDarkMode ? 'light' : 'dark'}
+        backgroundColor={isDarkMode ? '#007AFF' : '#007AFF'}
       />
-      <View style={[styles.innercontainer, {paddingTop: inset.top}]}>
-        <View style={styles.logoContainer}>
-          {/* image */}
+
+      <YStack
+        flex={1}
+        paddingTop={inset.top + 60}
+        paddingHorizontal="$2"
+        paddingBottom="$6"
+        space="$5">
+        {/* Logo Section */}
+
+        {/* Form Section */}
+        <YStack
+          marginTop="$4"
+          backgroundColor={isDarkMode ? '$black' : '$background'}
+          padding="$5"
+          borderRadius="$5"
+          gap="$4"
+          elevation={1}>
           <Image
-            source={require('../../assets/icon.png')}
-            style={styles.logo}
+            source={require('../../../assets/images/icon.png')}
+            style={{
+              height: 80,
+              width: 80,
+              // borderRadius: 60,
+              alignSelf: 'center',
+              resizeMode: 'cover',
+            }}
           />
-          {/* brand text container */}
-          <Text style={styles.brandText}>Ultimate Health</Text>
-        </View>
-        {/* login form */}
-        <View
-          style={[
-            styles.formContainer,
-            {backgroundColor: isDarkMode ? Colors.darker : 'white'},
-          ]}>
-          {/* email input */}
-          <Text style={styles.inputLabelTxt}>Email</Text>
-          {emailMessage ? (
-            <Text style={{color: 'red'}}>Please Enter a Valid Email</Text>
-          ) : (
-            <Text style={{color: 'red'}} />
+
+          <Text
+            alignSelf="center"
+            textAlign="center"
+            fontSize={16}
+            fontWeight="500"
+            color={isDarkMode ? '$color' : '$color10'}
+            maxWidth={300}
+            lineHeight={22}>
+            Enter your email and password to securely access your account
+          </Text>
+
+          {emailMessage && (
+            <Text color="red" fontSize={14}>
+              Please Enter a Valid Email
+            </Text>
           )}
-          <View style={styles.input}>
-            <TextInput
-              onChange={e => handleEmail(e)}
+
+          <XStack alignItems="center" position="relative">
+            <Icon
+              name="mail"
+              size={22}
+              color={isDarkMode ? 'white' : 'black'}
+              style={{
+                position: 'absolute',
+                left: 6,
+                zIndex: 1,
+              }}
+            />
+            <Input
+              flex={1}
+              height="$6"
+              borderRadius="$3"
+              placeholder="Enter your email"
               autoCapitalize="none"
               autoCorrect={false}
-              clearButtonMode="while-editing"
               keyboardType="email-address"
-              //placeholder="Enter your mail id"
-              placeholderTextColor="#948585"
-              style={[
-                styles.inputControl,
-                {
-                  borderColor: isDarkMode ? 'white' : 'black',
-                  color: isDarkMode ? 'white' : 'black',
-                },
-              ]}
+              onChangeText={handleEmail}
+              color={isDarkMode ? '$color' : '$color10'}
+              paddingStart="$8"
             />
-          </View>
-          <Text style={styles.inputLabelTxt}>Password</Text>
-          {passwordMessage ? (
-            <Text style={{color: 'red'}}>
-              Password must be 6 Characters Longs
+          </XStack>
+
+          {passwordMessage && (
+            <Text color="red" fontSize={14}>
+              Password must be 6 Characters Long
             </Text>
-          ) : (
-            <Text style={{color: 'red'}} />
           )}
-          <View style={styles.input}>
-            <View style={styles.passwordContainer}>
-              <TextInput
-                autoCapitalize="none"
-                autoCorrect={false}
-                clearButtonMode="while-editing"
-                keyboardType="ascii-capable"
-                //placeholder="Password"
-                placeholderTextColor="#948585"
-                secureTextEntry={secureTextEntry}
-                style={[
-                  styles.inputControl,
-                  {
-                    borderColor: isDarkMode ? 'white' : 'black',
-                    color: isDarkMode ? 'white' : 'black',
-                  },
-                ]}
-                onChange={e => handlePassword(e)}
-                value={password}
-                underlineColorAndroid="transparent"
+
+          <XStack alignItems="center" position="relative">
+            <Entypo
+              name="lock"
+              size={22}
+              color={isDarkMode ? 'white' : 'black'}
+              style={{
+                position: 'absolute',
+                left: 12,
+                zIndex: 1,
+              }}
+            />
+            <Input
+              flex={1}
+              height="$6"
+              borderRadius="$3"
+              placeholder="Password"
+              secureTextEntry={secureTextEntry}
+              autoCapitalize="none"
+              onChangeText={handlePassword}
+              value={password}
+              color={isDarkMode ? '$color' : '$color10'}
+              paddingLeft="$8"
+              paddingRight="$8"
+            />
+            <Button
+              chromeless
+              size="$4"
+              circular
+              position="absolute"
+              right={6}
+              onPress={handleSecureEntryClickEvent}>
+              <Icon
+                name={secureTextEntry ? 'eye-off' : 'eye'}
+                size={22}
+                color={isDarkMode ? 'white' : 'black'}
               />
+            </Button>
+          </XStack>
 
-              <TouchableOpacity
-                style={styles.eyeIcon}
-                onPress={handleSecureEntryClickEvent}>
-                {secureTextEntry ? (
-                  <Icon
-                    name="eye-off"
-                    size={20}
-                    color={isDarkMode ? 'white' : 'black'}
-                  />
-                ) : (
-                  <Icon
-                    name="eye"
-                    size={20}
-                    color={isDarkMode ? 'white' : 'black'}
-                  />
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
+          <Button
+            backgroundColor="$blue10"
+            theme="blue"
+            marginTop="$6"
+            size="$6"
+            fontWeight="700"
+            alignSelf="center"
+            onPress={validateAndSubmit}
+            width="100%">
+            <Text fontSize={18} color="$white" fontWeight="600">
+              Login
+            </Text>
+          </Button>
 
-          <View style={styles.loginButtonContainer}>
-            <TouchableOpacity
-              style={styles.loginButton}
-              onPress={() => {
-                validateAndSubmit();
-              }}>
-              <Text style={styles.loginText}>Login</Text>
-            </TouchableOpacity>
-          </View>
-
-          <EmailInputModal
-            // eslint-disable-next-line @typescript-eslint/no-shadow
-            callback={(email: string) => {
-              setOtpMail(email);
-              if (requestVerificationMode) {
-                requestVerification.mutate({
-                  email1: email,
-                });
-              } else {
-                sendOtpMutation.mutate({
-                  email: email,
-                });
-              }
-            }}
-            visible={emailInputVisible}
-            backButtonClick={handleEmailInputBack}
-            onDismiss={() => setEmailInputVisible(false)}
-            isRequestVerification={requestVerificationMode}
-          />
-
-          <TouchableOpacity
-            style={styles.createAccountContainer}
+          <Button
+            chromeless
+            size="$5"
+            alignSelf="center"
             onPress={() => {
-              navigation.navigate('SignUpScreenFirst');
-            }}>
-            <View style={{...styles.loginButton, backgroundColor: '#F5f5f5'}}>
-              <Text
-                style={[
-                  styles.createAccountText,
-                  {
-                    // color: isDarkMode ? 'white' : 'black',
-                    color: 'black',
-                  },
-                ]}>
-                Sign up
-              </Text>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.forgotPasswordContainer}
-            onPress={() => {
-              //console.log('Forgot Password Click');
+              console.log('Forgot Password clicked!');
               setEmailInputVisible(true);
               setRequestVerification(false);
             }}>
-            <Text style={styles.inputLabelTxt}>Forgot Password?</Text>
-          </TouchableOpacity>
+            <Text color="$blue10" fontWeight="600" fontSize={16}>
+              Forgot Password?
+            </Text>
+          </Button>
 
-          <View style={styles.loginButtonContainer}>
-            <TouchableOpacity
-              style={{...styles.loginButton}}
-              onPress={() => {
-                // validateAndSubmit();
-                setRequestVerification(true);
-                setEmailInputVisible(true);
-              }}>
-              <Text style={styles.loginText}>Request Verification</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
+          <Button
+            variant="outlined"
+            marginTop="$2"
+            size="$6"
+            theme="dark"
+            alignSelf="center"
+            opacity={0.7}
+            onPress={() => {
+              setRequestVerification(true);
+              setEmailInputVisible(true);
+            }}>
+            <Text color={isDarkMode ? '$color' : '$black'} fontWeight="600">
+              Request Verification
+            </Text>
+          </Button>
+
+          <Separator marginVertical="$3" />
+
+          <Button
+            marginTop="$3"
+            size="$6"
+            background="$gray3"
+            color="$color"
+            alignSelf="center"
+            width="100%"
+            onPress={() => navigation.navigate('SignUpScreenFirst')}>
+            <Text fontWeight="600" fontSize={16}>
+              Sign Up
+            </Text>
+          </Button>
+        </YStack>
+
+        <EmailInputBottomSheet
+          visible={emailInputVisible}
+          callback={(email: string) => {
+            setOtpMail(email);
+            if (requestVerificationMode) {
+              requestVerification.mutate({email1: email});
+            } else {
+              sendOtpMutation.mutate({email});
+            }
+          }}
+          backButtonClick={handleEmailInputBack}
+          onDismiss={() => setEmailInputVisible(false)}
+          isRequestVerification={requestVerificationMode}
+        />
+      </YStack>
     </ScrollView>
-    // <DropDownComponent data={Categories} />
   );
 };
 
 export default LoginScreen;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-  },
-  innercontainer: {
-    flex: 1,
-    //  backgroundColor: PRIMARY_COLOR,
-  },
-  logoContainer: {
-    flex: 0,
-    width: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    //marginBottom: hp(3),
-    marginTop: hp(2),
-    flexDirection: 'column',
-    marginHorizontal: 18,
-    marginLeft: wp(2),
-  },
-  logo: {
-    height: hp(16),
-    width: wp(20),
-    borderRadius: 70,
-    resizeMode: 'cover',
-  },
-  brandText: {
-    color: PRIMARY_COLOR,
-    fontSize: fp(6),
-    // fontFamily: 'Lobster-Regular',
-    fontWeight: '600',
-    alignSelf: 'center',
-  },
-  formContainer: {
-    flex: 1,
-    // marginTop: hp(1),
-    // borderWidth: 10,
-    // borderColor: ON_PRIMARY_COLOR,
-    // borderTopRightRadius: wp(2),
-    //borderTopLeftRadius: wp(26),
-    paddingHorizontal: wp(5.5),
-    paddingTop: hp(3),
-    flexDirection: 'column',
-  },
-  input: {
-    flexDirection: 'column',
-    marginBottom: hp(1),
-    height: hp(6),
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 6,
-    backgroundColor: '#f5f5f5',
-    borderColor: '#99ccff',
-  },
-  inputLabel: {
-    fontSize: fp(5),
-    fontWeight: '600',
-    color: '#ffffff',
-    marginBottom: hp(0),
-  },
-
-  inputLabelTxt: {
-    fontSize: fp(4),
-    fontWeight: '500',
-    color: BUTTON_COLOR,
-    //marginLeft: hp(1),
-    marginBottom: hp(0),
-  },
-
-  inputControl: {
-    // borderWidth: 1,
-    width: '100%',
-    paddingRight: 40,
-    fontSize: fp(4),
-    fontWeight: '500',
-    alignItems: 'center',
-    height: hp(5),
-  },
-  forgotPasswordContainer: {
-    alignItems: 'flex-start',
-    marginVertical: 2,
-  },
-  forgotPasswordText: {color: '	#000000', fontWeight: '700', marginBottom: 6},
-  loginButtonContainer: {marginVertical: hp(2)},
-  loginButton: {
-    backgroundColor: PRIMARY_COLOR,
-    paddingVertical: hp(1.3),
-    paddingHorizontal: wp(1.3),
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 8,
-    width: '100%',
-  },
-  loginText: {
-    fontSize: fp(5),
-    fontWeight: '700',
-    color: '#fff',
-  },
-  createAccountContainer: {marginVertical: hp(1), alignItems: 'center'},
-  createAccountText: {
-    fontSize: 16,
-    fontWeight: '500',
-    marginBottom: 5,
-  },
-  passwordContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  eyeIcon: {
-    position: 'absolute',
-    right: 0,
-    padding: 10,
-  },
-});

@@ -1,5 +1,4 @@
 import {
-  SafeAreaView,
   StyleSheet,
   View,
   Alert,
@@ -9,9 +8,11 @@ import {
   ScrollView,
 } from 'react-native';
 import {useCallback, useEffect, useRef, useState} from 'react';
-import {PRIMARY_COLOR} from '../helper/Theme';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import AddIcon from '../components/AddIcon';
 import ArticleCard from '../components/ArticleCard';
+
 import HomeScreenHeader from '../components/HomeScreenHeader';
 import {
   ArticleData,
@@ -24,6 +25,7 @@ import axios from 'axios';
 import {
   ARTICLE_TAGS_API,
   GET_PROFILE_API,
+  PROD_URL,
   REPOST_ARTICLE,
   REQUEST_EDIT,
 } from '../helper/APIUtils';
@@ -32,7 +34,7 @@ import {BottomSheetModal} from '@gorhom/bottom-sheet';
 import {useMutation, useQuery} from '@tanstack/react-query';
 import {useSelector, useDispatch} from 'react-redux';
 import Loader from '../components/Loader';
-import Config from 'react-native-config';
+
 import {
   setFilteredArticles,
   setSearchedArticles,
@@ -45,6 +47,8 @@ import Snackbar from 'react-native-snackbar';
 import {useSocket} from '../../SocketContext';
 import {useFocusEffect} from '@react-navigation/native';
 import InactiveUserModal from '../components/InactiveUserModal';
+import {StatusBar} from 'expo-status-bar';
+import {wp} from '../helper/Metric';
 
 // Here The purpose of using Redux is to maintain filter state throughout the app session. globally
 const HomeScreen = ({navigation}: HomeScreenProps) => {
@@ -52,11 +56,11 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const [articleCategories, setArticleCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<Category>();
   const [sortingType, setSortingType] = useState<string>('');
-  //const [loading, setLoading] = useState(true);
+  const {isConnected} = useSelector((state: any) => state.network);
   const [selectedCardId, setSelectedCardId] = useState<string>('');
   const [repostItem, setRepostItem] = useState<ArticleData | null>(null);
   const [selectCategoryList, setSelectCategoryList] = useState<Category[]>([]);
-  const[filterLoading, setFilterLoading] = useState<boolean>(false);
+  const [filterLoading, setFilterLoading] = useState<boolean>(false);
   const {
     filteredArticles,
     searchedArticles,
@@ -71,10 +75,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const socket = useSocket();
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-
-  //console.log('User Token', user_token);
-  //console.log('User Id', user_id);
-  //console.log('BASE URL', Config.PROD_URL);
 
   const handleCategorySelection = (category: CategoryType) => {
     // Update Redux State
@@ -92,12 +92,15 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   }, []);
 
   const getAllCategories = useCallback(async () => {
+    if (!isConnected) {
+      return;
+    }
     if (user_token === '') {
       Alert.alert('No token found');
       return;
     }
     const {data: categoryData} = await axios.get(
-      `${Config.PROD_URL + ARTICLE_TAGS_API}`,
+      `${PROD_URL + ARTICLE_TAGS_API}`,
       {
         headers: {
           Authorization: `Bearer ${user_token}`,
@@ -108,7 +111,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       selectedTags === undefined ||
       (selectedTags && selectedTags.length === 0)
     ) {
-      //console.log('Category Data', categoryData);
       dispatch(
         setSelectedTags({
           selectedTags: categoryData,
@@ -120,7 +122,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     }
     setArticleCategories(categoryData);
     dispatch(setTags({tags: categoryData}));
-  }, [dispatch, selectedTags, user_token]);
+  }, [dispatch, isConnected, selectedTags, user_token]);
 
   useEffect(() => {
     getAllCategories();
@@ -136,7 +138,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           throw new Error('No token found');
         }
         const response = await axios.get(
-          `${Config.PROD_URL}/notification/unread-count?role=2`,
+          `${PROD_URL}/notification/unread-count?role=2`,
           {
             headers: {
               Authorization: `Bearer ${user_token}`,
@@ -144,19 +146,15 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           },
         );
 
-        // console.log('Notification Response', response);
         return response.data.unreadCount as number;
       } catch (err) {
         console.error('Error fetching articles:', err);
       }
     },
+    enabled: isConnected && !!user_token,
   });
 
-  const {
-    data: user,
-    refetch: refetchUser,
-    isLoading: isUserLoading,
-  } = useQuery({
+  const {data: user, refetch: refetchUser} = useQuery({
     queryKey: ['get-my-profile'],
     queryFn: async () => {
       const response = await axios.get(`${GET_PROFILE_API}`, {
@@ -166,16 +164,24 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       });
       return response.data.profile as User;
     },
+    enabled: !!isConnected && !!user_token,
   });
 
   useFocusEffect(
     useCallback(() => {
-      refetchUser();
-      refetchUnreadCount();
-    }, [refetchUnreadCount, refetchUser]),
+      if (isConnected && user_token) {
+        refetchUser();
+        refetchUnreadCount();
+      } else {
+        Alert.alert(
+          'No Internet 😶‍🌫️',
+          'Offline mode will be available in the next update.',
+        );
+      }
+    }, [isConnected, user_token, refetchUser, refetchUnreadCount]),
   );
+
   const handleNoteIconClick = () => {
-    //navigation.navigate('EditorScreen');
     navigation.navigate('ArticleDescriptionScreen', {
       article: null,
       htmlContent: undefined,
@@ -187,10 +193,17 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   };
 
   const handleRepostAction = (item: ArticleData) => {
-    setRepostItem(item);
-    repostMutation.mutate({
-      articleId: Number(item._id),
-    });
+    if (isConnected) {
+      setRepostItem(item);
+      repostMutation.mutate({
+        articleId: Number(item._id),
+      });
+    } else {
+      Snackbar.show({
+        text: 'Please check your network connection',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+    }
   };
 
   const repostMutation = useMutation({
@@ -227,11 +240,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         duration: Snackbar.LENGTH_SHORT,
       });
 
-      // Emit notification
-
       if (repostItem) {
-        //emitNotification(repostItem);
-
         const body = {
           type: 'repost',
           userId: user_id,
@@ -248,7 +257,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           },
         };
 
-        // console.log('notification body', body);
         socket.emit('notification', body);
       }
     },
@@ -270,10 +278,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       reason: string;
       articleRecordId: string;
     }) => {
-      //console.log('Article Id', articleId);
-      // console.log('Reason', reason);
-      // console.log('URL', REQUEST_EDIT);
-
       const res = await axios.post(
         REQUEST_EDIT,
         {
@@ -325,6 +329,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
             articleRecordId: item.pb_recordId,
           });
         }}
+        source="home"
       />
     );
   };
@@ -364,6 +369,11 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
      dispatch(setSortType({sortType: sortingType}));
     }
 
+    if (sortingType && sortingType !== '') {
+      console.log('Sort type', sortType);
+      dispatch(setSortType({sortType: sortingType}));
+    }
+
     updateArticles(articleData);
   };
 
@@ -375,8 +385,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     }
 
     let filtered = articleData;
-   // console.log('sort type', sortType);
-    //console.log('Filtered before', filtered);
+
     if (selectedTags.length > 0) {
       filtered = filtered.filter(article =>
         selectedTags.some(tag =>
@@ -384,7 +393,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         ),
       );
     }
-   //  console.log('Filtered before sort', filtered);
+    //  console.log('Filtered before sort', filtered);
     if (sortType && sortType === 'recent' && filtered.length > 1) {
       filtered = filtered.sort(
         (a, b) =>
@@ -398,8 +407,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     } else if (sortType && sortType === 'popular' && filtered.length > 1) {
       filtered.sort((a, b) => b.viewCount - a.viewCount);
     }
-   // console.log('Filtered', filtered);
-    //console.log('Article Data', articleData);
     dispatch(setFilteredArticles({filteredArticles: filtered}));
     setFilterLoading(false);
   };
@@ -413,12 +420,9 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     queryKey: ['get-all-articles', page],
     queryFn: async () => {
       try {
-        const response = await axios.get(
-          `${Config.PROD_URL}/articles?page=${page}`,
-          {
-            headers: {Authorization: `Bearer ${user_token}`},
-          },
-        );
+        const response = await axios.get(`${PROD_URL}/articles?page=${page}`, {
+          headers: {Authorization: `Bearer ${user_token}`},
+        });
 
         const d: ArticleData[] = response.data.articles;
 
@@ -438,14 +442,22 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         return [];
       }
     },
-    enabled: !!user_token && !!page,
+    enabled: isConnected && !!user_token && !!page,
   });
 
   const onRefresh = () => {
-    setRefreshing(true);
-    refetch();
-    refetchUnreadCount();
-    setRefreshing(false);
+    console.log('is connected', isConnected);
+    if (isConnected) {
+      setRefreshing(true);
+      refetch();
+      refetchUnreadCount();
+      setRefreshing(false);
+    } else {
+      Snackbar.show({
+        text: 'Please check your network connection',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+    }
   };
   const handleSearch = (textInput: string) => {
     //console.log('Search Input', textInput);
@@ -468,17 +480,67 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     }
   };
 
-  if (isError || !articleData || articleData.length === 0) {
-    return <Text style={styles.message}>No Article Found</Text>;
+  if (!articleData || articleData.length === 0) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <HomeScreenHeader
+          handlePresentModalPress={handlePresentModalPress}
+          onTextInputChange={handleSearch}
+          onNotificationClick={() => navigation.navigate('NotificationScreen')}
+          unreadCount={unreadCount || 0}
+        />
+
+        <View style={styles.emptyContainer}>
+          <Text style={styles.message}>📡 Article Loading...</Text>
+        </View>
+      </SafeAreaView>
+    );
   }
 
-  if (isLoading || submitEditRequestMutation.isPending || isUserLoading) {
+  if (isError) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <HomeScreenHeader
+          handlePresentModalPress={handlePresentModalPress}
+          onTextInputChange={handleSearch}
+          onNotificationClick={() => navigation.navigate('NotificationScreen')}
+          unreadCount={unreadCount || 0}
+        />
+
+        <View style={styles.emptyContainer}>
+          <Text style={styles.message}>📡 No Article Found</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (isConnected === false) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <HomeScreenHeader
+          handlePresentModalPress={handlePresentModalPress}
+          onTextInputChange={handleSearch}
+          onNotificationClick={() => navigation.navigate('NotificationScreen')}
+          unreadCount={unreadCount || 0}
+        />
+
+        <View style={styles.emptyContainer}>
+          <Text style={styles.message}>
+            📡 Please try to be online to view articles
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (isLoading || submitEditRequestMutation.isPending) {
     return <Loader />;
   }
 
   if (user && (user.isBlockUser || user.isBannedUser)) {
     return (
       <SafeAreaView style={styles.blockContainer}>
+        <StatusBar style="dark" backgroundColor={PRIMARY_COLOR} />
         <HomeScreenHeader
           handlePresentModalPress={handlePresentModalPress}
           onTextInputChange={handleSearch}
@@ -497,15 +559,19 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
             {selectedTags &&
               selectedTags.length > 0 &&
               !searchMode &&
-              selectedTags.map((item, index) => (
+              selectedTags.map((item: Category, index: number) => (
                 <TouchableOpacity
                   key={index}
                   style={{
                     ...styles.button,
                     backgroundColor:
-                      selectedCategory && selectedCategory._id !== item._id ? 'white' : PRIMARY_COLOR,
+                      selectedCategory && selectedCategory._id !== item._id
+                        ? 'white'
+                        : PRIMARY_COLOR,
                     borderColor:
-                      selectedCategory && selectedCategory._id !== item._id ? PRIMARY_COLOR : 'white',
+                      selectedCategory && selectedCategory._id !== item._id
+                        ? PRIMARY_COLOR
+                        : 'white',
                   }}
                   onPress={() => {
                     handleCategoryClick(item);
@@ -513,7 +579,10 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
                   <Text
                     style={{
                       ...styles.labelStyle,
-                      color: selectedCategory && selectedCategory._id !== item._id ? 'black' : 'white',
+                      color:
+                        selectedCategory && selectedCategory._id !== item._id
+                          ? 'black'
+                          : 'white',
                     }}>
                     {item.name}
                   </Text>
@@ -521,6 +590,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
               ))}
           </ScrollView>
         </View>
+        
         <InactiveUserModal
           open={true}
           onRequestAdmin={() => {
@@ -530,8 +600,8 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
             user.isBlockUser
               ? 'blocked'
               : user.isBannedUser
-              ? 'banned'
-              : undefined
+                ? 'banned'
+                : undefined
           }
         />
       </SafeAreaView>
@@ -573,9 +643,13 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
                 style={{
                   ...styles.button,
                   backgroundColor:
-                    selectedCategory && selectedCategory._id !== item._id ? 'white' : PRIMARY_COLOR,
+                    selectedCategory && selectedCategory._id !== item._id
+                      ? 'white'
+                      : '#000A60',
                   borderColor:
-                    selectedCategory && selectedCategory._id !== item._id ? PRIMARY_COLOR : 'white',
+                    selectedCategory && selectedCategory._id !== item._id
+                      ? PRIMARY_COLOR
+                      : 'white',
                 }}
                 onPress={() => {
                   handleCategoryClick(item);
@@ -583,7 +657,10 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
                 <Text
                   style={{
                     ...styles.labelStyle,
-                    color: selectedCategory && selectedCategory._id !== item._id ? 'black' : 'white',
+                    color:
+                      selectedCategory && selectedCategory._id !== item._id
+                        ? 'black'
+                        : 'white',
                   }}>
                   {item.name}
                 </Text>
@@ -601,7 +678,9 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
                 : filteredArticles.filter(
                     article =>
                       article.tags &&
-                      article.tags.some(tag => tag.name === selectedCategory?.name),
+                      article.tags.some(
+                        tag => tag.name === selectedCategory?.name,
+                      ),
                   )
             }
             renderItem={renderItem}
@@ -611,12 +690,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
             onRefresh={onRefresh}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                {/**
-                 *  <Image
-                  source={require('../assets/no_results.jpg')}
-                  style={styles.emptyImgStyle}
-                />
-                 */}
                 <Text style={styles.message}>No Article Found</Text>
               </View>
             }
@@ -643,8 +716,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F0F8FF',
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'flex-start',
+    alignItems: 'stretch',
   },
 
   blockContainer: {
@@ -654,15 +727,16 @@ const styles = StyleSheet.create({
     //alignItems: 'center',
   },
   buttonContainer: {
+    marginTop: wp(3),
     flexDirection: 'row',
     paddingHorizontal: 6,
   },
   button: {
     flex: 0,
-    borderRadius: 14,
+    borderRadius: wp(4),
     marginHorizontal: 6,
     marginVertical: 4,
-    padding: 8,
+    padding: wp(3.1),
     borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',
@@ -692,22 +766,23 @@ const styles = StyleSheet.create({
 
   message: {
     fontSize: 16,
-    color: '#fff',
+    color: '#000',
     fontFamily: 'bold',
     textAlign: 'center',
   },
   emptyContainer: {
     flex: 1,
+    backgroundColor: ON_PRIMARY_COLOR,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    top: 70,
+    top: 30,
   },
   emptyImgStyle: {
-    width: 300,
+    width: 100,
     height: 200,
     borderRadius: 8,
-    marginBottom: 10,
+    marginBottom: 1,
     resizeMode: 'contain',
   },
 });

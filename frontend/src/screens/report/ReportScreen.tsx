@@ -17,11 +17,13 @@ import {RadioButton} from 'react-native-paper';
 import Snackbar from 'react-native-snackbar';
 import {hp, wp} from '../../helper/Metric';
 import {PRIMARY_COLOR} from '../../helper/Theme';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 export default function ReportScreen({navigation, route}: ReportScreenProp) {
   const {articleId, commentId, authorId, podcastId} = route.params;
   const {user_token, user_id} = useSelector((state: any) => state.user);
-  const [selectedReasonId, setSelectedReasonId] = useState<String>('');
+  const {isConnected} = useSelector((state: any) => state.network);
+  const [selectedReasonId, setSelectedReasonId] = useState<string>('');
 
   const {data: reasons, isLoading} = useQuery({
     queryKey: ['get-report-reasons'],
@@ -43,6 +45,7 @@ export default function ReportScreen({navigation, route}: ReportScreenProp) {
         console.error('Error fetching Report Reasons:', err);
       }
     },
+    enabled: !!isConnected && !!user_token,
   });
 
   //console.log(reasons[0].reason)
@@ -57,7 +60,7 @@ export default function ReportScreen({navigation, route}: ReportScreenProp) {
       const res = await axios.post(
         SUBMIT_REPORT,
         {
-          articleId: podcastId? null: articleId,
+          articleId: podcastId ? null : articleId,
           podcastId: podcastId,
           commentId: commentId,
           reportedBy: user_id,
@@ -93,7 +96,7 @@ export default function ReportScreen({navigation, route}: ReportScreenProp) {
   }
   return (
     <ScrollView style={{backgroundColor: 'white'}}>
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
         <Text style={styles.header}>What's going on?</Text>
         <Text style={styles.text}>
           We will check for all Community Guidelines, so don't worry about
@@ -111,6 +114,18 @@ export default function ReportScreen({navigation, route}: ReportScreenProp) {
             <Text style={styles.optionText}>{reason.reason}</Text>
           </View>
         ))}
+
+        {!isConnected && (
+          <Text
+            style={{
+              color: 'red',
+              marginVertical: hp(3),
+              fontSize: 16,
+              fontWeight: '600',
+            }}>
+            Please be online to report ⚠️
+          </Text>
+        )}
 
         {selectedReasonId !== '' && (
           <TouchableOpacity
@@ -143,7 +158,7 @@ export default function ReportScreen({navigation, route}: ReportScreenProp) {
             <Text style={styles.btnText}>Submit</Text>
           </TouchableOpacity>
         )}
-      </View>
+      </SafeAreaView>
     </ScrollView>
   );
 }
