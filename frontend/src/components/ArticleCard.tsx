@@ -225,8 +225,9 @@ const ArticleCard = ({
   });
 
   const onChange = () => {
-    console.log('Menu visible');
+   
     setMenuVisible(true);
+     console.log('Menu visible',menuVisible);
   };
 
   const generatePDFFromUrl = async (recordId: string, title: string) => {

@@ -22,7 +22,12 @@ export default function SplashScreen({navigation}: SplashScreenProp) {
 
   const {data: tokenRes, isLoading} = useCheckTokenStatus();
 
-
+  useEffect(() => {
+    console.log('Token status:', tokenRes);
+    if (tokenRes) {
+      checkLoginStatus();
+    }
+  }, [ tokenRes]);
   // function isDateMoreThanSevenDaysOld(dateString: string) {
   //   const inputDate = new Date(dateString).getTime();
   //   const currentDate = new Date().getTime();
@@ -33,7 +38,9 @@ export default function SplashScreen({navigation}: SplashScreenProp) {
 
   const checkLoginStatus = async () => {
 
-
+    if(!tokenRes){
+      return;
+    }
     try {
       const userId = await retrieveItem(KEYS.USER_ID);
       const user = await retrieveItem(KEYS.USER_TOKEN);

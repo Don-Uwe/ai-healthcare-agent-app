@@ -15,10 +15,9 @@ import Slider from '@react-native-community/slider';
 
 import {useAudioPlayer} from 'expo-audio';
 import {Button, Circle, Theme, XStack, YStack, Text} from 'tamagui';
-import {AntDesign, Entypo, Ionicons} from '@expo/vector-icons';
+import {AntDesign, Ionicons} from '@expo/vector-icons';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import LottieView from 'lottie-react-native';
-import {showAlert} from '../store/alertSlice';
 
 const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
   const {uploadImage, loading, error: imageError} = useUploadImage();
@@ -26,17 +25,17 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [position, setPosition] = useState(0);
   const [duration, setDuration] = useState(0);
-  const dispatch = useDispatch();
+  
 
   const {title, description, selectedGenres, imageUtils, filePath} =
     route.params;
 
   //const [elapsedMs, setElapsedMs] = useState(0);
-  const {user_token, user_id} = useSelector((state: any) => state.user);
+  const {user_token} = useSelector((state: any) => state.user);
   const {isConnected} = useSelector((state: any) => state.network);
   const [amplitudes, setAmplitudes] = useState<number[]>([]);
   //const [currentAmplitude, setCurrentAmplitude] = useState<number>(0);
-  const timerRef = useRef(null);
+  //const timerRef = useRef(null);
 
   const player = useAudioPlayer(
     filePath
@@ -115,28 +114,6 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
     setPosition(next);
   };
 
-  const handleStopPlay = async () => {
-    stopPlay();
-    setUiState('review');
-  };
-
-  const handleReRecord = async () => {
-    if (filePath) {
-      try {
-        const exists = await RNFS.exists(filePath);
-        if (exists) {
-          await RNFS.unlink(filePath);
-          console.log('File deleted:', filePath);
-        }
-        navigation.goBack();
-      } catch (err) {
-        console.warn('Error deleting file:', err);
-      }
-    }
-    // unlink file path
-    setAmplitudes([]);
-    setUiState('idle');
-  };
 
   const unlinkFile = useCallback(async () => {
     if (filePath) {

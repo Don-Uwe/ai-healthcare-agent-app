@@ -11,7 +11,7 @@ import {fp, hp} from '../helper/Metric';
 import {ImprovementCardProps} from '../type';
 import moment from 'moment';
 import {BUTTON_COLOR, PRIMARY_COLOR} from '../helper/Theme';
-import {StatusEnum} from '../helper/Utils';
+import {handleExternalClick, StatusEnum} from '../helper/Utils';
 //import io from 'socket.io-client';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import AutoHeightWebView from '@brown-bear/react-native-autoheight-webview';
@@ -84,6 +84,7 @@ const ImprovementCard = ({item, onNavigate}: ImprovementCardProps) => {
               source={{html: extractBody(item?.edit_reason) || '<p>No reason provided.</p>'}}
               scalesPageToFit={true}
               viewportContent={'width=device-width, user-scalable=no'}
+              onShouldStartLoadWithRequest={handleExternalClick}
             />
           </View>
 

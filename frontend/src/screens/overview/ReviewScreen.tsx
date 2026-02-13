@@ -34,7 +34,7 @@ import axios from 'axios';
 //import {useSocket} from '../../../SocketContext';
 //import CommentScreen from '../CommentScreen';
 import {setUserHandle} from '../../store/UserSlice';
-import {StatusEnum} from '../../helper/Utils';
+import {handleExternalClick, StatusEnum} from '../../helper/Utils';
 import ReviewItem from '../../components/ReviewItem';
 //import {Comment} from '../../type';
 import {io} from 'socket.io-client';
@@ -253,6 +253,7 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
               style={{
                 width: Dimensions.get('window').width - 15,
                 marginTop: 35,
+                marginBottom: 30,
               }}
               customStyle={`* { font-family: 'Times New Roman'; } p { font-size: 16px; }`}
               onSizeUpdated={size => console.log(size.height)}
@@ -267,6 +268,7 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
               source={{html: htmlContent ?? noDataHtml}}
               scalesPageToFit={true}
               viewportContent={'width=device-width, user-scalable=no'}
+              onShouldStartLoadWithRequest={handleExternalClick}
             />
           </View>
         </View>

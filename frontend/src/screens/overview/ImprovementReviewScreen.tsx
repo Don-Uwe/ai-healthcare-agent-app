@@ -32,7 +32,7 @@ import axios from 'axios';
 import {useSocket} from '../../../SocketContext';
 //import CommentScreen from '../CommentScreen';
 import {setUserHandle} from '../../store/UserSlice';
-import {StatusEnum} from '../../helper/Utils';
+import {handleExternalClick, StatusEnum} from '../../helper/Utils';
 import ReviewItem from '../../components/ReviewItem';
 import {Button, Spinner, TextArea, YStack, Text} from 'tamagui';
 import AutoHeightWebView from '@brown-bear/react-native-autoheight-webview';
@@ -262,6 +262,7 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
               style={{
                 width: Dimensions.get('window').width - 15,
                 marginTop: 35,
+                marginBottom: 30,
               }}
               customStyle={`* { font-family: 'Times New Roman'; } p { font-size: 16px; }`}
               onSizeUpdated={size => console.log(size.height)}
@@ -276,6 +277,7 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
               source={{html: htmlContent ?? noDataHtml}}
               scalesPageToFit={true}
               viewportContent={'width=device-width, user-scalable=no'}
+              onShouldStartLoadWithRequest={handleExternalClick}
             />
           </View>
         </View>

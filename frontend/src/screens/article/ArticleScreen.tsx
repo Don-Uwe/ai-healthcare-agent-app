@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   Dimensions,
   FlatList,
+  Linking,
 } from 'react-native';
 import {useEffect, useMemo, useRef, useState} from 'react';
 import {useQuery, useMutation} from '@tanstack/react-query';
@@ -37,14 +38,13 @@ import axios from 'axios';
 import Loader from '../../components/Loader';
 import Snackbar from 'react-native-snackbar';
 
-
-import {formatCount, StatusEnum} from '../../helper/Utils';
+import {formatCount, handleExternalClick, StatusEnum} from '../../helper/Utils';
 //import CommentScreen from '../CommentScreen';
 import Tts from 'react-native-tts';
 
 import {setUserHandle} from '../../store/UserSlice';
 import {io} from 'socket.io-client';
-import { Feather } from '@expo/vector-icons';
+import {Feather} from '@expo/vector-icons';
 import AutoHeightWebView from '@brown-bear/react-native-autoheight-webview';
 
 const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
@@ -57,7 +57,6 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const dispatch = useDispatch();
   const [webviewHeight, setWebViewHeight] = useState(0);
   const [speechingMode, setSpeechingMode] = useState(false);
-
 
   useEffect(() => {
     updateViewCountMutation.mutate();
@@ -83,11 +82,10 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     },
   });
 
-  useEffect(()=>{
-  refetch();
-  },[articleId, refetch])
+  useEffect(() => {
+    refetch();
+  }, [articleId, refetch]);
 
-  
   const {data: user} = useQuery({
     queryKey: ['get-my-profile'],
     queryFn: async () => {
@@ -147,7 +145,6 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
       Alert.alert('Internal server error, try again!');
     },
   });
-
 
   // --- Settings ---
 
@@ -307,17 +304,13 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     },
   });
 
-
-
   useEffect(() => {
     if (htmlContent) {
-      
       setWebViewHeight(htmlContent.length);
     } else {
       setWebViewHeight(noDataHtml.length);
     }
   }, [htmlContent]);
-
 
   const {data: profile_image} = useQuery({
     queryKey: ['author_profile_image'],
@@ -351,9 +344,43 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     return plainText;
   }
 
+  const ensureLanguageInstalled = async (lang: string) => {
+    Snackbar.show({
+      text: `Checking if language ${lang} is installed.`,
+      duration: Snackbar.LENGTH_SHORT,
+    });
+    const voices = await Tts.voices();
+
+    const voice = voices.find(v => v.language === lang && !v.notInstalled);
+
+    if (voice) {
+      await Tts.setDefaultVoice(voice.id);
+      return true;
+    }
+
+    if (Platform.OS === 'android') {
+      Tts.requestInstallData();
+    }
+
+    return false;
+  };
+
   const speakSection = async (_language = 'en-US', content: string) => {
     // Tts.requestInstallData();
+
+    const ready = await ensureLanguageInstalled(_language);
+
+    if (!ready) {
+      Snackbar.show({
+        text: 'Language not installed. Please install the language pack to enable text-to-speech.',
+        duration: Snackbar.LENGTH_LONG,
+      });
+      console.log('Language not installed. Prompted user.');
+      return;
+    }
     Tts.setDefaultPitch(0.4);
+    Tts.setDefaultRate(0.5);
+    Tts.setDefaultLanguage(_language);
 
     const res = await convertHtmlToPlainText(content);
 
@@ -386,7 +413,6 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     }
   };
 
-
   if (isLoading) {
     return <Loader />;
   }
@@ -402,7 +428,11 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
           if (windowHeight + offset >= height) {
             //ScrollEnd,
             // console.log('ScrollEnd');
-            if (article && !readEventSave && article.status === StatusEnum.PUBLISHED) {
+            if (
+              article &&
+              !readEventSave &&
+              article.status === StatusEnum.PUBLISHED
+            ) {
               updateReadEventMutation.mutate();
             }
           }
@@ -411,8 +441,10 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
         <View style={styles.imageContainer}>
           {article && article?.imageUtils && article?.imageUtils.length > 0 ? (
             <Image
-              source={{uri: article?.imageUtils[0].startsWith('http')? article?.imageUtils[0] :
-                `${GET_IMAGE}/${article?.imageUtils[0]}`
+              source={{
+                uri: article?.imageUtils[0].startsWith('http')
+                  ? article?.imageUtils[0]
+                  : `${GET_IMAGE}/${article?.imageUtils[0]}`,
               }}
               style={styles.image}
             />
@@ -455,7 +487,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
                 // setCartoonModalVisible(true);
                 // prepareSection();
                 if (htmlContent) {
-                  speakSection('en-US', htmlContent);
+                  const language = article?.language || 'en-In';
+                  speakSection(language, htmlContent);
                 }
               } else {
                 Tts.stop();
@@ -660,7 +693,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
             <AutoHeightWebView
               style={{
                 width: Dimensions.get('window').width - 15,
-                marginTop: 35,
+                marginTop: 30,
+                marginBottom: 40,
               }}
               customStyle={`* { font-family: 'Times New Roman'; } p { font-size: 16px; }`}
               onSizeUpdated={size => console.log(size.height)}
@@ -675,11 +709,10 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
               source={{html: htmlContent ?? noDataHtml}}
               scalesPageToFit={true}
               viewportContent={'width=device-width, user-scalable=no'}
+              onShouldStartLoadWithRequest={handleExternalClick}
             />
           </View>
         </View>
-
-     
       </ScrollView>
       <View
         style={[

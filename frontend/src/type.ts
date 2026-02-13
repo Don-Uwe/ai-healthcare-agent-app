@@ -544,6 +544,7 @@ export type ArticleData = {
   likedUsers: User[];
   savedUsers: string[];
   mentionedUsers: User[];
+  language: string;
   assigned_date: string | null;
   discardReason: string;
   status: string;

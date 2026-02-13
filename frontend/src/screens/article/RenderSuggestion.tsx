@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 import {RenderSuggestionProp} from '../../type';
 import WebView from 'react-native-webview';
-import {createHTMLStructure} from '../../helper/Utils';
+import {createHTMLStructure, handleExternalClick} from '../../helper/Utils';
 import {useRef} from 'react';
 import {useDispatch} from 'react-redux';
 import {setSuggestionAccepted} from '../../store/dataSlice';
@@ -68,6 +68,7 @@ export default function RenderSuggestion({
         source={{html: createHTMLStructure('', htmlContent, [], '', '')}}
         scalesPageToFit={true}
         viewportContent={'width=device-width, user-scalable=no'}
+        onShouldStartLoadWithRequest={handleExternalClick}
       />
 
       <View style={styles.buttonContainer}>

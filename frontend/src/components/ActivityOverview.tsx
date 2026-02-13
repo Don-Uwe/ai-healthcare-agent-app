@@ -14,11 +14,11 @@ import {
 
 import {PRIMARY_COLOR} from '../helper/Theme';
 //import {LineChart} from 'react-native-gifted-charts';
-import {LineChart, Barchart, BarChart} from 'react-native-chart-kit';
+import {BarChart} from 'react-native-chart-kit';
 import {useQuery} from '@tanstack/react-query';
 import moment from 'moment';
 import {fp, hp} from '../helper/Metric';
-import {useDispatch, useSelector} from 'react-redux';
+import { useSelector} from 'react-redux';
 import axios from 'axios';
 import {
   GET_IMAGE,
@@ -68,8 +68,7 @@ interface Props {
 const ActivityOverview = ({onArticleViewed, userId, others, user_handle}: Props) => {
   const [userState, setUserState] = useState<number>(0);
   const {user_token, user_id} = useSelector((state: any) => state.user);
-  const dispatch = useDispatch();
-  const [isFocus, setIsFocus] = useState<boolean>(false);
+  const [, setIsFocus] = useState<boolean>(false);
   // const [selectedDay, setSelectedDay] = useState<number>(new Date().getDay());
   const {isConnected} = useSelector((state: any) => state.user);
   const [selectedMonth, setSelectedMonth] = useState<number>(
@@ -617,37 +616,37 @@ const ActivityOverview = ({onArticleViewed, userId, others, user_handle}: Props)
     <Loader />;
   }
 
-  const processData = data => {
-    if (!Array.isArray(data) || data.length === 0) {
-      return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-    }
+  // const processData = data => {
+  //   if (!Array.isArray(data) || data.length === 0) {
+  //     return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  //   }
 
-    /*
-    console.log('data', data.map(item => ({
-      value: item.value, // Ensure the value is an integer
-      label: item.date.substring(8),
-    })));
+  //   /*
+  //   console.log('data', data.map(item => ({
+  //     value: item.value, // Ensure the value is an integer
+  //     label: item.date.substring(8),
+  //   })));
     
-    return data.map(item => ({
-      value: item.value, // Ensure the value is an integer
-      label: item.date.substring(8),
-    }));
-    */
+  //   return data.map(item => ({
+  //     value: item.value, // Ensure the value is an integer
+  //     label: item.date.substring(8),
+  //   }));
+  //   */
 
-    return data.map(item =>
-      Number.isFinite(Number(item.value)) ? Number(item.value) : 0,
-    );
-  };
+  //   return data.map(item =>
+  //     Number.isFinite(Number(item.value)) ? Number(item.value) : 0,
+  //   );
+  // };
 
-  const processLabels = data => {
-    if (!data) {
-      return [];
-    }
+  // const processLabels = data => {
+  //   if (!data) {
+  //     return [];
+  //   }
 
-    //console.log("Label data", data)
+  //   //console.log("Label data", data)
 
-    return data.map(item => item.date?.substring(8) ?? '-');
-  };
+  //   return data.map(item => item.date?.substring(8) ?? '-');
+  // };
 
   const getTrendMessage = () => {
     const monthNames = [
@@ -1096,9 +1095,9 @@ const ActivityOverview = ({onArticleViewed, userId, others, user_handle}: Props)
                         ? item?.imageUtils[0]
                         : `${GET_IMAGE}/${item?.imageUtils[0]}`,
                     }}
-                    w={130}
-                    h={130}
-                    br="$8"
+                    width={130}
+                    height={130}
+                    borderRadius={8}
                   />
 
                   <YStack flex={1} padding="$3">

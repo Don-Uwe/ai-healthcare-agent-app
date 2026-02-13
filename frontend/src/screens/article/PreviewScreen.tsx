@@ -15,7 +15,7 @@ import {
   PreviewScreenProp,
   User,
 } from '../../type';
-import {createHTMLStructure} from '../../helper/Utils';
+import {createHTMLStructure, handleExternalClick} from '../../helper/Utils';
 import {useMutation, useQuery} from '@tanstack/react-query';
 import ImageResizer from '@bam.tech/react-native-image-resizer';
 
@@ -547,6 +547,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
         }}
         scalesPageToFit={true}
         viewportContent={'width=device-width, user-scalable=no'}
+        onShouldStartLoadWithRequest={handleExternalClick}
       />
     </View>
   );

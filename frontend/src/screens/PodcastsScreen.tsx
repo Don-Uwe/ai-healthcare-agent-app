@@ -271,9 +271,9 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
 
       <View style={styles.buttonContainer}>
         <ScrollView
-          horizontal={true}
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{flex:1}}
+         horizontal
+    showsHorizontalScrollIndicator={false}
+    contentContainerStyle={{ flexDirection: "row" }}
         >
           {selectedTags &&
             selectedTags.length > 0 &&

@@ -151,6 +151,7 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
         await storeItem(KEYS.USER_ID, auth.userId.toString());
         await storeItem(KEYS.USER_HANDLE, data?.user_handle);
         if (auth.token) {
+          console.log('Storing token:', auth.token);
           await storeItem(KEYS.USER_TOKEN, auth.token.toString());
           await storeItem(
             KEYS.USER_TOKEN_EXPIRY_DATE,

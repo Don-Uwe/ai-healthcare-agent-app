@@ -25,7 +25,7 @@ export const useCheckTokenStatus = () => {
     queryKey: ['token-status'],
     queryFn: async () => {
       const token = await retrieveItem(KEYS.USER_TOKEN);
-
+      console.log('Checking token status for token:', token);
       if (!token) {
         return { isValid: false, message: 'No token found' };
       }

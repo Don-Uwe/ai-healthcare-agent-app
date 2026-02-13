@@ -2,7 +2,7 @@ import NetInfo from '@react-native-community/netinfo';
 import {Category, CategoryType, PodcastData} from '../type';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {GET_STORAGE_DATA} from './APIUtils';
-import {Alert, PermissionsAndroid, Platform} from 'react-native';
+import {Alert, Linking, PermissionsAndroid, Platform} from 'react-native';
 import RNFS from 'react-native-fs';
 
 export const checkInternetConnection = (
@@ -138,6 +138,18 @@ export function formatCount(count: number) {
     return Math.floor(count / 1000000) + 'M';
   }
 }
+
+export const handleExternalClick = (request:any) => {
+    const { url } = request;
+
+    // External link
+    if (url.startsWith("http")) {
+      Linking.openURL(url);
+      return false;
+    }
+
+    return true;
+  };
 
 export function msToTime(ms: number): string {
   let totalSeconds = Math.floor(ms);
