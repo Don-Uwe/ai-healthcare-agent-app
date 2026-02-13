@@ -39,9 +39,22 @@
 </div>
 <hr>
 
-[![Download Latest APK](https://img.shields.io/badge/Download-APK-blue.svg)](https://drive.google.com/file/d/19pRw_TWU4R3wcXjffOPBy1JGBDGnlaEh/view?usp=sharing)
+## Explore the platform: [uhsocial.in](https://uhsocial.in/)
 
-Managing content at scale requires a clear and controlled workflow to ensure quality, accuracy, and accountability. This system outlines how articles are created, reviewed, and improved over time using a structured CRUD (Create, Read, Update, Delete) approach — enriched by an edit request mechanism, inspired by proven practices at platforms like <a href="https://www.geeksforgeeks.org/">GeeksforGeeks</a>.
+## Data uploading will commence from 9th February, 2026. All contributors will be notified through their registered email IDs.
+
+### ❤️ Heartfelt Thank You
+Ultimate Health exists because of the passion, dedication, and collective intelligence of our community.
+
+To every developer who squashed a bug, every translator who broke a language barrier, and every moderator who ensured content integrity—Thank You. You are building a healthier world, one contribution at a time.
+
+### 👥 All Contributors
+We are immensely grateful to everyone who has shaped this project.
+
+---
+
+
+Managing content at scale requires a clear and controlled workflow to ensure quality, accuracy, and accountability. This system outlines how articles are created, reviewed, and improved over time using a structured CRUD (Create, Read, Update, Delete) approach — enriched by an edit request mechanism.
 
 **We particularly liked the workflow and approach, and I’ve tried to learn from it as a learner. This is not the actual flow of any real world system — rather, based on my understanding and thought process, I’ve implemented a version that reflects those learnings in a way that suits our needs.**
 
@@ -79,6 +92,15 @@ Managing content at scale requires a clear and controlled workflow to ensure qua
       <th>Event Description</th>
    </tr>
 
+ <tr>
+      <td><img src="https://github.com/user-attachments/assets/e0a40d06-f5b8-42a7-a5a0-033280f842be" width="200" height="auto" loading="lazy" alt="IEEE IGDTUW Open Source Week"/></td>
+      <td> IEEE IGDTUW Open Source Week</td>
+      <td>
+       IEEE IGDTUW Open Source Week is a week-long event aimed at fostering collaboration and skill-building in open-source.
+       Event Dates: November 12 - November 18
+      </td>
+   </tr>
+   
    <tr>
       <td><img src="https://github.com/user-attachments/assets/2b03167c-a598-48be-9f93-66130e58ec00" width="200" height="auto" loading="lazy" alt="Vultr Cloud Innovate Hackathon"/></td>
       <td>Vultr Cloud Innovate Hackathon</td>
@@ -617,7 +639,7 @@ This project is licensed under the [MIT License](./LICENSE).
  </tr>
  <tr>
    
-   <td align="center"><a href="https://github.com/revanth1718"><img src="https://avatars.githubusercontent.com/u/109272714?v=4" width="120px;" alt=""/><br/><sub><b>Revanth</b></sub></a>
+   <td align="center"><a href="https://github.com/revanth1718"><img src="https://avatars.githubusercontent.com/u/109272714?v=4" width="120px;" alt=""/><br/><sub><b>Revanth Pasupuleti</b></sub></a>
         </td> 
    <td align="center"><a href="https://github.com/arunimaChintu"><img src="https://avatars.githubusercontent.com/u/99474881?v=4" width="120px;" alt=""/><br/><sub><b>Arunima Dutta</b></sub></a>
         </td> 
