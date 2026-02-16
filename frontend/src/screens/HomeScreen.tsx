@@ -351,13 +351,22 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     // Update Redux State Variables
     console.log('enter');
     if (selectCategoryList.length > 0) {
+    //   console.log("enter")
       dispatch(setSelectedTags({selectedTags: selectCategoryList}));
     } else {
+       //console.log("enter ele", articleCategories);
+
       dispatch(
         setSelectedTags({
           selectedTags: articleCategories,
         }),
       );
+
+    }
+
+   if(sortingType && sortingType !== ''){
+      console.log("Sort type", sortType);
+     dispatch(setSortType({sortType: sortingType}));
     }
 
     if (sortingType && sortingType !== '') {
@@ -664,7 +673,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           searchedArticles.length > 0) && (
           <FlatList
             data={
-              searchMode
+              searchMode 
                 ? searchedArticles
                 : filteredArticles.filter(
                     article =>
