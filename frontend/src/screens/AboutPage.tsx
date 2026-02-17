@@ -1,5 +1,6 @@
 import React from 'react';
 import {Share, Linking, Image} from 'react-native';
+import VersionCheck from 'react-native-version-check';
 import {
   YStack,
   XStack,
@@ -10,12 +11,14 @@ import {
   Theme,
   Button,
   styled,
+  View,
 } from 'tamagui';
 import {
   Ionicons,
   FontAwesome6,
 } from '@expo/vector-icons';
 import { AboutScreenProps } from '../type';
+import { ON_PRIMARY_COLOR } from '../helper/Theme';
 
 
 
@@ -30,6 +33,8 @@ const SectionCard = styled(YStack, {
 });
 
 const AboutScreen = ({navigation}:AboutScreenProps) => {
+
+  const currentVersion = VersionCheck.getCurrentVersion();
  const onShare = async () => {
   try {
     await Share.share({
@@ -49,6 +54,8 @@ const AboutScreen = ({navigation}:AboutScreenProps) => {
   return (
     <Theme name="light">
       <ScrollView showsVerticalScrollIndicator={false}>
+
+        <View flex={1} backgroundColor={ON_PRIMARY_COLOR}>
         {/* 1. Header Section */}
         <YStack alignItems="center" marginTop="$8" marginBottom="$4" gap="$4">
           <YStack
@@ -81,7 +88,7 @@ const AboutScreen = ({navigation}:AboutScreenProps) => {
               fontWeight="900"
               //lineHeight={2}
               marginTop="$1">
-              VERSION 1.2.0
+              VERSION {currentVersion}
             </Text>
           </YStack>
 
@@ -270,6 +277,7 @@ const AboutScreen = ({navigation}:AboutScreenProps) => {
             ultimate.health25@gmail.com
           </Text>
         </YStack>
+        </View>
       </ScrollView>
     </Theme>
   );

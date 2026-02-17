@@ -497,7 +497,7 @@ const ArticleCard = ({
                 });
               }}
               style={styles.likeSaveChildContainer}>
-              <FontAwesome name="commenting" size={27} color={PRIMARY_COLOR} />
+              <FontAwesome name="commenting" size={27} color={'#414A4C'} />
             </TouchableOpacity>
 
             {source === 'home' && (
@@ -510,8 +510,8 @@ const ArticleCard = ({
                 style={styles.likeSaveChildContainer}>
                 <FontAwesome6
                   name="arrows-rotate"
-                  size={22}
-                  color={PRIMARY_COLOR}
+                  size={24}
+                  color={'#414A4C'}
                 />
                 <Text
                   style={{
@@ -522,6 +522,23 @@ const ArticleCard = ({
                   }}>
                   {formatCount(item.repostUsers.length)}
                 </Text>
+              </TouchableOpacity>
+            )}
+
+            {source === 'home' && (
+              <TouchableOpacity
+                onPress={() => {
+                  // width.value = withTiming(0, {duration: 300});
+                  // yValue.value = withTiming(100, {duration: 300});
+                  handleShare();
+                }}
+                style={styles.likeSaveChildContainer}>
+                <FontAwesome
+                  name="share-alt"
+                  size={24}
+                  color={'#414A4C'}
+                />
+              
               </TouchableOpacity>
             )}
 
@@ -545,7 +562,7 @@ const ArticleCard = ({
                 {item.savedUsers.includes(user_id) ? (
                   <IonIcons name="bookmark" size={24} color={PRIMARY_COLOR} />
                 ) : (
-                  <IonIcons name="bookmark-outline" size={24} color={'black'} />
+                  <IonIcons name="bookmark-outline" size={24} color={'#414A4C'} />
                 )}
               </TouchableOpacity>
             )}
@@ -554,7 +571,7 @@ const ArticleCard = ({
               <TouchableOpacity
                 style={styles.likeSaveChildContainer}
                 onPress={onChange}>
-                <Entypo name="dots-three-vertical" size={20} color={'black'} />
+                <Entypo name="dots-three-vertical" size={20} color={'#414A4C'} />
               </TouchableOpacity>
             )}
           </View>

@@ -17,10 +17,10 @@ import {useEffect, useMemo, useRef, useState} from 'react';
 import {useQuery, useMutation} from '@tanstack/react-query';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {ArticleData, ArticleScreenProp, User} from '../../type';
 import {useDispatch, useSelector} from 'react-redux';
-import {hp} from '../../helper/Metric';
+import {hp, wp} from '../../helper/Metric';
 import {
   FOLLOW_USER,
   GET_ARTICLE_BY_ID,
@@ -46,10 +46,12 @@ import {setUserHandle} from '../../store/UserSlice';
 import {io} from 'socket.io-client';
 import {Feather} from '@expo/vector-icons';
 import AutoHeightWebView from '@brown-bear/react-native-autoheight-webview';
+import LottieView from 'lottie-react-native';
 
 const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const insets = useSafeAreaInsets();
   const {articleId, authorId, recordId} = route.params;
+  const [spakingStarted, setSpeakingStarted] = useState(false);
   const {user_id, user_token} = useSelector((state: any) => state.user);
   const [readEventSave, setReadEventSave] = useState(false);
 
@@ -61,7 +63,11 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   useEffect(() => {
     updateViewCountMutation.mutate();
     return () => {
+      setSpeakingStarted(false);
       Tts.stop();
+
+      Tts.removeAllListeners('tts-finish');
+      Tts.removeAllListeners('tts-error');
     };
   }, []);
 
@@ -365,51 +371,99 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     return false;
   };
 
-  const speakSection = async (_language = 'en-US', content: string) => {
-    // Tts.requestInstallData();
+  // const speakSection = async (_language = 'en-IN', content: string) => {
+  //   // Tts.requestInstallData();
 
-    const ready = await ensureLanguageInstalled(_language);
+  //   await Tts.stop();
+  // Tts.removeAllListeners('tts-finish');
+  // Tts.removeAllListeners('tts-error');
 
-    if (!ready) {
-      Snackbar.show({
-        text: 'Language not installed. Please install the language pack to enable text-to-speech.',
-        duration: Snackbar.LENGTH_LONG,
+  //   const ready = await ensureLanguageInstalled(_language);
+
+  //   if (!ready) {
+  //     Snackbar.show({
+  //       text: 'Language not installed. Please install the language pack to enable text-to-speech.',
+  //       duration: Snackbar.LENGTH_LONG,
+  //     });
+  //     console.log('Language not installed. Prompted user.');
+  //     return;
+  //   }
+  //   Tts.setDefaultPitch(1.0);
+  //   Tts.setDefaultRate(0.5);
+  //   Tts.setDefaultLanguage(_language);
+
+  //   const res = await convertHtmlToPlainText(content);
+
+  //   if (res) {
+  //     Tts.getInitStatus().then(() => {
+  //       const textChunks = res.split(' ');
+  //       let chunkIndex = 0;
+
+  //       const speakNextChunk = () => {
+  //         if (chunkIndex < textChunks.length) {
+  //           const chunk = textChunks
+  //             .slice(chunkIndex, chunkIndex + 120)
+  //             .join(' ');
+
+  //           Tts.speak(chunk);
+
+  //           Tts.addEventListener('tts-finish', () => {
+  //             chunkIndex += 120;
+  //             speakNextChunk();
+  //           });
+
+  //           Tts.addEventListener('tts-error', error => {
+  //             console.error('TTS Error:', error);
+  //           });
+  //         }
+  //       };
+
+  //     const finishListener = Tts.addEventListener('tts-finish', speakNextChunk);
+  //       speakNextChunk();
+  //     });
+  //   }
+  // };
+
+  const speakSection = async (_language = 'en-IN', content: string) => {
+    try {
+      setSpeakingStarted(true);
+      await Tts.stop();
+      Tts.removeAllListeners('tts-finish');
+      Tts.removeAllListeners('tts-error');
+
+      const ready = await ensureLanguageInstalled(_language);
+      if (!ready) return;
+
+      await Tts.setDefaultLanguage(_language);
+      Tts.setDefaultPitch(1.0);
+      Tts.setDefaultRate(0.5);
+
+      const plainText = await convertHtmlToPlainText(content);
+      if (!plainText) return;
+
+      const words = plainText.split(' ');
+      let chunkIndex = 0;
+
+      const speakNextChunk = () => {
+        if (chunkIndex >= words.length) {
+          return;
+        }
+
+        const chunk = words.slice(chunkIndex, chunkIndex + 120).join(' ');
+        chunkIndex += 120;
+
+        Tts.speak(chunk);
+      };
+
+      Tts.addEventListener('tts-finish', speakNextChunk);
+
+      Tts.addEventListener('tts-error', e => {
+        console.log('TTS Error:', e);
       });
-      console.log('Language not installed. Prompted user.');
-      return;
-    }
-    Tts.setDefaultPitch(0.4);
-    Tts.setDefaultRate(0.5);
-    Tts.setDefaultLanguage(_language);
 
-    const res = await convertHtmlToPlainText(content);
-
-    if (res) {
-      Tts.getInitStatus().then(() => {
-        const textChunks = res.split(' ');
-        let chunkIndex = 0;
-
-        const speakNextChunk = () => {
-          if (chunkIndex < textChunks.length) {
-            const chunk = textChunks
-              .slice(chunkIndex, chunkIndex + 100)
-              .join(' ');
-
-            Tts.speak(chunk);
-
-            Tts.addEventListener('tts-finish', () => {
-              chunkIndex += 100;
-              speakNextChunk();
-            });
-
-            Tts.addEventListener('tts-error', error => {
-              console.error('TTS Error:', error);
-            });
-          }
-        };
-
-        speakNextChunk();
-      });
+      speakNextChunk();
+    } catch (error) {
+      console.log('TTS Error:', error);
     }
   };
 
@@ -418,7 +472,91 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.imageContainer}>
+        {article && article?.imageUtils && article?.imageUtils.length > 0 ? (
+          <Image
+            source={{
+              uri: article?.imageUtils[0].startsWith('http')
+                ? article?.imageUtils[0]
+                : `${GET_IMAGE}/${article?.imageUtils[0]}`,
+            }}
+            style={styles.image}
+          />
+        ) : (
+          <Image
+            source={require('../../assets/images/no_results.jpg')}
+            style={styles.image}
+          />
+        )}
+        {updateLikeMutation.isPending ? (
+          <ActivityIndicator size={40} color={PRIMARY_COLOR} />
+        ) : (
+          <TouchableOpacity
+            onPress={handleLike}
+            style={[
+              styles.likeButton,
+              {
+                backgroundColor: 'white',
+              },
+            ]}>
+            <FontAwesome
+              name="heart"
+              size={34}
+              color={
+                article &&
+                article?.likedUsers &&
+                article?.likedUsers?.some(user => user._id === user_id)
+                  ? PRIMARY_COLOR
+                  : 'black'
+              }
+            />
+          </TouchableOpacity>
+        )}
+
+        <TouchableOpacity
+          onPress={() => {
+            setSpeechingMode(!speechingMode);
+
+            if (!speechingMode) {
+              // setCartoonModalVisible(true);
+              // prepareSection();
+              if (htmlContent) {
+                const language = article?.language || 'en-IN';
+                speakSection(language, htmlContent);
+              }
+            } else {
+              setSpeakingStarted(false);
+              Tts.stop();
+              Tts.removeAllListeners('tts-finish');
+              Tts.removeAllListeners('tts-error');
+            }
+          }}
+          style={[
+            styles.playButton,
+            {
+              backgroundColor: 'white',
+            },
+          ]}>
+          <Feather
+            name={speechingMode ? 'mic' : 'mic-off'}
+            size={30}
+            color={speechingMode ? PRIMARY_COLOR : 'black'}
+          />
+        </TouchableOpacity>
+
+        {spakingStarted && (
+          <View style={styles.botContainer}>
+            <LottieView
+              source={require('../../assets/LottieAnimation/TalkBotAnimation.json')}
+              autoPlay
+              loop={spakingStarted}
+              style={{width: 200, height: 200}}
+            />
+          </View>
+        )}
+      </View>
+
       <ScrollView
         style={styles.scrollView}
         onScroll={e => {
@@ -438,75 +576,6 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
           }
         }}
         contentContainerStyle={styles.scrollViewContent}>
-        <View style={styles.imageContainer}>
-          {article && article?.imageUtils && article?.imageUtils.length > 0 ? (
-            <Image
-              source={{
-                uri: article?.imageUtils[0].startsWith('http')
-                  ? article?.imageUtils[0]
-                  : `${GET_IMAGE}/${article?.imageUtils[0]}`,
-              }}
-              style={styles.image}
-            />
-          ) : (
-            <Image
-              source={require('../../assets/images/no_results.jpg')}
-              style={styles.image}
-            />
-          )}
-          {updateLikeMutation.isPending ? (
-            <ActivityIndicator size={40} color={PRIMARY_COLOR} />
-          ) : (
-            <TouchableOpacity
-              onPress={handleLike}
-              style={[
-                styles.likeButton,
-                {
-                  backgroundColor: 'white',
-                },
-              ]}>
-              <FontAwesome
-                name="heart"
-                size={34}
-                color={
-                  article &&
-                  article?.likedUsers &&
-                  article?.likedUsers?.some(user => user._id === user_id)
-                    ? PRIMARY_COLOR
-                    : 'black'
-                }
-              />
-            </TouchableOpacity>
-          )}
-
-          <TouchableOpacity
-            onPress={() => {
-              setSpeechingMode(!speechingMode);
-
-              if (!speechingMode) {
-                // setCartoonModalVisible(true);
-                // prepareSection();
-                if (htmlContent) {
-                  const language = article?.language || 'en-In';
-                  speakSection(language, htmlContent);
-                }
-              } else {
-                Tts.stop();
-              }
-            }}
-            style={[
-              styles.playButton,
-              {
-                backgroundColor: 'white',
-              },
-            ]}>
-            <Feather
-              name={speechingMode ? 'mic' : 'mic-off'}
-              size={30}
-              color={speechingMode ? PRIMARY_COLOR : 'black'}
-            />
-          </TouchableOpacity>
-        </View>
         <View style={styles.contentContainer}>
           {article && (
             <Text style={{...styles.viewText, marginBottom: 10}}>
@@ -673,6 +742,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
               </View>
             </>
           )}
+
           <View style={styles.descriptionContainer}>
             {/* <WebView
               style={{
@@ -719,7 +789,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
           styles.footer,
           {
             paddingBottom:
-              Platform.OS === 'ios' ? insets.bottom : insets.bottom + 20,
+              wp(6),
           },
         ]}>
         <View style={styles.authorContainer}>
@@ -796,7 +866,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
             </TouchableOpacity>
           ))}
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -810,6 +880,8 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 0,
+   // marginTop: hp(4),
+    borderBottomEndRadius: hp(2),
     backgroundColor: '#ffffff',
     position: 'relative',
   },
@@ -818,7 +890,14 @@ const styles = StyleSheet.create({
     flexGrow: 0,
   },
   imageContainer: {
+    width: '100%',
+    height: 250,
     position: 'relative',
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
+    overflow: 'hidden',
+    zIndex: 4,
+    elevation: 4,
   },
   image: {
     height: 300,
@@ -828,7 +907,7 @@ const styles = StyleSheet.create({
   likeButton: {
     padding: 10,
     position: 'absolute',
-    bottom: -25,
+    bottom: 4,
     right: 70,
     borderRadius: 50,
   },
@@ -836,7 +915,7 @@ const styles = StyleSheet.create({
   playButton: {
     padding: 10,
     position: 'absolute',
-    bottom: -25,
+    bottom: 4,
     right: 20,
     borderRadius: 50,
   },
@@ -982,6 +1061,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
   },
+
+  botContainer: {
+    position: 'absolute',
+    bottom: 100,
+    right: 20,
+    zIndex: 100,
+  },
+
   submitButtonText: {
     fontSize: 18,
     color: '#fff',
