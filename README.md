@@ -661,7 +661,9 @@ This project is licensed under the [MIT License](./LICENSE).
         </td> 
   <td align="center"><a href="https://github.com/Pujan-sarkar"><img src="https://avatars.githubusercontent.com/u/144250917?v=4" width="120px;" alt=""/><br/><sub><b>Pujan Sarkar</b></sub></a>
         </td> 
-  
+
+   <td align="center"><a href="https://github.com/tristnaja"><img src="https://avatars.githubusercontent.com/u/121044617?v=4" width="120px;" alt=""/><br/><sub><b>Tristan Al Harrish Basori</b></sub></a>
+        </td> 
  </tr>
    </p>
  </table>
