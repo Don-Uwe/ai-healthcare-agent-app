@@ -7,7 +7,7 @@ import {
   FlatList,
   ScrollView,
 } from 'react-native';
-import {useCallback, useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import AddIcon from '../components/AddIcon';
@@ -480,6 +480,20 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     }
   };
 
+ const listData = useMemo(() => {
+  if (searchMode) return searchedArticles;
+
+  const filtered = filteredArticles.filter(
+    (article:ArticleData) =>
+      article.tags &&
+      article.tags.some(
+        tag => tag.name === selectedCategory?.name,
+      ),
+  );
+
+  return filtered.sort(() => Math.random() - 0.5);
+}, [searchMode, searchedArticles, filteredArticles, selectedCategory]);
+
   if (!articleData || articleData.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
@@ -608,6 +622,8 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     );
   }
 
+ 
+
   return (
     <SafeAreaView style={styles.container}>
       <HomeScreenHeader
@@ -673,15 +689,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           searchedArticles.length > 0) && (
           <FlatList
             data={
-              searchMode 
-                ? searchedArticles
-                : filteredArticles.filter(
-                    article =>
-                      article.tags &&
-                      article.tags.some(
-                        tag => tag.name === selectedCategory?.name,
-                      ),
-                  )
+              listData
             }
             renderItem={renderItem}
             keyExtractor={item => item._id.toString()}

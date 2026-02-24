@@ -178,14 +178,10 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
   // }, [podcasts]);
 
   const filteredPodcasts = selectedCategory
-  ? podcasts.filter(
-      (podcast: PodcastData) =>
-        podcast.tags?.some(
-          tag => tag.name === selectedCategory.name
-        )
-    )
-  : [];
-
+    ? podcasts.filter((podcast: PodcastData) =>
+        podcast.tags?.some(tag => tag.name === selectedCategory.name),
+      )
+    : [];
 
   const navigateToReport = (podcastId: string) => {
     navigation.navigate('ReportScreen', {
@@ -227,12 +223,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
   });
 
   const renderItem = ({item}: {item: PodcastData}) => (
-    <Pressable
-      key={item._id}
-      onPress={() => {
-        //playPodcast(item);
-        updateViewCountMutation.mutate(item._id);
-      }}>
+   
       <PodcastCard
         id={item._id}
         title={item.title}
@@ -262,7 +253,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
         }}
         playlistAct={openPlaylist}
       />
-    </Pressable>
+  
   );
 
   return (
@@ -271,10 +262,9 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
 
       <View style={styles.buttonContainer}>
         <ScrollView
-         horizontal
-    showsHorizontalScrollIndicator={false}
-    contentContainerStyle={{ flexDirection: "row" }}
-        >
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{flexDirection: 'row'}}>
           {selectedTags &&
             selectedTags.length > 0 &&
             selectedTags.map((item: Category, index: number) => (
@@ -320,9 +310,8 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
                       tag => tag.name === selectedCategory?.name,
                     ),
                 )
-              : []
+              : podcasts
           }
-          
           renderItem={renderItem}
           keyExtractor={item => item._id.toString()}
           contentContainerStyle={styles.flatListContentContainer}
@@ -376,7 +365,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     marginVertical: hp(10),
-    paddingHorizontal: 10,
+    paddingHorizontal: 1,
     backgroundColor: ON_PRIMARY_COLOR,
   },
 

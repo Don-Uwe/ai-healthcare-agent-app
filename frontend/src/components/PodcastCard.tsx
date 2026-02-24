@@ -103,7 +103,7 @@ const PodcastCard = ({
         {/* Left section: Image + Text */}
         <XStack flex={1} gap="$3"  height="100%" alignItems="flex-start">
           <Image source={{uri}} width={100} height="100%" borderRadius={20} 
-           resizeMode='cover'
+           
           />
 
           <YStack flex={1} gap="$1" overflow="hidden">
@@ -137,11 +137,7 @@ const PodcastCard = ({
         </XStack>
 
         {/* Right section: Play button + duration */}
-        <YStack alignItems="center" justifyContent="center" minWidth={50}>
-          <TouchableOpacity onPress={handleClick}>
-            <Feather name="chevrons-right" size={24} color="black" />
-          </TouchableOpacity>
-        </YStack>
+        
       </XStack>
 
       {/* Dots icon (top-right corner) */}

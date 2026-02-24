@@ -8,7 +8,7 @@ import { useDispatch } from 'react-redux';
 const useUploadAudio = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
-  const dispatch = useDispatch();
+ // const dispatch = useDispatch();
 
   const uploadAudio = async (uri: string) => {
     let type = '';

@@ -330,7 +330,7 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
               width={90}
               height={90}
               borderRadius={45}
-              background="#4ACDFF"
+              backgroundColor="#4ACDFF"
               onPress={() =>
                 player.currentStatus.playing ? handlePause() : handlePlay()
               }
