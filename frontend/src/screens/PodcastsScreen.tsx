@@ -1,10 +1,8 @@
-import {useCallback, useEffect, useState} from 'react';
+import {useCallback, useState} from 'react';
 import {
   StyleSheet,
-  Pressable,
   TouchableOpacity,
   NativeModules,
-  ScrollView,
   Alert,
   Text,
   FlatList,
@@ -32,7 +30,7 @@ import {
   setTags,
 } from '../store/dataSlice';
 import CreatePlaylist from '../components/CreatePlaylist';
-import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
+import {ON_PRIMARY_COLOR} from '../helper/Theme';
 
 import CreateIcon from '../components/CreateIcon';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -81,16 +79,16 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
     dispatch(setTags({tags: categoryData}));
   }, [dispatch, isConnected, user_token]);
 
-  useEffect(() => {
-    if (
-      selectedTags === undefined ||
-      (selectedTags && selectedTags.length === 0)
-    ) {
-      getAllCategories();
-    }
+  // useEffect(() => {
+  //   if (
+  //     selectedTags === undefined ||
+  //     (selectedTags && selectedTags.length === 0)
+  //   ) {
+  //    // getAllCategories();
+  //   }
 
-    return () => {};
-  }, [getAllCategories, selectedTags]);
+  //   return () => {};
+  // }, [getAllCategories, selectedTags]);
 
   const openPlaylist = (id: string) => {
     // setPlaylistIds([id]);
@@ -177,11 +175,11 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
   //   };
   // }, [podcasts]);
 
-  const filteredPodcasts = selectedCategory
-    ? podcasts.filter((podcast: PodcastData) =>
-        podcast.tags?.some(tag => tag.name === selectedCategory.name),
-      )
-    : [];
+  // const filteredPodcasts = selectedCategory
+  //   ? podcasts.filter((podcast: PodcastData) =>
+  //       podcast.tags?.some(tag => tag.name === selectedCategory.name),
+  //     )
+  //   : [];
 
   const navigateToReport = (podcastId: string) => {
     navigation.navigate('ReportScreen', {
@@ -260,7 +258,9 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
     <SafeAreaView style={styles.container}>
       <StatusBar style="light" backgroundColor={'#000A60'} />
 
-      <View style={styles.buttonContainer}>
+      {
+        /**
+         * <View style={styles.buttonContainer}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -298,20 +298,12 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
             ))}
         </ScrollView>
       </View>
+         */
+      }
 
       <YStack flex={1} padding="$2">
         <FlatList
-          data={
-            filteredPodcasts
-              ? filteredPodcasts.filter(
-                  (podcast: PodcastData) =>
-                    podcast.tags &&
-                    podcast.tags.some(
-                      tag => tag.name === selectedCategory?.name,
-                    ),
-                )
-              : podcasts
-          }
+          data={podcasts}
           renderItem={renderItem}
           keyExtractor={item => item._id.toString()}
           contentContainerStyle={styles.flatListContentContainer}
@@ -365,7 +357,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     marginVertical: hp(10),
-    paddingHorizontal: 1,
+   // paddingHorizontal: 1,
     backgroundColor: ON_PRIMARY_COLOR,
   },
 
