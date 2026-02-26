@@ -1,7 +1,7 @@
 import React, {useRef} from 'react';
 import {TouchableOpacity, Alert} from 'react-native';
 import {YStack, XStack, Image, Text, styled} from 'tamagui';
-import {Feather, Entypo} from '@expo/vector-icons';
+import {Entypo} from '@expo/vector-icons';
 import {formatCount} from '../helper/Utils';
 import {Category} from '../type';
 import {BottomSheetModal} from '@gorhom/bottom-sheet';
