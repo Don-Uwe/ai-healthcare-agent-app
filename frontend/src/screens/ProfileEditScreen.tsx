@@ -36,7 +36,7 @@ import {
   ImagePickerResponse,
 } from 'react-native-image-picker';
 import ImageResizer from '@bam.tech/react-native-image-resizer';
-import useUploadImage from '../../hooks/useUploadImage';
+import useUploadImage from '../hooks/useUploadImage';
 import {showAlert} from '../store/alertSlice';
 import Snackbar from 'react-native-snackbar';
 // eslint-disable-next-line @typescript-eslint/no-require-imports

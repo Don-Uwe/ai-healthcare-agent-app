@@ -18,7 +18,7 @@ import {REGISTRATION_API, VERIFICATION_MAIL_API} from '../../helper/APIUtils';
 import EmailVerifiedModal from '../../components/VerifiedModal';
 import Loader from '../../components/Loader';
 import Snackbar from 'react-native-snackbar';
-import useUploadImage from '../../../hooks/useUploadImage';
+import useUploadImage from '../../hooks/useUploadImage';
 import {SafeAreaView} from 'react-native-safe-area-context';
 let validator = require('email-validator');
 

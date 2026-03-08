@@ -32,7 +32,7 @@ import {
   UPLOAD_IMPROVEMENT_TO_POCKETBASE,
 } from '../../helper/APIUtils';
 import {useDispatch, useSelector} from 'react-redux';
-import useUploadImage from '../../../hooks/useUploadImage';
+import useUploadImage from '../../hooks/useUploadImage';
 import {setSuggestion} from '../../store/dataSlice';
 import Snackbar from 'react-native-snackbar';
 import AutoHeightWebView from '@brown-bear/react-native-autoheight-webview';
@@ -229,6 +229,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
           description: description,
           pb_recordId: recordId,
           allow_podcast: true,
+          language: "en-IN"
         },
         {
           headers: {

@@ -1,5 +1,5 @@
 import {FirebaseProvider} from '@/hooks/FirebaseContext';
-import {useCheckTokenStatus} from '@/hooks/useGetTokenStatus';
+import {useCheckTokenStatus} from '@/src/hooks/useGetTokenStatus';
 import {useNotificationListeners} from '@/hooks/useNotificationListener';
 import {useVersionCheck} from '@/hooks/useVersionCheck';
 import {SocketProvider} from '@/SocketContext';
@@ -23,6 +23,7 @@ import {setConnected} from '../store/NetworkSlice';
 import {firebaseInit} from '../helper/firebase';
 import {cleanUpDownloads, KEYS, retrieveItem} from '../helper/Utils';
 import { setUserToken } from '../store/UserSlice';
+import axios from 'axios';
 
 export default function AppContent() {
   const navigationRef = useRef(null);
@@ -32,6 +33,7 @@ export default function AppContent() {
   };
 
   const {data: tokenRes = null, isLoading} = useCheckTokenStatus();
+
   const {visible, storeUrl} = useVersionCheck();
   const dispatch = useDispatch();
 
@@ -43,8 +45,10 @@ export default function AppContent() {
   }, [tokenRes, isLoading]);
 
   const checkToken = async () =>{
-    const token = await retrieveItem(KEYS.USER_TOKEN);
-
+     const token = await retrieveItem(KEYS.USER_TOKEN);
+     //axios.defaults.headers.
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      axios.defaults.headers.common["Content-Type"] = "application/json";
       dispatch(setUserToken(token));
       initDeepLinking(navigationRef.current, tokenRes?.isValid || false);
     

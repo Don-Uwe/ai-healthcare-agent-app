@@ -8,9 +8,9 @@ import axios from 'axios';
 import Snackbar from 'react-native-snackbar';
 
 import {UPLOAD_PODCAST} from '../helper/APIUtils';
-import useUploadImage from '../../hooks/useUploadImage';
+import useUploadImage from '../hooks/useUploadImage';
 import ImageResizer from '@bam.tech/react-native-image-resizer';
-import useUploadAudio from '../../hooks/useUploadAudio';
+import useUploadAudio from '../hooks/useUploadAudio';
 import Slider from '@react-native-community/slider';
 
 import {useAudioPlayer} from 'expo-audio';

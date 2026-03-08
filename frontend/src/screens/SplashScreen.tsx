@@ -11,7 +11,7 @@ import {SplashScreenProp} from '../type';
 import {useDispatch} from 'react-redux';
 import {retrieveItem, KEYS, clearStorage} from '../helper/Utils';
 import {setUserId, setUserToken, setUserHandle} from '../store/UserSlice';
-import { useCheckTokenStatus } from '@/hooks/useGetTokenStatus';
+import { useCheckTokenStatus } from '@/src/hooks/useGetTokenStatus';
 
 export default function SplashScreen({navigation}: SplashScreenProp) {
   const opacity = useSharedValue(0);

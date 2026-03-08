@@ -27,7 +27,7 @@ import {
 import EmailVerifiedModal from '../../components/VerifiedModal';
 import ImageResizer from '@bam.tech/react-native-image-resizer';
 import Loader from '../../components/Loader';
-import useUploadImage from '../../../hooks/useUploadImage';
+import useUploadImage from '../../hooks/useUploadImage';
 import {
   ImageLibraryOptions,
   launchImageLibrary,
