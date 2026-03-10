@@ -9,7 +9,7 @@ const categoryFunc = async () => {
     `${PROD_URL + ARTICLE_TAGS_API}`,
   );
 
-  return categoryData as Category;
+  return categoryData as Category[];
   }catch(err){
     console.log("GET CATEGORY ERR", err);
     return null;
@@ -17,7 +17,7 @@ const categoryFunc = async () => {
 };
 
 export const useGetCategories = (isConnected: boolean): UseQueryResult<
-  Category | null,
+  Category[] | null,
   AxiosError
 > => {
   return useQuery({

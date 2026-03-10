@@ -86,7 +86,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
     });
   };
 
-  const checkUserHandleAvailability = async handle => {
+  const checkUserHandleAvailability = async (handle:string) => {
     try {
       const response = await axios.post(CHECK_USER_HANDLE, {
         userHandle: username,
