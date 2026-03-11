@@ -26,7 +26,6 @@ import {
   ARTICLE_TAGS_API,
   GET_PROFILE_API,
   PROD_URL,
-  REPOST_ARTICLE,
   REQUEST_EDIT,
 } from '../helper/APIUtils';
 import FilterModal from '../components/FilterModal';
@@ -49,6 +48,7 @@ import {useFocusEffect} from '@react-navigation/native';
 import InactiveUserModal from '../components/InactiveUserModal';
 import {StatusBar} from 'expo-status-bar';
 import {wp} from '../helper/Metric';
+import {useRepostArticle} from '../hooks/useArticleRepost';
 
 // Here The purpose of using Redux is to maintain filter state throughout the app session. globally
 const HomeScreen = ({navigation}: HomeScreenProps) => {
@@ -61,6 +61,8 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const [repostItem, setRepostItem] = useState<ArticleData | null>(null);
   const [selectCategoryList, setSelectCategoryList] = useState<Category[]>([]);
   const [filterLoading, setFilterLoading] = useState<boolean>(false);
+
+  const {mutate: repost, isPending: repostPending} = useRepostArticle();
   const {
     filteredArticles,
     searchedArticles,
@@ -193,79 +195,109 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   };
 
   const handleRepostAction = (item: ArticleData) => {
-    if (isConnected) {
-      setRepostItem(item);
-      repostMutation.mutate({
-        articleId: Number(item._id),
-      });
-    } else {
+    if (!isConnected) {
       Snackbar.show({
         text: 'Please check your network connection',
         duration: Snackbar.LENGTH_SHORT,
       });
+      return;
     }
-  };
 
-  const repostMutation = useMutation({
-    mutationKey: ['repost-user-article'],
-    mutationFn: async ({
-      articleId,
-    }: // authorId,
-    {
-      articleId: number;
-      //  authorId: string;
-    }) => {
-      if (user_token === '') {
-        Alert.alert('No token found');
-        return;
-      }
-      const res = await axios.post(
-        REPOST_ARTICLE,
-        {
-          articleId: articleId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
+    repost(Number(item._id), {
+      onSuccess: () => {
+        refetch();
 
-      return res.data as any;
-    },
-    onSuccess: () => {
-      refetch();
-      Snackbar.show({
-        text: 'Article reposted in your feed',
-        duration: Snackbar.LENGTH_SHORT,
-      });
+        Snackbar.show({
+          text: 'Article reposted in your feed',
+          duration: Snackbar.LENGTH_SHORT,
+        });
 
-      if (repostItem) {
         const body = {
           type: 'repost',
           userId: user_id,
-          authorId: repostItem.authorId,
-          postId: repostItem._id,
-          articleRecordId: repostItem.pb_recordId,
+          authorId: item.authorId,
+          postId: item._id,
+          articleRecordId: item.pb_recordId,
           message: {
             title: `${user_handle} reposted`,
-            message: `${repostItem.title}`,
+            message: `${item.title}`,
           },
           authorMessage: {
             title: `${user_handle} reposted your article`,
-            message: `${repostItem.title}`,
+            message: `${item.title}`,
           },
         };
 
         socket.emit('notification', body);
-      }
-    },
+      },
 
-    onError: error => {
-      console.log('Repost Error', error);
-      Alert.alert('Internal server error, try again!');
-    },
-  });
+      onError: error => {
+        console.log('Repost Error', error);
+        Alert.alert('Internal server error, try again!');
+      },
+    });
+  };
+
+  // const repostMutation = useMutation({
+  //   mutationKey: ['repost-user-article'],
+  //   mutationFn: async ({
+  //     articleId,
+  //   }: // authorId,
+  //   {
+  //     articleId: number;
+  //     //  authorId: string;
+  //   }) => {
+  //     if (user_token === '') {
+  //       Alert.alert('No token found');
+  //       return;
+  //     }
+  //     const res = await axios.post(
+  //       REPOST_ARTICLE,
+  //       {
+  //         articleId: articleId,
+  //       },
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${user_token}`,
+  //         },
+  //       },
+  //     );
+
+  //     return res.data as any;
+  //   },
+  //   onSuccess: () => {
+  //     refetch();
+  //     Snackbar.show({
+  //       text: 'Article reposted in your feed',
+  //       duration: Snackbar.LENGTH_SHORT,
+  //     });
+
+  //     if (repostItem) {
+  //       const body = {
+  //         type: 'repost',
+  //         userId: user_id,
+  //         authorId: repostItem.authorId,
+  //         postId: repostItem._id,
+  //         articleRecordId: repostItem.pb_recordId,
+  //         message: {
+  //           title: `${user_handle} reposted`,
+  //           message: `${repostItem.title}`,
+  //         },
+  //         authorMessage: {
+  //           title: `${user_handle} reposted your article`,
+  //           message: `${repostItem.title}`,
+  //         },
+  //       };
+
+  //       socket.emit('notification', body);
+  //     }
+  //   },
+
+  //   onError: error => {
+  //     console.log('Repost Error', error);
+  //     Alert.alert('Internal server error, try again!');
+  //   },
+  // });
 
   const submitEditRequestMutation = useMutation({
     mutationKey: ['submit-edit-request'],
@@ -351,22 +383,21 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     // Update Redux State Variables
     console.log('enter');
     if (selectCategoryList.length > 0) {
-    //   console.log("enter")
+      //   console.log("enter")
       dispatch(setSelectedTags({selectedTags: selectCategoryList}));
     } else {
-       //console.log("enter ele", articleCategories);
+      //console.log("enter ele", articleCategories);
 
       dispatch(
         setSelectedTags({
           selectedTags: articleCategories,
         }),
       );
-
     }
 
-   if(sortingType && sortingType !== ''){
-      console.log("Sort type", sortType);
-     dispatch(setSortType({sortType: sortingType}));
+    if (sortingType && sortingType !== '') {
+      console.log('Sort type', sortType);
+      dispatch(setSortType({sortType: sortingType}));
     }
 
     if (sortingType && sortingType !== '') {
@@ -480,19 +511,17 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     }
   };
 
- const listData = useMemo(() => {
-  if (searchMode) return searchedArticles;
+  const listData = useMemo(() => {
+    if (searchMode) return searchedArticles;
 
-  const filtered = filteredArticles.filter(
-    (article:ArticleData) =>
-      article.tags &&
-      article.tags.some(
-        tag => tag.name === selectedCategory?.name,
-      ),
-  );
+    const filtered = filteredArticles.filter(
+      (article: ArticleData) =>
+        article.tags &&
+        article.tags.some(tag => tag.name === selectedCategory?.name),
+    );
 
-  return filtered.sort(() => Math.random() - 0.5);
-}, [searchMode, searchedArticles, filteredArticles, selectedCategory]);
+    return filtered.sort(() => Math.random() - 0.5);
+  }, [searchMode, searchedArticles, filteredArticles, selectedCategory]);
 
   if (!articleData || articleData.length === 0) {
     return (
@@ -604,7 +633,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
               ))}
           </ScrollView>
         </View>
-        
+
         <InactiveUserModal
           open={true}
           onRequestAdmin={() => {
@@ -621,8 +650,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       </SafeAreaView>
     );
   }
-
- 
 
   return (
     <SafeAreaView style={styles.container}>
@@ -688,9 +715,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         {((filteredArticles && filteredArticles.length > 0) ||
           searchedArticles.length > 0) && (
           <FlatList
-            data={
-              listData
-            }
+            data={listData}
             renderItem={renderItem}
             keyExtractor={item => item._id.toString()}
             contentContainerStyle={styles.flatListContentContainer}

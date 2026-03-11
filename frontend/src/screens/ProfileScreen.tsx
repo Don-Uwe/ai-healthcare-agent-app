@@ -10,7 +10,6 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import ProfileHeader from '../components/ProfileHeader';
 import {
   GET_PROFILE_API,
-  REPOST_ARTICLE,
   UPDATE_VIEW_COUNT,
 } from '../helper/APIUtils';
 import {ArticleData, ProfileScreenProps, User} from '../type';
@@ -21,6 +20,7 @@ import {useFocusEffect} from '@react-navigation/native';
 import Snackbar from 'react-native-snackbar';
 import {useSocket} from '../../SocketContext';
 import {setUserHandle} from '../store/UserSlice';
+import { useRepostArticle } from '../hooks/useArticleRepost';
 
 const ProfileScreen = ({navigation}: ProfileScreenProps) => {
   const {user_handle, user_id, user_token} = useSelector(
@@ -35,6 +35,8 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
   const [repostItem, setRepostItem] = useState<ArticleData | null>(null);
   const socket = useSocket();
   const dispatch = useDispatch();
+
+  const {mutate: repost, isPending: repostPending} = useRepostArticle();
 
   const {
     data: user,
@@ -138,83 +140,111 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
   );
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const handleRepostAction = (item: ArticleData) => {
-    if (isConnected) {
-      // updateLikeMutation.mutate();
-      setRepostItem(item);
-
-      repostMutation.mutate({
-        articleId: Number(item._id),
-      });
-    } else {
+   const handleRepostAction = (item: ArticleData) => {
+    if (!isConnected) {
       Snackbar.show({
         text: 'Please check your network connection',
         duration: Snackbar.LENGTH_SHORT,
       });
+      return;
     }
-  };
 
-  const repostMutation = useMutation({
-    mutationKey: ['repost-user-article'],
-    mutationFn: async ({
-      articleId,
-    }: // authorId,
-    {
-      articleId: number;
-      //  authorId: string;
-    }) => {
-      if (user_token === '') {
-        Alert.alert('No token found');
-        return;
-      }
-      const res = await axios.post(
-        REPOST_ARTICLE,
-        {
-          articleId: articleId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
+    repost(Number(item._id), {
+      onSuccess: () => {
+        refetch();
 
-      return res.data as any;
-    },
-    onSuccess: () => {
-      refetch();
-      Snackbar.show({
-        text: 'Article reposted in your feed',
-        duration: Snackbar.LENGTH_SHORT,
-      });
+        Snackbar.show({
+          text: 'Article reposted in your feed',
+          duration: Snackbar.LENGTH_SHORT,
+        });
 
-      if (repostItem) {
-        //emitNotification(repostItem);
-        socket.emit('notification', {
+        const body = {
           type: 'repost',
           userId: user_id,
-          authorId: repostItem.authorId,
-          postId: repostItem._id,
-          articleRecordId: repostItem.pb_recordId,
+          authorId: item.authorId,
+          postId: item._id,
+          articleRecordId: item.pb_recordId,
           message: {
             title: `${user_handle} reposted`,
-            message: `${repostItem.title}`,
+            message: `${item.title}`,
           },
           authorMessage: {
             title: `${user_handle} reposted your article`,
-            message: `${repostItem.title}`,
+            message: `${item.title}`,
           },
-        });
-      }
+        };
 
-      // Emit notification
-    },
+        socket.emit('notification', body);
+      },
 
-    onError: error => {
-      console.log('Repost Error', error);
-      Alert.alert('Internal server error, try again!');
-    },
-  });
+      onError: error => {
+        console.log('Repost Error', error);
+        Alert.alert('Internal server error, try again!');
+      },
+    });
+  };
+
+  // const repostMutation = useMutation({
+  //   mutationKey: ['repost-user-article'],
+  //   mutationFn: async ({
+  //     articleId,
+  //   }: // authorId,
+  //   {
+  //     articleId: number;
+  //     //  authorId: string;
+  //   }) => {
+  //     if (user_token === '') {
+  //       Alert.alert('No token found');
+  //       return;
+  //     }
+  //     const res = await axios.post(
+  //       REPOST_ARTICLE,
+  //       {
+  //         articleId: articleId,
+  //       },
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${user_token}`,
+  //         },
+  //       },
+  //     );
+
+  //     return res.data as any;
+  //   },
+  //   onSuccess: () => {
+  //     refetch();
+  //     Snackbar.show({
+  //       text: 'Article reposted in your feed',
+  //       duration: Snackbar.LENGTH_SHORT,
+  //     });
+
+  //     if (repostItem) {
+  //       //emitNotification(repostItem);
+  //       socket.emit('notification', {
+  //         type: 'repost',
+  //         userId: user_id,
+  //         authorId: repostItem.authorId,
+  //         postId: repostItem._id,
+  //         articleRecordId: repostItem.pb_recordId,
+  //         message: {
+  //           title: `${user_handle} reposted`,
+  //           message: `${repostItem.title}`,
+  //         },
+  //         authorMessage: {
+  //           title: `${user_handle} reposted your article`,
+  //           message: `${repostItem.title}`,
+  //         },
+  //       });
+  //     }
+
+  //     // Emit notification
+  //   },
+
+  //   onError: error => {
+  //     console.log('Repost Error', error);
+  //     Alert.alert('Internal server error, try again!');
+  //   },
+  // });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleReportAction = (item: ArticleData) => {
     navigation.navigate('ReportScreen', {

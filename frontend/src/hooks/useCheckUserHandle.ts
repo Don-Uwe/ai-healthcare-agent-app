@@ -12,7 +12,7 @@ export const useCheckUserHandleAvailability = (handle: string) => {
 
       return response.data;
     },
-    enabled: !!handle,
+    enabled: handle.length > 2, 
     retry: false,
   });
 };

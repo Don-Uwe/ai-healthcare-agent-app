@@ -10,7 +10,6 @@ import ProfileHeader from '../components/ProfileHeader';
 import {
   FOLLOW_USER,
   PROD_URL,
-  REPOST_ARTICLE,
   REQUEST_EDIT,
   UPDATE_VIEW_COUNT,
 } from '../helper/APIUtils';
@@ -22,6 +21,7 @@ import Loader from '../components/Loader';
 import {useFocusEffect} from '@react-navigation/native';
 import Snackbar from 'react-native-snackbar';
 import {useSocket} from '../../SocketContext';
+import {useRepostArticle} from '../hooks/useArticleRepost';
 
 const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   const {authorId, author_handle} = route.params;
@@ -38,6 +38,8 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
 
   //const [authorId, setAuthorId] = useState<string>('');
   const socket = useSocket();
+  const {mutate: repost, isPending: repostPending} = useRepostArticle();
+
   const {
     data: user,
     refetch,
@@ -69,19 +71,47 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleRepostAction = (item: ArticleData) => {
-    if (isConnected) {
-      // updateLikeMutation.mutate();
-      setRepostItem(item);
-
-      repostMutation.mutate({
-        articleId: Number(item._id),
-      });
-    } else {
+    if (!isConnected) {
       Snackbar.show({
         text: 'Please check your network connection',
         duration: Snackbar.LENGTH_SHORT,
       });
+      return;
     }
+
+    repost(Number(item._id), {
+      onSuccess: () => {
+        refetch();
+
+        Snackbar.show({
+          text: 'Article reposted in your feed',
+          duration: Snackbar.LENGTH_SHORT,
+        });
+
+        const body = {
+          type: 'repost',
+          userId: user_id,
+          authorId: item.authorId,
+          postId: item._id,
+          articleRecordId: item.pb_recordId,
+          message: {
+            title: `${user_handle} reposted`,
+            message: `${item.title}`,
+          },
+          authorMessage: {
+            title: `${user_handle} reposted your article`,
+            message: `${item.title}`,
+          },
+        };
+
+        socket.emit('notification', body);
+      },
+
+      onError: error => {
+        console.log('Repost Error', error);
+        Alert.alert('Internal server error, try again!');
+      },
+    });
   };
 
   const onArticleViewed = ({
@@ -107,66 +137,66 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
     }
   };
 
-  const repostMutation = useMutation({
-    mutationKey: ['repost-user-article'],
-    mutationFn: async ({
-      articleId,
-    }: // authorId,
-    {
-      articleId: number;
-      //  authorId: string;
-    }) => {
-      if (user_token === '') {
-        Alert.alert('No token found');
-        return;
-      }
-      const res = await axios.post(
-        REPOST_ARTICLE,
-        {
-          articleId: articleId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
+  // const repostMutation = useMutation({
+  //   mutationKey: ['repost-user-article'],
+  //   mutationFn: async ({
+  //     articleId,
+  //   }: // authorId,
+  //   {
+  //     articleId: number;
+  //     //  authorId: string;
+  //   }) => {
+  //     if (user_token === '') {
+  //       Alert.alert('No token found');
+  //       return;
+  //     }
+  //     const res = await axios.post(
+  //       REPOST_ARTICLE,
+  //       {
+  //         articleId: articleId,
+  //       },
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${user_token}`,
+  //         },
+  //       },
+  //     );
 
-      return res.data as any;
-    },
-    onSuccess: () => {
-      //refetch();
-      Snackbar.show({
-        text: 'Article reposted in your feed',
-        duration: Snackbar.LENGTH_SHORT,
-      });
+  //     return res.data as any;
+  //   },
+  //   onSuccess: () => {
+  //     //refetch();
+  //     Snackbar.show({
+  //       text: 'Article reposted in your feed',
+  //       duration: Snackbar.LENGTH_SHORT,
+  //     });
 
-      // Emit notification
-      if (repostItem) {
-        //emitNotification(repostItem);
-        socket.emit('notification', {
-          type: 'repost',
-          userId: user_id,
-          authorId: repostItem.authorId,
-          postId: repostItem._id,
-          articleRecordId: repostItem.pb_recordId,
-          message: {
-            title: `${user_handle} reposted`,
-            message: `${repostItem.title}`,
-          },
-          authorMessage: {
-            title: `${user_handle} reposted your article`,
-            message: `${repostItem.title}`,
-          },
-        });
-      }
-    },
+  //     // Emit notification
+  //     if (repostItem) {
+  //       //emitNotification(repostItem);
+  //       socket.emit('notification', {
+  //         type: 'repost',
+  //         userId: user_id,
+  //         authorId: repostItem.authorId,
+  //         postId: repostItem._id,
+  //         articleRecordId: repostItem.pb_recordId,
+  //         message: {
+  //           title: `${user_handle} reposted`,
+  //           message: `${repostItem.title}`,
+  //         },
+  //         authorMessage: {
+  //           title: `${user_handle} reposted your article`,
+  //           message: `${repostItem.title}`,
+  //         },
+  //       });
+  //     }
+  //   },
 
-    onError: error => {
-      console.log('Repost Error', error);
-      Alert.alert('Internal server error, try again!');
-    },
-  });
+  //   onError: error => {
+  //     console.log('Repost Error', error);
+  //     Alert.alert('Internal server error, try again!');
+  //   },
+  // });
 
   const updateViewCountMutation = useMutation({
     mutationKey: ['update-view-count-user-profile'],
@@ -553,7 +583,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   scrollViewContentContainer: {
-   // paddingHorizontal: 10,
+    // paddingHorizontal: 10,
     marginTop: 16,
   },
   flatListContentContainer: {

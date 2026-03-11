@@ -20,7 +20,6 @@ import {useMutation} from '@tanstack/react-query';
 import axios, {AxiosError} from 'axios';
 import Snackbar from 'react-native-snackbar';
 import {
-  CHECK_USER_HANDLE,
   REGISTRATION_API,
   VERIFICATION_MAIL_API,
 } from '../../helper/APIUtils';
@@ -33,6 +32,7 @@ import {
   launchImageLibrary,
   ImagePickerResponse,
 } from 'react-native-image-picker';
+import { useCheckUserHandleAvailability } from '@/src/hooks/useCheckUserHandle';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 let validator = require('email-validator');
 
@@ -46,11 +46,13 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
   const [role, setRole] = useState('');
   const [verifyBtntext, setVerifyBtntxt] = useState('Request Verification');
   const [verifiedModalVisible, setVerifiedModalVisible] = useState(false);
-  const [isHandleAvailable, setIsHandleAvailable] = useState(false);
+ // const [isHandleAvailable, setIsHandleAvailable] = useState(false);
   const [token, setToken] = useState('');
   const [isFocus, setIsFocus] = useState(false);
   const [isSecureEntry, setIsSecureEntry] = useState(true);
-  const [error, setError] = useState('');
+  //const [error, setError] = useState('');
+
+  const { data: checkhandle, isLoading } = useCheckUserHandleAvailability(username);
 
   const selectImage = async () => {
     const options: ImageLibraryOptions = {
@@ -86,34 +88,34 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
     });
   };
 
-  const checkUserHandleAvailability = async (handle:string) => {
-    try {
-      const response = await axios.post(CHECK_USER_HANDLE, {
-        userHandle: username,
-      });
-      if (response.data.status === true) {
-        setIsHandleAvailable(true);
-        console.log('User Handle ', isHandleAvailable);
-      } else {
-        setIsHandleAvailable(false);
-        console.log('User Handle ', isHandleAvailable);
-        setError(response.data.error); // Show the error message
-      }
-    } catch (err) {
-      console.error('Error checking user handle:', err);
-      setError('An error occurred while checking the user handle.');
-    }
-  };
+  // const checkUserHandleAvailability = async (handle:string) => {
+  //   try {
+  //     const response = await axios.post(CHECK_USER_HANDLE, {
+  //       userHandle: username,
+  //     });
+  //     if (response.data.status === true) {
+  //       setIsHandleAvailable(true);
+  //       console.log('User Handle ', isHandleAvailable);
+  //     } else {
+  //       setIsHandleAvailable(false);
+  //       console.log('User Handle ', isHandleAvailable);
+  //       setError(response.data.error); // Show the error message
+  //     }
+  //   } catch (err) {
+  //     console.error('Error checking user handle:', err);
+  //     setError('An error occurred while checking the user handle.');
+  //   }
+  // };
 
   const handleUserHandleChange = text => {
     setUsername(text);
-    if (text.length > 2) {
-      // Check if the user handle is available every time the user types
-      checkUserHandleAvailability(text);
-    } else {
-      setIsHandleAvailable(true);
-      setError('');
-    }
+    // if (text.length > 2) {
+    //   // Check if the user handle is available every time the user types
+    //   checkUserHandleAvailability(text);
+    // } else {
+    //   setIsHandleAvailable(true);
+    //   setError('');
+    // }
   };
 
   const userRegisterMutation = useMutation({
@@ -409,12 +411,12 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
       </XStack>
 
       {/* Handle Error */}
-      {isHandleAvailable && (
+      {checkhandle?.status === false && (
         <Text color="red" fontSize={14}>
           User handle is already in use.
         </Text>
       )}
-
+      {isLoading && <Text color="green" fontSize={14}>Checking...</Text>}
       {/* User Handle */}
       <XStack position="relative">
         <Input
