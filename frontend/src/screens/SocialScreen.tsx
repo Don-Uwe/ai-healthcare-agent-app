@@ -55,7 +55,7 @@ export default function Socialcreen({navigation, route}: SocialScreenProps) {
           Authorization: `Bearer ${user_token}`,
         },
       });
-      console.log('Response', response.data.followers);
+    //  console.log('Response', response.data.followers);
       return response.data.followers as User[];
     },
   });
