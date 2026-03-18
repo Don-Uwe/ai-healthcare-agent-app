@@ -1,25 +1,20 @@
 import React, {useState} from 'react';
 import {
-  StyleSheet,
-  View,
-  TextInput,
-  TouchableOpacity,
   Alert,
 } from 'react-native';
 
 import {ScrollView, YStack, XStack, Text, Input, Button, Image} from 'tamagui';
 import Icon from '@expo/vector-icons/MaterialIcons';
-import {hp, wp} from '../../helper/Metric';
-import {PRIMARY_COLOR} from '../../helper/Theme';
 import {Contactdetail, SignUpScreenSecondProp} from '../../type';
 import {useMutation} from '@tanstack/react-query';
 import axios, {AxiosError} from 'axios';
-import {REGISTRATION_API, VERIFICATION_MAIL_API} from '../../helper/APIUtils';
+import {REGISTRATION_API} from '../../helper/APIUtils';
 import EmailVerifiedModal from '../../components/VerifiedModal';
 import Loader from '../../components/Loader';
 import Snackbar from 'react-native-snackbar';
 import useUploadImage from '../../hooks/useUploadImage';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {useVerificationMailMutation} from '@/src/hooks/useMailVerification';
 let validator = require('email-validator');
 
 const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
@@ -33,6 +28,8 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
   const [token, setToken] = useState('');
   const [verifyBtntext, setVerifyBtntxt] = useState('Request Verification');
   const [verifiedModalVisible, setVerifiedModalVisible] = useState(false);
+  const {mutate: verifyEmailMutation, isPending: verifyMutationPending} =
+    useVerificationMailMutation();
 
   const doctorRegisterMutation = useMutation({
     mutationKey: ['doctor-user-registration'],
@@ -101,63 +98,61 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
     },
   });
 
-  const verifyMail = useMutation({
-    mutationKey: ['send-verification-mail'],
-    mutationFn: async () => {
-      const res = await axios.post(VERIFICATION_MAIL_API, {
-        email: user.email,
-        token: token,
-      });
-
-      return res.data.message as string;
-    },
-
-    onSuccess: data => {
-      setVerifyBtntxt(data);
-      Alert.alert('Verification Email Sent');
-      navigation.navigate('LoginScreen');
-    },
-    onError: (error: AxiosError) => {
-      if (error.response) {
-        const statusCode = error.response.status;
-        switch (statusCode) {
-          case 400:
-            if (error.message === 'Email and token are required') {
-              Alert.alert('Error', 'Email and token are required');
-            } else if (error.message === 'User not found or already verified') {
-              Alert.alert('Error', 'User not found or already verified');
-            } else {
-              Alert.alert('Error', 'Please provide all required fields');
-            }
-            break;
-          case 429:
-            Alert.alert(
-              'Error',
-              'Verification email already sent. Please try again after 1 hour.',
-            );
-            break;
-          case 500:
-            Alert.alert(
-              'Error',
-              'Internal server error. Please try again later.',
-            );
-            break;
-          default:
-            Alert.alert(
-              'Error',
-              'Something went wrong. Please try again later.',
-            );
-        }
-      } else {
-        // console.log('Email Verification error', error);
-        Alert.alert('Error', 'Please try again');
-      }
-    },
-  });
 
   const handleVerifyModalCallback = () => {
     if (token.length > 0) {
-      verifyMail.mutate();
+      verifyEmailMutation(
+        {
+          email: user.email,
+          token,
+        },
+        {
+          onSuccess: data => {
+            setVerifyBtntxt(data);
+            Snackbar.show({
+              text: 'Verification email sent!',
+              duration: Snackbar.LENGTH_LONG,
+            });
+            navigation.navigate('LoginScreen');
+          },
+
+          onError: (error: AxiosError) => {
+            if (error.response) {
+              const statusCode = error.response.status;
+              switch (statusCode) {
+                case 400:
+                  Snackbar.show({
+                    text: error.message,
+                    duration: Snackbar.LENGTH_SHORT,
+                  });
+                  break;
+                case 429:
+                  Snackbar.show({
+                    text: 'Verification email already sent. Please try again after 1 hour.',
+                    duration: Snackbar.LENGTH_SHORT,
+                  });
+                  break;
+                case 500:
+                  Snackbar.show({
+                    text: 'Internal server error. Please try again later.',
+                    duration: Snackbar.LENGTH_SHORT,
+                  });
+                  break;
+                default:
+                  Snackbar.show({
+                    text: 'Something went wrong. Please try again later.',
+                    duration: Snackbar.LENGTH_SHORT,
+                  });
+              }
+            } else {
+              Snackbar.show({
+                text: 'An error occured, try again!',
+                duration: Snackbar.LENGTH_SHORT,
+              });
+            }
+          },
+        },
+      );
     } else {
       Alert.alert(
         'Failed to authenticate, Token not found',
@@ -246,7 +241,7 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
     return phoneNumberRegex.test(phone);
   };
 
-  if (doctorRegisterMutation.isPending || verifyMail.isPending || loading) {
+  if (doctorRegisterMutation.isPending || verifyMutationPending || loading) {
     return <Loader />;
   }
   return (

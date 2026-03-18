@@ -14,17 +14,12 @@ import AddIcon from '../components/AddIcon';
 import ArticleCard from '../components/ArticleCard';
 
 import HomeScreenHeader from '../components/HomeScreenHeader';
-import {
-  ArticleData,
-  Category,
-  CategoryType,
-  HomeScreenProps,
-} from '../type';
+import {ArticleData, Category, CategoryType, HomeScreenProps} from '../type';
 import axios from 'axios';
-import {PROD_URL, REQUEST_EDIT} from '../helper/APIUtils';
+import {PROD_URL} from '../helper/APIUtils';
 import FilterModal from '../components/FilterModal';
 import {BottomSheetModal} from '@gorhom/bottom-sheet';
-import {useMutation, useQuery} from '@tanstack/react-query';
+import {useQuery} from '@tanstack/react-query';
 import {useSelector, useDispatch} from 'react-redux';
 import Loader from '../components/Loader';
 
@@ -45,6 +40,7 @@ import {wp} from '../helper/Metric';
 import {useRepostArticle} from '../hooks/useArticleRepost';
 import {useGetCategories} from '../hooks/useGetArticleTags';
 import {useGetProfile} from '../hooks/useGetProfile';
+import {useRequestArticleEdit} from '../hooks/useRequestArticleEdit';
 
 // Here The purpose of using Redux is to maintain filter state throughout the app session. globally
 const HomeScreen = ({navigation}: HomeScreenProps) => {
@@ -59,6 +55,8 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const [filterLoading, setFilterLoading] = useState<boolean>(false);
 
   const {mutate: repost, isPending: repostPending} = useRepostArticle();
+  const {mutate: requestEdit, isPending: requestEditPending} =
+    useRequestArticleEdit();
 
   const {
     filteredArticles,
@@ -205,42 +203,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     });
   };
 
-  const submitEditRequestMutation = useMutation({
-    mutationKey: ['submit-edit-request'],
-    mutationFn: async ({
-      articleId,
-      reason,
-      articleRecordId,
-    }: {
-      articleId: string;
-      reason: string;
-      articleRecordId: string;
-    }) => {
-      const res = await axios.post(
-        REQUEST_EDIT,
-        {
-          article_id: articleId,
-          edit_reason: reason,
-          article_recordId: articleRecordId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-
-      return res.data.message as string;
-    },
-    onSuccess: data => {
-      Alert.alert(data);
-    },
-    onError: err => {
-      console.log(err);
-      Alert.alert('Try again');
-    },
-  });
-
   const handleReportAction = (item: ArticleData) => {
     navigation.navigate('ReportScreen', {
       articleId: item._id,
@@ -261,11 +223,28 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         handleReportAction={handleReportAction}
         handleEditRequestAction={(item, index, reason) => {
           // submitRequest
-          submitEditRequestMutation.mutate({
-            articleId: item._id,
-            reason: reason,
-            articleRecordId: item.pb_recordId,
-          });
+          requestEdit(
+            {
+              articleId: item._id,
+              reason: reason,
+              articleRecordId: item.pb_recordId,
+            },
+            {
+              onSuccess: data => {
+                Snackbar.show({
+                  text: data,
+                  duration: Snackbar.LENGTH_SHORT
+                });
+              },
+              onError: err => {
+                console.log(err);
+                Snackbar.show({
+                  text: "Try again!",
+                  duration: Snackbar.LENGTH_SHORT
+                });
+              },
+            },
+          );
         }}
         source="home"
       />
@@ -482,7 +461,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     );
   }
 
-  if (isLoading || submitEditRequestMutation.isPending) {
+  if (isLoading || requestEditPending) {
     return <Loader />;
   }
 

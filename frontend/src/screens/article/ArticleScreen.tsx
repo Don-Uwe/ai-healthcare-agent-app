@@ -23,7 +23,6 @@ import {
   FOLLOW_USER,
   GET_IMAGE,
   GET_STORAGE_DATA,
-  LIKE_ARTICLE,
   SOCKET_PROD,
   UPDATE_READ_EVENT,
   UPDATE_VIEW_COUNT,
@@ -44,6 +43,7 @@ import LottieView from 'lottie-react-native';
 import {useGetArticleDetails} from '@/src/hooks/useGetArticleDetail';
 import {useGetArticleContent} from '@/src/hooks/useGetArticleContent';
 import {useGetProfile} from '@/src/hooks/useGetProfile';
+import {useLikeArticle} from '@/src/hooks/useLikeArticle';
 
 const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const insets = useSafeAreaInsets();
@@ -63,6 +63,10 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   } = useGetArticleDetails(articleId);
 
   const {data: articleContent} = useGetArticleContent(recordId);
+
+  const {mutate: likeMutation, isPending: likeMutationPending} = useLikeArticle(
+    Number(articleId),
+  );
 
   useEffect(() => {
     updateViewCountMutation.mutate();
@@ -117,7 +121,31 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
 
   const handleLike = () => {
     if (article) {
-      updateLikeMutation.mutate();
+      likeMutation({
+        onSuccess: (data: {article: ArticleData; likeStatus: boolean}) => {
+          if (data?.likeStatus) {
+            socket.emit('notification', {
+              type: 'likePost',
+              userId: data?.article?.authorId,
+              articleId: data?.article?._id,
+              podcastId: null,
+              articleRecordId: data?.article?.pb_recordId,
+              title: user
+                ? `${user?.user_handle} liked your post`
+                : 'Someone liked your post',
+              message: data?.article?.title,
+            });
+          }
+          refetch();
+        },
+        onError: (err: any) => {
+          console.log('error', err);
+          Snackbar.show({
+            text: 'Something went wrong, try again!',
+            duration: Snackbar.LENGTH_LONG,
+          });
+        },
+      });
     } else {
       Alert.alert('Article not found');
     }
@@ -173,59 +201,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     },
   });
 
-  const updateLikeMutation = useMutation({
-    mutationKey: ['update-like-status'],
 
-    mutationFn: async () => {
-      if (!user_token || user_token === '') {
-        Alert.alert('No token found');
-        return;
-      }
-      const res = await axios.post(
-        LIKE_ARTICLE,
-        {
-          article_id: article?._id,
-          //user_id: user_id,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-
-      return res.data.data as {
-        article: ArticleData;
-        likeStatus: boolean;
-      };
-    },
-
-    onSuccess: data => {
-      // dispatch(setArticle({article: data}));
-
-      if (data?.likeStatus) {
-        socket.emit('notification', {
-          type: 'likePost',
-          userId: data?.article?.authorId,
-          articleId: data?.article?._id,
-          podcastId: null,
-          articleRecordId: data?.article?.pb_recordId,
-          title: user
-            ? `${user?.user_handle} liked your post`
-            : 'Someone liked your post',
-          message: data?.article?.title,
-        });
-      }
-      refetch();
-    },
-
-    onError: err => {
-      Alert.alert('Try Again!');
-      console.log('Like Error', err);
-    },
-  });
-
-  //  console.log('Response', article?.authorId.followers);
 
   const updateReadEventMutation = useMutation({
     mutationKey: ['update-read-event-status'],
@@ -270,7 +246,6 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
       });
     },
   });
-
 
   async function convertHtmlToPlainText(html: string) {
     let modifiedHtml = html.replace(/ style="[^"]*"/g, '');
@@ -370,7 +345,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
             style={styles.image}
           />
         )}
-        {updateLikeMutation.isPending ? (
+        {likeMutationPending ? (
           <ActivityIndicator size={40} color={PRIMARY_COLOR} />
         ) : (
           <TouchableOpacity

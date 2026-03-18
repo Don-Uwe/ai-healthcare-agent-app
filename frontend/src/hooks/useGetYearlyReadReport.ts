@@ -3,13 +3,19 @@ import axios from 'axios';
 import {YearStatus} from '../type';
 import {GET_YEARLY_READ_REPORT} from '../helper/APIUtils';
 
-export const useGetAuthorYearlyReadReport = (
-  user_id: string,
-  selectedYear: number,
-  userId?: string,
-  others?: boolean,
-  isConnected?: boolean,
-): UseQueryResult<YearStatus[]> => {
+export const useGetAuthorYearlyReadReport = ({
+  user_id,
+  selectedYear,
+  userId,
+  others,
+  isConnected,
+}: {
+  user_id: string;
+  selectedYear: number;
+  userId?: string;
+  others?: boolean;
+  isConnected?: boolean;
+}): UseQueryResult<YearStatus[]> => {
   return useQuery<YearStatus[]>({
     queryKey: ['get-user-yearly-read-report', user_id, userId, others],
 

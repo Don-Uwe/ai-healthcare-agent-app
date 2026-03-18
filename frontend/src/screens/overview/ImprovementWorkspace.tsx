@@ -8,14 +8,12 @@ import {
   StyleSheet,
 } from 'react-native';
 import {EditRequest} from '../../type';
-import {GET_ALL_IMPROVEMENTS_FOR_USER} from '../../helper/APIUtils';
-import axios from 'axios';
-import {useQuery} from '@tanstack/react-query';
 import {useSelector} from 'react-redux';
 import Loader from '../../components/Loader';
 import ImprovementCard from '../../components/ImprovementCard';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
 import {hp} from '../../helper/Metric';
+import {useGetAllImprovementsForReview} from '@/src/hooks/useGetUserAllImprovements';
 
 export default function ImprovementWorkspace({
   handleImprovementClick,
@@ -35,52 +33,16 @@ export default function ImprovementWorkspace({
   const [improvementData, setImprovementData] = useState<EditRequest[]>([]);
   const [pageLoading, setPageLoading] = useState(false);
 
-  const {isLoading, refetch} = useQuery({
-    queryKey: ['get-all-improvements-for-review'],
-    queryFn: async () => {
-      try {
-        const response = await axios.get(
-          `${GET_ALL_IMPROVEMENTS_FOR_USER}?page=${page}&status=${selectedStatus}`,
-          {
-            headers: {
-              Authorization: `Bearer ${user_token}`,
-            },
-          },
-        );
-        if (Number(page) === 1 && response.data.totalPages) {
-          setTotalPages(response.data.totalPages);
-          setImprovementData(response.data.articles);
-        } else {
-          if (response.data.articles) {
-            const d = response.data.articles;
-            setImprovementData(prev => [...prev, ...d]);
-          }
-        }
-
-        if (Number(visit) === 1) {
-          if (response.data.publishedCount) {
-            const publishCount = response.data.publishedCount;
-            setPublishedLabel(`Published(${publishCount})`);
-          }
-          if (response.data.progressCount) {
-            const progressCount = response.data.progressCount;
-            setProgressLabel(`Progress(${progressCount})`);
-          }
-
-          if (response.data.discardCount) {
-            const discardCount = response.data.discardCount;
-            setDiscardLabel(`Discarded(${discardCount})`);
-          }
-
-          setVisit(0);
-        }
-
-        return response.data.articles as EditRequest[];
-      } catch (err) {
-        console.error('Error fetching articles:', err);
-      }
-    },
-    enabled: !!user_token && !!page,
+  const {isLoading, refetch} = useGetAllImprovementsForReview({
+    page,
+    selectedStatus,
+    visit,
+    setVisit,
+    setTotalPages,
+    setImprovementData,
+    setPublishedLabel,
+    setProgressLabel,
+    setDiscardLabel,
   });
 
   useEffect(() => {
@@ -147,8 +109,8 @@ export default function ImprovementWorkspace({
                 {item.status === 1
                   ? publishedLabel
                   : item.status === 2
-                  ? progressLabel
-                  : discardLabel}
+                    ? progressLabel
+                    : discardLabel}
               </Text>
             </TouchableOpacity>
           ))}
@@ -216,7 +178,7 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     paddingHorizontal: 0,
-    
+
     //zIndex: -2,
   },
   flatListContentContainer: {

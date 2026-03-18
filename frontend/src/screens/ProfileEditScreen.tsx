@@ -17,19 +17,16 @@ import ProfessionalTab from '../components/ProfessionalTab';
 import PasswordTab from '../components/PasswordTab';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useDispatch, useSelector} from 'react-redux';
-import {useMutation, useQuery} from '@tanstack/react-query';
+import {useMutation} from '@tanstack/react-query';
 import axios, {AxiosError} from 'axios';
 import {
   GET_STORAGE_DATA,
-  GET_USER_DETAILS_API,
   UPDATE_PROFILE_IMAGE,
   UPDATE_USER_CONTACT_DETAILS,
   UPDATE_USER_GENERAL_DETAILS,
   UPDATE_USER_PROFESSIONAL_DETAILS,
   UPDATE_USER_PASSWORD,
 } from '../helper/APIUtils';
-import {User} from '../type';
-import Loader from '../components/Loader';
 import {
   ImageLibraryOptions,
   launchImageLibrary,
@@ -37,8 +34,8 @@ import {
 } from 'react-native-image-picker';
 import ImageResizer from '@bam.tech/react-native-image-resizer';
 import useUploadImage from '../hooks/useUploadImage';
-import {showAlert} from '../store/alertSlice';
 import Snackbar from 'react-native-snackbar';
+import { useGetUserDetails } from '../hooks/useGetUserDetails';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 let validator = require('email-validator');
 let expr = /^(0|91)?[6-9][0-9]{9}$/;
@@ -74,19 +71,8 @@ const ProfileEditScreen = ({navigation}) => {
   const {user_token} = useSelector((state: any) => state.user);
   const {isConnected} = useSelector((state: any) => state.network);
 
-  const {data: user} = useQuery({
-    queryKey: ['get-user-details-by-id'],
-    queryFn: async () => {
-      const response = await axios.get(`${GET_USER_DETAILS_API}`, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      });
+  const {data: user} = useGetUserDetails(isConnected);
 
-      return response.data.profile as User;
-    },
-    enabled: !!isConnected,
-  });
   const userGeneralDetailsMutation = useMutation({
     mutationKey: ['user-general-details-updation'],
     mutationFn: async () => {

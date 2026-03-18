@@ -10,7 +10,6 @@ import ProfileHeader from '../components/ProfileHeader';
 import {
   FOLLOW_USER,
   PROD_URL,
-  REQUEST_EDIT,
   UPDATE_VIEW_COUNT,
 } from '../helper/APIUtils';
 import {ArticleData, UserProfileScreenProp, User} from '../type';
@@ -22,6 +21,7 @@ import {useFocusEffect} from '@react-navigation/native';
 import Snackbar from 'react-native-snackbar';
 import {useSocket} from '../../SocketContext';
 import {useRepostArticle} from '../hooks/useArticleRepost';
+import {useRequestArticleEdit} from '../hooks/useRequestArticleEdit';
 
 const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   const {authorId, author_handle} = route.params;
@@ -39,6 +39,8 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   //const [authorId, setAuthorId] = useState<string>('');
   const socket = useSocket();
   const {mutate: repost, isPending: repostPending} = useRepostArticle();
+  const {mutate: requestEdit, isPending: requestEditPending} =
+    useRequestArticleEdit();
 
   const {
     data: user,
@@ -137,8 +139,6 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
     }
   };
 
-
-
   const updateViewCountMutation = useMutation({
     mutationKey: ['update-view-count-user-profile'],
     mutationFn: async ({
@@ -209,41 +209,6 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
     [navigation],
   );
 
-  const submitEditRequestMutation = useMutation({
-    mutationKey: ['submit-edit-request-user'],
-    mutationFn: async ({
-      articleId,
-      reason,
-    }: {
-      articleId: string;
-      reason: string;
-    }) => {
-      const res = await axios.post(
-        REQUEST_EDIT,
-        {
-          article_id: articleId,
-          reason: reason,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-
-      return res.data.message as string;
-    },
-    onSuccess: data => {
-      Snackbar.show({
-        text: data,
-        duration: Snackbar.LENGTH_SHORT,
-      });
-    },
-    onError: err => {
-      console.log(err);
-      Alert.alert('Try again');
-    },
-  });
 
   const renderItem = useCallback(
     ({item}: {item: ArticleData}) => {
@@ -258,10 +223,28 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
           handleReportAction={handleReportAction}
           handleEditRequestAction={(item, index, reason) => {
             if (isConnected) {
-              submitEditRequestMutation.mutate({
-                articleId: item._id,
-                reason: reason,
-              });
+              requestEdit(
+                {
+                  articleId: item._id,
+                  reason: reason,
+                  articleRecordId: item.pb_recordId,
+                },
+                {
+                  onSuccess: data => {
+                    Snackbar.show({
+                      text: data,
+                      duration: Snackbar.LENGTH_SHORT,
+                    });
+                  },
+                  onError: err => {
+                    console.log(err);
+                    Snackbar.show({
+                      text: "Try again!",
+                      duration: Snackbar.LENGTH_LONG
+                    });
+                  },
+                },
+              );
             } else {
               Snackbar.show({
                 text: 'Please check your internet connection!',
@@ -280,7 +263,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
       navigation,
       onRefresh,
       selectedCardId,
-      submitEditRequestMutation,
+      requestEdit,
     ],
   );
 
@@ -426,7 +409,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
     );
   };
 
-  if (isLoading || submitEditRequestMutation.isPending) {
+  if (isLoading || requestEditPending) {
     return (
       <View style={styles.loadingContainer}>
         <Loader />

@@ -5,7 +5,7 @@ import { GET_ALL_IMPROVEMENTS_FOR_USER } from '../helper/APIUtils';
 
 interface Props {
   page: number;
-  selectedStatus: string;
+  selectedStatus: number;
   visit: number;
   setVisit: (v: number) => void;
   setTotalPages: (v: number) => void;

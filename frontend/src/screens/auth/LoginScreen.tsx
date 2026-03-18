@@ -19,12 +19,15 @@ import {AuthData, LoginScreenProp, User} from '../../type';
 import {useMutation} from '@tanstack/react-query';
 import axios, {AxiosError} from 'axios';
 import {useDispatch} from 'react-redux';
-import {LOGIN_API, RESEND_VERIFICATION, SEND_OTP} from '../../helper/APIUtils';
+import {LOGIN_API, SEND_OTP} from '../../helper/APIUtils';
 import Loader from '../../components/Loader';
 import {setUserHandle, setUserId, setUserToken} from '../../store/UserSlice';
 import messaging from '@react-native-firebase/messaging';
 import Entypo from '@expo/vector-icons/Entypo';
 import EmailInputBottomSheet from '../../components/EmailInputModal';
+import {useRequestVerification} from '@/src/hooks/useResendVerification';
+import Snackbar from 'react-native-snackbar';
+
 
 const LoginScreen = ({navigation, route}: LoginScreenProp) => {
   const inset = useSafeAreaInsets();
@@ -44,6 +47,8 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
   const [emailMessage, setEmailMessage] = useState(false);
 
   const [secureTextEntry, setSecureTextEntry] = useState(true);
+  const {mutate: resendVerification, isPending: resendVerificationPending} =
+    useRequestVerification();
 
   const handleSecureEntryClickEvent = () => {
     setSecureTextEntry(!secureTextEntry);
@@ -257,59 +262,10 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
     });
   };
 
-  const requestVerification = useMutation({
-    mutationKey: ['resend-verification-mail'],
-    mutationFn: async ({email1}: {email1: string}) => {
-      const res = await axios.post(RESEND_VERIFICATION, {
-        email: email1,
-      });
-
-      return res.data.message as string;
-    },
-
-    onSuccess: () => {
-      /** Check Status */
-      Alert.alert('Verification Email Sent');
-      setEmail('');
-      setPassword('');
-    },
-    onError: (error: AxiosError) => {
-      console.log('Email Verification error', error);
-
-      if (error.response) {
-        const statusCode = error.response.status;
-        switch (statusCode) {
-          case 400:
-            Alert.alert('Error', 'User not found or already verified');
-            break;
-          case 429:
-            Alert.alert(
-              'Error',
-              'Verification email already sent. Please try again after 1 hour.',
-            );
-            break;
-          case 500:
-            Alert.alert(
-              'Error',
-              'Internal server error. Please try again later.',
-            );
-            break;
-          default:
-            Alert.alert(
-              'Error',
-              'Something went wrong. Please try again later.',
-            );
-        }
-      } else {
-        console.log('Email Verification error', error);
-      }
-    },
-  });
-
   if (
     loginMutation.isPending ||
     sendOtpMutation.isPending ||
-    requestVerification.isPending
+    resendVerificationPending
   ) {
     return <Loader />;
   }
@@ -502,7 +458,54 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
           callback={(email: string) => {
             setOtpMail(email);
             if (requestVerificationMode) {
-              requestVerification.mutate({email1: email});
+              resendVerification(
+                {
+                  email,
+                },
+                {
+                  onSuccess: () => {
+                    /** Check Status */
+                    Alert.alert('Verification Email Sent');
+                    setEmail('');
+                    setPassword('');
+                  },
+                  onError: (error: AxiosError) => {
+                    console.log('Email Verification error', error);
+
+                    if (error.response) {
+                      const statusCode = error.response.status;
+                      switch (statusCode) {
+                        case 400:
+                          Snackbar.show({
+                            text: "User not found or already verified",
+                            duration: Snackbar.LENGTH_SHORT
+                          });
+                          break;
+                        case 429:
+                          Snackbar.show({
+                            text: "Verification email already sent, please try again after 1 hour",
+                            duration: Snackbar.LENGTH_SHORT
+                          });
+                          break;
+                        case 500:
+                          Snackbar.show({
+                            text: "Internal server error, try again",
+                            duration: Snackbar.LENGTH_SHORT
+                          });
+
+                          break;
+                        default:
+                          Alert.alert(
+                            'Error',
+                            'Something went wrong. Please try again later.',
+                          );
+                      }
+                    } else {
+                      console.log('Email Verification error', error);
+                    }
+                  },
+                },
+              );
             } else {
               sendOtpMutation.mutate({email});
             }

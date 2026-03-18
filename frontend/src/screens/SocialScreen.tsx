@@ -9,15 +9,16 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import {SocialScreenProps, User} from '../type';
+import {SocialScreenProps} from '../type';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
-import {FOLLOW_USER, GET_SOCIALS, GET_STORAGE_DATA} from '../helper/APIUtils';
+import {FOLLOW_USER, GET_STORAGE_DATA} from '../helper/APIUtils';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useSelector} from 'react-redux';
-import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import {useMutation, useQueryClient} from '@tanstack/react-query';
 import axios from 'axios';
 import {useSocket} from '../../SocketContext';
 import Loader from '../components/Loader';
+import { useGetUserSocials } from '../hooks/useGetUserSocialCircle';
 
 export default function Socialcreen({navigation, route}: SocialScreenProps) {
   const insets = useSafeAreaInsets();
@@ -34,30 +35,10 @@ export default function Socialcreen({navigation, route}: SocialScreenProps) {
     data: socials,
     refetch,
     isLoading,
-  } = useQuery({
-    queryKey: ['get-user-socials'],
-    queryFn: async () => {
-      let url = articleId
-        ? `${GET_SOCIALS}?type=${type}&articleId=${articleId}`
-        : `${GET_SOCIALS}?type=${type}`;
-
-     // console.log('Social User Id', url);
-
-      url =
-        social_user_id && social_user_id !== ''
-          ? `${url}&social_user_id=${social_user_id}`
-          : url;
-
-      console.log('Request Url', url);
-
-      const response = await axios.get(url, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      });
-    //  console.log('Response', response.data.followers);
-      return response.data.followers as User[];
-    },
+  } = useGetUserSocials({
+    type: type,
+    articleId: articleId,
+    social_user_id: social_user_id
   });
 
   useEffect(() => {

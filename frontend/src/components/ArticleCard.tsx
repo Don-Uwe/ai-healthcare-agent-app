@@ -21,7 +21,6 @@ import {useMutation} from '@tanstack/react-query';
 import {
   GET_ARTICLE_CONTENT,
   GET_IMAGE,
-  LIKE_ARTICLE,
   SAVE_ARTICLE,
 } from '../helper/APIUtils';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
@@ -30,22 +29,19 @@ import {
   requestStoragePermissions,
   StatusEnum,
 } from '../helper/Utils';
-import {
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
+import {useSharedValue, withTiming} from 'react-native-reanimated';
 import ArticleFloatingMenu from './ArticleFloatingMenu';
-//import io from 'socket.io-client';
+
 import Entypo from '@expo/vector-icons/Entypo';
 import Share from 'react-native-share';
 import RNFS from 'react-native-fs';
-//import {RNHTMLtoPDF} from 'react-native-html-to-pdf';
 import {generatePDF} from 'react-native-html-to-pdf';
 import {useSocket} from '../../SocketContext';
 import EditRequestModal from './EditRequestModal';
 import {FontAwesome, FontAwesome6} from '@expo/vector-icons';
 import Snackbar from 'react-native-snackbar';
-import { useGetProfile } from '../hooks/useGetProfile';
+import {useGetProfile} from '../hooks/useGetProfile';
+import {useLikeArticle} from '../hooks/useLikeArticle';
 
 const ArticleCard = ({
   item,
@@ -67,10 +63,20 @@ const ArticleCard = ({
   const [requestModalVisible, setRequestModalVisible] =
     useState<boolean>(false);
   const [menuVisible, setMenuVisible] = useState(false);
-   const {data: user} = useGetProfile();
+  const {data: user} = useGetProfile();
 
-  //console.log("Repost users", item.repostUsers);
-  //console.log('Image Utils', item?.imageUtils[0]);
+  const [isLiked, setIsLiked] = useState(
+    item.likedUsers.some(
+      it =>
+        (it._id && it._id.toString() === user_id) || it.toString() === user_id,
+    ),
+  );
+  const [likeCount, setLikeCount] = useState(item.likedUsers.length);
+
+  const {mutate: likeMutation, isPending: likeMutationPending} = useLikeArticle(
+    Number(item._id),
+  );
+
   const handleShare = async () => {
     try {
       const url =
@@ -90,12 +96,6 @@ const ArticleCard = ({
     } catch (error) {
       console.log('Error sharing:', error);
       Alert.alert('Error', 'Something went wrong while sharing.');
-      // dispatch(
-      //   showAlert({
-      //     title: 'Error!',
-      //     message: 'Something went wrong while sharing.',
-      //   }),
-      // );
       setMenuVisible(false);
     }
   };
@@ -105,19 +105,12 @@ const ArticleCard = ({
       console.log('connection established');
     });
   }, [socket]);
- 
 
   const updateSaveStatusMutation = useMutation({
     mutationKey: ['update-view-count'],
     mutationFn: async () => {
       if (user_token === '') {
         Alert.alert('No token found');
-        // dispatch(
-        //   showAlert({
-        //     title: 'Alert!',
-        //     message: 'No token found',
-        //   }),
-        // );
         return;
       }
       const res = await axios.post(
@@ -139,86 +132,14 @@ const ArticleCard = ({
     },
 
     onError: () => {
-      //console.log('Update View Count Error', error);
       Alert.alert('Internal server error, try again!');
-      // dispatch(
-      //   showAlert({
-      //     title: 'Server error',
-      //     message: 'Try again!',
-      //   }),
-      // );
     },
   });
 
-  const updateLikeMutation = useMutation({
-    mutationKey: ['update-like-status'],
-
-    mutationFn: async () => {
-      if (user_token === '') {
-        Alert.alert('No token found');
-        // dispatch(
-        //   showAlert({
-        //     title: 'Alert!',
-        //     message: 'No token found',
-        //   }),
-        // );
-        return;
-      }
-      const res = await axios.post(
-        LIKE_ARTICLE,
-        {
-          article_id: item._id,
-          //user_id: user_id,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-      return res.data.data as {
-        article: ArticleData;
-        likeStatus: boolean;
-      };
-    },
-
-    onSuccess: data => {
-      //dispatch(setArticle({article: data}));
-
-      //console.log('author', data);
-      if (data?.likeStatus) {
-        // data.userId, data.articleId, data.podcastId, data.articleRecordId, data.title, data.message
-        socket.emit('notification', {
-          type: 'likePost',
-          userId: data?.article?.authorId,
-          articleId: data?.article?._id,
-          podcastId: null,
-          articleRecordId: data?.article?.pb_recordId,
-          title: user
-            ? `${user?.user_handle} liked your post`
-            : 'Someone liked your post',
-          message: data?.article?.title,
-        });
-      }
-      success();
-    },
-
-    onError: () => {
-      Alert.alert('Try Again!');
-      //console.log('Like Error', err);
-      // dispatch(
-      //   showAlert({
-      //     title: 'Server error',
-      //     message: 'Please try again',
-      //   }),
-      // );
-    },
-  });
 
   const onChange = () => {
-   
     setMenuVisible(true);
-     console.log('Menu visible',menuVisible);
+    console.log('Menu visible', menuVisible);
   };
 
   const generatePDFFromUrl = async (recordId: string, title: string) => {
@@ -439,15 +360,42 @@ const ArticleCard = ({
 
           {/* Like, Save, and Comment Actions */}
           <View style={styles.likeSaveContainer}>
-            {updateLikeMutation.isPending ? (
+            {likeMutationPending ? (
               <ActivityIndicator size="small" color={PRIMARY_COLOR} />
             ) : (
               <TouchableOpacity
                 onPress={() => {
-                  //width.value = withTiming(0, {duration: 250});
-                  //yValue.value = withTiming(100, {duration: 250});
                   if (isConnected) {
-                    updateLikeMutation.mutate();
+                    setLikeCount(prev => (isLiked ? prev - 1 : prev + 1));
+
+                    likeMutation({
+                      onSuccess: (data: {
+                        article: ArticleData;
+                        likeStatus: boolean;
+                      }) => {
+                        if (data?.likeStatus) {
+                          setIsLiked(data?.likeStatus);
+                          socket.emit('notification', {
+                            type: 'likePost',
+                            userId: data?.article?.authorId,
+                            articleId: data?.article?._id,
+                            podcastId: null,
+                            articleRecordId: data?.article?.pb_recordId,
+                            title: user
+                              ? `${user?.user_handle} liked your post`
+                              : 'Someone liked your post',
+                            message: data?.article?.title,
+                          });
+                        }
+                      },
+                      onError: (err: any) => {
+                        console.log('Like error', err);
+                        Snackbar.show({
+                          text: 'something went wrong, try again!',
+                          duration: Snackbar.LENGTH_SHORT,
+                        });
+                      },
+                    });
                   } else {
                     Snackbar.show({
                       text: 'Please check your network connection',
@@ -456,11 +404,7 @@ const ArticleCard = ({
                   }
                 }}
                 style={styles.likeSaveChildContainer}>
-                {item.likedUsers.some(
-                  it =>
-                    (it._id && it._id.toString() === user_id) ||
-                    it.toString() === user_id,
-                ) ? (
+                {isLiked ? (
                   <AntDesign name="heart" size={24} color={PRIMARY_COLOR} />
                 ) : (
                   <FontAwesome name="heart-o" size={24} color={'black'} />
@@ -472,7 +416,7 @@ const ArticleCard = ({
                     fontWeight: '500',
                     color: 'black',
                   }}>
-                  {formatCount(item.likedUsers.length)}
+                  {formatCount(likeCount)}
                 </Text>
               </TouchableOpacity>
             )}
@@ -524,12 +468,7 @@ const ArticleCard = ({
                   handleShare();
                 }}
                 style={styles.likeSaveChildContainer}>
-                <FontAwesome
-                  name="share-alt"
-                  size={24}
-                  color={'#414A4C'}
-                />
-              
+                <FontAwesome name="share-alt" size={24} color={'#414A4C'} />
               </TouchableOpacity>
             )}
 
@@ -553,7 +492,11 @@ const ArticleCard = ({
                 {item.savedUsers.includes(user_id) ? (
                   <IonIcons name="bookmark" size={24} color={PRIMARY_COLOR} />
                 ) : (
-                  <IonIcons name="bookmark-outline" size={24} color={'#414A4C'} />
+                  <IonIcons
+                    name="bookmark-outline"
+                    size={24}
+                    color={'#414A4C'}
+                  />
                 )}
               </TouchableOpacity>
             )}
@@ -562,7 +505,11 @@ const ArticleCard = ({
               <TouchableOpacity
                 style={styles.likeSaveChildContainer}
                 onPress={onChange}>
-                <Entypo name="dots-three-vertical" size={20} color={'#414A4C'} />
+                <Entypo
+                  name="dots-three-vertical"
+                  size={20}
+                  color={'#414A4C'}
+                />
               </TouchableOpacity>
             )}
           </View>

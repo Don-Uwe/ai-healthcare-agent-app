@@ -22,7 +22,6 @@ import axios from 'axios';
 import Loader from '../../components/Loader';
 import {
   GET_IMAGE,
-  POST_ARTICLE,
   RENDER_SUGGESTION,
   SUBMIT_IMPROVEMENT,
   SUBMIT_SUGGESTED_CHANGES,
@@ -35,6 +34,7 @@ import {setSuggestion} from '../../store/dataSlice';
 import Snackbar from 'react-native-snackbar';
 import AutoHeightWebView from '@brown-bear/react-native-autoheight-webview';
 import {useGetProfile} from '@/src/hooks/useGetProfile';
+import {usePostArticleData} from '@/src/hooks/usePostArticle';
 
 //import io from 'socket.io-client';
 
@@ -61,6 +61,9 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
 
   const {isConnected} = useSelector((state: any) => state.network);
   const dispatch = useDispatch();
+
+  const {mutate: postMutation, isPending: postMutationPending} =
+    usePostArticleData();
 
   const {uploadImage, loading} = useUploadImage();
 
@@ -195,55 +198,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
     }
   };
 
-  const createPostMutation = useMutation({
-    mutationKey: ['create-post-key'],
-    mutationFn: async ({
-      article,
-      recordId,
-    }: {
-      article: string;
-      recordId: string;
-    }) => {
-      const response = await axios.post(
-        POST_ARTICLE,
-        {
-          title: title,
-          authorName: authorName,
-          authorId: user?._id,
-          content: article,
-          tags: selectedGenres,
-          imageUtils: imageUtils,
-          description: description,
-          pb_recordId: recordId,
-          allow_podcast: true,
-          language: 'en-IN',
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-      console.log(article);
-      return response.data.newArticle as ArticleData;
-    },
 
-    onSuccess: data => {
-      // User will not get notified, until the article published
-
-      Alert.alert('Article added sucessfully');
-
-      navigation.navigate('TabNavigation');
-    },
-    onError: error => {
-      console.log('Article post Error', error);
-      // console.log(error);
-
-      Alert.alert('Failed to upload your post');
-    },
-  });
-
-  // submit suggested changes
 
   const submitChangesMutation = useMutation({
     mutationKey: ['submit-post-key'],
@@ -395,13 +350,46 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
             article: data.html_file,
           });
         } else {
-          createPostMutation.mutate({
-            article: data.html_file,
-            recordId: data.recordId,
-          });
+          postMutation(
+            {
+              title: title,
+              authorName: authorName,
+              authorId: user?._id ?? '',
+              content: data.html_file,
+              tags: selectedGenres,
+              imageUtils: imageUtils,
+              description: description,
+              pb_recordId: data.recordId,
+              allow_podcast: true,
+              language: 'en-IN',
+            },
+            {
+              onSuccess: () => {
+                Snackbar.show({
+                  text: 'Article added successfully',
+                  duration: Snackbar.LENGTH_SHORT,
+                });
+
+                navigation.navigate('TabNavigation');
+              },
+
+              onError: error => {
+                console.log('Article post Error', error);
+                // console.log(error);
+
+                Snackbar.show({
+                  text: 'Failed to upload your post',
+                  duration: Snackbar.LENGTH_SHORT,
+                });
+              },
+            },
+          );
         }
       } else {
-        Alert.alert('Failed to upload your post');
+        Snackbar.show({
+          text: 'Failed to upload your post',
+          duration: Snackbar.LENGTH_SHORT,
+        });
       }
     },
     onError: error => {
@@ -457,7 +445,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
     renderSuggestionMutation.isPending ||
     uploadImprovementToPocketbase.isPending ||
     uploadArticleToPocketbase.isPending ||
-    createPostMutation.isPending ||
+    postMutationPending ||
     submitChangesMutation.isPending ||
     submitImprovementMutation.isPending ||
     loading

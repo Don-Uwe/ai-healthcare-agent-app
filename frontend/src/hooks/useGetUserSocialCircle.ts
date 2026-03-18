@@ -5,8 +5,8 @@ import { GET_SOCIALS } from '../helper/APIUtils';
 import { User } from '../type';
 
 interface Props {
-  type: string;
-  articleId?: string;
+  type: number;
+  articleId?: number;
   social_user_id?: string;
 }
 

@@ -1,4 +1,4 @@
-import {StyleSheet, Alert, Dimensions} from 'react-native';
+import {StyleSheet, Dimensions} from 'react-native';
 import {useCallback, useEffect, useState} from 'react';
 
 import {
@@ -15,16 +15,10 @@ import {
 import {PRIMARY_COLOR} from '../helper/Theme';
 //import {LineChart} from 'react-native-gifted-charts';
 import {BarChart} from 'react-native-chart-kit';
-import {useQuery} from '@tanstack/react-query';
 import moment from 'moment';
 import {fp, hp} from '../helper/Metric';
 import {useSelector} from 'react-redux';
-import axios from 'axios';
-import {
-  GET_IMAGE,
-  GET_YEARLY_READ_REPORT,
-  GET_YEARLY_WRITES_REPORT,
-} from '../helper/APIUtils';
+import {GET_IMAGE} from '../helper/APIUtils';
 import {ArticleData, MonthStatus, YearStatus} from '../type';
 import Loader from './Loader';
 
@@ -36,6 +30,8 @@ import {useGetAuthorMostViewedArticles} from '../hooks/useGetMostViewedArticle';
 import {useGetTotalLikeViewStatus} from '../hooks/useGetTotalLikeViewStatus';
 import {useGetTotalReads} from '../hooks/useGetTotalReads';
 import {useGetTotalWrites} from '../hooks/useGetTotalWrites';
+import {useGetAuthorYearlyReadReport} from '../hooks/useGetYearlyReadReport';
+import {useGetAuthorYearlyWriteReport} from '../hooks/useGetYearlyWriteReport';
 
 type LineDataItem = {
   label: string;
@@ -116,133 +112,25 @@ const ActivityOverview = ({
     });
 
   // GET YEARLY READ REPORT
-  const {data: yearlyReadReport, refetch: refetchYearlyReadReport} = useQuery({
-    queryKey: ['get-yearly-read-reports'],
-    queryFn: async () => {
-      try {
-        if (selectedYear === -1) {
-          return [];
-        }
-        if (user_token === '') {
-          Alert.alert('No token found');
-          // dispatch(
-          //   showAlert({
-          //     title: 'Alert!',
-          //     message: 'No token found',
-          //   }),
-          // );
-          return [];
-        }
-        if (!userId) {
-          if (others) {
-            // user id not found for others profile
-            Alert.alert('No user id found');
-            // dispatch(
-            //   showAlert({
-            //     title: 'Alert!',
-            //     message: 'No user id found',
-            //   }),
-            // );
-            return [];
-          }
-        }
-        if (user_id === '' && !others) {
-          // user id not found for own profile
-          Alert.alert('No user id found');
-          // dispatch(
-          //   showAlert({
-          //     title: 'Alert!',
-          //     message: 'No user id found',
-          //   }),
-          // );
-          return [];
-        }
-
-        let url = others
-          ? `${GET_YEARLY_READ_REPORT}?userId=${userId}&year=${selectedYear}`
-          : `${GET_YEARLY_READ_REPORT}?userId=${user_id}&year=${selectedYear}`;
-        const response = await axios.get(url, {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        });
-
-        return response.data.yearlyReads as YearStatus[];
-      } catch (err) {
-        console.error('Error fetching articles reads yearly:', err);
-      }
-    },
-    enabled:
-      !!isConnected &&
-      !!(user_token && selectedYear !== -1 && (userId || !others)),
-  });
+  const {data: yearlyReadReport, refetch: refetchYearlyReadReport} =
+    useGetAuthorYearlyReadReport({
+      user_id,
+      userId,
+      selectedYear,
+      others,
+      isConnected,
+    });
 
   // GET YEARLY WRITE REPORT
 
-  const {data: yearlyWriteReport, refetch: refetchYearlyWriteReport} = useQuery(
-    {
-      queryKey: ['get-yearly-write-reports'],
-      queryFn: async () => {
-        try {
-          if (selectedYear === -1) {
-            return [];
-          }
-          if (user_token === '') {
-            Alert.alert('No token found');
-            // dispatch(
-            //   showAlert({
-            //     title: 'Alert!',
-            //     message: 'No token found',
-            //   }),
-            // );
-            return [];
-          }
-          if (!userId) {
-            if (others) {
-              // user id not found for others profile
-              Alert.alert('No user id found');
-              // dispatch(
-              //   showAlert({
-              //     title: 'Alert!',
-              //     message: 'No user id found',
-              //   }),
-              // );
-              return [];
-            }
-          }
-          if (user_id === '' && !others) {
-            // user id not found for own profile
-            Alert.alert('No user id found');
-            // dispatch(
-            //   showAlert({
-            //     title: 'Alert!',
-            //     message: 'No user id found',
-            //   }),
-            // );
-            return [];
-          }
-
-          let url = others
-            ? `${GET_YEARLY_WRITES_REPORT}?userId=${userId}&year=${selectedYear}`
-            : `${GET_YEARLY_WRITES_REPORT}?userId=${user_id}&year=${selectedYear}`;
-
-          const response = await axios.get(url, {
-            headers: {
-              Authorization: `Bearer ${user_token}`,
-            },
-          });
-
-          return response.data.yearlyWrites as YearStatus[];
-        } catch (err) {
-          console.error('Error fetching articles reads yearly:', err);
-        }
-      },
-
-      enabled:
-        !!isConnected &&
-        !!(user_token && selectedYear !== -1 && (userId || !others)),
-    },
-  );
+  const {data: yearlyWriteReport, refetch: refetchYearlyWriteReport} =
+    useGetAuthorYearlyWriteReport({
+      user_id,
+      selectedYear,
+      userId,
+      others,
+      isConnected,
+    });
 
   // GET MOST VIEWED ARTICLE
   const {data: article, isLoading: isArticleLoading} =

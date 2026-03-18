@@ -1,5 +1,3 @@
-import {useQuery} from '@tanstack/react-query';
-import axios from 'axios';
 import {useCallback, useEffect, useState} from 'react';
 import {
   View,
@@ -9,13 +7,13 @@ import {
   FlatList,
   Image,
 } from 'react-native';
-import {GET_ALL_ARTICLES_FOR_USER} from '../../helper/APIUtils';
 import {ArticleData} from '../../type';
 import {useSelector} from 'react-redux';
 import ReviewCard from '../../components/ReviewCard';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
 import {hp} from '../../helper/Metric';
 import Loader from '../../components/Loader';
+import {useGetAllArticlesForUser} from '@/src/hooks/useGetUserAllArticles';
 
 export default function ArticleWorkSpace({
   handleClickAction,
@@ -32,73 +30,25 @@ export default function ArticleWorkSpace({
   const [progressLabel, setProgressLabel] = useState('Progress');
   const [discardLabel, setDiscardLabel] = useState('Discard');
   const [articleData, setArticleData] = useState<ArticleData[]>([]);
- 
+
   const [pageLoading, setPageLoading] = useState(false);
 
-  const {
-    data: articles,
-    isLoading,
-    refetch,
-  } = useQuery({
-    queryKey: ['get-all-articles-for-user'],
-    queryFn: async () => {
-      try {
-        const response = await axios.get(
-          `${GET_ALL_ARTICLES_FOR_USER}?page=${page}&status=${selectedStatus}`,
-          {
-            headers: {
-              Authorization: `Bearer ${user_token}`,
-            },
-          },
-        );
-
-        //console.log('Article Response', response.data);
-        //let d = response.data.articles as ArticleData[];
-        //updateArticles(d);
-
-        if (Number(page) === 1 && response.data.totalPages) {
-          setTotalPages(response.data.totalPages);
-          setArticleData(response.data.articles);
-        }else{
-          if(response.data.articles && Array.isArray(response.data.articles)){
-            const d = response.data.articles;
-          //  console.log("res", d);
-             setArticleData(prev => [...prev, ...d]);
-          }
-        }
-
-        if (Number(visit) === 1) {
-          if (response.data.publishedCount) {
-            const publishCount = response.data.publishedCount;
-            setPublishedLabel(`Published(${publishCount})`);
-          }
-          if (response.data.progressCount) {
-            const progressCount = response.data.progressCount;
-            setProgressLabel(`Progress(${progressCount})`);
-          }
-
-          if (response.data.discardCount) {
-            const discardCount = response.data.discardCount;
-            setDiscardLabel(`Discarded(${discardCount})`);
-          }
-
-          setVisit(0);
-        }
-
-        return response.data.articles as ArticleData[];
-      } catch (err) {
-        console.error('Error fetching articles:', err);
-      }
-    },
-    enabled: !!user_token && !!page,
+  const {isLoading, refetch} = useGetAllArticlesForUser({
+    page,
+    selectedStatus,
+    visit,
+    setVisit,
+    setTotalPages,
+    setArticleData,
+    setPublishedLabel,
+    setProgressLabel,
+    setDiscardLabel,
   });
 
-
-  useEffect(()=>{
+  useEffect(() => {
     refetch();
     setPageLoading(false);
-  },[page, refetch, selectedStatus]);
-
+  }, [page, refetch, selectedStatus]);
 
   const [selectedCardId, setSelectedCardId] = useState<string>('');
 
@@ -138,8 +88,6 @@ export default function ArticleWorkSpace({
     [handleClickAction, selectedCardId],
   );
 
-
-
   return (
     <View style={{flex: 1, backgroundColor: ON_PRIMARY_COLOR}}>
       <View style={styles.container}>
@@ -158,7 +106,7 @@ export default function ArticleWorkSpace({
                 setSelectedStatus(item.status);
                 setPage(1);
                 setArticleData([]);
-               setPageLoading(true);              
+                setPageLoading(true);
               }}>
               <Text
                 style={{
@@ -168,44 +116,42 @@ export default function ArticleWorkSpace({
                 {item.status === 1
                   ? publishedLabel
                   : item.status === 2
-                  ? progressLabel
-                  : discardLabel}
+                    ? progressLabel
+                    : discardLabel}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        {
-          isLoading || pageLoading ? (
-            <Loader/>
-          ):(
-            <View style={styles.articleContainer}>
-          <FlatList
-            data={articleData ? articleData : []}
-            renderItem={renderItem}
-            keyExtractor={item => item._id.toString()}
-            contentContainerStyle={styles.flatListContentContainer}
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            ListEmptyComponent={
-              <View style={styles.emptyContainer}>
-                <Image
-                  source={require('../../assets/images/no_results.jpg')}
-                  style={styles.image}
-                />
-                <Text style={styles.message}>No Article Found</Text>
-              </View>
-            }
-             onEndReached={() => {
-              if (page < totalPages) {
-                setPage(prev => prev + 1);
+        {isLoading || pageLoading ? (
+          <Loader />
+        ) : (
+          <View style={styles.articleContainer}>
+            <FlatList
+              data={articleData ? articleData : []}
+              renderItem={renderItem}
+              keyExtractor={item => item._id.toString()}
+              contentContainerStyle={styles.flatListContentContainer}
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              ListEmptyComponent={
+                <View style={styles.emptyContainer}>
+                  <Image
+                    source={require('../../assets/images/no_results.jpg')}
+                    style={styles.image}
+                  />
+                  <Text style={styles.message}>No Article Found</Text>
+                </View>
               }
-            }}
-            onEndReachedThreshold={0.5}
-          />
-        </View>
-          )
-        }
+              onEndReached={() => {
+                if (page < totalPages) {
+                  setPage(prev => prev + 1);
+                }
+              }}
+              onEndReachedThreshold={0.5}
+            />
+          </View>
+        )}
       </View>
     </View>
   );
