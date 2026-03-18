@@ -8,20 +8,16 @@ import {
   FlatList,
   Dimensions,
 } from 'react-native';
-import {useEffect, useMemo, useRef, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {EditRequest, ImpvReviewScreenProp, User, Comment} from '../../type';
+import {ImpvReviewScreenProp, Comment} from '../../type';
 
 import {useDispatch, useSelector} from 'react-redux';
-import WebView from 'react-native-webview';
 import {hp, wp} from '../../helper/Metric';
 import {
-  GET_IMPROVEMENT_BY_ID,
-  GET_IMPROVEMENT_CONTENT,
-  GET_PROFILE_API,
   GET_STORAGE_DATA,
   LOAD_REVIEW_COMMENTS,
 } from '../../helper/APIUtils';
@@ -36,6 +32,9 @@ import {handleExternalClick, StatusEnum} from '../../helper/Utils';
 import ReviewItem from '../../components/ReviewItem';
 import {Button, Spinner, TextArea, YStack, Text} from 'tamagui';
 import AutoHeightWebView from '@brown-bear/react-native-autoheight-webview';
+import {useGetImprovementById} from '@/src/hooks/useGetImprovementById';
+import {useGetImprovementContent} from '@/src/hooks/useGetImprovementContent';
+import {useGetProfile} from '@/src/hooks/useGetProfile';
 
 const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
   const insets = useSafeAreaInsets();
@@ -53,55 +52,12 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
 
   const flatListRef = useRef<FlatList<Comment>>(null);
 
-
-  // editrequest
-  const {data: improvement} = useQuery({
-    queryKey: ['get-improvement-by-id'],
-    queryFn: async () => {
-      const response = await axios.get(
-        `${GET_IMPROVEMENT_BY_ID}/${requestId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-
-      return response.data as EditRequest;
-    },
+  const {data: user} = useGetProfile();
+  const {data: improvement} = useGetImprovementById(requestId);
+  const {data: htmlContent} = useGetImprovementContent({
+    recordId: recordId,
+    articleRecordId: articleRecordId,
   });
-
-  const {data: user} = useQuery({
-    queryKey: ['get-my-profile'],
-    queryFn: async () => {
-      const response = await axios.get(`${GET_PROFILE_API}`, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      });
-      return response.data.profile as User;
-    },
-  });
-
-  const {data: htmlContent} = useQuery({
-    queryKey: ['get-improvement-content'],
-    queryFn: async () => {
-      let url = '';
-      if (recordId) {
-        url = `${GET_IMPROVEMENT_CONTENT}?articleRecordId=${articleRecordId}`;
-      } else {
-        url = `${GET_IMPROVEMENT_CONTENT}?recordid=${recordId}&articleRecordId=${articleRecordId}`;
-      }
-      const response = await axios.get(url, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      });
-      return response.data.htmlContent as string;
-    },
-  });
-
-  //console.log('html-content', htmlContent);
 
   const {isLoading} = useQuery({
     queryKey: ['get-improvement-review-comments'],
@@ -258,7 +214,7 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
               textZoom={100}
             /> */}
 
-             <AutoHeightWebView
+            <AutoHeightWebView
               style={{
                 width: Dimensions.get('window').width - 15,
                 marginTop: 35,

@@ -4,11 +4,18 @@ import axios from "axios";
 import { WriteStatus } from "../type";
 import { GET_TOTAL_WRITES } from "../helper/APIUtils";
 
-export const useGetTotalReads = (
-  user_id: string,
-  userId?: string,
-  others?: boolean,
+export const useGetTotalWrites = (
+ {
+ user_id,
+ userId,
+ others,
+ isConnected
+ }:{
+  user_id: string;
+  userId?: string;
+  others?: boolean;
   isConnected?: boolean
+ }
 ): UseQueryResult<WriteStatus> => {
 
   return useQuery<WriteStatus>({

@@ -7,17 +7,18 @@ import {
   Alert,
   TouchableOpacity,
 } from 'react-native';
-import {ReportReason, ReportScreenProp} from '../../type';
+import {ReportScreenProp} from '../../type';
 import {useSelector} from 'react-redux';
 import axios from 'axios';
-import {GET_REPORT_REASONS, SUBMIT_REPORT} from '../../helper/APIUtils';
+import {SUBMIT_REPORT} from '../../helper/APIUtils';
 import Loader from '../../components/Loader';
-import {useMutation, useQuery} from '@tanstack/react-query';
+import {useMutation} from '@tanstack/react-query';
 import {RadioButton} from 'react-native-paper';
 import Snackbar from 'react-native-snackbar';
 import {hp, wp} from '../../helper/Metric';
 import {PRIMARY_COLOR} from '../../helper/Theme';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import { useGetReasons } from '@/src/hooks/useGetReportReasons';
 
 export default function ReportScreen({navigation, route}: ReportScreenProp) {
   const {articleId, commentId, authorId, podcastId} = route.params;
@@ -25,28 +26,7 @@ export default function ReportScreen({navigation, route}: ReportScreenProp) {
   const {isConnected} = useSelector((state: any) => state.network);
   const [selectedReasonId, setSelectedReasonId] = useState<string>('');
 
-  const {data: reasons, isLoading} = useQuery({
-    queryKey: ['get-report-reasons'],
-    queryFn: async () => {
-      try {
-        if (user_token === '') {
-          Alert.alert('No token found');
-          return [];
-        }
-
-        const response = await axios.get(GET_REPORT_REASONS, {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        });
-
-        return response.data as ReportReason[];
-      } catch (err) {
-        console.error('Error fetching Report Reasons:', err);
-      }
-    },
-    enabled: !!isConnected && !!user_token,
-  });
+  const {data: reasons, isLoading} = useGetReasons(isConnected);
 
   //console.log(reasons[0].reason)
   const submitReportMutation = useMutation({

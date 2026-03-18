@@ -8,19 +8,17 @@ import {useDispatch, useSelector} from 'react-redux';
 import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import ProfileHeader from '../components/ProfileHeader';
-import {
-  GET_PROFILE_API,
-  UPDATE_VIEW_COUNT,
-} from '../helper/APIUtils';
-import {ArticleData, ProfileScreenProps, User} from '../type';
-import {useMutation, useQuery} from '@tanstack/react-query';
+import {UPDATE_VIEW_COUNT} from '../helper/APIUtils';
+import {ArticleData, ProfileScreenProps} from '../type';
+import {useMutation} from '@tanstack/react-query';
 import axios from 'axios';
 import Loader from '../components/Loader';
 import {useFocusEffect} from '@react-navigation/native';
 import Snackbar from 'react-native-snackbar';
 import {useSocket} from '../../SocketContext';
 import {setUserHandle} from '../store/UserSlice';
-import { useRepostArticle } from '../hooks/useArticleRepost';
+import {useRepostArticle} from '../hooks/useArticleRepost';
+import {useGetProfile} from '../hooks/useGetProfile';
 
 const ProfileScreen = ({navigation}: ProfileScreenProps) => {
   const {user_handle, user_id, user_token} = useSelector(
@@ -38,22 +36,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
 
   const {mutate: repost, isPending: repostPending} = useRepostArticle();
 
-  const {
-    data: user,
-    refetch,
-    isLoading,
-  } = useQuery({
-    queryKey: ['get-profile'],
-    queryFn: async () => {
-      const response = await axios.get(`${GET_PROFILE_API}`, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      });
-      return response.data.profile as User;
-    },
-    enabled: !!isConnected && !!user_token,
-  });
+  const {data: user, refetch, isLoading} = useGetProfile();
 
   if (user) {
     dispatch(setUserHandle(user.user_handle));
@@ -140,7 +123,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
   );
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-   const handleRepostAction = (item: ArticleData) => {
+  const handleRepostAction = (item: ArticleData) => {
     if (!isConnected) {
       Snackbar.show({
         text: 'Please check your network connection',
@@ -184,67 +167,6 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
     });
   };
 
-  // const repostMutation = useMutation({
-  //   mutationKey: ['repost-user-article'],
-  //   mutationFn: async ({
-  //     articleId,
-  //   }: // authorId,
-  //   {
-  //     articleId: number;
-  //     //  authorId: string;
-  //   }) => {
-  //     if (user_token === '') {
-  //       Alert.alert('No token found');
-  //       return;
-  //     }
-  //     const res = await axios.post(
-  //       REPOST_ARTICLE,
-  //       {
-  //         articleId: articleId,
-  //       },
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${user_token}`,
-  //         },
-  //       },
-  //     );
-
-  //     return res.data as any;
-  //   },
-  //   onSuccess: () => {
-  //     refetch();
-  //     Snackbar.show({
-  //       text: 'Article reposted in your feed',
-  //       duration: Snackbar.LENGTH_SHORT,
-  //     });
-
-  //     if (repostItem) {
-  //       //emitNotification(repostItem);
-  //       socket.emit('notification', {
-  //         type: 'repost',
-  //         userId: user_id,
-  //         authorId: repostItem.authorId,
-  //         postId: repostItem._id,
-  //         articleRecordId: repostItem.pb_recordId,
-  //         message: {
-  //           title: `${user_handle} reposted`,
-  //           message: `${repostItem.title}`,
-  //         },
-  //         authorMessage: {
-  //           title: `${user_handle} reposted your article`,
-  //           message: `${repostItem.title}`,
-  //         },
-  //       });
-  //     }
-
-  //     // Emit notification
-  //   },
-
-  //   onError: error => {
-  //     console.log('Repost Error', error);
-  //     Alert.alert('Internal server error, try again!');
-  //   },
-  // });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleReportAction = (item: ArticleData) => {
     navigation.navigate('ReportScreen', {

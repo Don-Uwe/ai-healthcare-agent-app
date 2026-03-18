@@ -11,17 +11,16 @@ import {
 } from 'react-native';
 import {useEffect, useState} from 'react';
 import {fp} from '../helper/Metric';
-import {ArticleCardProps, ArticleData, User} from '../type';
+import {ArticleCardProps, ArticleData} from '../type';
 import moment from 'moment';
 import {useSelector} from 'react-redux';
 import axios from 'axios';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import IonIcons from '@expo/vector-icons/Ionicons';
-import {useMutation, useQuery} from '@tanstack/react-query';
+import {useMutation} from '@tanstack/react-query';
 import {
   GET_ARTICLE_CONTENT,
   GET_IMAGE,
-  GET_PROFILE_API,
   LIKE_ARTICLE,
   SAVE_ARTICLE,
 } from '../helper/APIUtils';
@@ -46,6 +45,7 @@ import {useSocket} from '../../SocketContext';
 import EditRequestModal from './EditRequestModal';
 import {FontAwesome, FontAwesome6} from '@expo/vector-icons';
 import Snackbar from 'react-native-snackbar';
+import { useGetProfile } from '../hooks/useGetProfile';
 
 const ArticleCard = ({
   item,
@@ -67,6 +67,7 @@ const ArticleCard = ({
   const [requestModalVisible, setRequestModalVisible] =
     useState<boolean>(false);
   const [menuVisible, setMenuVisible] = useState(false);
+   const {data: user} = useGetProfile();
 
   //console.log("Repost users", item.repostUsers);
   //console.log('Image Utils', item?.imageUtils[0]);
@@ -104,17 +105,7 @@ const ArticleCard = ({
       console.log('connection established');
     });
   }, [socket]);
-  const {data: user} = useQuery({
-    queryKey: ['get-my-profile'],
-    queryFn: async () => {
-      const response = await axios.get(`${GET_PROFILE_API}`, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      });
-      return response.data.profile as User;
-    },
-  });
+ 
 
   const updateSaveStatusMutation = useMutation({
     mutationKey: ['update-view-count'],

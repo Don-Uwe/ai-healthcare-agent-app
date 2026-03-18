@@ -13,17 +13,15 @@ import {
   ContentSuggestionResponse,
   PocketBaseResponse,
   PreviewScreenProp,
-  User,
 } from '../../type';
 import {createHTMLStructure, handleExternalClick} from '../../helper/Utils';
-import {useMutation, useQuery} from '@tanstack/react-query';
+import {useMutation} from '@tanstack/react-query';
 import ImageResizer from '@bam.tech/react-native-image-resizer';
 
 import axios from 'axios';
 import Loader from '../../components/Loader';
 import {
   GET_IMAGE,
-  GET_PROFILE_API,
   POST_ARTICLE,
   RENDER_SUGGESTION,
   SUBMIT_IMPROVEMENT,
@@ -36,6 +34,7 @@ import useUploadImage from '../../hooks/useUploadImage';
 import {setSuggestion} from '../../store/dataSlice';
 import Snackbar from 'react-native-snackbar';
 import AutoHeightWebView from '@brown-bear/react-native-autoheight-webview';
+import {useGetProfile} from '@/src/hooks/useGetProfile';
 
 //import io from 'socket.io-client';
 
@@ -64,6 +63,8 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
   const dispatch = useDispatch();
 
   const {uploadImage, loading} = useUploadImage();
+
+  const {data: user} = useGetProfile();
   // console.log(selectedGenres);
 
   React.useEffect(() => {
@@ -87,20 +88,6 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
       ),
     });
   }, [navigation]);
-
-  const {data: user} = useQuery({
-    queryKey: ['userInfo'],
-    queryFn: async () => {
-      const response = await axios.get(GET_PROFILE_API, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      });
-      //console.log('User Profile', response.headers);
-      // console.log('Respon)
-      return response.data.profile as User;
-    },
-  });
 
   const handlePostSubmit = async () => {
     let finalArticle =
@@ -229,7 +216,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
           description: description,
           pb_recordId: recordId,
           allow_podcast: true,
-          language: "en-IN"
+          language: 'en-IN',
         },
         {
           headers: {
@@ -243,7 +230,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
 
     onSuccess: data => {
       // User will not get notified, until the article published
-      
+
       Alert.alert('Article added sucessfully');
 
       navigation.navigate('TabNavigation');

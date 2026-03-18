@@ -18,31 +18,24 @@ import {BarChart} from 'react-native-chart-kit';
 import {useQuery} from '@tanstack/react-query';
 import moment from 'moment';
 import {fp, hp} from '../helper/Metric';
-import { useSelector} from 'react-redux';
+import {useSelector} from 'react-redux';
 import axios from 'axios';
 import {
   GET_IMAGE,
-  GET_MONTHLY_READ_REPORT,
-  GET_MONTHLY_WRITES_REPORT,
-  GET_MOSTLY_VIEWED,
-  GET_TOTAL_LIKES_VIEWS,
-  GET_TOTAL_READS,
-  GET_TOTAL_WRITES,
   GET_YEARLY_READ_REPORT,
   GET_YEARLY_WRITES_REPORT,
 } from '../helper/APIUtils';
-import {
-  ArticleData,
-  MonthStatus,
-  ReadStatus,
-  UserStatus,
-  WriteStatus,
-  YearStatus,
-} from '../type';
+import {ArticleData, MonthStatus, YearStatus} from '../type';
 import Loader from './Loader';
 
 import {useFocusEffect} from '@react-navigation/native';
 import {Dropdown} from 'react-native-element-dropdown';
+import {useGetAuthorMonthlyReadReport} from '../hooks/useGetMonthlyReadReport';
+import {useGetAuthorMonthlyWriteReport} from '../hooks/useGetMonthlyWriteReport';
+import {useGetAuthorMostViewedArticles} from '../hooks/useGetMostViewedArticle';
+import {useGetTotalLikeViewStatus} from '../hooks/useGetTotalLikeViewStatus';
+import {useGetTotalReads} from '../hooks/useGetTotalReads';
+import {useGetTotalWrites} from '../hooks/useGetTotalWrites';
 
 type LineDataItem = {
   label: string;
@@ -58,14 +51,18 @@ interface Props {
     articleId: number;
     authorId: string;
     recordId: string;
-   
   }) => void;
   userId?: string;
   others: boolean;
   articlePosted: number;
   user_handle?: string;
 }
-const ActivityOverview = ({onArticleViewed, userId, others, user_handle}: Props) => {
+const ActivityOverview = ({
+  onArticleViewed,
+  userId,
+  others,
+  user_handle,
+}: Props) => {
   const [userState, setUserState] = useState<number>(0);
   const {user_token, user_id} = useSelector((state: any) => state.user);
   const [, setIsFocus] = useState<boolean>(false);
@@ -100,116 +97,23 @@ const ActivityOverview = ({onArticleViewed, userId, others, user_handle}: Props)
   ];
 
   // GET MONTHLY READ REPORT
-  const {data: monthlyReadReport, refetch: refetchMonthReadReport} = useQuery({
-    queryKey: ['get-month-read-reports'],
-    queryFn: async () => {
-      try {
-        if (selectedMonth === -1) {
-          return [];
-        }
-        if (user_token === '') {
-          Alert.alert('No token found');
+  const {data: monthlyReadReport, refetch: refetchMonthReadReport} =
+    useGetAuthorMonthlyReadReport({
+      user_id: user_id,
+      selectedMonth: selectedMonth,
+      userId: userId,
+      others: others,
+      isConnected: isConnected,
+    });
 
-          return [];
-        }
-        if (!userId) {
-          if (others) {
-            // user id not found for others profile
-            Alert.alert('No user id found');
-
-            return [];
-          }
-        }
-        if (user_id === '' && !others) {
-          // user id not found for own profile
-          Alert.alert('No user id found');
-
-          return [];
-        }
-
-        let url = others
-          ? `${GET_MONTHLY_READ_REPORT}?userId=${userId}&month=${selectedMonth}`
-          : `${GET_MONTHLY_READ_REPORT}?userId=${user_id}&month=${selectedMonth}`;
-        // console.log('URL', url);
-        const response = await axios.get(url, {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        });
-
-        return response.data.monthlyReads as MonthStatus[];
-      } catch (err) {
-        console.error('Error fetching articles reads monthly:', err);
-      }
-    },
-    enabled:
-      !!isConnected &&
-      !!(user_token && selectedMonth !== -1 && (userId || !others)),
-  });
-
-  const {data: monthlyWriteReport, refetch: refetchMonthWriteReport} = useQuery(
-    {
-      queryKey: ['get-month-write-reports'],
-      queryFn: async () => {
-        try {
-          if (selectedMonth === -1) {
-            return [];
-          }
-          if (user_token === '') {
-            Alert.alert('No token found');
-            // dispatch(
-            //   showAlert({
-            //     title: 'Alert!',
-            //     message: 'No token found',
-            //   }),
-            // );
-            return [];
-          }
-          if (!userId) {
-            if (others) {
-              // user id not found for others profile
-              Alert.alert('No user id found');
-              // dispatch(
-              //   showAlert({
-              //     title: 'Alert!',
-              //     message: 'No user id found',
-              //   }),
-              // );
-              return [];
-            }
-          }
-          if (user_id === '' && !others) {
-            // user id not found for own profile
-            Alert.alert('No user id found');
-            // dispatch(
-            //   showAlert({
-            //     title: 'Alert!',
-            //     message: 'No user id found',
-            //   }),
-            // );
-            return [];
-          }
-
-          let url = others
-            ? `${GET_MONTHLY_WRITES_REPORT}?userId=${userId}&month=${selectedMonth}`
-            : `${GET_MONTHLY_WRITES_REPORT}?userId=${user_id}&month=${selectedMonth}`;
-          // console.log('URL', url);
-          const response = await axios.get(url, {
-            headers: {
-              Authorization: `Bearer ${user_token}`,
-            },
-          });
-
-          return response.data.monthlyWrites as MonthStatus[];
-        } catch (err) {
-          console.error('Error fetching articles writes monthly:', err);
-        }
-      },
-      enabled:
-        !!isConnected &&
-        !!(user_token && selectedMonth !== -1 && (userId || !others)),
-    },
-  );
+  const {data: monthlyWriteReport, refetch: refetchMonthWriteReport} =
+    useGetAuthorMonthlyWriteReport({
+      user_id: user_id,
+      selectedMonth: selectedMonth,
+      userId: userId,
+      others: others,
+      isConnected: isConnected,
+    });
 
   // GET YEARLY READ REPORT
   const {data: yearlyReadReport, refetch: refetchYearlyReadReport} = useQuery({
@@ -341,233 +245,39 @@ const ActivityOverview = ({onArticleViewed, userId, others, user_handle}: Props)
   );
 
   // GET MOST VIEWED ARTICLE
-  const {data: article, isLoading: isArticleLoading} = useQuery({
-    queryKey: ['get-most-viewed-articles'],
-    queryFn: async () => {
-      try {
-        if (user_token === '') {
-          Alert.alert('No token found');
-          // dispatch(
-          //   showAlert({
-          //     title: 'Alert!',
-          //     message: 'No token found',
-          //   }),
-          // );
-          return '';
-        }
-        if (!userId) {
-          if (others) {
-            // user id not found for others profile
-            Alert.alert('No user id found');
-            // dispatch(
-            //   showAlert({
-            //     title: 'Alert!',
-            //     message: 'No user id found',
-            //   }),
-            // );
-            return '';
-          }
-        }
-        if (user_id === '' && !others) {
-          // user id not found for own profile
-          Alert.alert('No user id found');
-          // dispatch(
-          //   showAlert({
-          //     title: 'Alert!',
-          //     message: 'No user id found',
-          //   }),
-          // );
-          return '';
-        }
-
-        let url = others
-          ? `${GET_MOSTLY_VIEWED}${userId}`
-          : `${GET_MOSTLY_VIEWED}${user_id}`;
-
-        const response = await axios.get(url, {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        });
-
-        return response.data as ArticleData[];
-      } catch (err) {
-        console.error('Error fetching articles:', err);
-      }
-    },
-    enabled: !!isConnected && !!user_token,
-  });
+  const {data: article, isLoading: isArticleLoading} =
+    useGetAuthorMostViewedArticles({
+      user_id: user_id,
+      userId: userId,
+      others: others,
+      isConnected: isConnected,
+    });
 
   // GET USER STATUS FOR LIKE AND VIEW COUNT
 
-  const {isLoading: likeViewStatDataLoading} = useQuery({
-    queryKey: ['get-like-view-status'],
-    queryFn: async () => {
-      try {
-        if (user_token === '') {
-          Alert.alert('No token found');
-          // dispatch(
-          //   showAlert({
-          //     title: 'Alert!',
-          //     message: 'No token found',
-          //   }),
-          // );
-          return '';
-        }
-        if (!userId) {
-          if (others) {
-            // user id not found for others profile
-            Alert.alert('No user id found');
-            // dispatch(
-            //   showAlert({
-            //     title: 'Alert!',
-            //     message: 'No user id found',
-            //   }),
-            // );
-            return '';
-          }
-        }
-        if (user_id === '' && !others) {
-          // user id not found for own profile
-          Alert.alert('No user id found');
-          // dispatch(
-          //   showAlert({
-          //     title: 'Alert!',
-          //     message: 'No user id found',
-          //   }),
-          // );
-          return '';
-        }
-
-        let url = others
-          ? `${GET_TOTAL_LIKES_VIEWS}${userId}`
-          : `${GET_TOTAL_LIKES_VIEWS}${user_id}`;
-
-        const response = await axios.get(url, {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        });
-        // console.log('Like View Data', response.data);
-
-        return response.data as UserStatus;
-      } catch (err) {
-        console.error('Error fetching articles:', err);
-      }
-    },
-    enabled: !!isConnected && !!user_token,
+  const {isLoading: likeViewStatDataLoading} = useGetTotalLikeViewStatus({
+    user_id: user_id,
+    userId: userId,
+    others: others,
+    isConnected: isConnected,
   });
 
   // GET TOTAL READ STATUS
 
-  const {isLoading: readStatDataLoading} = useQuery({
-    queryKey: ['get-read-status'],
-    queryFn: async () => {
-      try {
-        if (user_token === '') {
-          Alert.alert('No token found');
-          // dispatch(
-          //   showAlert({
-          //     title: 'Alert!',
-          //     message: 'No token found',
-          //   }),
-          // );
-          return '';
-        }
-        if (!userId) {
-          if (others) {
-            // user id not found for others profile
-            Alert.alert('No user id found');
-            // dispatch(
-            //   showAlert({
-            //     title: 'Alert!',
-            //     message: 'No user id found',
-            //   }),
-            // );
-            return '';
-          }
-        }
-        if (user_id === '' && !others) {
-          // user id not found for own profile
-          Alert.alert('No user id found');
-          // dispatch(showAlert({
-          //      title: "Alert!",
-          //      message: 'No user id found'
-          //     }));
-          return '';
-        }
-
-        let url = others
-          ? `${GET_TOTAL_READS}${userId}`
-          : `${GET_TOTAL_READS}${user_id}`;
-
-        const response = await axios.get(url, {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        });
-        //console.log('READ Data', response.data);
-
-        return response.data as ReadStatus;
-      } catch (err) {
-        console.error('Error fetching articles:', err);
-      }
-    },
-    enabled: !!isConnected && !!user_token,
+  const {isLoading: readStatDataLoading} = useGetTotalReads({
+    user_id: user_id,
+    userId: userId,
+    others: others,
+    isConnected: isConnected,
   });
 
   // GET TOTAL WRITE STATUS
 
-  const {isLoading: writeStatDataLoading} = useQuery({
-    queryKey: ['get-write-status'],
-    queryFn: async () => {
-      try {
-        if (user_token === '') {
-          Alert.alert('No token found');
-          //  dispatch(showAlert({
-          //      title: "Alert!",
-          //      message: 'No token found'
-          //     }));
-          return '';
-        }
-        if (!userId) {
-          if (others) {
-            // user id not found for others profile
-            Alert.alert('No user id found');
-            //  dispatch(showAlert({
-            //      title: "Alert!",
-            //      message: 'No user id found'
-            //     }));
-            return '';
-          }
-        }
-        if (user_id === '' && !others) {
-          // user id not found for own profile
-          Alert.alert('No user id found');
-          //  dispatch(showAlert({
-          //      title: "Alert!",
-          //      message: 'No user id found'
-          //     }));
-          return '';
-        }
-
-        let url = others
-          ? `${GET_TOTAL_WRITES}${userId}`
-          : `${GET_TOTAL_WRITES}${user_id}`;
-
-        const response = await axios.get(url, {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        });
-        // console.log('Write Data', response.data);
-
-        return response.data as WriteStatus;
-      } catch (err) {
-        console.error('Error fetching articles:', err);
-      }
-    },
-    enabled: !!isConnected && !!user_token,
+  const {isLoading: writeStatDataLoading} = useGetTotalWrites({
+    user_id: user_id,
+    userId: userId,
+    others: others,
+    isConnected: isConnected,
   });
 
   useFocusEffect(
@@ -626,7 +336,7 @@ const ActivityOverview = ({onArticleViewed, userId, others, user_handle}: Props)
   //     value: item.value, // Ensure the value is an integer
   //     label: item.date.substring(8),
   //   })));
-    
+
   //   return data.map(item => ({
   //     value: item.value, // Ensure the value is an integer
   //     label: item.date.substring(8),
@@ -685,49 +395,47 @@ const ActivityOverview = ({onArticleViewed, userId, others, user_handle}: Props)
 
   const screenWidth = Dimensions.get('window').width;
 
+  const dayToWeekData = (data: MonthStatus[]): LineDataItem[] => {
+    if (!Array.isArray(data) || data.length === 0) return [];
 
- const dayToWeekData = (data: MonthStatus[]): LineDataItem[] => {
-  if (!Array.isArray(data) || data.length === 0) return [];
+    // Sort (safe guard)
+    const sorted = [...data].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+    );
 
-  // Sort (safe guard)
-  const sorted = [...data].sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-  );
+    const weeks: LineDataItem[] = [];
+    let currentWeek: MonthStatus[] = [];
+    let weekIndex = 1;
 
-  const weeks: LineDataItem[] = [];
-  let currentWeek: MonthStatus[] = [];
-  let weekIndex = 1;
+    const getWeekDay = (date: string) => new Date(date).getDay(); // 0 = Sun
 
-  const getWeekDay = (date: string) => new Date(date).getDay(); // 0 = Sun
+    sorted.forEach((item, index) => {
+      currentWeek.push(item);
 
-  sorted.forEach((item, index) => {
-    currentWeek.push(item);
+      const isSaturday = getWeekDay(item.date) === 6;
+      const isLastDay = index === sorted.length - 1;
 
-    const isSaturday = getWeekDay(item.date) === 6;
-    const isLastDay = index === sorted.length - 1;
+      if (isSaturday || isLastDay) {
+        const weekSum = currentWeek.reduce(
+          (sum, d) => sum + Number(d.value || 0),
+          0,
+        );
 
-    if (isSaturday || isLastDay) {
-      const weekSum = currentWeek.reduce(
-        (sum, d) => sum + Number(d.value || 0),
-        0
-      );
+        //const startDay = currentWeek[0].date.slice(8);
+        //const endDay = currentWeek[currentWeek.length - 1].date.slice(8);
 
-      //const startDay = currentWeek[0].date.slice(8);
-      //const endDay = currentWeek[currentWeek.length - 1].date.slice(8);
+        weeks.push({
+          label: `W${weekIndex}`,
+          value: weekSum,
+        });
 
-      weeks.push({
-        label: `W${weekIndex}`,
-        value: weekSum,
-      });
+        weekIndex++;
+        currentWeek = [];
+      }
+    });
 
-      weekIndex++;
-      currentWeek = [];
-    }
-  });
-
-  return weeks;
-};
-
+    return weeks;
+  };
 
   const MONTH_LABELS = [
     'Jan',
@@ -744,34 +452,33 @@ const ActivityOverview = ({onArticleViewed, userId, others, user_handle}: Props)
     'Dec',
   ];
 
- const groupYearlyData = (data: YearStatus[]) => {
-  const map = new Map<number, number>();
+  const groupYearlyData = (data: YearStatus[]) => {
+    const map = new Map<number, number>();
 
-  data.forEach(item => {
-    const monthNumber = Number(item.month.split('-')[1]); // "01" -> 1
-    map.set(monthNumber, item.value || 0);
-  });
+    data.forEach(item => {
+      const monthNumber = Number(item.month.split('-')[1]); // "01" -> 1
+      map.set(monthNumber, item.value || 0);
+    });
 
-  const normalized = MONTH_LABELS.map((label, index) => ({
-    label,
-    value: map.get(index + 1) ?? 0,
-  }));
+    const normalized = MONTH_LABELS.map((label, index) => ({
+      label,
+      value: map.get(index + 1) ?? 0,
+    }));
 
-  return [
-    normalized.slice(0, 3),   // Q1
-    normalized.slice(3, 6),   // Q2
-    normalized.slice(6, 9),   // Q3
-    normalized.slice(9, 12),  // Q4
-  ];
-};
-
+    return [
+      normalized.slice(0, 3), // Q1
+      normalized.slice(3, 6), // Q2
+      normalized.slice(6, 9), // Q3
+      normalized.slice(9, 12), // Q4
+    ];
+  };
 
   const YearlyChartSection = () => {
     const yearlyData =
-      userState === 0 ? yearlyReadReport ?? [] : yearlyWriteReport ?? [];
-        console.log('Raw yearly Data:', yearlyData);
+      userState === 0 ? (yearlyReadReport ?? []) : (yearlyWriteReport ?? []);
+    console.log('Raw yearly Data:', yearlyData);
     const groupedData = groupYearlyData(yearlyData);
-        console.log('Grouped yearly Data:', groupedData);
+    console.log('Grouped yearly Data:', groupedData);
 
     const CHART_HORIZONTAL_PADDING = 32;
     const chartWidth = screenWidth - CHART_HORIZONTAL_PADDING - 16;
@@ -856,12 +563,10 @@ const ActivityOverview = ({onArticleViewed, userId, others, user_handle}: Props)
   };
 
   const WeeklyChartSection = () => {
-
-
     const rawMonthlyData =
-      userState === 0 ? monthlyReadReport ?? [] : monthlyWriteReport ?? [];
-    
-      console.log('Raw Monthly Data:', rawMonthlyData);
+      userState === 0 ? (monthlyReadReport ?? []) : (monthlyWriteReport ?? []);
+
+    console.log('Raw Monthly Data:', rawMonthlyData);
 
     const weeklyData = dayToWeekData(rawMonthlyData);
 
@@ -916,8 +621,8 @@ const ActivityOverview = ({onArticleViewed, userId, others, user_handle}: Props)
     return (
       <View background="$background" paddingHorizontal="$4" marginTop="$6">
         <Text fontSize={19} fontWeight="700" marginBottom="$3">
-              {userState === 0 ? 'Reading Trend' : 'Writing Trend'}
-            </Text>
+          {userState === 0 ? 'Reading Trend' : 'Writing Trend'}
+        </Text>
         {selectedMonth !== -1 ? <WeeklyChartSection /> : <YearlyChartSection />}
       </View>
     );
@@ -1054,13 +759,9 @@ const ActivityOverview = ({onArticleViewed, userId, others, user_handle}: Props)
 
       {/* Chart Section */}
       {(selectedMonth !== -1 || selectedYear !== -1) && (
-     
-         <>
-            
-
-            <BarChartSection />
-          </>   
-      
+        <>
+          <BarChartSection />
+        </>
       )}
 
       {/* Most Viewed */}

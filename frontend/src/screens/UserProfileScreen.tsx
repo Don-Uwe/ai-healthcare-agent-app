@@ -137,66 +137,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
     }
   };
 
-  // const repostMutation = useMutation({
-  //   mutationKey: ['repost-user-article'],
-  //   mutationFn: async ({
-  //     articleId,
-  //   }: // authorId,
-  //   {
-  //     articleId: number;
-  //     //  authorId: string;
-  //   }) => {
-  //     if (user_token === '') {
-  //       Alert.alert('No token found');
-  //       return;
-  //     }
-  //     const res = await axios.post(
-  //       REPOST_ARTICLE,
-  //       {
-  //         articleId: articleId,
-  //       },
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${user_token}`,
-  //         },
-  //       },
-  //     );
 
-  //     return res.data as any;
-  //   },
-  //   onSuccess: () => {
-  //     //refetch();
-  //     Snackbar.show({
-  //       text: 'Article reposted in your feed',
-  //       duration: Snackbar.LENGTH_SHORT,
-  //     });
-
-  //     // Emit notification
-  //     if (repostItem) {
-  //       //emitNotification(repostItem);
-  //       socket.emit('notification', {
-  //         type: 'repost',
-  //         userId: user_id,
-  //         authorId: repostItem.authorId,
-  //         postId: repostItem._id,
-  //         articleRecordId: repostItem.pb_recordId,
-  //         message: {
-  //           title: `${user_handle} reposted`,
-  //           message: `${repostItem.title}`,
-  //         },
-  //         authorMessage: {
-  //           title: `${user_handle} reposted your article`,
-  //           message: `${repostItem.title}`,
-  //         },
-  //       });
-  //     }
-  //   },
-
-  //   onError: error => {
-  //     console.log('Repost Error', error);
-  //     Alert.alert('Internal server error, try again!');
-  //   },
-  // });
 
   const updateViewCountMutation = useMutation({
     mutationKey: ['update-view-count-user-profile'],

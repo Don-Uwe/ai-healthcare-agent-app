@@ -20,16 +20,15 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import {useMutation, useQuery} from '@tanstack/react-query';
 import {
   CHAT_URL,
-  GET_PROFILE_API,
   GET_STORAGE_DATA,
   SEND_MESSAGE_TO_GEMINI,
 } from '../helper/APIUtils';
 import axios, {AxiosError} from 'axios';
-import {ChatBotScreenProps, Message, User} from '../type';
+import {ChatBotScreenProps, Message} from '../type';
 import {hp} from '../helper/Metric';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {MaterialCommunityIcons} from '@expo/vector-icons';
-import {showAlert} from '../store/alertSlice';
+import { useGetProfile } from '../hooks/useGetProfile';
 
 // interface ChatbotResponse {
 //   id: string;
@@ -57,6 +56,7 @@ const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [isTyping, setIsTyping] = useState<boolean>(true);
   const dispatch = useDispatch();
+   const {data: user} = useGetProfile();
   // const token = 'GPMFAQIV2BGXCWYMCVQ3IPVXSOOLI53H5NYA'; //token
 
   //console.log("User Token", user_token);
@@ -77,22 +77,7 @@ const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
     }));
   };
 
-  const {
-    data: user,
-    refetch,
-    isLoading,
-  } = useQuery({
-    queryKey: ['get-profile'],
-    queryFn: async () => {
-      const response = await axios.get(`${GET_PROFILE_API}`, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      });
-      return response.data.profile as User;
-    },
-  });
-
+ 
   useQuery({
     queryKey: ['load-user-conversations'],
     queryFn: async () => {

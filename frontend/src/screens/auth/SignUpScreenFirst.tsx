@@ -88,34 +88,10 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
     });
   };
 
-  // const checkUserHandleAvailability = async (handle:string) => {
-  //   try {
-  //     const response = await axios.post(CHECK_USER_HANDLE, {
-  //       userHandle: username,
-  //     });
-  //     if (response.data.status === true) {
-  //       setIsHandleAvailable(true);
-  //       console.log('User Handle ', isHandleAvailable);
-  //     } else {
-  //       setIsHandleAvailable(false);
-  //       console.log('User Handle ', isHandleAvailable);
-  //       setError(response.data.error); // Show the error message
-  //     }
-  //   } catch (err) {
-  //     console.error('Error checking user handle:', err);
-  //     setError('An error occurred while checking the user handle.');
-  //   }
-  // };
+ 
 
-  const handleUserHandleChange = text => {
+  const handleUserHandleChange = (text:string) => {
     setUsername(text);
-    // if (text.length > 2) {
-    //   // Check if the user handle is available every time the user types
-    //   checkUserHandleAvailability(text);
-    // } else {
-    //   setIsHandleAvailable(true);
-    //   setError('');
-    // }
   };
 
   const userRegisterMutation = useMutation({

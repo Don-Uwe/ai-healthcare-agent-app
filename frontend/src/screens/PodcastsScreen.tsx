@@ -52,54 +52,14 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
 
-  const getAllCategories = useCallback(async () => {
-    if (!isConnected) {
-      return;
-    }
-    if (user_token === '') {
-      Alert.alert('No token found');
-      return;
-    }
-    const {data: categoryData} = await axios.get(
-      `${PROD_URL + ARTICLE_TAGS_API}`,
-      {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      },
-    );
-
-    dispatch(
-      setSelectedTags({
-        selectedTags: categoryData,
-      }),
-    );
-    setSelectedCategory(categoryData[0]);
-
-    dispatch(setTags({tags: categoryData}));
-  }, [dispatch, isConnected, user_token]);
-
-  // useEffect(() => {
-  //   if (
-  //     selectedTags === undefined ||
-  //     (selectedTags && selectedTags.length === 0)
-  //   ) {
-  //    // getAllCategories();
-  //   }
-
-  //   return () => {};
-  // }, [getAllCategories, selectedTags]);
 
   const openPlaylist = (id: string) => {
-    // setPlaylistIds([id]);
     dispatch(setaddedPodcastId(id));
-    // console.log('playlist ids', playlistIds);
     setPlaylistModalOpen(true);
   };
 
   const closePlaylist = () => {
     setPlaylistModalOpen(false);
-    // setPlaylistIds([]);
     dispatch(setaddedPodcastId(''));
   };
 
@@ -153,34 +113,6 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
     }
   };
 
-  // const {latestPodcasts, recommendedPodcasts, allPodcasts} = useMemo(() => {
-  //   if (!podcasts?.length) {
-  //     return {latestPodcasts: [], recommendedPodcasts: [], allPodcasts: []};
-  //   }
-
-  //   const now = new Date();
-  //   const latest = podcasts.filter(
-  //     p => differenceInDays(now, new Date(p.updated_at)) <= 7,
-  //   );
-
-  //   const withViews = [...podcasts].sort(
-  //     (a, b) => (b.viewUsers?.length || 0) - (a.viewUsers?.length || 0),
-  //   );
-
-  //   const recommended = withViews.slice(0, 5);
-  //   return {
-  //     latestPodcasts: latest,
-  //     recommendedPodcasts: recommended,
-  //     allPodcasts: podcasts,
-  //   };
-  // }, [podcasts]);
-
-  // const filteredPodcasts = selectedCategory
-  //   ? podcasts.filter((podcast: PodcastData) =>
-  //       podcast.tags?.some(tag => tag.name === selectedCategory.name),
-  //     )
-  //   : [];
-
   const navigateToReport = (podcastId: string) => {
     navigation.navigate('ReportScreen', {
       articleId: '',
@@ -189,6 +121,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
       podcastId: podcastId,
     });
   };
+
   const updateViewCountMutation = useMutation({
     mutationKey: ['update-podcast-view-count'],
     mutationFn: async (podcastId: string) => {

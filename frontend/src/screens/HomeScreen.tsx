@@ -19,15 +19,9 @@ import {
   Category,
   CategoryType,
   HomeScreenProps,
-  User,
 } from '../type';
 import axios from 'axios';
-import {
-  ARTICLE_TAGS_API,
-  GET_PROFILE_API,
-  PROD_URL,
-  REQUEST_EDIT,
-} from '../helper/APIUtils';
+import {PROD_URL, REQUEST_EDIT} from '../helper/APIUtils';
 import FilterModal from '../components/FilterModal';
 import {BottomSheetModal} from '@gorhom/bottom-sheet';
 import {useMutation, useQuery} from '@tanstack/react-query';
@@ -49,6 +43,8 @@ import InactiveUserModal from '../components/InactiveUserModal';
 import {StatusBar} from 'expo-status-bar';
 import {wp} from '../helper/Metric';
 import {useRepostArticle} from '../hooks/useArticleRepost';
+import {useGetCategories} from '../hooks/useGetArticleTags';
+import {useGetProfile} from '../hooks/useGetProfile';
 
 // Here The purpose of using Redux is to maintain filter state throughout the app session. globally
 const HomeScreen = ({navigation}: HomeScreenProps) => {
@@ -58,11 +54,12 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const [sortingType, setSortingType] = useState<string>('');
   const {isConnected} = useSelector((state: any) => state.network);
   const [selectedCardId, setSelectedCardId] = useState<string>('');
-  const [repostItem, setRepostItem] = useState<ArticleData | null>(null);
+  // const [repostItem, setRepostItem] = useState<ArticleData | null>(null);
   const [selectCategoryList, setSelectCategoryList] = useState<Category[]>([]);
   const [filterLoading, setFilterLoading] = useState<boolean>(false);
 
   const {mutate: repost, isPending: repostPending} = useRepostArticle();
+
   const {
     filteredArticles,
     searchedArticles,
@@ -70,13 +67,35 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     selectedTags,
     sortType,
   } = useSelector((state: any) => state.data);
+
   const {user_id, user_token, user_handle} = useSelector(
     (state: any) => state.user,
   );
+
   const [refreshing, setRefreshing] = useState(false);
   const socket = useSocket();
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  const {data: user, refetch: refetchUser} = useGetProfile();
+  const {data: categoryData, isSuccess} = useGetCategories(isConnected);
+
+  useEffect(() => {
+    if (!isSuccess || !categoryData) return;
+
+    if (!selectedTags || selectedTags.length === 0) {
+      dispatch(
+        setSelectedTags({
+          selectedTags: categoryData,
+        }),
+      );
+      setSelectedCategory(categoryData[0]);
+    } else {
+      setSelectedCategory(selectedTags[0]);
+    }
+
+    setArticleCategories(categoryData);
+    dispatch(setTags({tags: categoryData}));
+  }, [categoryData, dispatch, isSuccess, selectedTags]);
 
   const handleCategorySelection = (category: CategoryType) => {
     // Update Redux State
@@ -92,45 +111,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const handlePresentModalPress = useCallback(() => {
     bottomSheetModalRef.current?.present();
   }, []);
-
-  const getAllCategories = useCallback(async () => {
-    if (!isConnected) {
-      return;
-    }
-    if (user_token === '') {
-      Alert.alert('No token found');
-      return;
-    }
-    const {data: categoryData} = await axios.get(
-      `${PROD_URL + ARTICLE_TAGS_API}`,
-      {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      },
-    );
-    if (
-      selectedTags === undefined ||
-      (selectedTags && selectedTags.length === 0)
-    ) {
-      dispatch(
-        setSelectedTags({
-          selectedTags: categoryData,
-        }),
-      );
-      setSelectedCategory(categoryData[0]);
-    } else {
-      setSelectedCategory(selectedTags[0]);
-    }
-    setArticleCategories(categoryData);
-    dispatch(setTags({tags: categoryData}));
-  }, [dispatch, isConnected, selectedTags, user_token]);
-
-  useEffect(() => {
-    getAllCategories();
-
-    return () => {};
-  }, [getAllCategories]);
 
   const {data: unreadCount, refetch: refetchUnreadCount} = useQuery({
     queryKey: ['get-unread-notifications-count'],
@@ -154,19 +134,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       }
     },
     enabled: isConnected && !!user_token,
-  });
-
-  const {data: user, refetch: refetchUser} = useQuery({
-    queryKey: ['get-my-profile'],
-    queryFn: async () => {
-      const response = await axios.get(`${GET_PROFILE_API}`, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      });
-      return response.data.profile as User;
-    },
-    enabled: !!isConnected && !!user_token,
   });
 
   useFocusEffect(
@@ -237,67 +204,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       },
     });
   };
-
-  // const repostMutation = useMutation({
-  //   mutationKey: ['repost-user-article'],
-  //   mutationFn: async ({
-  //     articleId,
-  //   }: // authorId,
-  //   {
-  //     articleId: number;
-  //     //  authorId: string;
-  //   }) => {
-  //     if (user_token === '') {
-  //       Alert.alert('No token found');
-  //       return;
-  //     }
-  //     const res = await axios.post(
-  //       REPOST_ARTICLE,
-  //       {
-  //         articleId: articleId,
-  //       },
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${user_token}`,
-  //         },
-  //       },
-  //     );
-
-  //     return res.data as any;
-  //   },
-  //   onSuccess: () => {
-  //     refetch();
-  //     Snackbar.show({
-  //       text: 'Article reposted in your feed',
-  //       duration: Snackbar.LENGTH_SHORT,
-  //     });
-
-  //     if (repostItem) {
-  //       const body = {
-  //         type: 'repost',
-  //         userId: user_id,
-  //         authorId: repostItem.authorId,
-  //         postId: repostItem._id,
-  //         articleRecordId: repostItem.pb_recordId,
-  //         message: {
-  //           title: `${user_handle} reposted`,
-  //           message: `${repostItem.title}`,
-  //         },
-  //         authorMessage: {
-  //           title: `${user_handle} reposted your article`,
-  //           message: `${repostItem.title}`,
-  //         },
-  //       };
-
-  //       socket.emit('notification', body);
-  //     }
-  //   },
-
-  //   onError: error => {
-  //     console.log('Repost Error', error);
-  //     Alert.alert('Internal server error, try again!');
-  //   },
-  // });
 
   const submitEditRequestMutation = useMutation({
     mutationKey: ['submit-edit-request'],

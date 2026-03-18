@@ -10,24 +10,18 @@ import {
   Alert,
   ActivityIndicator,
   Dimensions,
-  FlatList,
-  Linking,
 } from 'react-native';
-import {useEffect, useMemo, useRef, useState} from 'react';
-import {useQuery, useMutation} from '@tanstack/react-query';
+import {useEffect, useState} from 'react';
+import {useMutation} from '@tanstack/react-query';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
-import {ArticleData, ArticleScreenProp, User} from '../../type';
+import {ArticleData, ArticleScreenProp} from '../../type';
 import {useDispatch, useSelector} from 'react-redux';
 import {hp, wp} from '../../helper/Metric';
 import {
   FOLLOW_USER,
-  GET_ARTICLE_BY_ID,
-  GET_ARTICLE_CONTENT,
   GET_IMAGE,
-  GET_PROFILE_API,
-  GET_PROFILE_IMAGE_BY_ID,
   GET_STORAGE_DATA,
   LIKE_ARTICLE,
   SOCKET_PROD,
@@ -47,6 +41,9 @@ import {io} from 'socket.io-client';
 import {Feather} from '@expo/vector-icons';
 import AutoHeightWebView from '@brown-bear/react-native-autoheight-webview';
 import LottieView from 'lottie-react-native';
+import {useGetArticleDetails} from '@/src/hooks/useGetArticleDetail';
+import {useGetArticleContent} from '@/src/hooks/useGetArticleContent';
+import {useGetProfile} from '@/src/hooks/useGetProfile';
 
 const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const insets = useSafeAreaInsets();
@@ -57,8 +54,15 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
 
   const socket = io(`${SOCKET_PROD}`);
   const dispatch = useDispatch();
-  const [webviewHeight, setWebViewHeight] = useState(0);
   const [speechingMode, setSpeechingMode] = useState(false);
+  const {data: user} = useGetProfile();
+  const {
+    data: article,
+    isLoading: articleLoading,
+    refetch,
+  } = useGetArticleDetails(articleId);
+
+  const {data: articleContent} = useGetArticleContent(recordId);
 
   useEffect(() => {
     updateViewCountMutation.mutate();
@@ -71,52 +75,9 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     };
   }, []);
 
-  const {
-    data: article,
-    refetch,
-    isLoading,
-  } = useQuery({
-    queryKey: ['get-article-by-id'],
-    queryFn: async () => {
-      const response = await axios.get(`${GET_ARTICLE_BY_ID}/${articleId}`, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      });
-
-      return response.data.article as ArticleData;
-    },
-  });
-
   useEffect(() => {
     refetch();
   }, [articleId, refetch]);
-
-  const {data: user} = useQuery({
-    queryKey: ['get-my-profile'],
-    queryFn: async () => {
-      const response = await axios.get(`${GET_PROFILE_API}`, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      });
-      return response.data.profile as User;
-    },
-  });
-
-  const {data: htmlContent} = useQuery({
-    queryKey: ['get-publish-article-content'],
-    queryFn: async () => {
-      const response = await axios.get(`${GET_ARTICLE_CONTENT}/${recordId}`, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      });
-
-      //console.log('HTML RES', response.data);
-      return response.data.htmlContent as string;
-    },
-  });
 
   const noDataHtml = '<p>No Data found</p>';
 
@@ -310,41 +271,14 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     },
   });
 
-  useEffect(() => {
-    if (htmlContent) {
-      setWebViewHeight(htmlContent.length);
-    } else {
-      setWebViewHeight(noDataHtml.length);
-    }
-  }, [htmlContent]);
-
-  const {data: profile_image} = useQuery({
-    queryKey: ['author_profile_image'],
-    queryFn: async () => {
-      const response = await axios.get(
-        `${GET_PROFILE_IMAGE_BY_ID}/${authorId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-      //console.log('Response', response);
-      return response.data.profile_image as string;
-    },
-  });
 
   async function convertHtmlToPlainText(html: string) {
-    // Remove inline styles
     let modifiedHtml = html.replace(/ style="[^"]*"/g, '');
 
-    // Remove <style> blocks and their content
     modifiedHtml = modifiedHtml.replace(/<style[^>]*>[\s\S]*?<\/style>/g, '');
 
-    // Replace &nbsp; with a space
     modifiedHtml = modifiedHtml.replace(/&nbsp;/g, ' ');
 
-    // Remove all other HTML tags
     let plainText = modifiedHtml.replace(/<[^>]*>/g, '');
 
     return plainText;
@@ -370,59 +304,6 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
 
     return false;
   };
-
-  // const speakSection = async (_language = 'en-IN', content: string) => {
-  //   // Tts.requestInstallData();
-
-  //   await Tts.stop();
-  // Tts.removeAllListeners('tts-finish');
-  // Tts.removeAllListeners('tts-error');
-
-  //   const ready = await ensureLanguageInstalled(_language);
-
-  //   if (!ready) {
-  //     Snackbar.show({
-  //       text: 'Language not installed. Please install the language pack to enable text-to-speech.',
-  //       duration: Snackbar.LENGTH_LONG,
-  //     });
-  //     console.log('Language not installed. Prompted user.');
-  //     return;
-  //   }
-  //   Tts.setDefaultPitch(1.0);
-  //   Tts.setDefaultRate(0.5);
-  //   Tts.setDefaultLanguage(_language);
-
-  //   const res = await convertHtmlToPlainText(content);
-
-  //   if (res) {
-  //     Tts.getInitStatus().then(() => {
-  //       const textChunks = res.split(' ');
-  //       let chunkIndex = 0;
-
-  //       const speakNextChunk = () => {
-  //         if (chunkIndex < textChunks.length) {
-  //           const chunk = textChunks
-  //             .slice(chunkIndex, chunkIndex + 120)
-  //             .join(' ');
-
-  //           Tts.speak(chunk);
-
-  //           Tts.addEventListener('tts-finish', () => {
-  //             chunkIndex += 120;
-  //             speakNextChunk();
-  //           });
-
-  //           Tts.addEventListener('tts-error', error => {
-  //             console.error('TTS Error:', error);
-  //           });
-  //         }
-  //       };
-
-  //     const finishListener = Tts.addEventListener('tts-finish', speakNextChunk);
-  //       speakNextChunk();
-  //     });
-  //   }
-  // };
 
   const speakSection = async (_language = 'en-IN', content: string) => {
     try {
@@ -467,7 +348,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     }
   };
 
-  if (isLoading) {
+  if (articleLoading) {
     return <Loader />;
   }
 
@@ -521,9 +402,9 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
             if (!speechingMode) {
               // setCartoonModalVisible(true);
               // prepareSection();
-              if (htmlContent) {
+              if (articleContent) {
                 const language = article?.language || 'en-IN';
-                speakSection(language, htmlContent);
+                speakSection(language, articleContent);
               }
             } else {
               setSpeakingStarted(false);
@@ -744,22 +625,6 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
           )}
 
           <View style={styles.descriptionContainer}>
-            {/* <WebView
-              style={{
-                padding: 7,
-                //width: '99%',
-                minHeight: minHeight,
-                // flex:7,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-              ref={webViewRef}
-              originWhitelist={['*']}
-              injectedJavaScript={cssCode}
-              source={{html: htmlContent ? htmlContent : noDataHtml}}
-              textZoom={100}
-            /> */}
-
             <AutoHeightWebView
               style={{
                 width: Dimensions.get('window').width - 15,
@@ -776,7 +641,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
                 },
               ]}
               originWhitelist={['*']}
-              source={{html: htmlContent ?? noDataHtml}}
+              source={{html: articleContent ?? noDataHtml}}
               scalesPageToFit={true}
               viewportContent={'width=device-width, user-scalable=no'}
               onShouldStartLoadWithRequest={handleExternalClick}
@@ -788,8 +653,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
         style={[
           styles.footer,
           {
-            paddingBottom:
-              wp(6),
+            paddingBottom: wp(6),
           },
         ]}>
         <View style={styles.authorContainer}>
@@ -880,7 +744,7 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 0,
-   // marginTop: hp(4),
+    // marginTop: hp(4),
     borderBottomEndRadius: hp(2),
     backgroundColor: '#ffffff',
     position: 'relative',

@@ -14,9 +14,7 @@ import {
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {NewPasswordScreenProp} from '../../type';
-import {useMutation} from '@tanstack/react-query';
-import axios, {AxiosError} from 'axios';
-import {CHANGE_PASSWORD_API} from '../../helper/APIUtils';
+import {AxiosError} from 'axios';
 import Loader from '../../components/Loader';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '@/src/helper/Theme';
@@ -136,41 +134,6 @@ export default function NewPasswordScreen({
     }
   };
 
-  // const changePasswordMutation = useMutation({
-  //   mutationKey: ['generate-new-password'],
-  //   mutationFn: async () => {
-  //     const res = await axios.post(CHANGE_PASSWORD_API, {
-  //       email: email,
-  //       newPassword: password,
-  //     });
-  //     return res.data as any;
-  //   },
-  //   onSuccess: () => {
-  //     Alert.alert('Password reset successfully');
-  //     navigation.navigate('LoginScreen');
-  //   },
-
-  //   onError: (error: AxiosError) => {
-  //     if (error.response) {
-  //       const statusCode = error.response.status;
-  //       switch (statusCode) {
-  //         case 400:
-  //           Alert.alert('Error', 'User not found');
-  //           break;
-  //         case 402:
-  //           Alert.alert(
-  //             'Error',
-  //             'New password should not be same as old password',
-  //           );
-  //           break;
-  //         default:
-  //           Alert.alert('Error', 'Something went wrong. Please try again.');
-  //       }
-  //     } else {
-  //       Alert.alert('Error', 'Something went wrong. Please try again.');
-  //     }
-  //   },
-  // });
 
   if (isPending) {
     return <Loader />;
