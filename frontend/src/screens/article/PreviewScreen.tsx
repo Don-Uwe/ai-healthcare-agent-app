@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import {BUTTON_COLOR} from '../../helper/Theme';
 import {
-  ArticleData,
   ContentSuggestionResponse,
   PocketBaseResponse,
   PreviewScreenProp,
@@ -23,8 +22,6 @@ import Loader from '../../components/Loader';
 import {
   GET_IMAGE,
   RENDER_SUGGESTION,
-  SUBMIT_IMPROVEMENT,
-  SUBMIT_SUGGESTED_CHANGES,
   UPLOAD_ARTICLE_TO_POCKETBASE,
   UPLOAD_IMPROVEMENT_TO_POCKETBASE,
 } from '../../helper/APIUtils';
@@ -35,6 +32,8 @@ import Snackbar from 'react-native-snackbar';
 import AutoHeightWebView from '@brown-bear/react-native-autoheight-webview';
 import {useGetProfile} from '@/src/hooks/useGetProfile';
 import {usePostArticleData} from '@/src/hooks/usePostArticle';
+import {useSubmitImprovement} from '@/src/hooks/useSubmitImprovement';
+import {useSubmitSuggestedChanges} from '@/src/hooks/useSubmitSuggestedChanges';
 
 //import io from 'socket.io-client';
 
@@ -64,6 +63,11 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
 
   const {mutate: postMutation, isPending: postMutationPending} =
     usePostArticleData();
+  const {mutate: improvementMutation, isPending: improvementMutationPending} =
+    useSubmitImprovement();
+
+  const {mutate: submitChangesMutation, isPending: submitChangesPending} =
+    useSubmitSuggestedChanges();
 
   const {uploadImage, loading} = useUploadImage();
 
@@ -199,87 +203,6 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
   };
 
 
-
-  const submitChangesMutation = useMutation({
-    mutationKey: ['submit-post-key'],
-    mutationFn: async ({article}: {article: string}) => {
-      const response = await axios.post(
-        SUBMIT_SUGGESTED_CHANGES,
-        {
-          title: title,
-          userId: articleData?.authorId,
-          authorName: authorName,
-          articleId: articleData?._id,
-          content: article,
-          tags: selectedGenres,
-          imageUtils: imageUtils,
-          description: description,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-      return response.data.newArticle as ArticleData;
-    },
-
-    onSuccess: data => {
-      // User will not get notified, until the article published
-
-      Alert.alert('Article updated sucessfully');
-
-      navigation.navigate('TabNavigation');
-    },
-    onError: error => {
-      console.log('Article post Error', error);
-      // console.log(error);
-
-      Alert.alert('Failed to upload your post');
-    },
-  });
-
-  // Submit Improvement
-  const submitImprovementMutation = useMutation({
-    mutationKey: ['submiit-improvemeny-key'],
-    mutationFn: async ({
-      edited_content,
-      recordId,
-    }: {
-      edited_content: string;
-      recordId: string;
-    }) => {
-      const response = await axios.post(
-        SUBMIT_IMPROVEMENT,
-        {
-          requestId: requestId,
-          edited_content: edited_content,
-          pb_recordId: recordId,
-          imageUtils: imageUtils,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-      // console.log(article);
-      return response.data.newArticle as ArticleData;
-    },
-
-    onSuccess: data => {
-      Alert.alert('Changes submitted for review');
-
-      navigation.navigate('TabNavigation');
-    },
-    onError: error => {
-      console.log('Article post Error', error);
-      // console.log(error);
-
-      Alert.alert('Failed to upload your post');
-    },
-  });
-
   const renderSuggestionMutation = useMutation({
     mutationKey: ['render-suggestion-key'],
     mutationFn: async () => {
@@ -346,9 +269,40 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
     onSuccess: (data: PocketBaseResponse) => {
       if (data.html_file) {
         if (articleData) {
-          submitChangesMutation.mutate({
-            article: data.html_file,
-          });
+          submitChangesMutation(
+            {
+              article: data.html_file,
+              title: title,
+              userId: articleData
+                ? typeof articleData.authorId === 'string'
+                  ? articleData.authorId
+                  : articleData.authorId._id
+                : '',
+              authorName: authorName,
+              articleId: articleData?._id,
+              tags: selectedGenres,
+              imageUtils: imageUtils,
+              description: description,
+            },
+            {
+              onSuccess: data => {
+                // User will not get notified, until the article published
+
+                Snackbar.show({
+                  text: 'Article submitted for review',
+                  duration: Snackbar.LENGTH_SHORT,
+                });
+
+                navigation.navigate('TabNavigation');
+              },
+              onError: error => {
+                console.log('Article post Error', error);
+                // console.log(error);
+
+                Alert.alert('Failed to upload your post');
+              },
+            },
+          );
         } else {
           postMutation(
             {
@@ -425,10 +379,29 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
 
     onSuccess: (data: PocketBaseResponse) => {
       if (data.html_file) {
-        submitImprovementMutation.mutate({
-          edited_content: data.html_file,
-          recordId: data.recordId,
-        });
+        improvementMutation(
+          {
+            edited_content: data.html_file,
+            recordId: data.recordId,
+            requestId: requestId ?? '',
+            imageUtils: imageUtils,
+          },
+          {
+            onSuccess: data => {
+              Snackbar.show({
+                text: 'Changes submitted for review',
+                duration: Snackbar.LENGTH_SHORT,
+              });
+
+              navigation.navigate('TabNavigation');
+            },
+            onError: error => {
+              console.log('Article post Error', error);
+
+              Alert.alert('Error', 'Failed to upload your post');
+            },
+          },
+        );
       } else {
         Alert.alert('Failed to upload your post');
       }
@@ -446,8 +419,8 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
     uploadImprovementToPocketbase.isPending ||
     uploadArticleToPocketbase.isPending ||
     postMutationPending ||
-    submitChangesMutation.isPending ||
-    submitImprovementMutation.isPending ||
+    submitChangesPending ||
+    improvementMutationPending ||
     loading
   ) {
     return <Loader />;

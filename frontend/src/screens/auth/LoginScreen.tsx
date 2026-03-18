@@ -19,7 +19,7 @@ import {AuthData, LoginScreenProp, User} from '../../type';
 import {useMutation} from '@tanstack/react-query';
 import axios, {AxiosError} from 'axios';
 import {useDispatch} from 'react-redux';
-import {LOGIN_API, SEND_OTP} from '../../helper/APIUtils';
+import {LOGIN_API} from '../../helper/APIUtils';
 import Loader from '../../components/Loader';
 import {setUserHandle, setUserId, setUserToken} from '../../store/UserSlice';
 import messaging from '@react-native-firebase/messaging';
@@ -27,7 +27,7 @@ import Entypo from '@expo/vector-icons/Entypo';
 import EmailInputBottomSheet from '../../components/EmailInputModal';
 import {useRequestVerification} from '@/src/hooks/useResendVerification';
 import Snackbar from 'react-native-snackbar';
-
+import {useSendOtpMutation} from '@/src/hooks/useSendOtp';
 
 const LoginScreen = ({navigation, route}: LoginScreenProp) => {
   const inset = useSafeAreaInsets();
@@ -49,6 +49,8 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
   const [secureTextEntry, setSecureTextEntry] = useState(true);
   const {mutate: resendVerification, isPending: resendVerificationPending} =
     useRequestVerification();
+
+  const {mutate: sendOtp, isPending: sendOtpPending} = useSendOtpMutation();
 
   const handleSecureEntryClickEvent = () => {
     setSecureTextEntry(!secureTextEntry);
@@ -222,38 +224,6 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
     setEmailInputVisible(false);
   };
 
-  const sendOtpMutation = useMutation({
-    mutationKey: ['forgot-password-otp'],
-    mutationFn: async ({email}: {email: string}) => {
-      const res = await axios.post(SEND_OTP, {
-        email: email,
-      });
-      return res.data.otp as string;
-    },
-
-    onSuccess: () => {
-      Alert.alert('OTP has sent to your mail');
-      navigateToOtpScreen();
-    },
-    onError: error => {
-      // eslint-disable-next-line import/no-named-as-default-member
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          if (error.response.status === 400) {
-            Alert.alert('Error', 'User with this email does not exist.');
-          } else if (error.response.status === 500) {
-            Alert.alert('Error', 'Error sending email.');
-          } else {
-            Alert.alert('Error', 'Something went wrong.');
-          }
-        } else {
-          Alert.alert('Error', 'Network error.');
-        }
-      } else {
-        Alert.alert('Error', 'Network error.');
-      }
-    },
-  });
 
   const navigateToOtpScreen = () => {
     setEmailInputVisible(false);
@@ -262,11 +232,7 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
     });
   };
 
-  if (
-    loginMutation.isPending ||
-    sendOtpMutation.isPending ||
-    resendVerificationPending
-  ) {
+  if (loginMutation.isPending || sendOtpPending || resendVerificationPending) {
     return <Loader />;
   }
   return (
@@ -477,20 +443,20 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
                       switch (statusCode) {
                         case 400:
                           Snackbar.show({
-                            text: "User not found or already verified",
-                            duration: Snackbar.LENGTH_SHORT
+                            text: 'User not found or already verified',
+                            duration: Snackbar.LENGTH_SHORT,
                           });
                           break;
                         case 429:
                           Snackbar.show({
-                            text: "Verification email already sent, please try again after 1 hour",
-                            duration: Snackbar.LENGTH_SHORT
+                            text: 'Verification email already sent, please try again after 1 hour',
+                            duration: Snackbar.LENGTH_SHORT,
                           });
                           break;
                         case 500:
                           Snackbar.show({
-                            text: "Internal server error, try again",
-                            duration: Snackbar.LENGTH_SHORT
+                            text: 'Internal server error, try again',
+                            duration: Snackbar.LENGTH_SHORT,
                           });
 
                           break;
@@ -507,7 +473,38 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
                 },
               );
             } else {
-              sendOtpMutation.mutate({email});
+              sendOtp(
+                {
+                  email,
+                },
+                {
+                  onSuccess: () => {
+                    Alert.alert('OTP has sent to your mail');
+                    navigateToOtpScreen();
+                  },
+                  onError: error => {
+                    // eslint-disable-next-line import/no-named-as-default-member
+                    if (axios.isAxiosError(error)) {
+                      if (error.response) {
+                        if (error.response.status === 400) {
+                          Alert.alert(
+                            'Error',
+                            'User with this email does not exist.',
+                          );
+                        } else if (error.response.status === 500) {
+                          Alert.alert('Error', 'Error sending email.');
+                        } else {
+                          Alert.alert('Error', 'Something went wrong.');
+                        }
+                      } else {
+                        Alert.alert('Error', 'Network error.');
+                      }
+                    } else {
+                      Alert.alert('Error', 'Network error.');
+                    }
+                  },
+                },
+              );
             }
           }}
           backButtonClick={handleEmailInputBack}

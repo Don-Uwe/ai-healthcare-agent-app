@@ -4,7 +4,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {OtpScreenProp} from '../../type';
 import {useMutation} from '@tanstack/react-query';
 import axios, {AxiosError} from 'axios';
-import {CHECK_OTP, SEND_OTP} from '../../helper/APIUtils';
+import {CHECK_OTP} from '../../helper/APIUtils';
 import Loader from '../../components/Loader';
 import {
   Theme,
@@ -16,14 +16,15 @@ import {
   Paragraph,
   Card,
 } from 'tamagui';
+import {useSendOtpMutation} from '@/src/hooks/useSendOtp';
 
 export default function OtpScreen({navigation, route}: OtpScreenProp) {
   const [otp, setOtp] = useState(['', '', '', '']);
   const inputs = useRef<(TextInput | null)[]>([]);
   const {email} = route.params;
-  
 
   const [errorMessages, setErrorMessages] = useState<string[]>();
+  const {mutate: sendOtp, isPending: sendOtpPending} = useSendOtpMutation();
 
   const handleSubmit = () => {
     //navigation.navigate('NewPasswordScreen');
@@ -38,39 +39,6 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
       });
     }
   };
-
-  const sendOtpMutation = useMutation({
-    mutationKey: ['forgot-password-otp'],
-    mutationFn: async () => {
-      const res = await axios.post(SEND_OTP, {
-        email: email,
-      });
-      return res.data.otp as string;
-    },
-
-    onSuccess: () => {
-      Alert.alert('OTP has sent to your mail');
-      setOtp(Array(4).fill(''));
-      setErrorMessages(undefined);
-    },
-    onError: error => {
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          if (error.response.status === 400) {
-            Alert.alert('Error', 'User with this email does not exist.');
-          } else if (error.response.status === 500) {
-            Alert.alert('Error', 'Error sending email.');
-          } else {
-            Alert.alert('Error', 'Something went wrong.');
-          }
-        } else {
-          Alert.alert('Error', 'Network error.');
-        }
-      } else {
-        Alert.alert('Error', 'Network error.');
-      }
-    },
-  });
 
   const verifyOtpMutation = useMutation({
     mutationKey: ['verify-otp'],
@@ -112,7 +80,7 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
     }
   };
 
-  if (sendOtpMutation.isPending || verifyOtpMutation.isPending) {
+  if (sendOtpPending || verifyOtpMutation.isPending) {
     return <Loader />;
   }
   return (
@@ -209,10 +177,43 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
               <Paragraph color="$gray10" fontSize={15}>
                 Didn’t receive the code?{' '}
                 <Text
-                onPress={()=>{
-                  sendOtpMutation.mutate();
-                }} 
-                color="$blue10" fontWeight="600">
+                  onPress={() => {
+                    sendOtp(
+                      {
+                        email,
+                      },
+                      {
+                        onSuccess: () => {
+                          Alert.alert('OTP has sent to your mail');
+                          setOtp(Array(4).fill(''));
+                          setErrorMessages(undefined);
+                        },
+                        onError: error => {
+                          // eslint-disable-next-line import/no-named-as-default-member
+                          if (axios.isAxiosError(error)) {
+                            if (error.response) {
+                              if (error.response.status === 400) {
+                                Alert.alert(
+                                  'Error',
+                                  'User with this email does not exist.',
+                                );
+                              } else if (error.response.status === 500) {
+                                Alert.alert('Error', 'Error sending email.');
+                              } else {
+                                Alert.alert('Error', 'Something went wrong.');
+                              }
+                            } else {
+                              Alert.alert('Error', 'Network error.');
+                            }
+                          } else {
+                            Alert.alert('Error', 'Network error.');
+                          }
+                        },
+                      },
+                    );
+                  }}
+                  color="$blue10"
+                  fontWeight="600">
                   Resend
                 </Text>
               </Paragraph>

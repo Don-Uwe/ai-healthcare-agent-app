@@ -17,12 +17,7 @@ import {useSelector} from 'react-redux';
 import axios from 'axios';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import IonIcons from '@expo/vector-icons/Ionicons';
-import {useMutation} from '@tanstack/react-query';
-import {
-  GET_ARTICLE_CONTENT,
-  GET_IMAGE,
-  SAVE_ARTICLE,
-} from '../helper/APIUtils';
+import {GET_ARTICLE_CONTENT, GET_IMAGE} from '../helper/APIUtils';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import {
   formatCount,
@@ -42,6 +37,7 @@ import {FontAwesome, FontAwesome6} from '@expo/vector-icons';
 import Snackbar from 'react-native-snackbar';
 import {useGetProfile} from '../hooks/useGetProfile';
 import {useLikeArticle} from '../hooks/useLikeArticle';
+import {useSaveArticle} from '../hooks/useSaveArticle';
 
 const ArticleCard = ({
   item,
@@ -73,7 +69,12 @@ const ArticleCard = ({
   );
   const [likeCount, setLikeCount] = useState(item.likedUsers.length);
 
+  const [saved, setSaved] = useState(item.savedUsers.includes(user_id));
+
   const {mutate: likeMutation, isPending: likeMutationPending} = useLikeArticle(
+    Number(item._id),
+  );
+  const {mutate: saveMutation, isPending: saveMutationPending} = useSaveArticle(
     Number(item._id),
   );
 
@@ -105,37 +106,6 @@ const ArticleCard = ({
       console.log('connection established');
     });
   }, [socket]);
-
-  const updateSaveStatusMutation = useMutation({
-    mutationKey: ['update-view-count'],
-    mutationFn: async () => {
-      if (user_token === '') {
-        Alert.alert('No token found');
-        return;
-      }
-      const res = await axios.post(
-        SAVE_ARTICLE,
-        {
-          article_id: item._id,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-
-      return res.data as any;
-    },
-    onSuccess: async () => {
-      success();
-    },
-
-    onError: () => {
-      Alert.alert('Internal server error, try again!');
-    },
-  });
-
 
   const onChange = () => {
     setMenuVisible(true);
@@ -368,7 +338,7 @@ const ArticleCard = ({
                   if (isConnected) {
                     setLikeCount(prev => (isLiked ? prev - 1 : prev + 1));
 
-                    likeMutation({
+                    likeMutation(undefined, {
                       onSuccess: (data: {
                         article: ArticleData;
                         likeStatus: boolean;
@@ -472,7 +442,7 @@ const ArticleCard = ({
               </TouchableOpacity>
             )}
 
-            {updateSaveStatusMutation.isPending ? (
+            {saveMutationPending ? (
               <ActivityIndicator size="small" color={PRIMARY_COLOR} />
             ) : (
               <TouchableOpacity
@@ -480,7 +450,22 @@ const ArticleCard = ({
                   if (isConnected) {
                     width.value = withTiming(0, {duration: 250});
                     yValue.value = withTiming(100, {duration: 250});
-                    updateSaveStatusMutation.mutate();
+                    saveMutation(undefined, {
+                      onSuccess: async () => {
+                        Snackbar.show({
+                          text: "Article saved!",
+                          duration: Snackbar.LENGTH_SHORT
+                        });
+                        setSaved(!saved);
+                      },
+
+                      onError: () => {
+                         Snackbar.show({
+                          text: "Something went wrong, try again!",
+                          duration: Snackbar.LENGTH_SHORT
+                        });
+                      },
+                    });
                   } else {
                     Snackbar.show({
                       text: 'Please check your network connection',
@@ -489,7 +474,7 @@ const ArticleCard = ({
                   }
                 }}
                 style={styles.likeSaveChildContainer}>
-                {item.savedUsers.includes(user_id) ? (
+                {saved ? (
                   <IonIcons name="bookmark" size={24} color={PRIMARY_COLOR} />
                 ) : (
                   <IonIcons

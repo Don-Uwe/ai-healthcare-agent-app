@@ -18,7 +18,8 @@ import Snackbar from 'react-native-snackbar';
 import {hp, wp} from '../../helper/Metric';
 import {PRIMARY_COLOR} from '../../helper/Theme';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import { useGetReasons } from '@/src/hooks/useGetReportReasons';
+import {useGetReasons} from '@/src/hooks/useGetReportReasons';
+import {useSubmitReport} from '@/src/hooks/useSubmitReport';
 
 export default function ReportScreen({navigation, route}: ReportScreenProp) {
   const {articleId, commentId, authorId, podcastId} = route.params;
@@ -27,51 +28,11 @@ export default function ReportScreen({navigation, route}: ReportScreenProp) {
   const [selectedReasonId, setSelectedReasonId] = useState<string>('');
 
   const {data: reasons, isLoading} = useGetReasons(isConnected);
+  const {mutate: submitReport, isPending: submitReportPending} =
+    useSubmitReport();
 
-  //console.log(reasons[0].reason)
-  const submitReportMutation = useMutation({
-    mutationKey: ['submit-report'],
-    mutationFn: async () => {
-      if (user_token === '') {
-        Alert.alert('No token found');
-        return;
-      }
 
-      const res = await axios.post(
-        SUBMIT_REPORT,
-        {
-          articleId: podcastId ? null : articleId,
-          podcastId: podcastId,
-          commentId: commentId,
-          reportedBy: user_id,
-          reasonId: selectedReasonId,
-          authorId: authorId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-
-      return res.data as any;
-    },
-    onSuccess: () => {
-      Snackbar.show({
-        text: 'Report submitted',
-        duration: Snackbar.LENGTH_SHORT,
-      });
-
-      navigation.navigate('ReportConfirmationScreen');
-    },
-
-    onError: error => {
-      // console.log('Update View Count Error', error);
-      Alert.alert('Internal server error, try again!');
-    },
-  });
-
-  if (isLoading) {
+  if (isLoading || submitReportPending) {
     return <Loader />;
   }
   return (
@@ -127,7 +88,31 @@ export default function ReportScreen({navigation, route}: ReportScreenProp) {
                     {
                       text: 'OK',
                       onPress: () => {
-                        submitReportMutation.mutate();
+                        submitReport(
+                          {
+                            articleId: podcastId ? null : Number(articleId),
+                            podcastId: podcastId,
+                            commentId: commentId,
+                            reportedBy: user_id,
+                            reasonId: selectedReasonId,
+                            authorId: authorId,
+                          },
+                          {
+                            onSuccess: () => {
+                              Snackbar.show({
+                                text: 'Report submitted',
+                                duration: Snackbar.LENGTH_SHORT,
+                              });
+
+                              navigation.navigate('ReportConfirmationScreen');
+                            },
+
+                            onError: error => {
+                              // console.log('Update View Count Error', error);
+                              Alert.alert('Something went wrong, try again!');
+                            },
+                          },
+                        );
                       },
                     },
                   ],

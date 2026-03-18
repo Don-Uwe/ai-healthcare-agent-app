@@ -4,11 +4,11 @@ import { SUBMIT_REPORT } from "../helper/APIUtils";
 
 type SubmitReportParams = {
   articleId?: number | null;
-  podcastId?: number | null;
-  commentId?: number | null;
-  reportedBy: number;
-  reasonId: number;
-  authorId: number;
+  podcastId?: string | null;
+  commentId?: string | null;
+  reportedBy: string;
+  reasonId: string;
+  authorId: string;
 };
 
 export const useSubmitReport = ():UseMutationResult<
