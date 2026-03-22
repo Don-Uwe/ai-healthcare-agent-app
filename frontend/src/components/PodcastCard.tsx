@@ -1,13 +1,14 @@
 import React, {useRef} from 'react';
-import {TouchableOpacity, Alert} from 'react-native';
-import {YStack, XStack, Image, Text, styled} from 'tamagui';
-import {Entypo} from '@expo/vector-icons';
+import {TouchableOpacity, Alert, StyleSheet, View} from 'react-native';
+import {YStack, XStack, Image, Text} from 'tamagui';
+import {Entypo, Ionicons} from '@expo/vector-icons';
 import {formatCount} from '../helper/Utils';
 import {Category} from '../type';
 import {BottomSheetModal} from '@gorhom/bottom-sheet';
 import PodcastActions from './PodcastActions';
 import Share from 'react-native-share';
 import {GET_STORAGE_DATA} from '../helper/APIUtils';
+import {GlassStyles, ProfessionalColors, BorderRadius} from '../styles/GlassStyles';
 
 
 interface PodcastProps {
@@ -76,96 +77,153 @@ const PodcastCard = ({
         : `${GET_STORAGE_DATA}/${imageUri}`
       : 'https://t3.ftcdn.net/jpg/05/10/75/30/360_F_510753092_f4AOmCJAczuGgRLCmHxmowga2tC9VYQP.jpg';
 
-  const CardContainer = styled(YStack, {
-    width: '100%',
-    borderRadius: 20,
-    backgroundColor: 'white',
-    padding: '$2',
-    marginVertical: '$3',
-    shadowColor: '#00000022',
-    elevation: 2,
-    overflow: 'hidden', 
-  });
-
-  const TagText = styled(Text, {
-    backgroundColor: '#f0f0f0',
-    color: '$blue10',
-    fontSize: 12,
-    paddingHorizontal: '$2',
-    paddingVertical: '$1',
-    borderRadius: 12,
-  });
-
   return (
-    
-    <CardContainer onPress={handleClick}>
-      <XStack gap="$3" alignItems="center" justifyContent="space-between">
-        {/* Left section: Image + Text */}
-        <XStack flex={1} gap="$3"  height="100%" alignItems="flex-start">
-          <Image source={{uri}} width={100} height="100%" borderRadius={20} 
-           
+    <TouchableOpacity onPress={handleClick} activeOpacity={0.9} style={styles.cardWrapper}>
+      <View style={[GlassStyles.glassCardElevated, styles.cardContainer]}>
+        {/* Cover Image with Gradient Overlay */}
+        <View style={styles.imageContainer}>
+          <Image
+            source={{uri}}
+            style={styles.coverImage}
+            borderRadius={BorderRadius.lg}
           />
+          {/* Glass Overlay on Image */}
+          <View style={styles.imageOverlay}>
+            <View style={[styles.playButton, GlassStyles.glassContainer]}>
+              <Ionicons name="play" size={24} color={ProfessionalColors.white} />
+            </View>
+          </View>
+        </View>
 
-          <YStack flex={1} gap="$1" overflow="hidden">
-            <Text
-              fontSize={16}
-              fontWeight="700"
-              numberOfLines={3}
-              ellipsizeMode="tail">
-              {title}
-            </Text>
+        {/* Content Section */}
+        <YStack padding="$3" gap="$2" flex={1}>
+          {/* Title */}
+          <Text
+            fontSize={17}
+            fontWeight="700"
+            color={ProfessionalColors.gray900}
+            numberOfLines={2}
+            ellipsizeMode="tail">
+            {title}
+          </Text>
 
-            <Text fontSize={14} color="$gray11">
+          {/* Host Name */}
+          <XStack alignItems="center" gap="$2">
+            <Ionicons name="person-circle-outline" size={18} color={ProfessionalColors.gray600} />
+            <Text fontSize={14} fontWeight="500" color={ProfessionalColors.gray700}>
               {host}
             </Text>
+          </XStack>
 
-            <XStack flexWrap="wrap" gap="$1" marginTop="$1">
-              {tags?.map((tag, i) => (
-                <TagText key={i}>#{tag.name}</TagText>
-              ))}
-            </XStack>
+          {/* Tags */}
+          <XStack flexWrap="wrap" gap="$1.5" marginTop="$1">
+            {tags?.slice(0, 3).map((tag, i) => (
+              <View key={i} style={styles.tag}>
+                <Text style={styles.tagText}>#{tag.name}</Text>
+              </View>
+            ))}
+          </XStack>
 
-            <XStack alignItems="center" marginTop="$1" gap="$1">
-              <Text color="$gray10">
+          {/* Stats Section */}
+          <XStack alignItems="center" justifyContent="space-between" marginTop="$2">
+            <XStack alignItems="center" gap="$1">
+              <Ionicons name="eye-outline" size={16} color={ProfessionalColors.gray600} />
+              <Text fontSize={13} fontWeight="500" color={ProfessionalColors.gray600}>
                 {views <= 1 ? `${views} view` : `${formatCount(views)} views`}
               </Text>
-              <Text fontSize={14} color="$gray10" marginTop="$1">
+            </XStack>
+
+            <XStack alignItems="center" gap="$1">
+              <Ionicons name="time-outline" size={16} color={ProfessionalColors.gray600} />
+              <Text fontSize={13} fontWeight="500" color={ProfessionalColors.gray600}>
                 {duration}
               </Text>
             </XStack>
-          </YStack>
-        </XStack>
+          </XStack>
+        </YStack>
 
-        {/* Right section: Play button + duration */}
-        
-      </XStack>
+        {/* Menu Button (top-right corner) */}
+        {display && (
+          <TouchableOpacity
+            style={[styles.menuButton, GlassStyles.glassContainer]}
+            onPress={handleOpenSheet}
+            activeOpacity={0.7}>
+            <Entypo name="dots-three-vertical" size={18} color={ProfessionalColors.gray800} />
+          </TouchableOpacity>
+        )}
 
-      {/* Dots icon (top-right corner) */}
-      {display && (
-        <TouchableOpacity
-          style={{
-            position: 'absolute',
-            top: 6,
-            right: 6,
-            padding: 4,
-            backgroundColor: 'transparent',
-          }}
-          onPress={handleOpenSheet}>
-          <Entypo name="dots-three-vertical" size={18} color="black" />
-        </TouchableOpacity>
-      )}
-
-      <PodcastActions
-        ref={sheetRef}
-        downloaded={downloaded}
-        onShare={handleShare}
-        onReport={handleReport}
-        onDownload={downLoadAudio}
-        onSave={() => playlistAct(id)}
-      />
-    </CardContainer>
-  
+        <PodcastActions
+          ref={sheetRef}
+          downloaded={downloaded}
+          onShare={handleShare}
+          onReport={handleReport}
+          onDownload={downLoadAudio}
+          onSave={() => playlistAct(id)}
+        />
+      </View>
+    </TouchableOpacity>
   );
 };
+
+const styles = StyleSheet.create({
+  cardWrapper: {
+    marginVertical: 8,
+    width: '100%',
+  },
+  cardContainer: {
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  imageContainer: {
+    width: '100%',
+    height: 200,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  coverImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  imageOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  playButton: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 191, 255, 0.9)',
+  },
+  tag: {
+    backgroundColor: ProfessionalColors.primaryGlass,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: ProfessionalColors.primary + '30',
+  },
+  tagText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: ProfessionalColors.primary,
+    textTransform: 'capitalize',
+  },
+  menuButton: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+});
 
 export default PodcastCard;

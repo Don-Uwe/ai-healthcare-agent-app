@@ -68,6 +68,7 @@ yarn-error.log
 # testing
 /coverage
 .env
+design.md
 
 # Yarn
 .yarn/*

@@ -252,122 +252,168 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
 
   return (
     <Theme name="dark">
-      <YStack flex={1} bg="#071225" ai="center" jc="center" px="$4" space="$6">
-        {/* Header */}
-        <Text color="white" fontSize={28} fontWeight="700" marginBottom="$2">
-          Podcast Recorder
-        </Text>
+      <YStack flex={1} bg="#0F172A" ai="center" jc="center" px="$4" space="$4">
+        {/* Header Section */}
+        <YStack ai="center" space="$2" mb="$4">
+          <Text color="#F1F5F9" fontSize={32} fontWeight="800" letterSpacing={1}>
+            Podcast Studio
+          </Text>
+          <Text color="#94A3B8" fontSize={15} fontWeight="500">
+            Record your voice with studio quality
+          </Text>
+        </YStack>
 
-        {/* Waveform Top */}
-        <YStack ai="center" jc="center" space="$3">
+        {/* Microphone Icon with Animation */}
+        <YStack ai="center" jc="center" space="$3" my="$4">
           <YStack
-            w={120}
-            h={120}
-            bg={recording ? '#38bdf8' : '#0a1e3a'}
+            w={140}
+            h={140}
+            bg={recording ? '#3B82F6' : '#1E293B'}
             ai="center"
             jc="center"
-            borderRadius={60}>
+            borderRadius={70}
+            borderWidth={recording ? 4 : 0}
+            borderColor={recording ? '#60A5FA' : 'transparent'}
+            shadowColor="#3B82F6"
+            shadowOffset={{width: 0, height: recording ? 8 : 4}}
+            shadowOpacity={recording ? 0.4 : 0.2}
+            shadowRadius={recording ? 20 : 10}
+            elevation={recording ? 8 : 4}>
             <Icon
               name="microphone"
-              size={48}
-              color={recording ? '#0a1e3a' : '#3bc9f7'}
+              size={60}
+              color={recording ? '#FFFFFF' : '#60A5FA'}
             />
           </YStack>
         </YStack>
 
-        {/* Timer */}
-        <Text
-          fontSize={48}
-          color="#3bc9f7"
-          fontWeight="700"
-          mt="$3"
-          letterSpacing={2}>
-          {recordTime}
-        </Text>
+        {/* Timer Display */}
+        <YStack ai="center" bg="#1E293B" px="$6" py="$4" borderRadius={16} mb="$2">
+          <Text
+            fontSize={56}
+            color="#60A5FA"
+            fontWeight="800"
+            letterSpacing={4}
+            fontFamily="monospace">
+            {recordTime}
+          </Text>
+          <Text color="#94A3B8" fontSize={13} fontWeight="600" mt="$1">
+            {uiState === 'recording' ? 'RECORDING IN PROGRESS' : uiState === 'review' ? 'RECORDING COMPLETE' : 'READY TO RECORD'}
+          </Text>
+        </YStack>
 
-        {/* Mid Wave */}
-        {/**
-     *    <YStack w="100%" h={80} ai="center" jc="center" mt="$2">
-        <AmplitudeWave audioWaves={amplitudes} />
-      </YStack>
-     */}
+        {/* Waveform Animation */}
         {recording && (
-          <LottieView
-            source={require('../assets/LottieAnimation/sound-voice-waves.json')}
-            autoPlay
-            loop
-            style={{
-              width: 150,
-              height: 150,
-            }}
-          />
+          <YStack ai="center" my="$3">
+            <LottieView
+              source={require('../assets/LottieAnimation/sound-voice-waves.json')}
+              autoPlay
+              loop
+              style={{
+                width: 200,
+                height: 100,
+              }}
+            />
+          </YStack>
         )}
 
         {/* Action Controls */}
-        <XStack jc="center" ai="center" space="$5" mt="$4">
-          {/* Play preview */}
+        <XStack jc="center" ai="center" space="$6" mt="$6">
+          {/* Play Preview Button */}
           {uiState === 'review' && (
-            <Circle
-              size={60}
-              bg="#1c3a63"
-              ai="center"
-              jc="center"
-              onPress={() =>
-                navigation.navigate('PodcastPlayer', {
-                  title,
-                  description,
-                  imageUtils,
-                  selectedGenres,
-                  filePath: audioRecorder.uri,
-                })
-              }>
-              <Icon name="play" size={32} color="white" />
-            </Circle>
+            <YStack ai="center" space="$2">
+              <Circle
+                size={70}
+                bg="#1E293B"
+                ai="center"
+                jc="center"
+                borderWidth={2}
+                borderColor="#3B82F6"
+                pressStyle={{scale: 0.95, bg: '#334155'}}
+                onPress={() =>
+                  navigation.navigate('PodcastPlayer', {
+                    title,
+                    description,
+                    imageUtils,
+                    selectedGenres,
+                    filePath: audioRecorder.uri,
+                  })
+                }>
+                <Icon name="play" size={36} color="#60A5FA" />
+              </Circle>
+              <Text color="#94A3B8" fontSize={12} fontWeight="600">
+                PLAY
+              </Text>
+            </YStack>
           )}
 
-          {/* Record/Stop main button */}
-          <Circle
-            size={110}
-            ai="center"
-            jc="center"
-            bg="transparent"
-            borderWidth={4}
-            borderColor="#32c2f1"
-            onPress={
-              uiState === 'idle' || uiState === 'review'
-                ? handleStartRecording
-                : handleStopRecording
-            }>
+          {/* Main Record/Stop Button */}
+          <YStack ai="center" space="$2">
             <Circle
-              size={70}
-              bg={uiState === 'recording' ? '#d32626' : '#32c2f1'}
-              ai="center"
-              jc="center">
-              <Icon
-                name={uiState === 'recording' ? 'stop' : 'record-circle'}
-                size={40}
-                color="white"
-              />
-            </Circle>
-          </Circle>
-
-          {/* Re-record */}
-          {uiState === 'review' && (
-            <Circle
-              size={60}
-              bg="#1c3a63"
+              size={120}
               ai="center"
               jc="center"
-              onPress={handleReRecord}>
-              <Icon name="refresh" size={32} color="white" />
+              bg="transparent"
+              borderWidth={5}
+              borderColor={uiState === 'recording' ? '#EF4444' : '#3B82F6'}
+              pressStyle={{scale: 0.95}}
+              shadowColor={uiState === 'recording' ? '#EF4444' : '#3B82F6'}
+              shadowOffset={{width: 0, height: 4}}
+              shadowOpacity={0.5}
+              shadowRadius={12}
+              elevation={6}
+              onPress={
+                uiState === 'idle' || uiState === 'review'
+                  ? handleStartRecording
+                  : handleStopRecording
+              }>
+              <Circle
+                size={85}
+                bg={uiState === 'recording' ? '#EF4444' : '#3B82F6'}
+                ai="center"
+                jc="center">
+                <Icon
+                  name={uiState === 'recording' ? 'stop' : 'record-circle'}
+                  size={48}
+                  color="white"
+                />
+              </Circle>
             </Circle>
+            <Text color="#94A3B8" fontSize={12} fontWeight="600">
+              {uiState === 'recording' ? 'STOP' : 'RECORD'}
+            </Text>
+          </YStack>
+
+          {/* Re-record Button */}
+          {uiState === 'review' && (
+            <YStack ai="center" space="$2">
+              <Circle
+                size={70}
+                bg="#1E293B"
+                ai="center"
+                jc="center"
+                borderWidth={2}
+                borderColor="#F59E0B"
+                pressStyle={{scale: 0.95, bg: '#334155'}}
+                onPress={handleReRecord}>
+                <Icon name="refresh" size={36} color="#FBBF24" />
+              </Circle>
+              <Text color="#94A3B8" fontSize={12} fontWeight="600">
+                RETRY
+              </Text>
+            </YStack>
           )}
         </XStack>
 
-        {/* Footer */}
-        <Text color="#8ea6c1" fontSize={19} marginTop="$2">
-          Title: {title}
-        </Text>
+        {/* Article Title Display */}
+        <YStack ai="center" mt="$6" px="$4" py="$3" bg="#1E293B" borderRadius={12} maxWidth="90%">
+          <Text color="#64748B" fontSize={12} fontWeight="600" mb="$1">
+            PODCAST TITLE
+          </Text>
+          <Text color="#E2E8F0" fontSize={17} fontWeight="700" textAlign="center">
+            {title}
+          </Text>
+        </YStack>
       </YStack>
     </Theme>
   );

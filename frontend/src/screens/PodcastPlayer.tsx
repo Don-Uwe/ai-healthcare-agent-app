@@ -332,64 +332,77 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
     <Theme name="dark">
       <YStack
         flex={1}
-        backgroundColor="#0B1425"
-        padding="$6"
-        paddingTop="$10"
+        backgroundColor="#0F172A"
+        padding="$5"
+        paddingTop="$8"
         justifyContent="space-between">
-        <YStack>
-          <Text color="white" fontSize={42} fontWeight="700">
+
+        {/* Header Section */}
+        <YStack mb="$4">
+          <Text color="#94A3B8" fontSize={13} fontWeight="600" mb="$2" letterSpacing={1}>
+            NOW PLAYING
+          </Text>
+          <Text color="#F1F5F9" fontSize={28} fontWeight="800" lineHeight={34}>
             {title}
           </Text>
-          <Text color="#B8C1D1" fontSize={18} marginTop="$2">
+          <Text color="#94A3B8" fontSize={16} marginTop="$3" lineHeight={24}>
             {description}
           </Text>
         </YStack>
 
-        <YStack alignItems="center" marginTop="$4">
+        {/* Upload Button Section */}
+        <YStack alignItems="center" my="$5">
           <Circle
-            size={100}
-            backgroundColor="#0D1A33"
-            shadowColor="#00D1FF"
-            shadowOffset={{width: 0, height: 0}}
-            shadowRadius={40}
+            size={110}
+            backgroundColor="#1E293B"
+            borderWidth={3}
+            borderColor="#3B82F6"
+            shadowColor="#3B82F6"
+            shadowOffset={{width: 0, height: 8}}
+            shadowRadius={24}
+            shadowOpacity={0.4}
             onPress={handlePostSubmit}
+            pressStyle={{scale: 0.95, backgroundColor: '#334155'}}
             alignSelf="center"
             justifyContent="center">
-            <AntDesign name="cloud-upload" size={75} color={'#72D8FF'} />
+            <AntDesign name="cloud-upload" size={50} color={'#60A5FA'} />
           </Circle>
           <Text
-            style={{
-              marginTop: 12,
-              color: '#72D8FF',
-              fontSize: 16,
-              fontWeight: 'bold',
-              textAlign: 'center',
-            }}>
-            Tap to upload
+            marginTop="$3"
+            color="#60A5FA"
+            fontSize={15}
+            fontWeight="700"
+            textAlign="center"
+            letterSpacing={0.5}>
+            UPLOAD PODCAST
           </Text>
         </YStack>
 
+        {/* Waveform Visualization */}
         {player.currentStatus.playing && (
-          <LottieView
-            source={require('../assets/LottieAnimation/sound-voice-waves.json')}
-            autoPlay
-            loop
-            style={{
-              width: '100%',
-              height: 150,
-            }}
-          />
+          <YStack alignItems="center" height={120} my="$2">
+            <LottieView
+              source={require('../assets/LottieAnimation/sound-voice-waves.json')}
+              autoPlay
+              loop
+              style={{
+                width: '100%',
+                height: 120,
+              }}
+            />
+          </YStack>
         )}
 
-        <YStack marginTop="$1">
+        {/* Progress Slider Section */}
+        <YStack my="$4" bg="#1E293B" borderRadius={16} padding="$4">
           <Slider
             style={styles.slider}
             minimumValue={0}
             maximumValue={duration}
             value={position}
-            minimumTrackTintColor={PRIMARY_COLOR}
-            maximumTrackTintColor="#ccc"
-            thumbTintColor={PRIMARY_COLOR}
+            minimumTrackTintColor="#3B82F6"
+            maximumTrackTintColor="#334155"
+            thumbTintColor="#60A5FA"
             onSlidingComplete={async (value: number) => {
               if (player) {
                 await player.seekTo(value);
@@ -398,26 +411,47 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
             }}
           />
 
-          <XStack justifyContent="space-between" marginTop="$3">
-            <Text color="#C0C9DA">{formatSecTime(position)}</Text>
-            <Text color="#C0C9DA">{formatSecTime(duration)}</Text>
+          <XStack justifyContent="space-between" marginTop="$2">
+            <Text color="#94A3B8" fontSize={14} fontWeight="600" fontFamily="monospace">
+              {formatSecTime(position)}
+            </Text>
+            <Text color="#94A3B8" fontSize={14} fontWeight="600" fontFamily="monospace">
+              {formatSecTime(duration)}
+            </Text>
           </XStack>
         </YStack>
 
+        {/* Playback Controls */}
         <XStack
-          justifyContent="space-around"
+          justifyContent="center"
           alignItems="center"
-          marginTop="$4">
-          <Button
-            height={90}
-            chromeless
+          marginTop="$5"
+          marginBottom="$4"
+          space="$6">
+
+          {/* Backward Button */}
+          <Circle
+            size={65}
+            backgroundColor="#1E293B"
+            borderWidth={2}
+            borderColor="#334155"
+            pressStyle={{scale: 0.9, backgroundColor: '#334155'}}
             onPress={handleBackward}
-            icon={<Ionicons name="play-back" size={26} color="#9BB3C8" />}
-          />
-          <Button
-            width={90}
-            height={90}
-            borderRadius={45}
+            justifyContent="center"
+            alignItems="center">
+            <Ionicons name="play-back" size={28} color="#94A3B8" />
+          </Circle>
+
+          {/* Play/Pause Button */}
+          <Circle
+            size={90}
+            backgroundColor="#3B82F6"
+            shadowColor="#3B82F6"
+            shadowOffset={{width: 0, height: 8}}
+            shadowRadius={20}
+            shadowOpacity={0.5}
+            elevation={8}
+            pressStyle={{scale: 0.95}}
             onPress={() => {
               if (player.currentStatus.playing) {
                 handlePause();
@@ -425,35 +459,39 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
                 handlePlay();
               }
             }}
-            backgroundColor="#4ACDFF"
-            icon={
-              player?.currentStatus.playing ? (
-                <Ionicons name="pause" size={50} color="white" />
-              ) : (
-                <Ionicons name="play" size={50} color="white" />
-              )
-            }
-            elevate
-            shadowColor="#4ACDFF"
-            shadowRadius={30}
-            shadowOffset={{width: 0, height: 0}}
-          />
+            justifyContent="center"
+            alignItems="center">
+            {player?.currentStatus.playing ? (
+              <Ionicons name="pause" size={45} color="white" />
+            ) : (
+              <Ionicons name="play" size={45} color="white" />
+            )}
+          </Circle>
 
-          <Button
-            height={90}
-            chromeless
+          {/* Forward Button */}
+          <Circle
+            size={65}
+            backgroundColor="#1E293B"
+            borderWidth={2}
+            borderColor="#334155"
+            pressStyle={{scale: 0.9, backgroundColor: '#334155'}}
             onPress={handleForward}
-            icon={<Ionicons name="play-forward" size={26} color="#9BB3C8" />}
-          />
+            justifyContent="center"
+            alignItems="center">
+            <Ionicons name="play-forward" size={28} color="#94A3B8" />
+          </Circle>
         </XStack>
 
+        {/* Footer Info */}
         <Text
           marginTop="$4"
-          marginBottom="$6"
+          marginBottom="$2"
           textAlign="center"
-          color="#8FA3BB"
-          fontSize={13}>
-          Saved at:{filePath}
+          color="#64748B"
+          fontSize={11}
+          numberOfLines={1}
+          ellipsizeMode="middle">
+          {filePath}
         </Text>
       </YStack>
     </Theme>

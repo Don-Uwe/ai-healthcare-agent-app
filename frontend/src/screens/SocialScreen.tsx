@@ -6,19 +6,21 @@ import {
   TouchableOpacity,
   Image,
   Platform,
-  Alert,
   ActivityIndicator,
+  ScrollView,
 } from 'react-native';
 import {SocialScreenProps} from '../type';
-import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
-import {FOLLOW_USER, GET_STORAGE_DATA} from '../helper/APIUtils';
+import {PRIMARY_COLOR} from '../helper/Theme';
+import {GET_STORAGE_DATA} from '../helper/APIUtils';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useSelector} from 'react-redux';
-import {useMutation, useQueryClient} from '@tanstack/react-query';
-import axios from 'axios';
+import {useQueryClient} from '@tanstack/react-query';
 import {useSocket} from '../../SocketContext';
 import Loader from '../components/Loader';
-import { useGetUserSocials } from '../hooks/useGetUserSocialCircle';
+import {useGetUserSocials} from '../hooks/useGetUserSocialCircle';
+import {useUpdateFollowStatus} from '../hooks/useUpdateFollowStatus';
+import Snackbar from 'react-native-snackbar';
+import {GlassStyles, ProfessionalColors} from '../styles/GlassStyles';
 
 export default function Socialcreen({navigation, route}: SocialScreenProps) {
   const insets = useSafeAreaInsets();
@@ -27,7 +29,11 @@ export default function Socialcreen({navigation, route}: SocialScreenProps) {
   const socket = useSocket();
   const [userid, setUserId] = useState<string>('');
   const queryClient = useQueryClient();
-  const {user_id, user_token, user_handle} = useSelector(
+
+  const {mutate: followMutate, isPending: followMutationPending} =
+    useUpdateFollowStatus();
+
+  const {user_id, user_handle} = useSelector(
     (state: any) => state.user,
   );
 
@@ -38,7 +44,7 @@ export default function Socialcreen({navigation, route}: SocialScreenProps) {
   } = useGetUserSocials({
     type: type,
     articleId: articleId,
-    social_user_id: social_user_id
+    social_user_id: social_user_id,
   });
 
   useEffect(() => {
@@ -50,191 +56,201 @@ export default function Socialcreen({navigation, route}: SocialScreenProps) {
     });
   }, [navigation, queryClient, type]);
 
-  const updateFollowMutation = useMutation({
-    mutationKey: ['update-follow-status'],
-
-    mutationFn: async (userid: string) => {
-      if (!user_token || user_token === '') {
-        Alert.alert('No token found');
-        return;
-      }
-      const res = await axios.post(
-        FOLLOW_USER,
-        {
-          followUserId: userid,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-      return res.data.followStatus as boolean;
-    },
-
-    onSuccess: data => {
-      //console.log('follow success');
-      if (data) {
-        socket.emit('notification', {
-          type: 'userFollow',
-          userId: userid,
-          message: {
-            title: `${user_handle} has followed you`,
-            body: '',
-          },
-        });
-      }
-      refetch();
-      // refetchProfile();
-    },
-
-    onError: err => {
-      console.log('Update Follow mutation error', err);
-      Alert.alert('Try Again!');
-      //console.log('Follow Error', err);
-    },
-  });
-
   if (isLoading) {
     return <Loader />;
   }
 
   return (
     <View style={styles.container}>
-      {socials && socials.length === 0 && (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.message}>No following user found</Text>
-        </View>
-      )}
-      {socials &&
-        socials.map((follower, index) => (
-          <View
-            key={index}
-            style={[
-              styles.footer,
-              {
-                paddingBottom:
-                  Platform.OS === 'ios' ? insets.bottom : insets.bottom + 20,
-              },
-            ]}>
-            <View style={styles.authorContainer}>
-              <TouchableOpacity
-                onPress={() => {
-                  navigation.navigate('UserProfileScreen', {
-                    authorId: follower._id,
-                    author_handle: undefined,
-                  });
-                }}>
-                {follower.Profile_image && follower.Profile_image !== '' ? (
-                  <Image
-                    source={{
-                      uri: follower.Profile_image.startsWith('http')
-                        ? follower.Profile_image
-                        : `${GET_STORAGE_DATA}/${follower.Profile_image}`,
-                    }}
-                    style={styles.authorImage}
-                  />
-                ) : (
-                  <Image
-                    source={{
-                      uri: 'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-                    }}
-                    style={styles.authorImage}
-                  />
-                )}
-              </TouchableOpacity>
-              <View>
-                <Text style={styles.authorName}>
-                  {follower ? follower?.user_name : ''}
-                </Text>
-                <Text style={styles.authorFollowers}>
-                  {follower.followers
-                    ? follower.followers.length > 1
-                      ? `${follower.followers.length} followers`
-                      : `${follower.followers.length} follower`
-                    : '0 follower'}
-                </Text>
-              </View>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}>
+        {socials && socials.length === 0 && (
+          <View style={styles.emptyContainer}>
+            <View style={[GlassStyles.glassCard, {padding: 32, alignItems: 'center'}]}>
+              <Text style={styles.message}>No users found</Text>
             </View>
-
-            {follower && user_id !== follower._id && (
-              <>
-                {updateFollowMutation.isPending ? (
-                  <ActivityIndicator size={40} color={PRIMARY_COLOR} />
-                ) : (
-                  <TouchableOpacity
-                    style={styles.followButton}
-                    onPress={() => {
-                      setUserId(follower._id);
-                      updateFollowMutation.mutate(follower._id);
-                    }}>
-                    <Text style={styles.followButtonText}>
-                      {follower.followers &&
-                      follower.followers.includes(user_id)
-                        ? 'Following'
-                        : 'Follow'}
-                    </Text>
-                  </TouchableOpacity>
-                )}
-              </>
-            )}
           </View>
-        ))}
+        )}
+        {socials &&
+          socials.map((follower, index) => (
+            <View
+              key={index}
+              style={[
+                styles.userCard,
+                {
+                  marginBottom: index === socials.length - 1
+                    ? (Platform.OS === 'ios' ? insets.bottom + 20 : insets.bottom + 40)
+                    : 12,
+                },
+              ]}>
+              <View style={styles.authorContainer}>
+                <TouchableOpacity
+                  onPress={() => {
+                    navigation.navigate('UserProfileScreen', {
+                      authorId: follower._id,
+                      author_handle: undefined,
+                    });
+                  }}
+                  activeOpacity={0.7}>
+                  {follower.Profile_image && follower.Profile_image !== '' ? (
+                    <Image
+                      source={{
+                        uri: follower.Profile_image.startsWith('http')
+                          ? follower.Profile_image
+                          : `${GET_STORAGE_DATA}/${follower.Profile_image}`,
+                      }}
+                      style={styles.authorImage}
+                    />
+                  ) : (
+                    <Image
+                      source={{
+                        uri: 'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
+                      }}
+                      style={styles.authorImage}
+                    />
+                  )}
+                </TouchableOpacity>
+                <View style={styles.userInfo}>
+                  <Text style={styles.authorName} numberOfLines={1}>
+                    {follower ? follower?.user_name : ''}
+                  </Text>
+                  <Text style={styles.authorFollowers}>
+                    {follower.followers
+                      ? follower.followers.length > 1
+                        ? `${follower.followers.length} followers`
+                        : `${follower.followers.length} follower`
+                      : '0 follower'}
+                  </Text>
+                </View>
+              </View>
+
+              {follower && user_id !== follower._id && (
+                <>
+                  {followMutationPending ? (
+                    <ActivityIndicator size={24} color={PRIMARY_COLOR} />
+                  ) : (
+                    <TouchableOpacity
+                      style={[
+                        styles.followButton,
+                        follower.followers && follower.followers.includes(user_id)
+                          ? styles.followingButton
+                          : null
+                      ]}
+                      onPress={() => {
+                        setUserId(follower._id);
+
+                        followMutate(follower._id, {
+                          onSuccess: data => {
+
+                            if (data) {
+                              socket.emit('notification', {
+                                type: 'userFollow',
+                                userId: userid,
+                                message: {
+                                  title: `${user_handle} has followed you`,
+                                  body: '',
+                                },
+                              });
+                              refetch();
+                            }
+
+                          },
+
+                          onError: err => {
+                            console.log('Update Follow mutation error', err);
+                            Snackbar.show({
+                              text: 'Try again!',
+                              duration: Snackbar.LENGTH_SHORT,
+                            });
+                          },
+                        });
+                      }}
+                      activeOpacity={0.7}>
+                      <Text style={styles.followButtonText}>
+                        {follower.followers &&
+                        follower.followers.includes(user_id)
+                          ? 'Following'
+                          : 'Follow'}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </>
+              )}
+            </View>
+          ))}
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  footer: {
-    backgroundColor: ON_PRIMARY_COLOR,
-    position: 'relative',
-    bottom: 0,
-    zIndex: 10,
-    borderTopEndRadius: 30,
-    borderTopStartRadius: 30,
+  container: {
+    flex: 1,
+    backgroundColor: ProfessionalColors.gray50,
+  },
+  scrollContent: {
+    padding: 16,
+  },
+  userCard: {
+    ...GlassStyles.glassCard,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: 20,
-    paddingHorizontal: 20,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: ON_PRIMARY_COLOR,
+    padding: 16,
   },
   authorContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    flex: 1,
+    marginRight: 12,
+  },
+  userInfo: {
+    marginLeft: 12,
+    flex: 1,
   },
   authorImage: {
-    height: 50,
-    width: 50,
-    borderRadius: 50,
+    height: 56,
+    width: 56,
+    borderRadius: 28,
+    borderWidth: 3,
+    borderColor: ProfessionalColors.white,
   },
   authorName: {
     fontWeight: '700',
-    fontSize: 15,
+    fontSize: 16,
+    color: ProfessionalColors.gray900,
+    marginBottom: 4,
   },
   authorFollowers: {
-    fontWeight: '400',
+    fontWeight: '500',
     fontSize: 13,
+    color: ProfessionalColors.gray600,
   },
   followButton: {
     backgroundColor: PRIMARY_COLOR,
-    paddingHorizontal: 15,
+    paddingHorizontal: 20,
     borderRadius: 20,
     paddingVertical: 10,
+    shadowColor: PRIMARY_COLOR,
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  followingButton: {
+    backgroundColor: ProfessionalColors.gray300,
   },
   followButtonText: {
-    color: 'white',
+    color: ProfessionalColors.white,
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   message: {
     fontSize: 16,
-    color: '#555',
+    color: ProfessionalColors.gray600,
     textAlign: 'center',
+    fontWeight: '500',
   },
   emptyContainer: {
     flex: 1,

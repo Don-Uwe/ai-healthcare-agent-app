@@ -119,45 +119,60 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
     <YStack
       flex={1}
       height={'100%'}
-      backgroundColor={ON_PRIMARY_COLOR}
-      paddingTop="$4"
+      backgroundColor="#F9FAFB"
+      paddingTop="$2"
       justifyContent="flex-start">
-      {/* Search Bar */}
-      <XStack
-        alignItems="center"
-        justifyContent="space-between"
-        marginTop="$5"
-        padding="$2"
-        borderRadius="$4"
-        shadowOffset={{width: 0, height: 1}}
-        shadowOpacity={0.1}
-        shadowRadius={3}>
+
+      {/* Header Section */}
+      <YStack paddingHorizontal="$4" paddingTop="$4" paddingBottom="$3" backgroundColor="#FFFFFF">
+        <YStack marginBottom="$3">
+          <XStack alignItems="center" justifyContent="space-between" marginBottom="$2">
+            <YStack>
+              <XStack alignItems="center" gap="$2">
+                <Feather name="mic" size={24} color={PRIMARY_COLOR} />
+                <YStack>
+                  <XStack>
+                    <YStack fontSize={26} fontWeight="800" color="#1F2937">
+                      Discover Podcasts
+                    </YStack>
+                  </XStack>
+                  <YStack fontSize={14} color="#6B7280" marginTop="$1">
+                    {searchData.length > 0 ? `${searchData.length} results found` : 'Search for your favorite content'}
+                  </YStack>
+                </YStack>
+              </XStack>
+            </YStack>
+          </XStack>
+        </YStack>
+
+        {/* Enhanced Search Bar */}
         <XStack
           alignItems="center"
-          width="100%"
-          flex={1}
-          backgroundColor="#FFFFFF"
-          borderRadius="$2"
+          backgroundColor="#F3F4F6"
+          borderRadius={12}
           paddingHorizontal="$3"
-          borderWidth={0.5}
-          borderColor={'$gray10'}
-          paddingVertical="$1"
-          background="transparent"
-          gap="$3">
-          <Feather name="search" size={25} color={'#808080'} />
+          paddingVertical="$2"
+          borderWidth={2}
+          borderColor={query ? PRIMARY_COLOR : '#E5E7EB'}
+          gap="$3"
+          shadowColor="#000"
+          shadowOffset={{width: 0, height: 2}}
+          shadowOpacity={query ? 0.1 : 0.05}
+          shadowRadius={4}
+          elevation={query ? 3 : 1}>
+          <Feather name="search" size={22} color={query ? PRIMARY_COLOR : '#9CA3AF'} />
           <Input
             flex={1}
-            size="$2"
-            minHeight={'$5'}
-            padding="$3"
-            paddingVertical="$2"
-            placeholder="Search..."
-            placeholderTextColor={'#c1c1c1'}
+            size="$4"
+            placeholder="Search podcasts, topics, or hosts..."
+            placeholderTextColor={'#9CA3AF'}
             borderWidth={0}
-            background="transparent"
+            backgroundColor="transparent"
             onChangeText={setQuery}
             value={query}
-            color={'black'}
+            color={'#1F2937'}
+            fontSize={15}
+            fontWeight="500"
             focusStyle={{
               outlineWidth: 0,
               borderColor: 'transparent',
@@ -165,40 +180,73 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
             }}
           />
 
-          <Pressable
-            onPress={() => {
-              setQuery('');
-            }}>
-            <Feather name="clock" size={25} color={'#808080'} />
-          </Pressable>
+          {query && (
+            <Pressable
+              onPress={() => {
+                setQuery('');
+                setSearchData([]);
+              }}>
+              <Feather name="x-circle" size={20} color="#6B7280" />
+            </Pressable>
+          )}
         </XStack>
-      </XStack>
+      </YStack>
 
-      <Separator marginVertical="$2" opacity={0} />
+      <Separator borderColor="#E5E7EB" />
 
+      {/* Results Section */}
       {isLoading && query !== '' ? (
-        <YStack flex={1} alignItems="center" justifyContent="center">
+        <YStack flex={1} alignItems="center" justifyContent="center" gap="$3">
           <ActivityIndicator size="large" color={PRIMARY_COLOR} />
+          <YStack fontSize={15} color="#6B7280" fontWeight="600">
+            Searching podcasts...
+          </YStack>
         </YStack>
       ) : (
-        <YStack paddingHorizontal="$2" marginBottom="$8">
+        <YStack paddingHorizontal="$3" marginBottom="$8" flex={1}>
           <FlatList
             data={query !== '' ? searchData : []}
             keyExtractor={item => item._id.toString()}
             renderItem={renderItem}
+            ListHeaderComponent={
+              query !== '' && searchData.length > 0 ? (
+                <YStack paddingVertical="$3" paddingHorizontal="$2">
+                  <XStack fontSize={13} fontWeight="700" color="#6B7280" letterSpacing={1}>
+                    SEARCH RESULTS
+                  </XStack>
+                </YStack>
+              ) : null
+            }
             ListEmptyComponent={
-              <YStack
-                alignItems="center"
-                justifyContent="center"
-                paddingVertical="$8">
-                <NoResults />
-              </YStack>
+              query === '' ? (
+                <YStack
+                  alignItems="center"
+                  justifyContent="center"
+                  paddingVertical="$10"
+                  gap="$3">
+                  <Feather name="headphones" size={64} color="#D1D5DB" />
+                  <YStack fontSize={18} fontWeight="700" color="#6B7280">
+                    Start Your Search
+                  </YStack>
+                  <YStack fontSize={14} color="#9CA3AF" textAlign="center" paddingHorizontal="$6">
+                    Type in the search bar to discover amazing podcasts
+                  </YStack>
+                </YStack>
+              ) : (
+                <YStack
+                  alignItems="center"
+                  justifyContent="center"
+                  paddingVertical="$8">
+                  <NoResults />
+                </YStack>
+              )
             }
             onEndReached={() => {
               if (page < totalPages) setPage(prev => prev + 1);
             }}
             onEndReachedThreshold={0.5}
             showsVerticalScrollIndicator={false}
+            contentContainerStyle={{paddingBottom: 20}}
           />
         </YStack>
       )}

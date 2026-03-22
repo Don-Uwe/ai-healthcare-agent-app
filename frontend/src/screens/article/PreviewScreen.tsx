@@ -427,11 +427,14 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
   }
   return (
     <View style={styles.container}>
-      <View style={styles.aiReviewBox}>
-        <Text style={styles.reviewTitle}> Your Post Is Ready to Review</Text>
+      {/* AI Review Card with Modern Design */}
+      <View style={styles.aiReviewCard}>
+        <View style={styles.iconContainer}>
+          <Text style={styles.iconText}>✨</Text>
+        </View>
+        <Text style={styles.reviewTitle}>Article Ready for Review</Text>
         <Text style={styles.reviewSubtext}>
-          Want to make it even better? Check your post with our AI Assistant’s
-          suggestions.
+          Enhance your content with AI-powered suggestions and improvements
         </Text>
         <TouchableOpacity
           style={styles.continueButton}
@@ -444,60 +447,95 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
                 duration: Snackbar.LENGTH_SHORT,
               });
             }
-          }}>
-          <Text style={styles.continueButtonText}>Continue</Text>
+          }}
+          activeOpacity={0.8}>
+          <Text style={styles.continueButtonText}>Get AI Suggestions</Text>
         </TouchableOpacity>
       </View>
-      {/* <WebView
-        style={{
-          padding: 20,
-          margin: 10,
-          width: '99%',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-        ref={webViewRef}
-        originWhitelist={['*']}
-        source={{
-          html: createHTMLStructure(
-            title,
-            article,
-            selectedGenres,
-            '',
-            user ? user?.user_name : '',
-          ),
-        }} // author name required
-        javaScriptEnabled={true}
-      /> */}
 
-      <AutoHeightWebView
-        style={{
-          width: Dimensions.get('window').width - 15,
-          marginTop: 35,
-        }}
-        customStyle={`* { font-family: 'Times New Roman'; } p { font-size: 14px; }`}
-        onSizeUpdated={size => console.log(size.height)}
-        files={[
-          {
-            href: 'cssfileaddress',
-            type: 'text/css',
-            rel: 'stylesheet',
-          },
-        ]}
-        originWhitelist={['*']}
-        source={{
-          html: createHTMLStructure(
-            title,
-            article,
-            selectedGenres,
-            '',
-            user ? user?.user_name : '',
-          ),
-        }}
-        scalesPageToFit={true}
-        viewportContent={'width=device-width, user-scalable=no'}
-        onShouldStartLoadWithRequest={handleExternalClick}
-      />
+      {/* Preview Label */}
+      <View style={styles.previewHeader}>
+        <Text style={styles.previewLabel}>Preview</Text>
+      </View>
+
+      {/* Article Preview */}
+      <View style={styles.articlePreviewContainer}>
+        <AutoHeightWebView
+          style={styles.webView}
+          customStyle={`
+            * {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+              margin: 0;
+              padding: 0;
+            }
+            body {
+              padding: 16px;
+              background-color: #FFFFFF;
+            }
+            p {
+              font-size: 16px;
+              line-height: 28px;
+              color: #374151;
+              margin-bottom: 16px;
+            }
+            h1, h2, h3, h4, h5, h6 {
+              color: #1F2937;
+              margin-top: 24px;
+              margin-bottom: 12px;
+              font-weight: 700;
+            }
+            h1 { font-size: 28px; }
+            h2 { font-size: 24px; }
+            h3 { font-size: 20px; }
+            img {
+              border-radius: 12px;
+              max-width: 100%;
+              height: auto;
+              margin: 16px 0;
+            }
+            a {
+              color: ${BUTTON_COLOR};
+              text-decoration: none;
+            }
+            blockquote {
+              border-left: 4px solid ${BUTTON_COLOR};
+              padding-left: 16px;
+              margin: 16px 0;
+              color: #6B7280;
+              font-style: italic;
+            }
+            ul, ol {
+              padding-left: 24px;
+              margin: 12px 0;
+            }
+            li {
+              margin: 8px 0;
+              line-height: 24px;
+            }
+          `}
+          onSizeUpdated={size => console.log(size.height)}
+          files={[
+            {
+              href: 'cssfileaddress',
+              type: 'text/css',
+              rel: 'stylesheet',
+            },
+          ]}
+          originWhitelist={['*']}
+          source={{
+            html: createHTMLStructure(
+              title,
+              article,
+              selectedGenres,
+              '',
+              user ? user?.user_name : '',
+            ),
+          }}
+          scalesPageToFit={true}
+          viewportContent={'width=device-width, user-scalable=no'}
+          onShouldStartLoadWithRequest={handleExternalClick}
+        />
+      </View>
     </View>
   );
 }
@@ -505,68 +543,113 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 16,
-    paddingTop: 10,
+    backgroundColor: '#F9FAFB',
   },
-
-  text: {
-    fontWeight: 'bold',
-    fontSize: 20,
-  },
-
   textWhite: {
-    fontWeight: '600',
-    fontSize: 17,
+    fontWeight: '700',
+    fontSize: 16,
     color: 'white',
   },
   button: {
     marginRight: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 7,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
     backgroundColor: BUTTON_COLOR,
-    width: 75,
-    padding: 6,
+    borderRadius: 8,
+    shadowColor: BUTTON_COLOR,
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  aiReviewCard: {
+    backgroundColor: '#FFFFFF',
+    margin: 16,
+    padding: 24,
+    borderRadius: 16,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  iconContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#FEF3C7',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 5,
+    marginBottom: 16,
   },
-
-  aiReviewBox: {
-    backgroundColor: '#f0f8ff',
-    padding: 16,
-    margin: 8,
-    borderRadius: 10,
-    borderColor: '#d0e6ff',
-    borderWidth: 1,
+  iconText: {
+    fontSize: 32,
+  },
+  reviewTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#1F2937',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  reviewSubtext: {
+    fontSize: 15,
+    color: '#6B7280',
+    textAlign: 'center',
+    marginBottom: 20,
+    lineHeight: 22,
+    paddingHorizontal: 8,
+  },
+  continueButton: {
+    backgroundColor: BUTTON_COLOR,
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    borderRadius: 12,
+    shadowColor: BUTTON_COLOR,
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 5,
+    minWidth: 200,
     alignItems: 'center',
   },
-
-  reviewTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    marginBottom: 6,
-  },
-
-  reviewSubtext: {
-    fontSize: 14,
-    color: '#34495e',
-    textAlign: 'center',
-    marginBottom: 12,
-    fontWeight: '500',
-  },
-
-  continueButton: {
-    backgroundColor: '#1e90ff',
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-  },
-
   continueButtonText: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  previewHeader: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: '#F3F4F6',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  previewLabel: {
+    fontSize: 14,
     fontWeight: '600',
+    color: '#6B7280',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  articlePreviewContainer: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 16,
+    marginVertical: 12,
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  webView: {
+    width: Dimensions.get('window').width - 32,
   },
 });

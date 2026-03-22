@@ -468,7 +468,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   if (user && (user.isBlockUser || user.isBannedUser)) {
     return (
       <SafeAreaView style={styles.blockContainer}>
-        <StatusBar style="dark" backgroundColor={PRIMARY_COLOR} />
+        <StatusBar style="light" backgroundColor="#007AFF" />
         <HomeScreenHeader
           handlePresentModalPress={handlePresentModalPress}
           onTextInputChange={handleSearch}

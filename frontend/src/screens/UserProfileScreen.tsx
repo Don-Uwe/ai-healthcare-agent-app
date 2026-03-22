@@ -1,5 +1,6 @@
-import {StyleSheet, View, Text, Alert, TouchableOpacity} from 'react-native';
+import {StyleSheet, View, Text, Alert, TouchableOpacity, useColorScheme} from 'react-native';
 import React, {useCallback, useState} from 'react';
+import {StatusBar} from 'expo-status-bar';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import ActivityOverview from '../components/ActivityOverview';
 import {Tabs, MaterialTabBar} from 'react-native-collapsible-tab-view';
@@ -7,11 +8,7 @@ import ArticleCard from '../components/ArticleCard';
 import {useSelector} from 'react-redux';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import ProfileHeader from '../components/ProfileHeader';
-import {
-  FOLLOW_USER,
-  PROD_URL,
-  UPDATE_VIEW_COUNT,
-} from '../helper/APIUtils';
+import {PROD_URL, UPDATE_VIEW_COUNT} from '../helper/APIUtils';
 import {ArticleData, UserProfileScreenProp, User} from '../type';
 import {useMutation, useQuery} from '@tanstack/react-query';
 import axios from 'axios';
@@ -22,8 +19,11 @@ import Snackbar from 'react-native-snackbar';
 import {useSocket} from '../../SocketContext';
 import {useRepostArticle} from '../hooks/useArticleRepost';
 import {useRequestArticleEdit} from '../hooks/useRequestArticleEdit';
+import {useUpdateFollowStatus} from '../hooks/useUpdateFollowStatus';
 
 const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
+  const colorScheme = useColorScheme();
+  const isDarkMode = colorScheme === 'dark';
   const {authorId, author_handle} = route.params;
   const {user_id, user_handle, user_token} = useSelector(
     (state: any) => state.user,
@@ -41,6 +41,9 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   const {mutate: repost, isPending: repostPending} = useRepostArticle();
   const {mutate: requestEdit, isPending: requestEditPending} =
     useRequestArticleEdit();
+
+  const {mutate: followMutate, isPending: followMutationPending} =
+    useUpdateFollowStatus();
 
   const {
     data: user,
@@ -209,7 +212,6 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
     [navigation],
   );
 
-
   const renderItem = useCallback(
     ({item}: {item: ArticleData}) => {
       return (
@@ -239,8 +241,8 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
                   onError: err => {
                     console.log(err);
                     Snackbar.show({
-                      text: "Try again!",
-                      duration: Snackbar.LENGTH_LONG
+                      text: 'Try again!',
+                      duration: Snackbar.LENGTH_LONG,
                     });
                   },
                 },
@@ -298,7 +300,34 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
 
   const handleFollow = () => {
     if (isConnected) {
-      updateFollowMutation.mutate();
+      
+      if (authorId) {
+        followMutate(authorId, {
+          onSuccess: data => {
+    
+            if (data) {
+              socket.emit('notification', {
+                type: 'userFollow',
+                userId: authorId,
+                message: {
+                  title: `${user_handle ? user_handle : 'Someone'} has followed you`,
+                  body: '',
+                },
+              });
+
+              onRefresh();
+            }
+          },
+
+          onError: err => {
+            console.log('Update Follow mutation error', err);
+            Snackbar.show({
+              text: 'Try again!',
+              duration: Snackbar.LENGTH_SHORT,
+            });
+          },
+        });
+      }
     } else {
       Snackbar.show({
         text: 'Please check your internet connection!',
@@ -307,54 +336,6 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
     }
   };
 
-  const updateFollowMutation = useMutation({
-    mutationKey: ['update-follow-status'],
-
-    mutationFn: async () => {
-      if (!user_token || user_token === '') {
-        Alert.alert('No token found');
-        return;
-      }
-      const res = await axios.post(
-        FOLLOW_USER,
-        {
-          followUserId: authorId,
-          //user_id: user_id,
-          //articleId: articleId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-      return res.data.followStatus as boolean;
-    },
-
-    onSuccess: data => {
-      //console.log('follow success');
-      if (data) {
-        socket.emit('notification', {
-          type: 'userFollow',
-          userId: authorId,
-          message: {
-            title: `${user_handle ? user_handle : 'Someone'} has followed you`,
-            body: '',
-          },
-        });
-      }
-
-      onRefresh();
-      // refetchFollowers();
-      // refetchProfile();
-    },
-
-    onError: err => {
-      console.log('Update Follow mutation error', err);
-      Alert.alert('Try Again!');
-      //console.log('Follow Error', err);
-    },
-  });
 
   const renderHeader = () => {
     if (user === undefined) {
@@ -411,28 +392,28 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
 
   if (isLoading || requestEditPending) {
     return (
-      <View style={styles.loadingContainer}>
+      <SafeAreaView style={[styles.loadingContainer, {backgroundColor: isDarkMode ? '#000A60' : '#F0F8FF'}]}>
+        <StatusBar style={isDarkMode ? 'light' : 'dark'} backgroundColor="#007AFF" />
         <Loader />
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, {backgroundColor: isDarkMode ? '#007AFF' : '#007AFF'}]}>
+      <StatusBar style="light" backgroundColor="#007AFF" />
       <TouchableOpacity
         style={styles.headerLeftButtonEditorScreen}
         onPress={() => {
-          // console.log('States', navigation.getState());
-          // console.log('Can go back', navigation.canGoBack());
           navigation.goBack();
         }}>
         <FontAwesome6 size={25} name="arrow-left" color="white" />
       </TouchableOpacity>
-      <View style={[styles.innerContainer, {paddingTop: insets.top}]}>
+      <View style={[styles.innerContainer, {paddingTop: insets.top, backgroundColor: isDarkMode ? '#000A60' : '#F0F8FF'}]}>
         <Tabs.Container
           renderHeader={renderHeader}
           renderTabBar={renderTabBar}
-          containerStyle={styles.tabsContainer}>
+          containerStyle={[styles.tabsContainer, {backgroundColor: isDarkMode ? '#000A60' : '#F0F8FF'}]}>
           {/* Tab 1 */}
           <Tabs.Tab name="User Insight">
             <Tabs.ScrollView
@@ -497,13 +478,11 @@ export default UserProfileScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0CAFFF',
   },
   innerContainer: {
     flex: 1,
   },
   tabsContainer: {
-    backgroundColor: 'white',
     overflow: 'hidden',
   },
   scrollViewContentContainer: {

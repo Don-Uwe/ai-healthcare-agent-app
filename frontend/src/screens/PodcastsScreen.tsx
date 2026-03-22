@@ -1,41 +1,37 @@
-import {useCallback, useState} from 'react';
+import {useState} from 'react';
 import {
   StyleSheet,
   TouchableOpacity,
   NativeModules,
-  Alert,
   Text,
   FlatList,
+  ActivityIndicator,
 } from 'react-native';
 
-import {YStack, View} from 'tamagui';
+import {YStack, View, XStack} from 'tamagui';
 import axios from 'axios';
 import PodcastCard from '../components/PodcastCard';
-import {hp, wp} from '../helper/Metric';
-import {Category, PodcastData, PodcastScreenProps} from '../type';
+import {hp} from '../helper/Metric';
+import {PodcastData, PodcastScreenProps} from '../type';
 import {useDispatch, useSelector} from 'react-redux';
 import {useMutation, useQuery} from '@tanstack/react-query';
 import {downloadAudio, msToTime} from '../helper/Utils';
 import {
-  ARTICLE_TAGS_API,
   GET_ALL_PODCASTS,
-  PROD_URL,
   UPDATE_PODCAST_VIEW_COUNT,
 } from '../helper/APIUtils';
 import Snackbar from 'react-native-snackbar';
 import {
   setaddedPodcastId,
   setPodcasts,
-  setSelectedTags,
-  setTags,
 } from '../store/dataSlice';
 import CreatePlaylist from '../components/CreatePlaylist';
-import {ON_PRIMARY_COLOR} from '../helper/Theme';
 
-import CreateIcon from '../components/CreateIcon';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {StatusBar} from 'expo-status-bar';
-import {MaterialIcons} from '@expo/vector-icons';
+import {Ionicons} from '@expo/vector-icons';
+import {GlassStyles, ProfessionalColors} from '../styles/GlassStyles';
+import CreateIcon from '../components/CreateIcon';
 
 const {WavAudioRecorder} = NativeModules;
 //const recorderEvents = new NativeEventEmitter(WavAudioRecorder);
@@ -63,7 +59,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
     dispatch(setaddedPodcastId(''));
   };
 
-  const {refetch} = useQuery({
+  const {refetch, isLoading, isFetching} = useQuery({
     queryKey: ['get-all-podcasts', page],
     queryFn: async () => {
       try {
@@ -154,7 +150,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
   });
 
   const renderItem = ({item}: {item: PodcastData}) => (
-   
+
       <PodcastCard
         id={item._id}
         title={item.title}
@@ -184,91 +180,98 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
         }}
         playlistAct={openPlaylist}
       />
-  
+
+  );
+
+  const renderLoadingState = () => (
+    <View style={styles.loadingContainer}>
+      <View style={[GlassStyles.glassCard, {padding: 40, alignItems: 'center'}]}>
+        <View style={styles.loadingIconContainer}>
+          <ActivityIndicator size="large" color={ProfessionalColors.primary} />
+        </View>
+        <Text style={styles.loadingText}>Loading podcasts...</Text>
+        <Text style={styles.loadingSubText}>
+          Please wait while we fetch the latest episodes
+        </Text>
+      </View>
+    </View>
+  );
+
+  const renderEmptyState = () => (
+    <View style={styles.emptyContainer}>
+      <View style={[GlassStyles.glassCard, {padding: 40, alignItems: 'center'}]}>
+        <View style={styles.emptyIconContainer}>
+          <Ionicons
+            name="headset-outline"
+            size={64}
+            color={ProfessionalColors.gray400}
+          />
+        </View>
+        <Text style={styles.message}>No podcasts found</Text>
+        <Text style={styles.subMessage}>
+          New episodes will appear here once added
+        </Text>
+      </View>
+    </View>
   );
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar style="light" backgroundColor={'#000A60'} />
+      <StatusBar style="light" backgroundColor="#007AFF" />
 
-      {
-        /**
-         * <View style={styles.buttonContainer}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{flexDirection: 'row'}}>
-          {selectedTags &&
-            selectedTags.length > 0 &&
-            selectedTags.map((item: Category, index: number) => (
-              <TouchableOpacity
-                key={index}
-                style={{
-                  ...styles.button,
-                  backgroundColor:
-                    selectedCategory && selectedCategory._id !== item._id
-                      ? 'white'
-                      : PRIMARY_COLOR,
-                  borderColor:
-                    selectedCategory && selectedCategory._id !== item._id
-                      ? PRIMARY_COLOR
-                      : 'white',
-                }}
-                onPress={() => {
-                  setSelectedCategory(item);
-                }}>
-                <Text
-                  style={{
-                    ...styles.labelStyle,
-                    color:
-                      selectedCategory && selectedCategory._id !== item._id
-                        ? 'black'
-                        : 'white',
-                  }}>
-                  {item.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
-        </ScrollView>
-      </View>
-         */
-      }
-
-      <YStack flex={1} padding="$2">
-        <FlatList
-          data={podcasts}
-          renderItem={renderItem}
-          keyExtractor={item => item._id.toString()}
-          contentContainerStyle={styles.flatListContentContainer}
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <MaterialIcons
-                name="podcasts"
-                size={64}
-                color="#B0B0B0"
-                style={styles.icon}
-              />
-              <Text style={styles.message}>No podcasts found</Text>
-              <Text style={styles.subMessage}>
-                New episodes will appear here once added
+      {/* Header Section */}
+      <View style={[GlassStyles.glassCard, styles.header]}>
+        <XStack alignItems="center" justifyContent="space-between">
+          <XStack alignItems="center" gap="$3">
+            <Ionicons name="headset" size={28} color={ProfessionalColors.primary} />
+            <YStack>
+              <Text style={styles.headerTitle}>Podcasts</Text>
+              <Text style={styles.headerSubtitle}>
+                {podcasts?.length || 0} episodes available
               </Text>
-            </View>
-          }
-          onEndReached={() => {
-            if (page < totalPages) {
-              setPage(prev => prev + 1);
+            </YStack>
+          </XStack>
+        </XStack>
+      </View>
+
+      <YStack flex={1} paddingHorizontal="$3">
+        {isLoading && !podcasts?.length ? (
+          renderLoadingState()
+        ) : (
+          <FlatList
+            data={podcasts}
+            renderItem={renderItem}
+            keyExtractor={item => item._id.toString()}
+            contentContainerStyle={styles.flatListContentContainer}
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            showsVerticalScrollIndicator={false}
+            ListEmptyComponent={renderEmptyState}
+            onEndReached={() => {
+              if (page < totalPages) {
+                setPage(prev => prev + 1);
+              }
+            }}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={
+              isFetching && podcasts?.length > 0 ? (
+                <View style={styles.footerLoading}>
+                  <ActivityIndicator
+                    size="small"
+                    color={ProfessionalColors.primary}
+                  />
+                </View>
+              ) : null
             }
-          }}
-          onEndReachedThreshold={0.5}
-        />
+          />
+        )}
       </YStack>
 
       <CreatePlaylist visible={playlistModalOpen} dismiss={closePlaylist} />
 
+      {/* Floating Action Button */}
       <TouchableOpacity
-        style={styles.homePlusIconview}
+        style={styles.fab}
         onPress={() => {
           console.log('Add icon clicked');
           navigation.navigate('PodcastForm');
@@ -289,65 +292,127 @@ export default PodcastsScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginVertical: hp(10),
-   // paddingHorizontal: 1,
-    backgroundColor: ON_PRIMARY_COLOR,
+    backgroundColor: ProfessionalColors.gray50,
+    paddingTop: hp(1),
   },
 
-  homePlusIconview: {
-    bottom: hp(5),
-    right: 25,
-    position: 'absolute',
-    zIndex: 10,
+  header: {
+    marginHorizontal: 16,
+    marginTop: hp(7),
+    marginBottom: 16,
+    padding: 16,
+    borderRadius: hp(2)
   },
 
-  buttonContainer: {
-    marginTop: wp(3),
-    flexDirection: 'row',
-    paddingHorizontal: 2,
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: ProfessionalColors.gray900,
   },
-  button: {
-    flex: 0,
-    borderRadius: wp(3.5),
-    marginHorizontal: 6,
-    marginVertical: 4,
-    padding: wp(3.1),
-    borderWidth: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  labelStyle: {
-    fontWeight: 'bold',
-    fontSize: 15,
-    textTransform: 'capitalize',
+
+  headerSubtitle: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: ProfessionalColors.gray600,
+    marginTop: 2,
   },
 
   flatListContentContainer: {
-    paddingHorizontal: 16,
-    marginTop: 10,
+    paddingTop: 8,
     paddingBottom: 120,
   },
 
-  message: {
-    fontSize: 16,
-    color: '#000',
-    fontFamily: 'bold',
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 20,
+  },
+
+  loadingIconContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: ProfessionalColors.glassWhiteMedium,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+
+  loadingText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: ProfessionalColors.gray900,
+    textAlign: 'center',
+    marginTop: 8,
+  },
+
+  loadingSubText: {
+    marginTop: 8,
+    fontSize: 14,
+    fontWeight: '500',
+    color: ProfessionalColors.gray600,
     textAlign: 'center',
   },
+
   emptyContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 40,
+    paddingVertical: 60,
+    paddingHorizontal: 20,
   },
-  icon: {
-    marginBottom: 12,
+
+  emptyIconContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: ProfessionalColors.glassWhiteMedium,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+
+  message: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: ProfessionalColors.gray900,
+    textAlign: 'center',
+    marginTop: 8,
   },
 
   subMessage: {
-    marginTop: 6,
-    fontSize: 13,
-    color: '#888',
+    marginTop: 8,
+    fontSize: 14,
+    fontWeight: '500',
+    color: ProfessionalColors.gray600,
     textAlign: 'center',
+  },
+
+  footerLoading: {
+    paddingVertical: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  fab: {
+    position: 'absolute',
+    bottom: hp(10),
+    right: 20,
+    zIndex: 10,
+    shadowColor: ProfessionalColors.primary,
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+
+  fabInner: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

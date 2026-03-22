@@ -6,6 +6,7 @@ import {
   Image,
   Text,
   StyleSheet,
+  useColorScheme,
 } from 'react-native';
 import {EditRequest} from '../../type';
 import {useSelector} from 'react-redux';
@@ -14,12 +15,15 @@ import ImprovementCard from '../../components/ImprovementCard';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
 import {hp} from '../../helper/Metric';
 import {useGetAllImprovementsForReview} from '@/src/hooks/useGetUserAllImprovements';
+import {ProfessionalColors} from '../../styles/GlassStyles';
 
 export default function ImprovementWorkspace({
   handleImprovementClick,
 }: {
   handleImprovementClick: (item: EditRequest) => void;
 }) {
+  const colorScheme = useColorScheme();
+  const isDarkMode = colorScheme === 'dark';
   const {user_token} = useSelector((state: any) => state.user);
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
@@ -82,7 +86,7 @@ export default function ImprovementWorkspace({
   );
 
   return (
-    <View style={{flex: 1, backgroundColor: ON_PRIMARY_COLOR}}>
+    <View style={{flex: 1, backgroundColor: isDarkMode ? '#000A60' : '#F0F8FF'}}>
       <View style={styles.container}>
         <View style={styles.buttonContainer}>
           {categories.map((item, index) => (
@@ -91,9 +95,12 @@ export default function ImprovementWorkspace({
               style={{
                 ...styles.button,
                 backgroundColor:
-                  selectedStatus !== item.status ? 'white' : PRIMARY_COLOR,
+                  selectedStatus !== item.status
+                    ? (isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.9)')
+                    : PRIMARY_COLOR,
                 borderColor:
-                  selectedStatus !== item.status ? PRIMARY_COLOR : 'white',
+                  selectedStatus !== item.status ? (isDarkMode ? 'rgba(0, 191, 255, 0.5)' : PRIMARY_COLOR) : PRIMARY_COLOR,
+                borderWidth: 1.5,
               }}
               onPress={() => {
                 setSelectedStatus(item.status);
@@ -104,7 +111,7 @@ export default function ImprovementWorkspace({
               <Text
                 style={{
                   ...styles.labelStyle,
-                  color: selectedStatus !== item.status ? 'black' : 'white',
+                  color: selectedStatus !== item.status ? (isDarkMode ? ProfessionalColors.white : ProfessionalColors.gray800) : 'white',
                 }}>
                 {item.status === 1
                   ? publishedLabel
@@ -182,9 +189,7 @@ const styles = StyleSheet.create({
     //zIndex: -2,
   },
   flatListContentContainer: {
-    // marginTop: hp(20),
     paddingHorizontal: 16,
-    backgroundColor: ON_PRIMARY_COLOR,
   },
 
   image: {

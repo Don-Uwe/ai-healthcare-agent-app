@@ -13,7 +13,7 @@ import { StatusBar } from 'expo-status-bar';
   return (
     <YStack backgroundColor="#000A60" width="100%" paddingHorizontal="$3" paddingVertical="$3" elevation={1}>
       <XStack alignItems="center" justifyContent="space-between" gap="$3">
-        <StatusBar style="dark" backgroundColor={'#000A60'} />
+   
         {/* Search Bar */}
         <XStack
           flex={1}
