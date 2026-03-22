@@ -288,9 +288,9 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
         </YStack>
 
         {/* Timer Display */}
-        <YStack ai="center" bg="#1E293B" px="$6" py="$4" borderRadius={16} mb="$2">
+        <YStack alignItems="center" bg="#1E293B" px="$6" py="$4" borderRadius={16} mb="$2">
           <Text
-            fontSize={56}
+            fontSize={50}
             color="#60A5FA"
             fontWeight="800"
             letterSpacing={4}

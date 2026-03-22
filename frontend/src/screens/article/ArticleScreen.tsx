@@ -37,7 +37,7 @@ import Tts from 'react-native-tts';
 
 import {setUserHandle} from '../../store/UserSlice';
 import {io} from 'socket.io-client';
-import {Feather} from '@expo/vector-icons';
+import {Feather, FontAwesome5, FontAwesome6} from '@expo/vector-icons';
 import AutoHeightWebView from '@brown-bear/react-native-autoheight-webview';
 import LottieView from 'lottie-react-native';
 import {useGetArticleDetails} from '@/src/hooks/useGetArticleDetail';
@@ -394,8 +394,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
               backgroundColor: 'white',
             },
           ]}>
-          <Feather
-            name={speechingMode ? 'mic' : 'mic-off'}
+          <FontAwesome5
+            name={'assistive-listening-systems' }
             size={30}
             color={speechingMode ? PRIMARY_COLOR : 'black'}
           />
@@ -755,7 +755,7 @@ const styles = StyleSheet.create({
     padding: 10,
     position: 'absolute',
     bottom: 4,
-    right: 20,
+    right: 15,
     borderRadius: 50,
   },
   contentContainer: {

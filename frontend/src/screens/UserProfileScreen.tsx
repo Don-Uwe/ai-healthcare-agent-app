@@ -34,7 +34,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   const [articleId, setArticleId] = useState<number>();
   const [recordId, setRecordId] = useState<string>('');
   const [selectedCardId, setSelectedCardId] = useState<string>('');
-  const [repostItem, setRepostItem] = useState<ArticleData | null>(null);
+
 
   //const [authorId, setAuthorId] = useState<string>('');
   const socket = useSocket();
@@ -409,7 +409,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
         }}>
         <FontAwesome6 size={25} name="arrow-left" color="white" />
       </TouchableOpacity>
-      <View style={[styles.innerContainer, {paddingTop: insets.top, backgroundColor: isDarkMode ? '#000A60' : '#F0F8FF'}]}>
+      <View style={[styles.innerContainer, { backgroundColor: isDarkMode ? '#000A60' : '#F0F8FF'}]}>
         <Tabs.Container
           renderHeader={renderHeader}
           renderTabBar={renderTabBar}

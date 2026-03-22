@@ -257,7 +257,7 @@ const AboutScreen = ({navigation}: AboutScreenProps) => {
           </YStack>
 
           {/* Footer */}
-          <YStack alignItems="center" marginTop="$6" marginBottom="$8" gap="$2">
+          <YStack alignItems="center" marginTop="$4" marginBottom="$11" gap="$2">
             <Text
               style={[
                 Typography.bodySmall,

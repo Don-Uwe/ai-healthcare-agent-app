@@ -462,57 +462,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
       <View style={styles.articlePreviewContainer}>
         <AutoHeightWebView
           style={styles.webView}
-          customStyle={`
-            * {
-              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-              margin: 0;
-              padding: 0;
-            }
-            body {
-              padding: 16px;
-              background-color: #FFFFFF;
-            }
-            p {
-              font-size: 16px;
-              line-height: 28px;
-              color: #374151;
-              margin-bottom: 16px;
-            }
-            h1, h2, h3, h4, h5, h6 {
-              color: #1F2937;
-              margin-top: 24px;
-              margin-bottom: 12px;
-              font-weight: 700;
-            }
-            h1 { font-size: 28px; }
-            h2 { font-size: 24px; }
-            h3 { font-size: 20px; }
-            img {
-              border-radius: 12px;
-              max-width: 100%;
-              height: auto;
-              margin: 16px 0;
-            }
-            a {
-              color: ${BUTTON_COLOR};
-              text-decoration: none;
-            }
-            blockquote {
-              border-left: 4px solid ${BUTTON_COLOR};
-              padding-left: 16px;
-              margin: 16px 0;
-              color: #6B7280;
-              font-style: italic;
-            }
-            ul, ol {
-              padding-left: 24px;
-              margin: 12px 0;
-            }
-            li {
-              margin: 8px 0;
-              line-height: 24px;
-            }
-          `}
+          
           onSizeUpdated={size => console.log(size.height)}
           files={[
             {

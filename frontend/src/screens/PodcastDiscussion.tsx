@@ -33,20 +33,17 @@ import {
   GET_STORAGE_DATA,
 } from '../helper/APIUtils';
 import {
-  Button,
   H3,
   Paragraph,
-  ScrollView,
   YStack,
   Text,
   View,
   Image,
 } from 'tamagui';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {hp, wp} from '../helper/Metric';
+import {wp} from '../helper/Metric';
 import {useQuery} from '@tanstack/react-query';
 import axios from 'axios';
-import {showAlert} from '../store/alertSlice';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 
 const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
@@ -58,10 +55,10 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
   const flatListRef = useRef<FlatList<Comment>>(null);
   const {user_id, user_token} = useSelector((state: any) => state.user);
   const [selectedCommentId, setSelectedCommentId] = useState<string>('');
-  const [editMode, setEditMode] = useState<Boolean>(false);
+  const [editMode, setEditMode] = useState<boolean>(false);
   const [editCommentId, setEditCommentId] = useState<string | null>(null);
-  const [commentLoading, setCommentLoading] = useState<Boolean>(false);
-  const [commentLikeLoading, setCommentLikeLoading] = useState<Boolean>(false);
+  const [commentLoading, setCommentLoading] = useState<boolean>(false);
+  const [commentLikeLoading, setCommentLikeLoading] = useState<boolean>(false);
   const [mentions, setMentions] = useState<User[]>([]);
 
   const {data: podcast, refetch} = useQuery({
@@ -194,67 +191,7 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
     [mentionedUsers, usedUserIds],
   );
 
-  // const renderSuggestions: FC<MentionSuggestionsProps> = ({
-  //   keyword,
-  //   onSuggestionPress,
-  // }) => {
-  //   if (keyword == null) {
-  //     return null;
-  //   }
-
-  //   return (
-  //     <View>
-  //       {mentionedUsers
-  //         .filter(
-  //           one =>
-  //             one.user_handle
-  //               .toLocaleLowerCase()
-  //               .includes(keyword.toLocaleLowerCase()) ||
-  //             one.user_name
-  //               .toLocaleLowerCase()
-  //               .includes(keyword.toLocaleLowerCase()),
-  //         )
-  //         .map(one => (
-  //           <Pressable
-  //             key={one._id}
-  //             onPress={() => {
-  //               onSuggestionPress({id: one._id, name: one.user_handle});
-  //               setMentions(prev => [...prev, one]);
-  //             }}
-  //             style={{flex: 0, padding: 12, flexDirection: 'row'}}>
-  //             {one.Profile_image ? (
-  //               <Image
-  //                 source={{
-  //                   uri: one.Profile_image.startsWith('https')
-  //                     ? one.Profile_image
-  //                     : `${GET_STORAGE_DATA}/${one.Profile_image}`,
-  //                 }}
-  //                 style={[
-  //                   styles.profileImage2,
-  //                   !one.Profile_image && {
-  //                     borderWidth: 0.5,
-  //                     borderColor: 'black',
-  //                   },
-  //                 ]}
-  //               />
-  //             ) : (
-  //               <Image
-  //                 source={{
-  //                   uri: 'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-  //                 }}
-  //                 style={[
-  //                   styles.profileImage2,
-  //                   {borderWidth: 0.5, borderColor: 'black'},
-  //                 ]}
-  //               />
-  //             )}
-
-  //             <Text style={styles.username2}>{one.user_handle}</Text>
-  //           </Pressable>
-  //         ))}
-  //     </View>
-  //   );
-  // };
+ 
 
   useEffect(() => {
     //console.log('Fetching comments for articleId:', route.params.articleId);
@@ -355,13 +292,7 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
     setEditCommentId(comment._id);
   };
 
-  const handleMentionClick = (user_handle: string) => {
-    //console.log('user handle', user_handle);
-    //navigation.navigate('UserProfileScreen', {
-    //  author_handle: user_handle.substring(1),
-    //});
-  };
-
+  
   const handleDeleteAction = (comment: Comment) => {
     //commentId, articleId, userId
     Alert.alert(
@@ -427,12 +358,7 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
         setEditMode(false);
       } else {
         Alert.alert('Error: Comment Not Found');
-        //   dispatch(
-        //   showAlert({
-        //     title: 'Error!',
-        //     message: 'Comment not found',
-        //   }),
-        // );
+       
       }
     } else {
       const formatted = replaceTriggerValues(
@@ -447,7 +373,7 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
         mentionedUsers: mentions,
       };
 
-      console.log('Comment emitting', newCommentObj);
+     // console.log('Comment emitting', newCommentObj);
       // Emit the new comment to the backend via socket
       socket.emit('comment', newCommentObj);
 
@@ -469,123 +395,85 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
 
   return (
     <KeyboardAwareScrollView
-      style={{width: '100%', flex: 1}}
-      // contentContainerStyle={{paddingHorizontal: 6, paddingBottom: 24}}
+      style={styles.scrollView}
       bottomOffset={50}
       showsVerticalScrollIndicator={false}
-      extraKeyboardSpace={40}
-      contentContainerStyle={{
-        flexGrow: 1,
-        paddingBottom: hp(18),
-        paddingHorizontal: 10,
-        backgroundColor: '#f8f9fb',
-      }}>
-      <SafeAreaView
-        style={{flex: 1, backgroundColor: '#f8f9fb', padding: wp(0.1)}}>
-        {/* Header Section */}
+      extraKeyboardSpace={20}
+      contentContainerStyle={styles.scrollContent}>
+      <SafeAreaView style={styles.safeArea}>
         <YStack gap="$3">
-          <H3 fontSize={19} color="black" fontWeight={'600'}>
-            {podcast?.title}
-          </H3>
+          {/* Article Title Card */}
+          <View style={styles.podcastTitleCard}>
+            <H3 fontSize={20} color="#1F2937" fontWeight={'700'}>
+              {podcast?.title}
+            </H3>
+          </View>
 
-          <Image
-            source={{
-              uri: podcast?.cover_image.startsWith('http')
-                ? podcast?.cover_image
-                : `${GET_IMAGE}/${podcast?.cover_image}`,
-            }}
-            style={{
-              width: '100%',
-              height: 180,
-              borderRadius: 8,
-            }}
-          />
+          {/* Article Image */}
+          <View style={styles.imageContainer}>
+            <Image
+              source={{
+                uri: podcast?.cover_image.startsWith('http')
+                  ? podcast?.cover_image
+                  : `${GET_IMAGE}/${podcast?.cover_image}`,
+              }}
+              style={styles.podcastImage}
+            />
+          </View>
 
-          <Button
+          {/* View Article Button */}
+          <TouchableOpacity
             onPress={() =>
               navigation.navigate('PodcastDetail', {
                 trackId: podcastId,
                 audioUrl: podcast?.audio_url ?? '',
               })
             }
-            backgroundColor={PRIMARY_COLOR}
-            pressStyle={{opacity: 0.9}}
-            borderRadius="$4"
-            size={'$6'}
-            marginTop="$2"
-            paddingVertical={'$3'}
-            elevation="$2">
-            <Text color="white" fontWeight="600" fontSize={16}>
-              🎧 Listen Now
-            </Text>
-          </Button>
-          <Paragraph color="$gray10" fontSize={17}>
-            {podcast?.description}
-          </Paragraph>
+            style={styles.viewPodcastButton}
+            activeOpacity={0.8}>
+            <Text style={styles.viewPodcastText}> 🎧 Listen Now</Text>
+          </TouchableOpacity>
 
-          <View style={styles.authorContainer}>
-            <TouchableOpacity
-              onPress={() => {
-                //  if (article && article?.authorId) {
-                //navigation.navigate('UserProfileScreen', {
-                //  authorId: authorId,
-                // });
-              }}>
-              {podcast?.user_id.Profile_image ? (
-                <Image
-                  source={{
-                    uri: podcast?.user_id.Profile_image.startsWith('http')
-                      ? `${podcast?.user_id.Profile_image}`
-                      : `${GET_STORAGE_DATA}/${podcast?.user_id.Profile_image}`,
-                  }}
-                  style={styles.authorImage}
-                />
-              ) : (
-                <Image
-                  source={{
-                    uri: 'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-                  }}
-                  style={styles.authorImage}
-                />
-              )}
-            </TouchableOpacity>
-            <View>
-              <Text style={styles.authorName}>
-                {podcast ? podcast?.user_id.user_name : ''}
-              </Text>
-              <Text style={styles.authorFollowers}>
-                {podcast?.user_id.followers
-                  ? podcast?.user_id.followers.length > 1
-                    ? `${podcast?.user_id.followers.length} followers`
-                    : `${podcast?.user_id.followers.length} follower`
-                  : '0 follower'}
-              </Text>
-            </View>
+          {/* Article Description */}
+          <View style={styles.descriptionCard}>
+            <Paragraph color="#4B5563" fontSize={15} lineHeight={22}>
+              {podcast?.description}
+            </Paragraph>
           </View>
 
+          {/* Mention Suggestions */}
           <Suggestions suggestions={filteredUsers} {...triggers.mention} />
 
+          {/* Comment Input */}
           <TextInput
             {...textInputProps}
             style={styles.textInput}
             placeholder="Add a comment..."
+            placeholderTextColor="#9CA3AF"
             multiline
           />
 
+          {/* Submit Button */}
           {newComment.length > 0 && (
             <TouchableOpacity
               style={styles.submitButton}
-              onPress={handleCommentSubmit}>
+              onPress={handleCommentSubmit}
+              activeOpacity={0.8}>
               <Text style={styles.submitButtonText}>
-                {editMode ? '✏️ Update Comment' : '⏩ Submit Comment'}
+                {editMode ? 'Update Comment' : 'Submit Comment'}
               </Text>
             </TouchableOpacity>
           )}
-          <YStack marginTop="$4" space="$3">
-            <Text fontWeight="600" fontSize={20}>
-              {comments.length} Comments
-            </Text>
 
+          {/* Comments Section Header */}
+          <View style={styles.commentsHeader}>
+            <Text style={styles.commentsHeaderText}>
+              {comments.length} {comments.length === 1 ? 'Comment' : 'Comments'}
+            </Text>
+          </View>
+
+          {/* Comments List */}
+          <YStack marginTop="$2" gap="$3">
             {comments.map(item => (
               <CommentItem
                 key={item._id}
@@ -597,7 +485,9 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
                 deleteAction={handleDeleteAction}
                 handleLikeAction={handleLikeAction}
                 commentLikeLoading={commentLikeLoading}
-                handleMentionClick={handleMentionClick}
+                handleMentionClick={()=>{
+
+                }}
                 handleReportAction={handleReportAction}
                 isFromArticle={false}
               />
@@ -607,9 +497,85 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
       </SafeAreaView>
     </KeyboardAwareScrollView>
   );
+ 
 };
 
 const styles = StyleSheet.create({
+  scrollView: {
+    width: '100%',
+    flex: 1,
+    backgroundColor: '#F9FAFB',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 120,
+    paddingHorizontal: 16,
+  },
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  podcastTitleCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 8,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+
+  imageContainer: {
+    position: 'relative',
+  },
+  podcastImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 12,
+  },
+
+  viewPodcastButton: {
+    backgroundColor: PRIMARY_COLOR,
+    padding: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    shadowColor: PRIMARY_COLOR,
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  viewPodcastText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 16,
+  },
+  descriptionCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+
+  commentsHeader: {
+    backgroundColor: '#F3F4F6',
+    padding: 12,
+    marginTop: 8,
+    borderRadius: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: PRIMARY_COLOR,
+  },
+  commentsHeaderText: {
+    fontWeight: '700',
+    fontSize: 18,
+    color: '#1F2937',
+  },
   container: {
     flex: 1,
     padding: 10,
