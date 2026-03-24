@@ -34,6 +34,7 @@ import {useGetProfile} from '@/src/hooks/useGetProfile';
 import {usePostArticleData} from '@/src/hooks/usePostArticle';
 import {useSubmitImprovement} from '@/src/hooks/useSubmitImprovement';
 import {useSubmitSuggestedChanges} from '@/src/hooks/useSubmitSuggestedChanges';
+import {useUploadArticleToPocketbase} from '@/src/hooks/useUploadArticlePocketbase';
 
 //import io from 'socket.io-client';
 
@@ -68,6 +69,9 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
 
   const {mutate: submitChangesMutation, isPending: submitChangesPending} =
     useSubmitSuggestedChanges();
+
+  const {mutate: uploadPocketbase, isPending: uploadPocketbasePending} =
+    useUploadArticleToPocketbase();
 
   const {uploadImage, loading} = useUploadImage();
 
@@ -153,9 +157,98 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
       else {
         // Submit new article
         setImageUtil(imageUtil);
-        uploadArticleToPocketbase.mutate({
-          htmlContent: finalArticle,
-        });
+
+        uploadPocketbase(
+          {
+            title: title,
+            htmlContent: finalArticle,
+            articleData: articleData,
+          },
+          {
+            onSuccess: (data: PocketBaseResponse) => {
+              if (data.html_file) {
+                if (articleData) {
+                  submitChangesMutation(
+                    {
+                      article: data.html_file,
+                      title: title,
+                      userId: articleData
+                        ? typeof articleData.authorId === 'string'
+                          ? articleData.authorId
+                          : articleData.authorId._id
+                        : '',
+                      authorName: authorName,
+                      articleId: articleData?._id,
+                      tags: selectedGenres,
+                      imageUtils: imageUtils,
+                      description: description,
+                    },
+                    {
+                      onSuccess: data => {
+                        // User will not get notified, until the article published
+
+                        Snackbar.show({
+                          text: 'Article submitted for review',
+                          duration: Snackbar.LENGTH_SHORT,
+                        });
+
+                        navigation.navigate('TabNavigation');
+                      },
+                      onError: error => {
+                        console.log('Article post Error', error);
+                        // console.log(error);
+
+                        Alert.alert('Failed to upload your post');
+                      },
+                    },
+                  );
+                } else {
+                  postMutation(
+                    {
+                      title: title,
+                      authorName: authorName,
+                      authorId: user?._id ?? '',
+                      content: data.html_file,
+                      tags: selectedGenres,
+                      imageUtils: imageUtils,
+                      description: description,
+                      pb_recordId: data.recordId,
+                      allow_podcast: true,
+                      language: 'en-IN',
+                    },
+                    {
+                      onSuccess: () => {
+                        Snackbar.show({
+                          text: 'Article added successfully',
+                          duration: Snackbar.LENGTH_SHORT,
+                        });
+
+                        navigation.navigate('TabNavigation');
+                      },
+
+                      onError: error => {
+                        console.log('Article post Error', error);
+                        Snackbar.show({
+                          text: 'Failed to upload your post',
+                          duration: Snackbar.LENGTH_SHORT,
+                        });
+                      },
+                    },
+                  );
+                }
+              } else {
+                Snackbar.show({
+                  text: 'Failed to upload your post',
+                  duration: Snackbar.LENGTH_SHORT,
+                });
+              }
+            },
+            onError: error => {
+              console.log('Article post Error pb', error.message);
+              Alert.alert('Failed to upload your post');
+            },
+          },
+        );
       }
     } catch (err) {
       console.error('Image processing failed:', err);
@@ -202,7 +295,6 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
     }
   };
 
-
   const renderSuggestionMutation = useMutation({
     mutationKey: ['render-suggestion-key'],
     mutationFn: async () => {
@@ -246,113 +338,6 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
     },
   });
 
-  const uploadArticleToPocketbase = useMutation({
-    mutationKey: ['upload-article-to-pocketbase-key'],
-    mutationFn: async ({htmlContent}: {htmlContent: string}) => {
-      const response = await axios.post(
-        UPLOAD_ARTICLE_TO_POCKETBASE,
-        {
-          title: title,
-          htmlContent: htmlContent,
-          record_id: articleData ? articleData.pb_recordId : null,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-      console.log('Response', response.data);
-      return response.data as PocketBaseResponse;
-    },
-
-    onSuccess: (data: PocketBaseResponse) => {
-      if (data.html_file) {
-        if (articleData) {
-          submitChangesMutation(
-            {
-              article: data.html_file,
-              title: title,
-              userId: articleData
-                ? typeof articleData.authorId === 'string'
-                  ? articleData.authorId
-                  : articleData.authorId._id
-                : '',
-              authorName: authorName,
-              articleId: articleData?._id,
-              tags: selectedGenres,
-              imageUtils: imageUtils,
-              description: description,
-            },
-            {
-              onSuccess: data => {
-                // User will not get notified, until the article published
-
-                Snackbar.show({
-                  text: 'Article submitted for review',
-                  duration: Snackbar.LENGTH_SHORT,
-                });
-
-                navigation.navigate('TabNavigation');
-              },
-              onError: error => {
-                console.log('Article post Error', error);
-                // console.log(error);
-
-                Alert.alert('Failed to upload your post');
-              },
-            },
-          );
-        } else {
-          postMutation(
-            {
-              title: title,
-              authorName: authorName,
-              authorId: user?._id ?? '',
-              content: data.html_file,
-              tags: selectedGenres,
-              imageUtils: imageUtils,
-              description: description,
-              pb_recordId: data.recordId,
-              allow_podcast: true,
-              language: 'en-IN',
-            },
-            {
-              onSuccess: () => {
-                Snackbar.show({
-                  text: 'Article added successfully',
-                  duration: Snackbar.LENGTH_SHORT,
-                });
-
-                navigation.navigate('TabNavigation');
-              },
-
-              onError: error => {
-                console.log('Article post Error', error);
-                // console.log(error);
-
-                Snackbar.show({
-                  text: 'Failed to upload your post',
-                  duration: Snackbar.LENGTH_SHORT,
-                });
-              },
-            },
-          );
-        }
-      } else {
-        Snackbar.show({
-          text: 'Failed to upload your post',
-          duration: Snackbar.LENGTH_SHORT,
-        });
-      }
-    },
-    onError: error => {
-      console.log('Article post Error pb', error.message);
-      // console.log(error);
-
-      Alert.alert('Failed to upload your post');
-    },
-  });
 
   const uploadImprovementToPocketbase = useMutation({
     mutationKey: ['upload-improvement-to-pocketbase-key'],
@@ -417,7 +402,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
   if (
     renderSuggestionMutation.isPending ||
     uploadImprovementToPocketbase.isPending ||
-    uploadArticleToPocketbase.isPending ||
+    uploadPocketbasePending ||
     postMutationPending ||
     submitChangesPending ||
     improvementMutationPending ||
@@ -462,7 +447,6 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
       <View style={styles.articlePreviewContainer}>
         <AutoHeightWebView
           style={styles.webView}
-          
           onSizeUpdated={size => console.log(size.height)}
           files={[
             {

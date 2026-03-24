@@ -7,12 +7,9 @@ import {Tabs, MaterialTabBar} from 'react-native-collapsible-tab-view';
 import ArticleCard from '../components/ArticleCard';
 import {useDispatch, useSelector} from 'react-redux';
 import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
-import {useSafeAreaInsets, SafeAreaView} from 'react-native-safe-area-context';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import ProfileHeader from '../components/ProfileHeader';
-import {UPDATE_VIEW_COUNT} from '../helper/APIUtils';
 import {ArticleData, ProfileScreenProps} from '../type';
-import {useMutation} from '@tanstack/react-query';
-import axios from 'axios';
 import Loader from '../components/Loader';
 import {useFocusEffect} from '@react-navigation/native';
 import Snackbar from 'react-native-snackbar';
@@ -20,11 +17,12 @@ import {useSocket} from '../../SocketContext';
 import {setUserHandle} from '../store/UserSlice';
 import {useRepostArticle} from '../hooks/useArticleRepost';
 import {useGetProfile} from '../hooks/useGetProfile';
+import {useUpdateViewCount} from '../hooks/useUpdateViewCount';
 
 const ProfileScreen = ({navigation}: ProfileScreenProps) => {
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === 'dark';
-  const {user_handle, user_id, user_token} = useSelector(
+  const {user_handle, user_id} = useSelector(
     (state: any) => state.user,
   );
   const [refreshing, setRefreshing] = useState<boolean>(false);
@@ -33,11 +31,12 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
   const [authorId, setAuthorId] = useState<string>('');
   const [recordId, setRecordId] = useState<string>('');
   const [selectedCardId, setSelectedCardId] = useState<string>('');
-  const [repostItem, setRepostItem] = useState<ArticleData | null>(null);
   const socket = useSocket();
   const dispatch = useDispatch();
 
-  const {mutate: repost, isPending: repostPending} = useRepostArticle();
+  const {mutate: repost} = useRepostArticle();
+  const {mutate: updateViewCount} =
+    useUpdateViewCount(articleId ?? 0);
 
   const {data: user, refetch, isLoading} = useGetProfile();
 
@@ -58,9 +57,20 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
       setAuthorId(authorId);
       setRecordId(recordId);
 
-      updateViewCountMutation.mutate({
-        articleId: Number(articleId),
+      updateViewCount(Number(articleId), {
+        onSuccess: async () => {
+          navigation.navigate('ArticleScreen', {
+            articleId: Number(articleId),
+            authorId: authorId,
+            recordId: recordId,
+          });
+        },
+
+        onError: () => {
+          Alert.alert('Internal server error, try again!');
+        },
       });
+      
     } else {
       Snackbar.show({
         text: 'Please check your internet connection!',
@@ -68,50 +78,10 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
       });
     }
   };
-  const updateViewCountMutation = useMutation({
-    mutationKey: ['update-view-count'],
-    mutationFn: async ({
-      articleId,
-    }: // authorId,
-    {
-      articleId: number;
-      //  authorId: string;
-    }) => {
-      if (user_token === '') {
-        Alert.alert('No token found');
-        return;
-      }
-      const res = await axios.post(
-        UPDATE_VIEW_COUNT,
-        {
-          article_id: articleId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
 
-      return res.data.article as ArticleData;
-    },
-    onSuccess: async data => {
-      navigation.navigate('ArticleScreen', {
-        articleId: Number(articleId),
-        authorId: authorId,
-        recordId: recordId,
-      });
-    },
-
-    onError: error => {
-      // console.log('Update View Count Error', error);
-      Alert.alert('Internal server error, try again!');
-    },
-  });
 
   const isDoctor = user !== undefined ? user.isDoctor : false;
   const bottomBarHeight = useBottomTabBarHeight();
-  const insets = useSafeAreaInsets();
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -302,21 +272,38 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={[styles.loadingContainer, {backgroundColor: isDarkMode ? '#000A60' : '#F0F8FF'}]}>
-        <StatusBar style={isDarkMode ? 'light' : 'dark'} backgroundColor="#007AFF" />
+      <SafeAreaView
+        style={[
+          styles.loadingContainer,
+          {backgroundColor: isDarkMode ? '#000A60' : '#F0F8FF'},
+        ]}>
+        <StatusBar
+          style={isDarkMode ? 'light' : 'dark'}
+          backgroundColor="#007AFF"
+        />
         <Loader />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, {backgroundColor: isDarkMode ? '#000A60' : PRIMARY_COLOR}]}>
-      <StatusBar style={isDarkMode ? 'light' : 'dark'} backgroundColor="#007AFF" />
+    <SafeAreaView
+      style={[
+        styles.container,
+        {backgroundColor: isDarkMode ? '#000A60' : PRIMARY_COLOR},
+      ]}>
+      <StatusBar
+        style={isDarkMode ? 'light' : 'dark'}
+        backgroundColor="#007AFF"
+      />
       <View style={[styles.innerContainer]}>
         <Tabs.Container
           renderHeader={renderHeader}
           renderTabBar={renderTabBar}
-          containerStyle={[styles.tabsContainer, {backgroundColor: isDarkMode ? '#000A60' : '#F0F8FF'}]}>
+          containerStyle={[
+            styles.tabsContainer,
+            {backgroundColor: isDarkMode ? '#000A60' : '#F0F8FF'},
+          ]}>
           {/* Tab 1 */}
           <Tabs.Tab name="Insight">
             <Tabs.ScrollView
@@ -381,7 +368,7 @@ export default ProfileScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-      backgroundColor: '#0CAFFF',
+    backgroundColor: '#0CAFFF',
   },
   innerContainer: {
     flex: 1,

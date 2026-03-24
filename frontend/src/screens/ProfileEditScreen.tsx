@@ -17,15 +17,9 @@ import ProfessionalTab from '../components/ProfessionalTab';
 import PasswordTab from '../components/PasswordTab';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useDispatch, useSelector} from 'react-redux';
-import {useMutation} from '@tanstack/react-query';
-import axios, {AxiosError} from 'axios';
+import {AxiosError} from 'axios';
 import {
   GET_STORAGE_DATA,
-  UPDATE_PROFILE_IMAGE,
-  UPDATE_USER_CONTACT_DETAILS,
-  UPDATE_USER_GENERAL_DETAILS,
-  UPDATE_USER_PROFESSIONAL_DETAILS,
-  UPDATE_USER_PASSWORD,
 } from '../helper/APIUtils';
 import {
   ImageLibraryOptions,
@@ -35,7 +29,12 @@ import {
 import ImageResizer from '@bam.tech/react-native-image-resizer';
 import useUploadImage from '../hooks/useUploadImage';
 import Snackbar from 'react-native-snackbar';
-import { useGetUserDetails } from '../hooks/useGetUserDetails';
+import {useGetUserDetails} from '../hooks/useGetUserDetails';
+import {useUpdatePassword} from '../hooks/useUpdatePassword';
+import {useUpdateProfileImage} from '../hooks/useUpdateProfileImage';
+import {useUpdateUserContactDetail} from '../hooks/useUpdateUserContactDetail';
+import {useUpdateUserGeneralDetails} from '../hooks/useUpdateUserGeneralDetails';
+import {useUpdateUserProfDetails} from '../hooks/useUpdateUserProfDetails';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 let validator = require('email-validator');
 let expr = /^(0|91)?[6-9][0-9]{9}$/;
@@ -53,6 +52,22 @@ const ProfileEditScreen = ({navigation}) => {
 
   // State to keep track of the currently selected tab
   const [currentTab, setcurrentTab] = useState<string>(tabs[0]);
+
+  const {mutate: updatePassword, isPending: passwordMutationPending} =
+    useUpdatePassword();
+
+  const {mutate: updateProfileImage, isPending: profileImagePending} =
+    useUpdateProfileImage();
+
+  const {mutate: updateContactDetails, isPending: contactDetailsPending} =
+    useUpdateUserContactDetail();
+
+  const {mutate: updateGeneralDetails, isPending: generalDetailsPending} =
+    useUpdateUserGeneralDetails();
+  const {
+    mutate: updateProfessionalDetails,
+    isPending: professionalDetailPending,
+  } = useUpdateUserProfDetails();
 
   // Initialize state variables
   const [user_profile_image, setUserProfileImage] = useState('');
@@ -73,622 +88,8 @@ const ProfileEditScreen = ({navigation}) => {
 
   const {data: user} = useGetUserDetails(isConnected);
 
-  const userGeneralDetailsMutation = useMutation({
-    mutationKey: ['user-general-details-updation'],
-    mutationFn: async () => {
-      const response = await axios.put(
-        `${UPDATE_USER_GENERAL_DETAILS}`,
-        {
-          username: username,
-          // userHandle: userHandle,
-          //email: email,
-          about: about,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-      return response.data as any;
-    },
-    onSuccess: _data => {
-      Alert.alert('Success', 'Details submitted successfully');
 
-      // dispatch(
-      //   showAlert({
-      //     title: 'Success',
-      //     message: 'Details submitted successfully',
-      //   }),
-      // );
-      navigation.goBack();
-    },
 
-    onError: (err: AxiosError) => {
-      if (err.response) {
-        const statusCode = err.response.status;
-        switch (statusCode) {
-          case 400:
-            // Handle bad request errors (missing fields or email/user handle already in use)
-            Alert.alert(
-              'Update Failed',
-              err?.response?.data?.error ||
-                'Please fill in all fields correctly.',
-            );
-            // dispatch(
-            //   showAlert({
-            //     title: 'Update failed',
-            //     message: 'Please fill in all fields correctly.',
-            //   }),
-            // );
-            break;
-          case 404:
-            // Handle user not found
-            Alert.alert(
-              'Update Failed',
-              'User not found. Please check your information.',
-            );
-            // dispatch(
-            //   showAlert({
-            //     title: 'Update failed',
-            //     message: 'User not found. Please check your information.',
-            //   }),
-            // );
-            break;
-          case 409:
-            // Handle conflict errors (duplicate email/user handle)
-            Alert.alert(
-              'Update Failed',
-              'Email or user handle already exists.',
-            );
-            // dispatch(
-            //   showAlert({
-            //     title: 'Update failed',
-            //     message: 'Email or user handle already exists.',
-            //   }),
-            // );
-            break;
-          case 500:
-            // Handle internal server errors
-            Alert.alert(
-              'Update Failed',
-              'Internal server error. Please try again later.',
-            );
-
-            // dispatch(
-            //   showAlert({
-            //     title: 'Update failed',
-            //     message: 'Internal server error. Please try again later.',
-            //   }),
-            // );
-            break;
-          default:
-            // Handle any other errors
-            Alert.alert(
-              'Update Failed',
-              'Something went wrong. Please try again later.',
-            );
-          // dispatch(
-          //   showAlert({
-          //     title: 'Update failed',
-          //     message: 'Something went wrong. Please try again later.',
-          //   }),
-          // );
-        }
-      } else {
-        // Handle network errors
-        console.log('General Update Error', err);
-        Alert.alert(
-          'Update Failed',
-          'Network error. Please check your connection.',
-        );
-        // dispatch(
-        //   showAlert({
-        //     title: 'Update failed',
-        //     message: 'Network error. Please check your connection.',
-        //   }),
-        // );
-      }
-    },
-  });
-  const userConatctDetailsMutation = useMutation({
-    mutationKey: ['user-contact-details-updation'],
-    mutationFn: async () => {
-      const response = await axios.put(
-        `${UPDATE_USER_CONTACT_DETAILS}`,
-        {
-          phone: contact_number,
-          email: contact_email,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-      return response.data as any;
-    },
-    onSuccess: _data => {
-      Alert.alert('Success', 'Details submitted successfully');
-      // dispatch(
-      //   showAlert({
-      //     title: 'Success',
-      //     message: 'Details submitted successfully.',
-      //   }),
-      // );
-      navigation.goBack();
-    },
-
-    onError: (err: AxiosError) => {
-      if (err.response) {
-        const statusCode = err.response.status;
-        switch (statusCode) {
-          case 400:
-            // Handle bad request errors (missing fields or email/user handle already in use)
-            Alert.alert(
-              'Update Failed',
-              err?.response?.data?.error ||
-                'Please fill in all fields correctly.',
-            );
-            // dispatch(
-            //   showAlert({
-            //     title: 'Update Failed',
-            //     message: 'Please fill in all fields correctly.',
-            //   }),
-            // );
-            break;
-          case 404:
-            // Handle user not found
-            Alert.alert(
-              'Update Failed',
-              'User not found. Please check your information.',
-            );
-            // dispatch(
-            //   showAlert({
-            //     title: 'Update Failed',
-            //     message: 'User not found. Please check your information.',
-            //   }),
-            // );
-            break;
-          case 409:
-            // Handle conflict errors (duplicate email/user handle)
-            Alert.alert(
-              'Update Failed',
-              'Email or user handle already exists.',
-            );
-            // dispatch(
-            //   showAlert({
-            //     title: 'Update Failed',
-            //     message: 'Email or user handle already exists.',
-            //   }),
-            // );
-            break;
-          case 500:
-            // Handle internal server errors
-            Alert.alert(
-              'Update Failed',
-              'Internal server error. Please try again later.',
-            );
-            // dispatch(
-            //   showAlert({
-            //     title: 'Update Failed',
-            //     message: 'Internal server error. Please try again later.',
-            //   }),
-            // );
-            break;
-          default:
-            // Handle any other errors
-            Alert.alert(
-              'Update Failed',
-              'Something went wrong. Please try again later.',
-            );
-          // dispatch(
-          //   showAlert({
-          //     title: 'Update Failed',
-          //     message: 'Something went wrong. Please try again later.',
-          //   }),
-          // );
-        }
-      } else {
-        // Handle network errors
-        console.log('General Update Error', err);
-        Alert.alert(
-          'Update Failed',
-          'Network error. Please check your connection.',
-        );
-        // dispatch(
-        //   showAlert({
-        //     title: 'Update Failed',
-        //     message: 'Network error. Please check your connection.',
-        //   }),
-        // );
-      }
-    },
-  });
-  const userProfessionalDetailsMutation = useMutation({
-    mutationKey: ['user-professional-details-updation'],
-    mutationFn: async () => {
-      const response = await axios.put(
-        `${UPDATE_USER_PROFESSIONAL_DETAILS}`,
-        {
-          specialization: specialization,
-          qualification: qualification,
-          experience: experience,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-      return response.data as any;
-    },
-    onSuccess: _data => {
-      Alert.alert('Success', 'Details submitted successfully');
-      // dispatch(
-      //   showAlert({
-      //     title: 'Success',
-      //     message: 'Details submitted successfully.',
-      //   }),
-      // );
-      navigation.goBack();
-    },
-
-    onError: (err: AxiosError) => {
-      if (err.response) {
-        const statusCode = err.response.status;
-        switch (statusCode) {
-          case 400:
-            // Handle bad request errors (missing fields or email/user handle already in use)
-            Alert.alert(
-              'Update Failed',
-              err?.response?.data?.error ||
-                'Please fill in all fields correctly.',
-            );
-            // dispatch(
-            //   showAlert({
-            //     title: 'Update Failed',
-            //     message: 'Please fill in all fields correctly.',
-            //   }),
-            // );
-            break;
-          case 404:
-            // Handle user not found
-            Alert.alert(
-              'Update Failed',
-              'User not found. Please check your information.',
-            );
-            // dispatch(
-            //   showAlert({
-            //     title: 'Update Failed',
-            //     message: 'User not found. Please check your information.',
-            //   }),
-            // );
-            break;
-          case 500:
-            // Handle internal server errors
-            Alert.alert(
-              'Update Failed',
-              'Internal server error. Please try again later.',
-            );
-            // dispatch(
-            //   showAlert({
-            //     title: 'Update Failed',
-            //     message: 'Internal server error. Please try again later.',
-            //   }),
-            // );
-            break;
-          default:
-            // Handle any other errors
-            Alert.alert(
-              'Update Failed',
-              'Something went wrong. Please try again later.',
-            );
-          // dispatch(
-          //   showAlert({
-          //     title: 'Update Failed',
-          //     message: 'Something went wrong. Please try again later.',
-          //   }),
-          // );
-        }
-      } else {
-        // Handle network errors
-        console.log('General Update Error', err);
-        Alert.alert(
-          'Update Failed',
-          'Network error. Please check your connection.',
-        );
-        // dispatch(
-        //   showAlert({
-        //     title: 'Update Failed',
-        //     message: 'Network error. Please check your connection.',
-        //   }),
-        // );
-      }
-    },
-  });
-  const userProfileImageMutation = useMutation({
-    mutationKey: ['user-profile-image-updation'],
-    mutationFn: async (profileImageUrl: string) => {
-      const response = await axios.post(
-        `${UPDATE_PROFILE_IMAGE}`,
-        {
-          profileImageUrl, // Use the uploaded image URL here
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-      return response.data as any;
-    },
-    onSuccess: _data => {
-      Alert.alert('Success', 'Profile updated successfully');
-      // dispatch(
-      //   showAlert({
-      //     title: 'Success',
-      //     message: 'Profile updated successfully',
-      //   }),
-      // );
-    },
-    onError: (err: AxiosError) => {
-      if (err.response) {
-        const statusCode = err.response.status;
-        const errorMessage = err?.response?.data?.error;
-
-        switch (statusCode) {
-          case 400:
-            // Handle validation errors (like invalid image format, file too large)
-            if (errorMessage?.includes('File too large')) {
-              Alert.alert(
-                'Update Failed',
-                'The image file exceeds the size limit of 1 MB. Please select a smaller image.',
-              );
-
-              // dispatch(
-              //   showAlert({
-              //     title: 'Update Failed',
-              //     message:
-              //       'The image file exceeds the size limit of 1 MB. Please select a smaller image.',
-              //   }),
-              // );
-            } else if (errorMessage?.includes('Invalid image format')) {
-              Alert.alert(
-                'Update Failed',
-                'The image format is invalid. Please upload a valid image (JPEG, PNG, etc.).',
-              );
-
-              // dispatch(
-              //   showAlert({
-              //     title: 'Update Failed',
-              //     message:
-              //       'The image format is invalid. Please upload a valid image (JPEG, PNG, etc.).',
-              //   }),
-              // );
-            } else {
-              Alert.alert(
-                'Update Failed',
-                errorMessage ||
-                  'Please ensure the image is valid and all fields are filled correctly.',
-              );
-
-              // dispatch(
-              //   showAlert({
-              //     title: 'Update Failed',
-              //     message:
-              //       'Please ensure the image is valid and all fields are filled correctly.',
-              //   }),
-              // );
-            }
-            break;
-
-          case 401:
-            // Handle unauthorized access (e.g., expired token)
-            Alert.alert(
-              'Update Failed',
-              'You are not authorized to update the profile image. Please log in again.',
-            );
-            // dispatch(
-            //   showAlert({
-            //     title: 'Update Failed',
-            //     message:
-            //       'You are not authorized to update the profile image. Please log in again.',
-            //   }),
-            // );
-            break;
-
-          case 404:
-            // Handle user not found errors
-            Alert.alert(
-              'Update Failed',
-              'User not found. Please ensure your account information is correct.',
-            );
-            // dispatch(
-            //   showAlert({
-            //     title: 'Update Failed',
-            //     message:
-            //       'User not found. Please ensure your account information is correct.',
-            //   }),
-            // );
-            break;
-
-          case 413:
-            // Handle payload too large errors (typically for image uploads)
-            Alert.alert(
-              'Update Failed',
-              'The uploaded image is too large. Please select an image under 1 MB.',
-            );
-            // dispatch(
-            //   showAlert({
-            //     title: 'Update Failed',
-            //     message:
-            //       'User not found. Please ensure your account information is correct.',
-            //   }),
-            // );
-            break;
-
-          case 500:
-            // Handle server-side errors
-            Alert.alert(
-              'Update Failed',
-              'An internal server error occurred. Please try again later.',
-            );
-            // dispatch(
-            //   showAlert({
-            //     title: 'Update Failed',
-            //     message:
-            //       'An internal server error occurred. Please try again later.',
-            //   }),
-            // );
-            break;
-
-          default:
-            // Handle unexpected errors
-            Alert.alert(
-              'Update Failed',
-              'An unexpected error occurred. Please try again later.',
-            );
-          // dispatch(
-          //   showAlert({
-          //     title: 'Update Failed',
-          //     message:
-          //       'An unexpected error occurred. Please try again later.',
-          //   }),
-          // );
-        }
-      } else {
-        // Handle network errors or other Axios-related issues
-        if (err.message === 'Network Error') {
-          Alert.alert(
-            'Update Failed',
-            'A network error occurred. Please check your internet connection and try again.',
-          );
-
-          // dispatch(
-          //   showAlert({
-          //     title: 'Update Failed',
-          //     message:
-          //       'A network error occurred. Please check your internet connection and try again.',
-          //   }),
-          // );
-        } else {
-          console.log('General Update Error:', err);
-          Alert.alert(
-            'Update Failed',
-            'Something went wrong. Please try again.',
-          );
-
-          // dispatch(
-          //   showAlert({
-          //     title: 'Update Failed',
-          //     message: 'Something went wrong. Please try again.',
-          //   }),
-          // );
-        }
-      }
-    },
-  });
-  const userPasswordUpdateMutation = useMutation({
-    mutationKey: ['user-password-updation'],
-    mutationFn: async () => {
-      const response = await axios.put(
-        `${UPDATE_USER_PASSWORD}`,
-        {
-          old_password: old_password,
-          new_password: new_password,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-      return response.data as any;
-    },
-    onSuccess: _data => {
-      Alert.alert('Success', 'Password updated sucessfully');
-      // dispatch(
-      //   showAlert({
-      //     title: 'Success',
-      //     message: 'Password updated sucessfully',
-      //   }),
-      // );
-      setOldPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-    },
-
-    onError: (err: AxiosError) => {
-      if (err.response) {
-        const statusCode = err.response.status;
-        switch (statusCode) {
-          case 400:
-            Alert.alert('Password Update Failed', err?.response?.data?.error);
-            // dispatch(
-            //   showAlert({
-            //     title: 'Password Update Failed',
-            //     message: err?.response?.data?.error,
-            //   }),
-            // );
-            break;
-          case 401:
-            Alert.alert('Password Update Failed', 'Old password is incorrect.');
-            // dispatch(
-            //   showAlert({
-            //     title: 'Password Update Failed',
-            //     message: 'Old password is incorrect.',
-            //   }),
-            // );
-            break;
-          case 404:
-            Alert.alert('Password Update Failed', 'User not found.');
-            // dispatch(
-            //   showAlert({
-            //     title: 'Password Update Failed',
-            //     message: 'User not found.',
-            //   }),
-            // );
-            break;
-          case 500:
-            Alert.alert(
-              'Password Update Failed',
-              'Internal server error. Please try again later.',
-            );
-            // dispatch(
-            //   showAlert({
-            //     title: 'Password Update Failed',
-            //     message: 'Internal server error. Please try again later.',
-            //   }),
-            // );
-            break;
-          default:
-            Alert.alert(
-              'Password Update Failed',
-              'Something went wrong. Please try again later.',
-            );
-          // dispatch(
-          //   showAlert({
-          //     title: 'Password Update Failed',
-          //     message: 'Something went wrong. Please try again later.',
-          //   }),
-          // );
-        }
-      } else {
-        // console.log('Password Update Error', err);
-        Alert.alert(
-          'Password Update Failed',
-          'Network error. Please check your connection.',
-        );
-        // dispatch(
-        //   showAlert({
-        //     title: 'Password Update Failed',
-        //     message: 'Something went wrong. Please try again later.',
-        //   }),
-        // );
-      }
-    },
-  });
   useEffect(() => {
     if (user) {
       //console.log(user);
@@ -767,7 +168,73 @@ const ProfileEditScreen = ({navigation}) => {
       Alert.alert('Validation Error', errorMessage);
       return;
     }
-    userGeneralDetailsMutation.mutate();
+
+    updateGeneralDetails(
+      {
+        username: username,
+        about: about,
+      },
+      {
+        onSuccess: _data => {
+          Alert.alert('Success', 'Details submitted successfully');
+          //navigation.goBack();
+        },
+
+        onError: (err: AxiosError) => {
+          if (err.response) {
+            const statusCode = err.response.status;
+            switch (statusCode) {
+              case 400:
+                // Handle bad request errors (missing fields or email/user handle already in use)
+                Alert.alert(
+                  'Update Failed',
+                  err?.response?.data?.error ||
+                    'Please fill in all fields correctly.',
+                );
+
+                break;
+              case 404:
+                // Handle user not found
+                Alert.alert(
+                  'Update Failed',
+                  'User not found. Please check your information.',
+                );
+
+                break;
+              case 409:
+                // Handle conflict errors (duplicate email/user handle)
+                Alert.alert(
+                  'Update Failed',
+                  'Email or user handle already exists.',
+                );
+
+                break;
+              case 500:
+                // Handle internal server errors
+                Alert.alert(
+                  'Update Failed',
+                  'Internal server error. Please try again later.',
+                );
+
+                break;
+              default:
+                // Handle any other errors
+                Alert.alert(
+                  'Update Failed',
+                  'Something went wrong. Please try again later.',
+                );
+            }
+          } else {
+            // Handle network errors
+            console.log('General Update Error', err);
+            Alert.alert(
+              'Update Failed',
+              'Network error. Please check your connection.',
+            );
+          }
+        },
+      },
+    );
   };
   const handleSubmitContactDetails = () => {
     if (!isConnected) {
@@ -783,7 +250,73 @@ const ProfileEditScreen = ({navigation}) => {
       return;
     }
     //console.log('donee');
-    userConatctDetailsMutation.mutate();
+    //userConatctDetailsMutation.mutate();
+
+    updateContactDetails(
+      {
+        phone: contact_number,
+        email: contact_email,
+      },
+      {
+        onSuccess: _data => {
+          Alert.alert('Success', 'Details submitted successfully');
+
+         // navigation.goBack();
+        },
+
+        onError: (err: AxiosError) => {
+          if (err.response) {
+            const statusCode = err.response.status;
+            switch (statusCode) {
+              case 400:
+                // Handle bad request errors (missing fields or email/user handle already in use)
+                Alert.alert(
+                  'Update Failed',
+                  err?.response?.data?.error ||
+                    'Please fill in all fields correctly.',
+                );
+
+                break;
+              case 404:
+                // Handle user not found
+                Alert.alert(
+                  'Update Failed',
+                  'User not found. Please check your information.',
+                );
+
+                break;
+              case 409:
+                // Handle conflict errors (duplicate email/user handle)
+                Alert.alert(
+                  'Update Failed',
+                  'Email or user handle already exists.',
+                );
+                break;
+              case 500:
+                // Handle internal server errors
+                Alert.alert(
+                  'Update Failed',
+                  'Internal server error. Please try again later.',
+                );
+                break;
+              default:
+                // Handle any other errors
+                Alert.alert(
+                  'Update Failed',
+                  'Something went wrong. Please try again later.',
+                );
+            }
+          } else {
+            // Handle network errors
+            console.log('General Update Error', err);
+            Alert.alert(
+              'Update Failed',
+              'Network error. Please check your connection.',
+            );
+          }
+        },
+      },
+    );
   };
   const handleSubmitProfessionalDetails = () => {
     if (!isConnected) {
@@ -799,7 +332,63 @@ const ProfileEditScreen = ({navigation}) => {
       return;
     }
     //console.log('donee');
-    userProfessionalDetailsMutation.mutate();
+
+    updateProfessionalDetails(
+      {
+        specialization: specialization,
+        qualification: qualification,
+        experience: experience,
+      },
+      {
+        onSuccess: _data => {
+          Alert.alert('Success', 'Details submitted successfully');
+        //  navigation.goBack();
+        },
+
+        onError: (err: AxiosError) => {
+          if (err.response) {
+            const statusCode = err.response.status;
+            switch (statusCode) {
+              case 400:
+                // Handle bad request errors (missing fields or email/user handle already in use)
+                Alert.alert(
+                  'Update Failed',
+                  err?.response?.data?.error ||
+                    'Please fill in all fields correctly.',
+                );
+                break;
+              case 404:
+                // Handle user not found
+                Alert.alert(
+                  'Update Failed',
+                  'User not found. Please check your information.',
+                );
+                break;
+              case 500:
+                // Handle internal server errors
+                Alert.alert(
+                  'Update Failed',
+                  'Internal server error. Please try again later.',
+                );
+                break;
+              default:
+                // Handle any other errors
+                Alert.alert(
+                  'Update Failed',
+                  'Something went wrong. Please try again later.',
+                );
+            }
+          } else {
+            // Handle network errors
+            console.log('General Update Error', err);
+            Alert.alert(
+              'Update Failed',
+              'Network error. Please check your connection.',
+            );
+          }
+        },
+      },
+    );
   };
   const handleSubmitPassword = () => {
     if (!isConnected) {
@@ -845,7 +434,67 @@ const ProfileEditScreen = ({navigation}) => {
       Alert.alert('Error', 'The new password and confirmation do not match.');
       return;
     }
-    userPasswordUpdateMutation.mutate();
+
+    updatePassword(
+      {
+        old_password: old_password,
+        new_password: new_password,
+      },
+      {
+        onSuccess: _data => {
+          Snackbar.show({
+            text: 'Password updated sucessfully',
+            duration: Snackbar.LENGTH_SHORT,
+          });
+          setOldPassword('');
+          setNewPassword('');
+          setConfirmPassword('');
+        },
+
+        onError: (err: AxiosError) => {
+          if (err.response) {
+            const statusCode = err.response.status;
+            switch (statusCode) {
+              case 400:
+                Alert.alert(
+                  'Password Update Failed',
+                  err?.response?.data?.error,
+                );
+                break;
+              case 401:
+                Alert.alert(
+                  'Password Update Failed',
+                  'Old password is incorrect.',
+                );
+                break;
+              case 404:
+                Alert.alert('Password Update Failed', 'User not found.');
+
+                break;
+              case 500:
+                Alert.alert(
+                  'Password Update Failed',
+                  'Internal server error. Please try again later.',
+                );
+
+                break;
+              default:
+                Alert.alert(
+                  'Password Update Failed',
+                  'Something went wrong. Please try again later.',
+                );
+            }
+          } else {
+            // console.log('Password Update Error', err);
+            Alert.alert(
+              'Password Update Failed',
+              'Network error. Please check your connection.',
+            );
+          }
+        },
+      },
+    );
+    //  userPasswordUpdateMutation.mutate();
   };
   const selectImage = async () => {
     const options: ImageLibraryOptions = {
@@ -885,18 +534,117 @@ const ProfileEditScreen = ({navigation}) => {
                     text: 'OK',
                     onPress: async () => {
                       try {
-            
                         if (isConnected) {
                           const result = await uploadImage(resizedImageUri.uri);
-                          userProfileImageMutation.mutate(result);
-                        }else{
+
+                          updateProfileImage(result as string, {
+                            onSuccess: _data => {
+                              Alert.alert(
+                                'Success',
+                                'Profile updated successfully',
+                              );
+                            },
+                            onError: (err: AxiosError) => {
+                              if (err.response) {
+                                const statusCode = err.response.status;
+                                const errorMessage = err?.response?.data?.error;
+
+                                switch (statusCode) {
+                                  case 400:
+                                    // Handle validation errors (like invalid image format, file too large)
+                                    if (
+                                      errorMessage?.includes('File too large')
+                                    ) {
+                                      Alert.alert(
+                                        'Update Failed',
+                                        'The image file exceeds the size limit of 1 MB. Please select a smaller image.',
+                                      );
+                                    } else if (
+                                      errorMessage?.includes(
+                                        'Invalid image format',
+                                      )
+                                    ) {
+                                      Alert.alert(
+                                        'Update Failed',
+                                        'The image format is invalid. Please upload a valid image (JPEG, PNG, etc.).',
+                                      );
+                                    } else {
+                                      Alert.alert(
+                                        'Update Failed',
+                                        errorMessage ||
+                                          'Please ensure the image is valid and all fields are filled correctly.',
+                                      );
+                                    }
+                                    break;
+
+                                  case 401:
+                                    // Handle unauthorized access (e.g., expired token)
+                                    Alert.alert(
+                                      'Update Failed',
+                                      'You are not authorized to update the profile image. Please log in again.',
+                                    );
+
+                                    break;
+
+                                  case 404:
+                                    // Handle user not found errors
+                                    Alert.alert(
+                                      'Update Failed',
+                                      'User not found. Please ensure your account information is correct.',
+                                    );
+
+                                    break;
+
+                                  case 413:
+                                    // Handle payload too large errors (typically for image uploads)
+                                    Alert.alert(
+                                      'Update Failed',
+                                      'The uploaded image is too large. Please select an image under 1 MB.',
+                                    );
+
+                                    break;
+
+                                  case 500:
+                                    // Handle server-side errors
+                                    Alert.alert(
+                                      'Update Failed',
+                                      'An internal server error occurred. Please try again later.',
+                                    );
+
+                                    break;
+
+                                  default:
+                                    // Handle unexpected errors
+                                    Alert.alert(
+                                      'Update Failed',
+                                      'An unexpected error occurred. Please try again later.',
+                                    );
+                                }
+                              } else {
+                                // Handle network errors or other Axios-related issues
+                                if (err.message === 'Network Error') {
+                                  Alert.alert(
+                                    'Update Failed',
+                                    'A network error occurred. Please check your internet connection and try again.',
+                                  );
+                                } else {
+                                  console.log('General Update Error:', err);
+                                  Alert.alert(
+                                    'Update Failed',
+                                    'Something went wrong. Please try again.',
+                                  );
+                                }
+                              }
+                            },
+                          });
+                        } else {
                           Snackbar.show({
-                            text: "Please check your internet connection!",
-                            duration: Snackbar.LENGTH_SHORT
+                            text: 'Please check your internet connection!',
+                            duration: Snackbar.LENGTH_SHORT,
                           });
                           return;
                         }
-                      } catch (err:any) {
+                      } catch (err: any) {
                         console.error('Upload failed');
                         Alert.alert('Error', 'Upload failed');
                       }
@@ -917,11 +665,11 @@ const ProfileEditScreen = ({navigation}) => {
 
   const Loading =
     loading ||
-    userGeneralDetailsMutation.isPending ||
-    userConatctDetailsMutation.isPending ||
-    userProfessionalDetailsMutation.isPending ||
-    userProfileImageMutation.isPending ||
-    userPasswordUpdateMutation.isPending;
+    generalDetailsPending ||
+    contactDetailsPending ||
+    professionalDetailPending ||
+    profileImagePending ||
+    passwordMutationPending;
   return (
     <SafeAreaView style={styles.safeAreaView}>
       <ScrollView

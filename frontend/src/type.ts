@@ -203,6 +203,11 @@ export type LoginScreenProp = StackScreenProps<
   'LoginScreen'
 >;
 
+export type LogoutScreenProp = StackScreenProps<
+  RootStackParamList,
+  'LogoutScreen'
+>;
+
 export type ArticleScreenProp = StackScreenProps<
   RootStackParamList,
   'ArticleScreen'

@@ -1,4 +1,11 @@
-import {StyleSheet, View, Text, Alert, TouchableOpacity, useColorScheme} from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  Alert,
+  TouchableOpacity,
+  useColorScheme,
+} from 'react-native';
 import React, {useCallback, useState} from 'react';
 import {StatusBar} from 'expo-status-bar';
 import {PRIMARY_COLOR} from '../helper/Theme';
@@ -6,11 +13,11 @@ import ActivityOverview from '../components/ActivityOverview';
 import {Tabs, MaterialTabBar} from 'react-native-collapsible-tab-view';
 import ArticleCard from '../components/ArticleCard';
 import {useSelector} from 'react-redux';
-import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import ProfileHeader from '../components/ProfileHeader';
-import {PROD_URL, UPDATE_VIEW_COUNT} from '../helper/APIUtils';
+import {PROD_URL} from '../helper/APIUtils';
 import {ArticleData, UserProfileScreenProp, User} from '../type';
-import {useMutation, useQuery} from '@tanstack/react-query';
+import {useQuery} from '@tanstack/react-query';
 import axios from 'axios';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Loader from '../components/Loader';
@@ -20,6 +27,7 @@ import {useSocket} from '../../SocketContext';
 import {useRepostArticle} from '../hooks/useArticleRepost';
 import {useRequestArticleEdit} from '../hooks/useRequestArticleEdit';
 import {useUpdateFollowStatus} from '../hooks/useUpdateFollowStatus';
+import {useUpdateViewCount} from '../hooks/useUpdateViewCount';
 
 const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   const colorScheme = useColorScheme();
@@ -35,15 +43,15 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   const [recordId, setRecordId] = useState<string>('');
   const [selectedCardId, setSelectedCardId] = useState<string>('');
 
-
   //const [authorId, setAuthorId] = useState<string>('');
   const socket = useSocket();
-  const {mutate: repost, isPending: repostPending} = useRepostArticle();
+  const {mutate: repost} = useRepostArticle();
   const {mutate: requestEdit, isPending: requestEditPending} =
     useRequestArticleEdit();
 
-  const {mutate: followMutate, isPending: followMutationPending} =
-    useUpdateFollowStatus();
+  const {mutate: followMutate} = useUpdateFollowStatus();
+
+  const {mutate: updateViewCount} = useUpdateViewCount(articleId ?? 0);
 
   const {
     data: user,
@@ -72,7 +80,6 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
 
   const isDoctor = user !== undefined ? user.isDoctor : false;
   //const bottomBarHeight = useBottomTabBarHeight();
-  const insets = useSafeAreaInsets();
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleRepostAction = (item: ArticleData) => {
@@ -131,8 +138,20 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
       setArticleId(articleId);
       //setAuthorId(authorId);
       setRecordId(recordId);
-      updateViewCountMutation.mutate({
-        articleId: Number(articleId),
+
+      updateViewCount(undefined, {
+        onSuccess: async () => {
+          navigation.navigate('ArticleScreen', {
+            articleId: Number(articleId),
+            authorId: authorId,
+            recordId: recordId,
+          });
+        },
+
+        onError: error => {
+          console.log('Update View Count Error', error);
+          Alert.alert('Internal server error, try again!');
+        },
       });
     } else {
       Snackbar.show({
@@ -141,50 +160,6 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
       });
     }
   };
-
-  const updateViewCountMutation = useMutation({
-    mutationKey: ['update-view-count-user-profile'],
-    mutationFn: async ({
-      articleId,
-    }: // authorId,
-    {
-      articleId: number;
-      //  authorId: string;
-    }) => {
-      if (user_token === '') {
-        Alert.alert('No token found');
-        return;
-      }
-      const res = await axios.post(
-        UPDATE_VIEW_COUNT,
-        {
-          article_id: articleId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-
-      return res.data.article as ArticleData;
-    },
-    onSuccess: async () => {
-      //console.log('Article Id', articleId);
-      //console.log('Author Id', authorId);
-
-      navigation.navigate('ArticleScreen', {
-        articleId: Number(articleId),
-        authorId: authorId,
-        recordId: recordId,
-      });
-    },
-
-    onError: error => {
-      console.log('Update View Count Error', error);
-      Alert.alert('Internal server error, try again!');
-    },
-  });
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -300,11 +275,9 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
 
   const handleFollow = () => {
     if (isConnected) {
-      
       if (authorId) {
         followMutate(authorId, {
           onSuccess: data => {
-    
             if (data) {
               socket.emit('notification', {
                 type: 'userFollow',
@@ -335,7 +308,6 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
       });
     }
   };
-
 
   const renderHeader = () => {
     if (user === undefined) {
@@ -392,15 +364,26 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
 
   if (isLoading || requestEditPending) {
     return (
-      <SafeAreaView style={[styles.loadingContainer, {backgroundColor: isDarkMode ? '#000A60' : '#F0F8FF'}]}>
-        <StatusBar style={isDarkMode ? 'light' : 'dark'} backgroundColor="#007AFF" />
+      <SafeAreaView
+        style={[
+          styles.loadingContainer,
+          {backgroundColor: isDarkMode ? '#000A60' : '#F0F8FF'},
+        ]}>
+        <StatusBar
+          style={isDarkMode ? 'light' : 'dark'}
+          backgroundColor="#007AFF"
+        />
         <Loader />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, {backgroundColor: isDarkMode ? '#007AFF' : '#007AFF'}]}>
+    <SafeAreaView
+      style={[
+        styles.container,
+        {backgroundColor: isDarkMode ? '#007AFF' : '#007AFF'},
+      ]}>
       <StatusBar style="light" backgroundColor="#007AFF" />
       <TouchableOpacity
         style={styles.headerLeftButtonEditorScreen}
@@ -409,11 +392,18 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
         }}>
         <FontAwesome6 size={25} name="arrow-left" color="white" />
       </TouchableOpacity>
-      <View style={[styles.innerContainer, { backgroundColor: isDarkMode ? '#000A60' : '#F0F8FF'}]}>
+      <View
+        style={[
+          styles.innerContainer,
+          {backgroundColor: isDarkMode ? '#000A60' : '#F0F8FF'},
+        ]}>
         <Tabs.Container
           renderHeader={renderHeader}
           renderTabBar={renderTabBar}
-          containerStyle={[styles.tabsContainer, {backgroundColor: isDarkMode ? '#000A60' : '#F0F8FF'}]}>
+          containerStyle={[
+            styles.tabsContainer,
+            {backgroundColor: isDarkMode ? '#000A60' : '#F0F8FF'},
+          ]}>
           {/* Tab 1 */}
           <Tabs.Tab name="User Insight">
             <Tabs.ScrollView

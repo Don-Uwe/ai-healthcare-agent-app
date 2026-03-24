@@ -6,10 +6,8 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {Dropdown} from 'react-native-element-dropdown';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import {SignUpScreenFirstProp, UserDetail} from '../../type';
-import {useMutation} from '@tanstack/react-query';
-import axios, {AxiosError} from 'axios';
+import {AxiosError} from 'axios';
 import Snackbar from 'react-native-snackbar';
-import {REGISTRATION_API} from '../../helper/APIUtils';
 import EmailVerifiedModal from '../../components/VerifiedModal';
 import ImageResizer from '@bam.tech/react-native-image-resizer';
 import Loader from '../../components/Loader';
@@ -21,6 +19,7 @@ import {
 } from 'react-native-image-picker';
 import {useCheckUserHandleAvailability} from '@/src/hooks/useCheckUserHandle';
 import {useVerificationMailMutation} from '@/src/hooks/useMailVerification';
+import {useRegdMutation} from '@/src/hooks/useUserRegistration';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 let validator = require('email-validator');
 
@@ -44,6 +43,8 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
     useCheckUserHandleAvailability(username);
   const {mutate: verifyEmailMutation, isPending: verifyEmailPending} =
     useVerificationMailMutation();
+
+  const {mutate: register, isPending: registerPending} = useRegdMutation();
 
   const selectImage = async () => {
     const options: ImageLibraryOptions = {
@@ -83,58 +84,6 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
     setUsername(text);
   };
 
-  const userRegisterMutation = useMutation({
-    mutationKey: ['general-user-registration'],
-    mutationFn: async ({profile_url}: {profile_url: string}) => {
-      const res = await axios.post(REGISTRATION_API, {
-        user_name: name,
-        user_handle: username,
-        email: email,
-        password: password,
-        isDoctor: false,
-        Profile_image: profile_url,
-      });
-      return res.data.token as string;
-    },
-    onSuccess: data => {
-      setToken(data);
-      setVerifiedModalVisible(true);
-    },
-
-    onError: (err: AxiosError) => {
-      console.log(err.message);
-      if (err.response) {
-        const statusCode = err.response.status;
-        switch (statusCode) {
-          case 400:
-            const errorData = err.message;
-            console.log('Error message', errorData);
-            Alert.alert('Registration failed', 'Please try again');
-            break;
-          case 409:
-            Alert.alert(
-              'Registration failed',
-              'Email or user handle already exists',
-            );
-            break;
-          case 500:
-            Alert.alert(
-              'Registration failed',
-              'Internal server error. Please try again later.',
-            );
-            break;
-          default:
-            Alert.alert(
-              'Registration failed',
-              'Something went wrong. Please try again later.',
-            );
-        }
-      } else {
-        console.log('General User Registration Error', err);
-        Alert.alert('Registration failed', 'Please try again');
-      }
-    },
-  });
 
   const handleVerifyModalCallback = () => {
     if (token.length > 0) {
@@ -231,52 +180,106 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
     }
   };
 
-  const registerGeneralUser = async () => {
-    Alert.alert(
-      '',
-      'Are you sure you want to use this image?',
-      [
-        {
-          text: 'Cancel',
-          onPress: () => {
-            // setUserProfileImage(user?.Profile_image || '');
-            setUserProfileImage('');
-            Snackbar.show({
-              text: 'Your profile image will not  be uploaded.',
-              duration: Snackbar.LENGTH_SHORT,
-            });
-            userRegisterMutation.mutate({
-              profile_url: '',
-            });
-          },
-          style: 'cancel',
+  const callRegisterAPI = (profile_url: string) => {
+    register(
+      {
+        user_name: name,
+        user_handle: username,
+        email: email,
+        password: password,
+        isDoctor: false,
+        Profile_image: profile_url,
+      },
+      {
+        onSuccess: data => {
+          setToken(data);
+          setVerifiedModalVisible(true);
         },
-        {
-          text: 'OK',
-          onPress: async () => {
-            try {
-              // Upload the resized image
-              const result = await uploadImage(user_profile_image);
 
-              userRegisterMutation.mutate({
-                profile_url: result ? result : '',
-              });
-            } catch (err) {
-              console.error('Upload failed');
-              Alert.alert('Error', 'Upload failed');
+        onError: (err: AxiosError) => {
+          console.log(err.message);
+          if (err.response) {
+            const statusCode = err.response.status;
+            switch (statusCode) {
+              case 400:
+                const errorData = err.message;
+                console.log('Error message', errorData);
+                Alert.alert('Registration failed', 'Please try again');
+                break;
+              case 409:
+                Alert.alert(
+                  'Registration failed',
+                  'Email or user handle already exists',
+                );
+                break;
+              case 500:
+                Alert.alert(
+                  'Registration failed',
+                  'Internal server error. Please try again later.',
+                );
+                break;
+              default:
+                Alert.alert(
+                  'Registration failed',
+                  'Something went wrong. Please try again later.',
+                );
             }
-          },
+          } else {
+            console.log('General User Registration Error', err);
+            Alert.alert('Registration failed', 'Please try again');
+          }
         },
-      ],
-      {cancelable: false},
+      },
     );
   };
+
+  const registerGeneralUser = async () => {
+    if (user_profile_image === '') {
+      callRegisterAPI('');
+    } else {
+      Alert.alert(
+        '',
+        'Are you sure you want to use this image?',
+        [
+          {
+            text: 'Cancel',
+            onPress: () => {
+              // setUserProfileImage(user?.Profile_image || '');
+              setUserProfileImage('');
+              Snackbar.show({
+                text: 'Your profile image will not  be uploaded.',
+                duration: Snackbar.LENGTH_SHORT,
+              });
+             callRegisterAPI('');
+            },
+            style: 'cancel',
+          },
+          {
+            text: 'OK',
+            onPress: async () => {
+              try {
+                // Upload the resized image
+                const result = await uploadImage(user_profile_image);
+
+                callRegisterAPI(result ?? '');
+              } catch (err) {
+                console.error('Upload failed');
+                Alert.alert('Error', 'Upload failed');
+              }
+            },
+          },
+        ],
+        {cancelable: false},
+      );
+    }
+  };
+
   const data = [
     {label: 'General User', value: 'general'},
     {label: 'Doctor', value: 'doctor'},
   ];
 
-  if (userRegisterMutation.isPending || verifyEmailPending || loading) {
+  if (registerPending || verifyEmailPending || loading) {
     return <Loader />;
   }
 

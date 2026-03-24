@@ -15,11 +15,9 @@ import {
 import {KEYS, storeItem} from '../../helper/Utils';
 
 import Icon from '@expo/vector-icons/Ionicons';
-import {AuthData, LoginScreenProp, User} from '../../type';
-import {useMutation} from '@tanstack/react-query';
+import {AuthData, LoginScreenProp} from '../../type';
 import axios, {AxiosError} from 'axios';
 import {useDispatch} from 'react-redux';
-import {LOGIN_API} from '../../helper/APIUtils';
 import Loader from '../../components/Loader';
 import {setUserHandle, setUserId, setUserToken} from '../../store/UserSlice';
 import messaging from '@react-native-firebase/messaging';
@@ -28,6 +26,7 @@ import EmailInputBottomSheet from '../../components/EmailInputModal';
 import {useRequestVerification} from '@/src/hooks/useResendVerification';
 import Snackbar from 'react-native-snackbar';
 import {useSendOtpMutation} from '@/src/hooks/useSendOtp';
+import {useLoginMutation} from '@/src/hooks/useUserLogin';
 
 const LoginScreen = ({navigation, route}: LoginScreenProp) => {
   const inset = useSafeAreaInsets();
@@ -51,6 +50,8 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
     useRequestVerification();
 
   const {mutate: sendOtp, isPending: sendOtpPending} = useSendOtpMutation();
+
+  const {mutate: login, isPending: loginPending} = useLoginMutation();
 
   const handleSecureEntryClickEvent = () => {
     setSecureTextEntry(!secureTextEntry);
@@ -90,9 +91,87 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
       setPasswordMessage(false);
       setEmailMessage(false);
       //console.log("email, password", email,password)
-      loginMutation.mutate({
-        token: fcmToken ?? 'not found',
-      });
+
+      login(
+        {
+          email: email,
+          password: password,
+          fcmToken: fcmToken ?? 'not found',
+        },
+        {
+          onSuccess: async data => {
+            const auth: AuthData = {
+              userId: data._id,
+              token: data?.refreshToken,
+              user_handle: data?.user_handle,
+            };
+            try {
+              await storeItem(KEYS.USER_ID, auth.userId.toString());
+              await storeItem(KEYS.USER_HANDLE, data?.user_handle);
+              if (auth.token) {
+                console.log('Storing token:', auth.token);
+                await storeItem(KEYS.USER_TOKEN, auth.token.toString());
+                await storeItem(
+                  KEYS.USER_TOKEN_EXPIRY_DATE,
+                  new Date().toISOString(),
+                );
+                dispatch(setUserId(auth.userId));
+                dispatch(setUserToken(auth.token));
+                dispatch(setUserHandle(auth.user_handle));
+                setTimeout(() => {
+                  if (redirectTo) {
+                    navigation.navigate({
+                      name: redirectTo.name,
+                      params: redirectTo.params,
+                    });
+
+                    return;
+                  }
+                  navigation.reset({
+                    index: 0,
+                    routes: [{name: 'TabNavigation'}],
+                  });
+                }, 1000);
+              } else {
+                Alert.alert('Token not found');
+              }
+            } catch (e) {
+              console.log('Async Storage ERROR', e);
+            }
+          },
+
+          onError: (error: AxiosError) => {
+            console.log('Error', error);
+            setPassword('');
+            setEmail('');
+            if (error.response) {
+              const errorCode = error.response.status;
+              switch (errorCode) {
+                case 400:
+                  Alert.alert('Error', 'Please provide email and password');
+                  break;
+                case 401:
+                  Alert.alert('Error', 'Invalid password');
+                  break;
+                case 403:
+                  Alert.alert(
+                    'Error',
+                    'Email not verified. Please check your email.',
+                  );
+                  break;
+                case 404:
+                  Alert.alert('Error', 'User not found');
+                  break;
+                default:
+                  Alert.alert('Error', 'Internal server error');
+              }
+            } else {
+              Alert.alert('Error', 'User not found');
+            }
+          },
+        },
+      );
+   
     } else {
       setOutput(true);
       setPasswordMessage(false);
@@ -135,95 +214,10 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
     }
   };
 
-  const loginMutation = useMutation({
-    mutationKey: ['login'],
-    mutationFn: async ({token}: {token: string}) => {
-      console.log('LOGIN', LOGIN_API, email, password, token);
-      const res = await axios.post(LOGIN_API, {
-        email: email,
-        password: password,
-        fcmToken: token,
-      });
-
-      return res.data.user as User;
-    },
-
-    onSuccess: async data => {
-      const auth: AuthData = {
-        userId: data._id,
-        token: data?.refreshToken,
-        user_handle: data?.user_handle,
-      };
-      try {
-        await storeItem(KEYS.USER_ID, auth.userId.toString());
-        await storeItem(KEYS.USER_HANDLE, data?.user_handle);
-        if (auth.token) {
-          console.log('Storing token:', auth.token);
-          await storeItem(KEYS.USER_TOKEN, auth.token.toString());
-          await storeItem(
-            KEYS.USER_TOKEN_EXPIRY_DATE,
-            new Date().toISOString(),
-          );
-          dispatch(setUserId(auth.userId));
-          dispatch(setUserToken(auth.token));
-          dispatch(setUserHandle(auth.user_handle));
-          setTimeout(() => {
-            if (redirectTo) {
-              navigation.navigate({
-                name: redirectTo.name,
-                params: redirectTo.params,
-              });
-
-              return;
-            }
-            navigation.reset({
-              index: 0,
-              routes: [{name: 'TabNavigation'}],
-            });
-          }, 1000);
-        } else {
-          Alert.alert('Token not found');
-        }
-      } catch (e) {
-        console.log('Async Storage ERROR', e);
-      }
-    },
-
-    onError: (error: AxiosError) => {
-      console.log('Error', error);
-      setPassword('');
-      setEmail('');
-      if (error.response) {
-        const errorCode = error.response.status;
-        switch (errorCode) {
-          case 400:
-            Alert.alert('Error', 'Please provide email and password');
-            break;
-          case 401:
-            Alert.alert('Error', 'Invalid password');
-            break;
-          case 403:
-            Alert.alert(
-              'Error',
-              'Email not verified. Please check your email.',
-            );
-            break;
-          case 404:
-            Alert.alert('Error', 'User not found');
-            break;
-          default:
-            Alert.alert('Error', 'Internal server error');
-        }
-      } else {
-        Alert.alert('Error', 'User not found');
-      }
-    },
-  });
 
   const handleEmailInputBack = () => {
     setEmailInputVisible(false);
   };
-
 
   const navigateToOtpScreen = () => {
     setEmailInputVisible(false);
@@ -232,7 +226,7 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
     });
   };
 
-  if (loginMutation.isPending || sendOtpPending || resendVerificationPending) {
+  if (loginPending || sendOtpPending || resendVerificationPending) {
     return <Loader />;
   }
   return (

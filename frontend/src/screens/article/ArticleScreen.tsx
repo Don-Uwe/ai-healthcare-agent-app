@@ -12,22 +12,17 @@ import {
   Dimensions,
 } from 'react-native';
 import {useEffect, useState} from 'react';
-import {useMutation} from '@tanstack/react-query';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
-import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import {ArticleData, ArticleScreenProp} from '../../type';
 import {useDispatch, useSelector} from 'react-redux';
 import {hp, wp} from '../../helper/Metric';
 import {
-  FOLLOW_USER,
   GET_IMAGE,
   GET_STORAGE_DATA,
   SOCKET_PROD,
-  UPDATE_READ_EVENT,
-  UPDATE_VIEW_COUNT,
 } from '../../helper/APIUtils';
-import axios from 'axios';
 import Loader from '../../components/Loader';
 import Snackbar from 'react-native-snackbar';
 
@@ -37,20 +32,31 @@ import Tts from 'react-native-tts';
 
 import {setUserHandle} from '../../store/UserSlice';
 import {io} from 'socket.io-client';
-import {Feather, FontAwesome5, FontAwesome6} from '@expo/vector-icons';
+import {FontAwesome5} from '@expo/vector-icons';
 import AutoHeightWebView from '@brown-bear/react-native-autoheight-webview';
 import LottieView from 'lottie-react-native';
 import {useGetArticleDetails} from '@/src/hooks/useGetArticleDetail';
 import {useGetArticleContent} from '@/src/hooks/useGetArticleContent';
 import {useGetProfile} from '@/src/hooks/useGetProfile';
 import {useLikeArticle} from '@/src/hooks/useLikeArticle';
+import {useUpdateFollowStatusByArticle} from '@/src/hooks/useUpdateFollowStatus';
+import {useUpdateReadEvent} from '@/src/hooks/useUpdateReadEvent';
+import {useUpdateViewCount} from '@/src/hooks/useUpdateViewCount';
 
 const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
-  const insets = useSafeAreaInsets();
   const {articleId, authorId, recordId} = route.params;
   const [spakingStarted, setSpeakingStarted] = useState(false);
-  const {user_id, user_token} = useSelector((state: any) => state.user);
+  const {user_id} = useSelector((state: any) => state.user);
   const [readEventSave, setReadEventSave] = useState(false);
+
+  const {mutate: followMutation, isPending: followMutationPending} =
+    useUpdateFollowStatusByArticle();
+
+  const {mutate: updateReadEvent} =
+    useUpdateReadEvent(articleId);
+
+  const {mutate: updateViewCount} =
+    useUpdateViewCount(articleId ?? 0);
 
   const socket = io(`${SOCKET_PROD}`);
   const dispatch = useDispatch();
@@ -69,7 +75,13 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   );
 
   useEffect(() => {
-    updateViewCountMutation.mutate();
+  
+    updateViewCount(articleId, {
+      onError: error => {
+        console.log('Update View Count Error', error);
+      //  Alert.alert('Internal server error, try again!');
+      },
+    });
     return () => {
       setSpeakingStarted(false);
       Tts.stop();
@@ -88,37 +100,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   if (user) {
     dispatch(setUserHandle(user.user_handle));
   }
-  const updateViewCountMutation = useMutation({
-    mutationKey: ['update-view-count'],
-    mutationFn: async () => {
-      if (user_token === '') {
-        Alert.alert('No token found');
-        return;
-      }
-      const res = await axios.post(
-        UPDATE_VIEW_COUNT,
-        {
-          article_id: articleId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-
-      return res.data.article as ArticleData;
-    },
-    onSuccess: async () => {},
-
-    onError: error => {
-      console.log('Update View Count Error', error);
-      Alert.alert('Internal server error, try again!');
-    },
-  });
 
   // --- Settings ---
-
   const handleLike = () => {
     if (article) {
       likeMutation({
@@ -152,100 +135,34 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   };
 
   const handleFollow = () => {
-    updateFollowMutation.mutate();
-  };
+    //  updateFollowMutation.mutate();
 
-  const updateFollowMutation = useMutation({
-    mutationKey: ['update-follow-status'],
+    followMutation(articleId.toString(), {
+      onSuccess: data => {
+        //console.log('follow success');
+        if (data) {
+          socket.emit('notification', {
+            type: 'userFollow',
+            userId: authorId,
+            message: {
+              title: `${user?.user_handle} has followed you`,
+              body: '',
+            },
+          });
+        }
+        refetch();
+        // refetchProfile();
+      },
 
-    mutationFn: async () => {
-      if (!user_token || user_token === '') {
-        Alert.alert('No token found');
-        return;
-      }
-      const res = await axios.post(
-        FOLLOW_USER,
-        {
-          //followUserId: authorId,
-          //user_id: user_id,
-          articleId: articleId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-      return res.data.followStatus as boolean;
-    },
-
-    onSuccess: data => {
-      //console.log('follow success');
-      if (data) {
-        socket.emit('notification', {
-          type: 'userFollow',
-          userId: authorId,
-          message: {
-            title: `${user?.user_handle} has followed you`,
-            body: '',
-          },
+      onError: err => {
+        console.log('Update Follow mutation error', err);
+        Snackbar.show({
+          text: 'Something went wrong, Try again!',
+          duration: Snackbar.LENGTH_SHORT,
         });
-      }
-      refetch();
-      // refetchProfile();
-    },
-
-    onError: err => {
-      console.log('Update Follow mutation error', err);
-      Alert.alert('Try Again!');
-    },
-  });
-
-
-
-  const updateReadEventMutation = useMutation({
-    mutationKey: ['update-read-event-status'],
-
-    mutationFn: async () => {
-      if (!user_token || user_token === '') {
-        Alert.alert('No token found');
-        return;
-      }
-      const res = await axios.post(
-        UPDATE_READ_EVENT,
-        {
-          article_id: article?._id,
-          //user_id: user_id,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-      return res.data as any;
-    },
-
-    onSuccess: () => {
-      console.log('Read Event Updated');
-      setReadEventSave(true);
-      //Alert.alert('Your Read status updated'); For debug purpose
-      Snackbar.show({
-        text: 'Your read status updated.',
-        duration: Snackbar.LENGTH_SHORT,
-      });
-    },
-
-    onError: err => {
-      console.log('Update Read Status mutation error', err);
-      //Alert.alert('Try Again!');
-      //console.log('Follow Error', err);
-      Snackbar.show({
-        text: 'Failed to update your read status.',
-        duration: Snackbar.LENGTH_SHORT,
-      });
-    },
-  });
+      },
+    });
+  };
 
   async function convertHtmlToPlainText(html: string) {
     let modifiedHtml = html.replace(/ style="[^"]*"/g, '');
@@ -395,7 +312,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
             },
           ]}>
           <FontAwesome5
-            name={'assistive-listening-systems' }
+            name={'assistive-listening-systems'}
             size={30}
             color={speechingMode ? PRIMARY_COLOR : 'black'}
           />
@@ -427,7 +344,28 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
               !readEventSave &&
               article.status === StatusEnum.PUBLISHED
             ) {
-              updateReadEventMutation.mutate();
+              ///updateReadEventMutation.mutate();
+              updateReadEvent(undefined, {
+                onSuccess: () => {
+                  console.log('Read Event Updated');
+                  setReadEventSave(true);
+                  //Alert.alert('Your Read status updated'); For debug purpose
+                  Snackbar.show({
+                    text: 'Your read status updated.',
+                    duration: Snackbar.LENGTH_SHORT,
+                  });
+                },
+
+                onError: err => {
+                  console.log('Update Read Status mutation error', err);
+                  //Alert.alert('Try Again!');
+                  //console.log('Follow Error', err);
+                  Snackbar.show({
+                    text: 'Failed to update your read status.',
+                    duration: Snackbar.LENGTH_SHORT,
+                  });
+                },
+              });
             }
           }
         }}
@@ -690,7 +628,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
         </View>
         {article &&
           user_id !== article.authorId._id &&
-          (updateFollowMutation.isPending ? (
+          (followMutationPending ? (
             <ActivityIndicator size={40} color={PRIMARY_COLOR} />
           ) : (
             <TouchableOpacity

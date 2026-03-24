@@ -17,6 +17,7 @@ import {
   Card,
 } from 'tamagui';
 import {useSendOtpMutation} from '@/src/hooks/useSendOtp';
+import {useVerifyOtpMutation} from '@/src/hooks/useVerifyOtp';
 
 export default function OtpScreen({navigation, route}: OtpScreenProp) {
   const [otp, setOtp] = useState(['', '', '', '']);
@@ -25,6 +26,7 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
 
   const [errorMessages, setErrorMessages] = useState<string[]>();
   const {mutate: sendOtp, isPending: sendOtpPending} = useSendOtpMutation();
+  const {mutate: checkOtp, isPending: checkOtpPending} = useVerifyOtpMutation();
 
   const handleSubmit = () => {
     //navigation.navigate('NewPasswordScreen');
@@ -34,33 +36,28 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
       return;
     } else {
       setErrorMessages(undefined);
-      verifyOtpMutation.mutate({
-        otp: fullCode,
-      });
+
+      checkOtp(
+        {
+          email: email,
+          otp: fullCode,
+        },
+        {
+          onSuccess: () => {
+            navigation.navigate('NewPasswordScreen', {
+              email: email,
+            });
+          },
+          onError: (error: AxiosError) => {
+            console.log('OTP ERROR', error);
+            setErrorMessages(['Invalid or expired otp']);
+            Alert.alert('Invalid or expired otp');
+          },
+        },
+      );
     }
   };
 
-  const verifyOtpMutation = useMutation({
-    mutationKey: ['verify-otp'],
-    mutationFn: async ({otp}: {otp: string}) => {
-      const res = await axios.post(CHECK_OTP, {
-        email: email,
-        otp: otp,
-      });
-      return res.data.message as string;
-    },
-
-    onSuccess: () => {
-      navigation.navigate('NewPasswordScreen', {
-        email: email,
-      });
-    },
-    onError: (error: AxiosError) => {
-      console.log('OTP ERROR', error);
-      setErrorMessages(['Invalid or expired otp']);
-      Alert.alert('Invalid or expired otp');
-    },
-  });
 
   const handleChange = (text: string, index: number) => {
     setErrorMessages(undefined);
@@ -80,7 +77,7 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
     }
   };
 
-  if (sendOtpPending || verifyOtpMutation.isPending) {
+  if (sendOtpPending || checkOtpPending) {
     return <Loader />;
   }
   return (

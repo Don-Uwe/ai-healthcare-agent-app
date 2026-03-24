@@ -14,10 +14,9 @@ import {fp} from '../helper/Metric';
 import {ArticleCardProps, ArticleData} from '../type';
 import moment from 'moment';
 import {useSelector} from 'react-redux';
-import axios from 'axios';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import IonIcons from '@expo/vector-icons/Ionicons';
-import {GET_ARTICLE_CONTENT, GET_IMAGE} from '../helper/APIUtils';
+import {GET_IMAGE} from '../helper/APIUtils';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import {
   formatCount,
@@ -38,6 +37,7 @@ import Snackbar from 'react-native-snackbar';
 import {useGetProfile} from '../hooks/useGetProfile';
 import {useLikeArticle} from '../hooks/useLikeArticle';
 import {useSaveArticle} from '../hooks/useSaveArticle';
+import {useLazyGetArticleContent} from '../hooks/useLazyGetArticleContent';
 
 const ArticleCard = ({
   item,
@@ -77,6 +77,8 @@ const ArticleCard = ({
   const {mutate: saveMutation, isPending: saveMutationPending} = useSaveArticle(
     Number(item._id),
   );
+  const {mutate: getArticleContent, isPending: getArticleContentPending} =
+    useLazyGetArticleContent();
 
   const handleShare = async () => {
     try {
@@ -126,27 +128,23 @@ const ArticleCard = ({
         });
         return;
       }
-      const response = await axios.get(`${GET_ARTICLE_CONTENT}/${recordId}`, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
+
+      getArticleContent(recordId, {
+        onSuccess: async (htmlContent: string) => {
+          if (htmlContent) {
+            console.log('Response', htmlContent);
+            await generatePDFData(title, htmlContent);
+            setMenuVisible(false);
+          }
+        },
+        onError: (error) => {
+          console.error('Error generating PDF:', error);
+          Alert.alert('Error', 'Something went wrong while creating the PDF.');
         },
       });
-
-      if (response.data.htmlContent) {
-        console.log('Response', response.data.htmlContent);
-        const htmlContent = response.data.htmlContent;
-        await generatePDFData(title, htmlContent);
-        setMenuVisible(false);
-      }
     } catch (error) {
       console.error('Error generating PDF:', error);
       Alert.alert('Error', 'Something went wrong while creating the PDF.');
-      // dispatch(
-      //   showAlert({
-      //     title: 'Error!',
-      //     message: 'Something went wrong while creating the PDF.',
-      //   }),
-      // );
     }
   };
 

@@ -5,7 +5,7 @@ import {UPLOAD_ARTICLE_TO_POCKETBASE} from '../helper/APIUtils';
 
 interface Props {
   title: string;
-  articleData?: ArticleData;
+  articleData?: ArticleData | null;
   htmlContent: string;
 }
 

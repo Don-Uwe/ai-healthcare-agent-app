@@ -1,20 +1,17 @@
 import React, {useState} from 'react';
-import {
-  Alert,
-} from 'react-native';
+import {Alert} from 'react-native';
 
 import {ScrollView, YStack, XStack, Text, Input, Button, Image} from 'tamagui';
 import Icon from '@expo/vector-icons/MaterialIcons';
 import {Contactdetail, SignUpScreenSecondProp} from '../../type';
-import {useMutation} from '@tanstack/react-query';
-import axios, {AxiosError} from 'axios';
-import {REGISTRATION_API} from '../../helper/APIUtils';
+import {AxiosError} from 'axios';
 import EmailVerifiedModal from '../../components/VerifiedModal';
 import Loader from '../../components/Loader';
 import Snackbar from 'react-native-snackbar';
 import useUploadImage from '../../hooks/useUploadImage';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useVerificationMailMutation} from '@/src/hooks/useMailVerification';
+import {useRegdMutation} from '@/src/hooks/useUserRegistration';
 let validator = require('email-validator');
 
 const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
@@ -30,17 +27,14 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
   const [verifiedModalVisible, setVerifiedModalVisible] = useState(false);
   const {mutate: verifyEmailMutation, isPending: verifyMutationPending} =
     useVerificationMailMutation();
+  const {mutate: register, isPending: registerPending} = useRegdMutation();
 
-  const doctorRegisterMutation = useMutation({
-    mutationKey: ['doctor-user-registration'],
-    mutationFn: async ({
-      contactDetail,
-      profile_url,
-    }: {
-      contactDetail: Contactdetail;
-      profile_url: string;
-    }) => {
-      const res = await axios.post(REGISTRATION_API, {
+  const callRegisterAPI = (
+    profile_url: string,
+    contactDetail: Contactdetail,
+  ) => {
+    register(
+      {
         user_name: user.user_name,
         user_handle: user.user_handle,
         email: user.email,
@@ -51,53 +45,53 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
         Years_of_experience: experience,
         Profile_image: profile_url,
         contact_detail: contactDetail,
-      });
-      return res.data.token as string;
-    },
-    onSuccess: data => {
-      setToken(data);
-      setVerifiedModalVisible(true);
-    },
+      },
+      {
+        onSuccess: data => {
+          setToken(data);
+          setVerifiedModalVisible(true);
+        },
 
-    onError: (err: AxiosError) => {
-      if (err.response) {
-        const statusCode = err.response.status;
-        switch (statusCode) {
-          case 400:
-            const errorData = err.message;
-            console.log('Error message', errorData);
+        onError: (err: AxiosError) => {
+          if (err.response) {
+            const statusCode = err.response.status;
+            switch (statusCode) {
+              case 400:
+                const errorData = err.message;
+                console.log('Error message', errorData);
+                Alert.alert('Registration failed', 'Please try again');
+                break;
+              case 409: {
+                Alert.alert(
+                  'Registration failed',
+                  'Email or user handle already exists',
+                );
+                break;
+              }
+
+              case 500: {
+                Alert.alert(
+                  'Registration failed',
+                  'Internal server error. Please try again later.',
+                );
+                break;
+              }
+
+              default: {
+                Alert.alert(
+                  'Registration failed',
+                  'Something went wrong. Please try again later.',
+                );
+              }
+            }
+          } else {
+            console.log('General User Registration Error', err);
             Alert.alert('Registration failed', 'Please try again');
-            break;
-          case 409: {
-            Alert.alert(
-              'Registration failed',
-              'Email or user handle already exists',
-            );
-            break;
           }
-
-          case 500: {
-            Alert.alert(
-              'Registration failed',
-              'Internal server error. Please try again later.',
-            );
-            break;
-          }
-
-          default: {
-            Alert.alert(
-              'Registration failed',
-              'Something went wrong. Please try again later.',
-            );
-          }
-        }
-      } else {
-        console.log('General User Registration Error', err);
-        Alert.alert('Registration failed', 'Please try again');
-      }
-    },
-  });
-
+        },
+      },
+    );
+  };
 
   const handleVerifyModalCallback = () => {
     if (token.length > 0) {
@@ -192,56 +186,51 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
   };
 
   const registerDoctor = async (contactDetail: Contactdetail) => {
-    Alert.alert(
-      '',
-      'Are you sure you want to use this image?',
-      [
-        {
-          text: 'Cancel',
-          onPress: () => {
-            // setUserProfileImage(user?.Profile_image || '');
-            //setUserProfileImage('');
-            Snackbar.show({
-              text: 'Your profile image will not be uploaded.',
-              duration: Snackbar.LENGTH_SHORT,
-            });
-            doctorRegisterMutation.mutate({
-              contactDetail: contactDetail,
-              profile_url: '',
-            });
-          },
-          style: 'cancel',
-        },
-        {
-          text: 'OK',
-          onPress: async () => {
-            try {
-              // Upload the resized image
-              let result;
-              if (user.profile_image && user.profile_image !== '') {
-                result = await uploadImage(user.profile_image);
-              }
-              doctorRegisterMutation.mutate({
-                contactDetail: contactDetail,
-                profile_url: result ? result : '',
+    if (!user.profile_image || user.profile_image === '') {
+      callRegisterAPI('', contactDetail);
+    } else {
+      Alert.alert(
+        '',
+        'Are you sure you want to use this image?',
+        [
+          {
+            text: 'Cancel',
+            onPress: () => {
+              // setUserProfileImage(user?.Profile_image || '');
+              //setUserProfileImage('');
+              Snackbar.show({
+                text: 'Your profile image will not be uploaded.',
+                duration: Snackbar.LENGTH_SHORT,
               });
-              // setSubmitProfileUrl(result ? result : '');
-            } catch (err) {
-              console.error('Registration failed', err);
-              Alert.alert('Error Occured', 'Registration failed');
-            }
+              callRegisterAPI('', contactDetail);
+            },
+            style: 'cancel',
           },
-        },
-      ],
-      {cancelable: false},
-    );
-  };
-  const validPhoneNumber = phone => {
-    const phoneNumberRegex = /^\+\d{1,3}\d{7,10}$/;
-    return phoneNumberRegex.test(phone);
+          {
+            text: 'OK',
+            onPress: async () => {
+              try {
+                // Upload the resized image
+                let result;
+                if (user.profile_image && user.profile_image !== '') {
+                  result = await uploadImage(user.profile_image);
+                }
+                
+               callRegisterAPI(result ?? "", contactDetail);
+              
+              } catch (err) {
+                console.error('Registration failed', err);
+                Alert.alert('Error Occured', 'Registration failed');
+              }
+            },
+          },
+        ],
+        {cancelable: false},
+      );
+    }
   };
 
-  if (doctorRegisterMutation.isPending || verifyMutationPending || loading) {
+  if (registerPending || verifyMutationPending || loading) {
     return <Loader />;
   }
   return (
