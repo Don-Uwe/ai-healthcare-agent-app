@@ -22,7 +22,6 @@ import Loader from '../../components/Loader';
 import {
   GET_IMAGE,
   RENDER_SUGGESTION,
-  UPLOAD_ARTICLE_TO_POCKETBASE,
   UPLOAD_IMPROVEMENT_TO_POCKETBASE,
 } from '../../helper/APIUtils';
 import {useDispatch, useSelector} from 'react-redux';
