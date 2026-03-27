@@ -15,10 +15,7 @@ import ArticleCard from '../components/ArticleCard';
 import {useSelector} from 'react-redux';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import ProfileHeader from '../components/ProfileHeader';
-import {PROD_URL} from '../helper/APIUtils';
-import {ArticleData, UserProfileScreenProp, User} from '../type';
-import {useQuery} from '@tanstack/react-query';
-import axios from 'axios';
+import {ArticleData, UserProfileScreenProp} from '../type';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Loader from '../components/Loader';
 import {useFocusEffect} from '@react-navigation/native';
@@ -28,6 +25,7 @@ import {useRepostArticle} from '../hooks/useArticleRepost';
 import {useRequestArticleEdit} from '../hooks/useRequestArticleEdit';
 import {useUpdateFollowStatus} from '../hooks/useUpdateFollowStatus';
 import {useUpdateViewCount} from '../hooks/useUpdateViewCount';
+import { useGetAuthorProfile } from '../hooks/useGetAuthorProfile';
 
 const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   const colorScheme = useColorScheme();
@@ -57,26 +55,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
     data: user,
     refetch,
     isLoading,
-  } = useQuery({
-    queryKey: ['get-user-profile'],
-    queryFn: async () => {
-      let url: string;
-      if (authorId) {
-        url = `${PROD_URL}/user/getuserprofile?id=${authorId._id}`;
-      } else if (author_handle) {
-        url = `${PROD_URL}/user/getuserprofile?handle=${author_handle}`;
-      } else {
-        url = `${PROD_URL}/user/getuserprofile?id=${user_id}`;
-      }
-      // console.log('User token', user_token);
-      const response = await axios.get(url, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      });
-      return response.data.profile as User;
-    },
-  });
+  } = useGetAuthorProfile(authorId._id, author_handle, user_id, isConnected);
 
   const isDoctor = user !== undefined ? user.isDoctor : false;
   //const bottomBarHeight = useBottomTabBarHeight();

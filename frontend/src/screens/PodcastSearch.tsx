@@ -1,9 +1,7 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Pressable, FlatList, ActivityIndicator} from 'react-native';
 import {PodcastData, PodcastSearchProp} from '../type';
-import {useMutation, useQuery} from '@tanstack/react-query';
-import axios from 'axios';
-import {SEARCH_PODCAST, UPDATE_PODCAST_VIEW_COUNT} from '../helper/APIUtils';
+import {AxiosError} from 'axios';
 import {useSelector} from 'react-redux';
 import PodcastCard from '../components/PodcastCard';
 import {msToTime} from '../helper/Utils';
@@ -12,85 +10,69 @@ import NoResults from '../components/NoResult';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import {XStack, YStack, Input, Separator, Text} from 'tamagui';
 import {Feather} from '@expo/vector-icons';
+import {useUpdatePodcastViewcount} from '../hooks/useUpdatePodcastViewcount';
+import {useGetSearchPodcasts} from '../hooks/useGetSearchPodcasts';
 
 export default function PodcastSearch({navigation}: PodcastSearchProp) {
   const [query, setQuery] = useState<string>('');
-  const {user_token} = useSelector((state: any) => state.user);
+  //const {user_token} = useSelector((state: any) => state.user);
   const {isConnected} = useSelector((state: any) => state.network);
   // const [results, setResults] = useState<PodcastData>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [searchData, setSearchData] = useState<PodcastData[]>([]);
 
-  const {isLoading, refetch} = useQuery({
-    queryKey: ['serach-podcasts', page],
-    queryFn: async () => {
-      const res = await axios.get(`${SEARCH_PODCAST}?q=${query}&page=${page}`, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      });
+  const {mutate: updateViewCount} = useUpdatePodcastViewcount();
 
-      if (Number(page) === 1) {
-        if (res.data.totalPages) {
-          const pages = res.data.totalPages;
-          setTotalPages(pages);
-        }
+  const {data: searchPodcasts, isLoading} = useGetSearchPodcasts(
+    isConnected,
+    page,
+    query,
+  );
 
-        if (res.data.matchPodcasts) {
-          setSearchData(res.data.matchPodcasts);
-        }
-      } else {
-        if (res.data.matchPodcasts) {
-          const oldPodcasts = searchData;
-          const newPodcasts = res.data.matchPodcasts;
-
-          setSearchData([...oldPodcasts, ...newPodcasts]);
-        }
+  useEffect(() => {
+    if (Number(page) === 1) {
+      if (searchPodcasts && searchPodcasts.totalPages) {
+        const pages = searchPodcasts.totalPages;
+        setTotalPages(pages);
       }
 
-      return res.data.matchPodcasts as PodcastData[];
-    },
-    enabled: isConnected && !!query && !!user_token,
-  });
+      if (searchPodcasts && searchPodcasts.matchPodcasts) {
+        setSearchData(searchPodcasts.matchPodcasts);
+      }
+    } else {
+      if (searchPodcasts && searchPodcasts.matchPodcasts) {
+        const oldPodcasts = searchData;
+        const newPodcasts = searchPodcasts.matchPodcasts;
 
-  const updateViewCountMutation = useMutation({
-    mutationKey: ['update-podcast-view-count'],
-    mutationFn: async (podcastId: string) => {
-      const res = await axios.post(
-        `${UPDATE_PODCAST_VIEW_COUNT}`,
-        {
-          podcast_id: podcastId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-      return res.data.data as PodcastData;
-    },
-    onSuccess: data => {
-      navigation.navigate('PodcastDetail', {
-        trackId: data._id,
-        audioUrl: data.audio_url,
-      });
-    },
-    onError: err => {
-      console.log('Update view count err', err);
-      Snackbar.show({
-        text: 'Something went wrong!',
-        duration: Snackbar.LENGTH_SHORT,
-      });
-    },
-  });
+        setSearchData([...oldPodcasts, ...newPodcasts]);
+      }
+    }
+  }, [page, searchData, searchPodcasts]);
+
 
   const renderItem = ({item}: {item: PodcastData}) => (
     <Pressable
       style={{padding: 10}}
       onPress={() => {
         //playPodcast(item);
-        updateViewCountMutation.mutate(item._id);
+        if (item) {
+          updateViewCount(item._id, {
+            onSuccess: (data: PodcastData) => {
+              navigation.navigate('PodcastDetail', {
+                trackId: data._id,
+                audioUrl: data.audio_url,
+              });
+            },
+            onError: (err: AxiosError) => {
+              console.log('Update view count err', err);
+              Snackbar.show({
+                text: 'Something went wrong!',
+                duration: Snackbar.LENGTH_SHORT,
+              });
+            },
+          });
+        }
       }}>
       <PodcastCard
         id={item._id}
@@ -104,7 +86,21 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
         downloaded={false}
         downLoadAudio={() => {}}
         handleClick={() => {
-          updateViewCountMutation.mutate(item._id);
+          updateViewCount(item._id, {
+            onSuccess: (data: PodcastData) => {
+              navigation.navigate('PodcastDetail', {
+                trackId: data._id,
+                audioUrl: data.audio_url,
+              });
+            },
+            onError: (err: AxiosError) => {
+              console.log('Update view count err', err);
+              Snackbar.show({
+                text: 'Something went wrong!',
+                duration: Snackbar.LENGTH_SHORT,
+              });
+            },
+          });
         }}
         imageUri={item.cover_image}
         handleReport={() => {}}

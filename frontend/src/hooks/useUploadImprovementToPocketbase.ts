@@ -7,7 +7,7 @@ interface ImprovementReq {
   title: string;
   htmlContent: string;
   article_id: string | null;
-  record_id: string;
+  record_id: string | null;
   improvement_id: string;
   user_id: string;
 }

@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import {PRIMARY_COLOR} from '../../helper/Theme';
 import {GET_STORAGE_DATA, USER_LOGOUT} from '../../helper/APIUtils';
-import {useMutation} from '@tanstack/react-query';
 import axios, {AxiosError} from 'axios';
 import {resetUserState} from '../../store/UserSlice';
 import {useDispatch, useSelector} from 'react-redux';

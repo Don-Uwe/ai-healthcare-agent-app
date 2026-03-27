@@ -15,11 +15,8 @@ import ArticleCard from '../components/ArticleCard';
 
 import HomeScreenHeader from '../components/HomeScreenHeader';
 import {ArticleData, Category, CategoryType, HomeScreenProps} from '../type';
-import axios from 'axios';
-import {PROD_URL} from '../helper/APIUtils';
 import FilterModal from '../components/FilterModal';
 import {BottomSheetModal} from '@gorhom/bottom-sheet';
-import {useQuery} from '@tanstack/react-query';
 import {useSelector, useDispatch} from 'react-redux';
 import Loader from '../components/Loader';
 
@@ -41,6 +38,8 @@ import {useRepostArticle} from '../hooks/useArticleRepost';
 import {useGetCategories} from '../hooks/useGetArticleTags';
 import {useGetProfile} from '../hooks/useGetProfile';
 import {useRequestArticleEdit} from '../hooks/useRequestArticleEdit';
+import {useGetUnreadNotificationCount} from '../hooks/useGetUnreadNotificationCount';
+import {useGetPaginatedArticle} from '../hooks/useGetPaginatedArticles';
 
 // Here The purpose of using Redux is to maintain filter state throughout the app session. globally
 const HomeScreen = ({navigation}: HomeScreenProps) => {
@@ -110,29 +109,8 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     bottomSheetModalRef.current?.present();
   }, []);
 
-  const {data: unreadCount, refetch: refetchUnreadCount} = useQuery({
-    queryKey: ['get-unread-notifications-count'],
-    queryFn: async () => {
-      try {
-        if (user_token === '') {
-          throw new Error('No token found');
-        }
-        const response = await axios.get(
-          `${PROD_URL}/notification/unread-count?role=2`,
-          {
-            headers: {
-              Authorization: `Bearer ${user_token}`,
-            },
-          },
-        );
-
-        return response.data.unreadCount as number;
-      } catch (err) {
-        console.error('Error fetching articles:', err);
-      }
-    },
-    enabled: isConnected && !!user_token,
-  });
+  const {data: unreadCount, refetch: refetchUnreadCount} =
+    useGetUnreadNotificationCount(isConnected);
 
   useFocusEffect(
     useCallback(() => {
@@ -233,14 +211,14 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
               onSuccess: data => {
                 Snackbar.show({
                   text: data,
-                  duration: Snackbar.LENGTH_SHORT
+                  duration: Snackbar.LENGTH_SHORT,
                 });
               },
               onError: err => {
                 console.log(err);
                 Snackbar.show({
-                  text: "Try again!",
-                  duration: Snackbar.LENGTH_SHORT
+                  text: 'Try again!',
+                  duration: Snackbar.LENGTH_SHORT,
                 });
               },
             },
@@ -261,7 +239,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       }),
     );
     dispatch(setSortType({sortType: ''}));
-    dispatch(setFilteredArticles({filteredArticles: articleData}));
+    dispatch(setFilteredArticles({filteredArticles: articleData?.articles}));
   };
 
   const handleFilterApply = () => {
@@ -290,7 +268,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       dispatch(setSortType({sortType: sortingType}));
     }
 
-    updateArticles(articleData);
+    updateArticles(articleData?.articles);
   };
 
   const updateArticles = (articleData?: ArticleData[]) => {
@@ -332,34 +310,22 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     isLoading,
     isError,
     refetch,
-  } = useQuery({
-    queryKey: ['get-all-articles', page],
-    queryFn: async () => {
-      try {
-        const response = await axios.get(`${PROD_URL}/articles?page=${page}`, {
-          headers: {Authorization: `Bearer ${user_token}`},
-        });
+  } = useGetPaginatedArticle(isConnected, page);
 
-        const d: ArticleData[] = response.data.articles;
-
-        if (Number(page) === 1 && response.data.totalPages) {
-          setTotalPages(response.data.totalPages);
-        }
-
-        if (Number(page) === 1) {
-          updateArticles(d);
-        } else {
-          updateArticles([...filteredArticles, ...d]);
-        }
-
-        return response.data.articles as ArticleData[];
-      } catch (err) {
-        console.error('Error fetching articles:', err);
-        return [];
+  useEffect(() => {
+    if (articleData) {
+      if (Number(page) === 1 && articleData.totalPages) {
+        setTotalPages(articleData.totalPages);
       }
-    },
-    enabled: isConnected && !!user_token && !!page,
-  });
+
+      if (Number(page) === 1) {
+        updateArticles(articleData.articles);
+      } else {
+        updateArticles([...filteredArticles, ...articleData.articles]);
+      }
+    }
+  }, [articleData, filteredArticles, page, updateArticles]);
+
 
   const onRefresh = () => {
     console.log('is connected', isConnected);
@@ -382,7 +348,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       dispatch(setSearchMode({searchMode: false}));
     } else {
       dispatch(setSearchMode({searchMode: true}));
-      const matchesSearch = articleData.filter(article => {
+      const matchesSearch = articleData?.articles.filter(article => {
         const matchesTitle = article.title
           .toLowerCase()
           .includes(textInput.toLowerCase());
@@ -408,7 +374,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     return filtered.sort(() => Math.random() - 0.5);
   }, [searchMode, searchedArticles, filteredArticles, selectedCategory]);
 
-  if (!articleData || articleData.length === 0) {
+  if (!articleData || articleData.articles?.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
         <HomeScreenHeader

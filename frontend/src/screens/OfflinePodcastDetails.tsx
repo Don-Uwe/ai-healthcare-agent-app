@@ -20,18 +20,16 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 
 import {formatCount, updateOfflinePodcastLikeStatus} from '../helper/Utils';
 import {useDispatch, useSelector} from 'react-redux';
-import {useCallback, useEffect, useState} from 'react';
-import {useMutation} from '@tanstack/react-query';
-import axios from 'axios';
+import {useEffect, useState} from 'react';
 import Snackbar from 'react-native-snackbar';
-import {GET_STORAGE_DATA, LIKE_PODCAST} from '../helper/APIUtils';
+import {GET_STORAGE_DATA} from '../helper/APIUtils';
 import Share from 'react-native-share';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Icon from '@expo/vector-icons/MaterialIcons';
 import {useSocket} from '../../SocketContext';
 import {Feather} from '@expo/vector-icons';
 import {useAudioPlayer} from 'expo-audio';
-import {showAlert} from '../store/alertSlice';
+import {useLikePodcast} from '../hooks/useLikePodcast';
 
 export default function OfflinePodcastDetail({
   route,
@@ -55,6 +53,8 @@ export default function OfflinePodcastDetail({
   const dispatch = useDispatch();
 
   const player = useAudioPlayer(`file://${podcast.filePath}`);
+
+  const {mutate: likePodcast, isPending: likePodcastPending} = useLikePodcast();
 
   useEffect(() => {
     //console.log("File path", `${filePath}`);
@@ -88,7 +88,7 @@ export default function OfflinePodcastDetail({
 
   const handleShare = async () => {
     try {
-        const url = `https://uhsocial.in/api/share/podcast?trackId=${podcast._id}&audioUrl=${podcast.audio_url}`;
+      const url = `https://uhsocial.in/api/share/podcast?trackId=${podcast._id}&audioUrl=${podcast.audio_url}`;
       await Share.open({
         title: podcast?.title,
         message: `${podcast?.title} : Check out this awesome podcast on UltimateHealth app!`,
@@ -99,7 +99,7 @@ export default function OfflinePodcastDetail({
       //console.log(result);
     } catch (error) {
       console.log('Error sharing:', error);
-       Alert.alert('Error', 'Something went wrong while sharing.');
+      Alert.alert('Error', 'Something went wrong while sharing.');
       // dispatch(
       //   showAlert({
       //     title: 'Error!',
@@ -108,54 +108,6 @@ export default function OfflinePodcastDetail({
       // );
     }
   };
-
-  const updateLikeCountMutation = useMutation({
-    mutationKey: ['update-podcast-like-count'],
-    mutationFn: async (podcastId: string) => {
-      const res = await axios.post(
-        `${LIKE_PODCAST}`,
-        {
-          podcast_id: podcastId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-      return res.data as any;
-    },
-    onSuccess: async data => {
-      if (data.likeStatus === false) {
-        // Update podcast status in storage
-        podcast.likedUsers = podcast.likedUsers.filter(id => id !== user_id);
-        setCurrentPodcast(podcast);
-        await updateOfflinePodcastLikeStatus(podcast);
-      } else {
-        podcast.likedUsers.push(user_id);
-        if (data?.likeStatus) {
-          // data.userId, data.articleId, data.podcastId, data.articleRecordId, data.title, data.message
-          socket.emit('notification', {
-            type: 'likePost',
-            userId: user_id,
-            articleId: null,
-            podcastId: podcast._id,
-            articleRecordId: null,
-            title: `${user_handle} liked your post`,
-            message: podcast.title,
-          });
-        }
-        await updateOfflinePodcastLikeStatus(podcast);
-      }
-    },
-    onError: err => {
-      console.log('Update like count err', err);
-      Snackbar.show({
-        text: 'Something went wrong!',
-        duration: Snackbar.LENGTH_SHORT,
-      });
-    },
-  });
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -237,7 +189,39 @@ export default function OfflinePodcastDetail({
           style={styles.footerItem}
           onPress={() => {
             if (isConnected) {
-              updateLikeCountMutation.mutate(podcast._id);
+              likePodcast(podcast._id, {
+                onSuccess: async data => {
+                  if (data.likeStatus === false) {
+                    podcast.likedUsers = podcast.likedUsers.filter(
+                      id => id !== user_id,
+                    );
+                    setCurrentPodcast(podcast);
+                    await updateOfflinePodcastLikeStatus(podcast);
+                  } else {
+                    podcast.likedUsers.push(user_id);
+                    if (data?.likeStatus) {
+                      // data.userId, data.articleId, data.podcastId, data.articleRecordId, data.title, data.message
+                      socket.emit('notification', {
+                        type: 'likePost',
+                        userId: user_id,
+                        articleId: null,
+                        podcastId: podcast._id,
+                        articleRecordId: null,
+                        title: `${user_handle} liked your post`,
+                        message: podcast.title,
+                      });
+                    }
+                    await updateOfflinePodcastLikeStatus(podcast);
+                  }
+                },
+                onError: err => {
+                  console.log('Update like count err', err);
+                  Snackbar.show({
+                    text: 'Something went wrong!',
+                    duration: Snackbar.LENGTH_SHORT,
+                  });
+                },
+              });
             } else {
               Snackbar.show({
                 text: 'You are currently offline',

@@ -1,17 +1,16 @@
-import {Alert, FlatList, StyleSheet, Text, View, Image} from 'react-native';
+import {FlatList, StyleSheet, Text, View, Image} from 'react-native';
 import React, {useEffect} from 'react';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import NotificationItem from '../components/NotificationItem';
 import {useDispatch, useSelector} from 'react-redux';
-import {useMutation, useQuery} from '@tanstack/react-query';
-import axios from 'axios';
 import {Notification, NotificationType} from '../type';
 import Loader from '../components/Loader';
 import Snackbar from 'react-native-snackbar';
 import {hp} from '../helper/Metric';
-import {PROD_URL} from '../helper/APIUtils';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {showAlert} from '../store/alertSlice';
+import {useGetAllNotifications} from '../hooks/useGetAllNotifications';
+import {useMarkNotificationAsRead} from '../hooks/useMarkNoticationAsRead';
+import {useDeleteNotification} from '../hooks/useDeleteNotification';
 
 // PodcastsScreen component displays the list of podcasts and includes a PodcastPlayer
 const NotificationScreen = ({navigation}) => {
@@ -25,134 +24,58 @@ const NotificationScreen = ({navigation}) => {
     React.useState<Notification[]>();
 
   const dispatch = useDispatch();
+  const {mutate: markNotification} = useMarkNotificationAsRead();
+  const {mutate: deleteNotification, isPending} = useDeleteNotification();
 
-  // console.log(user_token);
-  //  console.log('user_token');
-
-  const {isLoading, refetch} = useQuery({
-    queryKey: ['get-all-notifications', page],
-    queryFn: async () => {
-      try {
-        const response = await axios.get(
-          `${PROD_URL}/notifications?role=2&page=${page}`,
-          {
-            headers: {
-              Authorization: `Bearer ${user_token}`,
-            },
-          },
-        );
-
-        if (Number(page) === 1) {
-          if (response.data.totalPages) {
-            const totalPage = response.data.totalPages;
-            setTotalPages(totalPage);
-          }
-          setNotificationsData(response.data.notifications);
-        } else {
-          const oldNotif = notificationsData ?? [];
-          setNotificationsData([...oldNotif, ...response.data.notifications]);
-        }
-        // console.log('Notification Response', response);
-        return response.data.notifications as Notification[];
-      } catch (err) {
-        console.error('Error fetching articles:', err);
-      }
-    },
-    enabled: isConnected && !!user_token && !!page,
-  });
-
-  // Mark Notification as read api integration
-  const markNotificationMutation = useMutation({
-    mutationKey: ['mark-notification-as-read'],
-    mutationFn: async () => {
-      if (user_token === '') {
-        Alert.alert('No token found');
-        // dispatch(
-        //   showAlert({
-        //     title: 'Error!',
-        //     message: 'No token found',
-        //   }),
-        // );
-        return;
-      }
-      const res = await axios.put(
-        `${PROD_URL}/notifications/mark-as-read?role=2`,
-        {
-          role: 2,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-
-      return res.data as any;
-    },
-    onSuccess: async () => {
-      //success();
-
-      Snackbar.show({
-        text: 'All notifications marked as read',
-        duration: Snackbar.LENGTH_SHORT,
-      });
-    },
-
-    onError: error => {
-      console.log(error);
-      Snackbar.show({
-        text: 'Internal server error, cannot mark the notification as read!',
-        duration: Snackbar.LENGTH_SHORT,
-      });
-    },
-  });
-
-  const deleteNotificationMutation = useMutation({
-    mutationKey: ['delete-notification-by-id'],
-    mutationFn: async ({id}: {id: string}) => {
-      if (user_token === '') {
-        Alert.alert('No token found');
-        // dispatch(
-        //   showAlert({
-        //     title: 'Error!',
-        //     message: 'No token found',
-        //   }),
-        // );
-        return;
-      }
-      const res = await axios.delete(
-        `${PROD_URL}/notification/${id}`,
-
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-
-      return res.data as any;
-    },
-    onSuccess: async () => {
-      //success();
-      refetch();
-      Snackbar.show({
-        text: 'Notification deleted',
-        duration: Snackbar.LENGTH_SHORT,
-      });
-    },
-
-    onError: error => {
-      console.log(error);
-      Snackbar.show({
-        text: 'Internal server error, failed to delete notification!',
-        duration: Snackbar.LENGTH_SHORT,
-      });
-    },
-  });
+  const {
+    data: notificationsRes,
+    isLoading,
+    refetch,
+  } = useGetAllNotifications(page, isConnected);
 
   useEffect(() => {
-    
-    markNotificationMutation.mutate();
+    if (notificationsRes) {
+      if (Number(page) === 1) {
+        if (notificationsRes.totalPages) {
+          const totalPage = notificationsRes.totalPages;
+          setTotalPages(totalPage);
+        }
+        setNotificationsData(notificationsRes.notifications);
+      } else {
+        if (notificationsRes.notifications) {
+          const oldNotif = notificationsData ?? [];
+          setNotificationsData([
+            ...oldNotif,
+            ...notificationsRes.notifications,
+          ]);
+        }
+      }
+    }
+  }, [notificationsData, notificationsRes, page]);
+
+
+  useEffect(() => {
+    if (isConnected) {
+      markNotification(
+        {},
+        {
+          onSuccess: async () => {
+            Snackbar.show({
+              text: 'All notifications marked as read',
+              duration: Snackbar.LENGTH_SHORT,
+            });
+          },
+
+          onError: error => {
+            console.log(error);
+            Snackbar.show({
+              text: 'Internal server error, cannot mark the notification as read!',
+              duration: Snackbar.LENGTH_SHORT,
+            });
+          },
+        },
+      );
+    }
 
     return () => {};
   }, []);
@@ -253,12 +176,34 @@ const NotificationScreen = ({navigation}) => {
 
   const handleDeleteAction = (item: Notification) => {
     console.log('Notification ID', item?._id);
-    deleteNotificationMutation.mutate({
-      id: item?._id,
-    });
+
+    if (isConnected) {
+      deleteNotification(item._id, {
+        onSuccess: async () => {
+          refetch();
+          Snackbar.show({
+            text: 'Notification deleted',
+            duration: Snackbar.LENGTH_SHORT,
+          });
+        },
+
+        onError: error => {
+          console.log(error);
+          Snackbar.show({
+            text: 'Internal server error, failed to delete notification!',
+            duration: Snackbar.LENGTH_SHORT,
+          });
+        },
+      });
+    } else {
+      Snackbar.show({
+        text: 'Please check your internet connection',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+    }
   };
 
-  if (isLoading) {
+  if (isPending) {
     return <Loader />;
   }
 

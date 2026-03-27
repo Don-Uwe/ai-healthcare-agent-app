@@ -104,7 +104,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   // --- Settings ---
   const handleLike = () => {
     if (article) {
-      likeMutation({
+      likeMutation(undefined,{
         onSuccess: (data: {article: ArticleData; likeStatus: boolean}) => {
           if (data?.likeStatus) {
             socket.emit('notification', {

@@ -2,9 +2,7 @@ import React, {useRef, useState} from 'react';
 import {TextInput, Alert} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {OtpScreenProp} from '../../type';
-import {useMutation} from '@tanstack/react-query';
 import axios, {AxiosError} from 'axios';
-import {CHECK_OTP} from '../../helper/APIUtils';
 import Loader from '../../components/Loader';
 import {
   Theme,

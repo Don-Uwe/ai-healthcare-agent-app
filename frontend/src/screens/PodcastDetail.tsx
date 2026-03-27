@@ -8,28 +8,28 @@ import {
   View,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import {PodcastData, PodcastDetailScreenProp} from '../type';
+import {PodcastDetailScreenProp} from '../type';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import Slider from '@react-native-community/slider';
-import {GlassStyles, ProfessionalColors} from '../styles/GlassStyles';
+import {GlassStyles} from '../styles/GlassStyles';
 
 import {useAudioPlayer} from 'expo-audio';
 
-import {useMutation, useQuery} from '@tanstack/react-query';
-import axios from 'axios';
-import {GET_IMAGE, GET_PODCAST_DETAILS, LIKE_PODCAST} from '../helper/APIUtils';
+import {GET_IMAGE} from '../helper/APIUtils';
 import {useSelector} from 'react-redux';
 
 import {downloadAudio, formatCount, StatusEnum} from '../helper/Utils';
 import Snackbar from 'react-native-snackbar';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Share from 'react-native-share';
-import {fp, hp} from '../helper/Metric';
+import {fp} from '../helper/Metric';
 import {useSocket} from '../../SocketContext';
 import {Feather} from '@expo/vector-icons';
 import Loader from '../components/Loader';
-import {Button, Theme, XStack, YStack, Text} from 'tamagui';
+import {Theme, XStack, YStack, Text} from 'tamagui';
 import LottieView from 'lottie-react-native';
+import {useGetSinglePodcastDetails} from '../hooks/useGetSinglePodcastDetails';
+import {useLikePodcast} from '../hooks/useLikePodcast';
 
 const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   //const [progress, setProgress] = useState(10);
@@ -47,39 +47,8 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   const [duration, setDuration] = useState(0);
   const [position, setPosition] = useState(0);
 
-  // const handleListenPress = async () => {
-  //   if (!player) return;
-  //   const status = player.currentStatus;
-  //   if (status.playing) {
-  //     player.pause();
-  //   } else {
-  //     player.play();
-  //   }
-  // };
-
-  const {data: podcast, refetch} = useQuery({
-    queryKey: ['get-podcast-details'],
-    queryFn: async () => {
-      try {
-        if (user_token === '') {
-          throw new Error('No token found');
-        }
-        const response = await axios.get(
-          `${GET_PODCAST_DETAILS}?podcast_id=${trackId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${user_token}`,
-            },
-          },
-        );
-        return response.data as PodcastData;
-      } catch (err) {
-        console.error('Error fetching podcast:', err);
-      }
-    },
-  });
-
-  // const [source, setSource] = useState<string  | null>(null);
+  const {data: podcast, refetch} = useGetSinglePodcastDetails(trackId);
+  const {mutate: likePodcast, isPending: likePodcastPending} = useLikePodcast();
 
   const source = audioUrl?.startsWith('http')
     ? audioUrl
@@ -102,13 +71,6 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
 
     return () => clearInterval(interval);
   }, [player.currentTime, player.duration, player.playing]);
-
-  // const handleSeek = async (value: number) => {
-  //   if (player) {
-  //     await player.seekTo(value);
-  //     setPosition(value);
-  //   }
-  // };
 
   const SKIP_TIME = 5; // seconds
 
@@ -163,45 +125,6 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
     return () => clearInterval(interval);
   }, [player, player.currentTime, player.duration, player.playing]);
 
-  const updateLikeCountMutation = useMutation({
-    mutationKey: ['update-podcast-like-count'],
-    mutationFn: async (podcastId: string) => {
-      const res = await axios.post(
-        `${LIKE_PODCAST}`,
-        {
-          podcast_id: podcastId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-      return res.data as any;
-    },
-    onSuccess: data => {
-      if (data?.likeStatus && podcast) {
-        // data.userId, data.articleId, data.podcastId, data.articleRecordId, data.title, data.message
-        socket.emit('notification', {
-          type: 'likePost',
-          userId: user_id,
-          articleId: null,
-          podcastId: podcast._id,
-          articleRecordId: null,
-          title: `${user_handle} liked your post`,
-          message: podcast.title,
-        });
-        refetch();
-      }
-    },
-    onError: err => {
-      console.log('Update like count err', err);
-      Snackbar.show({
-        text: 'Something went wrong!',
-        duration: Snackbar.LENGTH_SHORT,
-      });
-    },
-  });
 
   const handleShare = async () => {
     try {
@@ -282,7 +205,6 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
             </Text>
           </YStack>
         </View>
-
 
         {/* PLAYING VISUALIZER */}
         {playing && (
@@ -372,12 +294,38 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
             style={[styles.actionsContainer, GlassStyles.glassContainerDark]}>
             <XStack alignItems="center" justifyContent="space-evenly">
               {/* LIKE */}
-              {updateLikeCountMutation.isPending ? (
+              {likePodcastPending ? (
                 <ActivityIndicator size="small" color={PRIMARY_COLOR} />
               ) : (
                 <TouchableOpacity
                   style={styles.actionButton}
-                  onPress={() => updateLikeCountMutation.mutate(trackId)}>
+                  onPress={() => {
+
+                    likePodcast(trackId, {
+                      onSuccess: data => {
+                        if (data?.likeStatus && podcast) {
+                          // data.userId, data.articleId, data.podcastId, data.articleRecordId, data.title, data.message
+                          socket.emit('notification', {
+                            type: 'likePost',
+                            userId: user_id,
+                            articleId: null,
+                            podcastId: podcast._id,
+                            articleRecordId: null,
+                            title: `${user_handle} liked your post`,
+                            message: podcast.title,
+                          });
+                          refetch();
+                        }
+                      },
+                      onError: err => {
+                        console.log('Update like count err', err);
+                        Snackbar.show({
+                          text: 'Something went wrong!',
+                          duration: Snackbar.LENGTH_SHORT,
+                        });
+                      },
+                    });
+                  }}>
                   {podcast?.likedUsers.includes(user_id) ? (
                     <AntDesign name="heart" size={26} color={PRIMARY_COLOR} />
                   ) : (

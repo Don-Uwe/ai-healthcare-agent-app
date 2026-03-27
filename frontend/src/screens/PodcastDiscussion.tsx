@@ -5,14 +5,10 @@ import {
   FlatList,
   Alert,
   Pressable,
-  KeyboardAvoidingView,
-  TouchableWithoutFeedback,
   TextInput,
-  Keyboard,
-  Platform,
 } from 'react-native';
 // eslint-disable-next-line import/no-duplicates
-import {PodcastData, PodcastDiscussionProp, User, Comment} from '../type';
+import {PodcastDiscussionProp, User, Comment} from '../type';
 import {PRIMARY_COLOR} from '../helper/Theme';
 //import io from 'socket.io-client';
 import {useDispatch, useSelector} from 'react-redux';
@@ -29,7 +25,6 @@ import {
 } from 'react-native-controlled-mentions';
 import {
   GET_IMAGE,
-  GET_PODCAST_DETAILS,
   GET_STORAGE_DATA,
 } from '../helper/APIUtils';
 import {
@@ -42,9 +37,8 @@ import {
 } from 'tamagui';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {wp} from '../helper/Metric';
-import {useQuery} from '@tanstack/react-query';
-import axios from 'axios';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
+import { useGetSinglePodcastDetails } from '../hooks/useGetSinglePodcastDetails';
 
 const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
   const socket = useSocket();
@@ -61,30 +55,9 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
   const [commentLikeLoading, setCommentLikeLoading] = useState<boolean>(false);
   const [mentions, setMentions] = useState<User[]>([]);
 
-  const {data: podcast, refetch} = useQuery({
-    queryKey: ['get-podcast-details'],
-    queryFn: async () => {
-      try {
-        if (user_token === '') {
-          throw new Error('No token found');
-        }
-        const response = await axios.get(
-          `${GET_PODCAST_DETAILS}?podcast_id=${podcastId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${user_token}`,
-            },
-          },
-        );
-        return response.data as PodcastData;
-      } catch (err) {
-        console.error('Error fetching podcast:', err);
-      }
-    },
-  });
+  const {data: podcast, refetch} = useGetSinglePodcastDetails(podcastId);
 
-  // mention triggers for v3
-  // Create as constants outside component or memoize with useMemo
+
   const triggersConfig: TriggersConfig<'mention' | 'hashtag'> = {
     mention: {
       trigger: '@',

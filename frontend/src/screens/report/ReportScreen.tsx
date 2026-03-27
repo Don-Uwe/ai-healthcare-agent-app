@@ -9,10 +9,7 @@ import {
 } from 'react-native';
 import {ReportScreenProp} from '../../type';
 import {useSelector} from 'react-redux';
-import axios from 'axios';
-import {SUBMIT_REPORT} from '../../helper/APIUtils';
 import Loader from '../../components/Loader';
-import {useMutation} from '@tanstack/react-query';
 import {RadioButton} from 'react-native-paper';
 import Snackbar from 'react-native-snackbar';
 import {hp, wp} from '../../helper/Metric';

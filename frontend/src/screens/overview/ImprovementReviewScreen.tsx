@@ -9,7 +9,6 @@ import {
   Dimensions,
 } from 'react-native';
 import {useEffect, useRef, useState} from 'react';
-import {useQuery} from '@tanstack/react-query';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -17,11 +16,7 @@ import {ImpvReviewScreenProp, Comment} from '../../type';
 
 import {useDispatch, useSelector} from 'react-redux';
 import {hp, wp} from '../../helper/Metric';
-import {
-  GET_STORAGE_DATA,
-  LOAD_REVIEW_COMMENTS,
-} from '../../helper/APIUtils';
-import axios from 'axios';
+import {GET_STORAGE_DATA} from '../../helper/APIUtils';
 
 //import io from 'socket.io-client';
 
@@ -35,11 +30,14 @@ import AutoHeightWebView from '@brown-bear/react-native-autoheight-webview';
 import {useGetImprovementById} from '@/src/hooks/useGetImprovementById';
 import {useGetImprovementContent} from '@/src/hooks/useGetImprovementContent';
 import {useGetProfile} from '@/src/hooks/useGetProfile';
+import {useGetLoadReviewComments} from '@/src/hooks/useGetLoadReviewComments';
 
 const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
   const insets = useSafeAreaInsets();
   const {requestId, authorId, recordId, articleRecordId} = route.params; // requestId
   const {user_token, user_handle} = useSelector((state: any) => state.user);
+  const {isConnected} = useSelector((state: any) => state.network);
+
   const [feedback, setFeedback] = useState('');
   const [webviewHeight, setWebViewHeight] = useState(0);
 
@@ -59,25 +57,15 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
     articleRecordId: articleRecordId,
   });
 
-  const {isLoading} = useQuery({
-    queryKey: ['get-improvement-review-comments'],
+  const {data: loadComments, isLoading} = useGetLoadReviewComments(
+    undefined,
+    requestId,
+    isConnected,
+  );
 
-    queryFn: async () => {
-      const response = await axios.get(
-        `${LOAD_REVIEW_COMMENTS}?requestId=${requestId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-
-      setComments(response.data);
-      //console.log('Comments', response.data);
-
-      return response.data as Comment[];
-    },
-  });
+  useEffect(() => {
+    setComments(loadComments ?? []);
+  }, [loadComments, comments]);
 
   const noDataHtml = '<p>No Data found</p>';
 

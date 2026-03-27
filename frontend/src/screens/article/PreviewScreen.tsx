@@ -9,21 +9,14 @@ import {
 } from 'react-native';
 import {BUTTON_COLOR} from '../../helper/Theme';
 import {
-  ContentSuggestionResponse,
   PocketBaseResponse,
   PreviewScreenProp,
 } from '../../type';
 import {createHTMLStructure, handleExternalClick} from '../../helper/Utils';
-import {useMutation} from '@tanstack/react-query';
 import ImageResizer from '@bam.tech/react-native-image-resizer';
 
-import axios from 'axios';
 import Loader from '../../components/Loader';
-import {
-  GET_IMAGE,
-  RENDER_SUGGESTION,
-  UPLOAD_IMPROVEMENT_TO_POCKETBASE,
-} from '../../helper/APIUtils';
+import {GET_IMAGE} from '../../helper/APIUtils';
 import {useDispatch, useSelector} from 'react-redux';
 import useUploadImage from '../../hooks/useUploadImage';
 import {setSuggestion} from '../../store/dataSlice';
@@ -34,8 +27,8 @@ import {usePostArticleData} from '@/src/hooks/usePostArticle';
 import {useSubmitImprovement} from '@/src/hooks/useSubmitImprovement';
 import {useSubmitSuggestedChanges} from '@/src/hooks/useSubmitSuggestedChanges';
 import {useUploadArticleToPocketbase} from '@/src/hooks/useUploadArticlePocketbase';
-
-//import io from 'socket.io-client';
+import {useUploadImprovementToPocketbase} from '@/src/hooks/useUploadImprovementToPocketbase';
+import {useRenderSuggestion} from '@/src/hooks/useRenderSuggestion';
 
 export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
   const {
@@ -71,6 +64,13 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
 
   const {mutate: uploadPocketbase, isPending: uploadPocketbasePending} =
     useUploadArticleToPocketbase();
+  const {
+    mutate: uploadImprovementToPocketbase,
+    isPending: uploadPocketbaseImprovementPending,
+  } = useUploadImprovementToPocketbase();
+
+  const {mutate: renderAISuggestion, isPending: renderSuggestionPending} =
+    useRenderSuggestion();
 
   const {uploadImage, loading} = useUploadImage();
 
@@ -128,7 +128,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
           // Resize the image and handle the upload
           const resizedImageUri = await resizeImage(localImage);
 
-          uploadedUrl = await uploadImage(resizedImageUri?.uri);
+          uploadedUrl = await uploadImage(resizedImageUri?.uri as string);
         }
 
         if (i === 0 && imageUtil.length === 0) {
@@ -148,15 +148,58 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
 
       // Submit Improvement
       if (requestId) {
-        uploadImprovementToPocketbase.mutate({
-          htmlContent: finalArticle,
-        });
+        uploadImprovementToPocketbase(
+          {
+            title: title,
+            htmlContent: finalArticle,
+            article_id: articleData ? articleData.pb_recordId : null,
+            record_id: pb_record_id ?? null,
+            improvement_id: requestId,
+            user_id: user_id,
+          },
+          {
+            onSuccess: (data: PocketBaseResponse) => {
+              if (data.html_file) {
+                improvementMutation(
+                  {
+                    edited_content: data.html_file,
+                    recordId: data.recordId,
+                    requestId: requestId ?? '',
+                    imageUtils: imageUtils,
+                  },
+                  {
+                    onSuccess: data => {
+                      Snackbar.show({
+                        text: 'Changes submitted for review',
+                        duration: Snackbar.LENGTH_SHORT,
+                      });
+
+                      navigation.navigate('TabNavigation');
+                    },
+                    onError: error => {
+                      console.log('Article post Error', error);
+
+                      Alert.alert('Error', 'Failed to upload your post');
+                    },
+                  },
+                );
+              } else {
+                Alert.alert('Failed to upload your post');
+              }
+            },
+            onError: error => {
+              console.log('Article post Error', error);
+              // console.log(error);
+
+              Alert.alert('Failed to upload your post');
+            },
+          },
+        );
       }
       // Submit changes or create a new post
       else {
         // Submit new article
         setImageUtil(imageUtil);
-
         uploadPocketbase(
           {
             title: title,
@@ -294,113 +337,10 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
     }
   };
 
-  const renderSuggestionMutation = useMutation({
-    mutationKey: ['render-suggestion-key'],
-    mutationFn: async () => {
-      // console.log("htmlContent", article);
-      const response = await axios.post(
-        RENDER_SUGGESTION,
-        {
-          text: article,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-      return response.data as ContentSuggestionResponse;
-    },
-
-    onSuccess: data => {
-      // User will not get notified, until the article published
-      if (data.full_html) {
-        dispatch(setSuggestion({suggestion: data.suggestion}));
-
-        navigation.navigate('RenderSuggestion', {
-          htmlContent: data.full_html,
-        });
-      } else {
-        Snackbar.show({
-          text: 'Failed to load suggestions, try again!',
-          duration: Snackbar.LENGTH_SHORT,
-        });
-      }
-    },
-    onError: error => {
-      console.log('Article suggestion Error', error);
-
-      Snackbar.show({
-        text: 'Failed to load suggestions, try again!',
-        duration: Snackbar.LENGTH_SHORT,
-      });
-    },
-  });
-
-
-  const uploadImprovementToPocketbase = useMutation({
-    mutationKey: ['upload-improvement-to-pocketbase-key'],
-    mutationFn: async ({htmlContent}: {htmlContent: string}) => {
-      const response = await axios.post(
-        UPLOAD_IMPROVEMENT_TO_POCKETBASE,
-        {
-          title: title,
-          htmlContent: htmlContent,
-          article_id: articleData ? articleData.pb_recordId : null,
-          record_id: pb_record_id,
-          improvement_id: requestId,
-          user_id: user_id,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-      // console.log(article);
-      return response.data as PocketBaseResponse;
-    },
-
-    onSuccess: (data: PocketBaseResponse) => {
-      if (data.html_file) {
-        improvementMutation(
-          {
-            edited_content: data.html_file,
-            recordId: data.recordId,
-            requestId: requestId ?? '',
-            imageUtils: imageUtils,
-          },
-          {
-            onSuccess: data => {
-              Snackbar.show({
-                text: 'Changes submitted for review',
-                duration: Snackbar.LENGTH_SHORT,
-              });
-
-              navigation.navigate('TabNavigation');
-            },
-            onError: error => {
-              console.log('Article post Error', error);
-
-              Alert.alert('Error', 'Failed to upload your post');
-            },
-          },
-        );
-      } else {
-        Alert.alert('Failed to upload your post');
-      }
-    },
-    onError: error => {
-      console.log('Article post Error', error);
-      // console.log(error);
-
-      Alert.alert('Failed to upload your post');
-    },
-  });
 
   if (
-    renderSuggestionMutation.isPending ||
-    uploadImprovementToPocketbase.isPending ||
+    renderSuggestionPending ||
+    uploadPocketbaseImprovementPending ||
     uploadPocketbasePending ||
     postMutationPending ||
     submitChangesPending ||
@@ -424,7 +364,35 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
           style={styles.continueButton}
           onPress={() => {
             if (isConnected) {
-              renderSuggestionMutation.mutate();
+              renderAISuggestion(
+                {
+                  text: article,
+                },
+                {
+                  onSuccess: data => {
+                    if (data.full_html) {
+                      dispatch(setSuggestion({suggestion: data.suggestion}));
+
+                      navigation.navigate('RenderSuggestion', {
+                        htmlContent: data.full_html,
+                      });
+                    } else {
+                      Snackbar.show({
+                        text: 'Failed to load suggestions, try again!',
+                        duration: Snackbar.LENGTH_SHORT,
+                      });
+                    }
+                  },
+                  onError: error => {
+                    console.log('Article suggestion Error', error);
+
+                    Snackbar.show({
+                      text: 'Failed to load suggestions, try again!',
+                      duration: Snackbar.LENGTH_SHORT,
+                    });
+                  },
+                },
+              );
             } else {
               Snackbar.show({
                 text: 'Please check your internet connection',

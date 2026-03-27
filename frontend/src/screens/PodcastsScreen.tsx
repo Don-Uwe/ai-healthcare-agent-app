@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {
   StyleSheet,
   TouchableOpacity,
@@ -9,22 +9,13 @@ import {
 } from 'react-native';
 
 import {YStack, View, XStack} from 'tamagui';
-import axios from 'axios';
 import PodcastCard from '../components/PodcastCard';
 import {hp} from '../helper/Metric';
 import {PodcastData, PodcastScreenProps} from '../type';
 import {useDispatch, useSelector} from 'react-redux';
-import {useMutation, useQuery} from '@tanstack/react-query';
 import {downloadAudio, msToTime} from '../helper/Utils';
-import {
-  GET_ALL_PODCASTS,
-  UPDATE_PODCAST_VIEW_COUNT,
-} from '../helper/APIUtils';
 import Snackbar from 'react-native-snackbar';
-import {
-  setaddedPodcastId,
-  setPodcasts,
-} from '../store/dataSlice';
+import {setaddedPodcastId, setPodcasts} from '../store/dataSlice';
 import CreatePlaylist from '../components/CreatePlaylist';
 
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -32,6 +23,8 @@ import {StatusBar} from 'expo-status-bar';
 import {Ionicons} from '@expo/vector-icons';
 import {GlassStyles, ProfessionalColors} from '../styles/GlassStyles';
 import CreateIcon from '../components/CreateIcon';
+import {useGetAllPodcasts} from '../hooks/useGetAllPodcasts';
+import {useUpdatePodcastViewcount} from '../hooks/useUpdatePodcastViewcount';
 
 const {WavAudioRecorder} = NativeModules;
 //const recorderEvents = new NativeEventEmitter(WavAudioRecorder);
@@ -39,15 +32,41 @@ const {WavAudioRecorder} = NativeModules;
 const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
   const dispatch = useDispatch();
   const {user_token, user_id} = useSelector((state: any) => state.user);
-  const {selectedTags, sortType} = useSelector((state: any) => state.data);
+  // const {selectedTags, sortType} = useSelector((state: any) => state.data);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const {podcasts} = useSelector((state: any) => state.data);
   const {isConnected} = useSelector((state: any) => state.network);
   const [playlistModalOpen, setPlaylistModalOpen] = useState<boolean>(false);
-  const [selectedCategory, setSelectedCategory] = useState<Category>();
+  // const [selectedCategory, setSelectedCategory] = useState<Category>();
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
 
+  const {
+    data: podcastData,
+    isLoading,
+    refetch,
+  } = useGetAllPodcasts(isConnected, page);
+
+  const {mutate: updateViewCount} = useUpdatePodcastViewcount();
+
+  useEffect(() => {
+    if (podcastData) {
+      if (Number(page) === 1) {
+        if (podcastData.totalPages) {
+          const total = podcastData.totalPages;
+          setTotalPages(total);
+        }
+        if (podcastData.allPodcasts) {
+          let data = podcastData.allPodcasts as PodcastData[];
+          dispatch(setPodcasts(data));
+        }
+      } else {
+        const oldPodcasts = podcasts;
+        let data = podcastData.allPodcasts as PodcastData[];
+        dispatch(setPodcasts([...oldPodcasts, ...data]));
+      }
+    }
+  }, [podcastData, page, dispatch, podcasts]);
 
   const openPlaylist = (id: string) => {
     dispatch(setaddedPodcastId(id));
@@ -58,39 +77,6 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
     setPlaylistModalOpen(false);
     dispatch(setaddedPodcastId(''));
   };
-
-  const {refetch, isLoading, isFetching} = useQuery({
-    queryKey: ['get-all-podcasts', page],
-    queryFn: async () => {
-      try {
-        const response = await axios.get(`${GET_ALL_PODCASTS}?page=${page}`, {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        });
-
-        if (Number(page) === 1) {
-          if (response.data.totalPages) {
-            const total = response.data.totalPages;
-            setTotalPages(total);
-          }
-          if (response.data.allPodcasts) {
-            let data = response.data.allPodcasts as PodcastData[];
-            dispatch(setPodcasts(data));
-          }
-        } else {
-          const oldPodcasts = podcasts;
-          let data = response.data.allPodcasts as PodcastData[];
-          dispatch(setPodcasts([...oldPodcasts, ...data]));
-        }
-        const d = response.data.allPodcasts as PodcastData[];
-        return d;
-      } catch (err) {
-        console.error('Error fetching podcasts:', err);
-      }
-    },
-    enabled: isConnected && !!user_token && !!page,
-  });
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -118,74 +104,57 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
     });
   };
 
-  const updateViewCountMutation = useMutation({
-    mutationKey: ['update-podcast-view-count'],
-    mutationFn: async (podcastId: string) => {
-      const res = await axios.post(
-        `${UPDATE_PODCAST_VIEW_COUNT}`,
-        {
-          podcast_id: podcastId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-      return res.data.data as PodcastData;
-    },
-    onSuccess: data => {
-      navigation.navigate('PodcastDetail', {
-        trackId: data._id,
-        audioUrl: data.audio_url,
-      });
-    },
-    onError: err => {
-      console.log('Update view count err', err);
-      Snackbar.show({
-        text: 'Something went wrong!',
-        duration: Snackbar.LENGTH_SHORT,
-      });
-    },
-  });
 
   const renderItem = ({item}: {item: PodcastData}) => (
-
-      <PodcastCard
-        id={item._id}
-        title={item.title}
-        audioUrl={item.audio_url}
-        host={item.user_id.user_name}
-        views={item.viewUsers.length}
-        duration={`${msToTime(item.duration)}`}
-        tags={item.tags}
-        downloaded={false}
-        display={true}
-        downLoadAudio={async () => {
-          if (isConnected) {
-            await downloadAudio(item);
-          } else {
+    <PodcastCard
+      id={item._id}
+      title={item.title}
+      audioUrl={item.audio_url}
+      host={item.user_id.user_name}
+      views={item.viewUsers.length}
+      duration={`${msToTime(item.duration)}`}
+      tags={item.tags}
+      downloaded={false}
+      display={true}
+      downLoadAudio={async () => {
+        if (isConnected) {
+          await downloadAudio(item);
+        } else {
+          Snackbar.show({
+            text: 'Internet connection required',
+            duration: Snackbar.LENGTH_SHORT,
+          });
+        }
+      }}
+      handleClick={() => {
+        updateViewCount(item._id, {
+          onSuccess: data => {
+            navigation.navigate('PodcastDetail', {
+              trackId: data._id,
+              audioUrl: data.audio_url,
+            });
+          },
+          onError: err => {
+            console.log('Update view count err', err);
             Snackbar.show({
-              text: 'Internet connection required',
+              text: 'Something went wrong!',
               duration: Snackbar.LENGTH_SHORT,
             });
-          }
-        }}
-        handleClick={() => {
-          updateViewCountMutation.mutate(item._id);
-        }}
-        imageUri={item.cover_image}
-        handleReport={() => {
-          navigateToReport(item._id);
-        }}
-        playlistAct={openPlaylist}
-      />
-
+          },
+        });
+      }}
+      imageUri={item.cover_image}
+      handleReport={() => {
+        navigateToReport(item._id);
+      }}
+      playlistAct={openPlaylist}
+    />
   );
 
   const renderLoadingState = () => (
     <View style={styles.loadingContainer}>
-      <View style={[GlassStyles.glassCard, {padding: 40, alignItems: 'center'}]}>
+      <View
+        style={[GlassStyles.glassCard, {padding: 40, alignItems: 'center'}]}>
         <View style={styles.loadingIconContainer}>
           <ActivityIndicator size="large" color={ProfessionalColors.primary} />
         </View>
@@ -199,7 +168,8 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
 
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
-      <View style={[GlassStyles.glassCard, {padding: 40, alignItems: 'center'}]}>
+      <View
+        style={[GlassStyles.glassCard, {padding: 40, alignItems: 'center'}]}>
         <View style={styles.emptyIconContainer}>
           <Ionicons
             name="headset-outline"
@@ -223,7 +193,11 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
       <View style={[GlassStyles.glassCard, styles.header]}>
         <XStack alignItems="center" justifyContent="space-between">
           <XStack alignItems="center" gap="$3">
-            <Ionicons name="headset" size={28} color={ProfessionalColors.primary} />
+            <Ionicons
+              name="headset"
+              size={28}
+              color={ProfessionalColors.primary}
+            />
             <YStack>
               <Text style={styles.headerTitle}>Podcasts</Text>
               <Text style={styles.headerSubtitle}>
@@ -301,7 +275,7 @@ const styles = StyleSheet.create({
     marginTop: hp(7),
     marginBottom: 16,
     padding: 16,
-    borderRadius: hp(2)
+    borderRadius: hp(2),
   },
 
   headerTitle: {

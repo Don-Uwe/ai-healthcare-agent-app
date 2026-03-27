@@ -9,7 +9,6 @@ import {
   Dimensions,
 } from 'react-native';
 import React, {useEffect, useRef, useState} from 'react';
-import {useQuery} from '@tanstack/react-query';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -19,10 +18,8 @@ import {hp, wp} from '../../helper/Metric';
 import {
   GET_IMAGE,
   GET_STORAGE_DATA,
-  LOAD_REVIEW_COMMENTS,
   SOCKET_PROD,
 } from '../../helper/APIUtils';
-import axios from 'axios';
 
 import {setUserHandle} from '../../store/UserSlice';
 import {handleExternalClick, StatusEnum} from '../../helper/Utils';
@@ -33,15 +30,16 @@ import AutoHeightWebView from '@brown-bear/react-native-autoheight-webview';
 import {useGetArticleDetails} from '@/src/hooks/useGetArticleDetail';
 import {useGetArticleContent} from '@/src/hooks/useGetArticleContent';
 import {useGetProfile} from '@/src/hooks/useGetProfile';
+import {useGetLoadReviewComments} from '@/src/hooks/useGetLoadReviewComments';
 
 const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
   const insets = useSafeAreaInsets();
   const {articleId, authorId, recordId} = route.params;
   const {user_token} = useSelector((state: any) => state.user);
+  const {isConnected} = useSelector((state: any) => state.isConnected);
 
   const [feedback, setFeedback] = useState<string>('');
   const [loading, setLoading] = useState(false);
-  const [webviewHeight, setWebViewHeight] = useState(0);
   const {data: user} = useGetProfile();
   const {data: article, refetch} = useGetArticleDetails(articleId);
 
@@ -54,25 +52,15 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
 
   const flatListRef = useRef<FlatList<Comment>>(null);
 
-  const {isLoading} = useQuery({
-    queryKey: ['get-review-comments'],
+  const {data: loadComments, isLoading} = useGetLoadReviewComments(
+    articleId,
+    undefined,
+    isConnected,
+  );
 
-    queryFn: async () => {
-      const response = await axios.get(
-        `${LOAD_REVIEW_COMMENTS}?articleId=${articleId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-
-      setComments(response.data);
-      //console.log('Comments', response.data);
-
-      return response.data as Comment[];
-    },
-  });
+  useEffect(() => {
+    setComments(loadComments ?? []);
+  }, [loadComments, comments]);
 
   useEffect(() => {
     refetch();

@@ -1,23 +1,21 @@
-import {useCallback, useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {Alert, StyleSheet} from 'react-native';
 import {PodcastPlayerScreenProps} from '../type';
 import RNFS from 'react-native-fs';
-import {useMutation} from '@tanstack/react-query';
-import {useDispatch, useSelector} from 'react-redux';
-import axios from 'axios';
+import {useSelector} from 'react-redux';
 import Snackbar from 'react-native-snackbar';
 
-import {UPLOAD_PODCAST} from '../helper/APIUtils';
 import useUploadImage from '../hooks/useUploadImage';
 import ImageResizer from '@bam.tech/react-native-image-resizer';
 import useUploadAudio from '../hooks/useUploadAudio';
 import Slider from '@react-native-community/slider';
 
 import {useAudioPlayer} from 'expo-audio';
-import {Button, Circle, Theme, XStack, YStack, Text} from 'tamagui';
+import {Circle, Theme, XStack, YStack, Text} from 'tamagui';
 import {AntDesign, Ionicons} from '@expo/vector-icons';
-import {PRIMARY_COLOR} from '../helper/Theme';
 import LottieView from 'lottie-react-native';
+import {useUploadPodcast} from '../hooks/useUploadPodcast';
+import Loader from '../components/Loader';
 
 const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
   const {uploadImage, loading, error: imageError} = useUploadImage();
@@ -25,7 +23,6 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [position, setPosition] = useState(0);
   const [duration, setDuration] = useState(0);
-  
 
   const {title, description, selectedGenres, imageUtils, filePath} =
     route.params;
@@ -36,6 +33,9 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
   const [amplitudes, setAmplitudes] = useState<number[]>([]);
   //const [currentAmplitude, setCurrentAmplitude] = useState<number>(0);
   //const timerRef = useRef(null);
+
+  const {mutate: uploadPodcast, isPending: uploadPodcastPending} =
+    useUploadPodcast();
 
   const player = useAudioPlayer(
     filePath
@@ -114,7 +114,6 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
     setPosition(next);
   };
 
-
   const unlinkFile = useCallback(async () => {
     if (filePath) {
       try {
@@ -144,76 +143,18 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
     }
   };
 
-  const uploadPodcastMutation = useMutation({
-    mutationKey: ['uploadPodcast'],
-    mutationFn: async ({
-      audio_url,
-      cover_image,
-    }: {
-      audio_url: string;
-      cover_image: string;
-    }) => {
-      const response = await axios.post(
-        UPLOAD_PODCAST,
-        {
-          title: title,
-          description: description,
-          tags: selectedGenres,
-          article_id: null,
-          audio_url: audio_url,
-          cover_image: cover_image,
-          duration: player.duration,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-            'Content-Type': 'application/json',
-          },
-        },
-      );
-
-      return response.data.message as string;
-    },
-    onSuccess: async data => {
-      await handleUpload();
-
-      Snackbar.show({
-        text: 'Podcast submitted for review',
-        duration: Snackbar.LENGTH_SHORT,
-      });
-      navigation.navigate('TabNavigation');
-    },
-    onError: async error => {
-      // Handle upload error
-      await handleUpload();
-      Snackbar.show({
-        text: 'Upload failed',
-        duration: Snackbar.LENGTH_SHORT,
-      });
-      console.error('Upload error:', error);
-    },
-  });
 
   const handlePostSubmit = async () => {
-
-    if(!isConnected){
+    if (!isConnected) {
       Alert.alert('Please check your internet and try again!');
       return;
     }
-  
+
     if (!filePath || !imageUtils) {
       Alert.alert(
         'Error',
         'Please record a podcast and select an image before uploading.',
       );
-
-      // dispatch(
-      //   showAlert({
-      //     title: 'Error',
-      //     message:
-      //       'Please record a podcast and select an image before uploading.',
-      //   }),
-      // );
       return;
     }
 
@@ -233,38 +174,51 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
       // Resize the image and handle the upload
       const resizedImageUri = await resizeImage(imageUtils);
 
-      let uploadedUrl = await uploadImage(resizedImageUri?.uri);
+      let uploadedUrl = await uploadImage(resizedImageUri?.uri as string);
       let audioUrl = await uploadAudio(filePath);
 
       console.log('audio', audioUrl);
       console.log('Image', uploadedUrl);
 
       if (uploadedUrl && audioUrl) {
-        // Call the mutation to upload the podcast
-        uploadPodcastMutation.mutate({
-          audio_url: audioUrl,
-          cover_image: uploadedUrl,
-        });
+
+        uploadPodcast(
+          {
+            title: title,
+            description: description,
+            tags: selectedGenres,
+            article_id: null,
+            audio_url: audioUrl,
+            cover_image: uploadedUrl,
+            duration: player.duration,
+          },
+          {
+            onSuccess: async data => {
+              await handleUpload();
+
+              Snackbar.show({
+                text: 'Podcast submitted for review',
+                duration: Snackbar.LENGTH_SHORT,
+              });
+              navigation.navigate('TabNavigation');
+            },
+            onError: async error => {
+              // Handle upload error
+              await handleUpload();
+              Snackbar.show({
+                text: 'Upload failed',
+                duration: Snackbar.LENGTH_SHORT,
+              });
+              console.error('Upload error:', error);
+            },
+          },
+        );
       } else {
         Alert.alert('Error', 'Could not upload the podcast. Please try again.');
-        //   dispatch(
-        //   showAlert({
-        //     title: 'Error',
-        //     message:
-        //       'Could not upload the podcast. Please try again.',
-        //   }),
-        // );
       }
     } catch (err) {
       console.error('Image processing failed:', err);
       Alert.alert('Error', 'Could not process the images.');
-      // dispatch(
-      //   showAlert({
-      //     title: 'Error',
-      //     message:
-      //       'Could not process the images.',
-      //   }),
-      // );
       await handleUpload();
     }
   };
@@ -328,6 +282,10 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
     }
   }, [error, handleUpload, imageError]);
 
+
+  // if(uploadPodcastPending){
+  //   return <Loader/>
+  // }
   return (
     <Theme name="dark">
       <YStack
@@ -336,10 +294,14 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
         padding="$5"
         paddingTop="$8"
         justifyContent="space-between">
-
         {/* Header Section */}
         <YStack mb="$4">
-          <Text color="#94A3B8" fontSize={13} fontWeight="600" mb="$2" letterSpacing={1}>
+          <Text
+            color="#94A3B8"
+            fontSize={13}
+            fontWeight="600"
+            mb="$2"
+            letterSpacing={1}>
             NOW PLAYING
           </Text>
           <Text color="#F1F5F9" fontSize={28} fontWeight="800" lineHeight={34}>
@@ -412,10 +374,18 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
           />
 
           <XStack justifyContent="space-between" marginTop="$2">
-            <Text color="#94A3B8" fontSize={14} fontWeight="600" fontFamily="monospace">
+            <Text
+              color="#94A3B8"
+              fontSize={14}
+              fontWeight="600"
+              fontFamily="monospace">
               {formatSecTime(position)}
             </Text>
-            <Text color="#94A3B8" fontSize={14} fontWeight="600" fontFamily="monospace">
+            <Text
+              color="#94A3B8"
+              fontSize={14}
+              fontWeight="600"
+              fontFamily="monospace">
               {formatSecTime(duration)}
             </Text>
           </XStack>
@@ -428,7 +398,6 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
           marginTop="$5"
           marginBottom="$4"
           space="$6">
-
           {/* Backward Button */}
           <Circle
             size={65}
