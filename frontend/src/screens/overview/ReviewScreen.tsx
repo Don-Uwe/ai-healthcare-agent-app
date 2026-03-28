@@ -60,7 +60,7 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
 
   useEffect(() => {
     setComments(loadComments ?? []);
-  }, [loadComments, comments]);
+  }, [loadComments]);
 
   useEffect(() => {
     refetch();
@@ -184,20 +184,26 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
           article?.reviewer_id !== null && (
             <YStack
               padding={wp(4)}
-              marginTop={hp(1.2)} // reduced from hp(3)
-              borderRadius={10}
-              space="$3">
+              marginTop={hp(1.5)}
+              borderRadius={16}
+              space="$3"
+              backgroundColor="#F8F9FA"
+              borderWidth={1}
+              borderColor="#E0E0E0">
+              <Text fontSize={17} fontWeight="700" color="#1A1A1A" marginBottom="$2">
+                💬 Add a Comment
+              </Text>
               <TextArea
-                placeholder="Ask your doubt"
+                placeholder="Share your thoughts or ask a question..."
                 value={feedback}
                 onChangeText={setFeedback}
                 multiline
-                height={hp(19)}
-                fontSize={wp(4.8)}
-                paddingVertical={10}
-                paddingHorizontal={12}
-                borderRadius={8}
-                borderWidth={1.5}
+                height={hp(16)}
+                fontSize={wp(4.5)}
+                paddingVertical={12}
+                paddingHorizontal={14}
+                borderRadius={12}
+                borderWidth={2}
                 borderColor={PRIMARY_COLOR}
                 backgroundColor="#fff"
                 textAlignVertical="top"
@@ -210,11 +216,11 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
                   ) : (
                     <Button
                       size="$4"
-                      width="45%"
-                      height={44}
+                      width="40%"
+                      height={48}
                       backgroundColor={PRIMARY_COLOR}
                       color="#fff"
-                      borderRadius={8}
+                      borderRadius={12}
                       onPress={() => {
                         setLoading(true);
 
@@ -228,8 +234,8 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
 
                         setFeedback('');
                       }}>
-                      <Text color="#ffffff" fontSize={17}>
-                        Post
+                      <Text color="#ffffff" fontSize={16} fontWeight="700">
+                        Post Comment
                       </Text>
                     </Button>
                   )}

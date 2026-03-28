@@ -15,7 +15,7 @@ import {PodcastData, PodcastScreenProps} from '../type';
 import {useDispatch, useSelector} from 'react-redux';
 import {downloadAudio, msToTime} from '../helper/Utils';
 import Snackbar from 'react-native-snackbar';
-import {setaddedPodcastId, setPodcasts} from '../store/dataSlice';
+import {setaddedPodcastId, setPodcasts, appendPodcasts} from '../store/dataSlice';
 import CreatePlaylist from '../components/CreatePlaylist';
 
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -61,12 +61,13 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
           dispatch(setPodcasts(data));
         }
       } else {
-        const oldPodcasts = podcasts;
-        let data = podcastData.allPodcasts as PodcastData[];
-        dispatch(setPodcasts([...oldPodcasts, ...data]));
+        if (podcastData.allPodcasts) {
+          let data = podcastData.allPodcasts as PodcastData[];
+          dispatch(appendPodcasts(data));
+        }
       }
     }
-  }, [podcastData, page, dispatch, podcasts]);
+  }, [podcastData, page]);
 
   const openPlaylist = (id: string) => {
     dispatch(setaddedPodcastId(id));
@@ -228,7 +229,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
             }}
             onEndReachedThreshold={0.5}
             ListFooterComponent={
-              isFetching && podcasts?.length > 0 ? (
+              isLoading && podcasts?.length > 0 ? (
                 <View style={styles.footerLoading}>
                   <ActivityIndicator
                     size="small"
@@ -272,7 +273,7 @@ const styles = StyleSheet.create({
 
   header: {
     marginHorizontal: 16,
-    marginTop: hp(7),
+    marginTop: hp(10),
     marginBottom: 16,
     padding: 16,
     borderRadius: hp(2),

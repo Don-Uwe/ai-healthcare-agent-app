@@ -42,7 +42,7 @@ export default function AppContent() {
       
       checkToken();
     }
-  }, [tokenRes, isLoading]);
+  }, [tokenRes, navigationRef]);
 
   const checkToken = async () =>{
      const token = await retrieveItem(KEYS.USER_TOKEN);

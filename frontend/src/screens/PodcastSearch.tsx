@@ -48,7 +48,7 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
         setSearchData([...oldPodcasts, ...newPodcasts]);
       }
     }
-  }, [page, searchData, searchPodcasts]);
+  }, [page, searchPodcasts]);
 
 
   const renderItem = ({item}: {item: PodcastData}) => (

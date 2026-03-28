@@ -94,7 +94,9 @@ const ProfileEditScreen = ({navigation}) => {
     if (user) {
       //console.log(user);
       setUserProfileImage(
-        user.Profile_image ? `${GET_STORAGE_DATA}/${user.Profile_image}` : '',
+        user.Profile_image ?
+        user.Profile_image.startsWith("http") ? user.Profile_image :
+         `${GET_STORAGE_DATA}/${user.Profile_image}` : '',
       );
       setUsername(user.user_name || '');
       setUserHandle(user.user_handle || '');

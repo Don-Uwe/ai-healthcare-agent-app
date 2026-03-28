@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   FlatList,
   ScrollView,
+  Animated,
+  Easing,
 } from 'react-native';
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -40,6 +42,264 @@ import {useGetProfile} from '../hooks/useGetProfile';
 import {useRequestArticleEdit} from '../hooks/useRequestArticleEdit';
 import {useGetUnreadNotificationCount} from '../hooks/useGetUnreadNotificationCount';
 import {useGetPaginatedArticle} from '../hooks/useGetPaginatedArticles';
+
+// Loading State Component with Animation
+const LoadingState = () => {
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const rotateAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // Pulse animation
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.2,
+          duration: 1000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ]),
+    ).start();
+
+    // Rotate animation
+    Animated.loop(
+      Animated.timing(rotateAnim, {
+        toValue: 1,
+        duration: 2000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+    ).start();
+  }, [pulseAnim, rotateAnim]);
+
+  const rotate = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
+  return (
+    <View style={styles.stateContainer}>
+      <Animated.View
+        style={[
+          styles.iconCircle,
+          {
+            transform: [{scale: pulseAnim}, {rotate}],
+          },
+        ]}>
+        <Text style={styles.iconEmoji}>📚</Text>
+      </Animated.View>
+      <Text style={styles.stateTitle}>Loading Articles</Text>
+      <Text style={styles.stateDescription}>
+        Gathering the latest health insights for you...
+      </Text>
+      <View style={styles.dotsContainer}>
+        <AnimatedDot delay={0} />
+        <AnimatedDot delay={200} />
+        <AnimatedDot delay={400} />
+      </View>
+    </View>
+  );
+};
+
+// Animated Dot Component
+const AnimatedDot = ({delay}: {delay: number}) => {
+  const fadeAnim = useRef(new Animated.Value(0.3)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.delay(delay),
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(fadeAnim, {
+          toValue: 0.3,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]),
+    ).start();
+  }, [delay, fadeAnim]);
+
+  return (
+    <Animated.View
+      style={[
+        styles.dot,
+        {
+          opacity: fadeAnim,
+        },
+      ]}
+    />
+  );
+};
+
+// Error State Component
+const ErrorState = ({onRetry}: {onRetry: () => void}) => {
+  const shakeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.sequence([
+      Animated.timing(shakeAnim, {
+        toValue: 10,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeAnim, {
+        toValue: -10,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeAnim, {
+        toValue: 10,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeAnim, {
+        toValue: 0,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [shakeAnim]);
+
+  return (
+    <View style={styles.stateContainer}>
+      <Animated.View
+        style={[
+          styles.iconCircle,
+          styles.errorCircle,
+          {
+            transform: [{translateX: shakeAnim}],
+          },
+        ]}>
+        <Text style={styles.iconEmoji}>📭</Text>
+      </Animated.View>
+      <Text style={styles.stateTitle}>No Articles Found</Text>
+      <Text style={styles.stateDescription}>
+        We couldn&apos;t find any articles at the moment.{'\n'}
+        Please try refreshing or check back later.
+      </Text>
+      <TouchableOpacity style={styles.retryButton} onPress={onRetry}>
+        <Text style={styles.retryButtonText}>Retry</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+// Offline State Component
+const OfflineState = () => {
+  const bounceAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(bounceAnim, {
+          toValue: -10,
+          duration: 500,
+          easing: Easing.ease,
+          useNativeDriver: true,
+        }),
+        Animated.timing(bounceAnim, {
+          toValue: 0,
+          duration: 500,
+          easing: Easing.ease,
+          useNativeDriver: true,
+        }),
+      ]),
+    ).start();
+  }, [bounceAnim]);
+
+  return (
+    <View style={styles.stateContainer}>
+      <Animated.View
+        style={[
+          styles.iconCircle,
+          styles.offlineCircle,
+          {
+            transform: [{translateY: bounceAnim}],
+          },
+        ]}>
+        <Text style={styles.iconEmoji}>📡</Text>
+      </Animated.View>
+      <Text style={styles.stateTitle}>You&apos;re Offline</Text>
+      <Text style={styles.stateDescription}>
+        Connect to the internet to view articles.{'\n'}
+        Offline mode coming in the next update!
+      </Text>
+    </View>
+  );
+};
+
+// Empty Article State Component (for FlatList empty state)
+const EmptyArticleState = () => {
+  const floatAnim = useRef(new Animated.Value(0)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // Fade in animation
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 800,
+      useNativeDriver: true,
+    }).start();
+
+    // Float animation
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(floatAnim, {
+          toValue: 1,
+          duration: 2000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(floatAnim, {
+          toValue: 0,
+          duration: 2000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ]),
+    ).start();
+  }, [floatAnim, fadeAnim]);
+
+  const translateY = floatAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -15],
+  });
+
+  return (
+    <Animated.View style={[styles.emptyArticleContainer, {opacity: fadeAnim}]}>
+      <Animated.View
+        style={[
+          styles.emptyIconCircle,
+          {
+            transform: [{translateY}],
+          },
+        ]}>
+        <Text style={styles.emptyIconEmoji}>🔍</Text>
+      </Animated.View>
+      <Text style={styles.emptyArticleTitle}>No Articles Here</Text>
+      <Text style={styles.emptyArticleDescription}>
+        We couldn&apos;t find any articles in this category.{'\n'}
+        Try selecting a different category or{'\n'}
+        check back later for new content!
+      </Text>
+      <View style={styles.emptyTagsContainer}>
+        <View style={styles.emptyTag}>
+          <Text style={styles.emptyTagText}>Try other tags</Text>
+        </View>
+      </View>
+    </Animated.View>
+  );
+};
 
 // Here The purpose of using Redux is to maintain filter state throughout the app session. globally
 const HomeScreen = ({navigation}: HomeScreenProps) => {
@@ -92,7 +352,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
 
     setArticleCategories(categoryData);
     dispatch(setTags({tags: categoryData}));
-  }, [categoryData, dispatch, isSuccess, selectedTags]);
+  }, [categoryData, isSuccess]);
 
   const handleCategorySelection = (category: CategoryType) => {
     // Update Redux State
@@ -324,7 +584,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         updateArticles([...filteredArticles, ...articleData.articles]);
       }
     }
-  }, [articleData, filteredArticles, page, updateArticles]);
+  }, [articleData, page]);
 
 
   const onRefresh = () => {
@@ -384,9 +644,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           unreadCount={unreadCount || 0}
         />
 
-        <View style={styles.emptyContainer}>
-          <Text style={styles.message}>📡 Article Loading...</Text>
-        </View>
+        <LoadingState />
       </SafeAreaView>
     );
   }
@@ -401,9 +659,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           unreadCount={unreadCount || 0}
         />
 
-        <View style={styles.emptyContainer}>
-          <Text style={styles.message}>📡 No Article Found</Text>
-        </View>
+        <ErrorState onRetry={refetch} />
       </SafeAreaView>
     );
   }
@@ -418,11 +674,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           unreadCount={unreadCount || 0}
         />
 
-        <View style={styles.emptyContainer}>
-          <Text style={styles.message}>
-            📡 Please try to be online to view articles
-          </Text>
-        </View>
+        <OfflineState />
       </SafeAreaView>
     );
   }
@@ -572,11 +824,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
             contentContainerStyle={styles.flatListContentContainer}
             refreshing={refreshing}
             onRefresh={onRefresh}
-            ListEmptyComponent={
-              <View style={styles.emptyContainer}>
-                <Text style={styles.message}>No Article Found</Text>
-              </View>
-            }
+            ListEmptyComponent={<EmptyArticleState />}
             onEndReached={() => {
               if (page < totalPages) {
                 setPage(prev => prev + 1);
@@ -668,5 +916,142 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 1,
     resizeMode: 'contain',
+  },
+
+  // New state styles
+  stateContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+    backgroundColor: '#F0F8FF',
+  },
+  iconCircle: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#E3F2FD',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+    shadowColor: PRIMARY_COLOR,
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  errorCircle: {
+    backgroundColor: '#FFEBEE',
+  },
+  offlineCircle: {
+    backgroundColor: '#FFF3E0',
+  },
+  iconEmoji: {
+    fontSize: 56,
+  },
+  stateTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1A1A1A',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  stateDescription: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 24,
+    paddingHorizontal: 16,
+  },
+  dotsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  dot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: PRIMARY_COLOR,
+    marginHorizontal: 6,
+  },
+  retryButton: {
+    backgroundColor: PRIMARY_COLOR,
+    paddingHorizontal: 32,
+    paddingVertical: 14,
+    borderRadius: 25,
+    marginTop: 8,
+    shadowColor: PRIMARY_COLOR,
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  retryButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+
+  // Empty Article State styles (for FlatList empty state)
+  emptyArticleContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 24,
+    minHeight: 400,
+  },
+  emptyIconCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#F3E5F5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+    shadowColor: '#9C27B0',
+    shadowOffset: {width: 0, height: 3},
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  emptyIconEmoji: {
+    fontSize: 48,
+  },
+  emptyArticleTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#1A1A1A',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  emptyArticleDescription: {
+    fontSize: 15,
+    color: '#757575',
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 20,
+  },
+  emptyTagsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 8,
+  },
+  emptyTag: {
+    backgroundColor: '#E8EAF6',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#C5CAE9',
+  },
+  emptyTagText: {
+    color: '#3F51B5',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

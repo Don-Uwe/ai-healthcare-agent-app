@@ -67,12 +67,6 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
       if (!status.granted) {
         Alert.alert('Permission to access microphone was denied');
 
-        // dispatch(
-        //   showAlert({
-        //     title: 'Error',
-        //     message: 'Permission to access microphone was denied',
-        //   }),
-        // );
       }
 
       const storageGranted = await requestStoragePermissions();

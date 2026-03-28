@@ -51,7 +51,7 @@ const NotificationScreen = ({navigation}) => {
         }
       }
     }
-  }, [notificationsData, notificationsRes, page]);
+  }, [notificationsRes, page]);
 
 
   useEffect(() => {

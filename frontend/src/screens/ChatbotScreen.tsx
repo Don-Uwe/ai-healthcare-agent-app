@@ -84,7 +84,7 @@ const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
 
       setIsTyping(false);
     }
-  }, [conversations, messages]);
+  }, [conversations]);
 
   const convertToGiftedFormat = (items: Message[]): IMessage[] => {
     return items.map(m => ({

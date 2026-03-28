@@ -5,15 +5,15 @@ import {
   TouchableOpacity,
   Text,
   FlatList,
-  Image,
 } from 'react-native';
 import {ArticleData} from '../../type';
 import {useSelector} from 'react-redux';
 import ReviewCard from '../../components/ReviewCard';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
-import {hp} from '../../helper/Metric';
+import {hp, wp} from '../../helper/Metric';
 import Loader from '../../components/Loader';
 import {useGetAllArticlesForUser} from '@/src/hooks/useGetUserAllArticles';
+import {NoArticleState} from '../../components/EmptyStates';
 
 export default function ArticleWorkSpace({
   handleClickAction,
@@ -134,15 +134,7 @@ export default function ArticleWorkSpace({
               contentContainerStyle={styles.flatListContentContainer}
               refreshing={refreshing}
               onRefresh={onRefresh}
-              ListEmptyComponent={
-                <View style={styles.emptyContainer}>
-                  <Image
-                    source={require('../../assets/images/no_results.jpg')}
-                    style={styles.image}
-                  />
-                  <Text style={styles.message}>No Article Found</Text>
-                </View>
-              }
+              ListEmptyComponent={<NoArticleState onRefresh={onRefresh} />}
               onEndReached={() => {
                 if (page < totalPages) {
                   setPage(prev => prev + 1);
@@ -164,55 +156,39 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 6,
+    paddingHorizontal: wp(3),
+    gap: wp(2),
+    marginBottom: hp(1),
   },
   button: {
     flex: 1,
-    borderRadius: 10,
-    marginHorizontal: 2,
-    marginVertical: 4,
-    padding: hp(1.5),
-    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: hp(1.8),
+    paddingHorizontal: wp(3),
+    borderWidth: 2,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: PRIMARY_COLOR,
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   labelStyle: {
-    fontWeight: 'bold',
-    fontSize: 14,
+    fontWeight: '700',
+    fontSize: 15,
     textTransform: 'capitalize',
+    letterSpacing: 0.3,
   },
   articleContainer: {
     flex: 1,
     width: '100%',
     paddingHorizontal: 0,
-    //zIndex: -2,
   },
   flatListContentContainer: {
-    // marginTop: hp(20),
-    paddingHorizontal: 16,
+    paddingHorizontal: wp(4),
+    paddingTop: hp(1),
     backgroundColor: ON_PRIMARY_COLOR,
-  },
-
-  image: {
-    height: 160,
-    width: 160,
-    borderRadius: 80,
-    resizeMode: 'cover',
-    marginBottom: hp(4),
-  },
-
-  message: {
-    fontSize: 17,
-    color: '#555',
-    fontWeight: '500',
-    textAlign: 'center',
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 10,
-    marginTop: hp(15),
-    alignSelf: 'center',
+    paddingBottom: hp(2),
   },
 });

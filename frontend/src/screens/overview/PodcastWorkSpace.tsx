@@ -5,25 +5,23 @@ import {
   TouchableOpacity,
   Text,
   FlatList,
-  Image,
 } from 'react-native';
 import {PodcastData} from '../../type';
 import {useSelector} from 'react-redux';
-import {msToTime} from '../../helper/Utils';
-import PodcastCard from '../../components/PodcastCard';
+import PodcastReviewCard from '../../components/PodcastReviewCard';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
-import {hp} from '../../helper/Metric';
+import {hp, wp} from '../../helper/Metric';
 import Loader from '../../components/Loader';
 import {useGetPendingPodcasts} from '@/src/hooks/useGetPendingPodcasts';
 import {useGetDiscardedPodcasts} from '@/src/hooks/useGetDiscardedPodcast';
 import {useGetUserPublishedPodcasts} from '@/src/hooks/useGetUserPublishedPodcasts';
+import {NoPodcastState} from '../../components/EmptyStates';
 
 export default function PodcastWorkSpace({
   handleClickAction,
 }: {
   handleClickAction: (item: PodcastData) => void;
 }) {
-  const { user_handle} = useSelector((state: any) => state.user);
   const {isConnected} = useSelector((state: any) => state.network);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [publishedPage, setPublishedPage] = useState(1);
@@ -74,7 +72,7 @@ export default function PodcastWorkSpace({
         }
       }
     }
-  }, [publishedPodcastsData, publishedPodcasts, publishedPage]);
+  }, [publishedPodcastsData, publishedPage]);
 
   useEffect(() => {
     if (pendingPodcastsData) {
@@ -93,7 +91,7 @@ export default function PodcastWorkSpace({
         }
       }
     }
-  }, [pendingPage, pendingPodcasts, pendingPodcastsData]);
+  }, [pendingPage, pendingPodcastsData]);
 
   useEffect(() => {
     if (discardedPodcastsData) {
@@ -112,7 +110,7 @@ export default function PodcastWorkSpace({
         }
       }
     }
-  }, [discardedPodcasts, discardedPodcastsData, discardedPage]);
+  }, [ discardedPodcastsData, discardedPage]);
 
   const categories = [1, 2, 3];
 
@@ -135,29 +133,15 @@ export default function PodcastWorkSpace({
   const renderItem = useCallback(
     ({item}: {item: PodcastData}) => {
       return (
-        <PodcastCard
-          id={item._id}
-          audioUrl={item.audio_url}
-          title={item.title}
-          host={user_handle}
-          imageUri={item.cover_image}
-          views={item.viewUsers.length}
-          duration={msToTime(item.duration)}
-          tags={item.tags}
-          handleClick={() => {
-            handleClickAction(item);
+        <PodcastReviewCard
+          item={item}
+          onNavigate={(podcast) => {
+            handleClickAction(podcast);
           }}
-          downLoadAudio={() => {}}
-          handleReport={() => {
-            // Handle report action
-          }}
-          downloaded={false}
-          display={false}
-          playlistAct={() => {}}
         />
       );
     },
-    [handleClickAction, user_handle],
+    [handleClickAction],
   );
 
   return (
@@ -215,15 +199,7 @@ export default function PodcastWorkSpace({
               contentContainerStyle={styles.flatListContentContainer}
               refreshing={refreshing}
               onRefresh={onRefresh}
-              ListEmptyComponent={
-                <View style={styles.emptyContainer}>
-                  <Image
-                    source={require('../../../assets/images/no_results.jpg')}
-                    style={styles.image}
-                  />
-                  <Text style={styles.message}>No podcasts Found</Text>
-                </View>
-              }
+              ListEmptyComponent={<NoPodcastState onRefresh={onRefresh} />}
               onEndReached={() => {
                 if (selectedStatus === 1) {
                   if (publishedPage < totalPublishPages) {
@@ -255,56 +231,40 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 6,
+    paddingHorizontal: wp(3),
+    gap: wp(2),
+    marginBottom: hp(1),
   },
   button: {
     flex: 1,
-    borderRadius: 10,
-    marginHorizontal: 2,
-    marginVertical: 4,
-    padding: hp(1.5),
-    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: hp(1.8),
+    paddingHorizontal: wp(2),
+    borderWidth: 2,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: PRIMARY_COLOR,
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   labelStyle: {
-    fontWeight: 'bold',
-    fontSize: 14,
+    fontWeight: '700',
+    fontSize: 13,
     textTransform: 'capitalize',
+    letterSpacing: 0.3,
   },
   articleContainer: {
     flex: 1,
     width: '100%',
-    paddingHorizontal: hp(1),
+    paddingHorizontal: 0,
     marginBottom: hp(13),
-    //zIndex: -2,
   },
   flatListContentContainer: {
-    // marginTop: hp(20),
-    paddingHorizontal: 16,
+    paddingHorizontal: wp(4),
+    paddingTop: hp(1),
     backgroundColor: ON_PRIMARY_COLOR,
-  },
-
-  image: {
-    height: 160,
-    width: 160,
-    borderRadius: 80,
-    resizeMode: 'cover',
-    marginBottom: hp(4),
-  },
-
-  message: {
-    fontSize: 17,
-    color: '#555',
-    fontWeight: '500',
-    textAlign: 'center',
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 10,
-    marginTop: hp(15),
-    alignSelf: 'center',
+    paddingBottom: hp(2),
   },
 });
