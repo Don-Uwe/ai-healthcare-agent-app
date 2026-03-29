@@ -23,6 +23,7 @@ import {
 import ImageResizer from '@bam.tech/react-native-image-resizer';
 import {hp} from '../helper/Metric';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 
 const LANGUAGES = [
   {label: 'English', value: 'en'},
@@ -200,8 +201,17 @@ const PodcastForm = ({navigation, route}: PodcastFormProp) => {
   };
 
   return (
-    <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
-      <SafeAreaView>
+    <SafeAreaView style={styles.container}>
+      <KeyboardAwareScrollView
+        style={{width: '100%', flex: 1}}
+        bottomOffset={50}
+        showsVerticalScrollIndicator={false}
+        extraKeyboardSpace={20}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingBottom: hp(4),
+        }}>
         <WarningBox />
         <LanguageSelector />
 
@@ -364,8 +374,8 @@ const PodcastForm = ({navigation, route}: PodcastFormProp) => {
             <Ionicon name="arrow-forward" size={20} color="#fff" />
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
-    </ScrollView>
+      </KeyboardAwareScrollView>
+    </SafeAreaView>
   );
 };
 

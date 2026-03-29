@@ -25,13 +25,14 @@ import {GlassStyles, ProfessionalColors} from '../styles/GlassStyles';
 import CreateIcon from '../components/CreateIcon';
 import {useGetAllPodcasts} from '../hooks/useGetAllPodcasts';
 import {useUpdatePodcastViewcount} from '../hooks/useUpdatePodcastViewcount';
+import { PodcastLoadingState } from '../components/EmptyStates';
 
 const {WavAudioRecorder} = NativeModules;
 //const recorderEvents = new NativeEventEmitter(WavAudioRecorder);
 
 const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
   const dispatch = useDispatch();
-  const {user_token, user_id} = useSelector((state: any) => state.user);
+  const {user_id} = useSelector((state: any) => state.user);
   // const {selectedTags, sortType} = useSelector((state: any) => state.data);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const {podcasts} = useSelector((state: any) => state.data);
@@ -86,15 +87,6 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
     setRefreshing(false);
   };
 
-  const handleScroll = ({nativeEvent}: {nativeEvent: any}) => {
-    const {layoutMeasurement, contentOffset, contentSize} = nativeEvent;
-    const isCloseToBottom =
-      layoutMeasurement.height + contentOffset.y >= contentSize.height - 20;
-
-    if (isCloseToBottom && page < totalPages) {
-      setPage(prev => prev + 1);
-    }
-  };
 
   const navigateToReport = (podcastId: string) => {
     navigation.navigate('ReportScreen', {
@@ -154,16 +146,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
 
   const renderLoadingState = () => (
     <View style={styles.loadingContainer}>
-      <View
-        style={[GlassStyles.glassCard, {padding: 40, alignItems: 'center'}]}>
-        <View style={styles.loadingIconContainer}>
-          <ActivityIndicator size="large" color={ProfessionalColors.primary} />
-        </View>
-        <Text style={styles.loadingText}>Loading podcasts...</Text>
-        <Text style={styles.loadingSubText}>
-          Please wait while we fetch the latest episodes
-        </Text>
-      </View>
+     <PodcastLoadingState/>
     </View>
   );
 

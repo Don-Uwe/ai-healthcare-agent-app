@@ -32,6 +32,7 @@ import {useGetTotalReads} from '../hooks/useGetTotalReads';
 import {useGetTotalWrites} from '../hooks/useGetTotalWrites';
 import {useGetAuthorYearlyReadReport} from '../hooks/useGetYearlyReadReport';
 import {useGetAuthorYearlyWriteReport} from '../hooks/useGetYearlyWriteReport';
+import StatisticsCard from './StatisticsCard';
 
 type LineDataItem = {
   label: string;
@@ -63,7 +64,7 @@ const ActivityOverview = ({
   const {user_token, user_id} = useSelector((state: any) => state.user);
   const [, setIsFocus] = useState<boolean>(false);
   // const [selectedDay, setSelectedDay] = useState<number>(new Date().getDay());
-  const {isConnected} = useSelector((state: any) => state.user);
+  const {isConnected} = useSelector((state: any) => state.network);
   const [selectedMonth, setSelectedMonth] = useState<number>(
     new Date().getMonth(),
   );
@@ -143,16 +144,19 @@ const ActivityOverview = ({
 
   // GET USER STATUS FOR LIKE AND VIEW COUNT
 
-  const {isLoading: likeViewStatDataLoading} = useGetTotalLikeViewStatus({
+  const {data: likeViewStatData, isLoading: likeViewStatDataLoading, refetch: likeViewStatusRefetch} = useGetTotalLikeViewStatus({
     user_id: user_id,
     userId: userId,
     others: others,
     isConnected: isConnected,
   });
 
+ 
+
+
   // GET TOTAL READ STATUS
 
-  const {isLoading: readStatDataLoading} = useGetTotalReads({
+  const {data: readStatData, isLoading: readStatDataLoading} = useGetTotalReads({
     user_id: user_id,
     userId: userId,
     others: others,
@@ -161,7 +165,7 @@ const ActivityOverview = ({
 
   // GET TOTAL WRITE STATUS
 
-  const {isLoading: writeStatDataLoading} = useGetTotalWrites({
+  const {data: writeStatData, isLoading: writeStatDataLoading} = useGetTotalWrites({
     user_id: user_id,
     userId: userId,
     others: others,
@@ -175,7 +179,8 @@ const ActivityOverview = ({
       } else {
         refetchMonthWriteReport();
       }
-    }, [userState, refetchMonthReadReport, refetchMonthWriteReport]),
+      likeViewStatusRefetch();
+    }, [userState, likeViewStatusRefetch, refetchMonthReadReport, refetchMonthWriteReport]),
   );
   useEffect(() => {
     if (userState === 0) {
@@ -210,8 +215,11 @@ const ActivityOverview = ({
     writeStatDataLoading ||
     readStatDataLoading
   ) {
-    // eslint-disable-next-line no-unused-expressions
-    <Loader />;
+    return (
+      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 40}}>
+        <Loader />
+      </View>
+    );
   }
 
   // const processData = data => {
@@ -516,212 +524,201 @@ const ActivityOverview = ({
     );
   };
 
-  return (
-    <ScrollView flex={1} backgroundColor="$background" paddingBottom="$12">
-      {/* Filters */}
-      <YStack paddingHorizontal="$2" marginTop="$4" gap="$3">
-        {/* Read / Write */}
+ return (
+  <YStack flex={1} backgroundColor="$background">
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{
+        paddingBottom: 120,
+        flexGrow: 1,
+      }}>
+      
+      <View>
+        {/* Statistics */}
+        <YStack paddingHorizontal="$2" marginTop="$3" alignItems="center">
+          <StatisticsCard
+            totalLikes={likeViewStatData?.totalLikes || 0}
+            totalViews={likeViewStatData?.totalViews || 0}
+            totalArticles={readStatData?.totalReads || 0}
+            totalPodcasts={writeStatData?.totalWrites || 0}
+            improvements={0}
+          />
+        </YStack>
 
-        {/* Read / Write Toggle Buttons */}
-        <XStack
-          paddingHorizontal="$1"
-          marginTop="$4"
-          gap="$3"
-          justifyContent="space-between">
+
+        <YStack paddingHorizontal="$2" marginTop="$4" gap="$3">
+          
+          {/* Toggle */}
           <XStack
-            flex={1}
-            backgroundColor="$background"
-            borderRadius="$4"
-            borderWidth={1}
-            borderColor="#c1c1c1"
-            overflow="hidden">
-            {/* Read Button */}
-            <YStack
+            paddingHorizontal="$1"
+            marginTop="$2"
+            gap="$3"
+            justifyContent="space-between">
+            
+            <XStack
               flex={1}
-              paddingVertical="$3"
-              justifyContent="center"
-              alignItems="center"
-              backgroundColor={userState === 0 ? PRIMARY_COLOR : 'transparent'}
-              onPress={() => setUserState(0)}
-              pressStyle={{scale: 0.97}}>
-              <Text
-                fontSize={16}
-                fontWeight="700"
-                color={userState === 0 ? 'white' : 'black'}>
-                Read
-              </Text>
-            </YStack>
+              backgroundColor="$background"
+              borderRadius="$4"
+              borderWidth={1}
+              borderColor="#c1c1c1"
+              overflow="hidden">
 
-            {/* Write Button */}
-            <YStack
-              flex={1}
-              paddingVertical="$3"
-              justifyContent="center"
-              alignItems="center"
-              backgroundColor={userState === 1 ? PRIMARY_COLOR : 'transparent'}
-              onPress={() => setUserState(1)}
-              pressStyle={{scale: 0.97}}>
-              <Text
-                fontSize={16}
-                fontWeight="700"
-                color={userState === 1 ? 'white' : 'black'}>
-                Write
-              </Text>
-            </YStack>
+              {/* READ */}
+              <YStack
+                flex={1}
+                paddingVertical="$3"
+                justifyContent="center"
+                alignItems="center"
+                backgroundColor={userState === 0 ? PRIMARY_COLOR : 'transparent'}
+                onPress={() => setUserState(0)}>
+                <Text
+                  fontSize={16}
+                  fontWeight="700"
+                  color={userState === 0 ? 'white' : 'black'}>
+                  Read
+                </Text>
+              </YStack>
+
+              {/* WRITE */}
+              <YStack
+                flex={1}
+                paddingVertical="$3"
+                justifyContent="center"
+                alignItems="center"
+                backgroundColor={userState === 1 ? PRIMARY_COLOR : 'transparent'}
+                onPress={() => setUserState(1)}>
+                <Text
+                  fontSize={16}
+                  fontWeight="700"
+                  color={userState === 1 ? 'white' : 'black'}>
+                  Write
+                </Text>
+              </YStack>
+            </XStack>
           </XStack>
-        </XStack>
 
-        <View
-          style={{
-            ...styles.rowContainer,
-            paddingHorizontal: 10,
-            marginTop: 10,
-            gap: 10,
-          }}>
-          {/* MONTH DROPDOWN */}
-          <Dropdown
-            style={{
-              ...styles.button,
-              flex: 1,
-              borderRadius: 10,
-              borderWidth: 0.6,
-              backgroundColor: selectedMonth === -1 ? '#EFEFEF' : PRIMARY_COLOR,
-            }}
-            itemTextStyle={{
-              fontSize: 15,
-              fontWeight: '600',
-            }}
-            placeholderStyle={{
-              fontSize: 15,
-              fontWeight: '600',
-              color: '#555',
-            }}
-            data={monthlyDrops}
-            labelField="label"
-            valueField="value"
-            value={selectedMonth}
-            onFocus={() => setIsFocus(true)}
-            onBlur={() => setIsFocus(false)}
-            onChange={item => {
-              setSelectedMonth(item.value);
-              setSelectedYear(-1);
-              setIsFocus(false);
-              refetchMonthWriteReport();
-            }}
-            placeholder={'Monthly'}
-          />
+          {/* ===== DROPDOWNS ===== */}
+          <View style={styles.rowContainer}>
+            
+            {/* MONTH */}
+            <View style={{flex: 1, marginRight: 5}}>
+              <Dropdown
+                style={{
+                  ...styles.button,
+                  backgroundColor:
+                    selectedMonth === -1 ? '#EFEFEF' : PRIMARY_COLOR,
+                }}
+                data={monthlyDrops}
+                labelField="label"
+                valueField="value"
+                value={selectedMonth}
+                onChange={item => {
+                  setSelectedMonth(item.value);
+                  setSelectedYear(-1);
 
-          {/* YEAR DROPDOWN */}
-          <Dropdown
-            style={{
-              ...styles.button,
-              flex: 1,
-              borderRadius: 10,
-              borderWidth: 0.6,
-              backgroundColor: selectedYear === -1 ? '#EFEFEF' : PRIMARY_COLOR,
-            }}
-            placeholderStyle={{
-              fontSize: 15,
-              fontWeight: '600',
-              color: '#555',
-            }}
-            itemTextStyle={{
-              fontSize: 15,
-              fontWeight: '600',
-            }}
-            data={yearlyDrops}
-            labelField="label"
-            valueField="value"
-            value={selectedYear}
-            onFocus={() => setIsFocus(true)}
-            onBlur={() => setIsFocus(false)}
-            onChange={item => {
-              setSelectedYear(item.value);
-              setSelectedMonth(-1);
-              setIsFocus(false);
-            }}
-            placeholder={'Yearly'}
-          />
-        </View>
-      </YStack>
+                  if (userState === 0) {
+                    refetchMonthReadReport();
+                  } else {
+                    refetchMonthWriteReport();
+                  }
+                }}
+                placeholder={'Monthly'}
+              />
+            </View>
 
-      {/* Chart Section */}
+            {/* YEAR */}
+            <View style={{flex: 1, marginLeft: 5}}>
+              <Dropdown
+                style={{
+                  ...styles.button,
+                  backgroundColor:
+                    selectedYear === -1 ? '#EFEFEF' : PRIMARY_COLOR,
+                }}
+                data={yearlyDrops}
+                labelField="label"
+                valueField="value"
+                value={selectedYear}
+                onChange={item => {
+                  setSelectedYear(item.value);
+                  setSelectedMonth(-1);
+                }}
+                placeholder={'Yearly'}
+              />
+            </View>
+          </View>
+        </YStack>
+      </View>
+
+      {/* ===== CHART ===== */}
       {(selectedMonth !== -1 || selectedYear !== -1) && (
-        <>
+        <View>
           <BarChartSection />
-        </>
+        </View>
       )}
 
-      {/* Most Viewed */}
+      {/* ===== MOST VIEWED ===== */}
       {others && (
         <YStack paddingHorizontal="$4" marginTop="$6">
           <Text fontSize={19} fontWeight="800" marginBottom="$3">
             Most Viewed Articles
           </Text>
 
-          {article &&
-            article.map((item: ArticleData, index: number) => (
-              <Card
-                key={index}
-                elevate
-                bordered
-                borderWidth={0.6}
-                // boc="$color3"
-                borderRadius="$10"
-                //mb="$4"
-                pressStyle={{scale: 0.98}}
-                onPress={() =>
-                  onArticleViewed({
-                    articleId: Number(item._id),
-                    authorId: item.authorId.toString() ?? '',
-                    recordId: item.pb_recordId,
-                  })
-                }>
-                <XStack>
-                  <Image
-                    source={{
-                      uri: item?.imageUtils[0]?.startsWith('http')
-                        ? item?.imageUtils[0]
-                        : `${GET_IMAGE}/${item?.imageUtils[0]}`,
-                    }}
-                    width={130}
-                    height={130}
-                    borderRadius={8}
-                  />
+          {article?.map((item: ArticleData, index: number) => (
+            <Card
+              key={index}
+              elevate
+              bordered
+              borderWidth={0.6}
+              borderRadius="$10"
+              pressStyle={{scale: 0.98}}
+              onPress={() =>
+                onArticleViewed({
+                  articleId: Number(item._id),
+                  authorId: item.authorId.toString() ?? '',
+                  recordId: item.pb_recordId,
+                })
+              }>
+              <XStack>
+                <Image
+                  source={{
+                    uri: item?.imageUtils[0]?.startsWith('http')
+                      ? item?.imageUtils[0]
+                      : `${GET_IMAGE}/${item?.imageUtils[0]}`,
+                  }}
+                  width={130}
+                  height={130}
+                  borderRadius={8}
+                />
 
-                  <YStack flex={1} padding="$3">
-                    <Text fontSize={12} color="$gray10">
-                      {item?.tags.map(t => t.name).join(' | ')}
-                    </Text>
+                <YStack flex={1} padding="$3">
+                  <Text fontSize={12} color="$gray10">
+                    {item?.tags.map(t => t.name).join(' | ')}
+                  </Text>
 
-                    <Text
-                      fontSize={17}
-                      fontWeight="700"
-                      marginTop="$1"
-                      marginBottom="$1">
-                      {item?.title}
-                    </Text>
+                  <Text fontSize={17} fontWeight="700" marginTop="$1">
+                    {item?.title}
+                  </Text>
 
-                    <Text fontSize={13} color="$gray10">
-                      {item?.viewUsers?.length ?? 0} views
-                    </Text>
+                  <Text fontSize={13} color="$gray10">
+                    {item?.viewUsers?.length ?? 0} views
+                  </Text>
 
-                    <Text fontSize={12} color="$gray8" marginTop="$1">
-                      Updated: {moment(item.lastUpdated).format('DD/MM/YYYY')}
-                    </Text>
-                  </YStack>
-                </XStack>
-              </Card>
-            ))}
+                  <Text fontSize={12} color="$gray8" marginTop="$1">
+                    Updated: {moment(item.lastUpdated).format('DD/MM/YYYY')}
+                  </Text>
+                </YStack>
+              </XStack>
+            </Card>
+          ))}
         </YStack>
       )}
     </ScrollView>
-  );
+  </YStack>
+);
 };
 
 const styles = StyleSheet.create({
   rowContainer: {
-    flex: 0,
     width: '100%',
     flexDirection: 'row',
     padding: 2,
@@ -730,7 +727,6 @@ const styles = StyleSheet.create({
   },
 
   colContainer: {
-    flex: 0,
     width: '100%',
     flexDirection: 'column',
     padding: 1,
@@ -740,47 +736,17 @@ const styles = StyleSheet.create({
 
   box: {
     width: '95%',
-    // height: 120,
-    flex: 0,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     margin: 4,
-    //borderWidth: 1,
     padding: 3,
     borderColor: 'black',
     borderRadius: 8,
-    //flexDirection: 'column',
-  },
-
-  titleText: {
-    fontSize: 16,
-    color: 'black',
-    marginVertical: 4,
-    fontWeight: '600',
-  },
-
-  valueText: {
-    fontSize: 17,
-    color: PRIMARY_COLOR,
-    marginVertical: 4,
-    fontWeight: '700',
-  },
-
-  dropdown: {
-    height: 40,
-    width: '45%',
-    borderColor: '#c1c1c1',
-    borderWidth: 0.4,
-    borderRadius: 5,
-    paddingHorizontal: 10,
-    marginVertical: 3,
-    paddingRight: 2,
-    marginStart: 4,
   },
 
   button: {
-    width: '45%',
+    flex: 1, // ✅ IMPORTANT (instead of width: '45%')
     height: hp(6),
     padding: 8,
     borderRadius: 8,
@@ -789,35 +755,41 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#c1c1c1',
-    borderColor: 'black',
   },
-  btnText: {
-    fontSize: 16,
-    color: 'black',
+
+  dropdown: {
+    flex: 1, // ✅ FIX
+    height: 40,
+    borderColor: '#c1c1c1',
+    borderWidth: 0.4,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginVertical: 3,
   },
+
   cardContainer: {
-    flex: 0,
     width: '100%',
     maxHeight: 150,
     backgroundColor: '#E6E6E6',
     flexDirection: 'row',
-
     marginVertical: 14,
     overflow: 'hidden',
     elevation: 4,
-
     borderRadius: 12,
   },
+
   image: {
     flex: 0.6,
     resizeMode: 'cover',
   },
+
   textContainer: {
     flex: 0.9,
     backgroundColor: 'white',
     paddingHorizontal: 10,
     paddingVertical: 13,
   },
+
   title: {
     fontSize: fp(4.5),
     fontWeight: 'bold',
@@ -825,6 +797,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     fontFamily: 'Lobster-Regular',
   },
+
   footerText: {
     fontSize: fp(3.3),
     fontWeight: '600',

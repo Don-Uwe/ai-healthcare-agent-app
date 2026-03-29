@@ -203,18 +203,19 @@ const ArticleDescriptionScreen = ({
   };
 
   return (
+    <SafeAreaView style={styles.container}>
       <KeyboardAwareScrollView
-      style={{width: '100%', flex: 1}}
-      bottomOffset={50}
-      showsVerticalScrollIndicator={false}
-      extraKeyboardSpace={20}
-      contentContainerStyle={{
-        flexGrow: 1,
-        paddingBottom: hp(18),
-        paddingHorizontal: 10,
-        backgroundColor: '#f8f9fb',
-      }}>
-      <SafeAreaView style={styles.form}>
+        style={{width: '100%', flex: 1}}
+        bottomOffset={50}
+        showsVerticalScrollIndicator={false}
+        extraKeyboardSpace={20}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingBottom: hp(18),
+          paddingHorizontal: 10,
+        }}>
+      <View style={styles.form}>
         <LanguageSelector />
 
         {/* Header Section */}
@@ -357,7 +358,7 @@ const ArticleDescriptionScreen = ({
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.genreContainer}>
-            {categories.map((genre, index) => (
+            {categories.map((genre: Category, index: number) => (
               <TouchableOpacity
                 key={index}
                 style={[
@@ -384,8 +385,9 @@ const ArticleDescriptionScreen = ({
           <Text style={styles.submitButtonText}>Continue to Editor</Text>
           <Ionicon name="arrow-forward" size={20} color="#fff" />
         </TouchableOpacity>
-      </SafeAreaView>
+      </View>
     </KeyboardAwareScrollView>
+    </SafeAreaView>
   );
 };
 

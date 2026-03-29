@@ -26,7 +26,7 @@ import {fp} from '../helper/Metric';
 import {useSocket} from '../../SocketContext';
 import {Feather} from '@expo/vector-icons';
 import Loader from '../components/Loader';
-import {Theme, XStack, YStack, Text} from 'tamagui';
+import {Theme, XStack, YStack, Text, ScrollView} from 'tamagui';
 import LottieView from 'lottie-react-native';
 import {useGetSinglePodcastDetails} from '../hooks/useGetSinglePodcastDetails';
 import {useLikePodcast} from '../hooks/useLikePodcast';
@@ -46,6 +46,9 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   const [isLoading, setLoading] = useState<boolean>(false);
   const [duration, setDuration] = useState(0);
   const [position, setPosition] = useState(0);
+
+  const [isLike, setLike] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
 
   const {data: podcast, refetch} = useGetSinglePodcastDetails(trackId);
   const {mutate: likePodcast, isPending: likePodcastPending} = useLikePodcast();
@@ -71,6 +74,14 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
 
     return () => clearInterval(interval);
   }, [player.currentTime, player.duration, player.playing]);
+
+  useEffect(()=>{
+
+    if(podcast){
+      setLike(podcast.likedUsers.includes(user_id));
+      setLikeCount(podcast.likedUsers.length);
+    }
+  }, [podcast, user_id])
 
   const SKIP_TIME = 5; // seconds
 
@@ -125,7 +136,6 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
     return () => clearInterval(interval);
   }, [player, player.currentTime, player.duration, player.playing]);
 
-
   const handleShare = async () => {
     try {
       const url = `https://uhsocial.in/api/share/podcast?trackId=${podcast?._id}&audioUrl=${podcast?.audio_url}`;
@@ -175,238 +185,243 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   }
 
   return (
-    <Theme name="dark">
-      <YStack
-        flex={1}
-        backgroundColor="#0B1425"
-        padding="$6"
-        paddingTop="$10"
-        justifyContent="space-between">
-        {/* TITLE with Glass Effect */}
-        <View style={[styles.titleContainer, GlassStyles.glassContainerDark]}>
-          <YStack marginBottom="$4">
-            <Text
-              color="#94A3B8"
-              fontSize={13}
-              fontWeight="600"
-              marginBottom="$2"
-              letterSpacing={1}>
-              NOW PLAYING
-            </Text>
-            <Text
-              color="#F1F5F9"
-              fontSize={28}
-              fontWeight="800"
-              lineHeight={34}>
-              {podcast?.title}
-            </Text>
-            <Text color="#94A3B8" fontSize={16} marginTop="$3" lineHeight={24}>
-              {podcast?.description}
-            </Text>
-          </YStack>
-        </View>
+    <ScrollView backgroundColor={'#0B1425'}>
+      <Theme name="dark">
+        <YStack
+          flex={1}
+          backgroundColor="#0B1425"
+          padding="$3"
+          paddingTop="$10"
+          justifyContent="space-between">
+          {/* TITLE with Glass Effect */}
+          <View style={[styles.titleContainer, GlassStyles.glassContainerDark]}>
+            <YStack marginBottom="$4">
+              <Text
+                color="#94A3B8"
+                fontSize={13}
+                fontWeight="600"
+                marginBottom="$2"
+                letterSpacing={1}>
+                NOW PLAYING
+              </Text>
+              <Text
+                color="#F1F5F9"
+                fontSize={28}
+                fontWeight="800"
+                lineHeight={34}>
+                {podcast?.title}
+              </Text>
+              <Text
+                color="#94A3B8"
+                fontSize={16}
+                marginTop="$3"
+                lineHeight={24}>
+                {podcast?.description}
+              </Text>
+            </YStack>
+          </View>
 
-        {/* PLAYING VISUALIZER */}
-        {playing && (
-          <YStack alignItems="center" marginTop="$2">
+          {/* PLAYING VISUALIZER */}
+          {playing && (
+            <YStack alignItems="center" marginTop="$2">
+              <View
+                style={[
+                  styles.visualizerContainer,
+                  GlassStyles.glassContainerDark,
+                ]}>
+                <LottieView
+                  source={require('../assets/LottieAnimation/sound-voice-waves.json')}
+                  autoPlay
+                  loop
+                  style={{width: '100%', height: 150}}
+                />
+              </View>
+            </YStack>
+          )}
+
+          {/* SLIDER + TIME */}
+          <YStack marginTop="$2">
             <View
-              style={[
-                styles.visualizerContainer,
-                GlassStyles.glassContainerDark,
-              ]}>
-              <LottieView
-                source={require('../assets/LottieAnimation/sound-voice-waves.json')}
-                autoPlay
-                loop
-                style={{width: '100%', height: 150}}
+              style={[styles.sliderContainer, GlassStyles.glassContainerDark]}>
+              <Slider
+                style={styles.slider}
+                minimumValue={0}
+                maximumValue={duration}
+                value={position}
+                minimumTrackTintColor={PRIMARY_COLOR}
+                maximumTrackTintColor="#ccc"
+                thumbTintColor={PRIMARY_COLOR}
+                onSlidingComplete={async v => {
+                  if (player) {
+                    await player.seekTo(v);
+                    setPosition(v);
+                  }
+                }}
               />
+
+              <XStack
+                justifyContent="space-between"
+                marginTop="$2"
+                paddingHorizontal="$2">
+                <Text color="#C0C9DA" fontSize={14} fontWeight="600">
+                  {formatSecTime(position)}
+                </Text>
+                <Text color="#C0C9DA" fontSize={14} fontWeight="600">
+                  {formatSecTime(duration)}
+                </Text>
+              </XStack>
             </View>
           </YStack>
-        )}
 
-        {/* SLIDER + TIME */}
-        <YStack marginTop="$2">
+          {/* PLAYER BUTTONS */}
           <View
-            style={[styles.sliderContainer, GlassStyles.glassContainerDark]}>
-            <Slider
-              style={styles.slider}
-              minimumValue={0}
-              maximumValue={duration}
-              value={position}
-              minimumTrackTintColor={PRIMARY_COLOR}
-              maximumTrackTintColor="#ccc"
-              thumbTintColor={PRIMARY_COLOR}
-              onSlidingComplete={async v => {
-                if (player) {
-                  await player.seekTo(v);
-                  setPosition(v);
-                }
-              }}
-            />
+            style={[styles.controlsContainer, GlassStyles.glassContainerDark]}>
+            <XStack justifyContent="space-around" alignItems="center">
+              <TouchableOpacity
+                onPress={handleBackward}
+                style={styles.controlButton}>
+                <Ionicons name="play-back" size={32} color="#9BB3C8" />
+              </TouchableOpacity>
 
-            <XStack
-              justifyContent="space-between"
-              marginTop="$2"
-              paddingHorizontal="$2">
-              <Text color="#C0C9DA" fontSize={14} fontWeight="600">
-                {formatSecTime(position)}
-              </Text>
-              <Text color="#C0C9DA" fontSize={14} fontWeight="600">
-                {formatSecTime(duration)}
-              </Text>
+              <TouchableOpacity
+                onPress={() =>
+                  player.currentStatus.playing ? handlePause() : handlePlay()
+                }
+                style={styles.mainPlayButton}>
+                {playing ? (
+                  <Ionicons name="pause" size={40} color="white" />
+                ) : (
+                  <Ionicons name="play" size={40} color="white" />
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleForward}
+                style={styles.controlButton}>
+                <Ionicons name="play-forward" size={32} color="#9BB3C8" />
+              </TouchableOpacity>
             </XStack>
           </View>
-        </YStack>
 
-        {/* PLAYER BUTTONS */}
-        <View
-          style={[styles.controlsContainer, GlassStyles.glassContainerDark]}>
-          <XStack justifyContent="space-around" alignItems="center">
-            <TouchableOpacity
-              onPress={handleBackward}
-              style={styles.controlButton}>
-              <Ionicons name="play-back" size={32} color="#9BB3C8" />
-            </TouchableOpacity>
+          {/* FOOTER OPTIONS */}
+          {podcast && podcast.status === StatusEnum.PUBLISHED ? (
+            <View
+              style={[styles.actionsContainer, GlassStyles.glassContainerDark]}>
+              <XStack alignItems="center" justifyContent="space-evenly">
+                {/* LIKE */}
+                {likePodcastPending ? (
+                  <ActivityIndicator size="small" color={PRIMARY_COLOR} />
+                ) : (
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={() => {
+                      likePodcast(trackId, {
+                        onSuccess: data => {
 
-            <TouchableOpacity
-              onPress={() =>
-                player.currentStatus.playing ? handlePause() : handlePlay()
-              }
-              style={styles.mainPlayButton}>
-              {playing ? (
-                <Ionicons name="pause" size={40} color="white" />
-              ) : (
-                <Ionicons name="play" size={40} color="white" />
-              )}
-            </TouchableOpacity>
+                          console.log('Like podcast res', data);
+                          if (data?.likeStatus && podcast) {
+                            socket.emit('notification', {
+                              type: 'likePost',
+                              userId: user_id,
+                              articleId: null,
+                              podcastId: podcast._id,
+                              articleRecordId: null,
+                              title: `${user_handle} liked your post`,
+                              message: podcast.title,
+                            });
+                          
+                          }
+                          refetch();
+                        },
+                        onError: err => {
+                          console.log('Update like count err', err);
+                          Snackbar.show({
+                            text: 'Something went wrong!',
+                            duration: Snackbar.LENGTH_SHORT,
+                          });
+                        },
+                      });
+                    }}>
+                    {isLike ? (
+                      <AntDesign name="heart" size={26} color={PRIMARY_COLOR} />
+                    ) : (
+                      <Feather name="heart" size={26} color="white" />
+                    )}
+                    <Text style={styles.actionText}>
+                      {likeCount > 0 ? formatCount(likeCount) : ''}
+                    </Text>
+                  </TouchableOpacity>
+                )}
 
-            <TouchableOpacity
-              onPress={handleForward}
-              style={styles.controlButton}>
-              <Ionicons name="play-forward" size={32} color="#9BB3C8" />
-            </TouchableOpacity>
-          </XStack>
-        </View>
+                {/* DOWNLOAD */}
+                {isLoading ? (
+                  <ActivityIndicator size="small" color={PRIMARY_COLOR} />
+                ) : (
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={async () => {
+                      if (!podcast) {
+                        Snackbar.show({
+                          text: 'Something went wrong! try again',
+                          duration: Snackbar.LENGTH_SHORT,
+                        });
+                        return;
+                      }
 
-        {/* FOOTER OPTIONS */}
-        {podcast && podcast.status === StatusEnum.PUBLISHED ? (
-          <View
-            style={[styles.actionsContainer, GlassStyles.glassContainerDark]}>
-            <XStack alignItems="center" justifyContent="space-evenly">
-              {/* LIKE */}
-              {likePodcastPending ? (
-                <ActivityIndicator size="small" color={PRIMARY_COLOR} />
-              ) : (
+                      setLoading(true);
+                      const res = await downloadAudio(podcast);
+                      setLoading(false);
+
+                      Snackbar.show({
+                        text: res?.message ?? 'Audio downloaded successfully!',
+                        duration: Snackbar.LENGTH_SHORT,
+                      });
+                    }}>
+                    <Ionicons name="download-outline" size={26} color="white" />
+                  </TouchableOpacity>
+                )}
+
+                {/* COMMENTS */}
                 <TouchableOpacity
                   style={styles.actionButton}
                   onPress={() => {
-
-                    likePodcast(trackId, {
-                      onSuccess: data => {
-                        if (data?.likeStatus && podcast) {
-                          // data.userId, data.articleId, data.podcastId, data.articleRecordId, data.title, data.message
-                          socket.emit('notification', {
-                            type: 'likePost',
-                            userId: user_id,
-                            articleId: null,
-                            podcastId: podcast._id,
-                            articleRecordId: null,
-                            title: `${user_handle} liked your post`,
-                            message: podcast.title,
-                          });
-                          refetch();
-                        }
-                      },
-                      onError: err => {
-                        console.log('Update like count err', err);
-                        Snackbar.show({
-                          text: 'Something went wrong!',
-                          duration: Snackbar.LENGTH_SHORT,
-                        });
-                      },
-                    });
-                  }}>
-                  {podcast?.likedUsers.includes(user_id) ? (
-                    <AntDesign name="heart" size={26} color={PRIMARY_COLOR} />
-                  ) : (
-                    <Feather name="heart" size={26} color="white" />
-                  )}
-                  <Text style={styles.actionText}>
-                    {podcast?.likedUsers?.length
-                      ? formatCount(podcast.likedUsers.length)
-                      : 0}
-                  </Text>
-                </TouchableOpacity>
-              )}
-
-              {/* DOWNLOAD */}
-              {isLoading ? (
-                <ActivityIndicator size="small" color={PRIMARY_COLOR} />
-              ) : (
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={async () => {
-                    if (!podcast) {
+                    if (!isConnected) {
                       Snackbar.show({
-                        text: 'Something went wrong! try again',
+                        text: 'You are currently offline',
                         duration: Snackbar.LENGTH_SHORT,
                       });
                       return;
                     }
 
-                    setLoading(true);
-                    const res = await downloadAudio(podcast);
-                    setLoading(false);
-
-                    Snackbar.show({
-                      text: res?.message ?? 'Audio downloaded successfully!',
-                      duration: Snackbar.LENGTH_SHORT,
-                    });
+                    if (podcast) {
+                      navigation.navigate('PodcastDiscussion', {
+                        podcastId: podcast._id,
+                        mentionedUsers: podcast.mentionedUsers,
+                      });
+                    }
                   }}>
-                  <Ionicons name="download-outline" size={26} color="white" />
+                  <Ionicons name="chatbubble-outline" size={26} color="white" />
+                  <Text style={styles.actionText}>
+                    {podcast?.commentCount
+                      ? formatCount(podcast.commentCount)
+                      : 0}
+                  </Text>
                 </TouchableOpacity>
-              )}
 
-              {/* COMMENTS */}
-              <TouchableOpacity
-                style={styles.actionButton}
-                onPress={() => {
-                  if (!isConnected) {
-                    Snackbar.show({
-                      text: 'You are currently offline',
-                      duration: Snackbar.LENGTH_SHORT,
-                    });
-                    return;
-                  }
-
-                  if (podcast) {
-                    navigation.navigate('PodcastDiscussion', {
-                      podcastId: podcast._id,
-                      mentionedUsers: podcast.mentionedUsers,
-                    });
-                  }
-                }}>
-                <Ionicons name="chatbubble-outline" size={26} color="white" />
-                <Text style={styles.actionText}>
-                  {podcast?.commentCount
-                    ? formatCount(podcast.commentCount)
-                    : 0}
-                </Text>
-              </TouchableOpacity>
-
-              {/* SHARE */}
-              <TouchableOpacity
-                style={styles.actionButton}
-                onPress={handleShare}>
-                <Ionicons name="share-outline" size={26} color="white" />
-              </TouchableOpacity>
-            </XStack>
-          </View>
-        ) : (
-          <XStack></XStack>
-        )}
-      </YStack>
-    </Theme>
+                {/* SHARE */}
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={handleShare}>
+                  <Ionicons name="share-outline" size={26} color="white" />
+                </TouchableOpacity>
+              </XStack>
+            </View>
+          ) : (
+            <XStack></XStack>
+          )}
+        </YStack>
+      </Theme>
+    </ScrollView>
   );
 };
 

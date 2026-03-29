@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import React from 'react';
 import EllipseSvg from '../../assets/svg/EllipseSvg';
-import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
+import {PRIMARY_COLOR} from '../helper/Theme';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import MaterialCommunityIcon from '@expo/vector-icons/MaterialCommunityIcons';
@@ -40,10 +40,8 @@ const ProfileHeader = ({
   onFollowerPress,
   onFollowingPress,
   isFollowing,
-  articlesPosted,
   onFollowClick,
   onOverviewClick,
-  improvementPublished,
 }: ProfileHeaderProps) => {
   const {isConnected} = useSelector((state: any) => state.network);
 
@@ -221,7 +219,6 @@ const ProfileHeader = ({
             </Text>
           </Pressable>
         </View>
-        <View style={styles.infoContainer}></View>
       </View>
     </View>
   );
@@ -231,17 +228,18 @@ export default ProfileHeader;
 
 const styles = StyleSheet.create({
   container: {
-    //marginBottom: 20,
+    paddingBottom: 16,
     // backgroundColor: ON_PRIMARY_COLOR,
   },
   ellipseSvg: {
     position: 'absolute',
-    top: -1,
+    top:-1 ,
   },
   contentContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: hp(1.5),
+    marginTop: hp(1),
+    paddingHorizontal: wp(4),
     // backgroundColor: ON_PRIMARY_COLOR
   },
   profileImage: {
@@ -252,9 +250,10 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   nameText: {
-    fontSize: fp(6),
+    fontSize: fp(5.5),
     fontWeight: 'bold',
     color: 'black',
+    marginTop: 6,
   },
   usernameText: {
     fontSize: fp(4),
@@ -277,11 +276,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
-    marginVertical: 10,
+    marginVertical: 8,
   },
   iconButton: {
-    height: 50,
-    width: 50,
+    height: 45,
+    width: 45,
     borderRadius: 100,
     justifyContent: 'center',
     alignItems: 'center',
@@ -305,13 +304,13 @@ const styles = StyleSheet.create({
     //numRows: 2,
     alignItems: 'center',
     justifyContent: 'space-evenly',
-    marginVertical: 10,
+    marginVertical: 8,
   },
   infoBlock: {
     alignItems: 'center',
   },
   infoText: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
   },
   infoText2: {
@@ -319,7 +318,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   infoLabel: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'regular',
     color: 'black',
   },
@@ -328,8 +327,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 8,
-    paddingVertical: 8,
-    marginVertical: 8,
+    paddingVertical: 7,
+    marginVertical: 6,
     paddingHorizontal: 16,
     borderWidth: 1,
     backgroundColor: '#fff',
@@ -338,7 +337,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   btnSMText: {
-    fontSize: 17,
+    fontSize: 16,
     lineHeight: 20,
     fontWeight: '600',
     color: '#374151',

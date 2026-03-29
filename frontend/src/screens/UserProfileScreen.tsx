@@ -21,17 +21,17 @@ import Loader from '../components/Loader';
 import {useFocusEffect} from '@react-navigation/native';
 import Snackbar from 'react-native-snackbar';
 import {useSocket} from '../../SocketContext';
-import {useRepostArticle} from '../hooks/useArticleRepost';
 import {useRequestArticleEdit} from '../hooks/useRequestArticleEdit';
 import {useUpdateFollowStatus} from '../hooks/useUpdateFollowStatus';
 import {useUpdateViewCount} from '../hooks/useUpdateViewCount';
 import { useGetAuthorProfile } from '../hooks/useGetAuthorProfile';
+import {useGetTotalLikeViewStatus} from '../hooks/useGetTotalLikeViewStatus';
 
 const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === 'dark';
   const {authorId, author_handle} = route.params;
-  const {user_id, user_handle, user_token} = useSelector(
+  const {user_id, user_handle} = useSelector(
     (state: any) => state.user,
   );
   const {isConnected} = useSelector((state: any) => state.network);
@@ -43,7 +43,6 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
 
   //const [authorId, setAuthorId] = useState<string>('');
   const socket = useSocket();
-  const {mutate: repost} = useRepostArticle();
   const {mutate: requestEdit, isPending: requestEditPending} =
     useRequestArticleEdit();
 
@@ -51,62 +50,30 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
 
   const {mutate: updateViewCount} = useUpdateViewCount(articleId ?? 0);
 
+  // Get the actual authorId string
+  const actualAuthorId = typeof authorId === 'string' ? authorId : authorId?._id || '';
+
   const {
     data: user,
     refetch,
     isLoading,
-  } = useGetAuthorProfile(authorId._id, author_handle, user_id, isConnected);
+  } = useGetAuthorProfile(actualAuthorId, author_handle, user_id, isConnected);
 
   const isDoctor = user !== undefined ? user.isDoctor : false;
   //const bottomBarHeight = useBottomTabBarHeight();
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const handleRepostAction = (item: ArticleData) => {
-    if (!isConnected) {
-      Snackbar.show({
-        text: 'Please check your network connection',
-        duration: Snackbar.LENGTH_SHORT,
-      });
-      return;
-    }
+  // Fetch statistics data for the user being viewed
+  const {data: statsData} = useGetTotalLikeViewStatus({
+    user_id: user_id,
+    userId: actualAuthorId,
+    others: true,
+    isConnected: isConnected,
+  });
 
-    repost(Number(item._id), {
-      onSuccess: () => {
-        refetch();
-
-        Snackbar.show({
-          text: 'Article reposted in your feed',
-          duration: Snackbar.LENGTH_SHORT,
-        });
-
-        const body = {
-          type: 'repost',
-          userId: user_id,
-          authorId: item.authorId,
-          postId: item._id,
-          articleRecordId: item.pb_recordId,
-          message: {
-            title: `${user_handle} reposted`,
-            message: `${item.title}`,
-          },
-          authorMessage: {
-            title: `${user_handle} reposted your article`,
-            message: `${item.title}`,
-          },
-        };
-
-        socket.emit('notification', body);
-      },
-
-      onError: error => {
-        console.log('Repost Error', error);
-        Alert.alert('Internal server error, try again!');
-      },
-    });
-  };
 
   const onArticleViewed = ({
     articleId,
+    authorId: viewedAuthorId,
     recordId,
   }: {
     articleId: number;
@@ -115,14 +82,13 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   }) => {
     if (isConnected) {
       setArticleId(articleId);
-      //setAuthorId(authorId);
       setRecordId(recordId);
 
       updateViewCount(undefined, {
         onSuccess: async () => {
           navigation.navigate('ArticleScreen', {
             articleId: Number(articleId),
-            authorId: authorId,
+            authorId: viewedAuthorId,
             recordId: recordId,
           });
         },
@@ -175,7 +141,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
           success={onRefresh}
           isSelected={selectedCardId.toString() === item._id.toString()}
           setSelectedCardId={setSelectedCardId}
-          handleRepostAction={handleRepostAction}
+          handleRepostAction={()=>{}}
           handleReportAction={handleReportAction}
           handleEditRequestAction={(item, index, reason) => {
             if (isConnected) {
@@ -214,7 +180,6 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
     },
     [
       handleReportAction,
-      handleRepostAction,
       isConnected,
       navigation,
       onRefresh,
@@ -254,13 +219,13 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
 
   const handleFollow = () => {
     if (isConnected) {
-      if (authorId) {
-        followMutate(authorId, {
+      if (actualAuthorId) {
+        followMutate(actualAuthorId, {
           onSuccess: data => {
             if (data) {
               socket.emit('notification', {
                 type: 'userFollow',
-                userId: authorId,
+                userId: actualAuthorId,
                 message: {
                   title: `${user_handle ? user_handle : 'Someone'} has followed you`,
                   body: '',
@@ -293,13 +258,15 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
       return null;
     } // Safeguard to prevent rendering if user is undefined
 
+    const authorUser = typeof authorId === 'string' ? user : authorId;
+
     return (
       <ProfileHeader
         isDoctor={isDoctor}
-        username={authorId.user_name || ''}
-        userhandle={authorId.user_handle || ''}
+        username={authorUser?.user_name || user?.user_name || ''}
+        userhandle={authorUser?.user_handle || user?.user_handle || ''}
         profileImg={
-          authorId.Profile_image ||
+          authorUser?.Profile_image || user?.Profile_image ||
           'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500'
         }
         articlesPosted={user.articles ? user.articles.length : 0}
@@ -322,12 +289,11 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
         }
         onFollowClick={handleFollow}
         onOverviewClick={() => {}}
-        improvementPublished={user ? user.improvements.length : 0}
       />
     );
   };
 
-  const renderTabBar = props => {
+  const renderTabBar = (props: any) => {
     return (
       <MaterialTabBar
         {...props}
@@ -392,7 +358,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
               <ActivityOverview
                 onArticleViewed={onArticleViewed}
                 others={true}
-                userId={authorId ? authorId._id : user?._id}
+                userId={actualAuthorId || user?._id}
                 user_handle={user?.user_handle || ''}
                 articlePosted={user?.articles ? user.articles.length : 0}
               />
@@ -455,8 +421,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   scrollViewContentContainer: {
-    // paddingHorizontal: 10,
+    paddingHorizontal: 6,
     marginTop: 16,
+    flexGrow: 1,
   },
   flatListContentContainer: {
     paddingHorizontal: 10,

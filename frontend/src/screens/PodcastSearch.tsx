@@ -80,6 +80,7 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
         audioUrl={item.audio_url}
         host={item.user_id.user_name}
         views={item.viewUsers.length}
+        imageUri={item.cover_image}
         duration={`${msToTime(item.duration)}`}
         tags={item.tags}
         display={false}

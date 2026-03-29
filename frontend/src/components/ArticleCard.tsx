@@ -38,21 +38,19 @@ import {useGetProfile} from '../hooks/useGetProfile';
 import {useLikeArticle} from '../hooks/useLikeArticle';
 import {useSaveArticle} from '../hooks/useSaveArticle';
 import {useLazyGetArticleContent} from '../hooks/useLazyGetArticleContent';
+import {useRepostArticle} from '../hooks/useArticleRepost';
 
 const ArticleCard = ({
   item,
   navigation,
   setSelectedCardId,
-  success,
-  handleRepostAction,
   handleReportAction,
   handleEditRequestAction,
   source,
 }: ArticleCardProps) => {
-  const {user_token, user_id} = useSelector((state: any) => state.user);
+  const {user_id, user_handle} = useSelector((state: any) => state.user);
   const {isConnected} = useSelector((state: any) => state.network);
 
-  //const socket = io('http://51.20.1.81:8084');
   const socket = useSocket();
   const width = useSharedValue(0);
   const yValue = useSharedValue(60);
@@ -68,8 +66,12 @@ const ArticleCard = ({
     ),
   );
   const [likeCount, setLikeCount] = useState(item.likedUsers.length);
+  const [repostCount, setRepostCount] = useState(item.repostUsers.length);
 
   const [saved, setSaved] = useState(item.savedUsers.includes(user_id));
+  const [reposted, setReposted] = useState(
+    item.repostUsers.some(user => user.toString() === user_id),
+  );
 
   const {mutate: likeMutation, isPending: likeMutationPending} = useLikeArticle(
     Number(item._id),
@@ -77,6 +79,9 @@ const ArticleCard = ({
   const {mutate: saveMutation, isPending: saveMutationPending} = useSaveArticle(
     Number(item._id),
   );
+
+  const {mutate: repost, isPending: repostPending} = useRepostArticle();
+
   const {mutate: getArticleContent, isPending: getArticleContentPending} =
     useLazyGetArticleContent();
 
@@ -137,7 +142,7 @@ const ArticleCard = ({
             setMenuVisible(false);
           }
         },
-        onError: (error) => {
+        onError: error => {
           console.error('Error generating PDF:', error);
           Alert.alert('Error', 'Something went wrong while creating the PDF.');
         },
@@ -186,6 +191,55 @@ const ArticleCard = ({
     }
   };
 
+  const repostAction = () => {
+    if (isConnected) {
+      repost(Number(item._id), {
+        onSuccess: data => {
+          if (reposted === false) {
+
+            console.log('Repost success', data);
+            setReposted(true);
+            const body = {
+              type: 'repost',
+              userId: user_id,
+              authorId: item.authorId,
+              postId: item._id,
+              articleRecordId: item.pb_recordId,
+              message: {
+                title: `${user_handle} reposted`,
+                message: `${item.title}`,
+              },
+              authorMessage: {
+                title: `${user_handle} reposted your article`,
+                message: `${item.title}`,
+              },
+            };
+
+            setRepostCount(prev => prev + 1);
+
+            socket.emit('notification', body);
+          }
+
+          Snackbar.show({
+            text: data.message,
+            duration: Snackbar.LENGTH_SHORT,
+          });
+        },
+        onError: err => {
+          console.log('Repost error', err);
+          Snackbar.show({
+            text: 'Something went wrong, try again!',
+            duration: Snackbar.LENGTH_SHORT,
+          });
+        },
+      });
+    } else {
+      Snackbar.show({
+        text: 'Please check your internet connection',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+    }
+  };
   return (
     <Pressable
       onPress={() => {
@@ -242,7 +296,7 @@ const ArticleCard = ({
                   articleId: item._id,
                   name: 'Repost in your feed',
                   action: () => {
-                    handleRepostAction(item);
+                    repostAction();
                     //handleAnimation();
                     setMenuVisible(false);
                   },
@@ -306,7 +360,7 @@ const ArticleCard = ({
             <Text style={styles.footerText1}>{item?.authorName}</Text>
             <Text style={styles.dot}>•</Text>
             <Text style={styles.footerText1}>
-              {formatCount(item?.viewUsers?.length || 0)} views
+              {formatCount(item?.viewCount || 0)} views
             </Text>
             <Text style={styles.dot}>•</Text>
             <Text style={styles.footerText1}>
@@ -334,15 +388,24 @@ const ArticleCard = ({
               <TouchableOpacity
                 onPress={() => {
                   if (isConnected) {
-                    setLikeCount(prev => (isLiked ? prev - 1 : prev + 1));
+                    const previousIsLiked = isLiked;
+                    const previousLikeCount = likeCount;
+
+                    // Optimistic update
+                    setIsLiked(!isLiked);
+                    setLikeCount(prev =>
+                      isLiked ? (prev - 1 > 0 ? prev - 1 : 0) : prev + 1,
+                    );
 
                     likeMutation(undefined, {
                       onSuccess: (data: {
                         article: ArticleData;
                         likeStatus: boolean;
                       }) => {
+                        console.log('Article like success', data.likeStatus);
+                        setIsLiked(data?.likeStatus);
+
                         if (data?.likeStatus) {
-                          setIsLiked(data?.likeStatus);
                           socket.emit('notification', {
                             type: 'likePost',
                             userId: data?.article?.authorId,
@@ -358,6 +421,9 @@ const ArticleCard = ({
                       },
                       onError: (err: any) => {
                         console.log('Like error', err);
+                        // Rollback optimistic update
+                        setIsLiked(previousIsLiked);
+                        setLikeCount(previousLikeCount);
                         Snackbar.show({
                           text: 'something went wrong, try again!',
                           duration: Snackbar.LENGTH_SHORT,
@@ -404,28 +470,32 @@ const ArticleCard = ({
             </TouchableOpacity>
 
             {source === 'home' && (
-              <TouchableOpacity
-                onPress={() => {
-                  // width.value = withTiming(0, {duration: 300});
-                  // yValue.value = withTiming(100, {duration: 300});
-                  handleRepostAction(item);
-                }}
-                style={styles.likeSaveChildContainer}>
-                <FontAwesome6
-                  name="arrows-rotate"
-                  size={24}
-                  color={'#414A4C'}
-                />
-                <Text
-                  style={{
-                    ...styles.title,
-                    fontWeight: '500',
-                    marginStart: 3,
-                    color: 'black',
-                  }}>
-                  {formatCount(item.repostUsers.length)}
-                </Text>
-              </TouchableOpacity>
+              <>
+                {repostPending ? (
+                  <ActivityIndicator size="small" color={PRIMARY_COLOR} />
+                ) : (
+                  <TouchableOpacity
+                    onPress={() => {
+                      repostAction();
+                    }}
+                    style={styles.likeSaveChildContainer}>
+                    <FontAwesome6
+                      name="arrows-rotate"
+                      size={24}
+                      color={!reposted ? '#414A4C' : PRIMARY_COLOR}
+                    />
+                    <Text
+                      style={{
+                        ...styles.title,
+                        fontWeight: '500',
+                        marginStart: 3,
+                        color: 'black',
+                      }}>
+                      {formatCount(repostCount)}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </>
             )}
 
             {source === 'home' && (
@@ -449,18 +519,19 @@ const ArticleCard = ({
                     width.value = withTiming(0, {duration: 250});
                     yValue.value = withTiming(100, {duration: 250});
                     saveMutation(undefined, {
-                      onSuccess: async () => {
+                      onSuccess: async data => {
+                        console.log('Article save success', data);
                         Snackbar.show({
-                          text: "Article saved!",
-                          duration: Snackbar.LENGTH_SHORT
+                          text: data.message,
+                          duration: Snackbar.LENGTH_SHORT,
                         });
                         setSaved(!saved);
                       },
 
                       onError: () => {
-                         Snackbar.show({
-                          text: "Something went wrong, try again!",
-                          duration: Snackbar.LENGTH_SHORT
+                        Snackbar.show({
+                          text: 'Something went wrong, try again!',
+                          duration: Snackbar.LENGTH_SHORT,
                         });
                       },
                     });

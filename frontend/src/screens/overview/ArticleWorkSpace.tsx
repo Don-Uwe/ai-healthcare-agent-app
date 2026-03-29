@@ -20,7 +20,7 @@ export default function ArticleWorkSpace({
 }: {
   handleClickAction: (item: ArticleData) => void;
 }) {
-  const {user_token} = useSelector((state: any) => state.user);
+  useSelector((state: any) => state.user);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
   },
   labelStyle: {
     fontWeight: '700',
-    fontSize: 15,
+    fontSize: 14,
     textTransform: 'capitalize',
     letterSpacing: 0.3,
   },

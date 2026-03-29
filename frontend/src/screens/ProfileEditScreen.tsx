@@ -3,19 +3,18 @@ import {
   Text,
   TouchableOpacity,
   View,
-  Dimensions,
   StyleSheet,
   Alert,
   ActivityIndicator,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
-import {hp} from '../helper/Metric';
 import GeneralTab from '../components/GeneralTab';
 import ContactTab from '../components/ContactTab';
 import ProfessionalTab from '../components/ProfessionalTab';
 import PasswordTab from '../components/PasswordTab';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 import {useDispatch, useSelector} from 'react-redux';
 import {AxiosError} from 'axios';
 import {
@@ -135,13 +134,6 @@ const ProfileEditScreen = ({navigation}) => {
   const validateContactFields = () => {
     if (!contact_number) {
       return 'contact number is required';
-    } else if (!expr.test(contact_number)) {
-      return 'Phone number is not valid';
-    }
-    if (!contact_email) {
-      return 'Email is required';
-    } else if (!validator.validate(email)) {
-      return 'Email is not valid';
     }
     return null; // No errors
   };
@@ -673,14 +665,17 @@ const ProfileEditScreen = ({navigation}) => {
     profileImagePending ||
     passwordMutationPending;
   return (
-    <SafeAreaView style={styles.safeAreaView}>
-      <ScrollView
+    <SafeAreaView style={styles.safeAreaView} edges={['top']}>
+      <KeyboardAwareScrollView
         style={styles.container}
-        contentInsetAdjustmentBehavior="always"
         contentContainerStyle={[
           styles.contentContainer,
-          {paddingBottom: insets.bottom},
-        ]}>
+          {paddingBottom: Math.max(insets.bottom, 20) + 40},
+        ]}
+        bottomOffset={100}
+        showsVerticalScrollIndicator={false}
+        extraKeyboardSpace={40}
+        keyboardShouldPersistTaps="handled">
         {/* Horizontal scroll view for the tabs */}
         <ScrollView
           horizontal={true}
@@ -761,7 +756,7 @@ const ProfileEditScreen = ({navigation}) => {
             />
           )}
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
       {Loading && (
         <View style={styles.overlay}>
           <ActivityIndicator size={50} color={PRIMARY_COLOR} />
@@ -810,7 +805,7 @@ const styles = StyleSheet.create({
   },
   tabContent: {
     marginTop: 25,
-    minHeight: Dimensions.get('window').height - hp(25), // Ensure content takes full screen height
+    paddingBottom: 20,
   },
   overlay: {
     flex: 1,

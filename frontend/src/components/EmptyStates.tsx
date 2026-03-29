@@ -503,7 +503,7 @@ const styles = StyleSheet.create({
   waveLine: {
     width: 6,
     height: 40,
-    backgroundColor: '#4CAF50',
+    backgroundColor: PRIMARY_COLOR,
     marginHorizontal: 4,
     borderRadius: 3,
   },

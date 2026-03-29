@@ -199,6 +199,7 @@ export default function OfflinePodcastDetail({
                     await updateOfflinePodcastLikeStatus(podcast);
                   } else {
                     podcast.likedUsers.push(user_id);
+                    setCurrentPodcast(podcast);
                     if (data?.likeStatus) {
                       // data.userId, data.articleId, data.podcastId, data.articleRecordId, data.title, data.message
                       socket.emit('notification', {

@@ -11,7 +11,7 @@ import {ReviewCardProps} from '../type';
 import moment from 'moment';
 import {BUTTON_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import {formatCount, StatusEnum} from '../helper/Utils';
-import Animated, {
+import {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -41,12 +41,6 @@ const ReviewCard = ({
       ? 'red'
       : BUTTON_COLOR;
 
-  const menuStyle = useAnimatedStyle(() => {
-    return {
-      width: width.value,
-      transform: [{translateY: yValue.value}],
-    };
-  });
   //console.log('Image Utils', item?.imageUtils[0]);
 
   const handleAnimation = () => {
@@ -116,15 +110,14 @@ const ReviewCard = ({
 
           <Text style={styles.description}>{item?.description}</Text>
 
-          {item?.status === StatusEnum.PUBLISHED && (
-            <Text style={{...styles.footerText1, marginBottom: 3}}>
-              {item?.viewUsers
-                ? item?.viewUsers.length > 1
-                  ? `${formatCount(item?.viewUsers.length)} views`
-                  : `${item?.viewUsers.length} view`
-                : '0 view'}
-            </Text>
-          )}
+          <Text style={{...styles.footerText1, marginBottom: 3}}>
+            {item?.viewCount
+              ? item?.viewCount > 1
+                ? `${formatCount(item?.viewCount)} views`
+                : `${item?.viewCount} view`
+              : '0 view'}
+          </Text>
+
           <Text style={styles.footerText1}>
             Last updated: {''}
             {moment(new Date(item?.lastUpdated)).format('DD/MM/YYYY')}

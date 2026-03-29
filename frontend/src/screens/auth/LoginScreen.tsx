@@ -73,24 +73,33 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
   }, [emailInputVisible]);
 
   async function getFCMToken() {
-    await requestUserPermission();
-    const fcmToken = await messaging().getToken();
-    if (fcmToken) {
-      console.log('FCM Token:', fcmToken);
-      setFcmToken(fcmToken);
-    } else {
-      console.log('Failed to get FCM Token');
-      return null;
+    try {
+      await requestUserPermission();
+      const fcmToken = await messaging().getToken();
+      if (fcmToken) {
+        console.log('FCM Token:', fcmToken);
+        setFcmToken(fcmToken);
+        return fcmToken;
+      } else {
+        console.log('Failed to get FCM Token');
+        return null;
+      }
+    } catch (error) {
+      console.log('Error getting FCM Token:', error);
+      // Return a placeholder token in debug mode to allow login to proceed
+      return __DEV__ ? 'debug-mode-token' : null;
     }
-    return fcmToken;
   }
 
   const validateAndSubmit = async () => {
     if (validate()) {
-      const fcmToken = await getFCMToken();
       setPasswordMessage(false);
       setEmailMessage(false);
-      //console.log("email, password", email,password)
+      console.log("email, password", email, password);
+      console.log("Attempting login in debug mode:", __DEV__);
+
+      const fcmToken = await getFCMToken();
+      console.log("FCM Token retrieved:", fcmToken);
 
       login(
         {
@@ -362,7 +371,12 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
             size="$6"
             fontWeight="700"
             alignSelf="center"
-            onPress={validateAndSubmit}
+            onPress={() => {
+              console.log('Login button pressed!');
+              validateAndSubmit();
+            }}
+            disabled={loginPending}
+            opacity={loginPending ? 0.5 : 1}
             width="100%">
             <Text fontSize={18} color="$white" fontWeight="600">
               Login

@@ -22,8 +22,9 @@ export const useGetTotalLikeViewStatus = ({
         ? `${GET_TOTAL_LIKES_VIEWS}${userId}`
         : `${GET_TOTAL_LIKES_VIEWS}${user_id}`;
 
+       
       const response = await axios.get(url);
-
+    
       return response.data as UserStatus;
     },
 

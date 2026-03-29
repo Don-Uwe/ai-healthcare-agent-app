@@ -31,12 +31,10 @@ import {
   setTags,
 } from '../store/dataSlice';
 import Snackbar from 'react-native-snackbar';
-import {useSocket} from '../../SocketContext';
 import {useFocusEffect} from '@react-navigation/native';
 import InactiveUserModal from '../components/InactiveUserModal';
 import {StatusBar} from 'expo-status-bar';
 import {wp} from '../helper/Metric';
-import {useRepostArticle} from '../hooks/useArticleRepost';
 import {useGetCategories} from '../hooks/useGetArticleTags';
 import {useGetProfile} from '../hooks/useGetProfile';
 import {useRequestArticleEdit} from '../hooks/useRequestArticleEdit';
@@ -312,8 +310,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   // const [repostItem, setRepostItem] = useState<ArticleData | null>(null);
   const [selectCategoryList, setSelectCategoryList] = useState<Category[]>([]);
   const [filterLoading, setFilterLoading] = useState<boolean>(false);
-
-  const {mutate: repost, isPending: repostPending} = useRepostArticle();
   const {mutate: requestEdit, isPending: requestEditPending} =
     useRequestArticleEdit();
 
@@ -325,12 +321,11 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     sortType,
   } = useSelector((state: any) => state.data);
 
-  const {user_id, user_token, user_handle} = useSelector(
+  const {user_token} = useSelector(
     (state: any) => state.user,
   );
 
   const [refreshing, setRefreshing] = useState(false);
-  const socket = useSocket();
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const {data: user, refetch: refetchUser} = useGetProfile();
@@ -397,49 +392,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     setSelectedCategory(category);
   };
 
-  const handleRepostAction = (item: ArticleData) => {
-    if (!isConnected) {
-      Snackbar.show({
-        text: 'Please check your network connection',
-        duration: Snackbar.LENGTH_SHORT,
-      });
-      return;
-    }
-
-    repost(Number(item._id), {
-      onSuccess: () => {
-        refetch();
-
-        Snackbar.show({
-          text: 'Article reposted in your feed',
-          duration: Snackbar.LENGTH_SHORT,
-        });
-
-        const body = {
-          type: 'repost',
-          userId: user_id,
-          authorId: item.authorId,
-          postId: item._id,
-          articleRecordId: item.pb_recordId,
-          message: {
-            title: `${user_handle} reposted`,
-            message: `${item.title}`,
-          },
-          authorMessage: {
-            title: `${user_handle} reposted your article`,
-            message: `${item.title}`,
-          },
-        };
-
-        socket.emit('notification', body);
-      },
-
-      onError: error => {
-        console.log('Repost Error', error);
-        Alert.alert('Internal server error, try again!');
-      },
-    });
-  };
 
   const handleReportAction = (item: ArticleData) => {
     navigation.navigate('ReportScreen', {
@@ -457,7 +409,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         setSelectedCardId={setSelectedCardId}
         navigation={navigation}
         success={onRefresh}
-        handleRepostAction={handleRepostAction}
+        handleRepostAction={()=>{}}
         handleReportAction={handleReportAction}
         handleEditRequestAction={(item, index, reason) => {
           // submitRequest

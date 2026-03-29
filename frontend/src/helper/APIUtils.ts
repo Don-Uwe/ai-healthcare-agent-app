@@ -1,7 +1,14 @@
+// Development vs Production URL configuration
+const __DEV__ = typeof __DEV__ !== 'undefined' ? __DEV__ : false;
 
-const PROD_URL ="https://uhsocial.in/api"
-const SOCKET_PROD = "https://uhsocial.in"
-const CONTENT_CHECKER_PROD = "https://uhsocial.in/content-intel"
+// For local development, uncomment and local backend
+// const DEV_URL = "http://10.0.2.2:3000/api"; // Android emulator
+// const DEV_URL = "http://localhost:3000/api"; // iOS simulator
+const DEV_URL = "https://uhsocial.in/api"; // Use production for now
+
+const PROD_URL = __DEV__ ? DEV_URL : "https://uhsocial.in/api";
+const SOCKET_PROD = __DEV__ ? (DEV_URL.includes('localhost') || DEV_URL.includes('10.0.2.2') ? DEV_URL.replace('/api', '') : "https://uhsocial.in") : "https://uhsocial.in";
+const CONTENT_CHECKER_PROD = __DEV__ ? `${SOCKET_PROD}/content-intel` : "https://uhsocial.in/content-intel";
 
 const LOGIN_API = `${PROD_URL}/user/login`;
 const REGISTRATION_API = `${PROD_URL}/user/register`;

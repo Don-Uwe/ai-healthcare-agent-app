@@ -13,28 +13,21 @@ import {ArticleData, ProfileScreenProps} from '../type';
 import Loader from '../components/Loader';
 import {useFocusEffect} from '@react-navigation/native';
 import Snackbar from 'react-native-snackbar';
-import {useSocket} from '../../SocketContext';
 import {setUserHandle} from '../store/UserSlice';
-import {useRepostArticle} from '../hooks/useArticleRepost';
 import {useGetProfile} from '../hooks/useGetProfile';
 import {useUpdateViewCount} from '../hooks/useUpdateViewCount';
 
 const ProfileScreen = ({navigation}: ProfileScreenProps) => {
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === 'dark';
-  const {user_handle, user_id} = useSelector(
-    (state: any) => state.user,
-  );
+  const {user_id} = useSelector((state: any) => state.user);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const {isConnected} = useSelector((state: any) => state.network);
   const [articleId, setArticleId] = useState<number>();
   const [authorId, setAuthorId] = useState<string>('');
   const [recordId, setRecordId] = useState<string>('');
   const [selectedCardId, setSelectedCardId] = useState<string>('');
-  const socket = useSocket();
   const dispatch = useDispatch();
-
-  const {mutate: repost} = useRepostArticle();
   const {mutate: updateViewCount} =
     useUpdateViewCount(articleId ?? 0);
 
@@ -95,50 +88,6 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
     }, [refetch]),
   );
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const handleRepostAction = (item: ArticleData) => {
-    if (!isConnected) {
-      Snackbar.show({
-        text: 'Please check your network connection',
-        duration: Snackbar.LENGTH_SHORT,
-      });
-      return;
-    }
-
-    repost(Number(item._id), {
-      onSuccess: () => {
-        refetch();
-
-        Snackbar.show({
-          text: 'Article reposted in your feed',
-          duration: Snackbar.LENGTH_SHORT,
-        });
-
-        const body = {
-          type: 'repost',
-          userId: user_id,
-          authorId: item.authorId,
-          postId: item._id,
-          articleRecordId: item.pb_recordId,
-          message: {
-            title: `${user_handle} reposted`,
-            message: `${item.title}`,
-          },
-          authorMessage: {
-            title: `${user_handle} reposted your article`,
-            message: `${item.title}`,
-          },
-        };
-
-        socket.emit('notification', body);
-      },
-
-      onError: error => {
-        console.log('Repost Error', error);
-        Alert.alert('Internal server error, try again!');
-      },
-    });
-  };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleReportAction = (item: ArticleData) => {
@@ -158,7 +107,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
           setSelectedCardId={setSelectedCardId}
           navigation={navigation}
           success={onRefresh}
-          handleRepostAction={handleRepostAction}
+          handleRepostAction={()=>{}}
           handleReportAction={handleReportAction}
           handleEditRequestAction={() => {}}
           source="profile"
@@ -169,7 +118,6 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
       selectedCardId,
       navigation,
       onRefresh,
-      handleRepostAction,
       handleReportAction,
     ],
   );
@@ -251,7 +199,6 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
             }
           }
         }}
-        improvementPublished={user ? user.improvements.length : 0}
       />
     );
   };
@@ -313,6 +260,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
               <ActivityOverview
                 onArticleViewed={onArticleViewed}
                 others={false}
+                
                 user_handle={user?.user_handle || ''}
                 articlePosted={user?.articles ? user.articles.length : 0}
               />
@@ -377,6 +325,7 @@ const styles = StyleSheet.create({
   tabsContainer: {
     //  backgroundColor: ON_PRIMARY_COLOR,
     overflow: 'hidden',
+    flex: 1,
   },
   scrollViewContentContainer: {
     paddingHorizontal: 6,

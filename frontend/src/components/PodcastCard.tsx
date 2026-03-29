@@ -51,6 +51,8 @@ const PodcastCard = ({
     sheetRef.current?.present();
   };
 
+ // console.log("Image url", imageUri);
+
   const handleShare = async () => {
     try {
 
@@ -70,6 +72,7 @@ const PodcastCard = ({
     }
   };
 
+  console.log("podcast uri", `${GET_STORAGE_DATA}/${imageUri}`);
   const uri =
     imageUri && imageUri !== ''
       ? imageUri.startsWith('https')
