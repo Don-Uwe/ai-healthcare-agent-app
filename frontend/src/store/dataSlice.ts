@@ -49,6 +49,7 @@ const initialState: DataState = {
     reviewer_id: undefined,
     contributors: [],
     pb_recordId: '',
+    language: "en-IN"
   },
   categories: [],
   articleContent:'',
@@ -104,6 +105,9 @@ const dataSlice = createSlice({
     setPodcasts(state,action){
       state.podcasts = action.payload;
     },
+    appendPodcasts(state, action){
+      state.podcasts = [...state.podcasts, ...action.payload];
+    },
     setaddedPodcastId(state, action){
       state.addedPodcastId = action.payload;
     },
@@ -125,6 +129,7 @@ export const {
   setSuggestionAccepted,
   setSelectePodcastCategories,
   setPodcasts,
+  appendPodcasts,
   setaddedPodcastId,
   setRemovePlaylistId,
 } = dataSlice.actions;

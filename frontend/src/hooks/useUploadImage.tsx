@@ -1,8 +1,8 @@
 import {useState} from 'react';
-import {UPLOAD_STORAGE} from '../src/helper/APIUtils';
 import { showAlert } from '@/src/store/alertSlice';
 import { useDispatch } from 'react-redux';
 import { Alert } from 'react-native';
+import { UPLOAD_STORAGE } from '../helper/APIUtils';
 
 const useUploadImage = () => {
   const [loading, setLoading] = useState(false);

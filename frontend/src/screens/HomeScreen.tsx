@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   FlatList,
   ScrollView,
+  Animated,
+  Easing,
 } from 'react-native';
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -14,24 +16,9 @@ import AddIcon from '../components/AddIcon';
 import ArticleCard from '../components/ArticleCard';
 
 import HomeScreenHeader from '../components/HomeScreenHeader';
-import {
-  ArticleData,
-  Category,
-  CategoryType,
-  HomeScreenProps,
-  User,
-} from '../type';
-import axios from 'axios';
-import {
-  ARTICLE_TAGS_API,
-  GET_PROFILE_API,
-  PROD_URL,
-  REPOST_ARTICLE,
-  REQUEST_EDIT,
-} from '../helper/APIUtils';
+import {ArticleData, Category, CategoryType, HomeScreenProps} from '../type';
 import FilterModal from '../components/FilterModal';
 import {BottomSheetModal} from '@gorhom/bottom-sheet';
-import {useMutation, useQuery} from '@tanstack/react-query';
 import {useSelector, useDispatch} from 'react-redux';
 import Loader from '../components/Loader';
 
@@ -44,11 +31,273 @@ import {
   setTags,
 } from '../store/dataSlice';
 import Snackbar from 'react-native-snackbar';
-import {useSocket} from '../../SocketContext';
 import {useFocusEffect} from '@react-navigation/native';
 import InactiveUserModal from '../components/InactiveUserModal';
 import {StatusBar} from 'expo-status-bar';
 import {wp} from '../helper/Metric';
+import {useGetCategories} from '../hooks/useGetArticleTags';
+import {useGetProfile} from '../hooks/useGetProfile';
+import {useRequestArticleEdit} from '../hooks/useRequestArticleEdit';
+import {useGetUnreadNotificationCount} from '../hooks/useGetUnreadNotificationCount';
+import {useGetPaginatedArticle} from '../hooks/useGetPaginatedArticles';
+
+// Loading State Component with Animation
+const LoadingState = () => {
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const rotateAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // Pulse animation
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.2,
+          duration: 1000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ]),
+    ).start();
+
+    // Rotate animation
+    Animated.loop(
+      Animated.timing(rotateAnim, {
+        toValue: 1,
+        duration: 2000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+    ).start();
+  }, [pulseAnim, rotateAnim]);
+
+  const rotate = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
+  return (
+    <View style={styles.stateContainer}>
+      <Animated.View
+        style={[
+          styles.iconCircle,
+          {
+            transform: [{scale: pulseAnim}, {rotate}],
+          },
+        ]}>
+        <Text style={styles.iconEmoji}>📚</Text>
+      </Animated.View>
+      <Text style={styles.stateTitle}>Loading Articles</Text>
+      <Text style={styles.stateDescription}>
+        Gathering the latest health insights for you...
+      </Text>
+      <View style={styles.dotsContainer}>
+        <AnimatedDot delay={0} />
+        <AnimatedDot delay={200} />
+        <AnimatedDot delay={400} />
+      </View>
+    </View>
+  );
+};
+
+// Animated Dot Component
+const AnimatedDot = ({delay}: {delay: number}) => {
+  const fadeAnim = useRef(new Animated.Value(0.3)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.delay(delay),
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(fadeAnim, {
+          toValue: 0.3,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]),
+    ).start();
+  }, [delay, fadeAnim]);
+
+  return (
+    <Animated.View
+      style={[
+        styles.dot,
+        {
+          opacity: fadeAnim,
+        },
+      ]}
+    />
+  );
+};
+
+// Error State Component
+const ErrorState = ({onRetry}: {onRetry: () => void}) => {
+  const shakeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.sequence([
+      Animated.timing(shakeAnim, {
+        toValue: 10,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeAnim, {
+        toValue: -10,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeAnim, {
+        toValue: 10,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeAnim, {
+        toValue: 0,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [shakeAnim]);
+
+  return (
+    <View style={styles.stateContainer}>
+      <Animated.View
+        style={[
+          styles.iconCircle,
+          styles.errorCircle,
+          {
+            transform: [{translateX: shakeAnim}],
+          },
+        ]}>
+        <Text style={styles.iconEmoji}>📭</Text>
+      </Animated.View>
+      <Text style={styles.stateTitle}>No Articles Found</Text>
+      <Text style={styles.stateDescription}>
+        We couldn&apos;t find any articles at the moment.{'\n'}
+        Please try refreshing or check back later.
+      </Text>
+      <TouchableOpacity style={styles.retryButton} onPress={onRetry}>
+        <Text style={styles.retryButtonText}>Retry</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+// Offline State Component
+const OfflineState = () => {
+  const bounceAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(bounceAnim, {
+          toValue: -10,
+          duration: 500,
+          easing: Easing.ease,
+          useNativeDriver: true,
+        }),
+        Animated.timing(bounceAnim, {
+          toValue: 0,
+          duration: 500,
+          easing: Easing.ease,
+          useNativeDriver: true,
+        }),
+      ]),
+    ).start();
+  }, [bounceAnim]);
+
+  return (
+    <View style={styles.stateContainer}>
+      <Animated.View
+        style={[
+          styles.iconCircle,
+          styles.offlineCircle,
+          {
+            transform: [{translateY: bounceAnim}],
+          },
+        ]}>
+        <Text style={styles.iconEmoji}>📡</Text>
+      </Animated.View>
+      <Text style={styles.stateTitle}>You&apos;re Offline</Text>
+      <Text style={styles.stateDescription}>
+        Connect to the internet to view articles.{'\n'}
+        Offline mode coming in the next update!
+      </Text>
+    </View>
+  );
+};
+
+// Empty Article State Component (for FlatList empty state)
+const EmptyArticleState = () => {
+  const floatAnim = useRef(new Animated.Value(0)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // Fade in animation
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 800,
+      useNativeDriver: true,
+    }).start();
+
+    // Float animation
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(floatAnim, {
+          toValue: 1,
+          duration: 2000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(floatAnim, {
+          toValue: 0,
+          duration: 2000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ]),
+    ).start();
+  }, [floatAnim, fadeAnim]);
+
+  const translateY = floatAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -15],
+  });
+
+  return (
+    <Animated.View style={[styles.emptyArticleContainer, {opacity: fadeAnim}]}>
+      <Animated.View
+        style={[
+          styles.emptyIconCircle,
+          {
+            transform: [{translateY}],
+          },
+        ]}>
+        <Text style={styles.emptyIconEmoji}>🔍</Text>
+      </Animated.View>
+      <Text style={styles.emptyArticleTitle}>No Articles Here</Text>
+      <Text style={styles.emptyArticleDescription}>
+        We couldn&apos;t find any articles in this category.{'\n'}
+        Try selecting a different category or{'\n'}
+        check back later for new content!
+      </Text>
+      <View style={styles.emptyTagsContainer}>
+        <View style={styles.emptyTag}>
+          <Text style={styles.emptyTagText}>Try other tags</Text>
+        </View>
+      </View>
+    </Animated.View>
+  );
+};
 
 // Here The purpose of using Redux is to maintain filter state throughout the app session. globally
 const HomeScreen = ({navigation}: HomeScreenProps) => {
@@ -58,9 +307,12 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const [sortingType, setSortingType] = useState<string>('');
   const {isConnected} = useSelector((state: any) => state.network);
   const [selectedCardId, setSelectedCardId] = useState<string>('');
-  const [repostItem, setRepostItem] = useState<ArticleData | null>(null);
+  // const [repostItem, setRepostItem] = useState<ArticleData | null>(null);
   const [selectCategoryList, setSelectCategoryList] = useState<Category[]>([]);
   const [filterLoading, setFilterLoading] = useState<boolean>(false);
+  const {mutate: requestEdit, isPending: requestEditPending} =
+    useRequestArticleEdit();
+
   const {
     filteredArticles,
     searchedArticles,
@@ -68,13 +320,34 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     selectedTags,
     sortType,
   } = useSelector((state: any) => state.data);
-  const {user_id, user_token, user_handle} = useSelector(
+
+  const {user_token} = useSelector(
     (state: any) => state.user,
   );
+
   const [refreshing, setRefreshing] = useState(false);
-  const socket = useSocket();
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  const {data: user, refetch: refetchUser} = useGetProfile();
+  const {data: categoryData, isSuccess} = useGetCategories(isConnected);
+
+  useEffect(() => {
+    if (!isSuccess || !categoryData) return;
+
+    if (!selectedTags || selectedTags.length === 0) {
+      dispatch(
+        setSelectedTags({
+          selectedTags: categoryData,
+        }),
+      );
+      setSelectedCategory(categoryData[0]);
+    } else {
+      setSelectedCategory(selectedTags[0]);
+    }
+
+    setArticleCategories(categoryData);
+    dispatch(setTags({tags: categoryData}));
+  }, [categoryData, isSuccess]);
 
   const handleCategorySelection = (category: CategoryType) => {
     // Update Redux State
@@ -91,81 +364,8 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     bottomSheetModalRef.current?.present();
   }, []);
 
-  const getAllCategories = useCallback(async () => {
-    if (!isConnected) {
-      return;
-    }
-    if (user_token === '') {
-      Alert.alert('No token found');
-      return;
-    }
-    const {data: categoryData} = await axios.get(
-      `${PROD_URL + ARTICLE_TAGS_API}`,
-      {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      },
-    );
-    if (
-      selectedTags === undefined ||
-      (selectedTags && selectedTags.length === 0)
-    ) {
-      dispatch(
-        setSelectedTags({
-          selectedTags: categoryData,
-        }),
-      );
-      setSelectedCategory(categoryData[0]);
-    } else {
-      setSelectedCategory(selectedTags[0]);
-    }
-    setArticleCategories(categoryData);
-    dispatch(setTags({tags: categoryData}));
-  }, [dispatch, isConnected, selectedTags, user_token]);
-
-  useEffect(() => {
-    getAllCategories();
-
-    return () => {};
-  }, [getAllCategories]);
-
-  const {data: unreadCount, refetch: refetchUnreadCount} = useQuery({
-    queryKey: ['get-unread-notifications-count'],
-    queryFn: async () => {
-      try {
-        if (user_token === '') {
-          throw new Error('No token found');
-        }
-        const response = await axios.get(
-          `${PROD_URL}/notification/unread-count?role=2`,
-          {
-            headers: {
-              Authorization: `Bearer ${user_token}`,
-            },
-          },
-        );
-
-        return response.data.unreadCount as number;
-      } catch (err) {
-        console.error('Error fetching articles:', err);
-      }
-    },
-    enabled: isConnected && !!user_token,
-  });
-
-  const {data: user, refetch: refetchUser} = useQuery({
-    queryKey: ['get-my-profile'],
-    queryFn: async () => {
-      const response = await axios.get(`${GET_PROFILE_API}`, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      });
-      return response.data.profile as User;
-    },
-    enabled: !!isConnected && !!user_token,
-  });
+  const {data: unreadCount, refetch: refetchUnreadCount} =
+    useGetUnreadNotificationCount(isConnected);
 
   useFocusEffect(
     useCallback(() => {
@@ -192,116 +392,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     setSelectedCategory(category);
   };
 
-  const handleRepostAction = (item: ArticleData) => {
-    if (isConnected) {
-      setRepostItem(item);
-      repostMutation.mutate({
-        articleId: Number(item._id),
-      });
-    } else {
-      Snackbar.show({
-        text: 'Please check your network connection',
-        duration: Snackbar.LENGTH_SHORT,
-      });
-    }
-  };
-
-  const repostMutation = useMutation({
-    mutationKey: ['repost-user-article'],
-    mutationFn: async ({
-      articleId,
-    }: // authorId,
-    {
-      articleId: number;
-      //  authorId: string;
-    }) => {
-      if (user_token === '') {
-        Alert.alert('No token found');
-        return;
-      }
-      const res = await axios.post(
-        REPOST_ARTICLE,
-        {
-          articleId: articleId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-
-      return res.data as any;
-    },
-    onSuccess: () => {
-      refetch();
-      Snackbar.show({
-        text: 'Article reposted in your feed',
-        duration: Snackbar.LENGTH_SHORT,
-      });
-
-      if (repostItem) {
-        const body = {
-          type: 'repost',
-          userId: user_id,
-          authorId: repostItem.authorId,
-          postId: repostItem._id,
-          articleRecordId: repostItem.pb_recordId,
-          message: {
-            title: `${user_handle} reposted`,
-            message: `${repostItem.title}`,
-          },
-          authorMessage: {
-            title: `${user_handle} reposted your article`,
-            message: `${repostItem.title}`,
-          },
-        };
-
-        socket.emit('notification', body);
-      }
-    },
-
-    onError: error => {
-      console.log('Repost Error', error);
-      Alert.alert('Internal server error, try again!');
-    },
-  });
-
-  const submitEditRequestMutation = useMutation({
-    mutationKey: ['submit-edit-request'],
-    mutationFn: async ({
-      articleId,
-      reason,
-      articleRecordId,
-    }: {
-      articleId: string;
-      reason: string;
-      articleRecordId: string;
-    }) => {
-      const res = await axios.post(
-        REQUEST_EDIT,
-        {
-          article_id: articleId,
-          edit_reason: reason,
-          article_recordId: articleRecordId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-
-      return res.data.message as string;
-    },
-    onSuccess: data => {
-      Alert.alert(data);
-    },
-    onError: err => {
-      console.log(err);
-      Alert.alert('Try again');
-    },
-  });
 
   const handleReportAction = (item: ArticleData) => {
     navigation.navigate('ReportScreen', {
@@ -319,15 +409,32 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         setSelectedCardId={setSelectedCardId}
         navigation={navigation}
         success={onRefresh}
-        handleRepostAction={handleRepostAction}
+        handleRepostAction={()=>{}}
         handleReportAction={handleReportAction}
         handleEditRequestAction={(item, index, reason) => {
           // submitRequest
-          submitEditRequestMutation.mutate({
-            articleId: item._id,
-            reason: reason,
-            articleRecordId: item.pb_recordId,
-          });
+          requestEdit(
+            {
+              articleId: item._id,
+              reason: reason,
+              articleRecordId: item.pb_recordId,
+            },
+            {
+              onSuccess: data => {
+                Snackbar.show({
+                  text: data,
+                  duration: Snackbar.LENGTH_SHORT,
+                });
+              },
+              onError: err => {
+                console.log(err);
+                Snackbar.show({
+                  text: 'Try again!',
+                  duration: Snackbar.LENGTH_SHORT,
+                });
+              },
+            },
+          );
         }}
         source="home"
       />
@@ -344,29 +451,23 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       }),
     );
     dispatch(setSortType({sortType: ''}));
-    dispatch(setFilteredArticles({filteredArticles: articleData}));
+    dispatch(setFilteredArticles({filteredArticles: articleData?.articles}));
   };
 
   const handleFilterApply = () => {
     // Update Redux State Variables
     console.log('enter');
     if (selectCategoryList.length > 0) {
-    //   console.log("enter")
+      //   console.log("enter")
       dispatch(setSelectedTags({selectedTags: selectCategoryList}));
     } else {
-       //console.log("enter ele", articleCategories);
+      //console.log("enter ele", articleCategories);
 
       dispatch(
         setSelectedTags({
           selectedTags: articleCategories,
         }),
       );
-
-    }
-
-   if(sortingType && sortingType !== ''){
-      console.log("Sort type", sortType);
-     dispatch(setSortType({sortType: sortingType}));
     }
 
     if (sortingType && sortingType !== '') {
@@ -374,7 +475,12 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       dispatch(setSortType({sortType: sortingType}));
     }
 
-    updateArticles(articleData);
+    if (sortingType && sortingType !== '') {
+      console.log('Sort type', sortType);
+      dispatch(setSortType({sortType: sortingType}));
+    }
+
+    updateArticles(articleData?.articles);
   };
 
   const updateArticles = (articleData?: ArticleData[]) => {
@@ -416,34 +522,22 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     isLoading,
     isError,
     refetch,
-  } = useQuery({
-    queryKey: ['get-all-articles', page],
-    queryFn: async () => {
-      try {
-        const response = await axios.get(`${PROD_URL}/articles?page=${page}`, {
-          headers: {Authorization: `Bearer ${user_token}`},
-        });
+  } = useGetPaginatedArticle(isConnected, page);
 
-        const d: ArticleData[] = response.data.articles;
-
-        if (Number(page) === 1 && response.data.totalPages) {
-          setTotalPages(response.data.totalPages);
-        }
-
-        if (Number(page) === 1) {
-          updateArticles(d);
-        } else {
-          updateArticles([...filteredArticles, ...d]);
-        }
-
-        return response.data.articles as ArticleData[];
-      } catch (err) {
-        console.error('Error fetching articles:', err);
-        return [];
+  useEffect(() => {
+    if (articleData) {
+      if (Number(page) === 1 && articleData.totalPages) {
+        setTotalPages(articleData.totalPages);
       }
-    },
-    enabled: isConnected && !!user_token && !!page,
-  });
+
+      if (Number(page) === 1) {
+        updateArticles(articleData.articles);
+      } else {
+        updateArticles([...filteredArticles, ...articleData.articles]);
+      }
+    }
+  }, [articleData, page]);
+
 
   const onRefresh = () => {
     console.log('is connected', isConnected);
@@ -466,7 +560,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       dispatch(setSearchMode({searchMode: false}));
     } else {
       dispatch(setSearchMode({searchMode: true}));
-      const matchesSearch = articleData.filter(article => {
+      const matchesSearch = articleData?.articles.filter(article => {
         const matchesTitle = article.title
           .toLowerCase()
           .includes(textInput.toLowerCase());
@@ -480,21 +574,31 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     }
   };
 
- const listData = useMemo(() => {
-  if (searchMode) return searchedArticles;
+  const listData = useMemo(() => {
+    if (searchMode) return searchedArticles;
 
-  const filtered = filteredArticles.filter(
-    (article:ArticleData) =>
-      article.tags &&
-      article.tags.some(
-        tag => tag.name === selectedCategory?.name,
-      ),
-  );
+    const filtered = filteredArticles.filter(
+      (article: ArticleData) =>
+        article.tags &&
+        article.tags.some(tag => tag.name === selectedCategory?.name),
+    );
 
-  return filtered.sort(() => Math.random() - 0.5);
-}, [searchMode, searchedArticles, filteredArticles, selectedCategory]);
+    return filtered.sort(() => Math.random() - 0.5);
+  }, [searchMode, searchedArticles, filteredArticles, selectedCategory]);
 
-  if (!articleData || articleData.length === 0) {
+  // Check if any filters are active
+  const hasActiveFilters = useMemo(() => {
+    const hasCustomCategories = selectedTags.length > 0 && selectedTags.length < articleCategories.length;
+    const hasSorting = sortType !== '';
+    return hasCustomCategories || hasSorting;
+  }, [selectedTags, sortType, articleCategories]);
+
+  // Quick reset handler for header
+  const handleQuickReset = () => {
+    handleFilterReset();
+  };
+
+  if (!articleData || articleData.articles?.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
         <HomeScreenHeader
@@ -502,11 +606,11 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           onTextInputChange={handleSearch}
           onNotificationClick={() => navigation.navigate('NotificationScreen')}
           unreadCount={unreadCount || 0}
+          hasActiveFilters={hasActiveFilters}
+          onFilterReset={handleQuickReset}
         />
 
-        <View style={styles.emptyContainer}>
-          <Text style={styles.message}>📡 Article Loading...</Text>
-        </View>
+        <LoadingState />
       </SafeAreaView>
     );
   }
@@ -519,11 +623,11 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           onTextInputChange={handleSearch}
           onNotificationClick={() => navigation.navigate('NotificationScreen')}
           unreadCount={unreadCount || 0}
+          hasActiveFilters={hasActiveFilters}
+          onFilterReset={handleQuickReset}
         />
 
-        <View style={styles.emptyContainer}>
-          <Text style={styles.message}>📡 No Article Found</Text>
-        </View>
+        <ErrorState onRetry={refetch} />
       </SafeAreaView>
     );
   }
@@ -536,25 +640,23 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           onTextInputChange={handleSearch}
           onNotificationClick={() => navigation.navigate('NotificationScreen')}
           unreadCount={unreadCount || 0}
+          hasActiveFilters={hasActiveFilters}
+          onFilterReset={handleQuickReset}
         />
 
-        <View style={styles.emptyContainer}>
-          <Text style={styles.message}>
-            📡 Please try to be online to view articles
-          </Text>
-        </View>
+        <OfflineState />
       </SafeAreaView>
     );
   }
 
-  if (isLoading || submitEditRequestMutation.isPending) {
+  if (isLoading || requestEditPending) {
     return <Loader />;
   }
 
   if (user && (user.isBlockUser || user.isBannedUser)) {
     return (
       <SafeAreaView style={styles.blockContainer}>
-        <StatusBar style="dark" backgroundColor={PRIMARY_COLOR} />
+        <StatusBar style="light" backgroundColor="#007AFF" />
         <HomeScreenHeader
           handlePresentModalPress={handlePresentModalPress}
           onTextInputChange={handleSearch}
@@ -562,6 +664,8 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
             navigation.navigate('NotificationScreen');
           }}
           unreadCount={unreadCount ? unreadCount : 0}
+          hasActiveFilters={hasActiveFilters}
+          onFilterReset={handleQuickReset}
         />
 
         <View style={styles.buttonContainer}>
@@ -604,7 +708,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
               ))}
           </ScrollView>
         </View>
-        
+
         <InactiveUserModal
           open={true}
           onRequestAdmin={() => {
@@ -622,8 +726,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     );
   }
 
- 
-
   return (
     <SafeAreaView style={styles.container}>
       <HomeScreenHeader
@@ -633,6 +735,8 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           navigation.navigate('NotificationScreen');
         }}
         unreadCount={unreadCount ? unreadCount : 0}
+        hasActiveFilters={hasActiveFilters}
+        onFilterReset={handleQuickReset}
       />
       <FilterModal
         bottomSheetModalRef={bottomSheetModalRef}
@@ -688,19 +792,13 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         {((filteredArticles && filteredArticles.length > 0) ||
           searchedArticles.length > 0) && (
           <FlatList
-            data={
-              listData
-            }
+            data={listData}
             renderItem={renderItem}
             keyExtractor={item => item._id.toString()}
             contentContainerStyle={styles.flatListContentContainer}
             refreshing={refreshing}
             onRefresh={onRefresh}
-            ListEmptyComponent={
-              <View style={styles.emptyContainer}>
-                <Text style={styles.message}>No Article Found</Text>
-              </View>
-            }
+            ListEmptyComponent={<EmptyArticleState />}
             onEndReached={() => {
               if (page < totalPages) {
                 setPage(prev => prev + 1);
@@ -792,5 +890,142 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 1,
     resizeMode: 'contain',
+  },
+
+  // New state styles
+  stateContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+    backgroundColor: '#F0F8FF',
+  },
+  iconCircle: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#E3F2FD',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+    shadowColor: PRIMARY_COLOR,
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  errorCircle: {
+    backgroundColor: '#FFEBEE',
+  },
+  offlineCircle: {
+    backgroundColor: '#FFF3E0',
+  },
+  iconEmoji: {
+    fontSize: 56,
+  },
+  stateTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1A1A1A',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  stateDescription: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 24,
+    paddingHorizontal: 16,
+  },
+  dotsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  dot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: PRIMARY_COLOR,
+    marginHorizontal: 6,
+  },
+  retryButton: {
+    backgroundColor: PRIMARY_COLOR,
+    paddingHorizontal: 32,
+    paddingVertical: 14,
+    borderRadius: 25,
+    marginTop: 8,
+    shadowColor: PRIMARY_COLOR,
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  retryButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+
+  // Empty Article State styles (for FlatList empty state)
+  emptyArticleContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 24,
+    minHeight: 400,
+  },
+  emptyIconCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#F3E5F5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+    shadowColor: '#9C27B0',
+    shadowOffset: {width: 0, height: 3},
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  emptyIconEmoji: {
+    fontSize: 48,
+  },
+  emptyArticleTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#1A1A1A',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  emptyArticleDescription: {
+    fontSize: 15,
+    color: '#757575',
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 20,
+  },
+  emptyTagsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 8,
+  },
+  emptyTag: {
+    backgroundColor: '#E8EAF6',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#C5CAE9',
+  },
+  emptyTagText: {
+    color: '#3F51B5',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

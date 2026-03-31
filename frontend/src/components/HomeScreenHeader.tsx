@@ -9,11 +9,13 @@ import { StatusBar } from 'expo-status-bar';
   onTextInputChange,
   onNotificationClick,
   unreadCount,
+  hasActiveFilters = false,
+  onFilterReset,
 }: HomeScreenHeaderProps) => {
   return (
     <YStack backgroundColor="#000A60" width="100%" paddingHorizontal="$3" paddingVertical="$3" elevation={1}>
       <XStack alignItems="center" justifyContent="space-between" gap="$3">
-        <StatusBar style="dark" backgroundColor={'#000A60'} />
+
         {/* Search Bar */}
         <XStack
           flex={1}
@@ -37,6 +39,11 @@ import { StatusBar } from 'expo-status-bar';
             onChangeText={onTextInputChange}
             fontSize="$4"
           />
+          {hasActiveFilters && onFilterReset ? (
+            <Button unstyled onPress={onFilterReset} paddingRight="$1" paddingLeft="$1">
+              <Ionicons name="refresh" size={20} color={'#FF5252'} />
+            </Button>
+          ) : null}
           <Button unstyled onPress={handlePresentModalPress}>
             <AntDesign name="menu-fold" size={20} color={'#191C1B'} />
           </Button>

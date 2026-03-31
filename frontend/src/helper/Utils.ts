@@ -106,29 +106,14 @@ export const getMimeTypes = (ext: string): string => {
     case 'x-ms-wma':
       type = 'audio/x-ms-wma';
       break;
-    case 'wav':
-      type = 'audio/wav';
-      break;
-    case 'ogg':
-      type = 'audio/ogg';
-      break;
-    case 'aac':
-      type = 'audio/aac';
-      break;
-    case 'flac':
-      type = 'audio/flac';
-      break;
-    case 'm4a':
-      type = 'audio/mp4';
-      break;
-    case 'webm':
-      type = 'audio/webm';
-      break;
+
+  
     default:
       type = 'application/octet-stream';
   }
   return type;
 };
+
 export function formatCount(count: number) {
   if (count < 1000) {
     return count.toString();
@@ -311,6 +296,8 @@ ${body}
 </body>
 `;
 };
+
+
 
 // General purpose podcast app, no need to encrypted download data here,
 // We will ensure that, there will be no copyrighted content, or we can't give access to download
@@ -646,6 +633,21 @@ export const VULTR_CHAT_PROFILE_AVTARS = {
     'https://static.vecteezy.com/system/resources/previews/026/309/247/non_2x/robot-chat-or-chat-bot-logo-modern-conversation-automatic-technology-logo-design-template-vector.jpg',
 };
 
+export const ttsLanguageList = [
+  { name: "English (India)", code: "en-IN" },
+  { name: "Hindi", code: "hi-IN" },
+  { name: "Bengali", code: "bn-IN" },
+  { name: "Tamil", code: "ta-IN" },
+  { name: "Telugu", code: "te-IN" },
+  { name: "Marathi", code: "mr-IN" },
+  { name: "Gujarati", code: "gu-IN" },
+  { name: "Kannada", code: "kn-IN" },
+  { name: "Malayalam", code: "ml-IN" },
+  { name: "Punjabi", code: "pa-IN" },
+  { name: "Odia", code: "or-IN" },
+  { name: "Assamese", code: "as-IN" },
+  { name: "Urdu (India)", code: "ur-IN" }
+];
 export const Categories: CategoryType[] = [
   {id: 1, name: 'Cardiology'},
   {id: 2, name: 'Neurology'},

@@ -16,25 +16,24 @@ export default function ReviewItem({item}: {item: Comment}) {
     <YStack
       space="$3"
       marginBottom="$4"
-      elevation={3}
+      elevation={5}
       style={{
         shadowColor: '#000',
-        shadowOffset: {width: 0, height: 2},
+        shadowOffset: {width: 0, height: 3},
         shadowOpacity: 0.1,
-        shadowRadius: 4,
+        shadowRadius: 8,
         backgroundColor: 'white',
-        borderRadius: 8,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: '#F0F0F0',
       }}
-      paddingHorizontal={10}
-      paddingVertical={6}
-      shadowColor={'white'}
-      //borderBottomWidth={1}
-      //borderColor="$gray5"
+      paddingHorizontal={16}
+      paddingVertical={14}
       marginTop="$2">
       {/* Main Comment Layout */}
       <XStack alignItems="flex-start" space="$3">
         {/* Profile Image */}
-        <Avatar circular size="$5">
+        <Avatar circular size="$6">
           <Avatar.Image
             accessibilityLabel={
               item.adminId
@@ -56,29 +55,29 @@ export default function ReviewItem({item}: {item: Comment}) {
                   'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500'
             }
           />
-          <Avatar.Fallback backgroundColor="#ccc" />
+          <Avatar.Fallback backgroundColor="#E0E0E0" />
         </Avatar>
 
         {/* Comment Content */}
-        <YStack flex={1} space="$1.5">
+        <YStack flex={1} space="$2">
           <XStack alignItems="center" justifyContent="space-between">
             <XStack alignItems="center" space="$2">
-              <Text fontWeight="700" color="$gray12" fontSize={18}>
+              <Text fontWeight="800" color="#1A1A1A" fontSize={17} letterSpacing={0.3}>
                 {item.adminId ? item.adminId.user_handle : item.userId.user_handle}
               </Text>
               {item.isEdited && (
-                <Text color="$gray9" fontSize={15}>
+                <Text color="$gray9" fontSize={13} fontStyle="italic">
                   (edited)
                 </Text>
               )}
             </XStack>
           </XStack>
 
-          <Paragraph color="$gray11" fontSize={16}>
+          <Paragraph color="#4A4A4A" fontSize={15} lineHeight={22}>
             {item.content}
           </Paragraph>
 
-          <Text color="$gray9" fontSize="$3">
+          <Text color="#999" fontSize={13} marginTop="$1">
             Last updated {formatWithOrdinal(item.updatedAt)}
           </Text>
         </YStack>

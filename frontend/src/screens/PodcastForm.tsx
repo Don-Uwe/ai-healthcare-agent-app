@@ -8,11 +8,13 @@ import {
   ScrollView,
   Image,
   Alert,
+  Modal,
+  FlatList,
 } from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import {PodcastFormProp, Category} from '../type';
 import Ionicon from '@expo/vector-icons/Ionicons';
-import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
+import {PRIMARY_COLOR} from '../helper/Theme';
 import {
   ImageLibraryOptions,
   ImagePickerResponse,
@@ -21,67 +23,49 @@ import {
 import ImageResizer from '@bam.tech/react-native-image-resizer';
 import {hp} from '../helper/Metric';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {showAlert} from '../store/alertSlice';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
+import { ttsLanguageList } from '../helper/Utils';
+
 
 const PodcastForm = ({navigation, route}: PodcastFormProp) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [selectedGenres, setSelectedGenres] = useState<Category[]>([]);
+  const [language, setLanguage] = useState('en');
+  const [languageModalVisible, setLanguageModalVisible] = useState(false);
   const {categories} = useSelector((state: any) => state.data);
   const [imageUtils, setImageUtils] = useState('');
-  // console.log(categories);
   const dispatch = useDispatch();
 
   const handleGenrePress = (genre: Category) => {
     if (isSelected(genre)) {
       setSelectedGenres(selectedGenres.filter(item => item.id !== genre.id));
     } else if (selectedGenres.length < 5) {
-      // Check if the length of selected genres is less than 5
-      setSelectedGenres([...selectedGenres, genre]); // Add the new genre to the selected genres array
+     
+      setSelectedGenres([...selectedGenres, genre]); 
     }
   };
 
-  const isSelected = genre => selectedGenres.includes(genre);
+  const isSelected = (genre: Category) => selectedGenres.includes(genre);
 
   const handleCreatePost = () => {
     if (title === '') {
        Alert.alert('Title section is required');
-      // dispatch(
-      //   showAlert({
-      //     title: 'Error',
-      //     message: 'Title section is required',
-      //   }),
-      // );
+      
       return;
     } else if (description === '') {
        Alert.alert('Please give proper description');
-      // dispatch(
-      //   showAlert({
-      //     title: 'Error',
-      //     message: 'Please give proper description',
-      //   }),
-      // );
+      
       return;
     } else if (selectedGenres.length === 0) {
        Alert.alert('Please select at least one suitable tags for your podcast.');
-      // dispatch(
-      //   showAlert({
-      //     title: 'Error',
-      //     message: 'Please select at least one suitable tags for your podcast.',
-      //   }),
-      // );
+     
       return;
     }
 
     // Later purpose
     else if (imageUtils.length === 0) {
-       Alert.alert('Please upload one cover image for your podcast.');
-      // dispatch(
-      //   showAlert({
-      //     title: 'Error',
-      //     message: 'Please upload one cover image for your podcast.',
-      //   }),
-      // );
+      Alert.alert('Please upload one cover image for your podcast.');
       return;
     }
 
@@ -101,43 +85,32 @@ const PodcastForm = ({navigation, route}: PodcastFormProp) => {
 
     launchImageLibrary(options, (response: ImagePickerResponse) => {
       if (response.didCancel) {
-        //console.log('User cancelled image picker');
       } else if (response.errorMessage) {
         console.log('ImagePicker Error: ', response.errorMessage);
       } else if (response.assets) {
         const {uri, fileSize} = response.assets[0];
 
-        // Check file size (1 MB limit)
         if (fileSize && fileSize > 1024 * 1024) {
           Alert.alert('Error', 'File size exceeds 1 MB.');
-          // dispatch(
-          //   showAlert({
-          //     title: 'Error',
-          //     message: 'File size exceeds 1 MB.',
-          //   }),
-          // );
           return;
         }
 
         // Check dimensions
         ImageResizer.createResizedImage(uri, 1000, 1000, 'JPEG', 100)
           .then(resizedImageUri => {
-            // If the image is resized successfully, upload it
           })
           .catch(err => {
             console.log(err);
              Alert.alert('Error', 'Could not resize the image.');
-            // dispatch(
-            //   showAlert({
-            //     title: 'Error',
-            //     message: 'Could not resize the image.',
-            //   }),
-            // );
           });
 
         setImageUtils(uri ? uri : '');
       }
     });
+  };
+
+  const getLanguageLabel = (value: string) => {
+    return ttsLanguageList.find(lang => lang.code === value)?.name || 'English (India)';
   };
 
   const WarningBox = () => {
@@ -164,14 +137,85 @@ const PodcastForm = ({navigation, route}: PodcastFormProp) => {
     );
   };
 
+  const LanguageSelector = () => {
+    return (
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={languageModalVisible}
+        onRequestClose={() => setLanguageModalVisible(false)}>
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setLanguageModalVisible(false)}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Select Language</Text>
+              <TouchableOpacity onPress={() => setLanguageModalVisible(false)}>
+                <Ionicon name="close" size={24} color="#222" />
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={ttsLanguageList}
+              keyExtractor={item => item.code}
+              renderItem={({item}) => (
+                <TouchableOpacity
+                  style={[
+                    styles.languageItem,
+                    language === item.code && styles.selectedLanguageItem,
+                  ]}
+                  onPress={() => {
+                    setLanguage(item.code);
+                    setLanguageModalVisible(false);
+                  }}>
+                  <Text
+                    style={[
+                      styles.languageItemText,
+                      language === item.code && styles.selectedLanguageItemText,
+                    ]}>
+                    {item.name}
+                  </Text>
+                  {language === item.code && (
+                    <Ionicon name="checkmark" size={20} color={PRIMARY_COLOR} />
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </TouchableOpacity>
+      </Modal>
+    );
+  };
+
   return (
-    <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
-      <SafeAreaView>
+    <SafeAreaView style={styles.container}>
+      <KeyboardAwareScrollView
+        style={{width: '100%', flex: 1}}
+        bottomOffset={50}
+        showsVerticalScrollIndicator={false}
+        extraKeyboardSpace={20}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingBottom: hp(4),
+        }}>
         <WarningBox />
+        <LanguageSelector />
 
         <View style={styles.form}>
-          {/* Image Upload */}
-          <View style={styles.input}>
+          {/* Header Section */}
+          <View style={styles.headerSection}>
+            <Text style={styles.sectionTitle}>Podcast Details</Text>
+            <Text style={styles.sectionSubtitle}>
+              Fill in the information below to create your podcast
+            </Text>
+          </View>
+
+          {/* Image Upload Section */}
+          <View style={styles.section}>
+            <Text style={styles.inputLabel}>
+              <Ionicon name="image-outline" size={18} color="#222" /> Cover Image
+            </Text>
             {imageUtils ? (
               <View style={styles.imageContainer}>
                 <Image source={{uri: imageUtils}} style={styles.image} />
@@ -179,11 +223,13 @@ const PodcastForm = ({navigation, route}: PodcastFormProp) => {
                   <TouchableOpacity
                     style={styles.changeButton}
                     onPress={selectImage}>
+                    <Ionicon name="pencil" size={16} color="#222" />
                     <Text style={styles.changeButtonText}>Change</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.deleteButton}
                     onPress={() => setImageUtils('')}>
+                    <Ionicon name="trash" size={16} color="#fff" />
                     <Text style={styles.deleteButtonText}>Delete</Text>
                   </TouchableOpacity>
                 </View>
@@ -192,77 +238,107 @@ const PodcastForm = ({navigation, route}: PodcastFormProp) => {
               <TouchableOpacity
                 style={styles.uploadContainer}
                 onPress={selectImage}>
-                <Ionicon name="cloud-upload" size={36} color={PRIMARY_COLOR} />
-                <Text style={styles.uploadText}>Upload Image</Text>
+                <Ionicon name="cloud-upload" size={40} color={PRIMARY_COLOR} />
+                <Text style={styles.uploadText}>Upload Cover Image</Text>
                 <Text style={styles.uploadHint}>
-                  Image should be of min 1MB
+                  Maximum file size: 1MB • JPG, PNG
                 </Text>
               </TouchableOpacity>
             )}
           </View>
 
-          {/* Title */}
-          <View style={styles.input}>
-            <Text style={styles.inputLabel}>Title</Text>
-            <TextInput
-              autoCapitalize="sentences"
-              autoCorrect={false}
-              keyboardType="default"
-              placeholder="Podcast Title"
-              placeholderTextColor="#6b7280"
-              style={styles.inputControl}
-              value={title}
-              onChangeText={setTitle}
-            />
-          </View>
+          {/* Basic Information Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Basic Information</Text>
 
-          {/* Description */}
-          <View style={styles.input}>
-            <Text style={styles.inputLabel}>Description</Text>
-
-            <TextInput
-              placeholder="Give a little description or overview"
-              placeholderTextColor="#6b7280"
-              textAlignVertical="top"
-              style={styles.aboutInput}
-              multiline
-              numberOfLines={4}
-              autoCapitalize="sentences"
-              value={description}
-              onChangeText={text => {
-                if (text.length <= 60) {
-                  setDescription(text);
-                }
-              }}
-            />
-
-            {/* Character Counter */}
-            <Text style={styles.charCounter}>{description.length}/60</Text>
-          </View>
-
-          {/* Category */}
-          <View style={styles.input}>
-            <Text style={styles.inputLabel}>
-              Choose Tags for Your Podcast (Up to 5)
-            </Text>
-            {selectedGenres.map((genre, index) => (
-              <Text key={index} style={styles.selectedGenreText}>
-                #{genre.name}
+            {/* Title */}
+            <View style={styles.input}>
+              <Text style={styles.inputLabel}>
+                <Ionicon name="mic-outline" size={18} color="#222" /> Title *
               </Text>
-            ))}
+              <TextInput
+                autoCapitalize="sentences"
+                autoCorrect={false}
+                keyboardType="default"
+                placeholder="Enter your podcast title"
+                placeholderTextColor="#6b7280"
+                style={styles.inputControl}
+                value={title}
+                onChangeText={setTitle}
+              />
+            </View>
+
+            {/* Language Dropdown */}
+            <View style={styles.input}>
+              <Text style={styles.inputLabel}>
+                <Ionicon name="globe-outline" size={18} color="#222" /> Language *
+              </Text>
+              <TouchableOpacity
+                style={styles.languageSelector}
+                onPress={() => setLanguageModalVisible(true)}>
+                <Text style={styles.languageSelectorText}>
+                  {getLanguageLabel(language)}
+                </Text>
+                <Ionicon name="chevron-down" size={20} color="#6b7280" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Description */}
+            <View style={styles.input}>
+              <Text style={styles.inputLabel}>
+                <Ionicon name="document-text-outline" size={18} color="#222" /> Description *
+              </Text>
+              <TextInput
+                placeholder="Provide a brief overview of your podcast"
+                placeholderTextColor="#6b7280"
+                textAlignVertical="top"
+                style={styles.aboutInput}
+                multiline
+                numberOfLines={4}
+                autoCapitalize="sentences"
+                value={description}
+                onChangeText={text => {
+                  if (text.length <= 160) {
+                    setDescription(text);
+                  }
+                }}
+              />
+              <Text style={styles.charCounter}>{description.length}/160</Text>
+            </View>
+          </View>
+
+          {/* Tags Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>
+              <Ionicon name="pricetag-outline" size={18} color="#222" /> Tags
+            </Text>
+            <Text style={styles.sectionSubtitle}>
+              Select up to 5 tags to help people discover your podcast
+            </Text>
+
+            {selectedGenres.length > 0 && (
+              <View style={styles.selectedGenresWrapper}>
+                {selectedGenres.map((genre, index) => (
+                  <View key={index} style={styles.selectedGenreChip}>
+                    <Text style={styles.selectedGenreChipText}>#{genre.name}</Text>
+                    <TouchableOpacity onPress={() => handleGenrePress(genre)}>
+                      <Ionicon name="close-circle" size={18} color={PRIMARY_COLOR} />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            )}
 
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.genreContainer}>
-              {categories.map((genre, index) => (
+              {categories.map((genre: Category, index: number) => (
                 <TouchableOpacity
                   key={index}
                   style={[
                     styles.genreButton,
-                    isSelected(genre) &&
-                      styles.selectedGenreButton &&
-                      styles.selectedGenreButton,
+                    isSelected(genre) && styles.selectedGenreButton,
                   ]}
                   onPress={() => handleGenrePress(genre)}>
                   <Text
@@ -276,35 +352,66 @@ const PodcastForm = ({navigation, route}: PodcastFormProp) => {
               ))}
             </ScrollView>
           </View>
+
+          {/* Submit Button */}
           <TouchableOpacity
             style={styles.submitButton}
             onPress={handleCreatePost}>
-            <Text style={styles.submitButtonText}>Continue</Text>
+            <Text style={styles.submitButtonText}>Continue to Recording</Text>
+            <Ionicon name="arrow-forward" size={20} color="#fff" />
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
-    </ScrollView>
+      </KeyboardAwareScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: ON_PRIMARY_COLOR,
+    backgroundColor: '#f8f9fb',
   },
   form: {
-    marginTop: hp(3),
-
+    marginTop: hp(2),
     paddingHorizontal: 16,
+    paddingBottom: hp(4),
+  },
+  headerSection: {
+    marginBottom: 24,
+    paddingVertical: 16,
+  },
+  section: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    marginBottom: 4,
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 20,
   },
   input: {
     marginBottom: 16,
   },
   inputLabel: {
-    fontSize: 17,
+    fontSize: 15,
     fontWeight: '600',
     color: '#222',
     marginBottom: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   inputControl: {
     height: 50,
@@ -315,210 +422,260 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#222',
     borderWidth: 1,
-    borderColor: '#C9D3DB',
+    borderColor: '#E5E7EB',
   },
   aboutInput: {
-    height: 150,
+    height: 120,
     backgroundColor: '#fff',
     paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingVertical: 12,
     borderRadius: 12,
     fontSize: 15,
     fontWeight: '500',
     color: '#222',
     borderWidth: 1,
-    borderColor: '#C9D3DB',
+    borderColor: '#E5E7EB',
   },
   imageContainer: {
-    width: 300,
-    alignSelf: 'center',
-    height: 300,
-    borderRadius: 20,
+    width: '100%',
+    height: 200,
+    borderRadius: 12,
     overflow: 'hidden',
     position: 'relative',
+    marginTop: 8,
   },
   image: {
     width: '100%',
-    alignSelf: 'center',
-    resizeMode: 'contain',
     height: '100%',
-    aspectRatio: 3 / 2,
+    resizeMode: 'cover',
   },
   imageOverlay: {
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
     position: 'absolute',
     width: '100%',
     bottom: 0,
-    paddingVertical: 15,
+    paddingVertical: 12,
     flexDirection: 'row',
     justifyContent: 'space-around',
   },
   changeButton: {
     backgroundColor: 'white',
-    width: '40%',
-    padding: 3,
-    borderRadius: 50,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
   },
   changeButtonText: {
-    textAlign: 'center',
+    color: '#222',
+    fontWeight: '600',
+    fontSize: 14,
   },
   deleteButton: {
-    backgroundColor: 'red',
-    width: '40%',
-    padding: 3,
-    borderRadius: 50,
+    backgroundColor: '#EF4444',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
   },
   deleteButtonText: {
-    textAlign: 'center',
     color: 'white',
+    fontWeight: '600',
+    fontSize: 14,
   },
   uploadContainer: {
-    backgroundColor: 'rgba(0, 191, 255,0.1)',
-    height: 150,
+    backgroundColor: 'rgba(59, 130, 246, 0.05)',
+    height: 160,
     width: '100%',
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 16,
-    marginBottom: 16,
-  },
-
-  uploadImageContainer: {
-    flexDirection: 'row',
-    width: '96%',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 6,
-    borderWidth: 1,
-    borderColor: 'black',
-    borderRadius: 8,
-    marginStart: 7,
-    //marginBottom: 6,
-  },
-  checkbox: {
-    width: 24,
-    height: 24,
-    borderWidth: 1,
+    borderRadius: 12,
+    borderWidth: 2,
     borderStyle: 'dashed',
     borderColor: PRIMARY_COLOR,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    marginTop: 8,
   },
-  charCounter: {
-    marginTop: 4,
-    marginStart: 6,
-    alignSelf: 'flex-start',
-    color: 'black',
-    fontSize: 15,
-  },
-
   uploadText: {
-    color: 'black',
-    fontWeight: '500',
-    fontSize: 15,
+    color: '#222',
+    fontWeight: '600',
+    fontSize: 16,
+    marginTop: 8,
   },
   uploadHint: {
-    color: 'black',
-    fontSize: 12,
-    fontStyle: 'italic',
+    color: '#6b7280',
+    fontSize: 13,
+    marginTop: 4,
   },
-  dropdown: {
+  charCounter: {
+    marginTop: 6,
+    alignSelf: 'flex-end',
+    color: '#6b7280',
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  languageSelector: {
     height: 50,
-    borderColor: 'gray',
-    borderWidth: 0.5,
-    borderRadius: 8,
-    paddingHorizontal: 8,
-  },
-  placeholderStyle: {
-    fontSize: 16,
-  },
-  selectedTextStyle: {
-    fontSize: 16,
-    color: 'white',
-  },
-  inputSearchStyle: {
-    height: 40,
-    fontSize: 16,
-  },
-  iconStyle: {
-    width: 20,
-    height: 20,
-  },
-  selectedStyle: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 16,
     borderRadius: 12,
-    backgroundColor: PRIMARY_COLOR,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  languageSelectorText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#222',
   },
   submitButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: PRIMARY_COLOR,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
     padding: 16,
-    borderRadius: 8,
-    marginBottom: hp(8),
+    borderRadius: 12,
+    marginTop: 8,
+    marginBottom: hp(4),
+    shadowColor: PRIMARY_COLOR,
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   submitButtonText: {
     color: '#fff',
-    textAlign: 'center',
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 16,
+    fontWeight: '700',
   },
   genreContainer: {
-    height: 80,
-
-    padding: 16,
+    paddingVertical: 8,
     flexDirection: 'row',
   },
   genreButton: {
-    backgroundColor: '#f0f0f0',
-    flex: 0,
-    padding: 8,
-    margin: 4,
-    borderRadius: 8,
-    alignItems: 'center',
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    marginRight: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
   genreButtonText: {
-    color: '#666',
+    color: '#374151',
+    fontSize: 14,
+    fontWeight: '600',
   },
   selectedGenreButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: PRIMARY_COLOR,
+    borderColor: PRIMARY_COLOR,
   },
   selectedGenreButtonText: {
     color: '#fff',
   },
-  selectedGenresContainer: {
+  selectedGenresWrapper: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    padding: 16,
+    marginBottom: 12,
+    marginTop: 8,
   },
-  selectedGenreItem: {
-    backgroundColor: '#007bff',
-    padding: 8,
-    margin: 4,
-    borderRadius: 4,
+  selectedGenreChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    marginRight: 8,
+    marginBottom: 8,
+    gap: 6,
+  },
+  selectedGenreChipText: {
+    color: PRIMARY_COLOR,
+    fontSize: 14,
+    fontWeight: '600',
   },
   selectedGenreText: {
     color: PRIMARY_COLOR,
     marginHorizontal: hp(0.5),
   },
-
   warningContainer: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(217, 83, 79, 0.1)',
+    backgroundColor: 'rgba(251, 146, 60, 0.1)',
     borderLeftWidth: 4,
-    borderLeftColor: '#FF8C42',
-    padding: 12,
-    marginTop: hp(0.5),
+    borderLeftColor: '#FB923C',
+    padding: 16,
+    marginTop: hp(1),
     marginHorizontal: 16,
-    borderRadius: 8,
+    borderRadius: 12,
     marginBottom: 16,
     alignItems: 'flex-start',
   },
   warningTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
-    color: '#D9534F',
-    marginBottom: 4,
+    color: '#EA580C',
+    marginBottom: 6,
   },
   warningText: {
-    fontSize: 15,
-    color: '#444',
+    fontSize: 14,
+    color: '#78350F',
     lineHeight: 20,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingTop: 8,
+    maxHeight: '70%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1a1a1a',
+  },
+  languageItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  selectedLanguageItem: {
+    backgroundColor: 'rgba(59, 130, 246, 0.05)',
+  },
+  languageItemText: {
+    fontSize: 16,
+    color: '#374151',
+    fontWeight: '500',
+  },
+  selectedLanguageItemText: {
+    color: PRIMARY_COLOR,
+    fontWeight: '700',
   },
 });
 

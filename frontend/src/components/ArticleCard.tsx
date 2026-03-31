@@ -11,65 +11,80 @@ import {
 } from 'react-native';
 import {useEffect, useState} from 'react';
 import {fp} from '../helper/Metric';
-import {ArticleCardProps, ArticleData, User} from '../type';
+import {ArticleCardProps, ArticleData} from '../type';
 import moment from 'moment';
 import {useSelector} from 'react-redux';
-import axios from 'axios';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import IonIcons from '@expo/vector-icons/Ionicons';
-import {useMutation, useQuery} from '@tanstack/react-query';
-import {
-  GET_ARTICLE_CONTENT,
-  GET_IMAGE,
-  GET_PROFILE_API,
-  LIKE_ARTICLE,
-  SAVE_ARTICLE,
-} from '../helper/APIUtils';
+import {GET_IMAGE} from '../helper/APIUtils';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import {
   formatCount,
   requestStoragePermissions,
   StatusEnum,
 } from '../helper/Utils';
-import {
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
+import {useSharedValue, withTiming} from 'react-native-reanimated';
 import ArticleFloatingMenu from './ArticleFloatingMenu';
-//import io from 'socket.io-client';
+
 import Entypo from '@expo/vector-icons/Entypo';
 import Share from 'react-native-share';
 import RNFS from 'react-native-fs';
-//import {RNHTMLtoPDF} from 'react-native-html-to-pdf';
 import {generatePDF} from 'react-native-html-to-pdf';
 import {useSocket} from '../../SocketContext';
 import EditRequestModal from './EditRequestModal';
 import {FontAwesome, FontAwesome6} from '@expo/vector-icons';
 import Snackbar from 'react-native-snackbar';
+import {useGetProfile} from '../hooks/useGetProfile';
+import {useLikeArticle} from '../hooks/useLikeArticle';
+import {useSaveArticle} from '../hooks/useSaveArticle';
+import {useLazyGetArticleContent} from '../hooks/useLazyGetArticleContent';
+import {useRepostArticle} from '../hooks/useArticleRepost';
 
 const ArticleCard = ({
   item,
   navigation,
   setSelectedCardId,
-  success,
-  handleRepostAction,
   handleReportAction,
   handleEditRequestAction,
   source,
 }: ArticleCardProps) => {
-  const {user_token, user_id} = useSelector((state: any) => state.user);
+  const {user_id, user_handle} = useSelector((state: any) => state.user);
   const {isConnected} = useSelector((state: any) => state.network);
 
-  //const socket = io('http://51.20.1.81:8084');
   const socket = useSocket();
   const width = useSharedValue(0);
   const yValue = useSharedValue(60);
   const [requestModalVisible, setRequestModalVisible] =
     useState<boolean>(false);
   const [menuVisible, setMenuVisible] = useState(false);
+  const {data: user} = useGetProfile();
 
-  //console.log("Repost users", item.repostUsers);
-  //console.log('Image Utils', item?.imageUtils[0]);
+  const [isLiked, setIsLiked] = useState(
+    item.likedUsers.some(
+      it =>
+        (it._id && it._id.toString() === user_id) || it.toString() === user_id,
+    ),
+  );
+  const [likeCount, setLikeCount] = useState(item.likedUsers.length);
+  const [repostCount, setRepostCount] = useState(item.repostUsers.length);
+
+  const [saved, setSaved] = useState(item.savedUsers.includes(user_id));
+  const [reposted, setReposted] = useState(
+    item.repostUsers.some(user => user.toString() === user_id),
+  );
+
+  const {mutate: likeMutation, isPending: likeMutationPending} = useLikeArticle(
+    Number(item._id),
+  );
+  const {mutate: saveMutation, isPending: saveMutationPending} = useSaveArticle(
+    Number(item._id),
+  );
+
+  const {mutate: repost, isPending: repostPending} = useRepostArticle();
+
+  const {mutate: getArticleContent, isPending: getArticleContentPending} =
+    useLazyGetArticleContent();
+
   const handleShare = async () => {
     try {
       const url =
@@ -89,12 +104,6 @@ const ArticleCard = ({
     } catch (error) {
       console.log('Error sharing:', error);
       Alert.alert('Error', 'Something went wrong while sharing.');
-      // dispatch(
-      //   showAlert({
-      //     title: 'Error!',
-      //     message: 'Something went wrong while sharing.',
-      //   }),
-      // );
       setMenuVisible(false);
     }
   };
@@ -104,130 +113,10 @@ const ArticleCard = ({
       console.log('connection established');
     });
   }, [socket]);
-  const {data: user} = useQuery({
-    queryKey: ['get-my-profile'],
-    queryFn: async () => {
-      const response = await axios.get(`${GET_PROFILE_API}`, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      });
-      return response.data.profile as User;
-    },
-  });
-
-  const updateSaveStatusMutation = useMutation({
-    mutationKey: ['update-view-count'],
-    mutationFn: async () => {
-      if (user_token === '') {
-        Alert.alert('No token found');
-        // dispatch(
-        //   showAlert({
-        //     title: 'Alert!',
-        //     message: 'No token found',
-        //   }),
-        // );
-        return;
-      }
-      const res = await axios.post(
-        SAVE_ARTICLE,
-        {
-          article_id: item._id,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-
-      return res.data as any;
-    },
-    onSuccess: async () => {
-      success();
-    },
-
-    onError: () => {
-      //console.log('Update View Count Error', error);
-      Alert.alert('Internal server error, try again!');
-      // dispatch(
-      //   showAlert({
-      //     title: 'Server error',
-      //     message: 'Try again!',
-      //   }),
-      // );
-    },
-  });
-
-  const updateLikeMutation = useMutation({
-    mutationKey: ['update-like-status'],
-
-    mutationFn: async () => {
-      if (user_token === '') {
-        Alert.alert('No token found');
-        // dispatch(
-        //   showAlert({
-        //     title: 'Alert!',
-        //     message: 'No token found',
-        //   }),
-        // );
-        return;
-      }
-      const res = await axios.post(
-        LIKE_ARTICLE,
-        {
-          article_id: item._id,
-          //user_id: user_id,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-      return res.data.data as {
-        article: ArticleData;
-        likeStatus: boolean;
-      };
-    },
-
-    onSuccess: data => {
-      //dispatch(setArticle({article: data}));
-
-      //console.log('author', data);
-      if (data?.likeStatus) {
-        // data.userId, data.articleId, data.podcastId, data.articleRecordId, data.title, data.message
-        socket.emit('notification', {
-          type: 'likePost',
-          userId: data?.article?.authorId,
-          articleId: data?.article?._id,
-          podcastId: null,
-          articleRecordId: data?.article?.pb_recordId,
-          title: user
-            ? `${user?.user_handle} liked your post`
-            : 'Someone liked your post',
-          message: data?.article?.title,
-        });
-      }
-      success();
-    },
-
-    onError: () => {
-      Alert.alert('Try Again!');
-      //console.log('Like Error', err);
-      // dispatch(
-      //   showAlert({
-      //     title: 'Server error',
-      //     message: 'Please try again',
-      //   }),
-      // );
-    },
-  });
 
   const onChange = () => {
-   
     setMenuVisible(true);
-     console.log('Menu visible',menuVisible);
+    console.log('Menu visible', menuVisible);
   };
 
   const generatePDFFromUrl = async (recordId: string, title: string) => {
@@ -244,27 +133,23 @@ const ArticleCard = ({
         });
         return;
       }
-      const response = await axios.get(`${GET_ARTICLE_CONTENT}/${recordId}`, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
+
+      getArticleContent(recordId, {
+        onSuccess: async (htmlContent: string) => {
+          if (htmlContent) {
+            console.log('Response', htmlContent);
+            await generatePDFData(title, htmlContent);
+            setMenuVisible(false);
+          }
+        },
+        onError: error => {
+          console.error('Error generating PDF:', error);
+          Alert.alert('Error', 'Something went wrong while creating the PDF.');
         },
       });
-
-      if (response.data.htmlContent) {
-        console.log('Response', response.data.htmlContent);
-        const htmlContent = response.data.htmlContent;
-        await generatePDFData(title, htmlContent);
-        setMenuVisible(false);
-      }
     } catch (error) {
       console.error('Error generating PDF:', error);
       Alert.alert('Error', 'Something went wrong while creating the PDF.');
-      // dispatch(
-      //   showAlert({
-      //     title: 'Error!',
-      //     message: 'Something went wrong while creating the PDF.',
-      //   }),
-      // );
     }
   };
 
@@ -306,6 +191,55 @@ const ArticleCard = ({
     }
   };
 
+  const repostAction = () => {
+    if (isConnected) {
+      repost(Number(item._id), {
+        onSuccess: data => {
+          if (reposted === false) {
+
+            console.log('Repost success', data);
+            setReposted(true);
+            const body = {
+              type: 'repost',
+              userId: user_id,
+              authorId: item.authorId,
+              postId: item._id,
+              articleRecordId: item.pb_recordId,
+              message: {
+                title: `${user_handle} reposted`,
+                message: `${item.title}`,
+              },
+              authorMessage: {
+                title: `${user_handle} reposted your article`,
+                message: `${item.title}`,
+              },
+            };
+
+            setRepostCount(prev => prev + 1);
+
+            socket.emit('notification', body);
+          }
+
+          Snackbar.show({
+            text: data.message,
+            duration: Snackbar.LENGTH_SHORT,
+          });
+        },
+        onError: err => {
+          console.log('Repost error', err);
+          Snackbar.show({
+            text: 'Something went wrong, try again!',
+            duration: Snackbar.LENGTH_SHORT,
+          });
+        },
+      });
+    } else {
+      Snackbar.show({
+        text: 'Please check your internet connection',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+    }
+  };
   return (
     <Pressable
       onPress={() => {
@@ -362,7 +296,7 @@ const ArticleCard = ({
                   articleId: item._id,
                   name: 'Repost in your feed',
                   action: () => {
-                    handleRepostAction(item);
+                    repostAction();
                     //handleAnimation();
                     setMenuVisible(false);
                   },
@@ -426,7 +360,7 @@ const ArticleCard = ({
             <Text style={styles.footerText1}>{item?.authorName}</Text>
             <Text style={styles.dot}>•</Text>
             <Text style={styles.footerText1}>
-              {formatCount(item?.viewUsers?.length || 0)} views
+              {formatCount(item?.viewCount || 0)} views
             </Text>
             <Text style={styles.dot}>•</Text>
             <Text style={styles.footerText1}>
@@ -448,15 +382,54 @@ const ArticleCard = ({
 
           {/* Like, Save, and Comment Actions */}
           <View style={styles.likeSaveContainer}>
-            {updateLikeMutation.isPending ? (
+            {likeMutationPending ? (
               <ActivityIndicator size="small" color={PRIMARY_COLOR} />
             ) : (
               <TouchableOpacity
                 onPress={() => {
-                  //width.value = withTiming(0, {duration: 250});
-                  //yValue.value = withTiming(100, {duration: 250});
                   if (isConnected) {
-                    updateLikeMutation.mutate();
+                    const previousIsLiked = isLiked;
+                    const previousLikeCount = likeCount;
+
+                    // Optimistic update
+                    setIsLiked(!isLiked);
+                    setLikeCount(prev =>
+                      isLiked ? (prev - 1 > 0 ? prev - 1 : 0) : prev + 1,
+                    );
+
+                    likeMutation(undefined, {
+                      onSuccess: (data: {
+                        article: ArticleData;
+                        likeStatus: boolean;
+                      }) => {
+                        console.log('Article like success', data.likeStatus);
+                        setIsLiked(data?.likeStatus);
+
+                        if (data?.likeStatus) {
+                          socket.emit('notification', {
+                            type: 'likePost',
+                            userId: data?.article?.authorId,
+                            articleId: data?.article?._id,
+                            podcastId: null,
+                            articleRecordId: data?.article?.pb_recordId,
+                            title: user
+                              ? `${user?.user_handle} liked your post`
+                              : 'Someone liked your post',
+                            message: data?.article?.title,
+                          });
+                        }
+                      },
+                      onError: (err: any) => {
+                        console.log('Like error', err);
+                        // Rollback optimistic update
+                        setIsLiked(previousIsLiked);
+                        setLikeCount(previousLikeCount);
+                        Snackbar.show({
+                          text: 'something went wrong, try again!',
+                          duration: Snackbar.LENGTH_SHORT,
+                        });
+                      },
+                    });
                   } else {
                     Snackbar.show({
                       text: 'Please check your network connection',
@@ -465,11 +438,7 @@ const ArticleCard = ({
                   }
                 }}
                 style={styles.likeSaveChildContainer}>
-                {item.likedUsers.some(
-                  it =>
-                    (it._id && it._id.toString() === user_id) ||
-                    it.toString() === user_id,
-                ) ? (
+                {isLiked ? (
                   <AntDesign name="heart" size={24} color={PRIMARY_COLOR} />
                 ) : (
                   <FontAwesome name="heart-o" size={24} color={'black'} />
@@ -481,7 +450,7 @@ const ArticleCard = ({
                     fontWeight: '500',
                     color: 'black',
                   }}>
-                  {formatCount(item.likedUsers.length)}
+                  {formatCount(likeCount)}
                 </Text>
               </TouchableOpacity>
             )}
@@ -501,28 +470,32 @@ const ArticleCard = ({
             </TouchableOpacity>
 
             {source === 'home' && (
-              <TouchableOpacity
-                onPress={() => {
-                  // width.value = withTiming(0, {duration: 300});
-                  // yValue.value = withTiming(100, {duration: 300});
-                  handleRepostAction(item);
-                }}
-                style={styles.likeSaveChildContainer}>
-                <FontAwesome6
-                  name="arrows-rotate"
-                  size={24}
-                  color={'#414A4C'}
-                />
-                <Text
-                  style={{
-                    ...styles.title,
-                    fontWeight: '500',
-                    marginStart: 3,
-                    color: 'black',
-                  }}>
-                  {formatCount(item.repostUsers.length)}
-                </Text>
-              </TouchableOpacity>
+              <>
+                {repostPending ? (
+                  <ActivityIndicator size="small" color={PRIMARY_COLOR} />
+                ) : (
+                  <TouchableOpacity
+                    onPress={() => {
+                      repostAction();
+                    }}
+                    style={styles.likeSaveChildContainer}>
+                    <FontAwesome6
+                      name="arrows-rotate"
+                      size={24}
+                      color={!reposted ? '#414A4C' : PRIMARY_COLOR}
+                    />
+                    <Text
+                      style={{
+                        ...styles.title,
+                        fontWeight: '500',
+                        marginStart: 3,
+                        color: 'black',
+                      }}>
+                      {formatCount(repostCount)}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </>
             )}
 
             {source === 'home' && (
@@ -533,16 +506,11 @@ const ArticleCard = ({
                   handleShare();
                 }}
                 style={styles.likeSaveChildContainer}>
-                <FontAwesome
-                  name="share-alt"
-                  size={24}
-                  color={'#414A4C'}
-                />
-              
+                <FontAwesome name="share-alt" size={24} color={'#414A4C'} />
               </TouchableOpacity>
             )}
 
-            {updateSaveStatusMutation.isPending ? (
+            {saveMutationPending ? (
               <ActivityIndicator size="small" color={PRIMARY_COLOR} />
             ) : (
               <TouchableOpacity
@@ -550,7 +518,23 @@ const ArticleCard = ({
                   if (isConnected) {
                     width.value = withTiming(0, {duration: 250});
                     yValue.value = withTiming(100, {duration: 250});
-                    updateSaveStatusMutation.mutate();
+                    saveMutation(undefined, {
+                      onSuccess: async data => {
+                        console.log('Article save success', data);
+                        Snackbar.show({
+                          text: data.message,
+                          duration: Snackbar.LENGTH_SHORT,
+                        });
+                        setSaved(!saved);
+                      },
+
+                      onError: () => {
+                        Snackbar.show({
+                          text: 'Something went wrong, try again!',
+                          duration: Snackbar.LENGTH_SHORT,
+                        });
+                      },
+                    });
                   } else {
                     Snackbar.show({
                       text: 'Please check your network connection',
@@ -559,10 +543,14 @@ const ArticleCard = ({
                   }
                 }}
                 style={styles.likeSaveChildContainer}>
-                {item.savedUsers.includes(user_id) ? (
+                {saved ? (
                   <IonIcons name="bookmark" size={24} color={PRIMARY_COLOR} />
                 ) : (
-                  <IonIcons name="bookmark-outline" size={24} color={'#414A4C'} />
+                  <IonIcons
+                    name="bookmark-outline"
+                    size={24}
+                    color={'#414A4C'}
+                  />
                 )}
               </TouchableOpacity>
             )}
@@ -571,7 +559,11 @@ const ArticleCard = ({
               <TouchableOpacity
                 style={styles.likeSaveChildContainer}
                 onPress={onChange}>
-                <Entypo name="dots-three-vertical" size={20} color={'#414A4C'} />
+                <Entypo
+                  name="dots-three-vertical"
+                  size={20}
+                  color={'#414A4C'}
+                />
               </TouchableOpacity>
             )}
           </View>

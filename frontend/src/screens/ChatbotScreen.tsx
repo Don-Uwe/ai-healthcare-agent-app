@@ -1,4 +1,4 @@
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {
   Bubble,
   GiftedChat,
@@ -17,19 +17,16 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import {useMutation, useQuery} from '@tanstack/react-query';
-import {
-  CHAT_URL,
-  GET_PROFILE_API,
-  GET_STORAGE_DATA,
-  SEND_MESSAGE_TO_GEMINI,
-} from '../helper/APIUtils';
-import axios, {AxiosError} from 'axios';
-import {ChatBotScreenProps, Message, User} from '../type';
+import {GET_STORAGE_DATA} from '../helper/APIUtils';
+import {AxiosError} from 'axios';
+import {ChatBotScreenProps, Message} from '../type';
 import {hp} from '../helper/Metric';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {MaterialCommunityIcons} from '@expo/vector-icons';
-import {showAlert} from '../store/alertSlice';
+import {useGetProfile} from '../hooks/useGetProfile';
+import {useSendMessageToGemini} from '../hooks/useSendMessageToGemini';
+import {useLoadAIConversations} from '../hooks/useLoadAIChats';
+import Snackbar from 'react-native-snackbar';
 
 // interface ChatbotResponse {
 //   id: string;
@@ -53,57 +50,24 @@ import {showAlert} from '../store/alertSlice';
 
 const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
   const {user_id, user_token} = useSelector((state: any) => state.user);
+  const {isConnected} = useSelector((state: any) => state.network);
 
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [isTyping, setIsTyping] = useState<boolean>(true);
   const dispatch = useDispatch();
+  const {data: user} = useGetProfile();
   // const token = 'GPMFAQIV2BGXCWYMCVQ3IPVXSOOLI53H5NYA'; //token
 
   //console.log("User Token", user_token);
 
-  const convertToGiftedFormat = (items: Message[]): IMessage[] => {
-    return items.map(m => ({
-      _id: m._id,
-      text: m.text,
-      createdAt: new Date(m.timestamp),
-      user: {
-        _id: m.role === 'user' ? 1 : 2,
-        avatar: m.profileImage
-          ? `${GET_STORAGE_DATA}/${m.profileImage}`
-          : m.role === 'assistant'
-          ? 'https://static.vecteezy.com/system/resources/previews/026/309/247/non_2x/robot-chat-or-chat-bot-logo-modern-conversation-automatic-technology-logo-design-template-vector.jpg'
-          : undefined,
-      },
-    }));
-  };
+  const {mutate: sendMessageToAI, isPending: messageProcessPending} =
+    useSendMessageToGemini();
+  const {data: conversations, isLoading: conversationLoading} =
+    useLoadAIConversations(isConnected);
 
-  const {
-    data: user,
-    refetch,
-    isLoading,
-  } = useQuery({
-    queryKey: ['get-profile'],
-    queryFn: async () => {
-      const response = await axios.get(`${GET_PROFILE_API}`, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      });
-      return response.data.profile as User;
-    },
-  });
-
-  useQuery({
-    queryKey: ['load-user-conversations'],
-    queryFn: async () => {
-      const response = await axios.get(`${CHAT_URL}`, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      });
-
-      const d = response.data.messages as Message[];
-      const refined = convertToGiftedFormat(d);
+  useEffect(() => {
+    if (conversations) {
+      const refined = convertToGiftedFormat(conversations);
       setMessages([
         {
           _id: refined.length + 1,
@@ -119,139 +83,109 @@ const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
       ]);
 
       setIsTyping(false);
-      return response.data.messages as Message[];
-    },
-  });
+    }
+  }, [conversations]);
 
-  const sendChatbotRequestMutation = useMutation<Message, AxiosError, string>({
-    mutationKey: ['chatbot-response'],
-    mutationFn: async (message: string) => {
-      const response = await axios.post(
-        `${SEND_MESSAGE_TO_GEMINI}`,
-        {
-          text: message,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-      return response.data.message as Message;
-    },
-    onSuccess: (responseData: Message) => {
-      setMessages(previousMessages =>
-        GiftedChat.append(previousMessages, [
-          {
-            _id: responseData._id,
-            text: responseData.text,
-            createdAt: new Date(),
-            user: {
-              _id: 2,
-              avatar:
-                'https://static.vecteezy.com/system/resources/previews/026/309/247/non_2x/robot-chat-or-chat-bot-logo-modern-conversation-automatic-technology-logo-design-template-vector.jpg',
-            },
-          },
-        ]),
-      );
-    },
-    onError: (error: AxiosError) => {
-      console.log('Error', error);
-      if (error.response) {
-        const statusCode = error.response.status;
-        switch (statusCode) {
-          case 401:
-             Alert.alert('Authentication Error', 'Unauthorized Access');
-            // dispatch(
-            //   showAlert({
-            //     title: 'Authentication Error',
-            //     message: 'Unauthorized access',
-            //   }),
-            // );
-            break;
-          case 422:
-            Alert.alert(
-              'Bad Request',
-              'Invalid request. Please check your input.',
-            );
-            // dispatch(
-            //   showAlert({
-            //     title: 'Bad Request',
-            //     message: 'Invalid request. Please check your input.',
-            //   }),
-            // );
-            break;
-          case 429:
-            setMessages(previousMessages =>
-              GiftedChat.append(previousMessages, [
-                {
-                  _id: previousMessages.length + 1,
-                  text: 'You’ve reached your daily limit. You can ask up to 5 questions per day',
-                  createdAt: new Date(),
-                  user: {
-                    _id: 2,
-                    avatar:
-                      'https://static.vecteezy.com/system/resources/previews/026/309/247/non_2x/robot-chat-or-chat-bot-logo-modern-conversation-automatic-technology-logo-design-template-vector.jpg',
-                  },
-                },
-              ]),
-            );
-            break;
+  const convertToGiftedFormat = (items: Message[]): IMessage[] => {
+    return items.map(m => ({
+      _id: m._id,
+      text: m.text,
+      createdAt: new Date(m.timestamp),
+      user: {
+        _id: m.role === 'user' ? 1 : 2,
+        avatar: m.profileImage
+          ? `${GET_STORAGE_DATA}/${m.profileImage}`
+          : m.role === 'assistant'
+            ? 'https://static.vecteezy.com/system/resources/previews/026/309/247/non_2x/robot-chat-or-chat-bot-logo-modern-conversation-automatic-technology-logo-design-template-vector.jpg'
+            : undefined,
+      },
+    }));
+  };
 
-          case 500:
-            Alert.alert(
-            'Server Error',
-            'An internal server error occurred. Please try again later.',
-            );
-            // dispatch(
-            //   showAlert({
-            //     title: 'Server Error',
-            //     message:
-            //       'An internal server error occurred. Please try again later.',
-            //   }),
-            // );
-            break;
-          default:
-            Alert.alert(
-              'Unknown Error',
-              'An unexpected error occurred. Please try again later.',
-            );
-            // dispatch(
-            //   showAlert({
-            //     title: 'Unknown Error',
-            //     message:
-            //       'An unexpected error occurred. Please try again later.',
-            //   }),
-            // );
-        }
-      } else {
-        if (error.message === 'Network Error') {
-          Alert.alert(
-            'Network Error',
-            'Unable to connect. Please check your internet connection and try again.',
-          );
-
-          // dispatch(
-          //   showAlert({
-          //     title: 'Network Error',
-          //     message: 'Unable to connect. Please check your internet connection and try again.',
-          //   }),
-          // );
-        } else {
-          Alert.alert('Error', 'Something went wrong. Please try again.');
-        //  dispatch(
-        //     showAlert({
-        //       title: 'Error',
-        //       message: 'Something went wrong. Please try again.',
-        //     }),
-        //   );
-        }
-      }
-    },
-  });
 
   const onSend = useCallback((messages: IMessage[] = []) => {
-    sendChatbotRequestMutation.mutate(messages[0]?.text ?? 'Nothing found');
+    if (isConnected) {
+      Snackbar.show({
+        text: 'Please check your internet connection and try again!',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+      return;
+    }
+    sendMessageToAI(messages[0]?.text ?? 'AI in health within 100 words', {
+      onSuccess: (responseData: Message) => {
+        setMessages(previousMessages =>
+          GiftedChat.append(previousMessages, [
+            {
+              _id: responseData._id,
+              text: responseData.text,
+              createdAt: new Date(),
+              user: {
+                _id: 2,
+                avatar:
+                  'https://static.vecteezy.com/system/resources/previews/026/309/247/non_2x/robot-chat-or-chat-bot-logo-modern-conversation-automatic-technology-logo-design-template-vector.jpg',
+              },
+            },
+          ]),
+        );
+      },
+      onError: (error: AxiosError) => {
+        console.log('Error', error);
+        if (error.response) {
+          const statusCode = error.response.status;
+          switch (statusCode) {
+            case 401:
+              Alert.alert('Authentication Error', 'Unauthorized Access');
+
+              break;
+            case 422:
+              Alert.alert(
+                'Bad Request',
+                'Invalid request. Please check your input.',
+              );
+
+              break;
+            case 429:
+              setMessages(previousMessages =>
+                GiftedChat.append(previousMessages, [
+                  {
+                    _id: previousMessages.length + 1,
+                    text: 'You’ve reached your daily limit. You can ask up to 5 questions per day',
+                    createdAt: new Date(),
+                    user: {
+                      _id: 2,
+                      avatar:
+                        'https://static.vecteezy.com/system/resources/previews/026/309/247/non_2x/robot-chat-or-chat-bot-logo-modern-conversation-automatic-technology-logo-design-template-vector.jpg',
+                    },
+                  },
+                ]),
+              );
+              break;
+
+            case 500:
+              Alert.alert(
+                'Server Error',
+                'An internal server error occurred. Please try again later.',
+              );
+
+              break;
+            default:
+              Alert.alert(
+                'Unknown Error',
+                'An unexpected error occurred. Please try again later.',
+              );
+          }
+        } else {
+          if (error.message === 'Network Error') {
+            Alert.alert(
+              'Network Error',
+              'Unable to connect. Please check your internet connection and try again.',
+            );
+          } else {
+            Alert.alert('Error', 'Something went wrong. Please try again.');
+          }
+        }
+      },
+    });
     setMessages(previousMessages =>
       GiftedChat.append(previousMessages, messages),
     );

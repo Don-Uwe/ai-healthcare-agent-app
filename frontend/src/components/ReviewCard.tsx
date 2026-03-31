@@ -11,7 +11,7 @@ import {ReviewCardProps} from '../type';
 import moment from 'moment';
 import {BUTTON_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import {formatCount, StatusEnum} from '../helper/Utils';
-import Animated, {
+import {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -41,12 +41,6 @@ const ReviewCard = ({
       ? 'red'
       : BUTTON_COLOR;
 
-  const menuStyle = useAnimatedStyle(() => {
-    return {
-      width: width.value,
-      transform: [{translateY: yValue.value}],
-    };
-  });
   //console.log('Image Utils', item?.imageUtils[0]);
 
   const handleAnimation = () => {
@@ -116,15 +110,14 @@ const ReviewCard = ({
 
           <Text style={styles.description}>{item?.description}</Text>
 
-          {item?.status === StatusEnum.PUBLISHED && (
-            <Text style={{...styles.footerText1, marginBottom: 3}}>
-              {item?.viewUsers
-                ? item?.viewUsers.length > 1
-                  ? `${formatCount(item?.viewUsers.length)} views`
-                  : `${item?.viewUsers.length} view`
-                : '0 view'}
-            </Text>
-          )}
+          <Text style={{...styles.footerText1, marginBottom: 3}}>
+            {item?.viewCount
+              ? item?.viewCount > 1
+                ? `${formatCount(item?.viewCount)} views`
+                : `${item?.viewCount} view`
+              : '0 view'}
+          </Text>
+
           <Text style={styles.footerText1}>
             Last updated: {''}
             {moment(new Date(item?.lastUpdated)).format('DD/MM/YYYY')}
@@ -170,14 +163,18 @@ const styles = StyleSheet.create({
   cardContainer: {
     flex: 0,
     width: '100%',
-    maxHeight: 390,
     backgroundColor: '#ffffff',
     flexDirection: 'row',
-    marginVertical: 14,
+    marginVertical: hp(1.5),
     overflow: 'hidden',
-    elevation: 4,
-
-    borderRadius: 12,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 5,
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
   },
   image: {
     flex: 0.8,
@@ -200,38 +197,38 @@ const styles = StyleSheet.create({
   textContainer: {
     flex: 1,
     backgroundColor: 'white',
-    paddingHorizontal: 10,
-    paddingVertical: 13,
-    //alignItems:"center"
+    paddingHorizontal: 16,
+    paddingVertical: 16,
   },
   title: {
     fontSize: fp(5.5),
-    fontWeight: 'bold',
-    color: '#121a26',
-    marginBottom: 4,
-    fontFamily: 'Lobster-Regular',
-    //alignSelf: 'center',
+    fontWeight: '800',
+    color: '#1A1A1A',
+    marginBottom: 6,
+    lineHeight: fp(6.5),
+    letterSpacing: 0.3,
   },
   description: {
-    fontSize: fp(3),
-    fontWeight: '600',
-    lineHeight: 18,
-    color: '#778599',
-    marginBottom: 10,
-    fontFamily: 'monospace',
+    fontSize: fp(3.4),
+    fontWeight: '500',
+    lineHeight: 20,
+    color: '#666666',
+    marginBottom: 12,
   },
   footerText: {
-    fontSize: fp(3.9),
+    fontSize: fp(3.5),
     fontWeight: '700',
     color: BUTTON_COLOR,
-    marginBottom: 3,
+    marginBottom: 6,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
 
   footerText1: {
-    fontSize: fp(3.5),
-    fontWeight: '600',
-    color: '#121a26',
-    marginBottom: 3,
+    fontSize: fp(3.3),
+    fontWeight: '500',
+    color: '#5A5A5A',
+    marginBottom: 4,
   },
 
   footerContainer: {
@@ -244,27 +241,35 @@ const styles = StyleSheet.create({
   },
   shareIconContainer: {
     position: 'absolute',
-    top: 2,
-    right: 1,
+    top: 8,
+    right: 8,
     zIndex: 1,
+    backgroundColor: '#F8F8F8',
+    borderRadius: 20,
+    padding: 8,
   },
   viewContainer: {
-    //flex: 1,
     justifyContent: 'space-between',
     flexDirection: 'row',
     paddingHorizontal: 2,
+    marginTop: 8,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#F0F0F0',
   },
   viewInnnerContainer: {
     justifyContent: 'flex-start',
     flexDirection: 'row',
-    padding: 2,
+    padding: 4,
+    backgroundColor: '#F0F8FF',
+    borderRadius: 8,
+    paddingHorizontal: 12,
   },
   viewText: {
-    fontSize: fp(4),
-    textDecorationLine: 'underline',
+    fontSize: fp(3.8),
     color: PRIMARY_COLOR,
     fontWeight: '700',
-    marginRight: 2,
+    marginRight: 4,
   },
   // future card styles
   //   card: {

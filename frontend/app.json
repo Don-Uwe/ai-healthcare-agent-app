@@ -2,10 +2,10 @@
   "expo": {
     "name": "UltimateHealth",
     "slug": "UltimateHealth",
-  
-    "version": "1.3.3",
+
+    "version": "2.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/ic_ultimatehealth_appicon.png",
     "scheme": "ultimatehealth",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -13,8 +13,14 @@
       "backgroundColor": "#00BFFF",
       "barStyle": "light-content"
     },
+    "splash": {
+      "image": "./assets/images/ic_ultimatehealth_appicon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#E6F4FE"
+    },
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.ultimatehealth.app",
       "infoPlist": {
         "NSMicrophoneUsageDescription": "App requires microphone access to record audio.",
         "NSPhotoLibraryAddUsageDescription": "App needs access to save recordings.",
@@ -63,14 +69,13 @@
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundImage": "./assets/images/adaptive-icon.png",
-        "monochromeImage": "./assets/images/adaptive-icon.png"
+        "foregroundImage": "./assets/images/ic_ultimatehealth_appicon_foreground.png",
+        "backgroundImage": "./assets/images/ic_launcher_background.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.UltimateHealth",
-      "versionCode": 20
+      "versionCode": 21
     },
     "web": {
       "output": "static",
@@ -83,12 +88,13 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/icon.png",
-          "imageWidth": 150,
+          "image": "./assets/images/ic_ultimatehealth_appicon.png",
+          "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#00BFFF",
+          "backgroundColor": "#E6F4FE",
           "dark": {
-            "backgroundColor": "#00BFFF"
+            "image": "./assets/images/ic_ultimatehealth_appicon.png",
+            "backgroundColor": "#1A1A1A"
           }
         }
       ],

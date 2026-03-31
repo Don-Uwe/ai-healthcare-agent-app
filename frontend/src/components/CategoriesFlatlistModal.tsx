@@ -1,15 +1,15 @@
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import React, {useCallback, useMemo} from 'react';
+import {StyleSheet, Text, TouchableOpacity, View, TextInput} from 'react-native';
+import React, {useCallback, useMemo, useState} from 'react';
 import {
   BottomSheetModal,
   BottomSheetFlatList,
   BottomSheetBackdrop,
 } from '@gorhom/bottom-sheet';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import {HomeScreenCategoriesFlatlistProps} from '../type.ts';
+import {HomeScreenCategoriesFlatlistProps} from '../type';
 
-import {BUTTON_COLOR, ON_PRIMARY_COLOR} from '../helper/Theme.ts';
-import {hp} from '../helper/Metric.ts';
+import {PRIMARY_COLOR} from '../helper/Theme';
+import {hp} from '../helper/Metric';
 
 
 const CategoriesFlatlistModal = ({
@@ -18,7 +18,8 @@ const CategoriesFlatlistModal = ({
   handleCategorySelection,
   selectCategoryList,
 }: HomeScreenCategoriesFlatlistProps) => {
-  
+  const [searchQuery, setSearchQuery] = useState('');
+
   const renderBackdrop = useCallback(
     props => (
       <BottomSheetBackdrop
@@ -31,39 +32,48 @@ const CategoriesFlatlistModal = ({
   );
 
   // Define snap points for the bottom sheet
-  const snapPoints = useMemo(() => ['25%', '70%', '90%'], []);
+  const snapPoints = useMemo(() => ['25%', '75%', '95%'], []);
+
+  // Filter categories based on search
+  const filteredCategories = useMemo(() => {
+    if (!searchQuery.trim()) return categories;
+    return categories.filter(cat =>
+      cat.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [categories, searchQuery]);
 
   // Function to render each category item
   const renderItem = useCallback(
-    ({item}) => (
-      <TouchableOpacity
-        style={[
-          styles.item,
-          {
-            backgroundColor: selectCategoryList.some(i=> i.id === item?.id)
-              ? BUTTON_COLOR
-              : 'white',
-          },
-        ]}
-        onPress={() => {
-          handleCategorySelection(item);
-        }}>
-        <Text
+    ({item}) => {
+      const isSelected = selectCategoryList.some(i => i.id === item?.id);
+      return (
+        <TouchableOpacity
           style={[
-            styles.itemText,
-            {
-              color: selectCategoryList.some(i=> i.id === item?.id)
-                ? 'white'
-                : '#1F2024',
+            styles.item,
+            isSelected && {
+              backgroundColor: '#EEF2FF',
+              borderColor: PRIMARY_COLOR,
             },
-          ]}>
-          {item?.name}
-        </Text>
-        {selectCategoryList.includes(item?.name) && (
-          <MaterialIcons name="check" size={26} color={'white'} />
-        )}
-      </TouchableOpacity>
-    ),
+          ]}
+          onPress={() => {
+            handleCategorySelection(item);
+          }}>
+          <Text
+            style={[
+              styles.itemText,
+              isSelected && {
+                color: PRIMARY_COLOR,
+                fontWeight: '600',
+              },
+            ]}>
+            {item?.name}
+          </Text>
+          {isSelected && (
+            <MaterialIcons name="check-circle" size={22} color={PRIMARY_COLOR} />
+          )}
+        </TouchableOpacity>
+      );
+    },
     [handleCategorySelection, selectCategoryList],
   );
 
@@ -79,25 +89,49 @@ const CategoriesFlatlistModal = ({
       index={1}
       backdropComponent={renderBackdrop}
       enablePanDownToClose={true}
-      style={{backgroundColor: ON_PRIMARY_COLOR}}>
+      style={{backgroundColor: 'white'}}>
       <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <TouchableOpacity
-            style={styles.headerButton}
-            onPress={handleDismissModalPress}>
-            <MaterialIcons name="arrow-back" size={26} color={'black'} />
-          </TouchableOpacity>
-        </View>
-        <Text style={styles.title}>Category</Text>
+        <TouchableOpacity
+          style={styles.headerButton}
+          onPress={handleDismissModalPress}>
+          <MaterialIcons name="arrow-back" size={24} color={PRIMARY_COLOR} />
+        </TouchableOpacity>
+        <Text style={styles.title}>All Categories</Text>
+        <View style={{width: 24}} />
       </View>
-      <BottomSheetFlatList
-        data={categories}
-        keyExtractor={item => item.id.toString()}
-        renderItem={renderItem}
-        contentContainerStyle={styles.contentContainer}
-        contentInsetAdjustmentBehavior={'always'}
-        extraData={selectCategoryList}
-      />
+
+      <View style={styles.searchContainer}>
+        <MaterialIcons name="search" size={20} color="#9ca3af" style={styles.searchIcon} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search categories..."
+          placeholderTextColor="#9ca3af"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity onPress={() => setSearchQuery('')}>
+            <MaterialIcons name="close" size={20} color="#9ca3af" />
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {filteredCategories.length === 0 ? (
+        <View style={styles.noResults}>
+          <MaterialIcons name="search-off" size={48} color="#9ca3af" />
+          <Text style={styles.noResultsText}>No categories found</Text>
+          <Text style={styles.noResultsSubText}>Try a different search term</Text>
+        </View>
+      ) : (
+        <BottomSheetFlatList
+          data={filteredCategories}
+          keyExtractor={item => item.id.toString()}
+          renderItem={renderItem}
+          contentContainerStyle={styles.contentContainer}
+          contentInsetAdjustmentBehavior={'always'}
+          extraData={selectCategoryList}
+        />
+      )}
     </BottomSheetModal>
   );
 };
@@ -107,53 +141,84 @@ export default CategoriesFlatlistModal;
 // Styles for the component
 const styles = StyleSheet.create({
   header: {
-    position: 'relative',
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-    width: '100%',
-  },
-  headerLeft: {
-    position: 'absolute',
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    left: 10,
+    borderBottomColor: '#E5E7EB',
+    backgroundColor: 'white',
   },
   headerButton: {
-    zIndex: 12,
+    padding: 4,
   },
   title: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1d1d1d',
+    fontWeight: '700',
+    color: '#111827',
+    flex: 1,
     textAlign: 'center',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    marginHorizontal: 20,
+    marginVertical: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    height: 48,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 15,
+    color: '#111827',
+    paddingVertical: 0,
   },
   contentContainer: {
     paddingTop: 8,
     backgroundColor: 'white',
-    paddingBottom: 10,
-    paddingHorizontal: 16,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
   },
   item: {
-    borderWidth: 0.5,
-    borderRadius: 15,
-    //paddingVertical: 16,
-    paddingVertical: hp(1.2),
-    paddingHorizontal: 15,
+    borderWidth: 1.5,
+    borderRadius: 12,
+    paddingVertical: hp(1.4),
+    paddingHorizontal: 16,
     marginBottom: 10,
-    borderColor: '#C5C6CC',
+    borderColor: '#E5E7EB',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    backgroundColor: 'white',
   },
   itemText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#374151',
+  },
+  noResults: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  noResultsText: {
     fontSize: 18,
-    fontWeight: 'regular',
+    fontWeight: '600',
+    color: '#6B7280',
+    marginTop: 16,
+  },
+  noResultsSubText: {
+    fontSize: 14,
+    color: '#9ca3af',
+    marginTop: 8,
   },
 });

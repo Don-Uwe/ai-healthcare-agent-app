@@ -7,20 +7,18 @@ import {
   Dimensions,
   TouchableOpacity,
   TextInput,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
-import {useMutation, useQuery} from '@tanstack/react-query';
 import {useSelector} from 'react-redux';
 import {PRIMARY_COLOR} from '../helper/Theme';
-import axios from 'axios';
-import {GET_PLAYLIST, UPDATE_PODCAST_PLAYLIST} from '../helper/APIUtils';
 import Entypo from '@expo/vector-icons/Entypo';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Feather from '@expo/vector-icons/Feather';
 import {PlayList} from '../type';
 import Snackbar from 'react-native-snackbar';
 import NoInternet from './NoInternet';
+import {useGetPlaylists} from '../hooks/useGetPlaylists';
+import {useUpdatePodcastPlaylist} from '../hooks/useUpdatePodcastPlaylist';
 
 interface Props {
   //podcast_ids: string[];
@@ -35,6 +33,10 @@ export default function CreatePlaylist({visible, dismiss}: Props) {
   const {isConnected} = useSelector((state: any) => state.network);
   const [addedPlaylistIds, setAddedPlaylistIds] = useState<string[]>([]);
   const [removePlaylistIds, setRemovePlaylistIds] = useState<string[]>([]);
+
+  const {data: playlists} = useGetPlaylists();
+  const {mutate: updatePlaylist, isPending: updatePlaylistPending} =
+    useUpdatePodcastPlaylist();
 
   const onCheck = (id: string) => {
     // add the playlist id addedPlaylist
@@ -59,19 +61,6 @@ export default function CreatePlaylist({visible, dismiss}: Props) {
     }
   };
 
-  const {data: playlists} = useQuery({
-    queryKey: ['get-my-playlists'],
-    queryFn: async () => {
-      const res = await axios.get(GET_PLAYLIST, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      });
-      return res.data as PlayList[];
-    },
-  });
-
-  //console.log('podcast_ids', podcast_ids);
   /*
   // Add Playlist Mutation
   const addPlaylistMutation = useMutation({
@@ -161,48 +150,6 @@ export default function CreatePlaylist({visible, dismiss}: Props) {
   };
   */
 
-  const updatePlaylistMutation = useMutation({
-    mutationKey: ['update-podcast-playlist'],
-    mutationFn: async () => {
-      const res = await axios.post(
-        UPDATE_PODCAST_PLAYLIST,
-        {
-          addPlaylistIds: addedPlaylistIds,
-          removePlaylistIds: removePlaylistIds,
-          playlist_name: inputValue,
-          podcast_id: addedPodcastId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-      return res.data as any;
-    },
-    onSuccess: () => {
-      Snackbar.show({
-        text: 'Podcast added',
-        duration: Snackbar.LENGTH_SHORT,
-      });
-      dismiss();
-    },
-    onError: err => {
-
-      Snackbar.show({
-        text: err.message,
-        duration: Snackbar.LENGTH_SHORT,
-      });
-      //Alert.alert(err.message);
-      //setInputValue('');
-      clear();
-    },
-  });
-
-  const updatePlaylist = () => {
-    updatePlaylistMutation.mutate();
-  };
-
   const clear = () => {
     setAddedPlaylistIds([]);
     setRemovePlaylistIds([]);
@@ -275,7 +222,7 @@ export default function CreatePlaylist({visible, dismiss}: Props) {
             removePlaylistIds.length > 0 ||
             inputValue !== '') && (
             <>
-              {updatePlaylistMutation.isPending ? (
+              {updatePlaylistPending ? (
                 <ActivityIndicator size="small" color={PRIMARY_COLOR} />
               ) : (
                 <TouchableOpacity
@@ -285,7 +232,32 @@ export default function CreatePlaylist({visible, dismiss}: Props) {
                     alignItems: 'center',
                     marginTop: 10,
                   }}
-                  onPress={updatePlaylist}>
+                  onPress={() => {
+                    updatePlaylist(
+                      {
+                        addPlaylistIds: addedPlaylistIds,
+                        removePlaylistIds: removePlaylistIds,
+                        playlist_name: inputValue,
+                        podcast_id: addedPodcastId,
+                      },
+                      {
+                        onSuccess: () => {
+                          Snackbar.show({
+                            text: 'Podcast added',
+                            duration: Snackbar.LENGTH_SHORT,
+                          });
+                          dismiss();
+                        },
+                        onError: err => {
+                          Snackbar.show({
+                            text: err.message,
+                            duration: Snackbar.LENGTH_SHORT,
+                          });
+                          clear();
+                        },
+                      },
+                    );
+                  }}>
                   <Text style={styles.addButtonText}>Save</Text>
                 </TouchableOpacity>
               )}
@@ -294,7 +266,11 @@ export default function CreatePlaylist({visible, dismiss}: Props) {
         </View>
       ) : (
         <View style={styles.modalContent}>
-          <NoInternet onRetry={() => {dismiss()}} />
+          <NoInternet
+            onRetry={() => {
+              dismiss();
+            }}
+          />
         </View>
       )}
     </Modal>

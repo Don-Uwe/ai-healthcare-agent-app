@@ -15,16 +15,18 @@ import {
 import {KEYS, storeItem} from '../../helper/Utils';
 
 import Icon from '@expo/vector-icons/Ionicons';
-import {AuthData, LoginScreenProp, User} from '../../type';
-import {useMutation} from '@tanstack/react-query';
+import {AuthData, LoginScreenProp} from '../../type';
 import axios, {AxiosError} from 'axios';
 import {useDispatch} from 'react-redux';
-import {LOGIN_API, RESEND_VERIFICATION, SEND_OTP} from '../../helper/APIUtils';
 import Loader from '../../components/Loader';
 import {setUserHandle, setUserId, setUserToken} from '../../store/UserSlice';
 import messaging from '@react-native-firebase/messaging';
 import Entypo from '@expo/vector-icons/Entypo';
 import EmailInputBottomSheet from '../../components/EmailInputModal';
+import {useRequestVerification} from '@/src/hooks/useResendVerification';
+import Snackbar from 'react-native-snackbar';
+import {useSendOtpMutation} from '@/src/hooks/useSendOtp';
+import {useLoginMutation} from '@/src/hooks/useUserLogin';
 
 const LoginScreen = ({navigation, route}: LoginScreenProp) => {
   const inset = useSafeAreaInsets();
@@ -44,6 +46,12 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
   const [emailMessage, setEmailMessage] = useState(false);
 
   const [secureTextEntry, setSecureTextEntry] = useState(true);
+  const {mutate: resendVerification, isPending: resendVerificationPending} =
+    useRequestVerification();
+
+  const {mutate: sendOtp, isPending: sendOtpPending} = useSendOtpMutation();
+
+  const {mutate: login, isPending: loginPending} = useLoginMutation();
 
   const handleSecureEntryClickEvent = () => {
     setSecureTextEntry(!secureTextEntry);
@@ -65,27 +73,116 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
   }, [emailInputVisible]);
 
   async function getFCMToken() {
-    await requestUserPermission();
-    const fcmToken = await messaging().getToken();
-    if (fcmToken) {
-      console.log('FCM Token:', fcmToken);
-      setFcmToken(fcmToken);
-    } else {
-      console.log('Failed to get FCM Token');
-      return null;
+    try {
+      await requestUserPermission();
+      const fcmToken = await messaging().getToken();
+      if (fcmToken) {
+        console.log('FCM Token:', fcmToken);
+        setFcmToken(fcmToken);
+        return fcmToken;
+      } else {
+        console.log('Failed to get FCM Token');
+        return null;
+      }
+    } catch (error) {
+      console.log('Error getting FCM Token:', error);
+      // Return a placeholder token in debug mode to allow login to proceed
+      return __DEV__ ? 'debug-mode-token' : null;
     }
-    return fcmToken;
   }
 
   const validateAndSubmit = async () => {
     if (validate()) {
-      const fcmToken = await getFCMToken();
       setPasswordMessage(false);
       setEmailMessage(false);
-      //console.log("email, password", email,password)
-      loginMutation.mutate({
-        token: fcmToken ?? 'not found',
-      });
+      console.log("email, password", email, password);
+      console.log("Attempting login in debug mode:", __DEV__);
+
+      const fcmToken = await getFCMToken();
+      console.log("FCM Token retrieved:", fcmToken);
+
+      login(
+        {
+          email: email,
+          password: password,
+          fcmToken: fcmToken ?? 'not found',
+        },
+        {
+          onSuccess: async data => {
+            const auth: AuthData = {
+              userId: data._id,
+              token: data?.refreshToken,
+              user_handle: data?.user_handle,
+            };
+            try {
+              await storeItem(KEYS.USER_ID, auth.userId.toString());
+              await storeItem(KEYS.USER_HANDLE, data?.user_handle);
+              if (auth.token) {
+                console.log('Storing token:', auth.token);
+                  axios.defaults.headers.common["Authorization"] = `Bearer ${auth.token}`;
+                  axios.defaults.headers.common["Content-Type"] = "application/json";
+                await storeItem(KEYS.USER_TOKEN, auth.token.toString());
+                await storeItem(
+                  KEYS.USER_TOKEN_EXPIRY_DATE,
+                  new Date().toISOString(),
+                );
+                dispatch(setUserId(auth.userId));
+                dispatch(setUserToken(auth.token));
+                dispatch(setUserHandle(auth.user_handle));
+                setTimeout(() => {
+                  if (redirectTo) {
+                    navigation.navigate({
+                      name: redirectTo.name,
+                      params: redirectTo.params,
+                    });
+
+                    return;
+                  }
+                  navigation.reset({
+                    index: 0,
+                    routes: [{name: 'TabNavigation'}],
+                  });
+                }, 1000);
+              } else {
+                Alert.alert('Token not found');
+              }
+            } catch (e) {
+              console.log('Async Storage ERROR', e);
+            }
+          },
+
+          onError: (error: AxiosError) => {
+            console.log('Error', error);
+            setPassword('');
+            setEmail('');
+            if (error.response) {
+              const errorCode = error.response.status;
+              switch (errorCode) {
+                case 400:
+                  Alert.alert('Error', 'Please provide email and password');
+                  break;
+                case 401:
+                  Alert.alert('Error', 'Invalid password');
+                  break;
+                case 403:
+                  Alert.alert(
+                    'Error',
+                    'Email not verified. Please check your email.',
+                  );
+                  break;
+                case 404:
+                  Alert.alert('Error', 'User not found');
+                  break;
+                default:
+                  Alert.alert('Error', 'Internal server error');
+              }
+            } else {
+              Alert.alert('Error', 'User not found');
+            }
+          },
+        },
+      );
+   
     } else {
       setOutput(true);
       setPasswordMessage(false);
@@ -128,127 +225,10 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
     }
   };
 
-  const loginMutation = useMutation({
-    mutationKey: ['login'],
-    mutationFn: async ({token}: {token: string}) => {
-      console.log('LOGIN', LOGIN_API, email, password, token);
-      const res = await axios.post(LOGIN_API, {
-        email: email,
-        password: password,
-        fcmToken: token,
-      });
-
-      return res.data.user as User;
-    },
-
-    onSuccess: async data => {
-      const auth: AuthData = {
-        userId: data._id,
-        token: data?.refreshToken,
-        user_handle: data?.user_handle,
-      };
-      try {
-        await storeItem(KEYS.USER_ID, auth.userId.toString());
-        await storeItem(KEYS.USER_HANDLE, data?.user_handle);
-        if (auth.token) {
-          console.log('Storing token:', auth.token);
-          await storeItem(KEYS.USER_TOKEN, auth.token.toString());
-          await storeItem(
-            KEYS.USER_TOKEN_EXPIRY_DATE,
-            new Date().toISOString(),
-          );
-          dispatch(setUserId(auth.userId));
-          dispatch(setUserToken(auth.token));
-          dispatch(setUserHandle(auth.user_handle));
-          setTimeout(() => {
-            if (redirectTo) {
-              navigation.navigate({
-                name: redirectTo.name,
-                params: redirectTo.params,
-              });
-
-              return;
-            }
-            navigation.reset({
-              index: 0,
-              routes: [{name: 'TabNavigation'}],
-            });
-          }, 1000);
-        } else {
-          Alert.alert('Token not found');
-        }
-      } catch (e) {
-        console.log('Async Storage ERROR', e);
-      }
-    },
-
-    onError: (error: AxiosError) => {
-      console.log('Error', error);
-      setPassword('');
-      setEmail('');
-      if (error.response) {
-        const errorCode = error.response.status;
-        switch (errorCode) {
-          case 400:
-            Alert.alert('Error', 'Please provide email and password');
-            break;
-          case 401:
-            Alert.alert('Error', 'Invalid password');
-            break;
-          case 403:
-            Alert.alert(
-              'Error',
-              'Email not verified. Please check your email.',
-            );
-            break;
-          case 404:
-            Alert.alert('Error', 'User not found');
-            break;
-          default:
-            Alert.alert('Error', 'Internal server error');
-        }
-      } else {
-        Alert.alert('Error', 'User not found');
-      }
-    },
-  });
 
   const handleEmailInputBack = () => {
     setEmailInputVisible(false);
   };
-
-  const sendOtpMutation = useMutation({
-    mutationKey: ['forgot-password-otp'],
-    mutationFn: async ({email}: {email: string}) => {
-      const res = await axios.post(SEND_OTP, {
-        email: email,
-      });
-      return res.data.otp as string;
-    },
-
-    onSuccess: () => {
-      Alert.alert('OTP has sent to your mail');
-      navigateToOtpScreen();
-    },
-    onError: error => {
-      // eslint-disable-next-line import/no-named-as-default-member
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          if (error.response.status === 400) {
-            Alert.alert('Error', 'User with this email does not exist.');
-          } else if (error.response.status === 500) {
-            Alert.alert('Error', 'Error sending email.');
-          } else {
-            Alert.alert('Error', 'Something went wrong.');
-          }
-        } else {
-          Alert.alert('Error', 'Network error.');
-        }
-      } else {
-        Alert.alert('Error', 'Network error.');
-      }
-    },
-  });
 
   const navigateToOtpScreen = () => {
     setEmailInputVisible(false);
@@ -257,60 +237,7 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
     });
   };
 
-  const requestVerification = useMutation({
-    mutationKey: ['resend-verification-mail'],
-    mutationFn: async ({email1}: {email1: string}) => {
-      const res = await axios.post(RESEND_VERIFICATION, {
-        email: email1,
-      });
-
-      return res.data.message as string;
-    },
-
-    onSuccess: () => {
-      /** Check Status */
-      Alert.alert('Verification Email Sent');
-      setEmail('');
-      setPassword('');
-    },
-    onError: (error: AxiosError) => {
-      console.log('Email Verification error', error);
-
-      if (error.response) {
-        const statusCode = error.response.status;
-        switch (statusCode) {
-          case 400:
-            Alert.alert('Error', 'User not found or already verified');
-            break;
-          case 429:
-            Alert.alert(
-              'Error',
-              'Verification email already sent. Please try again after 1 hour.',
-            );
-            break;
-          case 500:
-            Alert.alert(
-              'Error',
-              'Internal server error. Please try again later.',
-            );
-            break;
-          default:
-            Alert.alert(
-              'Error',
-              'Something went wrong. Please try again later.',
-            );
-        }
-      } else {
-        console.log('Email Verification error', error);
-      }
-    },
-  });
-
-  if (
-    loginMutation.isPending ||
-    sendOtpMutation.isPending ||
-    requestVerification.isPending
-  ) {
+  if (loginPending || sendOtpPending || resendVerificationPending) {
     return <Loader />;
   }
   return (
@@ -444,7 +371,12 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
             size="$6"
             fontWeight="700"
             alignSelf="center"
-            onPress={validateAndSubmit}
+            onPress={() => {
+              console.log('Login button pressed!');
+              validateAndSubmit();
+            }}
+            disabled={loginPending}
+            opacity={loginPending ? 0.5 : 1}
             width="100%">
             <Text fontSize={18} color="$white" fontWeight="600">
               Login
@@ -502,9 +434,87 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
           callback={(email: string) => {
             setOtpMail(email);
             if (requestVerificationMode) {
-              requestVerification.mutate({email1: email});
+              resendVerification(
+                {
+                  email,
+                },
+                {
+                  onSuccess: () => {
+                    /** Check Status */
+                    Alert.alert('Verification Email Sent');
+                    setEmail('');
+                    setPassword('');
+                  },
+                  onError: (error: AxiosError) => {
+                    console.log('Email Verification error', error);
+
+                    if (error.response) {
+                      const statusCode = error.response.status;
+                      switch (statusCode) {
+                        case 400:
+                          Snackbar.show({
+                            text: 'User not found or already verified',
+                            duration: Snackbar.LENGTH_SHORT,
+                          });
+                          break;
+                        case 429:
+                          Snackbar.show({
+                            text: 'Verification email already sent, please try again after 1 hour',
+                            duration: Snackbar.LENGTH_SHORT,
+                          });
+                          break;
+                        case 500:
+                          Snackbar.show({
+                            text: 'Internal server error, try again',
+                            duration: Snackbar.LENGTH_SHORT,
+                          });
+
+                          break;
+                        default:
+                          Alert.alert(
+                            'Error',
+                            'Something went wrong. Please try again later.',
+                          );
+                      }
+                    } else {
+                      console.log('Email Verification error', error);
+                    }
+                  },
+                },
+              );
             } else {
-              sendOtpMutation.mutate({email});
+              sendOtp(
+                {
+                  email,
+                },
+                {
+                  onSuccess: () => {
+                    Alert.alert('OTP has sent to your mail');
+                    navigateToOtpScreen();
+                  },
+                  onError: error => {
+                    // eslint-disable-next-line import/no-named-as-default-member
+                    if (axios.isAxiosError(error)) {
+                      if (error.response) {
+                        if (error.response.status === 400) {
+                          Alert.alert(
+                            'Error',
+                            'User with this email does not exist.',
+                          );
+                        } else if (error.response.status === 500) {
+                          Alert.alert('Error', 'Error sending email.');
+                        } else {
+                          Alert.alert('Error', 'Something went wrong.');
+                        }
+                      } else {
+                        Alert.alert('Error', 'Network error.');
+                      }
+                    } else {
+                      Alert.alert('Error', 'Network error.');
+                    }
+                  },
+                },
+              );
             }
           }}
           backButtonClick={handleEmailInputBack}

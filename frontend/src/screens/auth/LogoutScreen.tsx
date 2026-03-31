@@ -9,73 +9,65 @@ import {
 } from 'react-native';
 import {PRIMARY_COLOR} from '../../helper/Theme';
 import {GET_STORAGE_DATA, USER_LOGOUT} from '../../helper/APIUtils';
-import {useMutation} from '@tanstack/react-query';
 import axios, {AxiosError} from 'axios';
-import {resetUserState, setUserId, setUserToken} from '../../store/UserSlice';
+import {resetUserState} from '../../store/UserSlice';
 import {useDispatch, useSelector} from 'react-redux';
 import {clearStorage} from '../../helper/Utils';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {LogoutScreenProp} from '@/src/type';
+import {useUserLogout} from '@/src/hooks/useUserLogout';
 
-const LogoutScreen = ({navigation, route}) => {
+const LogoutScreen = ({navigation, route}: LogoutScreenProp) => {
   const {profile_image, username} = route.params;
-  const {user_token} = useSelector((state: any) => state.user);
+ // const {user_token} = useSelector((state: any) => state.user);
   const dispatch = useDispatch();
-  const userLogoutMutation = useMutation({
-    mutationKey: ['user-logout'],
-    mutationFn: async () => {
-      const response = await axios.post(
-        `${USER_LOGOUT}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-      return response.data as any;
-    },
-    onSuccess: async () => {
-      Alert.alert('Success', 'Logout successfully');
-      await clearStorage();
-      dispatch(resetUserState());
-      //navigation.navigate('LoginScreen');
-      //navigation.replace('LoginScreen');
-      navigation.reset({
-        index: 0,
-        routes: [{name: 'LoginScreen'}], // Send user to LoginScreen after logout
-      });
-    },
 
-    onError: (err: AxiosError) => {
-      if (err.response) {
-        const statusCode = err.response.status;
-        switch (statusCode) {
-          case 500:
-            // Handle internal server errors
-            Alert.alert(
-              'Logout Failed',
-              'Internal server error. Please try again later.',
-            );
-            break;
-          default:
-            // Handle any other errors
-            Alert.alert(
-              'Logout Failed',
-              'Something went wrong. Please try again later.',
-            );
-        }
-      } else {
-        // Handle network errors
-        console.log('General Update Error', err);
-        Alert.alert(
-          'Logout Failed',
-          'Network error. Please check your connection.',
-        );
-      }
-    },
-  });
+  const {mutate: logout} = useUserLogout();
+
+
   const handleLogout = () => {
-    userLogoutMutation.mutate();
+    logout(
+      {},
+      {
+        onSuccess: async () => {
+          Alert.alert('Success', 'Logout successfully');
+          await clearStorage();
+          dispatch(resetUserState());
+          navigation.reset({
+            index: 0,
+            routes: [{name: 'LoginScreen'}], 
+          });
+        },
+
+        onError: (err: AxiosError) => {
+          if (err.response) {
+            const statusCode = err.response.status;
+            switch (statusCode) {
+              case 500:
+                // Handle internal server errors
+                Alert.alert(
+                  'Logout Failed',
+                  'Internal server error. Please try again later.',
+                );
+                break;
+              default:
+                // Handle any other errors
+                Alert.alert(
+                  'Logout Failed',
+                  'Something went wrong. Please try again later.',
+                );
+            }
+          } else {
+            // Handle network errors
+            console.log('General Update Error', err);
+            Alert.alert(
+              'Logout Failed',
+              'Network error. Please check your connection.',
+            );
+          }
+        },
+      },
+    );
   };
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>

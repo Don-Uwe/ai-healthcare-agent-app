@@ -10,58 +10,85 @@ import {
   Alert,
   ActivityIndicator,
   Dimensions,
-  FlatList,
-  Linking,
+  Share,
 } from 'react-native';
-import {useEffect, useMemo, useRef, useState} from 'react';
-import {useQuery, useMutation} from '@tanstack/react-query';
+import {useEffect, useState} from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
-import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
-import {ArticleData, ArticleScreenProp, User} from '../../type';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {ArticleData, ArticleScreenProp} from '../../type';
 import {useDispatch, useSelector} from 'react-redux';
-import {hp, wp} from '../../helper/Metric';
+import {hp} from '../../helper/Metric';
 import {
-  FOLLOW_USER,
-  GET_ARTICLE_BY_ID,
-  GET_ARTICLE_CONTENT,
   GET_IMAGE,
-  GET_PROFILE_API,
-  GET_PROFILE_IMAGE_BY_ID,
   GET_STORAGE_DATA,
-  LIKE_ARTICLE,
   SOCKET_PROD,
-  UPDATE_READ_EVENT,
-  UPDATE_VIEW_COUNT,
 } from '../../helper/APIUtils';
-import axios from 'axios';
 import Loader from '../../components/Loader';
 import Snackbar from 'react-native-snackbar';
 
 import {formatCount, handleExternalClick, StatusEnum} from '../../helper/Utils';
 //import CommentScreen from '../CommentScreen';
 import Tts from 'react-native-tts';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 import {setUserHandle} from '../../store/UserSlice';
 import {io} from 'socket.io-client';
-import {Feather} from '@expo/vector-icons';
+import {FontAwesome5} from '@expo/vector-icons';
 import AutoHeightWebView from '@brown-bear/react-native-autoheight-webview';
 import LottieView from 'lottie-react-native';
+import {useGetArticleDetails} from '@/src/hooks/useGetArticleDetail';
+import {useGetArticleContent} from '@/src/hooks/useGetArticleContent';
+import {useGetProfile} from '@/src/hooks/useGetProfile';
+import {useLikeArticle} from '@/src/hooks/useLikeArticle';
+import {useUpdateFollowStatusByArticle} from '@/src/hooks/useUpdateFollowStatus';
+import {useUpdateReadEvent} from '@/src/hooks/useUpdateReadEvent';
+import {useUpdateViewCount} from '@/src/hooks/useUpdateViewCount';
+import {useSaveArticle} from '@/src/hooks/useSaveArticle';
 
 const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
-  const insets = useSafeAreaInsets();
   const {articleId, authorId, recordId} = route.params;
   const [spakingStarted, setSpeakingStarted] = useState(false);
-  const {user_id, user_token} = useSelector((state: any) => state.user);
+  const {user_id} = useSelector((state: any) => state.user);
   const [readEventSave, setReadEventSave] = useState(false);
+
+  const {mutate: followMutation, isPending: followMutationPending} =
+    useUpdateFollowStatusByArticle();
+
+  const {mutate: updateReadEvent} =
+    useUpdateReadEvent(articleId);
+
+  const {mutate: updateViewCount} =
+    useUpdateViewCount(articleId ?? 0);
 
   const socket = io(`${SOCKET_PROD}`);
   const dispatch = useDispatch();
-  const [webviewHeight, setWebViewHeight] = useState(0);
   const [speechingMode, setSpeechingMode] = useState(false);
+  const {data: user} = useGetProfile();
+  const {
+    data: article,
+    isLoading: articleLoading,
+    refetch,
+  } = useGetArticleDetails(articleId);
+
+  const {data: articleContent} = useGetArticleContent(recordId);
+
+  const {mutate: likeMutation, isPending: likeMutationPending} = useLikeArticle(
+    Number(articleId),
+  );
+
+  const {mutate: saveMutation, isPending: saveMutationPending} = useSaveArticle(
+    Number(articleId),
+  );
 
   useEffect(() => {
-    updateViewCountMutation.mutate();
+  
+    updateViewCount(articleId, {
+      onError: error => {
+        console.log('Update View Count Error', error);
+      //  Alert.alert('Internal server error, try again!');
+      },
+    });
     return () => {
       setSpeakingStarted(false);
       Tts.stop();
@@ -71,280 +98,111 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     };
   }, []);
 
-  const {
-    data: article,
-    refetch,
-    isLoading,
-  } = useQuery({
-    queryKey: ['get-article-by-id'],
-    queryFn: async () => {
-      const response = await axios.get(`${GET_ARTICLE_BY_ID}/${articleId}`, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      });
-
-      return response.data.article as ArticleData;
-    },
-  });
-
   useEffect(() => {
     refetch();
   }, [articleId, refetch]);
-
-  const {data: user} = useQuery({
-    queryKey: ['get-my-profile'],
-    queryFn: async () => {
-      const response = await axios.get(`${GET_PROFILE_API}`, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      });
-      return response.data.profile as User;
-    },
-  });
-
-  const {data: htmlContent} = useQuery({
-    queryKey: ['get-publish-article-content'],
-    queryFn: async () => {
-      const response = await axios.get(`${GET_ARTICLE_CONTENT}/${recordId}`, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      });
-
-      //console.log('HTML RES', response.data);
-      return response.data.htmlContent as string;
-    },
-  });
 
   const noDataHtml = '<p>No Data found</p>';
 
   if (user) {
     dispatch(setUserHandle(user.user_handle));
   }
-  const updateViewCountMutation = useMutation({
-    mutationKey: ['update-view-count'],
-    mutationFn: async () => {
-      if (user_token === '') {
-        Alert.alert('No token found');
-        return;
-      }
-      const res = await axios.post(
-        UPDATE_VIEW_COUNT,
-        {
-          article_id: articleId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-
-      return res.data.article as ArticleData;
-    },
-    onSuccess: async () => {},
-
-    onError: error => {
-      console.log('Update View Count Error', error);
-      Alert.alert('Internal server error, try again!');
-    },
-  });
 
   // --- Settings ---
-
   const handleLike = () => {
     if (article) {
-      updateLikeMutation.mutate();
+      likeMutation(undefined,{
+        onSuccess: (data: {article: ArticleData; likeStatus: boolean}) => {
+          if (data?.likeStatus) {
+            socket.emit('notification', {
+              type: 'likePost',
+              userId: data?.article?.authorId,
+              articleId: data?.article?._id,
+              podcastId: null,
+              articleRecordId: data?.article?.pb_recordId,
+              title: user
+                ? `${user?.user_handle} liked your post`
+                : 'Someone liked your post',
+              message: data?.article?.title,
+            });
+          }
+          refetch();
+        },
+        onError: (err: any) => {
+          console.log('error', err);
+          Snackbar.show({
+            text: 'Something went wrong, try again!',
+            duration: Snackbar.LENGTH_LONG,
+          });
+        },
+      });
     } else {
       Alert.alert('Article not found');
     }
   };
 
   const handleFollow = () => {
-    updateFollowMutation.mutate();
+    //  updateFollowMutation.mutate();
+
+    followMutation(articleId.toString(), {
+      onSuccess: data => {
+        //console.log('follow success');
+        if (data) {
+          socket.emit('notification', {
+            type: 'userFollow',
+            userId: authorId,
+            message: {
+              title: `${user?.user_handle} has followed you`,
+              body: '',
+            },
+          });
+        }
+        refetch();
+        // refetchProfile();
+      },
+
+      onError: err => {
+        console.log('Update Follow mutation error', err);
+        Snackbar.show({
+          text: 'Something went wrong, Try again!',
+          duration: Snackbar.LENGTH_SHORT,
+        });
+      },
+    });
   };
 
-  const updateFollowMutation = useMutation({
-    mutationKey: ['update-follow-status'],
-
-    mutationFn: async () => {
-      if (!user_token || user_token === '') {
-        Alert.alert('No token found');
-        return;
-      }
-      const res = await axios.post(
-        FOLLOW_USER,
-        {
-          //followUserId: authorId,
-          //user_id: user_id,
-          articleId: articleId,
+  const handleSave = () => {
+    if (article) {
+      saveMutation(undefined, {
+        onSuccess: () => {
+          refetch();
+          Snackbar.show({
+            text: article.savedUsers?.includes(user_id)
+              ? 'Article removed from saved'
+              : 'Article saved successfully!',
+            duration: Snackbar.LENGTH_SHORT,
+          });
         },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
+        onError: (err: any) => {
+          console.log('error', err);
+          Snackbar.show({
+            text: 'Something went wrong, try again!',
+            duration: Snackbar.LENGTH_LONG,
+          });
         },
-      );
-      return res.data.followStatus as boolean;
-    },
-
-    onSuccess: data => {
-      //console.log('follow success');
-      if (data) {
-        socket.emit('notification', {
-          type: 'userFollow',
-          userId: authorId,
-          message: {
-            title: `${user?.user_handle} has followed you`,
-            body: '',
-          },
-        });
-      }
-      refetch();
-      // refetchProfile();
-    },
-
-    onError: err => {
-      console.log('Update Follow mutation error', err);
-      Alert.alert('Try Again!');
-    },
-  });
-
-  const updateLikeMutation = useMutation({
-    mutationKey: ['update-like-status'],
-
-    mutationFn: async () => {
-      if (!user_token || user_token === '') {
-        Alert.alert('No token found');
-        return;
-      }
-      const res = await axios.post(
-        LIKE_ARTICLE,
-        {
-          article_id: article?._id,
-          //user_id: user_id,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-
-      return res.data.data as {
-        article: ArticleData;
-        likeStatus: boolean;
-      };
-    },
-
-    onSuccess: data => {
-      // dispatch(setArticle({article: data}));
-
-      if (data?.likeStatus) {
-        socket.emit('notification', {
-          type: 'likePost',
-          userId: data?.article?.authorId,
-          articleId: data?.article?._id,
-          podcastId: null,
-          articleRecordId: data?.article?.pb_recordId,
-          title: user
-            ? `${user?.user_handle} liked your post`
-            : 'Someone liked your post',
-          message: data?.article?.title,
-        });
-      }
-      refetch();
-    },
-
-    onError: err => {
-      Alert.alert('Try Again!');
-      console.log('Like Error', err);
-    },
-  });
-
-  //  console.log('Response', article?.authorId.followers);
-
-  const updateReadEventMutation = useMutation({
-    mutationKey: ['update-read-event-status'],
-
-    mutationFn: async () => {
-      if (!user_token || user_token === '') {
-        Alert.alert('No token found');
-        return;
-      }
-      const res = await axios.post(
-        UPDATE_READ_EVENT,
-        {
-          article_id: article?._id,
-          //user_id: user_id,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-      return res.data as any;
-    },
-
-    onSuccess: () => {
-      console.log('Read Event Updated');
-      setReadEventSave(true);
-      //Alert.alert('Your Read status updated'); For debug purpose
-      Snackbar.show({
-        text: 'Your read status updated.',
-        duration: Snackbar.LENGTH_SHORT,
       });
-    },
-
-    onError: err => {
-      console.log('Update Read Status mutation error', err);
-      //Alert.alert('Try Again!');
-      //console.log('Follow Error', err);
-      Snackbar.show({
-        text: 'Failed to update your read status.',
-        duration: Snackbar.LENGTH_SHORT,
-      });
-    },
-  });
-
-  useEffect(() => {
-    if (htmlContent) {
-      setWebViewHeight(htmlContent.length);
     } else {
-      setWebViewHeight(noDataHtml.length);
+      Alert.alert('Article not found');
     }
-  }, [htmlContent]);
-
-  const {data: profile_image} = useQuery({
-    queryKey: ['author_profile_image'],
-    queryFn: async () => {
-      const response = await axios.get(
-        `${GET_PROFILE_IMAGE_BY_ID}/${authorId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-      //console.log('Response', response);
-      return response.data.profile_image as string;
-    },
-  });
+  };
 
   async function convertHtmlToPlainText(html: string) {
-    // Remove inline styles
     let modifiedHtml = html.replace(/ style="[^"]*"/g, '');
 
-    // Remove <style> blocks and their content
     modifiedHtml = modifiedHtml.replace(/<style[^>]*>[\s\S]*?<\/style>/g, '');
 
-    // Replace &nbsp; with a space
     modifiedHtml = modifiedHtml.replace(/&nbsp;/g, ' ');
 
-    // Remove all other HTML tags
     let plainText = modifiedHtml.replace(/<[^>]*>/g, '');
 
     return plainText;
@@ -370,59 +228,6 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
 
     return false;
   };
-
-  // const speakSection = async (_language = 'en-IN', content: string) => {
-  //   // Tts.requestInstallData();
-
-  //   await Tts.stop();
-  // Tts.removeAllListeners('tts-finish');
-  // Tts.removeAllListeners('tts-error');
-
-  //   const ready = await ensureLanguageInstalled(_language);
-
-  //   if (!ready) {
-  //     Snackbar.show({
-  //       text: 'Language not installed. Please install the language pack to enable text-to-speech.',
-  //       duration: Snackbar.LENGTH_LONG,
-  //     });
-  //     console.log('Language not installed. Prompted user.');
-  //     return;
-  //   }
-  //   Tts.setDefaultPitch(1.0);
-  //   Tts.setDefaultRate(0.5);
-  //   Tts.setDefaultLanguage(_language);
-
-  //   const res = await convertHtmlToPlainText(content);
-
-  //   if (res) {
-  //     Tts.getInitStatus().then(() => {
-  //       const textChunks = res.split(' ');
-  //       let chunkIndex = 0;
-
-  //       const speakNextChunk = () => {
-  //         if (chunkIndex < textChunks.length) {
-  //           const chunk = textChunks
-  //             .slice(chunkIndex, chunkIndex + 120)
-  //             .join(' ');
-
-  //           Tts.speak(chunk);
-
-  //           Tts.addEventListener('tts-finish', () => {
-  //             chunkIndex += 120;
-  //             speakNextChunk();
-  //           });
-
-  //           Tts.addEventListener('tts-error', error => {
-  //             console.error('TTS Error:', error);
-  //           });
-  //         }
-  //       };
-
-  //     const finishListener = Tts.addEventListener('tts-finish', speakNextChunk);
-  //       speakNextChunk();
-  //     });
-  //   }
-  // };
 
   const speakSection = async (_language = 'en-IN', content: string) => {
     try {
@@ -467,7 +272,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     }
   };
 
-  if (isLoading) {
+  if (articleLoading) {
     return <Loader />;
   }
 
@@ -489,7 +294,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
             style={styles.image}
           />
         )}
-        {updateLikeMutation.isPending ? (
+        {likeMutationPending ? (
           <ActivityIndicator size={40} color={PRIMARY_COLOR} />
         ) : (
           <TouchableOpacity
@@ -521,9 +326,9 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
             if (!speechingMode) {
               // setCartoonModalVisible(true);
               // prepareSection();
-              if (htmlContent) {
+              if (articleContent) {
                 const language = article?.language || 'en-IN';
-                speakSection(language, htmlContent);
+                speakSection(language, articleContent);
               }
             } else {
               setSpeakingStarted(false);
@@ -538,8 +343,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
               backgroundColor: 'white',
             },
           ]}>
-          <Feather
-            name={speechingMode ? 'mic' : 'mic-off'}
+          <FontAwesome5
+            name={'headphones'}
             size={30}
             color={speechingMode ? PRIMARY_COLOR : 'black'}
           />
@@ -571,7 +376,28 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
               !readEventSave &&
               article.status === StatusEnum.PUBLISHED
             ) {
-              updateReadEventMutation.mutate();
+              ///updateReadEventMutation.mutate();
+              updateReadEvent(undefined, {
+                onSuccess: () => {
+                  console.log('Read Event Updated');
+                  setReadEventSave(true);
+                  //Alert.alert('Your Read status updated'); For debug purpose
+                  Snackbar.show({
+                    text: 'Your read status updated.',
+                    duration: Snackbar.LENGTH_SHORT,
+                  });
+                },
+
+                onError: err => {
+                  console.log('Update Read Status mutation error', err);
+                  //Alert.alert('Try Again!');
+                  //console.log('Follow Error', err);
+                  Snackbar.show({
+                    text: 'Failed to update your read status.',
+                    duration: Snackbar.LENGTH_SHORT,
+                  });
+                },
+              });
             }
           }
         }}
@@ -579,10 +405,10 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
         <View style={styles.contentContainer}>
           {article && (
             <Text style={{...styles.viewText, marginBottom: 10}}>
-              {article && article?.viewUsers.length
-                ? article.viewUsers.length > 1
-                  ? `${formatCount(article.viewUsers.length)} views`
-                  : `${article.viewUsers.length} view`
+              {article?.viewCount
+                ? article.viewCount > 1
+                  ? `${formatCount(article.viewCount)} views`
+                  : `${article.viewCount} view`
                 : '0 view'}
             </Text>
           )}
@@ -744,22 +570,6 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
           )}
 
           <View style={styles.descriptionContainer}>
-            {/* <WebView
-              style={{
-                padding: 7,
-                //width: '99%',
-                minHeight: minHeight,
-                // flex:7,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-              ref={webViewRef}
-              originWhitelist={['*']}
-              injectedJavaScript={cssCode}
-              source={{html: htmlContent ? htmlContent : noDataHtml}}
-              textZoom={100}
-            /> */}
-
             <AutoHeightWebView
               style={{
                 width: Dimensions.get('window').width - 15,
@@ -776,7 +586,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
                 },
               ]}
               originWhitelist={['*']}
-              source={{html: htmlContent ?? noDataHtml}}
+              source={{html: articleContent ?? noDataHtml}}
               scalesPageToFit={true}
               viewportContent={'width=device-width, user-scalable=no'}
               onShouldStartLoadWithRequest={handleExternalClick}
@@ -784,87 +594,188 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
           </View>
         </View>
       </ScrollView>
-      <View
-        style={[
-          styles.footer,
-          {
-            paddingBottom:
-              wp(6),
-          },
-        ]}>
-        <View style={styles.authorContainer}>
+      <View style={styles.footer}>
+        {/* Action Bar Row */}
+        <View style={styles.actionBarFooter}>
           <TouchableOpacity
-            onPress={() => {
-              //  if (article && article?.authorId) {
-              navigation.navigate('UserProfileScreen', {
-                authorId: authorId,
-                author_handle: undefined,
-              });
-            }}>
-            {authorId.Profile_image && authorId.Profile_image !== '' ? (
-              <Image
-                source={{
-                  uri: authorId.Profile_image.startsWith('http')
-                    ? `${authorId.Profile_image}`
-                    : `${GET_STORAGE_DATA}/${authorId.Profile_image}`,
-                }}
-                style={styles.authorImage}
-              />
+            style={styles.actionButtonFooter}
+            onPress={handleLike}
+            disabled={likeMutationPending}>
+            {likeMutationPending ? (
+              <ActivityIndicator size={18} color={PRIMARY_COLOR} />
             ) : (
-              <Image
-                source={{
-                  uri: 'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-                }}
-                style={styles.authorImage}
-              />
+              <>
+                <FontAwesome
+                  name="heart"
+                  size={20}
+                  color={
+                    article &&
+                    article?.likedUsers &&
+                    article?.likedUsers?.some(user => user._id === user_id)
+                      ? PRIMARY_COLOR
+                      : '#666'
+                  }
+                />
+                <Text style={styles.actionTextFooter}>
+                  {article?.likeCount ? formatCount(article.likeCount) : 0}
+                </Text>
+              </>
             )}
           </TouchableOpacity>
-          <View>
-            <Text style={styles.authorName}>
-              {article ? article?.authorName : ''}
-            </Text>
-            <Text style={styles.authorFollowers}>
-              {article?.authorId.followers
-                ? article?.authorId.followers.length > 1
-                  ? `${article?.authorId.followers.length} followers`
-                  : `${article?.authorId.followers.length} follower`
-                : '0 follower'}
-            </Text>
-            {article &&
-              article.contributors &&
-              article.contributors.length > 0 && (
-                <TouchableOpacity
-                  onPress={() => {
-                    //   dispatch(setSocialUserId(''));
-                    navigation.navigate('SocialScreen', {
-                      type: 3,
-                      articleId: Number(article?._id),
-                      social_user_id: undefined,
+
+          <TouchableOpacity
+            style={styles.actionButtonFooter}
+            onPress={() => {
+              if (article) {
+                navigation.navigate('CommentScreen', {
+                  articleId: Number(article._id),
+                  mentionedUsers: article.mentionedUsers,
+                  article: article,
+                });
+              }
+            }}>
+            <MaterialCommunityIcons
+              name="comment-outline"
+              size={20}
+              color="#666"
+            />
+            <Text style={styles.actionTextFooter}>Comment</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.actionButtonFooter}
+            onPress={async () => {
+              try {
+                if (article) {
+                  const result = await Share.share({
+                    message: `Check out this article: ${article.title}\n\n${article.description}`,
+                    title: article.title,
+                  });
+
+                  if (result.action === Share.sharedAction) {
+                    Snackbar.show({
+                      text: 'Article shared successfully!',
+                      duration: Snackbar.LENGTH_SHORT,
                     });
-                  }}>
-                  <Text style={styles.contributorTextStyle}>
-                    See all contributors
-                  </Text>
-                </TouchableOpacity>
-              )}
-          </View>
+                  }
+                }
+              } catch (error) {
+                console.log('Error sharing:', error);
+                Snackbar.show({
+                  text: 'Failed to share article',
+                  duration: Snackbar.LENGTH_SHORT,
+                });
+              }
+            }}>
+            <FontAwesome name="share" size={20} color="#666" />
+            <Text style={styles.actionTextFooter}>Share</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.actionButtonFooter}
+            onPress={handleSave}
+            disabled={saveMutationPending}>
+            {saveMutationPending ? (
+              <ActivityIndicator size={18} color={PRIMARY_COLOR} />
+            ) : (
+              <>
+                <FontAwesome
+                  name={
+                    article?.savedUsers?.includes(user_id)
+                      ? 'bookmark'
+                      : 'bookmark-o'
+                  }
+                  size={20}
+                  color={
+                    article?.savedUsers?.includes(user_id)
+                      ? PRIMARY_COLOR
+                      : '#666'
+                  }
+                />
+                <Text style={styles.actionTextFooter}>Save</Text>
+              </>
+            )}
+          </TouchableOpacity>
         </View>
-        {article &&
-          user_id !== article.authorId._id &&
-          (updateFollowMutation.isPending ? (
-            <ActivityIndicator size={40} color={PRIMARY_COLOR} />
-          ) : (
+
+        {/* Author Row */}
+        <View style={styles.authorRow}>
+          <View style={styles.authorContainer}>
             <TouchableOpacity
-              style={styles.followButton}
-              onPress={handleFollow}>
-              <Text style={styles.followButtonText}>
-                {article.authorId.followers &&
-                article.authorId.followers.some(user => user._id === user_id)
-                  ? 'Following'
-                  : 'Follow'}
-              </Text>
+              onPress={() => {
+                //  if (article && article?.authorId) {
+                navigation.navigate('UserProfileScreen', {
+                  authorId: authorId,
+                  author_handle: undefined,
+                });
+              }}>
+              {authorId.Profile_image && authorId.Profile_image !== '' ? (
+                <Image
+                  source={{
+                    uri: authorId.Profile_image.startsWith('http')
+                      ? `${authorId.Profile_image}`
+                      : `${GET_STORAGE_DATA}/${authorId.Profile_image}`,
+                  }}
+                  style={styles.authorImage}
+                />
+              ) : (
+                <Image
+                  source={{
+                    uri: 'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
+                  }}
+                  style={styles.authorImage}
+                />
+              )}
             </TouchableOpacity>
-          ))}
+            <View>
+              <Text style={styles.authorName}>
+                {article ? article?.authorName : ''}
+              </Text>
+              <Text style={styles.authorFollowers}>
+                {article?.authorId.followers
+                  ? article?.authorId.followers.length > 1
+                    ? `${article?.authorId.followers.length} followers`
+                    : `${article?.authorId.followers.length} follower`
+                  : '0 follower'}
+              </Text>
+              {article &&
+                article.contributors &&
+                article.contributors.length > 0 && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      //   dispatch(setSocialUserId(''));
+                      navigation.navigate('SocialScreen', {
+                        type: 3,
+                        articleId: Number(article?._id),
+                        social_user_id: undefined,
+                      });
+                    }}>
+                    <Text style={styles.contributorTextStyle}>
+                      See all contributors
+                    </Text>
+                  </TouchableOpacity>
+                )}
+            </View>
+          </View>
+          {article &&
+            user_id !== article.authorId._id &&
+            (followMutationPending ? (
+              <ActivityIndicator size={40} color={PRIMARY_COLOR} />
+            ) : (
+              <TouchableOpacity
+                style={styles.followButton}
+                onPress={handleFollow}>
+                <Text style={styles.followButtonText}>
+                  {article.authorId.followers &&
+                  article.authorId.followers.some(
+                    (user: any) => user._id === user_id,
+                  )
+                    ? 'Following'
+                    : 'Follow'}
+                </Text>
+              </TouchableOpacity>
+            ))}
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -880,7 +791,7 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 0,
-   // marginTop: hp(4),
+    // marginTop: hp(4),
     borderBottomEndRadius: hp(2),
     backgroundColor: '#ffffff',
     position: 'relative',
@@ -891,7 +802,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     width: '100%',
-    height: 250,
+    height: 200,
     position: 'relative',
     borderBottomLeftRadius: 10,
     borderBottomRightRadius: 10,
@@ -900,7 +811,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   image: {
-    height: 300,
+    height: 200,
     width: '100%',
     objectFit: 'cover',
   },
@@ -916,7 +827,7 @@ const styles = StyleSheet.create({
     padding: 10,
     position: 'absolute',
     bottom: 4,
-    right: 20,
+    right: 15,
     borderRadius: 50,
   },
   contentContainer: {
@@ -1001,41 +912,63 @@ const styles = StyleSheet.create({
     position: 'relative',
     bottom: 0,
     zIndex: 10,
-    borderTopEndRadius: 30,
-    borderTopStartRadius: 30,
+    borderTopEndRadius: 20,
+    borderTopStartRadius: 20,
+    paddingTop: 12,
+    paddingBottom: 12,
+    paddingHorizontal: 16,
+  },
+  actionBarFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
+    marginBottom: 10,
+  },
+  actionButtonFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  actionTextFooter: {
+    fontSize: 12,
+    color: '#666',
+    fontWeight: '500',
+  },
+  authorRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: 20,
-    paddingHorizontal: 20,
   },
   authorContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
   },
   authorImage: {
-    height: 50,
-    width: 50,
-    borderRadius: 50,
+    height: 40,
+    width: 40,
+    borderRadius: 40,
   },
   authorName: {
     fontWeight: '700',
-    fontSize: 15,
+    fontSize: 14,
   },
   authorFollowers: {
     fontWeight: '400',
-    fontSize: 13,
+    fontSize: 11,
   },
   followButton: {
     backgroundColor: PRIMARY_COLOR,
-    paddingHorizontal: 15,
-    borderRadius: 20,
-    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 18,
+    paddingVertical: 8,
   },
   followButtonText: {
     color: 'white',
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
   },
 
@@ -1064,7 +997,7 @@ const styles = StyleSheet.create({
 
   botContainer: {
     position: 'absolute',
-    bottom: 100,
+    bottom: 60,
     right: 20,
     zIndex: 100,
   },

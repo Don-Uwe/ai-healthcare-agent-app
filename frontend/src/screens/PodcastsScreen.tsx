@@ -1,140 +1,84 @@
-import {useCallback, useState} from 'react';
+import {useEffect, useState} from 'react';
 import {
   StyleSheet,
   TouchableOpacity,
   NativeModules,
-  Alert,
   Text,
   FlatList,
+  ActivityIndicator,
 } from 'react-native';
 
-import {YStack, View} from 'tamagui';
-import axios from 'axios';
+import {YStack, View, XStack} from 'tamagui';
 import PodcastCard from '../components/PodcastCard';
-import {hp, wp} from '../helper/Metric';
-import {Category, PodcastData, PodcastScreenProps} from '../type';
+import {hp} from '../helper/Metric';
+import {PodcastData, PodcastScreenProps} from '../type';
 import {useDispatch, useSelector} from 'react-redux';
-import {useMutation, useQuery} from '@tanstack/react-query';
 import {downloadAudio, msToTime} from '../helper/Utils';
-import {
-  ARTICLE_TAGS_API,
-  GET_ALL_PODCASTS,
-  PROD_URL,
-  UPDATE_PODCAST_VIEW_COUNT,
-} from '../helper/APIUtils';
 import Snackbar from 'react-native-snackbar';
-import {
-  setaddedPodcastId,
-  setPodcasts,
-  setSelectedTags,
-  setTags,
-} from '../store/dataSlice';
+import {setaddedPodcastId, setPodcasts, appendPodcasts} from '../store/dataSlice';
 import CreatePlaylist from '../components/CreatePlaylist';
-import {ON_PRIMARY_COLOR} from '../helper/Theme';
 
-import CreateIcon from '../components/CreateIcon';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {StatusBar} from 'expo-status-bar';
-import {MaterialIcons} from '@expo/vector-icons';
+import {Ionicons} from '@expo/vector-icons';
+import {GlassStyles, ProfessionalColors} from '../styles/GlassStyles';
+import CreateIcon from '../components/CreateIcon';
+import {useGetAllPodcasts} from '../hooks/useGetAllPodcasts';
+import {useUpdatePodcastViewcount} from '../hooks/useUpdatePodcastViewcount';
+import { PodcastLoadingState } from '../components/EmptyStates';
 
 const {WavAudioRecorder} = NativeModules;
 //const recorderEvents = new NativeEventEmitter(WavAudioRecorder);
 
 const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
   const dispatch = useDispatch();
-  const {user_token, user_id} = useSelector((state: any) => state.user);
-  const {selectedTags, sortType} = useSelector((state: any) => state.data);
+  const {user_id} = useSelector((state: any) => state.user);
+  // const {selectedTags, sortType} = useSelector((state: any) => state.data);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const {podcasts} = useSelector((state: any) => state.data);
   const {isConnected} = useSelector((state: any) => state.network);
   const [playlistModalOpen, setPlaylistModalOpen] = useState<boolean>(false);
-  const [selectedCategory, setSelectedCategory] = useState<Category>();
+  // const [selectedCategory, setSelectedCategory] = useState<Category>();
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
 
-  const getAllCategories = useCallback(async () => {
-    if (!isConnected) {
-      return;
+  const {
+    data: podcastData,
+    isLoading,
+    refetch,
+  } = useGetAllPodcasts(isConnected, page);
+
+  const {mutate: updateViewCount} = useUpdatePodcastViewcount();
+
+  useEffect(() => {
+    if (podcastData) {
+      if (Number(page) === 1) {
+        if (podcastData.totalPages) {
+          const total = podcastData.totalPages;
+          setTotalPages(total);
+        }
+        if (podcastData.allPodcasts) {
+          let data = podcastData.allPodcasts as PodcastData[];
+          dispatch(setPodcasts(data));
+        }
+      } else {
+        if (podcastData.allPodcasts) {
+          let data = podcastData.allPodcasts as PodcastData[];
+          dispatch(appendPodcasts(data));
+        }
+      }
     }
-    if (user_token === '') {
-      Alert.alert('No token found');
-      return;
-    }
-    const {data: categoryData} = await axios.get(
-      `${PROD_URL + ARTICLE_TAGS_API}`,
-      {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      },
-    );
-
-    dispatch(
-      setSelectedTags({
-        selectedTags: categoryData,
-      }),
-    );
-    setSelectedCategory(categoryData[0]);
-
-    dispatch(setTags({tags: categoryData}));
-  }, [dispatch, isConnected, user_token]);
-
-  // useEffect(() => {
-  //   if (
-  //     selectedTags === undefined ||
-  //     (selectedTags && selectedTags.length === 0)
-  //   ) {
-  //    // getAllCategories();
-  //   }
-
-  //   return () => {};
-  // }, [getAllCategories, selectedTags]);
+  }, [podcastData, page]);
 
   const openPlaylist = (id: string) => {
-    // setPlaylistIds([id]);
     dispatch(setaddedPodcastId(id));
-    // console.log('playlist ids', playlistIds);
     setPlaylistModalOpen(true);
   };
 
   const closePlaylist = () => {
     setPlaylistModalOpen(false);
-    // setPlaylistIds([]);
     dispatch(setaddedPodcastId(''));
   };
-
-  const {refetch} = useQuery({
-    queryKey: ['get-all-podcasts', page],
-    queryFn: async () => {
-      try {
-        const response = await axios.get(`${GET_ALL_PODCASTS}?page=${page}`, {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        });
-
-        if (Number(page) === 1) {
-          if (response.data.totalPages) {
-            const total = response.data.totalPages;
-            setTotalPages(total);
-          }
-          if (response.data.allPodcasts) {
-            let data = response.data.allPodcasts as PodcastData[];
-            dispatch(setPodcasts(data));
-          }
-        } else {
-          const oldPodcasts = podcasts;
-          let data = response.data.allPodcasts as PodcastData[];
-          dispatch(setPodcasts([...oldPodcasts, ...data]));
-        }
-        const d = response.data.allPodcasts as PodcastData[];
-        return d;
-      } catch (err) {
-        console.error('Error fetching podcasts:', err);
-      }
-    },
-    enabled: isConnected && !!user_token && !!page,
-  });
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -143,43 +87,6 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
     setRefreshing(false);
   };
 
-  const handleScroll = ({nativeEvent}: {nativeEvent: any}) => {
-    const {layoutMeasurement, contentOffset, contentSize} = nativeEvent;
-    const isCloseToBottom =
-      layoutMeasurement.height + contentOffset.y >= contentSize.height - 20;
-
-    if (isCloseToBottom && page < totalPages) {
-      setPage(prev => prev + 1);
-    }
-  };
-
-  // const {latestPodcasts, recommendedPodcasts, allPodcasts} = useMemo(() => {
-  //   if (!podcasts?.length) {
-  //     return {latestPodcasts: [], recommendedPodcasts: [], allPodcasts: []};
-  //   }
-
-  //   const now = new Date();
-  //   const latest = podcasts.filter(
-  //     p => differenceInDays(now, new Date(p.updated_at)) <= 7,
-  //   );
-
-  //   const withViews = [...podcasts].sort(
-  //     (a, b) => (b.viewUsers?.length || 0) - (a.viewUsers?.length || 0),
-  //   );
-
-  //   const recommended = withViews.slice(0, 5);
-  //   return {
-  //     latestPodcasts: latest,
-  //     recommendedPodcasts: recommended,
-  //     allPodcasts: podcasts,
-  //   };
-  // }, [podcasts]);
-
-  // const filteredPodcasts = selectedCategory
-  //   ? podcasts.filter((podcast: PodcastData) =>
-  //       podcast.tags?.some(tag => tag.name === selectedCategory.name),
-  //     )
-  //   : [];
 
   const navigateToReport = (podcastId: string) => {
     navigation.navigate('ReportScreen', {
@@ -189,153 +96,140 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
       podcastId: podcastId,
     });
   };
-  const updateViewCountMutation = useMutation({
-    mutationKey: ['update-podcast-view-count'],
-    mutationFn: async (podcastId: string) => {
-      const res = await axios.post(
-        `${UPDATE_PODCAST_VIEW_COUNT}`,
-        {
-          podcast_id: podcastId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-      return res.data.data as PodcastData;
-    },
-    onSuccess: data => {
-      navigation.navigate('PodcastDetail', {
-        trackId: data._id,
-        audioUrl: data.audio_url,
-      });
-    },
-    onError: err => {
-      console.log('Update view count err', err);
-      Snackbar.show({
-        text: 'Something went wrong!',
-        duration: Snackbar.LENGTH_SHORT,
-      });
-    },
-  });
+
 
   const renderItem = ({item}: {item: PodcastData}) => (
-   
-      <PodcastCard
-        id={item._id}
-        title={item.title}
-        audioUrl={item.audio_url}
-        host={item.user_id.user_name}
-        views={item.viewUsers.length}
-        duration={`${msToTime(item.duration)}`}
-        tags={item.tags}
-        downloaded={false}
-        display={true}
-        downLoadAudio={async () => {
-          if (isConnected) {
-            await downloadAudio(item);
-          } else {
+    <PodcastCard
+      id={item._id}
+      title={item.title}
+      audioUrl={item.audio_url}
+      host={item.user_id.user_name}
+      views={item.viewUsers.length}
+      duration={`${msToTime(item.duration)}`}
+      tags={item.tags}
+      downloaded={false}
+      display={true}
+      downLoadAudio={async () => {
+        if (isConnected) {
+          await downloadAudio(item);
+        } else {
+          Snackbar.show({
+            text: 'Internet connection required',
+            duration: Snackbar.LENGTH_SHORT,
+          });
+        }
+      }}
+      handleClick={() => {
+        updateViewCount(item._id, {
+          onSuccess: data => {
+            navigation.navigate('PodcastDetail', {
+              trackId: data._id,
+              audioUrl: data.audio_url,
+            });
+          },
+          onError: err => {
+            console.log('Update view count err', err);
             Snackbar.show({
-              text: 'Internet connection required',
+              text: 'Something went wrong!',
               duration: Snackbar.LENGTH_SHORT,
             });
-          }
-        }}
-        handleClick={() => {
-          updateViewCountMutation.mutate(item._id);
-        }}
-        imageUri={item.cover_image}
-        handleReport={() => {
-          navigateToReport(item._id);
-        }}
-        playlistAct={openPlaylist}
-      />
-  
+          },
+        });
+      }}
+      imageUri={item.cover_image}
+      handleReport={() => {
+        navigateToReport(item._id);
+      }}
+      playlistAct={openPlaylist}
+    />
+  );
+
+  const renderLoadingState = () => (
+    <View style={styles.loadingContainer}>
+     <PodcastLoadingState/>
+    </View>
+  );
+
+  const renderEmptyState = () => (
+    <View style={styles.emptyContainer}>
+      <View
+        style={[GlassStyles.glassCard, {padding: 40, alignItems: 'center'}]}>
+        <View style={styles.emptyIconContainer}>
+          <Ionicons
+            name="headset-outline"
+            size={64}
+            color={ProfessionalColors.gray400}
+          />
+        </View>
+        <Text style={styles.message}>No podcasts found</Text>
+        <Text style={styles.subMessage}>
+          New episodes will appear here once added
+        </Text>
+      </View>
+    </View>
   );
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar style="light" backgroundColor={'#000A60'} />
+      <StatusBar style="light" backgroundColor="#007AFF" />
 
-      {
-        /**
-         * <View style={styles.buttonContainer}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{flexDirection: 'row'}}>
-          {selectedTags &&
-            selectedTags.length > 0 &&
-            selectedTags.map((item: Category, index: number) => (
-              <TouchableOpacity
-                key={index}
-                style={{
-                  ...styles.button,
-                  backgroundColor:
-                    selectedCategory && selectedCategory._id !== item._id
-                      ? 'white'
-                      : PRIMARY_COLOR,
-                  borderColor:
-                    selectedCategory && selectedCategory._id !== item._id
-                      ? PRIMARY_COLOR
-                      : 'white',
-                }}
-                onPress={() => {
-                  setSelectedCategory(item);
-                }}>
-                <Text
-                  style={{
-                    ...styles.labelStyle,
-                    color:
-                      selectedCategory && selectedCategory._id !== item._id
-                        ? 'black'
-                        : 'white',
-                  }}>
-                  {item.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
-        </ScrollView>
-      </View>
-         */
-      }
-
-      <YStack flex={1} padding="$2">
-        <FlatList
-          data={podcasts}
-          renderItem={renderItem}
-          keyExtractor={item => item._id.toString()}
-          contentContainerStyle={styles.flatListContentContainer}
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <MaterialIcons
-                name="podcasts"
-                size={64}
-                color="#B0B0B0"
-                style={styles.icon}
-              />
-              <Text style={styles.message}>No podcasts found</Text>
-              <Text style={styles.subMessage}>
-                New episodes will appear here once added
+      {/* Header Section */}
+      <View style={[GlassStyles.glassCard, styles.header]}>
+        <XStack alignItems="center" justifyContent="space-between">
+          <XStack alignItems="center" gap="$3">
+            <Ionicons
+              name="headset"
+              size={28}
+              color={ProfessionalColors.primary}
+            />
+            <YStack>
+              <Text style={styles.headerTitle}>Podcasts</Text>
+              <Text style={styles.headerSubtitle}>
+                {podcasts?.length || 0} episodes available
               </Text>
-            </View>
-          }
-          onEndReached={() => {
-            if (page < totalPages) {
-              setPage(prev => prev + 1);
+            </YStack>
+          </XStack>
+        </XStack>
+      </View>
+
+      <YStack flex={1} paddingHorizontal="$3">
+        {isLoading && !podcasts?.length ? (
+          renderLoadingState()
+        ) : (
+          <FlatList
+            data={podcasts}
+            renderItem={renderItem}
+            keyExtractor={item => item._id.toString()}
+            contentContainerStyle={styles.flatListContentContainer}
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            showsVerticalScrollIndicator={false}
+            ListEmptyComponent={renderEmptyState}
+            onEndReached={() => {
+              if (page < totalPages) {
+                setPage(prev => prev + 1);
+              }
+            }}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={
+              isLoading && podcasts?.length > 0 ? (
+                <View style={styles.footerLoading}>
+                  <ActivityIndicator
+                    size="small"
+                    color={ProfessionalColors.primary}
+                  />
+                </View>
+              ) : null
             }
-          }}
-          onEndReachedThreshold={0.5}
-        />
+          />
+        )}
       </YStack>
 
       <CreatePlaylist visible={playlistModalOpen} dismiss={closePlaylist} />
 
+      {/* Floating Action Button */}
       <TouchableOpacity
-        style={styles.homePlusIconview}
+        style={styles.fab}
         onPress={() => {
           console.log('Add icon clicked');
           navigation.navigate('PodcastForm');
@@ -356,65 +250,127 @@ export default PodcastsScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginVertical: hp(10),
-   // paddingHorizontal: 1,
-    backgroundColor: ON_PRIMARY_COLOR,
+    backgroundColor: ProfessionalColors.gray50,
+    paddingTop: hp(1),
   },
 
-  homePlusIconview: {
-    bottom: hp(5),
-    right: 25,
-    position: 'absolute',
-    zIndex: 10,
+  header: {
+    marginHorizontal: 16,
+    marginTop: hp(10),
+    marginBottom: 16,
+    padding: 16,
+    borderRadius: hp(2),
   },
 
-  buttonContainer: {
-    marginTop: wp(3),
-    flexDirection: 'row',
-    paddingHorizontal: 2,
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: ProfessionalColors.gray900,
   },
-  button: {
-    flex: 0,
-    borderRadius: wp(3.5),
-    marginHorizontal: 6,
-    marginVertical: 4,
-    padding: wp(3.1),
-    borderWidth: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  labelStyle: {
-    fontWeight: 'bold',
-    fontSize: 15,
-    textTransform: 'capitalize',
+
+  headerSubtitle: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: ProfessionalColors.gray600,
+    marginTop: 2,
   },
 
   flatListContentContainer: {
-    paddingHorizontal: 16,
-    marginTop: 10,
+    paddingTop: 8,
     paddingBottom: 120,
   },
 
-  message: {
-    fontSize: 16,
-    color: '#000',
-    fontFamily: 'bold',
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 20,
+  },
+
+  loadingIconContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: ProfessionalColors.glassWhiteMedium,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+
+  loadingText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: ProfessionalColors.gray900,
+    textAlign: 'center',
+    marginTop: 8,
+  },
+
+  loadingSubText: {
+    marginTop: 8,
+    fontSize: 14,
+    fontWeight: '500',
+    color: ProfessionalColors.gray600,
     textAlign: 'center',
   },
+
   emptyContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 40,
+    paddingVertical: 60,
+    paddingHorizontal: 20,
   },
-  icon: {
-    marginBottom: 12,
+
+  emptyIconContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: ProfessionalColors.glassWhiteMedium,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+
+  message: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: ProfessionalColors.gray900,
+    textAlign: 'center',
+    marginTop: 8,
   },
 
   subMessage: {
-    marginTop: 6,
-    fontSize: 13,
-    color: '#888',
+    marginTop: 8,
+    fontSize: 14,
+    fontWeight: '500',
+    color: ProfessionalColors.gray600,
     textAlign: 'center',
+  },
+
+  footerLoading: {
+    paddingVertical: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  fab: {
+    position: 'absolute',
+    bottom: hp(10),
+    right: 20,
+    zIndex: 10,
+    shadowColor: ProfessionalColors.primary,
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+
+  fabInner: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

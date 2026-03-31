@@ -7,14 +7,9 @@ import {
   Alert,
   Pressable,
   TextInput,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  TouchableWithoutFeedback,
-  Keyboard,
 } from 'react-native';
 
-import {YStack, H3, Paragraph, Button, Image, Text} from 'tamagui';
+import {YStack, H3, Paragraph, Image, Text} from 'tamagui';
 import {CommentScreenProp, User, Comment} from '../type';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import {useDispatch, useSelector} from 'react-redux';
@@ -31,8 +26,6 @@ import {
 } from 'react-native-controlled-mentions';
 import {GET_IMAGE, GET_STORAGE_DATA} from '../helper/APIUtils';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {hp, wp} from '../helper/Metric';
-import {showAlert} from '../store/alertSlice';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 
 const CommentScreen = ({navigation, route}: CommentScreenProp) => {
@@ -159,6 +152,7 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
   const handleMentionClick = (user_handle: string) => {
     navigation.navigate('UserProfileScreen', {
       author_handle: user_handle.substring(1),
+      authorId: undefined
     });
   };
 
@@ -246,7 +240,7 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
     }
 
     return (
-      <View>
+      <View style={styles.suggestionsContainer}>
         {suggestions
           .filter(one =>
             one.user_handle
@@ -260,7 +254,7 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
                 onSelect({id: one._id, name: one.user_handle});
                 setMentions(prev => [...prev, one]);
               }}
-              style={{flex: 0, padding: 12, flexDirection: 'row'}}>
+              style={styles.suggestionItem}>
               {one.Profile_image ? (
                 <Image
                   source={{
@@ -268,23 +262,14 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
                       ? one.Profile_image
                       : `${GET_STORAGE_DATA}/${one.Profile_image}`,
                   }}
-                  style={[
-                    styles.profileImage2,
-                    !one.Profile_image && {
-                      borderWidth: 0.5,
-                      borderColor: 'black',
-                    },
-                  ]}
+                  style={styles.profileImage2}
                 />
               ) : (
                 <Image
                   source={{
                     uri: 'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
                   }}
-                  style={[
-                    styles.profileImage2,
-                    {borderWidth: 0.5, borderColor: 'black'},
-                  ]}
+                  style={styles.profileImage2}
                 />
               )}
 
@@ -318,39 +303,34 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
 
   return (
     <KeyboardAwareScrollView
-      style={{width: '100%', flex: 1}}
-      // contentContainerStyle={{paddingHorizontal: 6, paddingBottom: 24}}
+      style={styles.scrollView}
       bottomOffset={50}
       showsVerticalScrollIndicator={false}
       extraKeyboardSpace={20}
-      contentContainerStyle={{
-        flexGrow: 1,
-        paddingBottom: hp(18),
-        paddingHorizontal: 10,
-        backgroundColor: '#f8f9fb',
-      }}>
-      <SafeAreaView
-        style={{flex: 1, backgroundColor: '#f8f9fb', padding: wp(0.2)}}>
-        {/* Header Section */}
+      contentContainerStyle={styles.scrollContent}>
+      <SafeAreaView style={styles.safeArea}>
         <YStack gap="$3">
-          <H3 fontSize={19} color="black" fontWeight={'600'}>
-            {article.title}
-          </H3>
+          {/* Article Title Card */}
+          <View style={styles.articleTitleCard}>
+            <H3 fontSize={20} color="#1F2937" fontWeight={'700'}>
+              {article.title}
+            </H3>
+          </View>
 
-          <Image
-            source={{
-              uri: article?.imageUtils[0].startsWith('http')
-                ? article?.imageUtils[0]
-                : `${GET_IMAGE}/${article?.imageUtils[0]}`,
-            }}
-            style={{
-              width: '100%',
-              height: 180,
-              borderRadius: 8,
-            }}
-          />
+          {/* Article Image */}
+          <View style={styles.imageContainer}>
+            <Image
+              source={{
+                uri: article?.imageUtils[0].startsWith('http')
+                  ? article?.imageUtils[0]
+                  : `${GET_IMAGE}/${article?.imageUtils[0]}`,
+              }}
+              style={styles.articleImage}
+            />
+          </View>
 
-          <Button
+          {/* View Article Button */}
+          <TouchableOpacity
             onPress={() =>
               navigation.navigate('ArticleScreen', {
                 articleId: Number(article._id),
@@ -358,44 +338,53 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
                 recordId: article.pb_recordId,
               })
             }
-            backgroundColor={PRIMARY_COLOR}
-            pressStyle={{opacity: 0.9}}
-            borderRadius="$4"
-            size={'$6'}
-            mt="$2"
-            paddingVertical={'$3'}
-            elevation="$2">
-            <Text color="white" fontWeight="600" fontSize={16}>
+            style={styles.viewArticleButton}
+            activeOpacity={0.8}>
+            <Text style={styles.viewArticleText}>
               View Full Article
             </Text>
-          </Button>
-          <Paragraph color="$gray10" fontSize={17}>
-            {article.description}
-          </Paragraph>
+          </TouchableOpacity>
 
+          {/* Article Description */}
+          <View style={styles.descriptionCard}>
+            <Paragraph color="#4B5563" fontSize={15} lineHeight={22}>
+              {article.description}
+            </Paragraph>
+          </View>
+
+          {/* Mention Suggestions */}
           <Suggestions suggestions={filteredUsers} {...triggers.mention} />
 
+          {/* Comment Input */}
           <TextInput
             {...textInputProps}
             style={styles.textInput}
             placeholder="Add a comment..."
+            placeholderTextColor="#9CA3AF"
             multiline
           />
 
+          {/* Submit Button */}
           {newComment.length > 0 && (
             <TouchableOpacity
               style={styles.submitButton}
-              onPress={handleCommentSubmit}>
+              onPress={handleCommentSubmit}
+              activeOpacity={0.8}>
               <Text style={styles.submitButtonText}>
-                {editMode ? '✏️ Update Comment' : '⏩ Submit Comment'}
+                {editMode ? 'Update Comment' : 'Submit Comment'}
               </Text>
             </TouchableOpacity>
           )}
-          <YStack marginTop="$4" space="$3">
-            <Text fontWeight="600" fontSize={20}>
-              {comments.length} Comments
-            </Text>
 
+          {/* Comments Section Header */}
+          <View style={styles.commentsHeader}>
+            <Text style={styles.commentsHeaderText}>
+              {comments.length} {comments.length === 1 ? 'Comment' : 'Comments'}
+            </Text>
+          </View>
+
+          {/* Comments List */}
+          <YStack marginTop="$2" gap="$3">
             {comments.map(item => (
               <CommentItem
                 key={item._id}
@@ -420,46 +409,141 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1, padding: 10, backgroundColor: '"#f8f9fb"'},
-  header: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#333',
-    textAlign: 'center',
-    marginVertical: 30,
+  scrollView: {
+    width: '100%',
+    flex: 1,
+    backgroundColor: '#F9FAFB',
   },
-  commentsList: {flex: 1, marginBottom: 20},
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 120,
+    paddingHorizontal: 16,
+  },
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  articleTitleCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 8,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  imageContainer: {
+    position: 'relative',
+  },
+  articleImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 12,
+  },
+  viewArticleButton: {
+    backgroundColor: PRIMARY_COLOR,
+    padding: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    shadowColor: PRIMARY_COLOR,
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  viewArticleText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 16,
+  },
+  descriptionCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  suggestionsContainer: {
+    maxHeight: 200,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  suggestionItem: {
+    flex: 0,
+    padding: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
   profileImage2: {
-    height: 30,
-    width: 30,
-    borderRadius: 15,
+    height: 36,
+    width: 36,
+    borderRadius: 18,
     resizeMode: 'cover',
-    marginRight: 8,
+    marginRight: 12,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
   },
   username2: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '600',
-    color: '#333',
+    color: '#374151',
   },
   textInput: {
-    height: 100,
-    borderColor: '#ccc',
-    fontSize: wp(5),
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 10,
+    minHeight: 100,
+    fontSize: 15,
+    borderRadius: 12,
+    padding: 16,
     textAlignVertical: 'top',
-    backgroundColor: '#fff',
-    marginTop: 10,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#D1D5DB',
+    color: '#1F2937',
+    marginTop: 8,
   },
   submitButton: {
     backgroundColor: PRIMARY_COLOR,
-    padding: 15,
-    marginTop: wp(1),
-    borderRadius: 8,
+    padding: 16,
+    marginTop: 8,
+    borderRadius: 12,
     alignItems: 'center',
+    shadowColor: PRIMARY_COLOR,
+    shadowOffset: {width: 0, height: 3},
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 4,
   },
-  submitButtonText: {fontSize: 18, color: '#fff', fontWeight: 'bold'},
+  submitButtonText: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
+  commentsHeader: {
+    backgroundColor: '#F3F4F6',
+    padding: 12,
+    marginTop: 8,
+    borderRadius: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: PRIMARY_COLOR,
+  },
+  commentsHeaderText: {
+    fontWeight: '700',
+    fontSize: 18,
+    color: '#1F2937',
+  },
 });
 
 export default CommentScreen;

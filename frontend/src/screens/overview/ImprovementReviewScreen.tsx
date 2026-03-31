@@ -8,24 +8,15 @@ import {
   FlatList,
   Dimensions,
 } from 'react-native';
-import {useEffect, useMemo, useRef, useState} from 'react';
-import {useQuery} from '@tanstack/react-query';
+import {useEffect, useRef, useState} from 'react';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {EditRequest, ImpvReviewScreenProp, User, Comment} from '../../type';
+import {ImpvReviewScreenProp, Comment} from '../../type';
 
 import {useDispatch, useSelector} from 'react-redux';
-import WebView from 'react-native-webview';
 import {hp, wp} from '../../helper/Metric';
-import {
-  GET_IMPROVEMENT_BY_ID,
-  GET_IMPROVEMENT_CONTENT,
-  GET_PROFILE_API,
-  GET_STORAGE_DATA,
-  LOAD_REVIEW_COMMENTS,
-} from '../../helper/APIUtils';
-import axios from 'axios';
+import {GET_STORAGE_DATA} from '../../helper/APIUtils';
 
 //import io from 'socket.io-client';
 
@@ -36,11 +27,17 @@ import {handleExternalClick, StatusEnum} from '../../helper/Utils';
 import ReviewItem from '../../components/ReviewItem';
 import {Button, Spinner, TextArea, YStack, Text} from 'tamagui';
 import AutoHeightWebView from '@brown-bear/react-native-autoheight-webview';
+import {useGetImprovementById} from '@/src/hooks/useGetImprovementById';
+import {useGetImprovementContent} from '@/src/hooks/useGetImprovementContent';
+import {useGetProfile} from '@/src/hooks/useGetProfile';
+import {useGetLoadReviewComments} from '@/src/hooks/useGetLoadReviewComments';
 
 const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
   const insets = useSafeAreaInsets();
   const {requestId, authorId, recordId, articleRecordId} = route.params; // requestId
   const {user_token, user_handle} = useSelector((state: any) => state.user);
+  const {isConnected} = useSelector((state: any) => state.network);
+
   const [feedback, setFeedback] = useState('');
   const [webviewHeight, setWebViewHeight] = useState(0);
 
@@ -53,75 +50,22 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
 
   const flatListRef = useRef<FlatList<Comment>>(null);
 
-
-  // editrequest
-  const {data: improvement} = useQuery({
-    queryKey: ['get-improvement-by-id'],
-    queryFn: async () => {
-      const response = await axios.get(
-        `${GET_IMPROVEMENT_BY_ID}/${requestId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-
-      return response.data as EditRequest;
-    },
+  const {data: user} = useGetProfile();
+  const {data: improvement} = useGetImprovementById(requestId);
+  const {data: htmlContent} = useGetImprovementContent({
+    recordId: recordId,
+    articleRecordId: articleRecordId,
   });
 
-  const {data: user} = useQuery({
-    queryKey: ['get-my-profile'],
-    queryFn: async () => {
-      const response = await axios.get(`${GET_PROFILE_API}`, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      });
-      return response.data.profile as User;
-    },
-  });
+  const {data: loadComments, isLoading} = useGetLoadReviewComments(
+    undefined,
+    requestId,
+    isConnected,
+  );
 
-  const {data: htmlContent} = useQuery({
-    queryKey: ['get-improvement-content'],
-    queryFn: async () => {
-      let url = '';
-      if (recordId) {
-        url = `${GET_IMPROVEMENT_CONTENT}?articleRecordId=${articleRecordId}`;
-      } else {
-        url = `${GET_IMPROVEMENT_CONTENT}?recordid=${recordId}&articleRecordId=${articleRecordId}`;
-      }
-      const response = await axios.get(url, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      });
-      return response.data.htmlContent as string;
-    },
-  });
-
-  //console.log('html-content', htmlContent);
-
-  const {isLoading} = useQuery({
-    queryKey: ['get-improvement-review-comments'],
-
-    queryFn: async () => {
-      const response = await axios.get(
-        `${LOAD_REVIEW_COMMENTS}?requestId=${requestId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-
-      setComments(response.data);
-      //console.log('Comments', response.data);
-
-      return response.data as Comment[];
-    },
-  });
+  useEffect(() => {
+    setComments(loadComments ?? []);
+  }, [loadComments]);
 
   const noDataHtml = '<p>No Data found</p>';
 
@@ -214,6 +158,7 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
                     pb_record_id: improvement?.pb_recordId,
                     authorName: user_handle,
                     htmlContent: htmlContent ? htmlContent : noDataHtml,
+                    language: improvement?.article.language,
                   });
                 }
               }}
@@ -258,7 +203,7 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
               textZoom={100}
             /> */}
 
-             <AutoHeightWebView
+            <AutoHeightWebView
               style={{
                 width: Dimensions.get('window').width - 15,
                 marginTop: 35,
@@ -393,20 +338,26 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
 
           <YStack
             padding={wp(4)}
-            marginTop={hp(1.2)} // reduced from hp(3)
-            borderRadius={10}
-            space="$3">
+            marginTop={hp(1.5)}
+            borderRadius={16}
+            space="$3"
+            backgroundColor="#F8F9FA"
+            borderWidth={1}
+            borderColor="#E0E0E0">
+            <Text fontSize={17} fontWeight="700" color="#1A1A1A" marginBottom="$2">
+              💬 Add a Comment
+            </Text>
             <TextArea
-              placeholder="Ask your doubt"
+              placeholder="Share your thoughts or ask a question..."
               value={feedback}
               onChangeText={setFeedback}
               multiline
-              height={hp(19)}
-              fontSize={wp(4.8)}
-              paddingVertical={10}
-              paddingHorizontal={12}
-              borderRadius={8}
-              borderWidth={1.5}
+              height={hp(16)}
+              fontSize={wp(4.5)}
+              paddingVertical={12}
+              paddingHorizontal={14}
+              borderRadius={12}
+              borderWidth={2}
               borderColor={PRIMARY_COLOR}
               backgroundColor="#fff"
               textAlignVertical="top"
@@ -419,11 +370,11 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
                 ) : (
                   <Button
                     size="$4"
-                    width="45%"
-                    height={44}
+                    width="40%"
+                    height={48}
                     backgroundColor={PRIMARY_COLOR}
                     color="#fff"
-                    borderRadius={8}
+                    borderRadius={12}
                     onPress={() => {
                       setLoading(true);
 
@@ -438,8 +389,8 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
 
                       setFeedback('');
                     }}>
-                    <Text color="#ffffff" fontSize={17}>
-                      Post
+                    <Text color="#ffffff" fontSize={16} fontWeight="700">
+                      Post Comment
                     </Text>
                   </Button>
                 )}

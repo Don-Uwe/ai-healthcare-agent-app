@@ -2,9 +2,7 @@ import React, {useRef, useState} from 'react';
 import {TextInput, Alert} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {OtpScreenProp} from '../../type';
-import {useMutation} from '@tanstack/react-query';
 import axios, {AxiosError} from 'axios';
-import {CHECK_OTP, SEND_OTP} from '../../helper/APIUtils';
 import Loader from '../../components/Loader';
 import {
   Theme,
@@ -16,14 +14,17 @@ import {
   Paragraph,
   Card,
 } from 'tamagui';
+import {useSendOtpMutation} from '@/src/hooks/useSendOtp';
+import {useVerifyOtpMutation} from '@/src/hooks/useVerifyOtp';
 
 export default function OtpScreen({navigation, route}: OtpScreenProp) {
   const [otp, setOtp] = useState(['', '', '', '']);
   const inputs = useRef<(TextInput | null)[]>([]);
   const {email} = route.params;
-  
 
   const [errorMessages, setErrorMessages] = useState<string[]>();
+  const {mutate: sendOtp, isPending: sendOtpPending} = useSendOtpMutation();
+  const {mutate: checkOtp, isPending: checkOtpPending} = useVerifyOtpMutation();
 
   const handleSubmit = () => {
     //navigation.navigate('NewPasswordScreen');
@@ -33,66 +34,28 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
       return;
     } else {
       setErrorMessages(undefined);
-      verifyOtpMutation.mutate({
-        otp: fullCode,
-      });
+
+      checkOtp(
+        {
+          email: email,
+          otp: fullCode,
+        },
+        {
+          onSuccess: () => {
+            navigation.navigate('NewPasswordScreen', {
+              email: email,
+            });
+          },
+          onError: (error: AxiosError) => {
+            console.log('OTP ERROR', error);
+            setErrorMessages(['Invalid or expired otp']);
+            Alert.alert('Invalid or expired otp');
+          },
+        },
+      );
     }
   };
 
-  const sendOtpMutation = useMutation({
-    mutationKey: ['forgot-password-otp'],
-    mutationFn: async () => {
-      const res = await axios.post(SEND_OTP, {
-        email: email,
-      });
-      return res.data.otp as string;
-    },
-
-    onSuccess: () => {
-      Alert.alert('OTP has sent to your mail');
-      setOtp(Array(4).fill(''));
-      setErrorMessages(undefined);
-    },
-    onError: error => {
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          if (error.response.status === 400) {
-            Alert.alert('Error', 'User with this email does not exist.');
-          } else if (error.response.status === 500) {
-            Alert.alert('Error', 'Error sending email.');
-          } else {
-            Alert.alert('Error', 'Something went wrong.');
-          }
-        } else {
-          Alert.alert('Error', 'Network error.');
-        }
-      } else {
-        Alert.alert('Error', 'Network error.');
-      }
-    },
-  });
-
-  const verifyOtpMutation = useMutation({
-    mutationKey: ['verify-otp'],
-    mutationFn: async ({otp}: {otp: string}) => {
-      const res = await axios.post(CHECK_OTP, {
-        email: email,
-        otp: otp,
-      });
-      return res.data.message as string;
-    },
-
-    onSuccess: () => {
-      navigation.navigate('NewPasswordScreen', {
-        email: email,
-      });
-    },
-    onError: (error: AxiosError) => {
-      console.log('OTP ERROR', error);
-      setErrorMessages(['Invalid or expired otp']);
-      Alert.alert('Invalid or expired otp');
-    },
-  });
 
   const handleChange = (text: string, index: number) => {
     setErrorMessages(undefined);
@@ -112,7 +75,7 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
     }
   };
 
-  if (sendOtpMutation.isPending || verifyOtpMutation.isPending) {
+  if (sendOtpPending || checkOtpPending) {
     return <Loader />;
   }
   return (
@@ -209,10 +172,43 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
               <Paragraph color="$gray10" fontSize={15}>
                 Didn’t receive the code?{' '}
                 <Text
-                onPress={()=>{
-                  sendOtpMutation.mutate();
-                }} 
-                color="$blue10" fontWeight="600">
+                  onPress={() => {
+                    sendOtp(
+                      {
+                        email,
+                      },
+                      {
+                        onSuccess: () => {
+                          Alert.alert('OTP has sent to your mail');
+                          setOtp(Array(4).fill(''));
+                          setErrorMessages(undefined);
+                        },
+                        onError: error => {
+                          // eslint-disable-next-line import/no-named-as-default-member
+                          if (axios.isAxiosError(error)) {
+                            if (error.response) {
+                              if (error.response.status === 400) {
+                                Alert.alert(
+                                  'Error',
+                                  'User with this email does not exist.',
+                                );
+                              } else if (error.response.status === 500) {
+                                Alert.alert('Error', 'Error sending email.');
+                              } else {
+                                Alert.alert('Error', 'Something went wrong.');
+                              }
+                            } else {
+                              Alert.alert('Error', 'Network error.');
+                            }
+                          } else {
+                            Alert.alert('Error', 'Network error.');
+                          }
+                        },
+                      },
+                    );
+                  }}
+                  color="$blue10"
+                  fontWeight="600">
                   Resend
                 </Text>
               </Paragraph>

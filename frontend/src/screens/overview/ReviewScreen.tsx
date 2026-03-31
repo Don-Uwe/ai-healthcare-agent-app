@@ -8,49 +8,42 @@ import {
   FlatList,
   Dimensions,
 } from 'react-native';
-import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {useQuery} from '@tanstack/react-query';
+import React, {useEffect, useRef, useState} from 'react';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {ArticleData, ReviewScreenProp, User, Comment} from '../../type';
-
+import {ReviewScreenProp, Comment} from '../../type';
 import {useDispatch, useSelector} from 'react-redux';
-import WebView from 'react-native-webview';
 import {hp, wp} from '../../helper/Metric';
 import {
-  GET_ARTICLE_BY_ID,
-  GET_ARTICLE_CONTENT,
   GET_IMAGE,
-  GET_PROFILE_API,
   GET_STORAGE_DATA,
-  LOAD_REVIEW_COMMENTS,
   SOCKET_PROD,
 } from '../../helper/APIUtils';
-import axios from 'axios';
 
-//import io from 'socket.io-client';
-
-//import {useSocket} from '../../../SocketContext';
-//import CommentScreen from '../CommentScreen';
 import {setUserHandle} from '../../store/UserSlice';
 import {handleExternalClick, StatusEnum} from '../../helper/Utils';
 import ReviewItem from '../../components/ReviewItem';
-//import {Comment} from '../../type';
 import {io} from 'socket.io-client';
 import {Button, Spinner, Text, YStack, TextArea} from 'tamagui';
 import AutoHeightWebView from '@brown-bear/react-native-autoheight-webview';
+import {useGetArticleDetails} from '@/src/hooks/useGetArticleDetail';
+import {useGetArticleContent} from '@/src/hooks/useGetArticleContent';
+import {useGetProfile} from '@/src/hooks/useGetProfile';
+import {useGetLoadReviewComments} from '@/src/hooks/useGetLoadReviewComments';
 
 const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
   const insets = useSafeAreaInsets();
   const {articleId, authorId, recordId} = route.params;
   const {user_token} = useSelector((state: any) => state.user);
+  const {isConnected} = useSelector((state: any) => state.isConnected);
 
   const [feedback, setFeedback] = useState<string>('');
   const [loading, setLoading] = useState(false);
-  const [webviewHeight, setWebViewHeight] = useState(0);
+  const {data: user} = useGetProfile();
+  const {data: article, refetch} = useGetArticleDetails(articleId);
 
-  //const scalePerChar = SCREEN_HEIGHT * 0.002;
+  const {data: articleContent} = useGetArticleContent(recordId);
 
   const socket = io(`${SOCKET_PROD}`);
   const dispatch = useDispatch();
@@ -59,68 +52,19 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
 
   const flatListRef = useRef<FlatList<Comment>>(null);
 
+  const {data: loadComments, isLoading} = useGetLoadReviewComments(
+    articleId,
+    undefined,
+    isConnected,
+  );
 
-  const {data: article, refetch} = useQuery({
-    queryKey: ['get-article-by-id'],
-
-    queryFn: async () => {
-      const response = await axios.get(`${GET_ARTICLE_BY_ID}/${articleId}`, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      });
-
-      return response.data.article as ArticleData;
-    },
-  });
-
-  const {isLoading} = useQuery({
-    queryKey: ['get-review-comments'],
-
-    queryFn: async () => {
-      const response = await axios.get(
-        `${LOAD_REVIEW_COMMENTS}?articleId=${articleId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-
-      setComments(response.data);
-      //console.log('Comments', response.data);
-
-      return response.data as Comment[];
-    },
-  });
+  useEffect(() => {
+    setComments(loadComments ?? []);
+  }, [loadComments]);
 
   useEffect(() => {
     refetch();
   }, [articleId, refetch]);
-
-  const {data: user} = useQuery({
-    queryKey: ['get-my-profile'],
-    queryFn: async () => {
-      const response = await axios.get(`${GET_PROFILE_API}`, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      });
-      return response.data.profile as User;
-    },
-  });
-
-  const {data: htmlContent} = useQuery({
-    queryKey: ['get-article-content'],
-    queryFn: async () => {
-      const response = await axios.get(`${GET_ARTICLE_CONTENT}/${recordId}`, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      });
-      return response.data.htmlContent as string;
-    },
-  });
 
   const noDataHtml = '<p>No Data found</p>';
 
@@ -139,29 +83,17 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
       console.log('connection error', data);
     });
 
-    socket.on('review-comments', data => {
-      // console.log('comment loaded', data);
-      //if (data.articleId === route.params.articleId) {
-      // setComments(data);
-      // }
-    });
-
-    // Listen for new comments
     socket.on('new-feedback', data => {
       setLoading(false);
 
-      //console.log('new comment loaded', data);
-      //if (data.articleId === route.params.articleId) {
       setComments(prevComments => {
         const newComments = [data, ...prevComments];
-        // Scroll to the first index after adding the new comment
         if (flatListRef.current && newComments.length > 1) {
           flatListRef?.current.scrollToIndex({index: 0, animated: true});
         }
 
         return newComments;
       });
-      // }
     });
 
     return () => {
@@ -170,15 +102,6 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
       socket.off('error');
     };
   }, [socket, route.params.articleId]);
-
-  useEffect(() => {
-    if (htmlContent) {
-      setWebViewHeight(htmlContent.length);
-    } else {
-      setWebViewHeight(noDataHtml.length);
-    }
-  }, [htmlContent]);
-
 
   return (
     <View style={styles.container}>
@@ -207,7 +130,7 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
               onPress={() => {
                 navigation.navigate('ArticleDescriptionScreen', {
                   article: article,
-                  htmlContent: htmlContent ? htmlContent : noDataHtml,
+                  htmlContent: articleContent ? articleContent : noDataHtml,
                 });
               }}
               style={[
@@ -233,23 +156,7 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
             </>
           )}
           <View style={styles.descriptionContainer}>
-            {/* <WebView
-              style={{
-                padding: 7,
-                //width: '99%',
-                minHeight: minHeight,
-                // flex:7,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-              ref={webViewRef}
-              originWhitelist={['*']}
-              injectedJavaScript={cssCode}
-              source={{html: htmlContent ? htmlContent : noDataHtml}}
-              textZoom={100}
-            /> */}
-
-             <AutoHeightWebView
+            <AutoHeightWebView
               style={{
                 width: Dimensions.get('window').width - 15,
                 marginTop: 35,
@@ -265,7 +172,7 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
                 },
               ]}
               originWhitelist={['*']}
-              source={{html: htmlContent ?? noDataHtml}}
+              source={{html: articleContent ?? noDataHtml}}
               scalesPageToFit={true}
               viewportContent={'width=device-width, user-scalable=no'}
               onShouldStartLoadWithRequest={handleExternalClick}
@@ -277,20 +184,26 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
           article?.reviewer_id !== null && (
             <YStack
               padding={wp(4)}
-              marginTop={hp(1.2)} // reduced from hp(3)
-              borderRadius={10}
-              space="$3">
+              marginTop={hp(1.5)}
+              borderRadius={16}
+              space="$3"
+              backgroundColor="#F8F9FA"
+              borderWidth={1}
+              borderColor="#E0E0E0">
+              <Text fontSize={17} fontWeight="700" color="#1A1A1A" marginBottom="$2">
+                💬 Add a Comment
+              </Text>
               <TextArea
-                placeholder="Ask your doubt"
+                placeholder="Share your thoughts or ask a question..."
                 value={feedback}
                 onChangeText={setFeedback}
                 multiline
-                height={hp(19)}
-                fontSize={wp(4.8)}
-                paddingVertical={10}
-                paddingHorizontal={12}
-                borderRadius={8}
-                borderWidth={1.5}
+                height={hp(16)}
+                fontSize={wp(4.5)}
+                paddingVertical={12}
+                paddingHorizontal={14}
+                borderRadius={12}
+                borderWidth={2}
                 borderColor={PRIMARY_COLOR}
                 backgroundColor="#fff"
                 textAlignVertical="top"
@@ -303,11 +216,11 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
                   ) : (
                     <Button
                       size="$4"
-                      width="45%"
-                      height={44}
+                      width="40%"
+                      height={48}
                       backgroundColor={PRIMARY_COLOR}
                       color="#fff"
-                      borderRadius={8}
+                      borderRadius={12}
                       onPress={() => {
                         setLoading(true);
 
@@ -321,7 +234,9 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
 
                         setFeedback('');
                       }}>
-                     <Text color='#ffffff' fontSize={17}>Post</Text>
+                      <Text color="#ffffff" fontSize={16} fontWeight="700">
+                        Post Comment
+                      </Text>
                     </Button>
                   )}
                 </YStack>

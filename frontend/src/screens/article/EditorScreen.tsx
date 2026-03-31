@@ -13,11 +13,10 @@ import Entypo from '@expo/vector-icons/Entypo';
 import IonIcon from '@expo/vector-icons/Ionicons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Fontisto from '@expo/vector-icons/Fontisto';
-import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
+import {PRIMARY_COLOR} from '../../helper/Theme';
 import {EditorScreenProp} from '../../type';
 import {launchImageLibrary} from 'react-native-image-picker';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {hp} from '../../helper/Metric';
 import {useDispatch} from 'react-redux';
 import {setSuggestion, setSuggestionAccepted} from '../../store/dataSlice';
 
@@ -37,7 +36,7 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
     pb_record_id,
   } = route.params;
 
-  const RichText = useRef();
+  const RichText = useRef(null);
   const [article, setArticle] = useState('');
   const [localImages, setLocalImages] = useState<string[]>([]);
   const [htmlImages, setHtmlImages] = useState<string[]>([]);
@@ -67,6 +66,7 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
                 articleData: articleData,
                 requestId: requestId,
                 pb_record_id: pb_record_id,
+                language: route.params.language,
               });
             } else {
               Alert.alert('Error', 'Please enter at least 20 characters');
@@ -128,11 +128,11 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
   }, [imageUtils]);
 
   useEffect(() => {
-    if (editorReady && article) {
+    if (editorReady && article && RichText.current) {
       RichText.current?.setContentHTML(article);
       //RichText.current?.focusContentEditor(); 
     }
-  }, [editorReady]);
+  }, [ editorReady]);
 
   // this function will be called when the editor has been initialized
   function editorInitializedCallback() {
@@ -244,31 +244,25 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
   };
 */
   return (
-    <ScrollView style={[styles.container, {paddingBottom: insets.bottom}]}>
-      {/* <View style={styles.box}>
-        <Text style={styles.text}>Write your post</Text>
+    <ScrollView
+      style={[styles.container, {paddingBottom: insets.bottom}]}
+      showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled">
 
-        <TouchableOpacity
-          onPress={() => {
-            //if (article.length > 20) {
-            navigation.navigate('PreviewScreen', {
-              article: article,
-            });
-            // }
-          }}>
-          <Text style={styles.preview}>Preview</Text>
-        </TouchableOpacity>
-      </View> */}
+      {/* Writing Helper Text */}
+      <Text style={styles.helperText}>
+        Compose your article with rich formatting tools below
+      </Text>
 
       <RichToolbar
-        style={[styles.richBar]}
+        style={styles.richBar}
         editor={RichText}
         disabled={false}
-        iconTint={'white'}
-        selectedIconTint={'black'}
-        disabledIconTint={'purple'}
+        iconTint={'#FFFFFF'}
+        selectedIconTint={'#FCD34D'}
+        disabledIconTint={'#9CA3AF'}
         onPressAddImage={onPressAddImage}
-        iconSize={30}
+        iconSize={28}
         actions={[
           // Text Formatting Actions
           actions.setBold,
@@ -280,9 +274,6 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
           actions.heading1,
           actions.heading2,
           actions.heading3,
-          actions.heading4,
-          actions.heading5,
-          actions.heading6,
 
           // Alignment Actions
           actions.alignLeft,
@@ -296,69 +287,56 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
           // Insert Actions
           actions.insertLink,
           actions.insertImage,
-          //actions.insertHTML,
-          actions.table,
+          actions.blockquote,
 
           // Undo/Redo Actions
           actions.undo,
           actions.redo,
-
-          // Blockquote Action
-          actions.blockquote,
         ]}
         iconMap={{
           // Custom Icons for Text Formatting Actions
           [actions.setStrikethrough]: ({tintColor}) => (
-            <FontAwesome name="strikethrough" color={tintColor} size={26} />
+            <FontAwesome name="strikethrough" color={tintColor} size={24} />
           ),
 
           // Custom Icons for Alignment Actions
           [actions.alignLeft]: ({tintColor}) => (
-            <Feather name="align-left" color={tintColor} size={35} />
+            <Feather name="align-left" color={tintColor} size={28} />
           ),
           [actions.alignCenter]: ({tintColor}) => (
-            <Feather name="align-center" color={tintColor} size={35} />
+            <Feather name="align-center" color={tintColor} size={28} />
           ),
           [actions.alignRight]: ({tintColor}) => (
-            <Feather name="align-right" color={tintColor} size={35} />
+            <Feather name="align-right" color={tintColor} size={28} />
           ),
 
           // Custom Icons for Undo/Redo Actions
           [actions.undo]: ({tintColor}) => (
-            <IonIcon name="arrow-undo" color={tintColor} size={35} />
+            <IonIcon name="arrow-undo" color={tintColor} size={28} />
           ),
           [actions.redo]: ({tintColor}) => (
-            <IonIcon name="arrow-redo" color={tintColor} size={35} />
+            <IonIcon name="arrow-redo" color={tintColor} size={28} />
           ),
 
           // Custom Icons for Heading Actions
           [actions.heading1]: ({tintColor}) => (
-            <Text style={[styles.tib, {color: tintColor}]}>H1</Text>
+            <Text style={[styles.headingIcon, {color: tintColor}]}>H1</Text>
           ),
           [actions.heading2]: ({tintColor}) => (
-            <Text style={[styles.tib, {color: tintColor}]}>H2</Text>
+            <Text style={[styles.headingIcon, {color: tintColor}]}>H2</Text>
           ),
           [actions.heading3]: ({tintColor}) => (
-            <Text style={[styles.tib, {color: tintColor}]}>H3</Text>
-          ),
-          [actions.heading4]: ({tintColor}) => (
-            <Text style={[styles.tib, {color: tintColor}]}>H4</Text>
-          ),
-          [actions.heading5]: ({tintColor}) => (
-            <Text style={[styles.tib, {color: tintColor}]}>H5</Text>
-          ),
-          [actions.heading6]: ({tintColor}) => (
-            <Text style={[styles.tib, {color: tintColor}]}>H6</Text>
+            <Text style={[styles.headingIcon, {color: tintColor}]}>H3</Text>
           ),
 
           // Custom Icon for Image Insertion
           [actions.insertImage]: ({tintColor}) => (
-            <Entypo name="image" color={tintColor} size={29} />
+            <Entypo name="image" color={tintColor} size={26} />
           ),
 
           // Custom Icon for Blockquote Action
           [actions.blockquote]: ({tintColor}) => (
-            <Entypo name="quote" color={tintColor} size={35} />
+            <Entypo name="quote" color={tintColor} size={28} />
           ),
         }}
         insertImage={onPressAddImage}
@@ -369,22 +347,20 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
         containerStyle={styles.editor}
         ref={RichText}
         style={styles.rich}
-        placeholder={
-          'Start Writing Here — outside formatting not acceptable here'
-        }
+        placeholder={'Start writing your article here...'}
         initialContentHTML={article}
         onChange={text => setArticle(text)}
         editorInitializedCallback={editorInitializedCallback}
         onHeightChange={handleHeightChange}
-        initialHeight={600}
+        initialHeight={650}
+        useContainer={true}
+        pasteAsPlainText={false}
       />
 
-      {/**
-     *
-     *  <Text style={styles.text}>Result</Text>
-
-      <HTMLView value={article} stylesheet={styles} />
-     */}
+      {/* Character Count Helper */}
+      <Text style={styles.characterCount}>
+        {article.replace(/<[^>]*>/g, '').length} characters
+      </Text>
     </ScrollView>
   );
 };
@@ -396,91 +372,86 @@ const styles = StyleSheet.create({
   /* styles for html tags */
   a: {
     fontWeight: 'bold',
-    color: 'purple',
+    color: PRIMARY_COLOR,
   },
   div: {
     fontFamily: 'monospace',
   },
   p: {
-    fontSize: 30,
+    fontSize: 16,
+    lineHeight: 24,
   },
   /*******************************/
   container: {
     flex: 1,
-    backgroundColor: ON_PRIMARY_COLOR,
+    backgroundColor: '#F9FAFB',
+  },
+  helperText: {
+    fontSize: 15,
+    color: '#6B7280',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    fontWeight: '500',
   },
   editor: {
-    backgroundColor: ON_PRIMARY_COLOR,
-    borderColor: 'black',
-    marginHorizontal: 4,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    marginHorizontal: 5,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+    minHeight: 650,
   },
   rich: {
-    //minHeight: 700,
     flex: 1,
-    backgroundColor: ON_PRIMARY_COLOR,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+    lineHeight: 24,
   },
   richBar: {
-    height: 55,
+    height: 56,
     backgroundColor: PRIMARY_COLOR,
-    marginTop: 0,
-    marginBottom: hp(0.8),
+    borderRadius: 12,
+    marginHorizontal: 12,
+    marginTop: 8,
+    marginBottom: 8,
+    shadowColor: PRIMARY_COLOR,
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  text: {
-    fontWeight: 'bold',
-    fontSize: 20,
-  },
-
-  preview: {
-    fontWeight: '500',
-    fontSize: 18,
-  },
-  tib: {
+  headingIcon: {
     textAlign: 'center',
-    fontSize: 22,
-    fontWeight: '600',
-    color: '#515156',
+    fontSize: 18,
+    fontWeight: '700',
   },
-
-  box: {
-    flex: 0,
-    width: '94%',
-    marginBottom: 20,
-    marginTop: 10,
-    marginStart: 10,
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    flexDirection: 'row',
+  characterCount: {
+    fontSize: 13,
+    color: '#9CA3AF',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    textAlign: 'right',
+    backgroundColor: '#FFFFFF',
+    marginTop: 4,
+    marginHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
   preview_button: {
     marginRight: 15,
     paddingHorizontal: 8,
     paddingVertical: 6,
-  },
-
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // semi-transparent background
-  },
-  modalContent: {
-    width: '80%',
-    backgroundColor: 'white',
-    borderRadius: 10,
-    padding: 20,
-    alignItems: 'center',
-  },
-  modalTitle: {
-    fontSize: 20,
-    marginBottom: 15,
-  },
-  fontOption: {
-    fontSize: 18,
-    paddingVertical: 10,
-  },
-  closeButton: {
-    marginTop: 15,
-    color: 'blue',
-    fontSize: 18,
   },
 });

@@ -1,57 +1,37 @@
-import {StyleSheet, View, Text, Alert} from 'react-native';
+import {StyleSheet, View, Text, Alert, useColorScheme} from 'react-native';
 import React, {useCallback, useState} from 'react';
+import {StatusBar} from 'expo-status-bar';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import ActivityOverview from '../components/ActivityOverview';
 import {Tabs, MaterialTabBar} from 'react-native-collapsible-tab-view';
 import ArticleCard from '../components/ArticleCard';
 import {useDispatch, useSelector} from 'react-redux';
 import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import ProfileHeader from '../components/ProfileHeader';
-import {
-  GET_PROFILE_API,
-  REPOST_ARTICLE,
-  UPDATE_VIEW_COUNT,
-} from '../helper/APIUtils';
-import {ArticleData, ProfileScreenProps, User} from '../type';
-import {useMutation, useQuery} from '@tanstack/react-query';
-import axios from 'axios';
+import {ArticleData, ProfileScreenProps} from '../type';
 import Loader from '../components/Loader';
 import {useFocusEffect} from '@react-navigation/native';
 import Snackbar from 'react-native-snackbar';
-import {useSocket} from '../../SocketContext';
 import {setUserHandle} from '../store/UserSlice';
+import {useGetProfile} from '../hooks/useGetProfile';
+import {useUpdateViewCount} from '../hooks/useUpdateViewCount';
 
 const ProfileScreen = ({navigation}: ProfileScreenProps) => {
-  const {user_handle, user_id, user_token} = useSelector(
-    (state: any) => state.user,
-  );
+  const colorScheme = useColorScheme();
+  const isDarkMode = colorScheme === 'dark';
+  const {user_id} = useSelector((state: any) => state.user);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const {isConnected} = useSelector((state: any) => state.network);
   const [articleId, setArticleId] = useState<number>();
   const [authorId, setAuthorId] = useState<string>('');
   const [recordId, setRecordId] = useState<string>('');
   const [selectedCardId, setSelectedCardId] = useState<string>('');
-  const [repostItem, setRepostItem] = useState<ArticleData | null>(null);
-  const socket = useSocket();
   const dispatch = useDispatch();
+  const {mutate: updateViewCount} =
+    useUpdateViewCount(articleId ?? 0);
 
-  const {
-    data: user,
-    refetch,
-    isLoading,
-  } = useQuery({
-    queryKey: ['get-profile'],
-    queryFn: async () => {
-      const response = await axios.get(`${GET_PROFILE_API}`, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      });
-      return response.data.profile as User;
-    },
-    enabled: !!isConnected && !!user_token,
-  });
+  const {data: user, refetch, isLoading} = useGetProfile();
 
   if (user) {
     dispatch(setUserHandle(user.user_handle));
@@ -70,9 +50,20 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
       setAuthorId(authorId);
       setRecordId(recordId);
 
-      updateViewCountMutation.mutate({
-        articleId: Number(articleId),
+      updateViewCount(Number(articleId), {
+        onSuccess: async () => {
+          navigation.navigate('ArticleScreen', {
+            articleId: Number(articleId),
+            authorId: authorId,
+            recordId: recordId,
+          });
+        },
+
+        onError: () => {
+          Alert.alert('Internal server error, try again!');
+        },
       });
+      
     } else {
       Snackbar.show({
         text: 'Please check your internet connection!',
@@ -80,50 +71,10 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
       });
     }
   };
-  const updateViewCountMutation = useMutation({
-    mutationKey: ['update-view-count'],
-    mutationFn: async ({
-      articleId,
-    }: // authorId,
-    {
-      articleId: number;
-      //  authorId: string;
-    }) => {
-      if (user_token === '') {
-        Alert.alert('No token found');
-        return;
-      }
-      const res = await axios.post(
-        UPDATE_VIEW_COUNT,
-        {
-          article_id: articleId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
 
-      return res.data.article as ArticleData;
-    },
-    onSuccess: async data => {
-      navigation.navigate('ArticleScreen', {
-        articleId: Number(articleId),
-        authorId: authorId,
-        recordId: recordId,
-      });
-    },
-
-    onError: error => {
-      // console.log('Update View Count Error', error);
-      Alert.alert('Internal server error, try again!');
-    },
-  });
 
   const isDoctor = user !== undefined ? user.isDoctor : false;
   const bottomBarHeight = useBottomTabBarHeight();
-  const insets = useSafeAreaInsets();
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -137,84 +88,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
     }, [refetch]),
   );
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const handleRepostAction = (item: ArticleData) => {
-    if (isConnected) {
-      // updateLikeMutation.mutate();
-      setRepostItem(item);
 
-      repostMutation.mutate({
-        articleId: Number(item._id),
-      });
-    } else {
-      Snackbar.show({
-        text: 'Please check your network connection',
-        duration: Snackbar.LENGTH_SHORT,
-      });
-    }
-  };
-
-  const repostMutation = useMutation({
-    mutationKey: ['repost-user-article'],
-    mutationFn: async ({
-      articleId,
-    }: // authorId,
-    {
-      articleId: number;
-      //  authorId: string;
-    }) => {
-      if (user_token === '') {
-        Alert.alert('No token found');
-        return;
-      }
-      const res = await axios.post(
-        REPOST_ARTICLE,
-        {
-          articleId: articleId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-
-      return res.data as any;
-    },
-    onSuccess: () => {
-      refetch();
-      Snackbar.show({
-        text: 'Article reposted in your feed',
-        duration: Snackbar.LENGTH_SHORT,
-      });
-
-      if (repostItem) {
-        //emitNotification(repostItem);
-        socket.emit('notification', {
-          type: 'repost',
-          userId: user_id,
-          authorId: repostItem.authorId,
-          postId: repostItem._id,
-          articleRecordId: repostItem.pb_recordId,
-          message: {
-            title: `${user_handle} reposted`,
-            message: `${repostItem.title}`,
-          },
-          authorMessage: {
-            title: `${user_handle} reposted your article`,
-            message: `${repostItem.title}`,
-          },
-        });
-      }
-
-      // Emit notification
-    },
-
-    onError: error => {
-      console.log('Repost Error', error);
-      Alert.alert('Internal server error, try again!');
-    },
-  });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleReportAction = (item: ArticleData) => {
     navigation.navigate('ReportScreen', {
@@ -233,7 +107,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
           setSelectedCardId={setSelectedCardId}
           navigation={navigation}
           success={onRefresh}
-          handleRepostAction={handleRepostAction}
+          handleRepostAction={()=>{}}
           handleReportAction={handleReportAction}
           handleEditRequestAction={() => {}}
           source="profile"
@@ -244,7 +118,6 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
       selectedCardId,
       navigation,
       onRefresh,
-      handleRepostAction,
       handleReportAction,
     ],
   );
@@ -326,7 +199,6 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
             }
           }
         }}
-        improvementPublished={user ? user.improvements.length : 0}
       />
     );
   };
@@ -347,19 +219,38 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
 
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
+      <SafeAreaView
+        style={[
+          styles.loadingContainer,
+          {backgroundColor: isDarkMode ? '#000A60' : '#F0F8FF'},
+        ]}>
+        <StatusBar
+          style={isDarkMode ? 'light' : 'dark'}
+          backgroundColor="#007AFF"
+        />
         <Loader />
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <View style={[styles.innerContainer, {paddingTop: insets.top}]}>
+    <SafeAreaView
+      style={[
+        styles.container,
+        {backgroundColor: isDarkMode ? '#000A60' : PRIMARY_COLOR},
+      ]}>
+      <StatusBar
+        style={isDarkMode ? 'light' : 'dark'}
+        backgroundColor="#007AFF"
+      />
+      <View style={[styles.innerContainer]}>
         <Tabs.Container
           renderHeader={renderHeader}
           renderTabBar={renderTabBar}
-          containerStyle={styles.tabsContainer}>
+          containerStyle={[
+            styles.tabsContainer,
+            {backgroundColor: isDarkMode ? '#000A60' : '#F0F8FF'},
+          ]}>
           {/* Tab 1 */}
           <Tabs.Tab name="Insight">
             <Tabs.ScrollView
@@ -369,6 +260,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
               <ActivityOverview
                 onArticleViewed={onArticleViewed}
                 others={false}
+                
                 user_handle={user?.user_handle || ''}
                 articlePosted={user?.articles ? user.articles.length : 0}
               />
@@ -415,7 +307,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
           </Tabs.Tab>
         </Tabs.Container>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -424,7 +316,7 @@ export default ProfileScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    //  backgroundColor: '#0CAFFF',
+    backgroundColor: '#0CAFFF',
   },
   innerContainer: {
     flex: 1,
@@ -433,6 +325,7 @@ const styles = StyleSheet.create({
   tabsContainer: {
     //  backgroundColor: ON_PRIMARY_COLOR,
     overflow: 'hidden',
+    flex: 1,
   },
   scrollViewContentContainer: {
     paddingHorizontal: 6,

@@ -1,25 +1,17 @@
 import React, {useState} from 'react';
-import {
-  StyleSheet,
-  View,
-  TextInput,
-  TouchableOpacity,
-  Alert,
-} from 'react-native';
+import {Alert} from 'react-native';
 
 import {ScrollView, YStack, XStack, Text, Input, Button, Image} from 'tamagui';
 import Icon from '@expo/vector-icons/MaterialIcons';
-import {hp, wp} from '../../helper/Metric';
-import {PRIMARY_COLOR} from '../../helper/Theme';
 import {Contactdetail, SignUpScreenSecondProp} from '../../type';
-import {useMutation} from '@tanstack/react-query';
-import axios, {AxiosError} from 'axios';
-import {REGISTRATION_API, VERIFICATION_MAIL_API} from '../../helper/APIUtils';
+import {AxiosError} from 'axios';
 import EmailVerifiedModal from '../../components/VerifiedModal';
 import Loader from '../../components/Loader';
 import Snackbar from 'react-native-snackbar';
-import useUploadImage from '../../../hooks/useUploadImage';
+import useUploadImage from '../../hooks/useUploadImage';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {useVerificationMailMutation} from '@/src/hooks/useMailVerification';
+import {useRegdMutation} from '@/src/hooks/useUserRegistration';
 let validator = require('email-validator');
 
 const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
@@ -33,17 +25,16 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
   const [token, setToken] = useState('');
   const [verifyBtntext, setVerifyBtntxt] = useState('Request Verification');
   const [verifiedModalVisible, setVerifiedModalVisible] = useState(false);
+  const {mutate: verifyEmailMutation, isPending: verifyMutationPending} =
+    useVerificationMailMutation();
+  const {mutate: register, isPending: registerPending} = useRegdMutation();
 
-  const doctorRegisterMutation = useMutation({
-    mutationKey: ['doctor-user-registration'],
-    mutationFn: async ({
-      contactDetail,
-      profile_url,
-    }: {
-      contactDetail: Contactdetail;
-      profile_url: string;
-    }) => {
-      const res = await axios.post(REGISTRATION_API, {
+  const callRegisterAPI = (
+    profile_url: string,
+    contactDetail: Contactdetail,
+  ) => {
+    register(
+      {
         user_name: user.user_name,
         user_handle: user.user_handle,
         email: user.email,
@@ -54,110 +45,108 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
         Years_of_experience: experience,
         Profile_image: profile_url,
         contact_detail: contactDetail,
-      });
-      return res.data.token as string;
-    },
-    onSuccess: data => {
-      setToken(data);
-      setVerifiedModalVisible(true);
-    },
+      },
+      {
+        onSuccess: data => {
+          setToken(data);
+          setVerifiedModalVisible(true);
+        },
 
-    onError: (err: AxiosError) => {
-      if (err.response) {
-        const statusCode = err.response.status;
-        switch (statusCode) {
-          case 400:
-            const errorData = err.message;
-            console.log('Error message', errorData);
-            Alert.alert('Registration failed', 'Please try again');
-            break;
-          case 409: {
-            Alert.alert(
-              'Registration failed',
-              'Email or user handle already exists',
-            );
-            break;
-          }
+        onError: (err: AxiosError) => {
+          if (err.response) {
+            const statusCode = err.response.status;
+            switch (statusCode) {
+              case 400:
+                const errorData = err.message;
+                console.log('Error message', errorData);
+                Alert.alert('Registration failed', 'Please try again');
+                break;
+              case 409: {
+                Alert.alert(
+                  'Registration failed',
+                  'Email or user handle already exists',
+                );
+                break;
+              }
 
-          case 500: {
-            Alert.alert(
-              'Registration failed',
-              'Internal server error. Please try again later.',
-            );
-            break;
-          }
+              case 500: {
+                Alert.alert(
+                  'Registration failed',
+                  'Internal server error. Please try again later.',
+                );
+                break;
+              }
 
-          default: {
-            Alert.alert(
-              'Registration failed',
-              'Something went wrong. Please try again later.',
-            );
-          }
-        }
-      } else {
-        console.log('General User Registration Error', err);
-        Alert.alert('Registration failed', 'Please try again');
-      }
-    },
-  });
-
-  const verifyMail = useMutation({
-    mutationKey: ['send-verification-mail'],
-    mutationFn: async () => {
-      const res = await axios.post(VERIFICATION_MAIL_API, {
-        email: user.email,
-        token: token,
-      });
-
-      return res.data.message as string;
-    },
-
-    onSuccess: data => {
-      setVerifyBtntxt(data);
-      Alert.alert('Verification Email Sent');
-      navigation.navigate('LoginScreen');
-    },
-    onError: (error: AxiosError) => {
-      if (error.response) {
-        const statusCode = error.response.status;
-        switch (statusCode) {
-          case 400:
-            if (error.message === 'Email and token are required') {
-              Alert.alert('Error', 'Email and token are required');
-            } else if (error.message === 'User not found or already verified') {
-              Alert.alert('Error', 'User not found or already verified');
-            } else {
-              Alert.alert('Error', 'Please provide all required fields');
+              default: {
+                Alert.alert(
+                  'Registration failed',
+                  'Something went wrong. Please try again later.',
+                );
+              }
             }
-            break;
-          case 429:
-            Alert.alert(
-              'Error',
-              'Verification email already sent. Please try again after 1 hour.',
-            );
-            break;
-          case 500:
-            Alert.alert(
-              'Error',
-              'Internal server error. Please try again later.',
-            );
-            break;
-          default:
-            Alert.alert(
-              'Error',
-              'Something went wrong. Please try again later.',
-            );
-        }
-      } else {
-        // console.log('Email Verification error', error);
-        Alert.alert('Error', 'Please try again');
-      }
-    },
-  });
+          } else {
+            console.log('General User Registration Error', err);
+            Alert.alert('Registration failed', 'Please try again');
+          }
+        },
+      },
+    );
+  };
 
   const handleVerifyModalCallback = () => {
     if (token.length > 0) {
-      verifyMail.mutate();
+      verifyEmailMutation(
+        {
+          email: user.email,
+          token,
+        },
+        {
+          onSuccess: data => {
+            setVerifyBtntxt(data);
+            Snackbar.show({
+              text: 'Verification email sent!',
+              duration: Snackbar.LENGTH_LONG,
+            });
+            navigation.navigate('LoginScreen');
+          },
+
+          onError: (error: AxiosError) => {
+            if (error.response) {
+              const statusCode = error.response.status;
+              switch (statusCode) {
+                case 400:
+                  Snackbar.show({
+                    text: error.message,
+                    duration: Snackbar.LENGTH_SHORT,
+                  });
+                  break;
+                case 429:
+                  Snackbar.show({
+                    text: 'Verification email already sent. Please try again after 1 hour.',
+                    duration: Snackbar.LENGTH_SHORT,
+                  });
+                  break;
+                case 500:
+                  Snackbar.show({
+                    text: 'Internal server error. Please try again later.',
+                    duration: Snackbar.LENGTH_SHORT,
+                  });
+                  break;
+                default:
+                  Snackbar.show({
+                    text: 'Something went wrong. Please try again later.',
+                    duration: Snackbar.LENGTH_SHORT,
+                  });
+              }
+            } else {
+              Snackbar.show({
+                text: 'An error occured, try again!',
+                duration: Snackbar.LENGTH_SHORT,
+              });
+            }
+          },
+        },
+      );
     } else {
       Alert.alert(
         'Failed to authenticate, Token not found',
@@ -197,56 +186,51 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
   };
 
   const registerDoctor = async (contactDetail: Contactdetail) => {
-    Alert.alert(
-      '',
-      'Are you sure you want to use this image?',
-      [
-        {
-          text: 'Cancel',
-          onPress: () => {
-            // setUserProfileImage(user?.Profile_image || '');
-            //setUserProfileImage('');
-            Snackbar.show({
-              text: 'Your profile image will not be uploaded.',
-              duration: Snackbar.LENGTH_SHORT,
-            });
-            doctorRegisterMutation.mutate({
-              contactDetail: contactDetail,
-              profile_url: '',
-            });
-          },
-          style: 'cancel',
-        },
-        {
-          text: 'OK',
-          onPress: async () => {
-            try {
-              // Upload the resized image
-              let result;
-              if (user.profile_image && user.profile_image !== '') {
-                result = await uploadImage(user.profile_image);
-              }
-              doctorRegisterMutation.mutate({
-                contactDetail: contactDetail,
-                profile_url: result ? result : '',
+    if (!user.profile_image || user.profile_image === '') {
+      callRegisterAPI('', contactDetail);
+    } else {
+      Alert.alert(
+        '',
+        'Are you sure you want to use this image?',
+        [
+          {
+            text: 'Cancel',
+            onPress: () => {
+              // setUserProfileImage(user?.Profile_image || '');
+              //setUserProfileImage('');
+              Snackbar.show({
+                text: 'Your profile image will not be uploaded.',
+                duration: Snackbar.LENGTH_SHORT,
               });
-              // setSubmitProfileUrl(result ? result : '');
-            } catch (err) {
-              console.error('Registration failed', err);
-              Alert.alert('Error Occured', 'Registration failed');
-            }
+              callRegisterAPI('', contactDetail);
+            },
+            style: 'cancel',
           },
-        },
-      ],
-      {cancelable: false},
-    );
-  };
-  const validPhoneNumber = phone => {
-    const phoneNumberRegex = /^\+\d{1,3}\d{7,10}$/;
-    return phoneNumberRegex.test(phone);
+          {
+            text: 'OK',
+            onPress: async () => {
+              try {
+                // Upload the resized image
+                let result;
+                if (user.profile_image && user.profile_image !== '') {
+                  result = await uploadImage(user.profile_image);
+                }
+                
+               callRegisterAPI(result ?? "", contactDetail);
+              
+              } catch (err) {
+                console.error('Registration failed', err);
+                Alert.alert('Error Occured', 'Registration failed');
+              }
+            },
+          },
+        ],
+        {cancelable: false},
+      );
+    }
   };
 
-  if (doctorRegisterMutation.isPending || verifyMail.isPending || loading) {
+  if (registerPending || verifyMutationPending || loading) {
     return <Loader />;
   }
   return (

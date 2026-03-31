@@ -20,6 +20,7 @@ export type RootStackParamList = {
     title: string;
     authorName: string;
     description: string;
+    language: string;
     selectedGenres: Category[];
     imageUtils: string;
     articleData: ArticleData | null | undefined;
@@ -35,6 +36,7 @@ export type RootStackParamList = {
     article: string;
     title: string;
     authorName: string;
+    language: string;
     description: string;
     image: string;
     selectedGenres: Category[];
@@ -86,7 +88,7 @@ export type RootStackParamList = {
   ReportConfirmationScreen: undefined;
   NotificationScreen: undefined;
   UserProfileScreen: {
-    authorId: string | undefined;
+    authorId: User | string | undefined;
     author_handle: string | undefined;
   };
   ProfileEditScreen: undefined;
@@ -201,6 +203,11 @@ export type PodcastFormProp = StackScreenProps<
 export type LoginScreenProp = StackScreenProps<
   RootStackParamList,
   'LoginScreen'
+>;
+
+export type LogoutScreenProp = StackScreenProps<
+  RootStackParamList,
+  'LogoutScreen'
 >;
 
 export type ArticleScreenProp = StackScreenProps<
@@ -345,6 +352,8 @@ export type HomeScreenHeaderProps = {
   onTextInputChange: (textInput: string) => void;
   onNotificationClick: () => void;
   unreadCount: number;
+  hasActiveFilters?: boolean;
+  onFilterReset?: () => void;
 };
 
 export type ArticleCardProps = {
@@ -443,7 +452,6 @@ export type ProfileHeaderProps = {
   isFollowing: boolean | undefined;
   onFollowClick: () => void;
   onOverviewClick: () => void;
-  improvementPublished: number;
 };
 
 export type HomeScreenFilterModalProps = {
@@ -455,6 +463,8 @@ export type HomeScreenFilterModalProps = {
   handleFilterApply: () => void;
   setSortingType: (selectedType: string) => void;
   sortingType: string | '';
+  selectedLanguages?: string[];
+  setSelectedLanguages?: (languages: string[]) => void;
 };
 
 export type HomeScreenCategoriesFlatlistProps = {
@@ -566,6 +576,7 @@ export type PodcastData = {
   likedUsers: User[];
   savedUsers: User[];
   viewUsers: User[];
+  viewCount: number;
   discardReason: string;
   is_removed: boolean;
   mentionedUsers: User[];

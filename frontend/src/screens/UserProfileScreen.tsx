@@ -1,31 +1,37 @@
-import {StyleSheet, View, Text, Alert, TouchableOpacity} from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  Alert,
+  TouchableOpacity,
+  useColorScheme,
+} from 'react-native';
 import React, {useCallback, useState} from 'react';
+import {StatusBar} from 'expo-status-bar';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import ActivityOverview from '../components/ActivityOverview';
 import {Tabs, MaterialTabBar} from 'react-native-collapsible-tab-view';
 import ArticleCard from '../components/ArticleCard';
 import {useSelector} from 'react-redux';
-import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import ProfileHeader from '../components/ProfileHeader';
-import {
-  FOLLOW_USER,
-  PROD_URL,
-  REPOST_ARTICLE,
-  REQUEST_EDIT,
-  UPDATE_VIEW_COUNT,
-} from '../helper/APIUtils';
-import {ArticleData, UserProfileScreenProp, User} from '../type';
-import {useMutation, useQuery} from '@tanstack/react-query';
-import axios from 'axios';
+import {ArticleData, UserProfileScreenProp} from '../type';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Loader from '../components/Loader';
 import {useFocusEffect} from '@react-navigation/native';
 import Snackbar from 'react-native-snackbar';
 import {useSocket} from '../../SocketContext';
+import {useRequestArticleEdit} from '../hooks/useRequestArticleEdit';
+import {useUpdateFollowStatus} from '../hooks/useUpdateFollowStatus';
+import {useUpdateViewCount} from '../hooks/useUpdateViewCount';
+import { useGetAuthorProfile } from '../hooks/useGetAuthorProfile';
+import {useGetTotalLikeViewStatus} from '../hooks/useGetTotalLikeViewStatus';
 
 const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
+  const colorScheme = useColorScheme();
+  const isDarkMode = colorScheme === 'dark';
   const {authorId, author_handle} = route.params;
-  const {user_id, user_handle, user_token} = useSelector(
+  const {user_id, user_handle} = useSelector(
     (state: any) => state.user,
   );
   const {isConnected} = useSelector((state: any) => state.network);
@@ -34,58 +40,40 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   const [articleId, setArticleId] = useState<number>();
   const [recordId, setRecordId] = useState<string>('');
   const [selectedCardId, setSelectedCardId] = useState<string>('');
-  const [repostItem, setRepostItem] = useState<ArticleData | null>(null);
 
   //const [authorId, setAuthorId] = useState<string>('');
   const socket = useSocket();
+  const {mutate: requestEdit, isPending: requestEditPending} =
+    useRequestArticleEdit();
+
+  const {mutate: followMutate} = useUpdateFollowStatus();
+
+  const {mutate: updateViewCount} = useUpdateViewCount(articleId ?? 0);
+
+  // Get the actual authorId string
+  const actualAuthorId = typeof authorId === 'string' ? authorId : authorId?._id || '';
+
   const {
     data: user,
     refetch,
     isLoading,
-  } = useQuery({
-    queryKey: ['get-user-profile'],
-    queryFn: async () => {
-      let url: string;
-      if (authorId) {
-        url = `${PROD_URL}/user/getuserprofile?id=${authorId._id}`;
-      } else if (author_handle) {
-        url = `${PROD_URL}/user/getuserprofile?handle=${author_handle}`;
-      } else {
-        url = `${PROD_URL}/user/getuserprofile?id=${user_id}`;
-      }
-      // console.log('User token', user_token);
-      const response = await axios.get(url, {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      });
-      return response.data.profile as User;
-    },
-  });
+  } = useGetAuthorProfile(actualAuthorId, author_handle, user_id, isConnected);
 
   const isDoctor = user !== undefined ? user.isDoctor : false;
   //const bottomBarHeight = useBottomTabBarHeight();
-  const insets = useSafeAreaInsets();
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const handleRepostAction = (item: ArticleData) => {
-    if (isConnected) {
-      // updateLikeMutation.mutate();
-      setRepostItem(item);
+  // Fetch statistics data for the user being viewed
+  const {data: statsData} = useGetTotalLikeViewStatus({
+    user_id: user_id,
+    userId: actualAuthorId,
+    others: true,
+    isConnected: isConnected,
+  });
 
-      repostMutation.mutate({
-        articleId: Number(item._id),
-      });
-    } else {
-      Snackbar.show({
-        text: 'Please check your network connection',
-        duration: Snackbar.LENGTH_SHORT,
-      });
-    }
-  };
 
   const onArticleViewed = ({
     articleId,
+    authorId: viewedAuthorId,
     recordId,
   }: {
     articleId: number;
@@ -94,10 +82,21 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   }) => {
     if (isConnected) {
       setArticleId(articleId);
-      //setAuthorId(authorId);
       setRecordId(recordId);
-      updateViewCountMutation.mutate({
-        articleId: Number(articleId),
+
+      updateViewCount(undefined, {
+        onSuccess: async () => {
+          navigation.navigate('ArticleScreen', {
+            articleId: Number(articleId),
+            authorId: viewedAuthorId,
+            recordId: recordId,
+          });
+        },
+
+        onError: error => {
+          console.log('Update View Count Error', error);
+          Alert.alert('Internal server error, try again!');
+        },
       });
     } else {
       Snackbar.show({
@@ -106,111 +105,6 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
       });
     }
   };
-
-  const repostMutation = useMutation({
-    mutationKey: ['repost-user-article'],
-    mutationFn: async ({
-      articleId,
-    }: // authorId,
-    {
-      articleId: number;
-      //  authorId: string;
-    }) => {
-      if (user_token === '') {
-        Alert.alert('No token found');
-        return;
-      }
-      const res = await axios.post(
-        REPOST_ARTICLE,
-        {
-          articleId: articleId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-
-      return res.data as any;
-    },
-    onSuccess: () => {
-      //refetch();
-      Snackbar.show({
-        text: 'Article reposted in your feed',
-        duration: Snackbar.LENGTH_SHORT,
-      });
-
-      // Emit notification
-      if (repostItem) {
-        //emitNotification(repostItem);
-        socket.emit('notification', {
-          type: 'repost',
-          userId: user_id,
-          authorId: repostItem.authorId,
-          postId: repostItem._id,
-          articleRecordId: repostItem.pb_recordId,
-          message: {
-            title: `${user_handle} reposted`,
-            message: `${repostItem.title}`,
-          },
-          authorMessage: {
-            title: `${user_handle} reposted your article`,
-            message: `${repostItem.title}`,
-          },
-        });
-      }
-    },
-
-    onError: error => {
-      console.log('Repost Error', error);
-      Alert.alert('Internal server error, try again!');
-    },
-  });
-
-  const updateViewCountMutation = useMutation({
-    mutationKey: ['update-view-count-user-profile'],
-    mutationFn: async ({
-      articleId,
-    }: // authorId,
-    {
-      articleId: number;
-      //  authorId: string;
-    }) => {
-      if (user_token === '') {
-        Alert.alert('No token found');
-        return;
-      }
-      const res = await axios.post(
-        UPDATE_VIEW_COUNT,
-        {
-          article_id: articleId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-
-      return res.data.article as ArticleData;
-    },
-    onSuccess: async () => {
-      //console.log('Article Id', articleId);
-      //console.log('Author Id', authorId);
-
-      navigation.navigate('ArticleScreen', {
-        articleId: Number(articleId),
-        authorId: authorId,
-        recordId: recordId,
-      });
-    },
-
-    onError: error => {
-      console.log('Update View Count Error', error);
-      Alert.alert('Internal server error, try again!');
-    },
-  });
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -238,42 +132,6 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
     [navigation],
   );
 
-  const submitEditRequestMutation = useMutation({
-    mutationKey: ['submit-edit-request-user'],
-    mutationFn: async ({
-      articleId,
-      reason,
-    }: {
-      articleId: string;
-      reason: string;
-    }) => {
-      const res = await axios.post(
-        REQUEST_EDIT,
-        {
-          article_id: articleId,
-          reason: reason,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-
-      return res.data.message as string;
-    },
-    onSuccess: data => {
-      Snackbar.show({
-        text: data,
-        duration: Snackbar.LENGTH_SHORT,
-      });
-    },
-    onError: err => {
-      console.log(err);
-      Alert.alert('Try again');
-    },
-  });
-
   const renderItem = useCallback(
     ({item}: {item: ArticleData}) => {
       return (
@@ -283,14 +141,32 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
           success={onRefresh}
           isSelected={selectedCardId.toString() === item._id.toString()}
           setSelectedCardId={setSelectedCardId}
-          handleRepostAction={handleRepostAction}
+          handleRepostAction={()=>{}}
           handleReportAction={handleReportAction}
           handleEditRequestAction={(item, index, reason) => {
             if (isConnected) {
-              submitEditRequestMutation.mutate({
-                articleId: item._id,
-                reason: reason,
-              });
+              requestEdit(
+                {
+                  articleId: item._id,
+                  reason: reason,
+                  articleRecordId: item.pb_recordId,
+                },
+                {
+                  onSuccess: data => {
+                    Snackbar.show({
+                      text: data,
+                      duration: Snackbar.LENGTH_SHORT,
+                    });
+                  },
+                  onError: err => {
+                    console.log(err);
+                    Snackbar.show({
+                      text: 'Try again!',
+                      duration: Snackbar.LENGTH_LONG,
+                    });
+                  },
+                },
+              );
             } else {
               Snackbar.show({
                 text: 'Please check your internet connection!',
@@ -304,12 +180,11 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
     },
     [
       handleReportAction,
-      handleRepostAction,
       isConnected,
       navigation,
       onRefresh,
       selectedCardId,
-      submitEditRequestMutation,
+      requestEdit,
     ],
   );
 
@@ -344,7 +219,32 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
 
   const handleFollow = () => {
     if (isConnected) {
-      updateFollowMutation.mutate();
+      if (actualAuthorId) {
+        followMutate(actualAuthorId, {
+          onSuccess: data => {
+            if (data) {
+              socket.emit('notification', {
+                type: 'userFollow',
+                userId: actualAuthorId,
+                message: {
+                  title: `${user_handle ? user_handle : 'Someone'} has followed you`,
+                  body: '',
+                },
+              });
+
+              onRefresh();
+            }
+          },
+
+          onError: err => {
+            console.log('Update Follow mutation error', err);
+            Snackbar.show({
+              text: 'Try again!',
+              duration: Snackbar.LENGTH_SHORT,
+            });
+          },
+        });
+      }
     } else {
       Snackbar.show({
         text: 'Please check your internet connection!',
@@ -353,67 +253,20 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
     }
   };
 
-  const updateFollowMutation = useMutation({
-    mutationKey: ['update-follow-status'],
-
-    mutationFn: async () => {
-      if (!user_token || user_token === '') {
-        Alert.alert('No token found');
-        return;
-      }
-      const res = await axios.post(
-        FOLLOW_USER,
-        {
-          followUserId: authorId,
-          //user_id: user_id,
-          //articleId: articleId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user_token}`,
-          },
-        },
-      );
-      return res.data.followStatus as boolean;
-    },
-
-    onSuccess: data => {
-      //console.log('follow success');
-      if (data) {
-        socket.emit('notification', {
-          type: 'userFollow',
-          userId: authorId,
-          message: {
-            title: `${user_handle ? user_handle : 'Someone'} has followed you`,
-            body: '',
-          },
-        });
-      }
-
-      onRefresh();
-      // refetchFollowers();
-      // refetchProfile();
-    },
-
-    onError: err => {
-      console.log('Update Follow mutation error', err);
-      Alert.alert('Try Again!');
-      //console.log('Follow Error', err);
-    },
-  });
-
   const renderHeader = () => {
     if (user === undefined) {
       return null;
     } // Safeguard to prevent rendering if user is undefined
 
+    const authorUser = typeof authorId === 'string' ? user : authorId;
+
     return (
       <ProfileHeader
         isDoctor={isDoctor}
-        username={authorId.user_name || ''}
-        userhandle={authorId.user_handle || ''}
+        username={authorUser?.user_name || user?.user_name || ''}
+        userhandle={authorUser?.user_handle || user?.user_handle || ''}
         profileImg={
-          authorId.Profile_image ||
+          authorUser?.Profile_image || user?.Profile_image ||
           'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500'
         }
         articlesPosted={user.articles ? user.articles.length : 0}
@@ -436,12 +289,11 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
         }
         onFollowClick={handleFollow}
         onOverviewClick={() => {}}
-        improvementPublished={user ? user.improvements.length : 0}
       />
     );
   };
 
-  const renderTabBar = props => {
+  const renderTabBar = (props: any) => {
     return (
       <MaterialTabBar
         {...props}
@@ -455,30 +307,48 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
     );
   };
 
-  if (isLoading || submitEditRequestMutation.isPending) {
+  if (isLoading || requestEditPending) {
     return (
-      <View style={styles.loadingContainer}>
+      <SafeAreaView
+        style={[
+          styles.loadingContainer,
+          {backgroundColor: isDarkMode ? '#000A60' : '#F0F8FF'},
+        ]}>
+        <StatusBar
+          style={isDarkMode ? 'light' : 'dark'}
+          backgroundColor="#007AFF"
+        />
         <Loader />
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[
+        styles.container,
+        {backgroundColor: isDarkMode ? '#007AFF' : '#007AFF'},
+      ]}>
+      <StatusBar style="light" backgroundColor="#007AFF" />
       <TouchableOpacity
         style={styles.headerLeftButtonEditorScreen}
         onPress={() => {
-          // console.log('States', navigation.getState());
-          // console.log('Can go back', navigation.canGoBack());
           navigation.goBack();
         }}>
         <FontAwesome6 size={25} name="arrow-left" color="white" />
       </TouchableOpacity>
-      <View style={[styles.innerContainer, {paddingTop: insets.top}]}>
+      <View
+        style={[
+          styles.innerContainer,
+          {backgroundColor: isDarkMode ? '#000A60' : '#F0F8FF'},
+        ]}>
         <Tabs.Container
           renderHeader={renderHeader}
           renderTabBar={renderTabBar}
-          containerStyle={styles.tabsContainer}>
+          containerStyle={[
+            styles.tabsContainer,
+            {backgroundColor: isDarkMode ? '#000A60' : '#F0F8FF'},
+          ]}>
           {/* Tab 1 */}
           <Tabs.Tab name="User Insight">
             <Tabs.ScrollView
@@ -488,7 +358,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
               <ActivityOverview
                 onArticleViewed={onArticleViewed}
                 others={true}
-                userId={authorId ? authorId._id : user?._id}
+                userId={actualAuthorId || user?._id}
                 user_handle={user?.user_handle || ''}
                 articlePosted={user?.articles ? user.articles.length : 0}
               />
@@ -543,18 +413,17 @@ export default UserProfileScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0CAFFF',
   },
   innerContainer: {
     flex: 1,
   },
   tabsContainer: {
-    backgroundColor: 'white',
     overflow: 'hidden',
   },
   scrollViewContentContainer: {
-   // paddingHorizontal: 10,
+    paddingHorizontal: 6,
     marginTop: 16,
+    flexGrow: 1,
   },
   flatListContentContainer: {
     paddingHorizontal: 10,

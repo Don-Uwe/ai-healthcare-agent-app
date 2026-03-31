@@ -27,7 +27,7 @@ import ArticleDescriptionScreen from '../screens/article/ArticleDescriptionScree
 import ProfileEditScreen from '../screens/ProfileEditScreen';
 import UserProfileScreen from '../screens/UserProfileScreen';
 import {RootStackParamList, TabParamList} from '../type';
-import {PRIMARY_COLOR} from '../helper/Theme';
+import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import LogoutScreen from '../screens/auth/LogoutScreen';
 import {useNavigation, NavigationProp} from '@react-navigation/native';
 import OverviewScreen from '../screens/overview/OverviewScreen';
@@ -721,6 +721,10 @@ const StackNavigation = () => {
           headerShown: true,
           title: 'Edit Profile',
           headerBackTitleVisible: false,
+        //  headerTitleAlign:"center",
+          headerBackgroundContainerStyle: {
+            backgroundColor: ON_PRIMARY_COLOR
+          },
           headerShadowVisible: false,
           headerLeft: () => (
             <TouchableOpacity
