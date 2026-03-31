@@ -586,6 +586,18 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     return filtered.sort(() => Math.random() - 0.5);
   }, [searchMode, searchedArticles, filteredArticles, selectedCategory]);
 
+  // Check if any filters are active
+  const hasActiveFilters = useMemo(() => {
+    const hasCustomCategories = selectedTags.length > 0 && selectedTags.length < articleCategories.length;
+    const hasSorting = sortType !== '';
+    return hasCustomCategories || hasSorting;
+  }, [selectedTags, sortType, articleCategories]);
+
+  // Quick reset handler for header
+  const handleQuickReset = () => {
+    handleFilterReset();
+  };
+
   if (!articleData || articleData.articles?.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
@@ -594,6 +606,8 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           onTextInputChange={handleSearch}
           onNotificationClick={() => navigation.navigate('NotificationScreen')}
           unreadCount={unreadCount || 0}
+          hasActiveFilters={hasActiveFilters}
+          onFilterReset={handleQuickReset}
         />
 
         <LoadingState />
@@ -609,6 +623,8 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           onTextInputChange={handleSearch}
           onNotificationClick={() => navigation.navigate('NotificationScreen')}
           unreadCount={unreadCount || 0}
+          hasActiveFilters={hasActiveFilters}
+          onFilterReset={handleQuickReset}
         />
 
         <ErrorState onRetry={refetch} />
@@ -624,6 +640,8 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           onTextInputChange={handleSearch}
           onNotificationClick={() => navigation.navigate('NotificationScreen')}
           unreadCount={unreadCount || 0}
+          hasActiveFilters={hasActiveFilters}
+          onFilterReset={handleQuickReset}
         />
 
         <OfflineState />
@@ -646,6 +664,8 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
             navigation.navigate('NotificationScreen');
           }}
           unreadCount={unreadCount ? unreadCount : 0}
+          hasActiveFilters={hasActiveFilters}
+          onFilterReset={handleQuickReset}
         />
 
         <View style={styles.buttonContainer}>
@@ -715,6 +735,8 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           navigation.navigate('NotificationScreen');
         }}
         unreadCount={unreadCount ? unreadCount : 0}
+        hasActiveFilters={hasActiveFilters}
+        onFilterReset={handleQuickReset}
       />
       <FilterModal
         bottomSheetModalRef={bottomSheetModalRef}

@@ -13,11 +13,10 @@ import Entypo from '@expo/vector-icons/Entypo';
 import IonIcon from '@expo/vector-icons/Ionicons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Fontisto from '@expo/vector-icons/Fontisto';
-import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
+import {PRIMARY_COLOR} from '../../helper/Theme';
 import {EditorScreenProp} from '../../type';
 import {launchImageLibrary} from 'react-native-image-picker';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {hp} from '../../helper/Metric';
 import {useDispatch} from 'react-redux';
 import {setSuggestion, setSuggestionAccepted} from '../../store/dataSlice';
 
@@ -37,7 +36,7 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
     pb_record_id,
   } = route.params;
 
-  const RichText = useRef();
+  const RichText = useRef(null);
   const [article, setArticle] = useState('');
   const [localImages, setLocalImages] = useState<string[]>([]);
   const [htmlImages, setHtmlImages] = useState<string[]>([]);
@@ -67,6 +66,7 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
                 articleData: articleData,
                 requestId: requestId,
                 pb_record_id: pb_record_id,
+                language: route.params.language,
               });
             } else {
               Alert.alert('Error', 'Please enter at least 20 characters');
@@ -128,11 +128,11 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
   }, [imageUtils]);
 
   useEffect(() => {
-    if (editorReady && article) {
+    if (editorReady && article && RichText.current) {
       RichText.current?.setContentHTML(article);
       //RichText.current?.focusContentEditor(); 
     }
-  }, [editorReady]);
+  }, [ editorReady]);
 
   // this function will be called when the editor has been initialized
   function editorInitializedCallback() {

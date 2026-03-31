@@ -24,21 +24,8 @@ import ImageResizer from '@bam.tech/react-native-image-resizer';
 import {hp} from '../helper/Metric';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
+import { ttsLanguageList } from '../helper/Utils';
 
-const LANGUAGES = [
-  {label: 'English', value: 'en'},
-  {label: 'Spanish', value: 'es'},
-  {label: 'French', value: 'fr'},
-  {label: 'German', value: 'de'},
-  {label: 'Italian', value: 'it'},
-  {label: 'Portuguese', value: 'pt'},
-  {label: 'Chinese', value: 'zh'},
-  {label: 'Japanese', value: 'ja'},
-  {label: 'Korean', value: 'ko'},
-  {label: 'Hindi', value: 'hi'},
-  {label: 'Arabic', value: 'ar'},
-  {label: 'Russian', value: 'ru'},
-];
 
 const PodcastForm = ({navigation, route}: PodcastFormProp) => {
   const [title, setTitle] = useState('');
@@ -123,7 +110,7 @@ const PodcastForm = ({navigation, route}: PodcastFormProp) => {
   };
 
   const getLanguageLabel = (value: string) => {
-    return LANGUAGES.find(lang => lang.value === value)?.label || 'English';
+    return ttsLanguageList.find(lang => lang.code === value)?.name || 'English (India)';
   };
 
   const WarningBox = () => {
@@ -169,26 +156,26 @@ const PodcastForm = ({navigation, route}: PodcastFormProp) => {
               </TouchableOpacity>
             </View>
             <FlatList
-              data={LANGUAGES}
-              keyExtractor={item => item.value}
+              data={ttsLanguageList}
+              keyExtractor={item => item.code}
               renderItem={({item}) => (
                 <TouchableOpacity
                   style={[
                     styles.languageItem,
-                    language === item.value && styles.selectedLanguageItem,
+                    language === item.code && styles.selectedLanguageItem,
                   ]}
                   onPress={() => {
-                    setLanguage(item.value);
+                    setLanguage(item.code);
                     setLanguageModalVisible(false);
                   }}>
                   <Text
                     style={[
                       styles.languageItemText,
-                      language === item.value && styles.selectedLanguageItemText,
+                      language === item.code && styles.selectedLanguageItemText,
                     ]}>
-                    {item.label}
+                    {item.name}
                   </Text>
-                  {language === item.value && (
+                  {language === item.code && (
                     <Ionicon name="checkmark" size={20} color={PRIMARY_COLOR} />
                   )}
                 </TouchableOpacity>

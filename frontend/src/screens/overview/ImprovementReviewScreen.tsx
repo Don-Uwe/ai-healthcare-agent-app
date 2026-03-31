@@ -158,6 +158,7 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
                     pb_record_id: improvement?.pb_recordId,
                     authorName: user_handle,
                     htmlContent: htmlContent ? htmlContent : noDataHtml,
+                    language: improvement?.article.language,
                   });
                 }
               }}

@@ -20,6 +20,7 @@ export type RootStackParamList = {
     title: string;
     authorName: string;
     description: string;
+    language: string;
     selectedGenres: Category[];
     imageUtils: string;
     articleData: ArticleData | null | undefined;
@@ -35,6 +36,7 @@ export type RootStackParamList = {
     article: string;
     title: string;
     authorName: string;
+    language: string;
     description: string;
     image: string;
     selectedGenres: Category[];
@@ -350,6 +352,8 @@ export type HomeScreenHeaderProps = {
   onTextInputChange: (textInput: string) => void;
   onNotificationClick: () => void;
   unreadCount: number;
+  hasActiveFilters?: boolean;
+  onFilterReset?: () => void;
 };
 
 export type ArticleCardProps = {
@@ -459,6 +463,8 @@ export type HomeScreenFilterModalProps = {
   handleFilterApply: () => void;
   setSortingType: (selectedType: string) => void;
   sortingType: string | '';
+  selectedLanguages?: string[];
+  setSelectedLanguages?: (languages: string[]) => void;
 };
 
 export type HomeScreenCategoriesFlatlistProps = {

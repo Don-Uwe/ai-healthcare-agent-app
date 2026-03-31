@@ -167,6 +167,8 @@ const ProfileEditScreen = ({navigation}) => {
       {
         username: username,
         about: about,
+        userHandle: userHandle,
+        email: email,
       },
       {
         onSuccess: _data => {

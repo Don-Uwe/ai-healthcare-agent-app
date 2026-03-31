@@ -40,6 +40,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
     localImages,
     articleData,
     requestId,
+    language,
     pb_record_id,
   } = route.params;
 
@@ -256,7 +257,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
                       description: description,
                       pb_recordId: data.recordId,
                       allow_podcast: true,
-                      language: 'en-IN',
+                      language: language,
                     },
                     {
                       onSuccess: () => {

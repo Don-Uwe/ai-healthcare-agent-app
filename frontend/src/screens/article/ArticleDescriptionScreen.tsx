@@ -24,21 +24,9 @@ import ImageResizer from '@bam.tech/react-native-image-resizer';
 import {hp} from '../../helper/Metric';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ttsLanguageList } from '@/src/helper/Utils';
 
-const LANGUAGES = [
-  {label: 'English', value: 'en'},
-  {label: 'Spanish', value: 'es'},
-  {label: 'French', value: 'fr'},
-  {label: 'German', value: 'de'},
-  {label: 'Italian', value: 'it'},
-  {label: 'Portuguese', value: 'pt'},
-  {label: 'Chinese', value: 'zh'},
-  {label: 'Japanese', value: 'ja'},
-  {label: 'Korean', value: 'ko'},
-  {label: 'Hindi', value: 'hi'},
-  {label: 'Arabic', value: 'ar'},
-  {label: 'Russian', value: 'ru'},
-];
+
 
 const ArticleDescriptionScreen = ({
   navigation,
@@ -49,7 +37,7 @@ const ArticleDescriptionScreen = ({
   const [authorName, setAuthorName] = useState('');
   const [description, setDescription] = useState('');
   const [selectedGenres, setSelectedGenres] = useState<Category[]>([]);
-  const [language, setLanguage] = useState('en');
+  const [language, setLanguage] = useState('en-IN');
   const [languageModalVisible, setLanguageModalVisible] = useState(false);
   const {categories} = useSelector((state: any) => state.data);
   const [imageUtils, setImageUtils] = useState('');
@@ -108,6 +96,7 @@ const ArticleDescriptionScreen = ({
       imageUtils: imageUtils,
       articleData: article,
       htmlContent: htmlContent,
+      language: language,
       requestId: undefined,
       pb_record_id: undefined
     });
@@ -149,7 +138,7 @@ const ArticleDescriptionScreen = ({
   };
 
   const getLanguageLabel = (value: string) => {
-    return LANGUAGES.find(lang => lang.value === value)?.label || 'English';
+    return ttsLanguageList.find(lang => lang.code === value)?.name || 'English (India)';
   };
 
   const LanguageSelector = () => {
@@ -171,26 +160,26 @@ const ArticleDescriptionScreen = ({
               </TouchableOpacity>
             </View>
             <FlatList
-              data={LANGUAGES}
-              keyExtractor={item => item.value}
+              data={ttsLanguageList}
+              keyExtractor={item => item.code}
               renderItem={({item}) => (
                 <TouchableOpacity
                   style={[
                     styles.languageItem,
-                    language === item.value && styles.selectedLanguageItem,
+                    language === item.code && styles.selectedLanguageItem,
                   ]}
                   onPress={() => {
-                    setLanguage(item.value);
+                    setLanguage(item.code);
                     setLanguageModalVisible(false);
                   }}>
                   <Text
                     style={[
                       styles.languageItemText,
-                      language === item.value && styles.selectedLanguageItemText,
+                      language === item.code && styles.selectedLanguageItemText,
                     ]}>
-                    {item.label}
+                    {item.name}
                   </Text>
-                  {language === item.value && (
+                  {language === item.code && (
                     <Ionicon name="checkmark" size={20} color={PRIMARY_COLOR} />
                   )}
                 </TouchableOpacity>

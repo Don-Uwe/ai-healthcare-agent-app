@@ -6,6 +6,8 @@ import { useMutation, UseMutationResult } from "@tanstack/react-query";
 type UpdateReq ={
     username: string;
     about: string;
+    userHandle: string;
+    email: string;
 }
 export const useUpdateUserGeneralDetails = ():UseMutationResult<
 any,
@@ -21,6 +23,8 @@ UpdateReq
         {
           username: req.username,
           about: req.about,
+          userHandle: req.userHandle,
+          email: req.email,
         }
       );
       return response.data as any;
