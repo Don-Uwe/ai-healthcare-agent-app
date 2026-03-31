@@ -16,6 +16,7 @@ import Snackbar from 'react-native-snackbar';
 import {setUserHandle} from '../store/UserSlice';
 import {useGetProfile} from '../hooks/useGetProfile';
 import {useUpdateViewCount} from '../hooks/useUpdateViewCount';
+import { NoArticleState } from '../components/EmptyStates';
 
 const ProfileScreen = ({navigation}: ProfileScreenProps) => {
   const colorScheme = useColorScheme();
@@ -280,9 +281,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
               keyExtractor={item => item?._id}
               refreshing={refreshing}
               ListEmptyComponent={
-                <View style={styles.emptyContainer}>
-                  <Text style={styles.message}>No Article Found</Text>
-                </View>
+                <NoArticleState/>
               }
             />
           </Tabs.Tab>
@@ -299,9 +298,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
               keyExtractor={item => item?._id}
               refreshing={refreshing}
               ListEmptyComponent={
-                <View style={styles.emptyContainer}>
-                  <Text style={styles.message}>No Article Found</Text>
-                </View>
+                 <NoArticleState/>
               }
             />
           </Tabs.Tab>

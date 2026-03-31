@@ -26,6 +26,7 @@ import {useUpdateFollowStatus} from '../hooks/useUpdateFollowStatus';
 import {useUpdateViewCount} from '../hooks/useUpdateViewCount';
 import { useGetAuthorProfile } from '../hooks/useGetAuthorProfile';
 import {useGetTotalLikeViewStatus} from '../hooks/useGetTotalLikeViewStatus';
+import { NoArticleState } from '../components/EmptyStates';
 
 const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   const colorScheme = useColorScheme();
@@ -377,9 +378,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
               keyExtractor={item => item?._id}
               refreshing={refreshing}
               ListEmptyComponent={
-                <View style={styles.emptyContainer}>
-                  <Text style={styles.message}>No Article Found</Text>
-                </View>
+                 <NoArticleState/>
               }
             />
           </Tabs.Tab>
@@ -396,9 +395,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
               keyExtractor={item => item?._id}
               refreshing={refreshing}
               ListEmptyComponent={
-                <View style={styles.emptyContainer}>
-                  <Text style={styles.message}>No Article Found</Text>
-                </View>
+                <NoArticleState/>
               }
             />
           </Tabs.Tab>
