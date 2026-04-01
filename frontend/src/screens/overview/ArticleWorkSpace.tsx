@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
   },
   labelStyle: {
     fontWeight: '700',
-    fontSize: 14,
+    fontSize: 13,
     textTransform: 'capitalize',
     letterSpacing: 0.3,
   },

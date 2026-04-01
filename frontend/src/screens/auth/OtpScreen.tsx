@@ -83,35 +83,53 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
       <SafeAreaView
         style={{
           flex: 1,
-          backgroundColor: 'white',
+          backgroundColor: '#f8f9fa',
           justifyContent: 'center',
           alignItems: 'center',
         }}>
-        <YStack f={1} jc="center" ai="center" bg="white" p="$6" space="$5">
+        <YStack f={1} jc="center" ai="center" bg="#f8f9fa" p="$6" space="$5">
           <Card
             elevate
             bordered
-            p="$9"
+            p="$8"
             width="90%"
+            maxWidth={450}
             bg="white"
-            br="$6"
-            shadowColor="#00000020">
-            <YStack ai="center" space="$3">
-              <Text fontSize={29} fontWeight="700" color="$color12">
-                OTP Verification
+            br="$8"
+            shadowColor="rgba(0, 0, 0, 0.08)"
+            shadowRadius={24}
+            shadowOffset={{ width: 0, height: 8 }}>
+            <YStack alignItems="center" gap="$4">
+              {/* Icon */}
+              <YStack
+                width={70}
+                height={70}
+                borderRadius={35}
+                backgroundColor="$blue2"
+                justifyContent="center"
+                alignItems="center"
+                marginBottom="$2">
+                <Text fontSize={32} color="$blue10">
+                  🔐
+                </Text>
+              </YStack>
+
+              <Text fontSize={28} fontWeight="700" color="$color12" textAlign="center">
+                Verify Your Code
               </Text>
               <Paragraph
                 textAlign="center"
                 color="$gray11"
                 fontSize={15}
-                fontWeight={'600'}
-                lineHeight={22}>
-                Enter the 4-digit verification code we’ve sent to your
-                registered email address.
+                fontWeight="500"
+                lineHeight={22}
+                paddingHorizontal="$2">
+                We've sent a 4-digit verification code to{'\n'}
+                <Text fontWeight="600" color="$blue10">{email}</Text>
               </Paragraph>
             </YStack>
 
-            <XStack space="$3" jc="center" mt="$6">
+            <XStack gap="$3" justifyContent="center" marginTop="$7" marginBottom="$2">
               {otp.map((digit, index) => (
                 <Input
                   key={index}
@@ -122,96 +140,133 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
                   keyboardType="numeric"
                   maxLength={1}
                   textAlign="center"
-                  fontSize={24}
-                  borderWidth={1.5}
-                  borderColor={digit ? '$blue9' : '$gray5'}
-                  focusStyle={{borderColor: '$blue10', shadowColor: '$blue6'}}
-                  bw={1.5}
+                  fontSize={28}
+                  fontWeight="700"
+                  borderWidth={2}
+                  borderColor={
+                    errorMessages
+                      ? '$red8'
+                      : digit
+                        ? '$blue9'
+                        : '$gray6'
+                  }
+                  focusStyle={{
+                    borderColor: errorMessages ? '$red9' : '$blue10',
+                    borderWidth: 2.5,
+                    backgroundColor: 'white',
+                    shadowColor: errorMessages ? '$red8' : '$blue8',
+                    shadowRadius: 8,
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3
+                  }}
                   br="$5"
-                  width={54}
-                  height={54}
-                  bg="$gray1"
+                  width={60}
+                  height={64}
+                  bg={errorMessages ? '$red1' : digit ? '$blue1' : '$gray1'}
+                  color="$color12"
                 />
               ))}
             </XStack>
 
             {errorMessages && (
-              <Paragraph
-                mt="$3"
-                mb="$1"
-                color="$red10"
-                fontSize={14}
-                fontWeight="600"
-                textAlign="center">
-                {errorMessages}
-              </Paragraph>
+              <XStack
+                jc="center"
+                ai="center"
+                gap="$2"
+                mt="$4"
+                mb="$2"
+                paddingHorizontal="$4"
+                paddingVertical="$2"
+                backgroundColor="$red2"
+                borderRadius="$3"
+                alignSelf="center">
+                <Text color="$red10" fontSize={20}>⚠️</Text>
+                <Paragraph
+                  color="$red10"
+                  fontSize={14}
+                  fontWeight="600"
+                  textAlign="center">
+                  {errorMessages}
+                </Paragraph>
+              </XStack>
             )}
 
             <Button
-              backgroundColor="$blue10"
-              hoverStyle={{bg: '$blue9'}}
-              pressStyle={{bg: '$blue8'}}
+              backgroundColor={otp.every(d => d) ? '$blue10' : '$gray7'}
+              hoverStyle={{ bg: '$blue9', opacity: 0.9 }}
+              pressStyle={{ bg: '$blue11', scale: 0.98 }}
               borderRadius={12}
               //width="100%"
-              paddingHorizontal={'$10'}
               alignItems="center"
-              alignSelf="center"
-              height={50}
-              marginTop={14}
+              justifyContent='center'
+              //alignSelf="center"
+              height={56}
+              marginTop="$5"
+              disabled={!otp.every(d => d)}
+              shadowColor="$blue8"
+              shadowRadius={12}
+              shadowOffset={{ width: 0, height: 4 }}
+              shadowOpacity={0.25}
               onPress={handleSubmit}>
               <Text
                 fontSize={17}
                 fontWeight="600"
                 color="white"
-                alignSelf="center">
-                Continue
+                >
+                Verify & Continue
               </Text>
             </Button>
 
-            <YStack marginTop="$5" ai="center">
-              <Paragraph color="$gray10" fontSize={15}>
-                Didn’t receive the code?{' '}
-                <Text
-                  onPress={() => {
-                    sendOtp(
-                      {
-                        email,
+            <YStack marginTop="$6" alignItems="center" gap="$3">
+              <Paragraph color="$gray10" fontSize={15} textAlign="center">
+                Didn't receive the code?
+              </Paragraph>
+              <Button
+                chromeless
+                onPress={() => {
+                  sendOtp(
+                    {
+                      email,
+                    },
+                    {
+                      onSuccess: () => {
+                        Alert.alert('Success', 'A new OTP has been sent to your email');
+                        setOtp(Array(4).fill(''));
+                        setErrorMessages(undefined);
                       },
-                      {
-                        onSuccess: () => {
-                          Alert.alert('OTP has sent to your mail');
-                          setOtp(Array(4).fill(''));
-                          setErrorMessages(undefined);
-                        },
-                        onError: error => {
-                          // eslint-disable-next-line import/no-named-as-default-member
-                          if (axios.isAxiosError(error)) {
-                            if (error.response) {
-                              if (error.response.status === 400) {
-                                Alert.alert(
-                                  'Error',
-                                  'User with this email does not exist.',
-                                );
-                              } else if (error.response.status === 500) {
-                                Alert.alert('Error', 'Error sending email.');
-                              } else {
-                                Alert.alert('Error', 'Something went wrong.');
-                              }
+                      onError: error => {
+                        // eslint-disable-next-line import/no-named-as-default-member
+                        if (axios.isAxiosError(error)) {
+                          if (error.response) {
+                            if (error.response.status === 400) {
+                              Alert.alert(
+                                'Error',
+                                'User with this email does not exist.',
+                              );
+                            } else if (error.response.status === 500) {
+                              Alert.alert('Error', 'Error sending email.');
                             } else {
-                              Alert.alert('Error', 'Network error.');
+                              Alert.alert('Error', 'Something went wrong.');
                             }
                           } else {
                             Alert.alert('Error', 'Network error.');
                           }
-                        },
+                        } else {
+                          Alert.alert('Error', 'Network error.');
+                        }
                       },
-                    );
-                  }}
-                  color="$blue10"
-                  fontWeight="600">
-                  Resend
-                </Text>
-              </Paragraph>
+                    },
+                  );
+                }}
+                padding="$2"
+                height="auto">
+                <XStack ai="center" gap="$2">
+                  <Text fontSize={18}>🔄</Text>
+                  <Text color="$blue10" fontWeight="700" fontSize={15}>
+                    Resend Code
+                  </Text>
+                </XStack>
+              </Button>
             </YStack>
           </Card>
         </YStack>

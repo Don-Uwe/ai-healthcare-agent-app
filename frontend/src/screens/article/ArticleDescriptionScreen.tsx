@@ -202,7 +202,7 @@ const ArticleDescriptionScreen = ({
         contentContainerStyle={{
           flexGrow: 1,
           paddingBottom: hp(18),
-          paddingHorizontal: 10,
+          paddingHorizontal: 6,
         }}>
       <View style={styles.form}>
         <LanguageSelector />

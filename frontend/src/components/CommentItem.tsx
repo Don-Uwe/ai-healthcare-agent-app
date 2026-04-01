@@ -42,7 +42,7 @@ export default function CommentItem({
 }) {
   const width = useSharedValue(0);
   const yValue = useSharedValue(60);
-  const isMenuVisible = useSharedValue(false);
+  const [isMenuVisible, setIsMenuVisible] = useState(false);
 
   const menuStyle = useAnimatedStyle(() => ({
     width: width.value,
@@ -52,15 +52,15 @@ export default function CommentItem({
   //console.log("Item", item);
 
   const handleAnimation = () => {
-    if (!isMenuVisible.value) {
+    if (!isMenuVisible) {
       width.value = withTiming(280, {duration: 250});
       yValue.value = withTiming(0, {duration: 250});
-      isMenuVisible.value = true;
+      setIsMenuVisible(true);
       setSelectedCommentId(item._id);
     } else {
       width.value = withTiming(0, {duration: 250});
       yValue.value = withTiming(100, {duration: 250});
-      isMenuVisible.value = false;
+      setIsMenuVisible(false);
       setSelectedCommentId('');
     }
   };
@@ -105,54 +105,56 @@ export default function CommentItem({
       //borderColor="$gray5"
       mt="$2">
       {/* Floating Menu */}
-      <Animated.View
-        pointerEvents={isMenuVisible.value ? 'auto' : 'none'}
-        style={[
-          menuStyle,
-          {
-            position: 'absolute',
-            top: 5,
-            right: 0,
-            zIndex: 10,
-            backgroundColor: 'transparent',
-          },
-        ]}>
-        <ArticleFloatingMenu
-          isVisible={isMenuVisible.value}
-          items={[
+      {isMenuVisible && (
+        <Animated.View
+          pointerEvents="auto"
+          style={[
+            menuStyle,
             {
-              name: 'Report',
-              action: () => {
-                handleReportAction(item._id, item.userId._id);
-                handleAnimation();
-              },
-              icon: 'aim',
+              position: 'absolute',
+              top: 5,
+              right: 0,
+              zIndex: 10,
+              backgroundColor: 'transparent',
             },
-            ...(userId === item.userId._id && isSelected && !isFromArticle
-              ? [
-                  {
-                    name: 'Edit',
-                    action: () => {
-                      handleEditAction(item);
-                      handleAnimation();
+          ]}>
+          <ArticleFloatingMenu
+            isVisible={isMenuVisible}
+            items={[
+              {
+                name: 'Report',
+                action: () => {
+                  handleReportAction(item._id, item.userId._id);
+                  handleAnimation();
+                },
+                icon: 'aim',
+              },
+              ...(userId === item.userId._id && isSelected && !isFromArticle
+                ? [
+                    {
+                      name: 'Edit',
+                      action: () => {
+                        handleEditAction(item);
+                        handleAnimation();
+                      },
+                      icon: 'edit',
                     },
-                    icon: 'edit',
-                  },
-                  {
-                    name: 'Delete',
-                    action: () => {
-                      deleteAction(item);
-                      handleAnimation();
+                    {
+                      name: 'Delete',
+                      action: () => {
+                        deleteAction(item);
+                        handleAnimation();
+                      },
+                      icon: 'delete',
                     },
-                    icon: 'delete',
-                  },
-                ]
-              : []),
-          ]}
-          top={1}
-          left={1}
-        />
-      </Animated.View>
+                  ]
+                : []),
+            ]}
+            top={1}
+            left={1}
+          />
+        </Animated.View>
+      )}
 
       {/* Main Comment Layout */}
       <XStack alignItems="flex-start" space="$3">

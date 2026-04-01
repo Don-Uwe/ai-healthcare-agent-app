@@ -302,13 +302,16 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
   if (commentLoading) return <Loader />;
 
   return (
+    <SafeAreaView style={styles.safeArea}>
     <KeyboardAwareScrollView
       style={styles.scrollView}
       bottomOffset={50}
       showsVerticalScrollIndicator={false}
       extraKeyboardSpace={20}
+      keyboardShouldPersistTaps="handled"
+      enableOnAndroid={true}
+      enableAutomaticScroll={true}
       contentContainerStyle={styles.scrollContent}>
-      <SafeAreaView style={styles.safeArea}>
         <YStack gap="$3">
           {/* Article Title Card */}
           <View style={styles.articleTitleCard}>
@@ -403,8 +406,8 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
             ))}
           </YStack>
         </YStack>
-      </SafeAreaView>
     </KeyboardAwareScrollView>
+      </SafeAreaView>
   );
 };
 

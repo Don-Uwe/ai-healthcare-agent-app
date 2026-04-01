@@ -13,7 +13,7 @@ SearchResponse,
 AxiosError
 >=>{
   return useQuery({
-    queryKey: ['serach-podcasts', page],
+    queryKey: ['search-podcasts', page, q],
     queryFn: async () => {
       const res = await axios.get(`${SEARCH_PODCAST}?q=${q}&page=${page}`);
 

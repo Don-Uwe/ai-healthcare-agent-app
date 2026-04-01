@@ -140,33 +140,35 @@ export default function NewPasswordScreen({
   }
   return (
     <Theme name="light">
-      <SafeAreaView style={{flex: 1, backgroundColor: '#f7f6fb'}}>
+      <SafeAreaView style={{flex: 1, backgroundColor: '#f8f9fa'}}>
         <YStack
           flex={1}
           justifyContent="center"
           alignItems="center"
           paddingHorizontal="$4"
-          padding="$6">
+          padding="$3">
           <Card
             elevate
             bordered
-            bg="white"
+            backgroundColor="white"
             width="100%"
-            maxWidth={400}
+            maxWidth={440}
             height="auto"
-            p="$6"
-            br="$8"
-            shadowColor="#00000020"
-            ai="center">
+            padding="$6"
+            borderRadius="$8"
+            shadowColor="rgba(0, 0, 0, 0.08)"
+            shadowRadius={24}
+            shadowOffset={{ width: 0, height: 8 }}
+            alignItems="center">
             {/* Icon Circle */}
             <Circle
-              size={70}
-              bg={ON_PRIMARY_COLOR}
-              jc="center"
-              ai="center"
-              mb="$4">
+              size={80}
+              backgroundColor={ON_PRIMARY_COLOR}
+              justifyContent="center"
+              alignItems="center"
+              marginBottom="$4">
               <AntDesign
-                size={32}
+                size={36}
                 name="key"
                 color={PRIMARY_COLOR}
                 strokeWidth={2.2}
@@ -175,45 +177,77 @@ export default function NewPasswordScreen({
 
             {/* Title & Subtitle */}
             <Text
-              fontSize={20}
-              fontWeight="600"
+              fontSize={26}
+              fontWeight="700"
               alignSelf="center"
               marginTop="$2"
               color="$color12"
-              mb="$2">
-              Set your new password
+              marginBottom="$2"
+              textAlign="center"
+              lineHeight={32}>
+              Create New Password
             </Text>
 
+            <Paragraph
+              color="$gray11"
+              fontSize={15}
+              fontWeight="500"
+              textAlign="center"
+              lineHeight={22}
+              marginBottom="$4"
+              paddingHorizontal="$2">
+              Your new password must be different from previously used passwords.
+            </Paragraph>
+
             {/* Inputs */}
-            <YStack space="$4" w="100%" marginTop="$4">
-              <YStack space="$2">
-                <Text fontWeight="600" color="$gray11">
-                  Password
+            <YStack gap="$4" width="100%" marginTop="$2">
+              <YStack gap="$2">
+                <Text fontWeight="600" color="$gray11" fontSize={14}>
+                  New Password
                 </Text>
 
-                <XStack ai="center" position="relative">
+                <XStack alignItems="center" position="relative">
                   <Entypo
                     name="lock"
-                    size={22}
-                    color={isDarkMode ? 'white' : 'black'}
+                    size={20}
+                    color={passwordVerify ? '#3b82f6' : '#9ca3af'}
                     style={{
                       position: 'absolute',
-                      left: 12,
+                      left: 14,
                       zIndex: 1,
                     }}
                   />
                   <Input
                     flex={1}
-                    height="$6"
-                    borderRadius="$3"
-                    placeholder="Password"
+                    height={56}
+                    borderRadius="$4"
+                    placeholder="Enter new password"
                     secureTextEntry={secureTextEntry}
                     autoCapitalize="none"
                     onChangeText={handlePassword}
                     value={password}
-                    color={isDarkMode ? '$color' : '$color10'}
-                    paddingLeft="$8"
-                    paddingRight="$8"
+                    color="$color10"
+                    paddingLeft={46}
+                    paddingRight={46}
+                    borderWidth={2}
+                    borderColor={
+                      errorMessage && !password
+                        ? '$red8'
+                        : passwordVerify && password
+                          ? '$green8'
+                          : '$gray6'
+                    }
+                    backgroundColor={
+                      errorMessage && !password
+                        ? '$red1'
+                        : passwordVerify && password
+                          ? '$green1'
+                          : '$gray1'
+                    }
+                    focusStyle={{
+                      borderColor: passwordVerify ? '$green9' : '$blue9',
+                      backgroundColor: 'white',
+                    }}
                   />
                   <Button
                     chromeless
@@ -221,44 +255,94 @@ export default function NewPasswordScreen({
                     circular
                     position="absolute"
                     right={6}
-                    onPress={handleSecureEntryClickEvent}>
+                    onPress={handleSecureEntryClickEvent}
+                    padding="$1">
                     <Icon
                       name={secureTextEntry ? 'eye-off' : 'eye'}
-                      size={22}
-                      color={isDarkMode ? 'white' : 'black'}
+                      size={20}
+                      color="#6b7280"
                     />
                   </Button>
                 </XStack>
+
+                {/* Password Requirements */}
+                <XStack gap="$2" alignItems="center" paddingLeft="$2">
+                  {password && passwordVerify ? (
+                    <>
+                      <Text fontSize={14} color="$green10">✓</Text>
+                      <Text fontSize={13} color="$green10" fontWeight="500">
+                        Password meets requirements
+                      </Text>
+                    </>
+                  ) : password ? (
+                    <>
+                      <Text fontSize={14} color="$red10">✗</Text>
+                      <Text fontSize={13} color="$gray11" fontWeight="500">
+                        At least 6 characters with lowercase letter
+                      </Text>
+                    </>
+                  ) : (
+                    <Text fontSize={13} color="$gray10" fontWeight="500">
+                      At least 6 characters with lowercase letter
+                    </Text>
+                  )}
+                </XStack>
               </YStack>
 
-              <YStack space="$2">
-                <Text fontWeight="600" color="$gray11">
-                  Confirm your new password
+              <YStack gap="$2">
+                <Text fontWeight="600" color="$gray11" fontSize={14}>
+                  Confirm Password
                 </Text>
 
-                <XStack ai="center" position="relative">
+                <XStack alignItems="center" position="relative">
                   <Entypo
                     name="lock"
-                    size={22}
-                    color={isDarkMode ? 'white' : 'black'}
+                    size={20}
+                    color={
+                      confirmPassword && password === confirmPassword
+                        ? '#3b82f6'
+                        : '#9ca3af'
+                    }
                     style={{
                       position: 'absolute',
-                      left: 12,
+                      left: 14,
                       zIndex: 1,
                     }}
                   />
                   <Input
                     flex={1}
-                    height="$6"
-                    borderRadius="$3"
-                    placeholder="Confirm Password"
+                    height={56}
+                    borderRadius="$4"
+                    placeholder="Re-enter password"
                     secureTextEntry={secureNewTextEntry}
                     autoCapitalize="none"
                     onChangeText={handleConfirmPassword}
                     value={confirmPassword}
-                    color={isDarkMode ? '$color' : '$color10'}
-                    paddingLeft="$8"
-                    paddingRight="$8"
+                    color="$color10"
+                    paddingLeft={46}
+                    paddingRight={46}
+                    borderWidth={2}
+                    borderColor={
+                      errorMessage && !confirmPassword
+                        ? '$red8'
+                        : confirmPassword && password === confirmPassword
+                          ? '$green8'
+                          : '$gray6'
+                    }
+                    backgroundColor={
+                      errorMessage && !confirmPassword
+                        ? '$red1'
+                        : confirmPassword && password === confirmPassword
+                          ? '$green1'
+                          : '$gray1'
+                    }
+                    focusStyle={{
+                      borderColor:
+                        confirmPassword && password === confirmPassword
+                          ? '$green9'
+                          : '$blue9',
+                      backgroundColor: 'white',
+                    }}
                   />
                   <Button
                     chromeless
@@ -266,60 +350,107 @@ export default function NewPasswordScreen({
                     circular
                     position="absolute"
                     right={6}
-                    onPress={handleSecureNewEntryClickEvent}>
+                    onPress={handleSecureNewEntryClickEvent}
+                    padding="$1">
                     <Icon
                       name={secureNewTextEntry ? 'eye-off' : 'eye'}
-                      size={22}
-                      color={isDarkMode ? 'white' : 'black'}
+                      size={20}
+                      color="#6b7280"
                     />
                   </Button>
                 </XStack>
+
+                {/* Confirmation Status */}
+                {confirmPassword && (
+                  <XStack gap="$2" alignItems="center" paddingLeft="$2">
+                    {password === confirmPassword ? (
+                      <>
+                        <Text fontSize={14} color="$green10">✓</Text>
+                        <Text fontSize={13} color="$green10" fontWeight="500">
+                          Passwords match
+                        </Text>
+                      </>
+                    ) : (
+                      <>
+                        <Text fontSize={14} color="$red10">✗</Text>
+                        <Text fontSize={13} color="$red10" fontWeight="500">
+                          Passwords don't match
+                        </Text>
+                      </>
+                    )}
+                  </XStack>
+                )}
               </YStack>
             </YStack>
 
             {/* Error Message */}
             {errorMessage && (
-              <Paragraph
-                color="$red10"
-                fontSize={14}
-                fontWeight="600"
-                textAlign="center"
-                mt="$3">
-                {errorMessage}
-              </Paragraph>
+              <XStack
+                gap="$2"
+                ai="center"
+                mt="$4"
+                paddingHorizontal="$3"
+                paddingVertical="$2"
+                backgroundColor="$red2"
+                borderRadius="$3"
+                alignSelf="stretch">
+                <Text fontSize={16}>⚠️</Text>
+                <Paragraph
+                  color="$red10"
+                  fontSize={14}
+                  fontWeight="600"
+                  flex={1}>
+                  {errorMessage}
+                </Paragraph>
+              </XStack>
             )}
 
             {/* Confirm Button */}
-            <YStack w="100%" marginTop="$8">
+            <YStack w="100%" marginTop="$6">
               <Button
-                backgroundColor="$blue10"
-                w="100%" // Ensure the button stretches across full width
-                h={50}
-                borderRadius={10}
-                hoverStyle={{bg: '$purple8'}}
-                pressStyle={{bg: '$purple7'}}
+                backgroundColor={
+                  password && confirmPassword && password === confirmPassword && passwordVerify
+                    ? '$blue10'
+                    : '$gray7'
+                }
+                w="100%"
+                h={56}
+                borderRadius={12}
+                hoverStyle={{ bg: '$blue9', opacity: 0.9 }}
+                pressStyle={{ bg: '$blue11', scale: 0.98 }}
+                disabled={!password || !confirmPassword || password !== confirmPassword || !passwordVerify}
+                shadowColor="$blue8"
+                shadowRadius={12}
+                shadowOffset={{ width: 0, height: 4 }}
+                shadowOpacity={0.25}
                 onPress={handlePasswordSubmit}>
-                <Text fontSize={17} fontWeight="500" color="white">
-                  Confirm
+                <Text fontSize={17} fontWeight="600" color="white">
+                  Reset Password
                 </Text>
               </Button>
             </YStack>
 
             {/* Return Link */}
-            <XStack marginTop="$6" ai="center" space="$2">
-              <Icon
-                color="$gray10"
-                name="arrow-back-circle-outline"
-                size={28}
-              />
-              <Text
-                color="$purple10"
-                fontWeight="600"
-                fontSize={16}
-                onPress={() => navigation.navigate('LoginScreen')}>
-                Return to the login screen
-              </Text>
-            </XStack>
+            <Button
+              chromeless
+              marginTop="$5"
+              onPress={() => navigation.navigate('LoginScreen')}
+              padding="$2"
+              height="auto">
+              <XStack ai="center" gap="$2">
+                <Icon
+                  color="$gray10"
+                  name="arrow-back-circle-outline"
+                  size={24}
+                />
+                <Text
+                  color="$blue10"
+                  fontWeight="600"
+                  fontSize={15}>
+                  Back to Login
+                </Text>
+              </XStack>
+            </Button>
           </Card>
         </YStack>
       </SafeAreaView>

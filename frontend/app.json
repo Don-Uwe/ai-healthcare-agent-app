@@ -14,7 +14,7 @@
       "barStyle": "light-content"
     },
     "splash": {
-      "image": "./assets/images/ic_ultimatehealth_appicon.png",
+      "image": "./assets/images/adaptive-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#E6F4FE"
     },
@@ -88,12 +88,12 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/ic_ultimatehealth_appicon.png",
+          "image": "./assets/images/adaptive-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#E6F4FE",
           "dark": {
-            "image": "./assets/images/ic_ultimatehealth_appicon.png",
+            "image": "./assets/images/adaptive-icon.png",
             "backgroundColor": "#1A1A1A"
           }
         }

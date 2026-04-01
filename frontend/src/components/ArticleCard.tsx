@@ -386,7 +386,8 @@ const ArticleCard = ({
               <ActivityIndicator size="small" color={PRIMARY_COLOR} />
             ) : (
               <TouchableOpacity
-                onPress={() => {
+                onPress={(e) => {
+                  e?.stopPropagation?.();
                   if (isConnected) {
                     const previousIsLiked = isLiked;
                     const previousLikeCount = likeCount;
@@ -456,7 +457,8 @@ const ArticleCard = ({
             )}
 
             <TouchableOpacity
-              onPress={() => {
+              onPress={(e) => {
+                e?.stopPropagation?.();
                 navigation.navigate('CommentScreen', {
                   articleId: item._id,
                   mentionedUsers: item.mentionedUsers
@@ -475,7 +477,8 @@ const ArticleCard = ({
                   <ActivityIndicator size="small" color={PRIMARY_COLOR} />
                 ) : (
                   <TouchableOpacity
-                    onPress={() => {
+                    onPress={(e) => {
+                      e?.stopPropagation?.();
                       repostAction();
                     }}
                     style={styles.likeSaveChildContainer}>
@@ -500,9 +503,8 @@ const ArticleCard = ({
 
             {source === 'home' && (
               <TouchableOpacity
-                onPress={() => {
-                  // width.value = withTiming(0, {duration: 300});
-                  // yValue.value = withTiming(100, {duration: 300});
+                onPress={(e) => {
+                  e?.stopPropagation?.();
                   handleShare();
                 }}
                 style={styles.likeSaveChildContainer}>
@@ -514,7 +516,8 @@ const ArticleCard = ({
               <ActivityIndicator size="small" color={PRIMARY_COLOR} />
             ) : (
               <TouchableOpacity
-                onPress={() => {
+                onPress={(e) => {
+                  e?.stopPropagation?.();
                   if (isConnected) {
                     width.value = withTiming(0, {duration: 250});
                     yValue.value = withTiming(100, {duration: 250});
@@ -558,7 +561,10 @@ const ArticleCard = ({
             {source === 'home' && item.status === StatusEnum.PUBLISHED && (
               <TouchableOpacity
                 style={styles.likeSaveChildContainer}
-                onPress={onChange}>
+                onPress={(e) => {
+                  e?.stopPropagation?.();
+                  onChange();
+                }}>
                 <Entypo
                   name="dots-three-vertical"
                   size={20}

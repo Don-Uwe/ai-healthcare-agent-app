@@ -367,13 +367,16 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
   }
 
   return (
+    <SafeAreaView style={styles.safeArea}>
     <KeyboardAwareScrollView
       style={styles.scrollView}
       bottomOffset={50}
       showsVerticalScrollIndicator={false}
       extraKeyboardSpace={20}
+      keyboardShouldPersistTaps="handled"
+      enableOnAndroid={true}
+      enableAutomaticScroll={true}
       contentContainerStyle={styles.scrollContent}>
-      <SafeAreaView style={styles.safeArea}>
         <YStack gap="$3">
           {/* Article Title Card */}
           <View style={styles.podcastTitleCard}>
@@ -467,10 +470,10 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
             ))}
           </YStack>
         </YStack>
-      </SafeAreaView>
     </KeyboardAwareScrollView>
+      </SafeAreaView>
   );
- 
+
 };
 
 const styles = StyleSheet.create({
