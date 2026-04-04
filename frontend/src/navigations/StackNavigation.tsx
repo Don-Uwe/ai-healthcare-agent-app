@@ -492,18 +492,18 @@ const StackNavigation = () => {
         component={PodcastProfile}
         options={({navigation}) => ({
           headerShown: true,
-          headerTitle: 'Profile',
+          headerTitle: 'My Podcasts',
           headerTintColor: 'white',
           headerTransparent: false,
           headerStyle: {
-            backgroundColor: '#000A60',
+            backgroundColor: PRIMARY_COLOR,
           },
           headerBackTitleVisible: false,
           headerLeft: () => (
             <TouchableOpacity
               style={styles.headerLeftButtonCommentScreen}
               onPress={() => {
-                queryClient.invalidateQueries({queryKey: ['get-user-socials']});
+                queryClient.invalidateQueries({queryKey: ['get-my-playlists']});
                 navigation.goBack();
               }}>
               <FontAwesome6 size={25} name="arrow-left" color={'white'} />

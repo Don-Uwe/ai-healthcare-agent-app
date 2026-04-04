@@ -20,7 +20,6 @@ import Loader from '../components/Loader';
 import {useGetUserSocials} from '../hooks/useGetUserSocialCircle';
 import {useUpdateFollowStatus} from '../hooks/useUpdateFollowStatus';
 import Snackbar from 'react-native-snackbar';
-import {GlassStyles, ProfessionalColors} from '../styles/GlassStyles';
 
 export default function Socialcreen({navigation, route}: SocialScreenProps) {
   const insets = useSafeAreaInsets();
@@ -67,7 +66,7 @@ export default function Socialcreen({navigation, route}: SocialScreenProps) {
         showsVerticalScrollIndicator={false}>
         {socials && socials.length === 0 && (
           <View style={styles.emptyContainer}>
-            <View style={[GlassStyles.glassCard, {padding: 32, alignItems: 'center'}]}>
+            <View style={styles.emptyCard}>
               <Text style={styles.message}>No users found</Text>
             </View>
           </View>
@@ -187,17 +186,34 @@ export default function Socialcreen({navigation, route}: SocialScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: ProfessionalColors.gray50,
+    backgroundColor: '#f5f5f5',
   },
   scrollContent: {
     padding: 16,
   },
   userCard: {
-    ...GlassStyles.glassCard,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 16,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  emptyCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 32,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   authorContainer: {
     flexDirection: 'row',
@@ -214,18 +230,18 @@ const styles = StyleSheet.create({
     width: 56,
     borderRadius: 28,
     borderWidth: 3,
-    borderColor: ProfessionalColors.white,
+    borderColor: '#ffffff',
   },
   authorName: {
     fontWeight: '700',
     fontSize: 16,
-    color: ProfessionalColors.gray900,
+    color: '#1a1a1a',
     marginBottom: 4,
   },
   authorFollowers: {
     fontWeight: '500',
     fontSize: 13,
-    color: ProfessionalColors.gray600,
+    color: '#6b7280',
   },
   followButton: {
     backgroundColor: PRIMARY_COLOR,
@@ -239,16 +255,16 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   followingButton: {
-    backgroundColor: ProfessionalColors.gray300,
+    backgroundColor: '#d1d5db',
   },
   followButtonText: {
-    color: ProfessionalColors.white,
+    color: '#ffffff',
     fontSize: 14,
     fontWeight: '700',
   },
   message: {
     fontSize: 16,
-    color: ProfessionalColors.gray600,
+    color: '#6b7280',
     textAlign: 'center',
     fontWeight: '500',
   },

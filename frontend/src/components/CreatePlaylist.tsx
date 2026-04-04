@@ -19,6 +19,7 @@ import Snackbar from 'react-native-snackbar';
 import NoInternet from './NoInternet';
 import {useGetPlaylists} from '../hooks/useGetPlaylists';
 import {useUpdatePodcastPlaylist} from '../hooks/useUpdatePodcastPlaylist';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 interface Props {
   //podcast_ids: string[];
@@ -192,24 +193,41 @@ export default function CreatePlaylist({visible, dismiss}: Props) {
       }}>
       <View style={styles.overlay} />
 
-      {!isConnected ? (
+      {isConnected ? (
         <View style={styles.modalContent}>
           <View style={styles.header}>
-            <Text style={styles.headerSubTitle}>Save to</Text>
+            <Text style={styles.headerSubTitle}>Save to Playlist</Text>
             <TouchableOpacity
               onPress={() => {
                 clear();
                 dismiss();
               }}>
-              <Text style={styles.headerCloseText}>Close</Text>
+              <Feather name="x" size={24} color="#6b7280" />
             </TouchableOpacity>
           </View>
-          {playlists &&
-            playlists.map(item => <RenderItem key={item._id} item={item} />)}
+          {playlists && playlists.length > 0 ? (
+            <>
+              <Text style={styles.sectionLabel}>Your Playlists</Text>
+              {playlists.map(item => (
+                <RenderItem key={item._id} item={item} />
+              ))}
+            </>
+          ) : (
+            <View style={styles.noPlaylistsContainer}>
+              <MaterialCommunityIcons
+                name="playlist-music-outline"
+                size={40}
+                color="#d1d5db"
+              />
+              <Text style={styles.noPlaylistsText}>No playlists yet</Text>
+            </View>
+          )}
 
+          <Text style={styles.sectionLabel}>Create New Playlist</Text>
           <TextInput
             style={styles.textInput}
-            placeholder="Enter new playlist name"
+            placeholder="Enter playlist name"
+            placeholderTextColor="#9ca3af"
             value={inputValue}
             onChangeText={setInputValue}
           />
@@ -290,30 +308,55 @@ const styles = StyleSheet.create({
     position: 'absolute',
     height: '100%',
     width: '100%',
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modalContent: {
     flex: 1,
-    width: '95%',
+    width: '92%',
+    maxHeight: '70%',
     alignSelf: 'center',
-    backgroundColor: 'white',
-    borderRadius: 10,
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
     position: 'absolute',
-    top: Dimensions.get('window').height / 3.2,
-    padding: 10,
-    paddingHorizontal: 10,
+    top: Dimensions.get('window').height / 4,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 8,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    padding: 6,
+    alignItems: 'center',
+    marginBottom: 20,
   },
   headerSubTitle: {
-    fontSize: 18,
-    color: '#313131',
+    fontSize: 20,
+    color: '#1a1a1a',
+    fontWeight: '700',
+  },
+  sectionLabel: {
+    fontSize: 14,
+    color: '#6b7280',
+    fontWeight: '600',
+    marginTop: 16,
+    marginBottom: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  noPlaylistsContainer: {
+    alignItems: 'center',
+    paddingVertical: 24,
+    paddingHorizontal: 16,
+  },
+  noPlaylistsText: {
+    fontSize: 14,
+    color: '#9ca3af',
+    marginTop: 8,
     fontWeight: '500',
   },
-
   headerCloseText: {
     fontSize: 16,
     color: '#313131',
@@ -332,51 +375,54 @@ const styles = StyleSheet.create({
   },
 
   textInput: {
-    flex: 1,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    fontSize: 16,
+    borderColor: '#e5e7eb',
+    borderWidth: 2,
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: '#1a1a1a',
+    backgroundColor: '#f9fafb',
   },
 
   addButton: {
     backgroundColor: PRIMARY_COLOR,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 6,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    shadowColor: PRIMARY_COLOR,
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
 
   addButtonText: {
-    color: 'white',
-    fontWeight: '600',
-    fontSize: 16,
+    color: '#ffffff',
+    fontWeight: '700',
+    fontSize: 15,
   },
   itemContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    backgroundColor: '#f8f8f8',
-    borderRadius: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    backgroundColor: '#f9fafb',
+    borderRadius: 10,
     marginVertical: 6,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 0.5},
-    //shadowOpacity: 0.1,
-    // shadowRadius: 2,
-    //elevation: 1,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
   },
 
   itemTextContainer: {
     flex: 1,
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
   },
 
   itemTitle: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#333',
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1a1a1a',
   },
 });
