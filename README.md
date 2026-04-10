@@ -44,7 +44,6 @@
 ## Explore the platform: [uhsocial.in](https://uhsocial.in/)
 ## [Download app](https://play.google.com/store/apps/details?id=com.anonymous.UltimateHealth)
 
-## Data uploading will commence from 9th February, 2026. All contributors will be notified through their registered email IDs.
 
 ### ❤️ Heartfelt Thank You
 Ultimate Health exists because of the passion, dedication, and collective intelligence of our community.
