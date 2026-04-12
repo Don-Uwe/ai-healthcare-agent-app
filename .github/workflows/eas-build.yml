@@ -1,0 +1,34 @@
+name: EAS Build (Android)
+
+on:
+  workflow_dispatch:   
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'yarn'
+
+      - name: Setup Expo & EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}  
+
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: yarn install --frozen-lockfile
+
+      - name: Build Android (Development / Preview)
+        working-directory: ./frontend
+        run: eas build --platform android --profile development --non-interactive --no-wait
