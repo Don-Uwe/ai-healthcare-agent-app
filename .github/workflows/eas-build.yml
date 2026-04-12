@@ -51,4 +51,4 @@ jobs:
 
       - name: Build Android with EAS
         working-directory: ./frontend
-        run: eas build --platform android --profile development --non-interactive --no-wait
+        run: npx expo prebuild --clean
