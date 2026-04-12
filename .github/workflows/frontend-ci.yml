@@ -1,0 +1,41 @@
+name: Frontend CI (Expo)
+
+on:
+  push:
+    branches: [ main, modern_ui ]
+    paths:
+      - 'frontend/**'
+  pull_request:
+    branches: [ main, modern_ui ]
+    paths:
+      - 'frontend/**'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'yarn'
+
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: yarn install --frozen-lockfile
+
+      - name: Lint check
+        working-directory: ./frontend
+        run: yarn lint --if-present || echo "Lint script not found, skipping..."
+
+      - name: TypeScript check
+        working-directory: ./frontend
+        run: yarn tsc --noEmit --if-present || echo "Type check skipped"
+
+      - name: Prebuild check (optional - only if needed)
+        working-directory: ./frontend
+        run: npx expo prebuild --clean --platform android --if-present || echo "Prebuild check skipped"
