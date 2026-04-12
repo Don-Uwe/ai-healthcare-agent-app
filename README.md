@@ -88,6 +88,12 @@
 - [Firebase Cloud Messaging Backend (Node.js)](https://medium.com/@bhattacharyas161/firebase-cloud-messaging-backend-implementation-using-nodejs-and-expressjs-5e1525856a3f)
 - [Firebase Cloud Messaging in React Native](https://medium.com/@bhattacharyas161/firebase-cloud-messaging-in-react-native-v8-vs-v9-setup-and-troubleshooting-0d1ed52fdead)
 
+##  Submodule Repositories
+
+- **Backend Repository**: [ultimatehealth-backend](https://github.com/SB2318/ultimatehealth-backend)
+- **Admin Repository**:  [ultimatehealth-admin](https://github.com/SB2318/ultimatehealth-admin-app)
+- **Content Checker Repository**:  [content-checker](https://github.com/SB2318/VeriWise-Content-Check)
+
 <hr>
 
 ## 🛠️ Tech Stack
@@ -97,7 +103,7 @@
   <img src="https://e7.pngegg.com/pngimages/247/558/png-clipart-node-js-javascript-express-js-npm-react-github-angle-text.png" alt="Node.js" width="50" height="50" />
   <img src="https://cdn.icon-icons.com/icons2/2699/PNG/512/expressjs_logo_icon_169185.png" alt="Express" width="50" height="50" />
   <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/React-icon.svg/2300px-React-icon.svg.png" alt="React" width="50" height="50" />
-  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/MongoDB.svg/2560px-MongoDB.svg.png" alt="MongoDB" width="60" height="50" />
+  <img src="https://staging.svgrepo.com/show/331488/mongodb.svg" alt="MongoDB" width="60" height="50" />
 </p>
 
 <hr>
@@ -109,8 +115,6 @@
 - [Getting Started](#getting-started)
 - [Contribution Guidelines](#-contribution-guidelines)
 - [Our Vision](#-our-vision)
-- [License](#-license)
-- [Contact Us](#contact-us)
 - [Contributors](#our-contributors-)
 
 <hr>
