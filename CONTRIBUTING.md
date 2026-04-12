@@ -1,115 +1,124 @@
-# **Contributing Guidelines** 📄
+# Contributing to UltimateHealth
 
-This documentation contains a set of guidelines to help you during the contribution process.
-We are happy to welcome all the contributions from anyone willing to improve/add new scripts to this project.
-Thank you for helping out and remember, **no contribution is too small.**
-<br>
-Please note we have a [code of conduct](CODE_OF_CONDUCT.md)  please follow it in all your interactions with the project.
+Thank you for your interest in contributing to **UltimateHealth** (also known as HealthGuide)!  
+We are building an open-source health library and article management platform to deliver reliable, multilingual wellness content, AI-powered chat, podcasts, and community-driven improvements. Your contributions help us empower people to take charge of their well-being.
 
+We welcome contributions from everyone — whether you're a first-time contributor, developer, content creator, tester, or designer.
 
+## Code of Conduct
 
-<br>
+Please read and follow our [Code of Conduct](CODE_OF_CONDUCT.md). We expect all participants to maintain a respectful and inclusive environment.
 
-## **Need some help regarding the basics?🤔**
+## Ways to Contribute
 
+You can contribute in many ways:
 
-You can refer to the following articles on basics of Git and Github and also contact the Project Mentors,
-in case you are stuck:
+- **Reporting bugs** or suggesting improvements (Issues)
+- **Fixing bugs** or implementing new features (Pull Requests)
+- **Writing or reviewing health articles** (content contributions)
+- **Improving documentation**
+- **Adding or improving translations**
+- **Enhancing the AI chat**, podcast features, or moderation tools
+- **Testing** the Android app or web platform
+- **Spreading the word** (starring the repo, sharing on social media)
 
-- [Forking a Repo](https://help.github.com/en/github/getting-started-with-github/fork-a-repo)
-- [Cloning a Repo](https://help.github.com/en/desktop/contributing-to-projects/creating-an-issue-or-pull-request)
-- [How to create a Pull Request](https://opensource.com/article/19/7/create-pull-request-github)
-- [Getting started with Git and GitHub](https://towardsdatascience.com/getting-started-with-git-and-github-6fcd0f2d4ac6)
-- [Learn GitHub from Scratch](https://docs.github.com/en/get-started/start-your-journey/git-and-github-learning-resources)
+## Getting Started
 
-<br>
+1. **Fork the repository**
 
-## **Contributing Process**
+   Click the **Fork** button at the top of [https://github.com/SB2318/UltimateHealth](https://github.com/SB2318/UltimateHealth).
 
+2. **Clone your fork**
 
-We follow the "fork and pull request" workflow for accepting contributions. To contribute to the project, please follow these steps:
+   ```bash
+   git clone https://github.com/SB2318/UltimateHealth.git
+   cd UltimateHealth
+   git checkout main
+   ```
+3. **Set up the frontend (React Native + Expo)**
+   ```bash
+   cd frontend
+   yarn install
+   npx expo prebuild --clean
 
+   npx expo run android   # For Android
+   # or
+   npx expo run ios       # For iOS (requires macOS + Xcode) ```
 
-### 1. Fork the repository to your GitHub account.
-![Fork](https://github.com/Sibam-Paul/UltimateHealth/assets/158052549/62853996-aa19-4892-9ba1-89b181fe1fdf)
+## Development Workflow
 
-### 2. Please be careful of this to uncheck "copy only the main"
-![Uncheck](https://github.com/Sibam-Paul/UltimateHealth/assets/158052549/35db6049-feca-4743-a18a-eef4e6bf77f7)
+1. **Create a branch** for your changes (use a clear name):
 
-### 3.For **development** related changes,now in your forked REPO checkout to the **develop** branch.
-![image](https://github.com/Sibam-Paul/UltimateHealth/assets/158052549/4cdd3f5f-bd65-4a1f-8d3b-aadf9d710e87)
-
-### 4. Create a folder at your desired location (usually at your desktop).
-### 5. Clone your forked repository of the project.
+  ```
+  git checkout -b feature/add-new-health-article
+  # or
+  git checkout -b bugfix/fix-plagiarism-check
+  ```
+2. **Make your changes** and test them thoroughly.
+3. **Commit your changes** using clear, conventional messages:
 ```
-$ git clone https://github.com/<your_username>/repository_name.git
+feat: add multilingual article publishing support
+fix: resolve crash in AI chat when no internet
+docs: update contribution guidelines
 ```
-### 6. Navigate to the project directory.
-```
-$ cd UltimateHealth
-```
-### 7. Checkout to **develop** branch.
-```
-$ git checkout develop
-```
-### 8.Create a new branch for your changes
-```
-$ git checkout -b my-branch
-```
-### 9. Make your changes in your code and test them thoroughly.
-
-### 10.Commit your changes
-```
-$ git commit -m "Add descriptive commit message"
-```
-
-### 11.Push the changes to your forked repository.
-```
-$ git push origin my-branch
-```
-
-### 12.Open a pull request (PR) against the **develop** repository for code related tasks and **main** repository for documentation related tasks.
-
-<br>
+4. **Push to your fork** and open a **Pull Request** to the **main** branch.
 
 
-## **Style Guide**
+## Pull Request Guidelines
+
+- **Keep PRs focused** — one feature or bug fix per PR.
+
+- **Include a clear title and description:**
+  - What problem does this solve?
+  - How did you test it?
+  - Any screenshots or videos (especially for UI changes)?
+
+- **Reference related issues**  
+  Example: `Closes #123`
+
+- **Follow code standards**
+  - Use TypeScript best practices for frontend
+  - Maintain clean and structured Node.js code for backend
+
+- **Testing**
+  - Add or update tests when applicable (see `TEST_GUIDELINES.md`)
+
+- **Documentation**
+  - Update documentation if your change affects users or developers
+
+---
+
+We will review your PR as soon as possible. Feedback will be provided constructively.
+
+## Content Contributions (Articles & Podcasts)
+
+- All health content must be **accurate, evidence-based, and original**.
+- The platform includes built-in:
+  - Plagiarism detection
+  - Grammar checks
+  - Originality scoring
+- Follow the review workflow:
+  - **Submit → Community/Reviewers Feedback → Approval by Moderators/Admins**
+
+---
+
+## Issue Guidelines
+
+- Use the provided **issue templates** when available.
+- Be **clear and descriptive**.
+- Include **steps to reproduce** bugs.
+- For **feature requests**:
+  - Explain the use case
+  - Describe why it benefits the community
 
 
-To maintain consistency and readability, please adhere to our style guide when contributing code or documentation. Some key points to keep in mind:
+## Recognition
 
+All contributors are listed in the **README**.  
+We greatly appreciate every contribution, big or small!
 
-1.Use consistent indentation and spacing.
+Thank you for helping make **UltimateHealth** a trusted resource for wellness information.
 
-2.Follow the naming conventions used in the project.
+— **The UltimateHealth Team**  
+*(Susmita Bhattacharya & contributors)*
 
-3.Write clear and concise comments.
-
-4.Use meaningful variable and function names.
-
-5.Keep code and documentation formatting consistent.
-
-<br>
-
-
-## **Issue Report Process 📌**
-
-1. Go to the project's issues.
-2. Give proper description for the issues.
-3. Don't spam to get the assignment of the issue 😀.
-4. Wait for till someone is looking into it !.
-5. Start working on issue only after you got assigned that issue 🚀.
-
-<br>
-
-## **Pull Request Process 🚀**
-
-1. Ensure that you have self reviewed your code 😀
-2. Make sure you have added the proper description for the functionality of the code
-3. I have commented my code, particularly in hard-to-understand areas.
-4. Add screenshot it help in review.
-5. Submit your PR by giving the necesarry information in PR template and hang tight we will review it really soon 🚀
-
-<br>
-
-# **Thank you for contributing💗** 
