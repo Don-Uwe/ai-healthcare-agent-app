@@ -1,556 +1,143 @@
-
-<a id="top"></a>
-<h1 align="center">UltimateHealth (HealthGuide)</h1>
-
-
-<h3 align="center">    
- 
-[![Typing SVG](https://readme-typing-svg.herokuapp.com?font=Roboto&size=22&duration=4995&pause=1000&color=006400&random=false&width=431&height=58&lines=Trusted+Source+for+Reliable+Health+Insights)](https://git.io/typing-svg)
+<h1 align="center">🌟 UltimateHealth (HealthGuide)</h1>
+<h3 align="center">
+  <a href="https://git.io/typing-svg">
+    <img src="https://readme-typing-svg.herokuapp.com?font=Roboto&size=22&duration=4995&pause=1000&color=006400&width=850&height=58&lines=Open-source+Health+Platform+%7C+React+Native+(Expo)+App+%2B+Node.js+Backend+%2B+MongoDB" alt="Typing SVG" />
+  </a>
 </h3>
+
+<div align="center">
+
+[![Live Web Demo](https://img.shields.io/badge/Live%20Web%20Demo-4CAF50?style=for-the-badge&logo=globe&logoColor=white)](https://uhsocial.in)
+[![Android App](https://img.shields.io/badge/Android%20App-Play%20Store-34A853?style=for-the-badge&logo=googleplay&logoColor=white)](https://play.google.com/store/apps/details?id=com.anonymous.UltimateHealth)
+[![API Docs](https://img.shields.io/badge/API%20Docs-007ACC?style=for-the-badge&logo=swagger&logoColor=white)](https://uhsocial.in/docs)
+[![Content API](https://img.shields.io/badge/Content%20API-FF6B00?style=for-the-badge&logo=python&logoColor=white)](https://uhsocial.in/content-intel/docs)
+
+</div>
 
 <br/>
 
- 
-
-![Creativity Next Level UltimateHealth Tour Part 2 ❤ devblog dothingsyoudontwanttodo development - QuestLog (720p, h264)](https://github.com/user-attachments/assets/433e6b0e-6d79-4335-85d8-7977bbddae5e)
-
-
-
-<table align="center">
-    <thead align="center">
-        <tr border: 1px;>
-            <td><b>🌟 Stars</b></td>
-            <td><b>🍴 Forks</b></td>
-            <td><b>🐛 Issues</b></td>
-            <td><b>🔔 Open PRs</b></td>
-            <td><b>🔕 Close PRs</b></td>
-            <td><b> Last Commit</b></td>
-        </tr>
-     </thead>
-    <tbody>
-         <tr>
-            <td><img alt="Stars" src="https://img.shields.io/github/stars/SB2318/UltimateHealth?style=flat&logo=github"/></td>
-             <td><img alt="Forks" src="https://img.shields.io/github/forks/SB2318/UltimateHealth?style=flat&logo=github"/></td>
-            <td><img alt="Issues" src="https://img.shields.io/github/issues/SB2318/UltimateHealth?style=flat&logo=github"/></td>
-            <td><img alt="Open Pull Requests" src="https://img.shields.io/github/issues-pr/SB2318/UltimateHealth?style=flat&logo=github"/></td>
-           <td><img alt="Close Pull Requests" src="https://img.shields.io/github/issues-pr-closed/SB2318/UltimateHealth?style=flat&color=critical&logo=github"/></td>
-           <td><img alt="Close Pull Requests" src="https://img.shields.io/github/last-commit/SB2318/UltimateHealth?style=flat&color=critical&logo=github"/></td>
-        </tr>
-    </tbody>
-</table>
-</div>
-<hr>
-
-## Explore the platform: [uhsocial.in](https://uhsocial.in/)
-## [Download app](https://play.google.com/store/apps/details?id=com.anonymous.UltimateHealth)
-
-
-### ❤️ Heartfelt Thank You
-Ultimate Health exists because of the passion, dedication, and collective intelligence of our community.
-
-To every developer who squashed a bug, every translator who broke a language barrier, and every moderator who ensured content integrity—Thank You. You are building a healthier world, one contribution at a time.
-
-### 👥 All Contributors
-We are immensely grateful to everyone who has shaped this project.
-
----
-
-
-Managing content at scale requires a clear and controlled workflow to ensure quality, accuracy, and accountability. This system outlines how articles are created, reviewed, and improved over time using a structured CRUD (Create, Read, Update, Delete) approach — enriched by an edit request mechanism.
-
-**We particularly liked the workflow and approach, and I’ve tried to learn from it as a learner. This is not the actual flow of any real world system — rather, based on my understanding and thought process, I’ve implemented a version that reflects those learnings in a way that suits our needs.**
-
-<h3>📄 API DOCUMENTATION</h3>
-<a href="https://uhsocial.in/docs" target="_blank" rel="noopener noreferrer">
-  Click here to view the full API Documentation
-</a>
-
-
-<h3>📄 PYTHON SERVER (CONTENT CHECKER)</h3>
-<a href="https://uhsocial.in/content-intel/docs" target="_blank" rel="noopener noreferrer">
-  Click here to view the content checker API Documentation
-</a>
-
-
-<!------------------------------------------------------------------------FEATURED IN------------------------------------------------------------------------------>
-
-<br>
-
- ## :zap: Programs Participated In: 
-
-
-<br>
-
-<!--
- <div>
-    <h2><img src="https://github.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/blob/master/Emojis/Hand%20gestures/Flexed%20Biceps.png?raw=true" width="35" height="35" >Programs Participated In</h2>
-  </div>
-
-  -->
+<div align="center">
 <table>
-   <tr>
-      <th>Event Logo</th>
-      <th>Event Name</th>
-      <th>Event Description</th>
-   </tr>
-
- <tr>
-      <td><img src="https://github.com/user-attachments/assets/e0a40d06-f5b8-42a7-a5a0-033280f842be" width="200" height="auto" loading="lazy" alt="IEEE IGDTUW Open Source Week"/></td>
-      <td> IEEE IGDTUW Open Source Week</td>
-      <td>
-       IEEE IGDTUW Open Source Week is a week-long event aimed at fostering collaboration and skill-building in open-source.
-       Event Dates: November 12 - November 18
-      </td>
-   </tr>
-   
-   <tr>
-      <td><img src="https://github.com/user-attachments/assets/2b03167c-a598-48be-9f93-66130e58ec00" width="200" height="auto" loading="lazy" alt="Vultr Cloud Innovate Hackathon"/></td>
-      <td>Vultr Cloud Innovate Hackathon</td>
-      <td>The Vultr Cloud Hackathon is an exciting competition that challenges participants to harness the power of Vultr's cloud infrastructure to develop creative and innovative solutions. Participants will use Vultr's scalable cloud services, including computing, storage, and networking, to build projects that solve real-world problems or push the boundaries of technology.</td>
-   </tr>
-   <tr>
-      <td><img src="https://user-images.githubusercontent.com/63473496/153487849-4f094c16-d21c-463e-9971-98a8af7ba372.png" width="200" height="auto" loading="lazy" alt="GSSoC 24"/></td>
-      <td>GirlScript Summer of Code 2024</td>
-      <td>GirlScript Summer of Code is a three-month-long Open Source Program conducted every summer by GirlScript Foundation. It is an initiative to bring more beginners to Open-Source Software Development.</td>
-   </tr>
+  <tr>
+    <td align="center"><b>🧾 License</b></td>
+    <td align="center"><b>🛠️ CI</b></td>
+    <td align="center"><b>🌟 Stars</b></td>
+    <td align="center"><b>🍴 Forks</b></td>
+    <td align="center"><b>🐛 Issues</b></td>
+    <td align="center"><b>🔄 Open PRs</b></td>
+    <td align="center"><b>✅ Closed PRs</b></td>
+    <td align="center"><b>⏱️ Last Commit</b></td>
+  </tr>
+  <tr>
+    <td align="center"><img alt="License" src="https://img.shields.io/github/license/SB2318/UltimateHealth?style=flat&logo=github&color=success"/></td>
+    <td align="center"><img alt="CI" src="https://github.com/SB2318/UltimateHealth/actions/workflows/frontend-ci.yml/badge.svg?style=flat&logo=github&color=success"/></td>
+    <td align="center"><img alt="Stars" src="https://img.shields.io/github/stars/SB2318/UltimateHealth?style=flat&logo=github&color=success"/></td>
+    <td align="center"><img alt="Forks" src="https://img.shields.io/github/forks/SB2318/UltimateHealth?style=flat&logo=github"/></td>
+    <td align="center"><img alt="Issues" src="https://img.shields.io/github/issues/SB2318/UltimateHealth?style=flat&logo=github"/></td>
+    <td align="center"><img alt="Open PRs" src="https://img.shields.io/github/issues-pr/SB2318/UltimateHealth?style=flat&logo=github"/></td>
+    <td align="center"><img alt="Closed PRs" src="https://img.shields.io/github/issues-pr-closed/SB2318/UltimateHealth?style=flat&color=critical&logo=github"/></td>
+    <td align="center"><img alt="Last Commit" src="https://img.shields.io/github/last-commit/SB2318/UltimateHealth?style=flat&color=informational&logo=github"/></td>
+  </tr>
 </table>
-<hr>
-
-
-
-
-
-
- <br>
-
-<!--
-
- ## 📸 Screenshots
-
-||||
-|:----------------------------------------:|:-----------------------------------------:|:-----------------------------------------: |
-| <img src="https://github.com/user-attachments/assets/7f393df5-fcd1-4148-8174-a4fb2b3d439b" width="70%" /> | <img src="https://github.com/user-attachments/assets/5b468454-04b9-46b2-97d4-a03e05d1705b" width="70%" />| <img src="https://github.com/user-attachments/assets/c6faba37-8c39-4934-bf22-86bad5c1ab7f" width="70%" /> |
-| <img src="https://github.com/user-attachments/assets/9674c7c6-0835-4351-85a8-e087f43499af" width="70%" /> | <img src="https://github.com/user-attachments/assets/e6e5ca7d-bceb-4399-8117-6a75e3eb0e97" width="70%" /> | <img src="https://github.com/user-attachments/assets/8e049ef4-3c59-4c9c-abce-c01fcdf8e265" width="70%" /> |
-|  <img src="https://github.com/user-attachments/assets/b6a94806-3671-46f3-9891-cc75e6f7eee1" width="70%" /> |  <img src="https://github.com/user-attachments/assets/3d71832b-a29e-476a-a964-68c6e6849d69" width="70%" />|
-
---> 
-<!--ABOUT US--->
-:zap: About Us:
-UltimateHealth is an innovative open-source project that aims to provide a comprehensive online library and article management application focused on health. The project is designed to cater to users looking for reliable and trustworthy information on various health-related topics.
-
-<hr>
-
-
-
- ## Documentation:
-
- <ul>
-  <li>
-   <a href="https://medium.com/@bhattacharyas161/firebase-cloud-messaging-backend-implementation-using-nodejs-and-expressjs-5e1525856a3f"> Firebase Cloud Messaging Backend Implementation using NodeJS and ExpressJS:
-   </a>
-  </li>
-  <li>
-    <a href="https://medium.com/@bhattacharyas161/firebase-cloud-messaging-in-react-native-v8-vs-v9-setup-and-troubleshooting-0d1ed52fdead">
-    Firebase Cloud Messaging in React Native: V8 vs V9 Setup and Troubleshooting
-   </a>
-  </li>
- </ul>
-
-<!------TECH STACKS-------->
-
-<div>
-<h2><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/High%20Voltage.png" alt="High Voltage" width="35" height="35" />Tech Stack</h2>
 </div>
 
-<p><a href="https://www.w3schools.com/java/"><img src="https://i.pinimg.com/originals/79/5e/bb/795ebb5f4a470cd7242136237f61fc53.png" alt="Java" width="70" height="50" /></a>
-<a href="https://www.w3schools.com/nodejs/"><img src="https://e7.pngegg.com/pngimages/247/558/png-clipart-node-js-javascript-express-js-npm-react-github-angle-text.png" alt="Node.js" width="50" height="50" /></a>
-<a href="https://www.javatpoint.com/expressjs-tutorial"><img src="https://cdn.icon-icons.com/icons2/2699/PNG/512/expressjs_logo_icon_169185.png" alt="expressjs" width="50" height="50" /></a>
-<a href="https://www.w3schools.com/REACT/DEFAULT.ASP"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/React-icon.svg/2300px-React-icon.svg.png" alt="React.js" width="50" height="50" /></a>
-</p>
 <hr>
-<!---------------------------------------------------------------------- HEADERS--------------------------------------------------------------->
-<details>
-  <img src="https://github.com/Vi1234sh12/Face-X/blob/master/.github/Assests/isometric.png" height="290px" align="right"/>
-  <summary><h2>:pushpin:Contents: </h2></summary>
 
-- [Features](#features-crystal_ball)🔮
-- [Project Requirements](#project-requirements-mailbox_with_mail)📬
-- [Getting Started](#getting-started-zap)⚡<br>
-- ✨[Contribution Guidelines:](#sparklescontribution-guidelines)
-- ⚡[Our Vision:](#zapour-vision)
-- ✍️ [Feedback and Support:](#%EF%B8%8F-feedback-and-support)
-- 🤝[Code of Conduct:](#-code-of-conduct)
-- 📃[License:](#-license)
-- [Contact Us:](#contact-us)
-- [Our Contributors](#our-contributors-%EF%B8%8F)❤️
-- 🙏🏻[Support](#-support-)
+## ✨ Key Features
 
- 
- <!---------------------------------------------------------------------- FEATURES--------------------------------------------------------------->
- <details>
-   <summary><h3>Features :crystal_ball:</h3></summary>
-    
-From the beginner's perspective, the project consists of three main modules: Article Section, Chat Section, and Podcasts. The Article Section includes:
+- **Multilingual Article Publishing** — Write health content in any language
+- **Collaborative Reviews** — Community editing, feedback & approval workflow
+- **Health Podcasts** — Publish and share verified podcasts
+- **Contribution Analytics** — Track your impact
+- **Content Integrity** — Plagiarism detection, grammar checks & originality scoring
+- **Community Safety** — Flagging system + RBAC for reviewers & admins
 
-* Diseases-related information
-* General health-related guidance :books:
-* Survival experiences from critical diseases
-* Backend Development
+**Admin Features**: Interactive review dashboard, moderation tools & more.
 
-Users can also listen to articles (audio features) if they prefer. The Chat Section features a guide bot that helps users solve health-related problems.:sparkles:
+*(Video Tour)*  
+![UltimateHealth Tour](https://github.com/user-attachments/assets/433e6b0e-6d79-4335-85d8-7977bbddae5e)
 
-## Features Left 
+<hr>
 
- *  MultiLanguage Feature
- *  PodCast
- *  Profile API Integration 
- *  Article API Integration 
- *  Search & Filter Feature 
- *  User Insights 
- *  Article Post via file upload
- *  Edit Or Update Article
- *  Review Team
- *  Push Notification
+## 🚀 Programs Participated In
 
-   // Phase II (Initial Implementation Vultr Hackathon)
- *  Chat (Comment, Share on the article)
- *  Chat With AI
-   
+<table>
+  <tr>
+    <th>Event</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/e0a40d06-f5b8-42a7-a5a0-033280f842be" width="180" alt="IEEE"/></td>
+    <td><b>IEEE IGDTUW Open Source Week</b><br>November 12–18</td>
+  </tr>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/2b03167c-a598-48be-9f93-66130e58ec00" width="180" alt="Vultr"/></td>
+    <td><b>Vultr Cloud Innovate Hackathon</b><br>Build innovative solutions using Vultr cloud</td>
+  </tr>
+  <tr>
+    <td><img src="https://user-images.githubusercontent.com/63473496/153487849-4f094c16-d21c-463e-9971-98a8af7ba372.png" width="180" alt="GSSoC"/></td>
+    <td><b>GirlScript Summer of Code 2024</b><br>3-month open source program for beginners</td>
+  </tr>
+</table>
 
-  </details>
+<hr>
 
-   <!--------------------------------------------------------- PROJECT REQUIREMENTS-------------------------------------------------------------------------------->
+## 📖 Documentation
 
-  <details>
-   <summary><h3>Project Requirements :mailbox_with_mail:</h3></summary>
-   
-   * Java installed on your machine. (**Java version:**  17)
-     - [Install JDK](#install-jdk)
-   * Android Studio installed on your machine.
-     - [Set Up Android Development Environment](#setting-android_home-environment-variable) 
-   
- 
+- [Firebase Cloud Messaging Backend (Node.js)](https://medium.com/@bhattacharyas161/firebase-cloud-messaging-backend-implementation-using-nodejs-and-expressjs-5e1525856a3f)
+- [Firebase Cloud Messaging in React Native](https://medium.com/@bhattacharyas161/firebase-cloud-messaging-in-react-native-v8-vs-v9-setup-and-troubleshooting-0d1ed52fdead)
 
+<hr>
 
+## 🛠️ Tech Stack
 
-### Install JDK: 
+<p>
+  <img src="https://i.pinimg.com/originals/79/5e/bb/795ebb5f4a470cd7242136237f61fc53.png" alt="Java" width="70" height="50" />
+  <img src="https://e7.pngegg.com/pngimages/247/558/png-clipart-node-js-javascript-express-js-npm-react-github-angle-text.png" alt="Node.js" width="50" height="50" />
+  <img src="https://cdn.icon-icons.com/icons2/2699/PNG/512/expressjs_logo_icon_169185.png" alt="Express" width="50" height="50" />
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/React-icon.svg/2300px-React-icon.svg.png" alt="React" width="50" height="50" />
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/MongoDB.svg/2560px-MongoDB.svg.png" alt="MongoDB" width="60" height="50" />
+</p>
 
-To ensure that your project runs smoothly, make sure you have Java 17 installed on your system. You can follow these steps to set up Java 17:
+<hr>
 
-* Visit the [Oracle website](https://www.oracle.com/in/java/) or the OpenJDK website to download the Java 17 JDK (Java Development Kit) for your operating system.
-* Follow the installation instructions provided for your specific operating system.
+## 📌 Contents
 
-### Installing JDK 17 on macOS:
+- [Key Features](#-key-features)
+- [Programs Participated](#-programs-participated-in)
+- [Getting Started](#getting-started)
+- [Contribution Guidelines](#-contribution-guidelines)
+- [Our Vision](#-our-vision)
+- [License](#-license)
+- [Contact Us](#contact-us)
+- [Contributors](#our-contributors-)
 
-* Visit the [Oracle JDK download page](https://www.oracle.com/in/java/technologies/downloads/#java17) or the AdoptOpenJDK website.
-* Download the JDK 17 installer for macOS (e.g., .dmg or .pkg file).
-* Open the downloaded installer and follow the installation instructions.
-* After the installation is complete, you can verify the installation by opening a Terminal window and running the command java -version. It should display the installed JDK version.
+<hr>
 
-### Setting JAVA_HOME on macOS:
+## Getting Started ⚡
 
-* Open a Terminal window.
-* Determine the installation path of JDK 17. You can use the java_home command to find the path by running /usr/libexec/java_home -v 17.
-* Copy the JDK installation path.
-* Create or edit the .zshrc file in your user home directory by running nano ~/.zshrc in the Terminal.
-* Add the following line to the file, replacing <JDK_PATH> with the copied JDK installation path:
-
-  **export JAVA_HOME=<JDK_PATH>**
-* Save the file and exit the text editor.
-* Close the Terminal window and open a new one to apply the changes.
-* To verify that JAVA_HOME is set correctly, run the command echo $JAVA_HOME in the Terminal. It should display the JDK installation path.
-
-
-### Installing JDK 17 on Windows:
-
-* Visit the [Oracle JDK download page](https://www.oracle.com/in/java/technologies/downloads/#java17) or the AdoptOpenJDK website.
-* Download the JDK 17 installer for Windows (e.g., .exe file).
-* Run the downloaded installer and follow the installation instructions.
-* After the installation is complete, you can verify the installation by opening a Command Prompt window and running the command java -version. It should display the installed JDK version.
-
-### Setting JAVA_HOME on Windows:
-
-* Right-click on the Windows Start button and select "System".
-* In the System window, click on "Advanced System Settings" on the left sidebar.
-* Click the "Environment Variables" button.
-* Under the "System Variables" section, click "New".
-* Enter **JAVA_HOME** as the Variable name.
-* Enter the path to the JDK 17 installation directory (e.g., C:\Program Files\Java\jdk-17) as the Variable value.
-* Click "OK" to save the variable.
-* Click "OK" again to close the Environment Variables window.
-* Close and reopen any Command Prompt windows for the changes to take effect.
-* To verify that **JAVA_HOME** is set correctly, run the command echo %JAVA_HOME% in a Command Prompt window. It should display the JDK installation path.
-
-### Setting ANDROID_HOME Environment Variable:💥
-
-To set the **ANDROID_HOME** variable for both Windows and macOS, you can follow the instructions below:
-
-### Windows:
-
-* Open the System Properties window by right-clicking on the Computer icon and selecting "Properties".
-* Click on "Advanced system settings" on the left-hand side.
-* In the System Properties window, click on the "Environment Variables" button.
-* In the Environment Variables window, under the "System variables" section, click on the "New" button.
-* Enter **ANDROID_HOME** as the variable name.
-* Enter the path to the Android SDK directory as the variable value. (Default Path: ` C:\Users\User_Name\AppData\Local\Android\Sdk `)
-* Click "OK" to save the changes.
-
-
-### macOS:
-
-* Open a terminal window.
-* Open the .bash_profile file in a text editor by running the command nano `~/.bash_profile.`
-* Add the following line to the file:
-* export ANDROID_HOME=/path/to/android/sdk
-* Replace /path/to/android/sdk with the actual path to the Android SDK directory.
-* Press Control + O to save the file, then press Enter to confirm the file name, and finally press Control + X to exit the text editor.
-* Close the terminal window and reopen it for the changes to take effect.
-
-Please note that the exact path to the Android SDK directory may vary depending on how you installed it. Make sure to replace **/path/to/android/sdk** with the correct path on your system.
-  </details>
-  
-<!-------------------------------------------------------------------GETTING STARTED------------------------------------------------------------------------------->
-
- <details>
-   <summary><h3>Getting Started ⚡️</h3></summary>
-
-   * [Initial Setup](#follow-these-steps-to-get-started-with-ultimatehealth) 🛠️
-   
-   * Development Guides:<br>
-     - [Frontend](#for-frontend) 🌐<br>
-     - [Backend](#for-backend) 🖥️
-
-   * [Testing Frontend with Localhost Backend Server](#testing-frontend-with-localhost-backend-server) 🧪
-
----
-
-### Follow these steps to get started with UltimateHealth:
-
-1. **Clone the Repository:**
-
+1. Clone the repo:
    ```bash
    git clone https://github.com/SB2318/UltimateHealth.git
-   ```
-   
-2. **Change to the Project Directory:**
-
-   ```bash
    cd UltimateHealth
-   ```
-
-3. **Checkout the Development Branch:**
-
-   ```bash
-   git checkout develop
-   ```
-
-   If the 'develop' branch is not available in your forked repository, refer to the detailed instructions in [CONTRIBUTING.md](./CONTRIBUTING.md).
-
-## For Frontend: 🌐
-
-1. **Install Dependencies:**
-
-   ```bash
-   npm install --legacy-peer-deps
-   ```
-
-2. **Configure the Application:**
-
-   Update configuration files as needed, ensuring Ethereum wallet connection details are set.
-
-3. **Run the Frontend Server:**
-
-   - For Android:
-
-     ```bash
-     npm run android
-     ```
-
-   - For iOS:
-
-     ```bash
-     npm run ios
-     ```
-
-## For Backend: 🖥️
-
-### MongoDB Installation:
-
-1. **Install MongoDB:**
-
-   - Download the MongoDB package for your OS from [MongoDB's official website](https://www.mongodb.com/try/download).
-   - Follow the installation instructions for your platform.
-
-2. **Set up MongoDB Database:**
-
-   - Start the MongoDB server with the `mongod` command.
-   - Use `mongo` shell or a GUI client like MongoDB Compass to interact with your databases.
-
-3. **Initialize the Backend Server:**
-
-### Setting up the Backend Server:
-
-1. **Navigate to Backend Directory:**
-
-   ```bash
-   cd backend
-   ```
-
-2. **Create and Configure the `.env` File:**
-
-   Add the following variables:
-
-   ```env
-   PORT=
-   MONGODB_URL=""
-   JWT_SECRET=""
-   ```
-
-3. **Install Dependencies:**
-
-   ```bash
-   npm install -s
-   ```
-
-4. **Run the Backend Server:**
-
-   - For development:
-
-     ```bash
-     npm run dev
-     ```
-
-   - To run the server once:
-
-     ```bash
-     node server.js
-     ```
-
-5. **Backend API URL:**
-
-   ```url
-   http://localhost:{PORT}/api/
-   ```
-
-   Replace `{PORT}` with the appropriate port number.
-
-## Testing Frontend with Localhost Backend Server: 🧪
-
-### Guidelines for Frontend Developers:
-
-1. **Start the Backend Server:**
-
-   Ensure the backend server is running on localhost. Start the server from the backend project directory (e.g., `node server.js`).
-
-2. **Configure the Frontend Application:**
-
-   Set the API base URL in the frontend configuration to point to the local backend server.
-
-3. **Use HTTP Clients:**
-
-   Test backend API endpoints using browser tools or dedicated HTTP clients like Postman or Insomnia.
-
-4. **Handle CORS:**
-
-   Configure the backend server to allow cross-origin requests if the frontend runs on a different port/domain.
-
-5. **Proxy Requests (Optional):**
-
-   Use built-in proxy features of frontend frameworks to forward API requests to the backend server.
-
-6. **Use Environment Variables:**
-
-   Store the backend server URL in environment variables instead of hardcoding.
-
-7. **Test Different Scenarios:**
-
-   Simulate various user flows, including error and edge cases, to ensure proper handling.
-
-**Access the Application:**
-
-Open your web browser and navigate to `LOCAL_HOST_URL`. Follow contribution guidelines if you'd like to contribute to the project.
-
----
-
-</details>
-
-</details>
-
-<hr>
-    
- <!---------------------------------------------------------------CONTRIBUTION GUIDELINES--------------------------------------------------------------------------->
-
-<details>
- <summary><h2>:sparkles:Contribution Guidelines:</h2></summary>
- 
- 
- * **Checkout and make your changes for the develop branch only:** When working on your contributions, switch to the **develop** branch in your local repository. This ensures that you are working on the latest version of the codebase.
-
-* **Create pull requests only for the develop branch:** When you are ready to submit your changes, create a pull request (PR) targeting the **develop** branch. This allows the maintainers to review and merge your code into the main development branch.
-
-* **Maintain contribution guidelines:** Each project may have its specific contribution guidelines. It's important to familiarize yourself with these guidelines before submitting your contributions. Adhering to these guidelines ensures consistency and helps maintain the quality of the codebase.
-
-* **Format your commit message with the issue number:** When making commits related to an issue, follow the format **Fixes: #32 in your commit message. Replace 32 with the issue number you are addressing.** This helps track and manage issues more efficiently.
-
-* **Attach a Postman response screenshot for backend tasks:** For tasks related to the backend, it is recommended to include a screenshot of the Postman response along with your pull request. This provides additional context and helps reviewers understand the changes made and their impact on the backend functionality.
-
-* **Make your pull request descriptive and include examples:** When creating a pull request, provide a clear and descriptive explanation of the changes you made. This helps reviewers understand the purpose and significance of your contribution. Additionally, including at least one example that demonstrates the intended usage or effect of your changes can be beneficial.
-
-* **Rebase your commits and optimize file changes:** When submitting your pull request, consider rebasing your commits into one commit and optimizing your file changes. This helps keep the commit history clean and makes it easier for reviewers to understand your changes.
-
-Remember, following these guidelines will help ensure a smooth and efficient contribution process. Happy coding!
-
-</details>
-
-<hr>
-
-
+   git checkout main
+   cd frontend
+2. Frontend (React Native + Expo)
+
+  ```bash
+   yarn install
+   npx expo prebuild --clean
+   npx expo run android (for android)
+   npx expo run ios (for Ios)
+ ```
 
 ## :zap:Our Vision:
 
 We are committed to delivering reliable health information and comprehensive resources that empower individuals to take charge of their well-being. Our mission is to foster a healthier society by providing trustworthy, accessible, and engaging content, enabling users to make informed decisions and lead healthier lives.
 
-
- <!-------------------------------------------------------------------FEEDBACK--------------------------------------------------------------------------->
-
-
-
-## ✍️ Feedback and Support:
+##  Feedback and Support:
 
 If you encounter any issues or have any feedback or suggestions, please open an issue in the Issues section of this repository. We appreciate your feedback and will respond as soon as possible.
-
-<!-- Code of conduct -->
-<div>
-<h2><img src = "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand%20gestures/Handshake.png" width="35" height="35"> Code of Conduct:</h2>
-</div>
-
-Please note that this project is released with a [Contributor Code of Conduct](./CODE_OF_CONDUCT.md). By participating in this project you agree to abide by its terms.
-<hr>
-
-<!-- License -->
-<div>
-<h2><img src = "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Page%20with%20Curl.png" width="35" height="35"> License:</h2>
-</div>
-
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)<br>
-This project is licensed under the [MIT License](./LICENSE).
-
-<hr>
-
-## Contact Us:
-
-
-
-<p align="left" style="display: inline;">
- <a href="mailto:ultimate.health25@gmail.com" target="blank"><img align="center" src="https://github.com/SB2318/UltimateHealth/assets/87614560/5e44b23b-3249-44d7-a858-902e4cd9854d" alt="Email" height="30" width="40" /></a>
- 
-<a href="https://www.linkedin.com/in/susmita-n-m-bhattacharya" target="blank"><img align="center" src="https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/linked-in-alt.svg" alt="https://www.linkedin.com/in/susmita-n-m-bhattacharya" height="30" width="40" /></a>
-
-</p>
-
-
-
-
 
 <hr>
           
@@ -682,4 +269,6 @@ This project is licensed under the [MIT License](./LICENSE).
 </div> <br>
 
 <a href="#top" style="position: fixed; bottom: 20px; right: 20px; background-color: black ; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; border-radius: 5px; font-family: Arial; font-size: 16px;">Go to Top</a>
+
+
 
