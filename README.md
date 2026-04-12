@@ -47,6 +47,7 @@
 
 - **Multilingual Article Publishing** — Write health content in any language
 - **Collaborative Reviews** — Community editing, feedback & approval workflow
+- **Community-Driven Content** — collaborative contributions where users can improve, refine, and expand existing health articles.
 - **Health Podcasts** — Publish and share verified podcasts
 - **Contribution Analytics** — Track your impact
 - **Content Integrity** — Plagiarism detection, grammar checks & originality scoring
@@ -82,7 +83,7 @@
 
 <hr>
 
-## 📖 Documentation
+## 📖 Blogs
 
 - [Firebase Cloud Messaging Backend (Node.js)](https://medium.com/@bhattacharyas161/firebase-cloud-messaging-backend-implementation-using-nodejs-and-expressjs-5e1525856a3f)
 - [Firebase Cloud Messaging in React Native](https://medium.com/@bhattacharyas161/firebase-cloud-messaging-in-react-native-v8-vs-v9-setup-and-troubleshooting-0d1ed52fdead)
@@ -141,7 +142,7 @@ If you encounter any issues or have any feedback or suggestions, please open an 
 
 <hr>
           
-<h2 align = "center">Our Contributors ❤️</h2>
+<h2 align = "center">Our Previous Contributors ❤️</h2>
 <div align = "center">
  <h3>Thank you for contributing to our repository</h3>
  <h1> We appreciate your help in making UltimateHealth even better.😃</h1>
