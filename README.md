@@ -23,16 +23,21 @@
     <td align="center"><b>🛠️ CI</b></td>
     <td align="center"><b>🌟 Stars</b></td>
     <td align="center"><b>🍴 Forks</b></td>
-    <td align="center"><b>🐛 Issues</b></td>
-    <td align="center"><b>🔄 Open PRs</b></td>
-    <td align="center"><b>✅ Closed PRs</b></td>
-    <td align="center"><b>⏱️ Last Commit</b></td>
   </tr>
   <tr>
     <td align="center"><img alt="License" src="https://img.shields.io/github/license/SB2318/UltimateHealth?style=flat&logo=github&color=success"/></td>
     <td align="center"><img alt="CI" src="https://github.com/SB2318/UltimateHealth/actions/workflows/frontend-ci.yml/badge.svg?style=flat&logo=github&color=success"/></td>
     <td align="center"><img alt="Stars" src="https://img.shields.io/github/stars/SB2318/UltimateHealth?style=flat&logo=github&color=success"/></td>
     <td align="center"><img alt="Forks" src="https://img.shields.io/github/forks/SB2318/UltimateHealth?style=flat&logo=github"/></td>
+  </tr>
+
+  <tr>
+    <td align="center"><b>🐛 Issues</b></td>
+    <td align="center"><b>🔄 Open PRs</b></td>
+    <td align="center"><b>✅ Closed PRs</b></td>
+    <td align="center"><b>⏱️ Last Commit</b></td>
+  </tr>
+  <tr>
     <td align="center"><img alt="Issues" src="https://img.shields.io/github/issues/SB2318/UltimateHealth?style=flat&logo=github"/></td>
     <td align="center"><img alt="Open PRs" src="https://img.shields.io/github/issues-pr/SB2318/UltimateHealth?style=flat&logo=github"/></td>
     <td align="center"><img alt="Closed PRs" src="https://img.shields.io/github/issues-pr-closed/SB2318/UltimateHealth?style=flat&color=critical&logo=github"/></td>
