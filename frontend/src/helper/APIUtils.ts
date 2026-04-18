@@ -83,7 +83,7 @@ const GET_PLAYLIST = `${PROD_URL}/podcast/get-my-playlists`;
 const CREATE_PLAYLIST = `${PROD_URL}/podcast/create-playlist`;
 const ADD_TO_PLAYLIST = `${PROD_URL}/podcast/add-podcast-form-playlist`;
 const UPDATE_PODCAST_PLAYLIST = `${PROD_URL}/podcast/update-playlist`;
-/** Podcast workspace */
+
 const DISCARDED_PODCASTS = `${PROD_URL}/podcast/discarded`;
 const PENDING_PODCASTS = `${PROD_URL}/podcast/user-pending`;
 const USER_PUBLISHED_PODCASTS = `${PROD_URL}/podcast/user-published`;
