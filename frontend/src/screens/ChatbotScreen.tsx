@@ -104,7 +104,7 @@ const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
 
 
   const onSend = useCallback((messages: IMessage[] = []) => {
-    if (isConnected) {
+    if (!isConnected) {
       Snackbar.show({
         text: 'Please check your internet connection and try again!',
         duration: Snackbar.LENGTH_SHORT,
