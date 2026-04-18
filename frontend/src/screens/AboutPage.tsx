@@ -9,6 +9,7 @@ import {
   Button,
   View,
 } from 'tamagui';
+
 import {
   Ionicons,
   FontAwesome6,
