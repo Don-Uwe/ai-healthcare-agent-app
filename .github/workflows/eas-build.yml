@@ -42,10 +42,16 @@ jobs:
             echo "Using npm"
             npm ci --legacy-peer-deps
           fi
+          
       -  name: Setup Firebase iOS Config
          working-directory: ./frontend
          run: |
           echo '${{ secrets.GOOGLE_SERVICE_INFO_PILIST }}' | base64 -d > GoogleService-Info.plist
+          
+      -  name: Setup Firebase Android Config
+         working-directory: ./frontend
+         run: |
+          echo '${{ secrets.GOOGLE_SERVICES_JSON }}' | base64 -d > google-services.json
           
       - name: Build Android with EAS
         working-directory: ./frontend
