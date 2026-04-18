@@ -1,4 +1,4 @@
-name: EAS Build (Android)
+name: EAS Build (Android & iOS)
 
 on:
   workflow_dispatch:           # Manual trigger (best for builds)
