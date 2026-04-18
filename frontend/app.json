@@ -20,7 +20,8 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.ultimatehealth.app",
+      "bundleIdentifier": "com.anonymous.UltimateHealth",
+      "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "NSMicrophoneUsageDescription": "App requires microphone access to record audio.",
         "NSPhotoLibraryAddUsageDescription": "App needs access to save recordings.",
