@@ -15,12 +15,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'none'                    # Fully independent (no lock file error)
-
       - name: Setup Expo & EAS
         uses: expo/expo-github-action@v8
         with:
