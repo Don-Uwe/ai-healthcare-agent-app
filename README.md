@@ -33,9 +33,11 @@
     <td align="center">
       <img alt="Frontend CI" src="https://github.com/SB2318/UltimateHealth/actions/workflows/frontend-ci.yml/badge.svg?style=flat&logo=github&color=success"/>
     </td>
-    <td align="center">
-      <img alt="Expo CI" src="https://github.com/SB2318/UltimateHealth/actions/workflows/eas-build.yml/badge.svg?style=flat&logo=expo&color=blue"/>
-    </td>
+   <td align="center">
+  <a href="https://github.com/SB2318/UltimateHealth/actions/workflows/eas-build.yml">
+    <img alt="Expo Build" src="https://github.com/SB2318/UltimateHealth/actions/workflows/eas-build.yml/badge.svg?label=Expo%20Build%20(Android%20%2B%20iOS)&logo=expo&color=blue"/>
+  </a>
+</td>
     <td align="center">
       <img alt="Stars" src="https://img.shields.io/github/stars/SB2318/UltimateHealth?style=flat&logo=github&color=success"/>
     </td>
@@ -59,7 +61,7 @@
     </td>
     <td align="center">
       <!-- FIXED PR BADGE -->
-      <img alt="Open PRs" src="https://img.shields.io/github/pulls/SB2318/UltimateHealth?style=flat&logo=github"/>
+      <img alt="Open PRs" src="https://img.shields.io/github/issues-pr/SB2318/UltimateHealth?style=flat&logo=github"/>
     </td>
     <td align="center">
       <img alt="Closed PRs" src="https://img.shields.io/github/issues-pr-closed/SB2318/UltimateHealth?style=flat&logo=github&color=critical"/>
