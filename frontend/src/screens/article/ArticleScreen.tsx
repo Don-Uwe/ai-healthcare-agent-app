@@ -196,6 +196,32 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     }
   };
 
+  const handleTranslateArticle = () => {
+    if (!article) {
+      Alert.alert('Article not found');
+      return;
+    }
+
+    if (!articleContent) {
+      Snackbar.show({
+        text: 'Article content is still loading. Please try again.',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+      return;
+    }
+
+    navigation.navigate('ArticleDescriptionScreen', {
+      article,
+      htmlContent: articleContent,
+      translationSource: {
+        sourceArticleId: article._id,
+        sourceArticleRecordId: article.pb_recordId || recordId,
+        sourceLanguage: article.language || 'en-IN',
+        sourceTitle: article.title,
+      },
+    });
+  };
+
   async function convertHtmlToPlainText(html: string) {
     let modifiedHtml = html.replace(/ style="[^"]*"/g, '');
 
@@ -673,6 +699,17 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
 
           <TouchableOpacity
             style={styles.actionButtonFooter}
+            onPress={handleTranslateArticle}>
+            <MaterialCommunityIcons
+              name="translate"
+              size={20}
+              color="#666"
+            />
+            <Text style={styles.actionTextFooter}>Translate</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.actionButtonFooter}
             onPress={handleSave}
             disabled={saveMutationPending}>
             {saveMutationPending ? (
@@ -928,7 +965,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   actionButtonFooter: {
-    flexDirection: 'row',
+    flex: 1,
+    flexDirection: 'column',
     alignItems: 'center',
     gap: 5,
   },

@@ -34,6 +34,7 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
     requestId,
     htmlContent,
     pb_record_id,
+    translationSource,
   } = route.params;
 
   const RichText = useRef(null);
@@ -67,6 +68,7 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
                 requestId: requestId,
                 pb_record_id: pb_record_id,
                 language: route.params.language,
+                translationSource,
               });
             } else {
               Alert.alert('Error', 'Please enter at least 20 characters');
@@ -90,6 +92,7 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
     requestId,
     dispatch,
     pb_record_id,
+    translationSource,
   ]);
 
   useEffect(() => {

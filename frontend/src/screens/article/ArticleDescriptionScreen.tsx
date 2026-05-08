@@ -32,7 +32,8 @@ const ArticleDescriptionScreen = ({
   navigation,
   route,
 }: ArticleDescriptionProp) => {
-  const {article, htmlContent} = route.params;
+  const {article, htmlContent, translationSource} = route.params;
+  const isTranslation = Boolean(translationSource);
   const [title, setTitle] = useState('');
   const [authorName, setAuthorName] = useState('');
   const [description, setDescription] = useState('');
@@ -49,13 +50,16 @@ const ArticleDescriptionScreen = ({
       setAuthorName(article.authorName);
       setDescription(article.description);
       setSelectedGenres(article.tags);
+      if (isTranslation) {
+        setLanguage('');
+      }
       setImageUtils(
         article.imageUtils && article.imageUtils.length > 0
           ? article.imageUtils[0]
           : '',
       );
     }
-  }, []);
+  }, [article, isTranslation]);
   const handleGenrePress = (genre: Category) => {
     if (isSelected(genre)) {
       setSelectedGenres(selectedGenres.filter(item => item.id !== genre.id));
@@ -80,6 +84,15 @@ const ArticleDescriptionScreen = ({
     } else if (selectedGenres.length === 0) {
       Alert.alert('Please select at least one suitable tags for your article.');
       return;
+    } else if (isTranslation && !language) {
+      Alert.alert('Please select a target language for the translation.');
+      return;
+    } else if (
+      isTranslation &&
+      language === translationSource?.sourceLanguage
+    ) {
+      Alert.alert('Please choose a language different from the source article.');
+      return;
     }
 
     // Later purpose
@@ -94,11 +107,12 @@ const ArticleDescriptionScreen = ({
       description: description,
       selectedGenres: selectedGenres,
       imageUtils: imageUtils,
-      articleData: article,
       htmlContent: htmlContent,
       language: language,
       requestId: undefined,
-      pb_record_id: undefined
+      pb_record_id: undefined,
+      articleData: isTranslation ? undefined : article,
+      translationSource,
     });
   };
 
@@ -137,8 +151,14 @@ const ArticleDescriptionScreen = ({
     });
   };
 
+  const availableLanguages = isTranslation
+    ? ttsLanguageList.filter(
+        lang => lang.code !== translationSource?.sourceLanguage,
+      )
+    : ttsLanguageList;
+
   const getLanguageLabel = (value: string) => {
-    return ttsLanguageList.find(lang => lang.code === value)?.name || 'English (India)';
+    return ttsLanguageList.find(lang => lang.code === value)?.name || 'Select language';
   };
 
   const LanguageSelector = () => {
@@ -160,7 +180,7 @@ const ArticleDescriptionScreen = ({
               </TouchableOpacity>
             </View>
             <FlatList
-              data={ttsLanguageList}
+              data={availableLanguages}
               keyExtractor={item => item.code}
               renderItem={({item}) => (
                 <TouchableOpacity
@@ -211,9 +231,23 @@ const ArticleDescriptionScreen = ({
         <View style={styles.headerSection}>
           <Text style={styles.sectionTitle}>Article Details</Text>
           <Text style={styles.sectionSubtitle}>
-            Fill in the information below to create your article
+            {isTranslation
+              ? `Create a translated version of "${translationSource?.sourceTitle}"`
+              : 'Fill in the information below to create your article'}
           </Text>
         </View>
+
+        {isTranslation && (
+          <View style={styles.translationNotice}>
+            <Ionicon name="language-outline" size={20} color={PRIMARY_COLOR} />
+            <View style={styles.translationNoticeTextWrapper}>
+              <Text style={styles.translationNoticeTitle}>Translation article</Text>
+              <Text style={styles.translationNoticeText}>
+                Source language: {getLanguageLabel(translationSource?.sourceLanguage ?? '')}
+              </Text>
+            </View>
+          </View>
+        )}
 
         {/* Image Upload Section */}
         <View style={styles.section}>
@@ -296,7 +330,7 @@ const ArticleDescriptionScreen = ({
               style={styles.languageSelector}
               onPress={() => setLanguageModalVisible(true)}>
               <Text style={styles.languageSelectorText}>
-                {getLanguageLabel(language)}
+                {language ? getLanguageLabel(language) : 'Select target language'}
               </Text>
               <Ionicon name="chevron-down" size={20} color="#6b7280" />
             </TouchableOpacity>
@@ -404,6 +438,30 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 8,
     elevation: 2,
+  },
+  translationNotice: {
+    backgroundColor: 'rgba(59, 130, 246, 0.08)',
+    borderColor: 'rgba(59, 130, 246, 0.25)',
+    borderRadius: 12,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 16,
+    padding: 14,
+  },
+  translationNoticeTextWrapper: {
+    flex: 1,
+  },
+  translationNoticeTitle: {
+    color: '#1a1a1a',
+    fontSize: 15,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  translationNoticeText: {
+    color: '#4b5563',
+    fontSize: 13,
+    lineHeight: 18,
   },
   sectionTitle: {
     fontSize: 20,
