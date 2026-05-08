@@ -42,6 +42,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
     requestId,
     language,
     pb_record_id,
+    translationSource,
   } = route.params;
 
   const [imageUtil, setImageUtil] = useState<string>('');
@@ -258,11 +259,20 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
                       pb_recordId: data.recordId,
                       allow_podcast: true,
                       language: language,
+                      isTranslation: Boolean(translationSource),
+                      sourceArticleId: translationSource?.sourceArticleId,
+                      sourceArticleRecordId:
+                        translationSource?.sourceArticleRecordId,
+                      sourceLanguage: translationSource?.sourceLanguage,
+                      targetLanguage: language,
+                      translationOf: translationSource?.sourceArticleId,
                     },
                     {
                       onSuccess: () => {
                         Snackbar.show({
-                          text: 'Article added successfully',
+                          text: translationSource
+                            ? 'Translation submitted successfully'
+                            : 'Article added successfully',
                           duration: Snackbar.LENGTH_SHORT,
                         });
 

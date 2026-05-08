@@ -26,6 +26,8 @@ const SAVE_ARTICLE = `${PROD_URL}/articles/saveArticle`;
 const LIKE_ARTICLE = `${PROD_URL}/articles/likeArticle`;
 const POST_ARTICLE = `${PROD_URL}/articles`;
 const GET_ARTICLE_BY_ID = `${PROD_URL}/articles`;
+const GET_ARTICLE_TRANSLATIONS = (articleId: string | number) =>
+  `${GET_ARTICLE_BY_ID}/${articleId}/translations`;
 const GET_USER_DETAILS_API = `${PROD_URL}/user/getdetails`;
 const UPDATE_USER_GENERAL_DETAILS = `${PROD_URL}/user/update-general-details`;
 const UPDATE_READ_EVENT = `${PROD_URL}/article/readEvent`;
@@ -113,6 +115,7 @@ export {
   LIKE_ARTICLE,
   POST_ARTICLE,
   GET_ARTICLE_BY_ID,
+  GET_ARTICLE_TRANSLATIONS,
   GET_USER_DETAILS_API,
   UPDATE_USER_GENERAL_DETAILS,
   UPDATE_USER_PASSWORD,

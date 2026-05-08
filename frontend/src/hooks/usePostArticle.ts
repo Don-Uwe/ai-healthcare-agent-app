@@ -14,6 +14,12 @@ type PostReq = {
   pb_recordId: string;
   allow_podcast: boolean;
   language: string;
+  isTranslation?: boolean;
+  sourceArticleId?: string;
+  sourceArticleRecordId?: string;
+  sourceLanguage?: string;
+  targetLanguage?: string;
+  translationOf?: string;
 };
 
 export const usePostArticleData = (): UseMutationResult<
