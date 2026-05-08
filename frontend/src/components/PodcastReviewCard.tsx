@@ -7,15 +7,14 @@ import {
   Image,
 } from 'react-native';
 import React from 'react';
-import {fp, hp, wp} from '../helper/Metric';
+import {fp, hp} from '../helper/Metric';
 import {PodcastData} from '../type';
 import {BUTTON_COLOR, PRIMARY_COLOR} from '../helper/Theme';
-import {StatusEnum, msToTime} from '../helper/Utils';
+import {StatusEnum, msToTime, formatCount} from '../helper/Utils';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Entypo from '@expo/vector-icons/Entypo';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import {GET_STORAGE_DATA} from '../helper/APIUtils';
-import {formatCount} from '../helper/Utils';
 
 interface PodcastReviewCardProps {
   item: PodcastData;
@@ -45,7 +44,6 @@ const PodcastReviewCard = ({
   // Get host/author name
   const hostName = item?.user_id?.user_name || item?.user_id?.user_handle || 'Unknown Host';
 
-  // Format duration using the msToTime utility (duration is in seconds)
   const formattedDuration = msToTime(item?.duration || 0);
 
   return (
