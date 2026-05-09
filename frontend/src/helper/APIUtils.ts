@@ -97,6 +97,10 @@ const GET_TOKEN_STATUS = `${PROD_URL}/tokenstatus`;
 const CHAT_URL = `${PROD_URL}/gemini/messages`;
 const SEND_MESSAGE_TO_GEMINI = `${PROD_URL}/gemini/send`;
 
+/** Notification Preferences */
+const GET_NOTIFICATION_PREFERENCES = `${PROD_URL}/user/notification-preferences`;
+const UPDATE_NOTIFICATION_PREFERENCES = `${PROD_URL}/user/notification-preferences`;
+
 
 export {
   LOGIN_API,
@@ -177,5 +181,7 @@ export {
   SOCKET_PROD,
   CONTENT_CHECKER_PROD,
   LOAD_REVIEW_COMMENTS,
-  SEND_MESSAGE_TO_GEMINI
+  SEND_MESSAGE_TO_GEMINI,
+  GET_NOTIFICATION_PREFERENCES,
+  UPDATE_NOTIFICATION_PREFERENCES,
 };

@@ -16,6 +16,8 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import MaterialCommunityIcon from '@expo/vector-icons/MaterialCommunityIcons';
 import Feather from '@expo/vector-icons/Feather';
+import {RootStackParamList} from '../type';
+import {NavigationProp} from '@react-navigation/native';
 import {fp, hp, wp} from '../helper/Metric';
 import {ProfileHeaderProps} from '../type';
 
@@ -158,6 +160,31 @@ const ProfileHeader = ({
                 color="black"
               />
               <Text style={styles.btnSMText}>Your Workspace</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => {
+            if (isConnected) {
+              (navigation as NavigationProp<RootStackParamList>).navigate(
+                'NotificationPreferencesScreen',
+              );
+            } else {
+              Snackbar.show({
+                text: 'Please check your internet connection!',
+                duration: Snackbar.LENGTH_SHORT,
+              });
+            }
+          }}>
+          {other && (
+            <View style={styles.btnSM}>
+              <MaterialCommunityIcon
+                name="bell-cog-outline"
+                size={20}
+                color="black"
+              />
+              <Text style={styles.btnSMText}>Notification Preferences</Text>
             </View>
           )}
         </TouchableOpacity>

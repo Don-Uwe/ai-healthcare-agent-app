@@ -48,6 +48,7 @@ import PodcastProfile from '../screens/PodcastProfile';
 import PrivacyPolicyScreen from '../screens/PrivacyPolicy';
 import ContributorPage from '../screens/ContributorPage';
 import OpenSourcePage from '../screens/OpenSourcePage';
+import NotificationPreferencesScreen from '../screens/NotificationPreferencesScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -733,6 +734,34 @@ const StackNavigation = () => {
                 navigation.goBack();
               }}>
               <FontAwesome6 size={25} name="arrow-left" color="black" />
+            </TouchableOpacity>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="NotificationPreferencesScreen"
+        component={NotificationPreferencesScreen}
+        options={({navigation}) => ({
+          headerShown: false,
+          headerTitle: 'Notification Preferences',
+          headerTitleAlign: 'center',
+          headerBackTitleVisible: false,
+          headerTintColor: 'white',
+          headerStyle: {
+            backgroundColor: '#000A60',
+            elevation: 4,
+            shadowColor: '#000',
+            shadowOffset: {width: 0, height: 2},
+            shadowOpacity: 0.25,
+            shadowRadius: 3.5,
+          },
+          headerLeft: () => (
+            <TouchableOpacity
+              style={styles.headerLeftButtonCommentScreen}
+              onPress={() => {
+                navigation.goBack();
+              }}>
+              <FontAwesome6 size={25} name="arrow-left" color={'white'} />
             </TouchableOpacity>
           ),
         })}

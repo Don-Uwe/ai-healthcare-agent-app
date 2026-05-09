@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import {YStack, XStack, Text, Button} from 'tamagui';
 import {Sheet} from '@tamagui/sheet';
 import AntDesign from '@expo/vector-icons/AntDesign';
@@ -22,45 +22,33 @@ export default function ArticleFloatingMenuSheet({
   items,
   onDismiss,
 }: ArticleFloatingMenuProp) {
-  const [open, setOpen] = useState(visible);
-
-  // keep open state in sync with visible prop
-  useEffect(() => {
-    setOpen(visible);
-  }, [visible]);
-
+  // Drive Sheet open state directly from the prop — single source of truth.
+  // No internal copy needed; parent (ArticleCard) owns the lifecycle.
   const handleOpenChange = (isOpen: boolean) => {
-    setOpen(isOpen);
     if (!isOpen) onDismiss();
   };
 
   return (
     <Sheet
       modal
-      open={open}
+      open={visible}
       onOpenChange={handleOpenChange}
       dismissOnSnapToBottom
-      snapPoints={[65, 30, 10]} 
+      snapPoints={[65, 30, 10]}
       dismissOnOverlayPress={true}
-    //  dismissOnSnapToBottom={false}
-      //dismissOnOverlayPress={false}
-     // animation="medium"
       zIndex={1000}>
-      {/* <Sheet.Overlay backgroundColor="rgba(0,0,0,0.05)" /> */}
       <Sheet.Handle />
-      <Sheet.Frame padding="$4" backgroundColor="white" height="100%" >
+      <Sheet.Frame padding="$4" backgroundColor="white" height="100%">
         <ScrollView
           contentContainerStyle={{paddingBottom: 20}}
-          keyboardShouldPersistTaps="handled"
-          >
+          keyboardShouldPersistTaps="handled">
           <YStack gap="$3">
             {items.map((item, index) => (
               <Button
                 key={`${item.name}-${item.articleId}-${index}`}
                 size="$5"
                 height={'21%'}
-                onPress={()=>{
-                  console.log('action click');
+                onPress={() => {
                   item.action();
                 }}
                 justifyContent="flex-start"

@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   Platform,
 } from 'react-native';
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {fp} from '../helper/Metric';
 import {ArticleCardProps, ArticleData} from '../type';
 import moment from 'moment';
@@ -57,6 +57,7 @@ const ArticleCard = ({
   const [requestModalVisible, setRequestModalVisible] =
     useState<boolean>(false);
   const [menuVisible, setMenuVisible] = useState(false);
+  const menuTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const {data: user} = useGetProfile();
 
   const [isLiked, setIsLiked] = useState(
@@ -114,9 +115,25 @@ const ArticleCard = ({
     });
   }, [socket]);
 
+  // Cleanup timer and close menu when card unmounts (FlatList recycling)
+  useEffect(() => {
+    return () => {
+      if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+      setMenuVisible(false);
+    };
+  }, []);
+
   const onChange = () => {
-    setMenuVisible(true);
-    console.log('Menu visible', menuVisible);
+    // Force a false → true transition so the child Sheet's useEffect
+    // always sees a value change, even if menuVisible was already true.
+    if (menuVisible) {
+      setMenuVisible(false);
+      menuTimerRef.current = setTimeout(() => {
+        setMenuVisible(true);
+      }, 50);
+    } else {
+      setMenuVisible(true);
+    }
   };
 
   const generatePDFFromUrl = async (recordId: string, title: string) => {

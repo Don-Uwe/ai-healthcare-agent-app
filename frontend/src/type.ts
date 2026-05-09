@@ -95,6 +95,7 @@ export type RootStackParamList = {
     author_handle: string | undefined;
   };
   ProfileEditScreen: undefined;
+  NotificationPreferencesScreen: undefined;
   LogoutScreen: {profile_image: string; username: string};
   RenderSuggestion: {
     htmlContent: string;
@@ -268,6 +269,11 @@ export type ReportConfirmationScreenProp = StackScreenProps<
 export type NotificationScreenProp = StackScreenProps<
   RootStackParamList,
   'NotificationScreen'
+>;
+
+export type NotificationPreferencesScreenProp = StackScreenProps<
+  RootStackParamList,
+  'NotificationPreferencesScreen'
 >;
 //StackScreenProps<RootStackParamList, 'UserProfileScreen'>;
 
@@ -753,4 +759,8 @@ export type PlayList = {
   podcasts: Podcast[] | string[];
   created_at: Date;
   updated_at: Date;
+};
+
+export type NotificationPreferences = {
+  contentClusters: string[];
 };

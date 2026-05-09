@@ -146,7 +146,11 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
         }
       }
 
-      setImageUtils([imageUtil, ...resultImages]);
+      // Use a local variable so mutation callbacks get the correct value
+      // synchronously — React setState is async so imageUtils state would
+      // still be [] by the time the mutation fires in the same tick.
+      const finalImageUtils = [imageUtil, ...resultImages];
+      setImageUtils(finalImageUtils);
 
       // Submit Improvement
       if (requestId) {
@@ -167,7 +171,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
                     edited_content: data.html_file,
                     recordId: data.recordId,
                     requestId: requestId ?? '',
-                    imageUtils: imageUtils,
+                    imageUtils: finalImageUtils,
                   },
                   {
                     onSuccess: data => {
@@ -224,7 +228,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
                       authorName: authorName,
                       articleId: articleData?._id,
                       tags: selectedGenres,
-                      imageUtils: imageUtils,
+                      imageUtils: finalImageUtils,
                       description: description,
                     },
                     {
@@ -254,7 +258,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
                       authorId: user?._id ?? '',
                       content: data.html_file,
                       tags: selectedGenres,
-                      imageUtils: imageUtils,
+                      imageUtils: finalImageUtils,
                       description: description,
                       pb_recordId: data.recordId,
                       allow_podcast: true,

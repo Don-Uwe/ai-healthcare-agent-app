@@ -178,10 +178,11 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
       const width = 1000;
       const height = 1000;
 
+      // imageHTML must be declared before it is referenced in setHtmlImages
+      const imageHTML = `<img src="${str}" style="width: ${width}px; height: ${height}px;" />`;
+
       setLocalImages(prev => [...prev, str]);
       setHtmlImages(prev => [...prev, imageHTML]);
-
-      const imageHTML = `<img src="${str}" style="width: ${width}px; height: ${height}px;" />`;
 
       await RichText.current?.insertHTML(imageHTML);
 
