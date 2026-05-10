@@ -49,6 +49,7 @@ import PrivacyPolicyScreen from '../screens/PrivacyPolicy';
 import ContributorPage from '../screens/ContributorPage';
 import OpenSourcePage from '../screens/OpenSourcePage';
 import NotificationPreferencesScreen from '../screens/NotificationPreferencesScreen';
+import GuestPlaceholderScreen from '../components/GuestPlaceholderScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -772,6 +773,15 @@ const StackNavigation = () => {
         options={{
           headerShown: false,
         }}
+      />
+      <Stack.Screen
+        name="GuestPlaceholderScreen"
+        component={GuestPlaceholderScreen}
+        options={({route}: any) => ({
+          headerShown: true,
+          title: route?.params?.title || 'Sign In Required',
+          headerBackTitleVisible: false,
+        })}
       />
       {/* <Stack.Screen
         name="ChatbotScreen"

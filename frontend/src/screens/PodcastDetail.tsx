@@ -39,7 +39,7 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   const [playing, setIsPlaying] = useState(false);
 
   const socket = useSocket();
-  const {user_token, user_id, user_handle} = useSelector(
+  const {user_token, user_id, user_handle, isGuest} = useSelector(
     (state: any) => state.user,
   );
   const {isConnected} = useSelector((state: any) => state.network);
@@ -315,6 +315,14 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
                   <TouchableOpacity
                     style={styles.actionButton}
                     onPress={() => {
+                      if (isGuest) {
+                        navigation.navigate('GuestPlaceholderScreen', {
+                          title: 'Sign In Required',
+                          description: 'Please sign in or sign up to like this podcast.',
+                          iconName: 'heart',
+                        });
+                        return;
+                      }
                       likePodcast(trackId, {
                         onSuccess: data => {
 
@@ -360,6 +368,14 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
                   <TouchableOpacity
                     style={styles.actionButton}
                     onPress={async () => {
+                      if (isGuest) {
+                        navigation.navigate('GuestPlaceholderScreen', {
+                          title: 'Sign In Required',
+                          description: 'Please sign in or sign up to download podcasts.',
+                          iconName: 'download',
+                        });
+                        return;
+                      }
                       if (!podcast) {
                         Snackbar.show({
                           text: 'Something went wrong! try again',
@@ -385,6 +401,14 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
                 <TouchableOpacity
                   style={styles.actionButton}
                   onPress={() => {
+                    if (isGuest) {
+                      navigation.navigate('GuestPlaceholderScreen', {
+                        title: 'Sign In Required',
+                        description: 'Please sign in or sign up to view and post comments.',
+                        iconName: 'comment',
+                      });
+                      return;
+                    }
                     if (!isConnected) {
                       Snackbar.show({
                         text: 'You are currently offline',

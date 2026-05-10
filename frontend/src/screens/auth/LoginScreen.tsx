@@ -19,7 +19,7 @@ import {AuthData, LoginScreenProp} from '../../type';
 import axios, {AxiosError} from 'axios';
 import {useDispatch} from 'react-redux';
 import Loader from '../../components/Loader';
-import {setUserHandle, setUserId, setUserToken} from '../../store/UserSlice';
+import {setUserHandle, setUserId, setUserToken, setGuestMode} from '../../store/UserSlice';
 import messaging from '@react-native-firebase/messaging';
 import Entypo from '@expo/vector-icons/Entypo';
 import EmailInputBottomSheet from '../../components/EmailInputModal';
@@ -425,6 +425,26 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
             onPress={() => navigation.navigate('SignUpScreenFirst')}>
             <Text fontWeight="600" fontSize={16}>
               Sign Up
+            </Text>
+          </Button>
+
+          <Button
+            variant="outlined"
+            marginTop="$3"
+            size="$6"
+            theme="dark"
+            borderColor="$gray8"
+            alignSelf="center"
+            width="100%"
+            onPress={() => {
+              dispatch(setGuestMode(true));
+              navigation.reset({
+                index: 0,
+                routes: [{name: 'TabNavigation'}],
+              });
+            }}>
+            <Text fontWeight="600" fontSize={16} color={isDarkMode ? '$color' : '$black'}>
+              Continue as Guest
             </Text>
           </Button>
         </YStack>

@@ -13,9 +13,16 @@ import {BUTTON_COLOR} from '../helper/Theme';
 import HeaderRightMenu from '../components/HeaderRightMenu';
 import ChatbotScreen from '../screens/ChatbotScreen';
 import AboutScreen from '../screens/AboutPage';
+import {useSelector} from 'react-redux';
+import GuestPlaceholderScreen from '../components/GuestPlaceholderScreen';
 
 const Tab = createBottomTabNavigator<TabParamList>();
+
+const ChatbotGuestScreen = () => <GuestPlaceholderScreen title="AI Chatbot" description="Sign in or sign up to get instant health advice and personalized answers from our AI assistant." iconName="robot" />;
+const ProfileGuestScreen = () => <GuestPlaceholderScreen title="Your Profile" description="Create an account to manage your details and preferences." iconName="user-alt" />;
+
 const TabNavigation = () => {
+  const isGuest = useSelector((state: any) => state.user.isGuest);
   return (
     <Tab.Navigator
       initialRouteName="Home"
@@ -60,7 +67,7 @@ const TabNavigation = () => {
 
       <Tab.Screen
         name="Chatbot"
-        component={ChatbotScreen}
+        component={isGuest ? ChatbotGuestScreen : ChatbotScreen}
         options={({navigation}) => ({
           headerTitleAlign: 'center',
           title: 'Chatbot',
@@ -93,7 +100,7 @@ const TabNavigation = () => {
       />
       <Tab.Screen
         name="Profile"
-        component={ProfileScreen}
+        component={isGuest ? ProfileGuestScreen : ProfileScreen}
         options={{
           headerShown: false,
           headerTransparent: true,

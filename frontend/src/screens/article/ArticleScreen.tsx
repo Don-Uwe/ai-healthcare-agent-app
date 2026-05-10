@@ -49,7 +49,7 @@ import {useSaveArticle} from '@/src/hooks/useSaveArticle';
 const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const {articleId, authorId, recordId} = route.params;
   const [spakingStarted, setSpeakingStarted] = useState(false);
-  const {user_id} = useSelector((state: any) => state.user);
+  const {user_id, isGuest} = useSelector((state: any) => state.user);
   const [readEventSave, setReadEventSave] = useState(false);
 
   const {mutate: followMutation, isPending: followMutationPending} =
@@ -110,6 +110,14 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
 
   // --- Settings ---
   const handleLike = () => {
+    if (isGuest) {
+      navigation.navigate('GuestPlaceholderScreen', {
+        title: 'Sign In Required',
+        description: 'Please sign in or sign up to like this article.',
+        iconName: 'heart',
+      });
+      return;
+    }
     if (article) {
       likeMutation(undefined,{
         onSuccess: (data: {article: ArticleData; likeStatus: boolean}) => {
@@ -142,6 +150,14 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   };
 
   const handleFollow = () => {
+    if (isGuest) {
+      navigation.navigate('GuestPlaceholderScreen', {
+        title: 'Sign In Required',
+        description: 'Please sign in or sign up to follow this author.',
+        iconName: 'user-plus',
+      });
+      return;
+    }
     //  updateFollowMutation.mutate();
 
     followMutation(articleId.toString(), {
@@ -172,6 +188,14 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   };
 
   const handleSave = () => {
+    if (isGuest) {
+      navigation.navigate('GuestPlaceholderScreen', {
+        title: 'Sign In Required',
+        description: 'Please sign in or sign up to save this article.',
+        iconName: 'bookmark',
+      });
+      return;
+    }
     if (article) {
       saveMutation(undefined, {
         onSuccess: () => {
@@ -652,6 +676,14 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
           <TouchableOpacity
             style={styles.actionButtonFooter}
             onPress={() => {
+              if (isGuest) {
+                navigation.navigate('GuestPlaceholderScreen', {
+                  title: 'Sign In Required',
+                  description: 'Please sign in or sign up to view and post comments.',
+                  iconName: 'comment',
+                });
+                return;
+              }
               if (article) {
                 navigation.navigate('CommentScreen', {
                   articleId: Number(article._id),

@@ -67,6 +67,7 @@ export type RootStackParamList = {
     articleRecordId: string;
   };
   OverviewScreen: undefined;
+  GuestPlaceholderScreen: { title?: string; description?: string; iconName?: string };
   // ConversationScreen: undefined;
   SocialScreen: {
     type: number;

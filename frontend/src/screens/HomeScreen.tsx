@@ -321,7 +321,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     sortType,
   } = useSelector((state: any) => state.data);
 
-  const {user_token} = useSelector(
+  const {user_token, isGuest} = useSelector(
     (state: any) => state.user,
   );
 
@@ -382,6 +382,14 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   );
 
   const handleNoteIconClick = () => {
+    if (isGuest) {
+      navigation.navigate('GuestPlaceholderScreen', {
+        title: 'Sign In Required',
+        description: 'Please sign in or sign up to write an article.',
+        iconName: 'pen-nib',
+      });
+      return;
+    }
     navigation.navigate('ArticleDescriptionScreen', {
       article: null,
       htmlContent: undefined,
@@ -604,7 +612,17 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         <HomeScreenHeader
           handlePresentModalPress={handlePresentModalPress}
           onTextInputChange={handleSearch}
-          onNotificationClick={() => navigation.navigate('NotificationScreen')}
+          onNotificationClick={() => {
+            if (isGuest) {
+              navigation.navigate('GuestPlaceholderScreen', {
+                title: 'Notifications',
+                description: 'Sign in to see your notifications.',
+                iconName: 'bell',
+              });
+            } else {
+              navigation.navigate('NotificationScreen');
+            }
+          }}
           unreadCount={unreadCount || 0}
           hasActiveFilters={hasActiveFilters}
           onFilterReset={handleQuickReset}
@@ -621,7 +639,17 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         <HomeScreenHeader
           handlePresentModalPress={handlePresentModalPress}
           onTextInputChange={handleSearch}
-          onNotificationClick={() => navigation.navigate('NotificationScreen')}
+          onNotificationClick={() => {
+            if (isGuest) {
+              navigation.navigate('GuestPlaceholderScreen', {
+                title: 'Notifications',
+                description: 'Sign in to see your notifications.',
+                iconName: 'bell',
+              });
+            } else {
+              navigation.navigate('NotificationScreen');
+            }
+          }}
           unreadCount={unreadCount || 0}
           hasActiveFilters={hasActiveFilters}
           onFilterReset={handleQuickReset}
@@ -638,7 +666,17 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         <HomeScreenHeader
           handlePresentModalPress={handlePresentModalPress}
           onTextInputChange={handleSearch}
-          onNotificationClick={() => navigation.navigate('NotificationScreen')}
+          onNotificationClick={() => {
+            if (isGuest) {
+              navigation.navigate('GuestPlaceholderScreen', {
+                title: 'Notifications',
+                description: 'Sign in to see your notifications.',
+                iconName: 'bell',
+              });
+            } else {
+              navigation.navigate('NotificationScreen');
+            }
+          }}
           unreadCount={unreadCount || 0}
           hasActiveFilters={hasActiveFilters}
           onFilterReset={handleQuickReset}
@@ -732,7 +770,15 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         handlePresentModalPress={handlePresentModalPress}
         onTextInputChange={handleSearch}
         onNotificationClick={() => {
-          navigation.navigate('NotificationScreen');
+          if (isGuest) {
+            navigation.navigate('GuestPlaceholderScreen', {
+              title: 'Notifications',
+              description: 'Sign in to see your notifications.',
+              iconName: 'bell',
+            });
+          } else {
+            navigation.navigate('NotificationScreen');
+          }
         }}
         unreadCount={unreadCount ? unreadCount : 0}
         hasActiveFilters={hasActiveFilters}
