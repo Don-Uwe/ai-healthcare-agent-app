@@ -14,6 +14,17 @@
 
 </div>
 
+Here’s a cleaner version while keeping your original meaning:
+
+**UltimateHealth Upcoming Release 🚀**
+
+* **Translation Contribution** – Extend any article in your preferred language.
+* **Guest Mode Support** – Read articles and listen to podcasts without signing in.
+* **Content Preference Save** – Save your preferences for a more personalized future experience.
+
+**Coming soon.**
+
+
 <br/>
 
 <div align="center">
