@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import {useQueryClient} from '@tanstack/react-query';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Snackbar from 'react-native-snackbar';
 import {useSelector} from 'react-redux';
@@ -22,7 +23,9 @@ import {useUpdateNotificationPreferences} from '../hooks/useUpdateNotificationPr
 const NotificationPreferencesScreen = ({
   navigation,
 }: NotificationPreferencesScreenProp) => {
+  const queryClient = useQueryClient();
   const {isConnected} = useSelector((state: any) => state.network);
+  const {isGuest} = useSelector((state: any) => state.user);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   // Fetch all article tags
@@ -33,14 +36,25 @@ const NotificationPreferencesScreen = ({
   const {data: preferencesData, isLoading: prefsLoading} =
     useGetNotificationPreferences(isConnected);
 
+  console.log("Preference data", preferencesData);
   // Mutation to save
   const {mutate: updatePreferences, isPending: isSaving} =
     useUpdateNotificationPreferences();
 
   // Pre-fill selections once both data sets are ready
   useEffect(() => {
-    if (preferencesData?.preferences?.contentClusters) {
-      setSelectedIds(preferencesData.preferences.contentClusters);
+    console.log('Fetched Preferences Data:', preferencesData);
+    if (preferencesData) {
+      // Support both { preferences: { contentClusters: [] } } and { contentClusters: [] }
+      const clusters =
+        preferencesData.preferences?.contentClusters ||
+        preferencesData.contentClusters;
+
+      console.log("Clusters", clusters);
+
+      if (Array.isArray(clusters)) {
+        setSelectedIds(clusters.map(cluster => cluster._id));
+      }
     }
   }, [preferencesData]);
 
@@ -51,6 +65,15 @@ const NotificationPreferencesScreen = ({
   };
 
   const handleSave = () => {
+    if (isGuest) {
+      navigation.navigate('GuestPlaceholderScreen', {
+        title: 'Sign In Required',
+        description: 'Please sign in to save your notification preferences.',
+        iconName: 'bell-cog-outline',
+      });
+      return;
+    }
+
     if (!isConnected) {
       Snackbar.show({
         text: 'Please check your internet connection!',
@@ -59,10 +82,18 @@ const NotificationPreferencesScreen = ({
       return;
     }
 
+    const payload = (categories ?? []).filter(cat =>
+      selectedIds.includes(cat._id),
+    );
+
     updatePreferences(
-      {contentClusters: selectedIds},
+      {contentClusters: payload},
       {
         onSuccess: () => {
+          console.log('Preferences saved successfully:', selectedIds);
+          queryClient.invalidateQueries({
+            queryKey: ['notification-preferences'],
+          });
           Snackbar.show({
             text: '✓ Notification preferences saved!',
             duration: Snackbar.LENGTH_SHORT,

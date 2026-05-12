@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { GET_IMPROVEMENT_CONTENT } from '../helper/APIUtils';
+import { useSelector } from 'react-redux';
 
 interface Props {
   recordId?: string;
@@ -11,6 +12,8 @@ export const useGetImprovementContent = ({
   recordId,
   articleRecordId,
 }: Props) => {
+  const isGuest = useSelector((state: any) => state.user.isGuest);
+
   return useQuery({
     queryKey: ['get-improvement-content', recordId, articleRecordId],
     queryFn: async () => {
@@ -26,6 +29,6 @@ export const useGetImprovementContent = ({
 
       return response.data.htmlContent as string;
     },
-    enabled: !!articleRecordId,
+    enabled: !!articleRecordId && !isGuest,
   });
 };

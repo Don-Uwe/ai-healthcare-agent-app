@@ -83,12 +83,14 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
 
   useEffect(() => {
   
-    updateViewCount(articleId, {
-      onError: error => {
-        console.log('Update View Count Error', error);
-      //  Alert.alert('Internal server error, try again!');
-      },
-    });
+    if (!isGuest) {
+      updateViewCount(articleId, {
+        onError: error => {
+          console.log('Update View Count Error', error);
+        //  Alert.alert('Internal server error, try again!');
+        },
+      });
+    }
     return () => {
       setSpeakingStarted(false);
       Tts.stop();
@@ -221,6 +223,14 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   };
 
   const handleTranslateArticle = () => {
+    if (isGuest) {
+      navigation.navigate('GuestPlaceholderScreen', {
+        title: 'Sign In Required',
+        description: 'Please sign in or sign up to translate this article.',
+        iconName: 'translate',
+      });
+      return;
+    }
     if (!article) {
       Alert.alert('Article not found');
       return;
@@ -424,6 +434,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
             if (
               article &&
               !readEventSave &&
+              !isGuest &&
               article.status === StatusEnum.PUBLISHED
             ) {
               ///updateReadEventMutation.mutate();
@@ -772,7 +783,14 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
           <View style={styles.authorContainer}>
             <TouchableOpacity
               onPress={() => {
-                //  if (article && article?.authorId) {
+                if (isGuest) {
+                  navigation.navigate('GuestPlaceholderScreen', {
+                    title: 'Sign In Required',
+                    description: 'Please sign in or sign up to view user profiles.',
+                    iconName: 'user',
+                  });
+                  return;
+                }
                 navigation.navigate('UserProfileScreen', {
                   authorId: authorId,
                   author_handle: undefined,
@@ -812,7 +830,14 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
                 article.contributors.length > 0 && (
                   <TouchableOpacity
                     onPress={() => {
-                      //   dispatch(setSocialUserId(''));
+                      if (isGuest) {
+                        navigation.navigate('GuestPlaceholderScreen', {
+                          title: 'Sign In Required',
+                          description: 'Please sign in or sign up to view all contributors.',
+                          iconName: 'users',
+                        });
+                        return;
+                      }
                       navigation.navigate('SocialScreen', {
                         type: 3,
                         articleId: Number(article?._id),

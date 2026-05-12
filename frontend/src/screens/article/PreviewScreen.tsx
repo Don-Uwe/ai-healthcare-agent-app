@@ -425,10 +425,10 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
         <Text style={styles.previewLabel}>Preview</Text>
       </View>
 
-      {/* Article Preview */}
       <View style={styles.articlePreviewContainer}>
         <AutoHeightWebView
           style={styles.webView}
+          customStyle={`* { font-family: 'Times New Roman'; } p { font-size: 16px; }`}
           onSizeUpdated={size => console.log(size.height)}
           files={[
             {

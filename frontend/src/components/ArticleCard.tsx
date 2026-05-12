@@ -48,7 +48,7 @@ const ArticleCard = ({
   handleEditRequestAction,
   source,
 }: ArticleCardProps) => {
-  const {user_id, user_handle} = useSelector((state: any) => state.user);
+  const {user_id, user_handle, isGuest} = useSelector((state: any) => state.user);
   const {isConnected} = useSelector((state: any) => state.network);
 
   const socket = useSocket();
@@ -209,6 +209,14 @@ const ArticleCard = ({
   };
 
   const repostAction = () => {
+    if (isGuest) {
+      navigation.navigate('GuestPlaceholderScreen', {
+        title: 'Sign In Required',
+        description: 'Please sign in or sign up to repost this article.',
+        iconName: 'arrows-rotate',
+      });
+      return;
+    }
     if (isConnected) {
       repost(Number(item._id), {
         onSuccess: data => {
@@ -405,6 +413,14 @@ const ArticleCard = ({
               <TouchableOpacity
                 onPress={(e) => {
                   e?.stopPropagation?.();
+                  if (isGuest) {
+                    navigation.navigate('GuestPlaceholderScreen', {
+                      title: 'Sign In Required',
+                      description: 'Please sign in or sign up to like this article.',
+                      iconName: 'heart',
+                    });
+                    return;
+                  }
                   if (isConnected) {
                     const previousIsLiked = isLiked;
                     const previousLikeCount = likeCount;
@@ -476,6 +492,14 @@ const ArticleCard = ({
             <TouchableOpacity
               onPress={(e) => {
                 e?.stopPropagation?.();
+                if (isGuest) {
+                  navigation.navigate('GuestPlaceholderScreen', {
+                    title: 'Sign In Required',
+                    description: 'Please sign in or sign up to view or post comments.',
+                    iconName: 'comment',
+                  });
+                  return;
+                }
                 navigation.navigate('CommentScreen', {
                   articleId: item._id,
                   mentionedUsers: item.mentionedUsers
@@ -535,6 +559,14 @@ const ArticleCard = ({
               <TouchableOpacity
                 onPress={(e) => {
                   e?.stopPropagation?.();
+                  if (isGuest) {
+                    navigation.navigate('GuestPlaceholderScreen', {
+                      title: 'Sign In Required',
+                      description: 'Please sign in or sign up to save this article.',
+                      iconName: 'bookmark',
+                    });
+                    return;
+                  }
                   if (isConnected) {
                     width.value = withTiming(0, {duration: 250});
                     yValue.value = withTiming(100, {duration: 250});
@@ -580,6 +612,14 @@ const ArticleCard = ({
                 style={styles.likeSaveChildContainer}
                 onPress={(e) => {
                   e?.stopPropagation?.();
+                  if (isGuest) {
+                    navigation.navigate('GuestPlaceholderScreen', {
+                      title: 'Sign In Required',
+                      description: 'Please sign in or sign up for more actions.',
+                      iconName: 'ellipsis-v',
+                    });
+                    return;
+                  }
                   onChange();
                 }}>
                 <Entypo

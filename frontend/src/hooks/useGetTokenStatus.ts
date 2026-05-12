@@ -5,6 +5,7 @@ import { KEYS, retrieveItem } from '@/src/helper/Utils';
 import { TokenStatus } from '@/src/type';
 import {useQuery} from '@tanstack/react-query';
 import axios from 'axios';
+import { useSelector } from 'react-redux';
 
  const checkTokenStatusApi = async (
   token: string,
@@ -21,6 +22,8 @@ import axios from 'axios';
   return res.data;
 };
 export const useCheckTokenStatus = () => {
+  const isGuest = useSelector((state: any) => state.user.isGuest);
+
   return useQuery<TokenStatus>({
     queryKey: ['token-status'],
     queryFn: async () => {
@@ -34,5 +37,6 @@ export const useCheckTokenStatus = () => {
     },
     staleTime: 1000 * 60 * 5,
     retry: false,
+    enabled: !isGuest,
   });
 };

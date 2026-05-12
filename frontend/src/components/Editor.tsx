@@ -30,12 +30,12 @@ export default function Editor({
    /**
     * Copyright 2024,UltimateHealth. All rights reserved.
     */
-   body {
-     font-family: Arial, sans-serif;
-     font-size: 40px; 
-     line-height: 1.5; 
-     color: #333; 
-   }
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 18px; 
+      line-height: 1.6; 
+      color: #333; 
+    }
    
    h1 {
      color: #00698f;
@@ -69,10 +69,10 @@ export default function Editor({
      margin-bottom: 10px;
    }
    
-   article {
-     width: 80%;
-     margin: 40px auto;
-   }
+    article {
+      width: 95%;
+      margin: 20px auto;
+    }
    table {
        border-collapse: collapse;
        width: 100%;

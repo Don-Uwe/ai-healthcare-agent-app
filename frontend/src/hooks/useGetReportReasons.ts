@@ -2,6 +2,7 @@ import {useQuery, UseQueryResult} from '@tanstack/react-query';
 import axios, {AxiosError} from 'axios';
 import {GET_REPORT_REASONS} from '../helper/APIUtils';
 import {ReportReason} from '../type';
+import {useSelector} from 'react-redux';
 
 const reasonsFunc = async () => {
   try{
@@ -20,9 +21,11 @@ export const useGetReasons = (isConnected: boolean): UseQueryResult<
   ReportReason[] | null,
   AxiosError
 > => {
+  const isGuest = useSelector((state: any) => state.user.isGuest);
+
   return useQuery({
     queryKey: ['get-report-reasons'],
     queryFn: reasonsFunc,
-    enabled: isConnected
+    enabled: isConnected && !isGuest
   });
 };

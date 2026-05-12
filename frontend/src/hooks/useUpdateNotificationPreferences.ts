@@ -1,13 +1,16 @@
 import {useMutation, UseMutationResult} from '@tanstack/react-query';
 import axios, {AxiosError} from 'axios';
 import {UPDATE_NOTIFICATION_PREFERENCES} from '../helper/APIUtils';
+//import {NotificationPreferencesResponse} from '../type';
+
+import {Category, NotificationPreferencesResponse} from '../type';
 
 type UpdatePreferencesReq = {
-  contentClusters: string[];
+  contentClusters: Category[];
 };
 
 export const useUpdateNotificationPreferences = (): UseMutationResult<
-  any,
+  NotificationPreferencesResponse,
   AxiosError,
   UpdatePreferencesReq
 > => {

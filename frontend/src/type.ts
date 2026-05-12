@@ -763,5 +763,16 @@ export type PlayList = {
 };
 
 export type NotificationPreferences = {
-  contentClusters: string[];
+  contentClusters: Category[];
+};
+
+export type UpdatePreferencesReq = {
+  contentClusters: Category[];
+};
+
+export type NotificationPreferencesResponse = {
+  preferences?: NotificationPreferences;
+  contentClusters?: Category[];
+  message: string;
+  error?: string;
 };

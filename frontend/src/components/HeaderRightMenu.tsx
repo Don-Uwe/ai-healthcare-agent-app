@@ -33,7 +33,7 @@ const HeaderRightMenu = ({onClick}: Props) => {
   );
 
   const {categories} = useSelector((state: any) => state.data);
-  const {user_token} = useSelector((state: any) => state.user);
+  const {user_token, isGuest} = useSelector((state: any) => state.user);
   const {isConnected} = useSelector((state: any) => state.network);
   const dispatch = useDispatch();
 
@@ -110,6 +110,15 @@ const HeaderRightMenu = ({onClick}: Props) => {
                 pressStyle={{opacity: 0.8}}
                 onPress={() => {
                   setMenuOpen(false);
+                  if (isGuest) {
+                    navigation.navigate('GuestPlaceholderScreen', {
+                      title: 'Sign In Required',
+                      description:
+                        'Please sign in or sign up to view your podcast profile.',
+                      iconName: 'user',
+                    });
+                    return;
+                  }
                   navigation.navigate('PodcastProfile');
                 }}>
                 <Text fontSize={15} color="#333">
@@ -129,6 +138,14 @@ const HeaderRightMenu = ({onClick}: Props) => {
                 pressStyle={{opacity: 0.8}}
                 onPress={() => {
                   setMenuOpen(false);
+                  if (isGuest) {
+                    navigation.navigate('GuestPlaceholderScreen', {
+                      title: 'Sign In Required',
+                      description: 'Please sign in or sign up to view your downloads.',
+                      iconName: 'download',
+                    });
+                    return;
+                  }
                   navigation.navigate('OfflinePodcastList');
                 }}>
                 <Text fontSize={15} color="#333">

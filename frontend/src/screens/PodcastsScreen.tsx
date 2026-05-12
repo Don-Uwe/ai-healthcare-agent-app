@@ -32,7 +32,7 @@ const {WavAudioRecorder} = NativeModules;
 
 const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
   const dispatch = useDispatch();
-  const {user_id} = useSelector((state: any) => state.user);
+  const {user_id, isGuest} = useSelector((state: any) => state.user);
   // const {selectedTags, sortType} = useSelector((state: any) => state.data);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const {podcasts} = useSelector((state: any) => state.data);
@@ -120,6 +120,13 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
         }
       }}
       handleClick={() => {
+        if (isGuest) {
+          navigation.navigate('PodcastDetail', {
+            trackId: item._id,
+            audioUrl: item.audio_url,
+          });
+          return;
+        }
         updateViewCount(item._id, {
           onSuccess: data => {
             navigation.navigate('PodcastDetail', {
@@ -228,19 +235,21 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
       <CreatePlaylist visible={playlistModalOpen} dismiss={closePlaylist} />
 
       {/* Floating Action Button */}
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={() => {
-          console.log('Add icon clicked');
-          navigation.navigate('PodcastForm');
-        }}>
-        <CreateIcon
-          callback={() => {
+      {!isGuest && (
+        <TouchableOpacity
+          style={styles.fab}
+          onPress={() => {
             console.log('Add icon clicked');
             navigation.navigate('PodcastForm');
-          }}
-        />
-      </TouchableOpacity>
+          }}>
+          <CreateIcon
+            callback={() => {
+              console.log('Add icon clicked');
+              navigation.navigate('PodcastForm');
+            }}
+          />
+        </TouchableOpacity>
+      )}
     </SafeAreaView>
   );
 };

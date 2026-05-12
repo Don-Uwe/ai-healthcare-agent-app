@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { GET_SOCIALS } from '../helper/APIUtils';
 import { User } from '../type';
+import { useSelector } from 'react-redux';
 
 interface Props {
   type: number;
@@ -15,6 +16,8 @@ export const useGetUserSocials = ({
   articleId,
   social_user_id,
 }: Props) => {
+  const isGuest = useSelector((state: any) => state.user.isGuest);
+
   return useQuery({
     queryKey: ['get-user-socials', type, articleId, social_user_id],
     queryFn: async () => {
@@ -32,6 +35,6 @@ export const useGetUserSocials = ({
 
       return response.data.followers as User[];
     },
-    enabled:  !!type,
+    enabled:  !!type && !isGuest,
   });
 };

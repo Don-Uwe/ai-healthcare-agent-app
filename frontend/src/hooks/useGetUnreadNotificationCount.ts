@@ -1,10 +1,13 @@
 import {useQuery, UseQueryResult} from '@tanstack/react-query';
 import {PROD_URL} from '../helper/APIUtils';
 import axios, {AxiosError} from 'axios';
+import {useSelector} from 'react-redux';
 
 export const useGetUnreadNotificationCount = (
   isConnected: boolean,
 ): UseQueryResult<number, AxiosError> => {
+  const isGuest = useSelector((state: any) => state.user.isGuest);
+
   return useQuery({
     queryKey: ['get-unread-notifications-count'],
     queryFn: async () => {
@@ -19,6 +22,6 @@ export const useGetUnreadNotificationCount = (
         return 0;
       }
     },
-    enabled: !!isConnected,
+    enabled: !!isConnected && !isGuest,
   });
 };

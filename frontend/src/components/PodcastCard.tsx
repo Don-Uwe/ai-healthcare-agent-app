@@ -9,6 +9,8 @@ import PodcastActions from './PodcastActions';
 import Share from 'react-native-share';
 import {GET_STORAGE_DATA} from '../helper/APIUtils';
 import {GlassStyles, ProfessionalColors, BorderRadius} from '../styles/GlassStyles';
+import {useSelector} from 'react-redux';
+import {useNavigation} from '@react-navigation/native';
 
 
 interface PodcastProps {
@@ -45,9 +47,19 @@ const PodcastCard = ({
   playlistAct,
 }: PodcastProps) => {
   const sheetRef = useRef<BottomSheetModal>(null);
+  const {isGuest} = useSelector((state: any) => state.user);
+  const navigation = useNavigation<any>();
 
   const handleOpenSheet = () => {
     // onSelect(id);
+    if (isGuest) {
+      navigation.navigate('GuestPlaceholderScreen', {
+        title: 'Sign In Required',
+        description: 'Please sign in or sign up for more actions.',
+        iconName: 'ellipsis-v',
+      });
+      return;
+    }
     sheetRef.current?.present();
   };
 
@@ -146,7 +158,7 @@ const PodcastCard = ({
         </YStack>
 
         {/* Menu Button (top-right corner) */}
-        {display && (
+        {display && !isGuest && (
           <TouchableOpacity
             style={[styles.menuButton, GlassStyles.glassContainer]}
             onPress={handleOpenSheet}

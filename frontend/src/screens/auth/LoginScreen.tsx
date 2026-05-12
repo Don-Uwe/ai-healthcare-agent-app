@@ -129,6 +129,7 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
                 dispatch(setUserId(auth.userId));
                 dispatch(setUserToken(auth.token));
                 dispatch(setUserHandle(auth.user_handle));
+                dispatch(setGuestMode(false));
                 setTimeout(() => {
                   if (redirectTo) {
                     navigation.navigate({
@@ -241,10 +242,9 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
     return <Loader />;
   }
   return (
-    <ScrollView
+    <YStack
       flex={1}
-      backgroundColor={isDarkMode ? '$background' : '#fff'}
-      showsVerticalScrollIndicator={false}>
+      backgroundColor={isDarkMode ? '$background' : '#fff'}>
       <StatusBar
         style={isDarkMode ? 'light' : 'dark'}
         backgroundColor={isDarkMode ? '#007AFF' : '#007AFF'}
@@ -252,25 +252,27 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
 
       <YStack
         flex={1}
-        paddingTop={inset.top + 60}
-        paddingHorizontal="$2"
-        paddingBottom="$6"
-        space="$5">
+        justifyContent="center"
+        paddingTop={inset.top}
+        paddingHorizontal="$3"
+        paddingBottom="$4"
+        space="$3">
         {/* Logo Section */}
 
         {/* Form Section */}
         <YStack
-          marginTop="$4"
+          marginTop="$2"
           backgroundColor={isDarkMode ? '$black' : '$background'}
-          padding="$5"
+          paddingVertical="$4"
+          paddingHorizontal="$2"
           borderRadius="$5"
-          gap="$4"
+          gap="$2"
           elevation={1}>
           <Image
             source={require('../../../assets/images/icon.png')}
             style={{
-              height: 80,
-              width: 80,
+              height: 60,
+              width: 60,
               // borderRadius: 60,
               alignSelf: 'center',
               resizeMode: 'cover',
@@ -364,11 +366,24 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
             </Button>
           </XStack>
 
+          <Text
+            color="$blue10"
+            fontWeight="600"
+            fontSize={14}
+            alignSelf="flex-end"
+            marginTop="$-1"
+            onPress={() => {
+              setEmailInputVisible(true);
+              setRequestVerification(false);
+            }}>
+            Forgot Password?
+          </Text>
+
           <Button
             backgroundColor="$blue10"
             theme="blue"
-            marginTop="$6"
-            size="$6"
+            marginTop="$3"
+            size="$5"
             fontWeight="700"
             alignSelf="center"
             onPress={() => {
@@ -383,59 +398,45 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
             </Text>
           </Button>
 
-          <Button
-            chromeless
-            size="$5"
+          <Text
+            color="$red10"
+            fontWeight="600"
+            fontSize={14}
             alignSelf="center"
-            onPress={() => {
-              console.log('Forgot Password clicked!');
-              setEmailInputVisible(true);
-              setRequestVerification(false);
-            }}>
-            <Text color="$blue10" fontWeight="600" fontSize={16}>
-              Forgot Password?
-            </Text>
-          </Button>
-
-          <Button
-            variant="outlined"
-            marginTop="$2"
-            size="$6"
-            theme="dark"
-            alignSelf="center"
-            opacity={0.7}
+            marginTop="$1"
             onPress={() => {
               setRequestVerification(true);
               setEmailInputVisible(true);
             }}>
-            <Text color={isDarkMode ? '$color' : '$black'} fontWeight="600">
-              Request Verification
-            </Text>
-          </Button>
+            Request Verification
+          </Text>
 
-          <Separator marginVertical="$3" />
+          <Separator marginVertical="$2" />
 
           <Button
-            marginTop="$3"
-            size="$6"
-            background="$gray3"
-            color="$color"
+            marginTop="$2"
+            size="$5"
+            backgroundColor={isDarkMode ? '$gray7' : '#f0f4f8'}
+            borderWidth={1}
+            borderColor={isDarkMode ? '$gray8' : '$blue4'}
             alignSelf="center"
             width="100%"
             onPress={() => navigation.navigate('SignUpScreenFirst')}>
-            <Text fontWeight="600" fontSize={16}>
+            <Text fontWeight="600" fontSize={16} color={isDarkMode ? '$color' : '$blue10'}>
               Sign Up
             </Text>
           </Button>
 
           <Button
-            variant="outlined"
-            marginTop="$3"
-            size="$6"
-            theme="dark"
-            borderColor="$gray8"
+            marginTop="$2"
+            size="$5"
+            backgroundColor={isDarkMode ? '$gray5' : '$gray3'}
+            borderRadius="$6"
+            borderWidth={1}
+            borderColor={isDarkMode ? '$gray7' : '$gray5'}
             alignSelf="center"
             width="100%"
+            icon={<Icon name="compass-outline" size={22} color={isDarkMode ? 'white' : 'black'} />}
             onPress={() => {
               dispatch(setGuestMode(true));
               navigation.reset({
@@ -443,7 +444,7 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
                 routes: [{name: 'TabNavigation'}],
               });
             }}>
-            <Text fontWeight="600" fontSize={16} color={isDarkMode ? '$color' : '$black'}>
+            <Text fontWeight="bold" fontSize={16} color={isDarkMode ? '$color' : '$black'}>
               Continue as Guest
             </Text>
           </Button>
@@ -542,7 +543,7 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
           isRequestVerification={requestVerificationMode}
         />
       </YStack>
-    </ScrollView>
+    </YStack>
   );
 };
 

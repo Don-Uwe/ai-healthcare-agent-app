@@ -2,6 +2,7 @@ import {useQuery, UseQueryResult} from '@tanstack/react-query';
 import axios from 'axios';
 import {YearStatus} from '../type';
 import {GET_YEARLY_WRITES_REPORT} from '../helper/APIUtils';
+import {useSelector} from 'react-redux';
 
 export const useGetAuthorYearlyWriteReport = ({
   user_id,
@@ -16,6 +17,8 @@ export const useGetAuthorYearlyWriteReport = ({
   others?: boolean;
   isConnected?: boolean;
 }): UseQueryResult<YearStatus[]> => {
+  const isGuest = useSelector((state: any) => state.user.isGuest);
+
   return useQuery<YearStatus[]>({
     queryKey: ['get-user-yearly-write-report', user_id, userId, others],
 
@@ -33,6 +36,6 @@ export const useGetAuthorYearlyWriteReport = ({
       return response.data.yearlyWrites as YearStatus[];
     },
 
-    enabled: !!isConnected && !!(!userId && others) && !!(!user_id && !others),
+    enabled: !!isConnected && !isGuest && !!(!userId && others) && !!(!user_id && !others),
   });
 };

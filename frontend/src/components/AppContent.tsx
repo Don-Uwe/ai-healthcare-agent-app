@@ -22,7 +22,7 @@ import {ON_PRIMARY_COLOR} from '../helper/Theme';
 import {setConnected} from '../store/NetworkSlice';
 import {firebaseInit} from '../helper/firebase';
 import {cleanUpDownloads, KEYS, retrieveItem} from '../helper/Utils';
-import { setUserToken } from '../store/UserSlice';
+import { setUserToken, setGuestMode } from '../store/UserSlice';
 import axios from 'axios';
 
 export default function AppContent() {
@@ -50,6 +50,9 @@ export default function AppContent() {
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       axios.defaults.headers.common["Content-Type"] = "application/json";
       dispatch(setUserToken(token));
+      if (token) {
+        dispatch(setGuestMode(false));
+      }
       initDeepLinking(navigationRef.current, tokenRes?.isValid || false);
     
   }

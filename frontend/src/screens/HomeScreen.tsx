@@ -369,16 +369,18 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
 
   useFocusEffect(
     useCallback(() => {
-      if (isConnected && user_token) {
-        refetchUser();
-        refetchUnreadCount();
+      if (isConnected) {
+        if (user_token && !isGuest) {
+          refetchUser();
+          refetchUnreadCount();
+        }
       } else {
         Alert.alert(
           'No Internet 😶‍🌫️',
           'Offline mode will be available in the next update.',
         );
       }
-    }, [isConnected, user_token, refetchUser, refetchUnreadCount]),
+    }, [isConnected, user_token, isGuest, refetchUser, refetchUnreadCount]),
   );
 
   const handleNoteIconClick = () => {
@@ -552,7 +554,9 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     if (isConnected) {
       setRefreshing(true);
       refetch();
-      refetchUnreadCount();
+      if (!isGuest) {
+        refetchUnreadCount();
+      }
       setRefreshing(false);
     } else {
       Snackbar.show({

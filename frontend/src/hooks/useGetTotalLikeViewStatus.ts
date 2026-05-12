@@ -2,6 +2,7 @@ import {useQuery, UseQueryResult} from '@tanstack/react-query';
 import axios from 'axios';
 import {UserStatus} from '../type';
 import {GET_TOTAL_LIKES_VIEWS} from '../helper/APIUtils';
+import {useSelector} from 'react-redux';
 
 export const useGetTotalLikeViewStatus = ({
   user_id,
@@ -14,6 +15,8 @@ export const useGetTotalLikeViewStatus = ({
   others?: boolean;
   isConnected?: boolean;
 }): UseQueryResult<UserStatus> => {
+  const isGuest = useSelector((state: any) => state.user.isGuest);
+
   return useQuery<UserStatus>({
     queryKey: ['get-like-view-status', user_id, userId, others],
 
@@ -28,6 +31,6 @@ export const useGetTotalLikeViewStatus = ({
       return response.data as UserStatus;
     },
 
-    enabled: !!isConnected && !!(!userId && others) && !!(!user_id && !others),
+    enabled: !!isConnected && !isGuest && !!(!userId && others) && !!(!user_id && !others),
   });
 };

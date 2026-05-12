@@ -210,8 +210,8 @@ export const createHTMLStructure = (
  */
 body {
   font-family: Arial, sans-serif;
-  font-size: 40px; 
-  line-height: 1.5; 
+  font-size: 18px; 
+  line-height: 1.6; 
   color: #333; 
 }
 
@@ -248,8 +248,8 @@ li {
 }
 
 article {
-  width: 80%;
-  margin: 40px auto;
+  width: 95%;
+  margin: 20px auto;
 }
 table {
     border-collapse: collapse;
@@ -531,8 +531,8 @@ export const createFeebackHTMLStructure = (feedback: string) => {
  */
 body {
   font-family: Arial, sans-serif;
-  font-size: 40px; 
-  line-height: 1.5; 
+  font-size: 18px; 
+  line-height: 1.6; 
   color: #333; 
 }
 
@@ -569,8 +569,8 @@ li {
 }
 
 article {
-  width: 80%;
-  margin: 40px auto;
+  width: 95%;
+  margin: 20px auto;
 }
 table {
     border-collapse: collapse;
