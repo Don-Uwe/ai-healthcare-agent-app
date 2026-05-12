@@ -14,6 +14,17 @@
 
 </div>
 
+Here’s a cleaner version while keeping your original meaning:
+
+**UltimateHealth Upcoming Release 🚀**
+
+* **Translation Contribution** – Extend any article in your preferred language.
+* **Guest Mode Support** – Read articles and listen to podcasts without signing in.
+* **Content Preference Save** – Save your preferences for a more personalized future experience.
+
+**Coming soon.**
+
+
 <br/>
 
 <div align="center">
@@ -299,6 +310,7 @@ If you encounter any issues or have any feedback or suggestions, please open an 
 
    <td align="center"><a href="https://github.com/tristnaja"><img src="https://avatars.githubusercontent.com/u/121044617?v=4" width="120px;" alt=""/><br/><sub><b>Tristan Al Harrish Basori</b></sub></a>
         </td> 
+       <td align="center"><a href="https://github.com/ionfwsrijan"><img src="https://avatars.githubusercontent.com/u/201338831?v=4" width="120px;" alt=""/><br/><sub><b>SrijanCodes</b></sub></a></td>
  </tr>
    </p>
  </table>
