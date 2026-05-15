@@ -1,6 +1,7 @@
 name: PR Governance
 
 on:
+  workflow_dispatch:
   pull_request:
     types:
       - opened
@@ -27,9 +28,18 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           requireScope: false
-          subjectPattern: ^(?![A-Z]).+$
-          subjectPatternError: |
-            The subject must not start with a capital letter.
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            perf
+            test
+            build
+            ci
+            chore
+            revert
 
       - name: Enforce Minimum Label Usage
         uses: actions/github-script@v7
