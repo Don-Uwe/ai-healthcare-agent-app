@@ -1,0 +1,49 @@
+name: PR Governance
+
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
+      - labeled
+      - unlabeled
+      - ready_for_review
+      - converted_to_draft
+
+permissions:
+  pull-requests: read
+
+jobs:
+  validate-pr:
+    name: Validate PR Title & Labels
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+
+    steps:
+      - name: Semantic PR Title Check
+        uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          requireScope: false
+          subjectPattern: ^(?![A-Z]).+$
+          subjectPatternError: |
+            The subject must not start with a capital letter.
+
+      - name: Enforce Minimum Label Usage
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const ignoredLabels = ["dependencies"];
+
+            const validLabels = pr.labels.filter(
+              label => !ignoredLabels.includes(label.name)
+            );
+
+            if (validLabels.length === 0) {
+              core.setFailed("Please apply at least one meaningful label to this pull request.");
+            } else {
+              core.info(`Found ${validLabels.length} valid label(s). Triage requirement met.`);
+            }

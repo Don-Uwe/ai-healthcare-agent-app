@@ -1,67 +1,54 @@
-name: Frontend CI (Expo)
+name: Frontend CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
-      - 'frontend/**'
+      - "frontend/**"
+      - ".github/workflows/frontend-ci.yml"
   pull_request:
-    branches: [ main ]
+    branches: [main]
     paths:
-      - 'frontend/**'
+      - "frontend/**"
+      - ".github/workflows/frontend-ci.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
-  check:
+  validate:
+    name: Validate JS/TS
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: ./frontend
+    env:
+      CI: true
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Detect Package Manager & Install Dependencies
-        working-directory: ./frontend
-        run: |
-          echo "🔍 Detecting package manager in frontend folder..."
-          
-          if [ -f "bun.lockb" ]; then
-            echo "Using Bun"
-            curl -fsSL https://bun.sh/install | bash
-            bun install
-          elif [ -f "pnpm-lock.yaml" ]; then
-            echo "Using pnpm"
-            npm install -g pnpm
-            pnpm install --frozen-lockfile
-          elif [ -f "yarn.lock" ]; then
-            echo "Using Yarn"
-            npm install -g yarn
-            yarn install --frozen-lockfile
-          else
-            echo "Using npm (default)"
-            npm ci --legacy-peer-deps
-          fi
+      - name: Setup Node & Cache Dependencies
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "yarn"
+          cache-dependency-path: frontend/yarn.lock
 
-      - name: Lint Check
-        working-directory: ./frontend
-        run: |
-          if npm run lint --if-present > /dev/null 2>&1; then
-            echo "Running lint with npm"
-            npm run lint
-          elif yarn lint --if-present > /dev/null 2>&1; then
-            echo "Running lint with yarn"
-            yarn lint
-          elif pnpm lint --if-present > /dev/null 2>&1; then
-            echo "Running lint with pnpm"
-            pnpm lint
-          else
-            echo "No lint script found, skipping..."
-          fi
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
 
-      - name: TypeScript Check
-        working-directory: ./frontend
-        run: |
-          if command -v tsc > /dev/null; then
-            echo "Running TypeScript check"
-            npx tsc --noEmit || echo "Type check completed with warnings"
-          else
-            echo "TypeScript check skipped (tsc not available)"
-          fi
+      - name: Run ESLint
+        run: yarn lint
+
+      - name: Run TypeScript Check
+        run: yarn typecheck
+
+      - name: Run Unit Tests
+        run: yarn test
