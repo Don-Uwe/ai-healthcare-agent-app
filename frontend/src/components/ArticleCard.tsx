@@ -30,7 +30,7 @@ import Entypo from '@expo/vector-icons/Entypo';
 import Share from 'react-native-share';
 import RNFS from 'react-native-fs';
 import {generatePDF} from 'react-native-html-to-pdf';
-import {useSocket} from '../../SocketContext';
+import {useSocket} from '../contexts/SocketContext';
 import EditRequestModal from './EditRequestModal';
 import {FontAwesome, FontAwesome6} from '@expo/vector-icons';
 import Snackbar from 'react-native-snackbar';
@@ -110,9 +110,11 @@ const ArticleCard = ({
   };
 
   useEffect(() => {
-    socket.on('connect', () => {
-      console.log('connection established');
-    });
+    if (socket) {
+      socket.on('connect', () => {
+        console.log('connection established');
+      });
+    }
   }, [socket]);
 
   // Cleanup timer and close menu when card unmounts (FlatList recycling)
@@ -241,8 +243,9 @@ const ArticleCard = ({
             };
 
             setRepostCount(prev => prev + 1);
-
-            socket.emit('notification', body);
+            if (socket) {
+              socket.emit('notification', body);
+            }
           }
 
           Snackbar.show({
@@ -440,17 +443,19 @@ const ArticleCard = ({
                         setIsLiked(data?.likeStatus);
 
                         if (data?.likeStatus) {
-                          socket.emit('notification', {
-                            type: 'likePost',
-                            userId: data?.article?.authorId,
-                            articleId: data?.article?._id,
-                            podcastId: null,
-                            articleRecordId: data?.article?.pb_recordId,
-                            title: user
-                              ? `${user?.user_handle} liked your post`
-                              : 'Someone liked your post',
-                            message: data?.article?.title,
-                          });
+                          if (socket) {
+                            socket.emit('notification', {
+                              type: 'likePost',
+                              userId: data?.article?.authorId,
+                              articleId: data?.article?._id,
+                              podcastId: null,
+                              articleRecordId: data?.article?.pb_recordId,
+                              title: user
+                                ? `${user?.user_handle} liked your post`
+                                : 'Someone liked your post',
+                              message: data?.article?.title,
+                            });
+                          }
                         }
                       },
                       onError: (err: any) => {

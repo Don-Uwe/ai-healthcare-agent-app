@@ -30,6 +30,6 @@ export const useGetTotalReads = ({
       return response.data as ReadStatus;
     },
 
-    enabled: !!isConnected && !isGuest && !!(!userId && others) && !!(!user_id && !others),
+    enabled: !!isConnected && (others ? !!userId : (!isGuest && !!user_id)),
   });
 };

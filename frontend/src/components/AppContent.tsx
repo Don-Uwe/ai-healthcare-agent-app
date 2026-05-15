@@ -2,7 +2,7 @@ import {FirebaseProvider} from '@/hooks/FirebaseContext';
 import {useCheckTokenStatus} from '@/src/hooks/useGetTokenStatus';
 import {useNotificationListeners} from '@/hooks/useNotificationListener';
 import {useVersionCheck} from '@/hooks/useVersionCheck';
-import {SocketProvider} from '@/SocketContext';
+import {SocketProvider} from '../contexts/SocketContext';
 import config from '@/tamagui.config';
 import messaging from '@react-native-firebase/messaging';
 import {NavigationContainer} from '@react-navigation/native';

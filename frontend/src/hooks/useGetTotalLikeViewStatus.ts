@@ -31,6 +31,6 @@ export const useGetTotalLikeViewStatus = ({
       return response.data as UserStatus;
     },
 
-    enabled: !!isConnected && !isGuest && !!(!userId && others) && !!(!user_id && !others),
+    enabled: !!isConnected && (others ? !!userId : (!isGuest && !!user_id)),
   });
 };

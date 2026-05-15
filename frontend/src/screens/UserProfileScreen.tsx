@@ -20,7 +20,7 @@ import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Loader from '../components/Loader';
 import {useFocusEffect} from '@react-navigation/native';
 import Snackbar from 'react-native-snackbar';
-import {useSocket} from '../../SocketContext';
+import {useSocket} from '../contexts/SocketContext';
 import {useRequestArticleEdit} from '../hooks/useRequestArticleEdit';
 import {useUpdateFollowStatus} from '../hooks/useUpdateFollowStatus';
 import {useUpdateViewCount} from '../hooks/useUpdateViewCount';
@@ -224,14 +224,16 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
         followMutate(actualAuthorId, {
           onSuccess: data => {
             if (data) {
-              socket.emit('notification', {
-                type: 'userFollow',
-                userId: actualAuthorId,
-                message: {
-                  title: `${user_handle ? user_handle : 'Someone'} has followed you`,
-                  body: '',
-                },
-              });
+              if (socket) {
+                socket.emit('notification', {
+                  type: 'userFollow',
+                  userId: actualAuthorId,
+                  message: {
+                    title: `${user_handle ? user_handle : 'Someone'} has followed you`,
+                    body: '',
+                  },
+                });
+              }
 
               onRefresh();
             }

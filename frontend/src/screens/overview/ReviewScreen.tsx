@@ -24,13 +24,13 @@ import {
 import {setUserHandle} from '../../store/UserSlice';
 import {handleExternalClick, StatusEnum} from '../../helper/Utils';
 import ReviewItem from '../../components/ReviewItem';
-import {io} from 'socket.io-client';
 import {Button, Spinner, Text, YStack, TextArea} from 'tamagui';
 import AutoHeightWebView from '@brown-bear/react-native-autoheight-webview';
 import {useGetArticleDetails} from '@/src/hooks/useGetArticleDetail';
 import {useGetArticleContent} from '@/src/hooks/useGetArticleContent';
 import {useGetProfile} from '@/src/hooks/useGetProfile';
 import {useGetLoadReviewComments} from '@/src/hooks/useGetLoadReviewComments';
+import {useSocket} from '../../contexts/SocketContext';
 
 const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
   const insets = useSafeAreaInsets();
@@ -45,7 +45,7 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
 
   const {data: articleContent} = useGetArticleContent(recordId);
 
-  const socket = io(`${SOCKET_PROD}`);
+  const socket = useSocket();
   const dispatch = useDispatch();
 
   const [comments, setComments] = useState<Comment[]>([]);
@@ -73,17 +73,19 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
   }
 
   useEffect(() => {
+    if (!socket) return;
+
     // socket.emit('load-review-comments', {articleId: route.params.articleId});
 
-    socket.on('connect', () => {
+    const onConnect = () => {
       console.log('connection established');
-    });
+    };
 
-    socket.on('error', data => {
+    const onError = (data: any) => {
       console.log('connection error', data);
-    });
+    };
 
-    socket.on('new-feedback', data => {
+    const onNewFeedback = (data: any) => {
       setLoading(false);
 
       setComments(prevComments => {
@@ -94,12 +96,17 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
 
         return newComments;
       });
-    });
+    };
+
+    socket.on('connect', onConnect);
+    socket.on('error', onError);
+    socket.on('new-feedback', onNewFeedback);
 
     return () => {
+      socket.off('connect', onConnect);
+      socket.off('error', onError);
       socket.off('review-comments');
       socket.off('new-feedback');
-      socket.off('error');
     };
   }, [socket, route.params.articleId]);
 
@@ -224,13 +231,15 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
                       onPress={() => {
                         setLoading(true);
 
-                        socket.emit('add-review-comment', {
-                          articleId: article?._id,
-                          reviewer_id: article?.reviewer_id,
-                          feedback: feedback,
-                          isReview: false,
-                          isNote: true,
-                        });
+                        if (socket) {
+                          socket.emit('add-review-comment', {
+                            articleId: article?._id,
+                            reviewer_id: article?.reviewer_id,
+                            feedback: feedback,
+                            isReview: false,
+                            isNote: true,
+                          });
+                        }
 
                         setFeedback('');
                       }}>

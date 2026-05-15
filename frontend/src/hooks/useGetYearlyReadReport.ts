@@ -36,6 +36,6 @@ export const useGetAuthorYearlyReadReport = ({
       return response.data.yearlyReads as YearStatus[];
     },
 
-    enabled: !!isConnected && !isGuest && !!(!userId && others) && !!(!user_id && !others),
+    enabled: !!isConnected && (others ? !!userId : (!isGuest && !!user_id)),
   });
 };

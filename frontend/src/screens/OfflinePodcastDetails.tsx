@@ -26,7 +26,7 @@ import {GET_STORAGE_DATA} from '../helper/APIUtils';
 import Share from 'react-native-share';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Icon from '@expo/vector-icons/MaterialIcons';
-import {useSocket} from '../../SocketContext';
+import {useSocket} from '../contexts/SocketContext';
 import {Feather} from '@expo/vector-icons';
 import {useAudioPlayer} from 'expo-audio';
 import {useLikePodcast} from '../hooks/useLikePodcast';
@@ -202,15 +202,17 @@ export default function OfflinePodcastDetail({
                     setCurrentPodcast(podcast);
                     if (data?.likeStatus) {
                       // data.userId, data.articleId, data.podcastId, data.articleRecordId, data.title, data.message
-                      socket.emit('notification', {
-                        type: 'likePost',
-                        userId: user_id,
-                        articleId: null,
-                        podcastId: podcast._id,
-                        articleRecordId: null,
-                        title: `${user_handle} liked your post`,
-                        message: podcast.title,
-                      });
+                      if (socket) {
+                        socket.emit('notification', {
+                          type: 'likePost',
+                          userId: user_id,
+                          articleId: null,
+                          podcastId: podcast._id,
+                          articleRecordId: null,
+                          title: `${user_handle} liked your post`,
+                          message: podcast.title,
+                        });
+                      }
                     }
                     await updateOfflinePodcastLikeStatus(podcast);
                   }

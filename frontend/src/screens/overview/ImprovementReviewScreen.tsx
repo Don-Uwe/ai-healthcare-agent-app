@@ -20,7 +20,7 @@ import {GET_STORAGE_DATA} from '../../helper/APIUtils';
 
 //import io from 'socket.io-client';
 
-import {useSocket} from '../../../SocketContext';
+import {useSocket} from '../../contexts/SocketContext';
 //import CommentScreen from '../CommentScreen';
 import {setUserHandle} from '../../store/UserSlice';
 import {handleExternalClick, StatusEnum} from '../../helper/Utils';
@@ -74,6 +74,8 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
   }
 
   useEffect(() => {
+    if (!socket) return;
+    
     // socket.emit('load-review-comments', {requestId: route.params.requestId});
 
     socket.on('connect', () => {
@@ -107,9 +109,11 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
     });
 
     return () => {
-      socket.off('review-comments');
-      socket.off('new-feedback');
-      socket.off('error');
+      if (socket) {
+        socket.off('review-comments');
+        socket.off('new-feedback');
+        socket.off('error');
+      }
     };
   }, [socket, route.params.requestId]);
 
@@ -379,13 +383,15 @@ const ImprovementReviewScreen = ({navigation, route}: ImpvReviewScreenProp) => {
                       setLoading(true);
 
                       //  const ans = createFeebackHTMLStructure(feedback);
-                      socket.emit('add-review-comment', {
-                        requestId: improvement?._id,
-                        reviewer_id: improvement?.reviewer_id,
-                        feedback: feedback,
-                        isReview: false,
-                        isNote: true,
-                      });
+                      if (socket) {
+                        socket.emit('add-review-comment', {
+                          requestId: improvement?._id,
+                          reviewer_id: improvement?.reviewer_id,
+                          feedback: feedback,
+                          isReview: false,
+                          isNote: true,
+                        });
+                      }
 
                       setFeedback('');
                     }}>

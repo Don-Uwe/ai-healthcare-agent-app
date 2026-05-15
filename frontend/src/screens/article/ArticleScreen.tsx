@@ -33,7 +33,6 @@ import Tts from 'react-native-tts';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 import {setUserHandle} from '../../store/UserSlice';
-import {io} from 'socket.io-client';
 import {FontAwesome5} from '@expo/vector-icons';
 import AutoHeightWebView from '@brown-bear/react-native-autoheight-webview';
 import LottieView from 'lottie-react-native';
@@ -45,6 +44,7 @@ import {useUpdateFollowStatusByArticle} from '@/src/hooks/useUpdateFollowStatus'
 import {useUpdateReadEvent} from '@/src/hooks/useUpdateReadEvent';
 import {useUpdateViewCount} from '@/src/hooks/useUpdateViewCount';
 import {useSaveArticle} from '@/src/hooks/useSaveArticle';
+import {useSocket} from '../../contexts/SocketContext';
 
 const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const {articleId, authorId, recordId} = route.params;
@@ -61,7 +61,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const {mutate: updateViewCount} =
     useUpdateViewCount(articleId ?? 0);
 
-  const socket = io(`${SOCKET_PROD}`);
+  const socket = useSocket();
   const dispatch = useDispatch();
   const [speechingMode, setSpeechingMode] = useState(false);
   const {data: user} = useGetProfile();
@@ -123,7 +123,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     if (article) {
       likeMutation(undefined,{
         onSuccess: (data: {article: ArticleData; likeStatus: boolean}) => {
-          if (data?.likeStatus) {
+          if (data?.likeStatus && socket) {
             socket.emit('notification', {
               type: 'likePost',
               userId: data?.article?.authorId,
@@ -165,7 +165,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     followMutation(articleId.toString(), {
       onSuccess: data => {
         //console.log('follow success');
-        if (data) {
+        if (data && socket) {
           socket.emit('notification', {
             type: 'userFollow',
             userId: authorId,

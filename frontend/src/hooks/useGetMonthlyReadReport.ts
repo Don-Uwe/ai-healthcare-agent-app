@@ -36,6 +36,6 @@ export const useGetAuthorMonthlyReadReport = ({
       return response.data.monthlyReads as MonthStatus[];
     },
 
-    enabled: !!isConnected && !isGuest && !!(!userId && others) && !!(!user_id && !others),
+    enabled: !!isConnected && (others ? !!userId : (!isGuest && !!user_id)),
   });
 };

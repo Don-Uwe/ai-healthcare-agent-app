@@ -3,7 +3,7 @@
     "name": "UltimateHealth",
     "slug": "UltimateHealth",
 
-    "version": "2.0.0",
+    "version": "2.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/ic_ultimatehealth_appicon.png",
     "scheme": "ultimatehealth",
@@ -90,7 +90,7 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/adaptive-icon.png",
-          "imageWidth": 200,
+          "imageWidth": 100,
           "resizeMode": "contain",
           "backgroundColor": "#E6F4FE",
           "dark": {

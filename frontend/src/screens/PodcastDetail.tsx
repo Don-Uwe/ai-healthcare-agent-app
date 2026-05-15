@@ -23,7 +23,7 @@ import Snackbar from 'react-native-snackbar';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Share from 'react-native-share';
 import {fp} from '../helper/Metric';
-import {useSocket} from '../../SocketContext';
+import {useSocket} from '../contexts/SocketContext';
 import {Feather} from '@expo/vector-icons';
 import Loader from '../components/Loader';
 import {Theme, XStack, YStack, Text, ScrollView} from 'tamagui';
@@ -328,16 +328,17 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
 
                           console.log('Like podcast res', data);
                           if (data?.likeStatus && podcast) {
-                            socket.emit('notification', {
-                              type: 'likePost',
-                              userId: user_id,
-                              articleId: null,
-                              podcastId: podcast._id,
-                              articleRecordId: null,
-                              title: `${user_handle} liked your post`,
-                              message: podcast.title,
-                            });
-                          
+                            if (socket) {
+                              socket.emit('notification', {
+                                type: 'likePost',
+                                userId: user_id,
+                                articleId: null,
+                                podcastId: podcast._id,
+                                articleRecordId: null,
+                                title: `${user_handle} liked your post`,
+                                message: podcast.title,
+                              });
+                            }
                           }
                           refetch();
                         },

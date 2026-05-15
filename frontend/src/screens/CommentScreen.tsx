@@ -15,7 +15,8 @@ import {PRIMARY_COLOR} from '../helper/Theme';
 import {useDispatch, useSelector} from 'react-redux';
 import Loader from '../components/Loader';
 import CommentItem from '../components/CommentItem';
-import {useSocket} from '../../SocketContext';
+import {useSocket} from '../contexts/SocketContext';
+import {useArticleRoom} from '../hooks/useArticleRoom';
 import {
   useMentions,
   replaceTriggerValues,
@@ -31,6 +32,9 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 const CommentScreen = ({navigation, route}: CommentScreenProp) => {
   const socket = useSocket();
   const {articleId, mentionedUsers, article} = route.params;
+
+  // Auto-join article room
+  useArticleRoom(articleId.toString(), null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const flatListRef = useRef<FlatList<Comment>>(null);
@@ -74,6 +78,8 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
   });
 
   useEffect(() => {
+    if (!socket) return;
+    
     socket.emit('fetch-comments', {articleId: route.params.articleId});
 
     socket.on('connect', () => console.log('connection established'));
@@ -164,12 +170,14 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
         {text: 'Cancel', style: 'cancel'},
         {
           text: 'OK',
-          onPress: () =>
+          onPress: () => {
+            if (!socket) return;
             socket.emit('delete-comment', {
               commentId: comment._id,
               articleId: route.params.articleId,
               userId: user_id,
-            }),
+            });
+          }
         },
       ],
       {cancelable: false},
@@ -177,6 +185,7 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
   };
 
   const handleLikeAction = (comment: Comment) => {
+    if (!socket) return;
     socket.emit('like-comment', {
       commentId: comment._id,
       articleId: route.params.articleId,
@@ -198,6 +207,8 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
     }
 
     const formatted = replaceTriggerValues(newComment, ({name}) => `@${name}`);
+
+    if (!socket) return;
 
     if (editMode && editCommentId) {
       socket.emit('edit-comment', {

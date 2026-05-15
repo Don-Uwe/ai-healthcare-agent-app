@@ -15,7 +15,7 @@ import {GET_STORAGE_DATA} from '../helper/APIUtils';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useSelector} from 'react-redux';
 import {useQueryClient} from '@tanstack/react-query';
-import {useSocket} from '../../SocketContext';
+import {useSocket} from '../contexts/SocketContext';
 import Loader from '../components/Loader';
 import {useGetUserSocials} from '../hooks/useGetUserSocialCircle';
 import {useUpdateFollowStatus} from '../hooks/useUpdateFollowStatus';
@@ -143,14 +143,16 @@ export default function Socialcreen({navigation, route}: SocialScreenProps) {
                           onSuccess: data => {
 
                             if (data) {
-                              socket.emit('notification', {
-                                type: 'userFollow',
-                                userId: userid,
-                                message: {
-                                  title: `${user_handle} has followed you`,
-                                  body: '',
-                                },
-                              });
+                              if (socket) {
+                                socket.emit('notification', {
+                                  type: 'userFollow',
+                                  userId: userid,
+                                  message: {
+                                    title: `${user_handle} has followed you`,
+                                    body: '',
+                                  },
+                                });
+                              }
                               refetch();
                             }
 

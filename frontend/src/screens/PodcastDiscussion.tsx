@@ -14,7 +14,8 @@ import {PRIMARY_COLOR} from '../helper/Theme';
 import {useDispatch, useSelector} from 'react-redux';
 import Loader from '../components/Loader';
 import CommentItem from '../components/CommentItem';
-import {useSocket} from '../../SocketContext';
+import {useSocket} from '../contexts/SocketContext';
+import {useArticleRoom} from '../hooks/useArticleRoom';
 import {
   useMentions,
   replaceTriggerValues,
@@ -44,6 +45,9 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
   const socket = useSocket();
   const dispatch = useDispatch();
   const {podcastId, mentionedUsers} = route.params;
+
+  // Auto-join podcast room
+  useArticleRoom(null, podcastId);
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const flatListRef = useRef<FlatList<Comment>>(null);
@@ -167,6 +171,7 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
  
 
   useEffect(() => {
+    if (!socket) return;
     //console.log('Fetching comments for articleId:', route.params.articleId);
     socket.emit('fetch-comments', {podcastId: route.params.podcastId});
 
@@ -280,6 +285,7 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
         {
           text: 'OK',
           onPress: () => {
+            if (!socket) return;
             socket.emit('delete-comment', {
               commentId: comment._id,
               podcastId: route.params.podcastId,
@@ -293,6 +299,7 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
   };
 
   const handleLikeAction = (comment: Comment) => {
+    if (!socket) return;
     socket.emit('like-comment', {
       commentId: comment._id,
       podcastId: route.params.podcastId,
@@ -311,6 +318,8 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
       // );
       return;
     }
+
+    if (!socket) return;
 
     if (editMode) {
       if (editCommentId) {
@@ -374,8 +383,8 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
       showsVerticalScrollIndicator={false}
       extraKeyboardSpace={20}
       keyboardShouldPersistTaps="handled"
-      enableOnAndroid={true}
-      enableAutomaticScroll={true}
+      //enableOnAndroid={true}
+     // enableAutomaticScroll={true}
       contentContainerStyle={styles.scrollContent}>
         <YStack gap="$3">
           {/* Article Title Card */}
