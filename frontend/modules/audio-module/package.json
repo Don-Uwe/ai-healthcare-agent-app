@@ -1,0 +1,8 @@
+{
+  "name": "audio-module",
+  "version": "1.0.0",
+  "description": "Custom Expo native audio module for UltimateHealth",
+  "main": "index.ts",
+  "types": "index.ts",
+  "private": true
+}

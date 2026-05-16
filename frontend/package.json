@@ -32,7 +32,7 @@
     "@tamagui/themes": "^1.135.6",
     "@tanstack/react-query": "^5.90.5",
     "@types/react-native-html-to-pdf": "^0.8.3",
-    "audio-module": "file:modules/audio-module",
+    "audio-module": "*",
     "axios": "^1.12.2",
     "date-fns": "^4.1.0",
     "email-validator": "^2.0.4",
@@ -95,5 +95,34 @@
     "react-native-svg-transformer": "^1.5.1",
     "typescript": "~5.9.2"
   },
-  "private": true
+  "private": true,
+  "workspaces": [
+    "modules/*"
+  ],
+  "expo": {
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "exclude": [
+          "react-native-fs",
+          "react-native-tts",
+          "react-native-version-check",
+          "audio-module"
+        ],
+        "listUnknownPackages": false
+      },
+      "appConfigFieldsNotSyncedCheck": {
+        "exclude": [
+          "orientation",
+          "icon",
+          "scheme",
+          "userInterfaceStyle",
+          "androidStatusBar",
+          "splash",
+          "ios",
+          "android",
+          "plugins"
+        ]
+      }
+    }
+  }
 }

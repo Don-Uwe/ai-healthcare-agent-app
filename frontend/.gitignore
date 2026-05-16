@@ -84,3 +84,6 @@ design.md
 
 expo-env.d.ts
 # @end expo-cli
+
+# Expo local state (machine-specific device history and dev server settings)
+.expo/
