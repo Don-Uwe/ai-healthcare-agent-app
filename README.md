@@ -329,12 +329,4 @@ If you encounter any issues or have any feedback or suggestions, please open an 
 
 <a href="#top" style="position: fixed; bottom: 20px; right: 20px; background-color: black ; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; border-radius: 5px; font-family: Arial; font-size: 16px;">Go to Top</a>
 
-
-
-< ! - -   t e s t   P R   - - > 
- 
- < ! - -   T r i g g e r   a c t i o n   t e s t   - - > 
- 
- < ! - -   T r i g g e r   a c t i o n   t e s t   - - > 
- 
- 
+<!-- trigger action -->
