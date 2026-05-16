@@ -312,6 +312,7 @@ If you encounter any issues or have any feedback or suggestions, please open an 
         </td> 
        <td align="center"><a href="https://github.com/ionfwsrijan"><img src="https://avatars.githubusercontent.com/u/201338831?v=4" width="120px;" alt=""/><br/><sub><b>SrijanCodes</b></sub></a></td>
      <td align="center"><a href="https://github.com/Sparshjoshi-iit"><img src="https://avatars.githubusercontent.com/u/181929259?v=4" width="120px;" alt=""/><br/><sub><b>Sparsh Joshi</b></sub></a></td>
+     <td align="center"><a href="https://github.com/Namraa310806"><img src="https://avatars.githubusercontent.com/u/131944677?v=4" width="120px;" alt=""/><br/><sub><b>Patel Namraa</b></sub></a></td>
  </tr>
    </p>
  </table>
