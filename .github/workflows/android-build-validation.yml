@@ -73,6 +73,11 @@ jobs:
         working-directory: ./frontend/android
         run: chmod +x gradlew
         
+      - name: Inject google-services.json
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: echo "$GOOGLE_SERVICES_JSON" > frontend/android/app/google-services.json
+
       - name: Compile Android Debug Build
         working-directory: ./frontend/android
         run: ./gradlew assembleDebug --console=plain
