@@ -76,7 +76,7 @@ jobs:
       - name: Inject google-services.json
         env:
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
-        run: echo "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
+        run: node -e "const fs = require('fs'); fs.writeFileSync('android/app/google-services.json', process.env.GOOGLE_SERVICES_JSON);"
 
       - name: Compile Android Debug Build
         working-directory: ./frontend/android
