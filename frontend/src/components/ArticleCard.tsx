@@ -5,7 +5,6 @@ import {
   Image,
   Pressable,
   Alert,
-  ActivityIndicator,
   TouchableOpacity,
   Platform,
 } from 'react-native';
@@ -33,6 +32,7 @@ import {generatePDF} from 'react-native-html-to-pdf';
 import {useSocket} from '../contexts/SocketContext';
 import EditRequestModal from './EditRequestModal';
 import {FontAwesome, FontAwesome6} from '@expo/vector-icons';
+import LoadingSpinner from './LoadingSpinner';
 import Snackbar from 'react-native-snackbar';
 import {useGetProfile} from '../hooks/useGetProfile';
 import {useLikeArticle} from '../hooks/useLikeArticle';
@@ -411,7 +411,7 @@ const ArticleCard = ({
           {/* Like, Save, and Comment Actions */}
           <View style={styles.likeSaveContainer}>
             {likeMutationPending ? (
-              <ActivityIndicator size="small" color={PRIMARY_COLOR} />
+              <LoadingSpinner size="small" />
             ) : (
               <TouchableOpacity
                 onPress={(e) => {
@@ -520,7 +520,7 @@ const ArticleCard = ({
             {source === 'home' && (
               <>
                 {repostPending ? (
-                  <ActivityIndicator size="small" color={PRIMARY_COLOR} />
+                  <LoadingSpinner size="small" />
                 ) : (
                   <TouchableOpacity
                     onPress={(e) => {
@@ -559,7 +559,7 @@ const ArticleCard = ({
             )}
 
             {saveMutationPending ? (
-              <ActivityIndicator size="small" color={PRIMARY_COLOR} />
+              <LoadingSpinner size="small" />
             ) : (
               <TouchableOpacity
                 onPress={(e) => {

@@ -7,7 +7,6 @@ import {
   Dimensions,
   TouchableOpacity,
   TextInput,
-  ActivityIndicator,
 } from 'react-native';
 import {useSelector} from 'react-redux';
 import {PRIMARY_COLOR} from '../helper/Theme';
@@ -20,6 +19,7 @@ import NoInternet from './NoInternet';
 import {useGetPlaylists} from '../hooks/useGetPlaylists';
 import {useUpdatePodcastPlaylist} from '../hooks/useUpdatePodcastPlaylist';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import LoadingSpinner from './LoadingSpinner';
 
 interface Props {
   //podcast_ids: string[];
@@ -241,7 +241,7 @@ export default function CreatePlaylist({visible, dismiss}: Props) {
             inputValue !== '') && (
             <>
               {updatePlaylistPending ? (
-                <ActivityIndicator size="small" color={PRIMARY_COLOR} />
+                <LoadingSpinner size="small" />
               ) : (
                 <TouchableOpacity
                   style={{

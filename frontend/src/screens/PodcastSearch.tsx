@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Pressable, FlatList, ActivityIndicator} from 'react-native';
+import {Pressable, FlatList} from 'react-native';
 import {PodcastData, PodcastSearchProp} from '../type';
 import {AxiosError} from 'axios';
 import {useSelector} from 'react-redux';
@@ -12,6 +12,7 @@ import {XStack, YStack, Input, Separator, Text} from 'tamagui';
 import {Feather} from '@expo/vector-icons';
 import {useUpdatePodcastViewcount} from '../hooks/useUpdatePodcastViewcount';
 import {useGetSearchPodcasts} from '../hooks/useGetSearchPodcasts';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 export default function PodcastSearch({navigation}: PodcastSearchProp) {
   const [query, setQuery] = useState<string>('');
@@ -103,7 +104,6 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
             },
           });
         }}
-        imageUri={item.cover_image}
         handleReport={() => {}}
         playlistAct={() => {}}
         //onSelect={()=>{}}
@@ -211,10 +211,7 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
       {/* Results Section */}
       {isLoading && query !== '' ? (
         <YStack flex={1} alignItems="center" justifyContent="center" gap="$3">
-          <ActivityIndicator size="large" color={PRIMARY_COLOR} />
-          <Text fontSize={15} color="#6B7280" fontWeight="600">
-            Searching podcasts...
-          </Text>
+          <LoadingSpinner text="Searching podcasts..." />
         </YStack>
       ) : (
         <YStack paddingHorizontal="$3" marginBottom="$8" flex={1}>

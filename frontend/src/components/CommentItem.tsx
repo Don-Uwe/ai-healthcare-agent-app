@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {ActivityIndicator, TouchableOpacity} from 'react-native';
+import {TouchableOpacity} from 'react-native';
 import {YStack, XStack, Text, Avatar, Paragraph, View} from 'tamagui';
 import Animated, {
   useAnimatedStyle,
@@ -14,6 +14,7 @@ import ArticleFloatingMenu from './AnimatedMenu';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import {Comment} from '../type';
 import {GET_STORAGE_DATA} from '../helper/APIUtils';
+import LoadingSpinner from './LoadingSpinner';
 
 export default function CommentItem({
   item,
@@ -203,7 +204,7 @@ export default function CommentItem({
           {/* Like & Actions */}
           <XStack alignItems="center" space="$2" marginTop="$2">
             {commentLikeLoading && isSelected ? (
-              <ActivityIndicator size="small" color={PRIMARY_COLOR} />
+              <LoadingSpinner size="small" />
             ) : (
               <TouchableOpacity
                 onPress={() => {

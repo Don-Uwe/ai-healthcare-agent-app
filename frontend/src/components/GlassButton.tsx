@@ -5,10 +5,10 @@ import {
   ViewStyle,
   TextStyle,
   StyleProp,
-  ActivityIndicator,
   useColorScheme,
 } from 'react-native';
 import { GlassStyles, ProfessionalColors, Typography } from '../styles/GlassStyles';
+import LoadingSpinner from './LoadingSpinner';
 
 interface GlassButtonProps {
   title: string;
@@ -62,7 +62,8 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
       activeOpacity={0.7}
     >
       {loading ? (
-        <ActivityIndicator
+        <LoadingSpinner
+          size="small"
           color={variant === 'primary' ? ProfessionalColors.white : ProfessionalColors.primary}
         />
       ) : (

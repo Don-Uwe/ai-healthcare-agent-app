@@ -5,7 +5,6 @@ import {
   View,
   StyleSheet,
   Alert,
-  ActivityIndicator,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
@@ -34,6 +33,7 @@ import {useUpdateProfileImage} from '../hooks/useUpdateProfileImage';
 import {useUpdateUserContactDetail} from '../hooks/useUpdateUserContactDetail';
 import {useUpdateUserGeneralDetails} from '../hooks/useUpdateUserGeneralDetails';
 import {useUpdateUserProfDetails} from '../hooks/useUpdateUserProfDetails';
+import LoadingSpinner from '../components/LoadingSpinner';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 let validator = require('email-validator');
 let expr = /^(0|91)?[6-9][0-9]{9}$/;
@@ -761,7 +761,7 @@ const ProfileEditScreen = ({navigation}) => {
       </KeyboardAwareScrollView>
       {Loading && (
         <View style={styles.overlay}>
-          <ActivityIndicator size={50} color={PRIMARY_COLOR} />
+          <LoadingSpinner size={50} />
         </View>
       )}
     </SafeAreaView>

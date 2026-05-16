@@ -1,4 +1,3 @@
-/* eslint-disable react-native/no-inline-styles */
 import {
   Image,
   Platform,
@@ -8,7 +7,6 @@ import {
   View,
   ScrollView,
   Alert,
-  ActivityIndicator,
   Dimensions,
   Share,
 } from 'react-native';
@@ -45,6 +43,7 @@ import {useUpdateReadEvent} from '@/src/hooks/useUpdateReadEvent';
 import {useUpdateViewCount} from '@/src/hooks/useUpdateViewCount';
 import {useSaveArticle} from '@/src/hooks/useSaveArticle';
 import {useSocket} from '../../contexts/SocketContext';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const {articleId, authorId, recordId} = route.params;
@@ -355,7 +354,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
           />
         )}
         {likeMutationPending ? (
-          <ActivityIndicator size={40} color={PRIMARY_COLOR} />
+          <LoadingSpinner size={40} />
         ) : (
           <TouchableOpacity
             onPress={handleLike}
@@ -663,7 +662,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
             onPress={handleLike}
             disabled={likeMutationPending}>
             {likeMutationPending ? (
-              <ActivityIndicator size={18} color={PRIMARY_COLOR} />
+              <LoadingSpinner size={18} />
             ) : (
               <>
                 <FontAwesome
@@ -756,7 +755,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
             onPress={handleSave}
             disabled={saveMutationPending}>
             {saveMutationPending ? (
-              <ActivityIndicator size={18} color={PRIMARY_COLOR} />
+              <LoadingSpinner size={18} />
             ) : (
               <>
                 <FontAwesome
@@ -854,7 +853,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
           {article &&
             user_id !== article.authorId._id &&
             (followMutationPending ? (
-              <ActivityIndicator size={40} color={PRIMARY_COLOR} />
+              <LoadingSpinner size={40} />
             ) : (
               <TouchableOpacity
                 style={styles.followButton}
