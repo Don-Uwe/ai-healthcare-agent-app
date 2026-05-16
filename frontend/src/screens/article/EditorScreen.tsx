@@ -37,7 +37,7 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
     translationSource,
   } = route.params;
 
-  const RichText = useRef(null);
+  const RichText = useRef<RichEditor>(null);
   const [article, setArticle] = useState('');
   const [localImages, setLocalImages] = useState<string[]>([]);
   const [htmlImages, setHtmlImages] = useState<string[]>([]);
@@ -159,7 +159,7 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
   */
 
   // Callback after height change
-  function handleHeightChange(_height) {
+  function handleHeightChange(_height: number) {
     // console.log("editor height change:", height);
   }
 
@@ -299,47 +299,37 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
         ]}
         iconMap={{
           // Custom Icons for Text Formatting Actions
-          [actions.setStrikethrough]: ({tintColor}) => (
+          [actions.setStrikethrough]: ({tintColor}: {tintColor: string}) => (
             <FontAwesome name="strikethrough" color={tintColor} size={24} />
           ),
-
-          // Custom Icons for Alignment Actions
-          [actions.alignLeft]: ({tintColor}) => (
+          [actions.alignLeft]: ({tintColor}: {tintColor: string}) => (
             <Feather name="align-left" color={tintColor} size={28} />
           ),
-          [actions.alignCenter]: ({tintColor}) => (
+          [actions.alignCenter]: ({tintColor}: {tintColor: string}) => (
             <Feather name="align-center" color={tintColor} size={28} />
           ),
-          [actions.alignRight]: ({tintColor}) => (
+          [actions.alignRight]: ({tintColor}: {tintColor: string}) => (
             <Feather name="align-right" color={tintColor} size={28} />
           ),
-
-          // Custom Icons for Undo/Redo Actions
-          [actions.undo]: ({tintColor}) => (
+          [actions.undo]: ({tintColor}: {tintColor: string}) => (
             <IonIcon name="arrow-undo" color={tintColor} size={28} />
           ),
-          [actions.redo]: ({tintColor}) => (
+          [actions.redo]: ({tintColor}: {tintColor: string}) => (
             <IonIcon name="arrow-redo" color={tintColor} size={28} />
           ),
-
-          // Custom Icons for Heading Actions
-          [actions.heading1]: ({tintColor}) => (
+          [actions.heading1]: ({tintColor}: {tintColor: string}) => (
             <Text style={[styles.headingIcon, {color: tintColor}]}>H1</Text>
           ),
-          [actions.heading2]: ({tintColor}) => (
+          [actions.heading2]: ({tintColor}: {tintColor: string}) => (
             <Text style={[styles.headingIcon, {color: tintColor}]}>H2</Text>
           ),
-          [actions.heading3]: ({tintColor}) => (
+          [actions.heading3]: ({tintColor}: {tintColor: string}) => (
             <Text style={[styles.headingIcon, {color: tintColor}]}>H3</Text>
           ),
-
-          // Custom Icon for Image Insertion
-          [actions.insertImage]: ({tintColor}) => (
+          [actions.insertImage]: ({tintColor}: {tintColor: string}) => (
             <Entypo name="image" color={tintColor} size={26} />
           ),
-
-          // Custom Icon for Blockquote Action
-          [actions.blockquote]: ({tintColor}) => (
+          [actions.blockquote]: ({tintColor}: {tintColor: string}) => (
             <Entypo name="quote" color={tintColor} size={28} />
           ),
         }}

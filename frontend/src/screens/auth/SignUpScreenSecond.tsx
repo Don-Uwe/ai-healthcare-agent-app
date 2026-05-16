@@ -107,7 +107,7 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
               text: 'Verification email sent!',
               duration: Snackbar.LENGTH_LONG,
             });
-            navigation.navigate('LoginScreen');
+            navigation.navigate('LoginScreen', {});
           },
 
           onError: (error: AxiosError) => {
@@ -294,8 +294,8 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
                 style={{
                   height: '100%',
                   width: '100%',
-                  resizeMode: 'cover',
                 }}
+                resizeMode="cover"
               />
             </YStack>
           )}
@@ -350,11 +350,11 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
                 placeholder={field.placeholder}
                 value={field.value}
                 onChangeText={field.onChangeText}
-                keyboardType={field.keyboardType}
+                keyboardType={field.keyboardType as any}
                 maxLength={field.maxLength}
               />
               <YStack position="absolute" right={14} top={12}>
-                <Icon name={field.icon} size={20} color="#000" />
+                <Icon name={field.icon as any} size={20} color="#000" />
               </YStack>
             </XStack>
           ))}

@@ -42,7 +42,7 @@ export function CustomAlertDialog() {
               {onCancel && (
                 <AlertDialog.Cancel asChild>
                   <Button
-                    theme="gray"
+                    theme={"gray" as any}
                     onPress={() => {
                       close();
                       onCancel?.();

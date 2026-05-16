@@ -96,7 +96,7 @@ const PodcastForm = ({navigation, route}: PodcastFormProp) => {
         }
 
         // Check dimensions
-        ImageResizer.createResizedImage(uri, 1000, 1000, 'JPEG', 100)
+        ImageResizer.createResizedImage(uri as any, 1000, 1000, 'JPEG', 100)
           .then(resizedImageUri => {
           })
           .catch(err => {

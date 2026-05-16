@@ -13,13 +13,13 @@ export default function Editor({
 }: {
   callback: (reason: string) => void;
 }) {
-  const RichText = useRef();
+  const RichText = useRef<RichEditor>(null);
   const [feedback, setFeedback] = useState('');
   const RichTextTool = useRef('');
-  function handleHeightChange(_height) {}
+  function handleHeightChange(_height: number) {}
 
   function editorInitializedCallback() {
-    RichText.current?.registerToolbar(function (_items) {});
+    RichText.current?.registerToolbar(function (_items: any) {});
   }
 
   const createFeebackHTMLStructure = (feedback: string) => {
@@ -144,43 +144,43 @@ export default function Editor({
           actions.blockquote,
         ]}
         iconMap={{
-          [actions.setStrikethrough]: ({tintColor}) => (
+          [actions.setStrikethrough]: ({tintColor}: {tintColor: string}) => (
             <FontAwesome name="strikethrough" color={tintColor} size={26} />
           ),
-          [actions.alignLeft]: ({tintColor}) => (
+          [actions.alignLeft]: ({tintColor}: {tintColor: string}) => (
             <Feather name="align-left" color={tintColor} size={35} />
           ),
-          [actions.alignCenter]: ({tintColor}) => (
+          [actions.alignCenter]: ({tintColor}: {tintColor: string}) => (
             <Feather name="align-center" color={tintColor} size={35} />
           ),
-          [actions.alignRight]: ({tintColor}) => (
+          [actions.alignRight]: ({tintColor}: {tintColor: string}) => (
             <Feather name="align-right" color={tintColor} size={35} />
           ),
-          [actions.undo]: ({tintColor}) => (
+          [actions.undo]: ({tintColor}: {tintColor: string}) => (
             <Ionicons name="arrow-undo" color={tintColor} size={35} />
           ),
-          [actions.redo]: ({tintColor}) => (
+          [actions.redo]: ({tintColor}: {tintColor: string}) => (
             <Ionicons name="arrow-redo" color={tintColor} size={35} />
           ),
-          [actions.heading1]: ({tintColor}) => (
+          [actions.heading1]: ({tintColor}: {tintColor: string}) => (
             <Text style={[styles.tib, {color: tintColor}]}>H1</Text>
           ),
-          [actions.heading2]: ({tintColor}) => (
+          [actions.heading2]: ({tintColor}: {tintColor: string}) => (
             <Text style={[styles.tib, {color: tintColor}]}>H2</Text>
           ),
-          [actions.heading3]: ({tintColor}) => (
+          [actions.heading3]: ({tintColor}: {tintColor: string}) => (
             <Text style={[styles.tib, {color: tintColor}]}>H3</Text>
           ),
-          [actions.heading4]: ({tintColor}) => (
+          [actions.heading4]: ({tintColor}: {tintColor: string}) => (
             <Text style={[styles.tib, {color: tintColor}]}>H4</Text>
           ),
-          [actions.heading5]: ({tintColor}) => (
+          [actions.heading5]: ({tintColor}: {tintColor: string}) => (
             <Text style={[styles.tib, {color: tintColor}]}>H5</Text>
           ),
-          [actions.heading6]: ({tintColor}) => (
+          [actions.heading6]: ({tintColor}: {tintColor: string}) => (
             <Text style={[styles.tib, {color: tintColor}]}>H6</Text>
           ),
-          [actions.blockquote]: ({tintColor}) => (
+          [actions.blockquote]: ({tintColor}: {tintColor: string}) => (
             <Entypo name="quote" color={tintColor} size={35} />
           ),
         }}

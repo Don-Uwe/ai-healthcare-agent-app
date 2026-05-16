@@ -18,7 +18,7 @@ import {PRIMARY_COLOR} from '../helper/Theme'; // Custom theme color
 import Tts from 'react-native-tts'; // Text-to-Speech library
 
 // Helper function to check if two values are approximately equal within a given epsilon (tolerance)
-function approximatelyEqual(v1, v2, epsilon = 500) {
+function approximatelyEqual(v1: number, v2: number, epsilon = 500) {
   return Math.abs(v1 - v2) < epsilon;
 }
 
@@ -28,7 +28,7 @@ const PodcastPlayer = ({}) => {
   const [isPlaying, setisPlaying] = useState(false); // Track if the podcast is playing
   const [duration, setDuration] = useState(0); // Store the total duration of the podcast
   const [currentPosition, setCurrentPosition] = useState(0); // Store the current playback position
-  const sliderInterval = useRef(null); // Reference to store the interval for updating the slider
+  const sliderInterval = useRef<NodeJS.Timeout | null>(null); // Reference to store the interval for updating the slider
 
   // Text content of the podcast
   const text = `You're seeking new ways to diversify your portfolio, but it's not always easy to find new reliable investment opportunities. Each week, our financial expert with four decades of successful investing experience will help you discover opportunities outside of your current strategy that you've probably never considered before. If you want to learn about ways to diversify your portfolio in ways that have various levels of risk, this show is for you.`;
@@ -73,7 +73,7 @@ const PodcastPlayer = ({}) => {
   };
 
   // Function to estimate TTS duration based on text length and speaking rate
-  const estimateTTSDuration = text => {
+  const estimateTTSDuration = (text: string) => {
     const wordsPerMinute = 130; // Average speaking rate at normal speed 1.1
     const adjustedWordsPerMinute = wordsPerMinute * rateAtTextSpoken; // Adjust based on the speech rate
     const words = text.split(' ').length; // Calculate number of words in the text
@@ -84,7 +84,9 @@ const PodcastPlayer = ({}) => {
   useEffect(() => {
     Tts.getInitStatus().then(initTts); // Initialize TTS when component mounts
     return () => {
-      clearInterval(sliderInterval.current); // Clear the interval
+      if (sliderInterval.current) {
+        clearInterval(sliderInterval.current); // Clear the interval
+      }
     };
   }, []);
 
@@ -99,7 +101,9 @@ const PodcastPlayer = ({}) => {
       // If currently playing, stop the speech and clear the interval
       //console.log('paused');
       Tts.stop(); // Stop the text-to-speech
-      clearInterval(sliderInterval.current); // Clear the interval used for updating position
+      if (sliderInterval.current) {
+        clearInterval(sliderInterval.current); // Clear the interval used for updating position
+      }
     } else {
       // If currently paused, calculate new starting position and resume speech
       Tts.stop(); // Ensure TTS is stopped before starting new speech
@@ -123,7 +127,9 @@ const PodcastPlayer = ({}) => {
 
           // If the new position is approximately equal to the duration, reset the position
           if (approximatelyEqual(newPosition, duration)) {
-            clearInterval(sliderInterval.current); // Stop the interval
+            if (sliderInterval.current) {
+              clearInterval(sliderInterval.current); // Stop the interval
+            }
             setCurrentPosition(0); // Reset position to the start
             setisPlaying(false);
             return 0;
@@ -132,7 +138,7 @@ const PodcastPlayer = ({}) => {
           // Return the new position
           return newPosition;
         });
-      }, 1000);
+      }, 1000) as any;
     }
 
     // Toggle the playing state
@@ -140,7 +146,7 @@ const PodcastPlayer = ({}) => {
   };
 
   // Function to handle slider changes
-  const handleSliderChange = value => {
+  const handleSliderChange = (value: number) => {
     // Calculate the position in milliseconds based on slider value
     const seekPosition = value * duration;
 

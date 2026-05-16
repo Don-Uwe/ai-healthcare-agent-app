@@ -66,6 +66,8 @@ const tokens = createTokens({
     11: 64,
     12: 72,
     13: 80,
+    14: 88,
+    15: 96,
     true: 16, // Optional but unconventional
   },
 
@@ -83,6 +85,9 @@ const tokens = createTokens({
     10: 80,
     11: 88,
     12: 96,
+    13: 104,
+    14: 112,
+    15: 120,
     true: 16, // Same here
     full: '100%',
   },
@@ -95,6 +100,12 @@ const tokens = createTokens({
     4: 16,
     5: 20,
     6: 24,
+    7: 28,
+    8: 32,
+    9: 36,
+    10: 40,
+    11: 44,
+    12: 48,
     round: 9999,
   },
 
@@ -122,9 +133,19 @@ const shorthands = {
   w: 'width',
   h: 'height',
   br: 'borderRadius',
-}
+  f: 'flex',
+  mt: 'marginTop',
+  mb: 'marginBottom',
+  ml: 'marginLeft',
+  mr: 'marginRight',
+  pt: 'paddingTop',
+  pb: 'paddingBottom',
+  pl: 'paddingLeft',
+  pr: 'paddingRight',
+  als: 'alignSelf',
+} as const
 
-const config:TamaguiConfig = createTamagui({
+const config = createTamagui({
   defaultTheme: 'light',
   animations,
   shorthands,
@@ -171,9 +192,17 @@ const config:TamaguiConfig = createTamagui({
     body: {
       family: 'System',
       size: {
-        1: 16,
-        2: 18,
-        3: 20,
+        1: 11,
+        2: 12,
+        3: 13,
+        4: 14,
+        5: 16,
+        6: 18,
+        7: 20,
+        8: 22,
+        9: 30,
+        10: 42,
+        true: 14,
       },
       lineHeight: {
         1: 22,
@@ -197,6 +226,6 @@ const config:TamaguiConfig = createTamagui({
   },
 })
 
-export type TamaguiCnfig = typeof config
+export type AppConfig = typeof config
 
-export default  config;
+export default config;

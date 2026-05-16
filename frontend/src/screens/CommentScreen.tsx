@@ -320,8 +320,10 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
       showsVerticalScrollIndicator={false}
       extraKeyboardSpace={20}
       keyboardShouldPersistTaps="handled"
-      enableOnAndroid={true}
-      enableAutomaticScroll={true}
+      {...({
+        enableOnAndroid: true,
+        enableAutomaticScroll: true,
+      } as any)}
       contentContainerStyle={styles.scrollContent}>
         <YStack gap="$3">
           {/* Article Title Card */}

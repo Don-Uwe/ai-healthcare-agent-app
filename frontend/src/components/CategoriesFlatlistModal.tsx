@@ -4,9 +4,10 @@ import {
   BottomSheetModal,
   BottomSheetFlatList,
   BottomSheetBackdrop,
+  BottomSheetBackdropProps,
 } from '@gorhom/bottom-sheet';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import {HomeScreenCategoriesFlatlistProps} from '../type';
+import {HomeScreenCategoriesFlatlistProps, Category} from '../type';
 
 import {PRIMARY_COLOR} from '../helper/Theme';
 import {hp} from '../helper/Metric';
@@ -21,7 +22,7 @@ const CategoriesFlatlistModal = ({
   const [searchQuery, setSearchQuery] = useState('');
 
   const renderBackdrop = useCallback(
-    props => (
+    (props: BottomSheetBackdropProps) => (
       <BottomSheetBackdrop
         {...props}
         disappearsOnIndex={0}
@@ -44,7 +45,7 @@ const CategoriesFlatlistModal = ({
 
   // Function to render each category item
   const renderItem = useCallback(
-    ({item}) => {
+    ({item}: {item: Category}) => {
       const isSelected = selectCategoryList.some(i => i.id === item?.id);
       return (
         <TouchableOpacity
@@ -125,7 +126,7 @@ const CategoriesFlatlistModal = ({
       ) : (
         <BottomSheetFlatList
           data={filteredCategories}
-          keyExtractor={item => item.id.toString()}
+          keyExtractor={(item: Category) => item.id.toString()}
           renderItem={renderItem}
           contentContainerStyle={styles.contentContainer}
           contentInsetAdjustmentBehavior={'always'}

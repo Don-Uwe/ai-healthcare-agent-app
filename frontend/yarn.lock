@@ -4260,13 +4260,6 @@ asynckit@^0.4.0:
 "audio-module@file:modules/audio-module":
   version "0.0.0"
 
-autolinker@^3.16.2:
-  version "3.16.2"
-  resolved "https://registry.yarnpkg.com/autolinker/-/autolinker-3.16.2.tgz#6bb4f32432fc111b65659336863e653973bfbcc9"
-  integrity sha512-JiYl7j2Z19F9NdTmirENSUUIIL/9MytEWtmzhfmsKPCp9E+G35Y0UNCMoM9tFigxT59qSc8Ml2dlZXOCVTYwuA==
-  dependencies:
-    tslib "^2.3.0"
-
 available-typed-arrays@^1.0.7:
   version "1.0.7"
   resolved "https://registry.yarnpkg.com/available-typed-arrays/-/available-typed-arrays-1.0.7.tgz#a5cc375d6a03c2efc87a553f3e0b1522def14846"
@@ -8215,13 +8208,6 @@ react-is@^19.1.0:
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-19.2.0.tgz#ddc3b4a4e0f3336c3847f18b806506388d7b9973"
   integrity sha512-x3Ax3kNSMIIkyVYhWPyO09bu0uttcAIoecO/um/rKGQ4EltYWVYtyiGkS/3xMynrbVQdS69Jhlv8FXUEZehlzA==
 
-react-native-autolink@^4.2.0:
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/react-native-autolink/-/react-native-autolink-4.2.0.tgz#da0161e6b745a69a5ebbfd524d4dd997e40c18f5"
-  integrity sha512-Mb5sLZMKj/ZaGDcRvUxWeN1AYnpUSRqLwFvDAgbtnfPo/m6Te2ApctFqkcVTL7UwNu3rlxXdFWYq05Z7EfFcug==
-  dependencies:
-    autolinker "^3.16.2"
-
 react-native-chart-kit@^6.12.0:
   version "6.12.0"
   resolved "https://registry.yarnpkg.com/react-native-chart-kit/-/react-native-chart-kit-6.12.0.tgz#187a4987a668a85b7e93588c248ed2c33b3a06f6"
@@ -8269,17 +8255,16 @@ react-native-gesture-handler@~2.28.0:
     hoist-non-react-statics "^3.3.0"
     invariant "^2.2.4"
 
-react-native-gifted-chat@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/react-native-gifted-chat/-/react-native-gifted-chat-3.0.0.tgz#050144d5f7f0b77f032e0c780361c1cc0e6e8c17"
-  integrity sha512-qKseEqdqm5hVmzTZR9wsJ115fTka4kkbb+yYNPhdjQkRwbnpbMxcOIK7EcnwKoEmNRLRhjswxz3ZyOmONIzLsA==
+react-native-gifted-chat@3.3.3:
+  version "3.3.3"
+  resolved "https://registry.yarnpkg.com/react-native-gifted-chat/-/react-native-gifted-chat-3.3.3.tgz#bab8a609c59b003417be76c344df93103a213ba1"
+  integrity sha512-UH4yWbOpkaLQeeQXVNWl69KgFmmlcj89vLQxh+GUOiPWDKQQd+nclI12+fhLk4KV554kao1irD/bUGDoENqVIQ==
   dependencies:
     "@expo/react-native-action-sheet" "^4.1.1"
     "@types/lodash.isequal" "^4.5.8"
     dayjs "^1.11.19"
     lodash.isequal "^4.5.0"
-    react-native-autolink "^4.2.0"
-    react-native-zoom-reanimated "^1.4.10"
+    react-native-zoom-reanimated "^1.5.2"
 
 react-native-html-to-pdf@^1.3.0:
   version "1.3.0"
@@ -8425,10 +8410,10 @@ react-native-worklets@0.5.1:
     convert-source-map "^2.0.0"
     semver "7.7.2"
 
-react-native-zoom-reanimated@^1.4.10:
-  version "1.4.10"
-  resolved "https://registry.yarnpkg.com/react-native-zoom-reanimated/-/react-native-zoom-reanimated-1.4.10.tgz#78e7c7ecc13c58d50f69665c601f8d6af21b16ce"
-  integrity sha512-5UPEGv3UDcH21jHJSIu87CxLGMrcdGS1Hx6EP7eBbLYf0XEOHL3F9v0p5iSuM31exuBjrNQZsDouNcPQW5liMQ==
+react-native-zoom-reanimated@^1.5.2:
+  version "1.5.3"
+  resolved "https://registry.yarnpkg.com/react-native-zoom-reanimated/-/react-native-zoom-reanimated-1.5.3.tgz#65a3c43d0e385dcbfd652553f33b1201d390fa14"
+  integrity sha512-IuaRbzs/Ku2lyOcG0p1xMro+1K1bCC+jtWoQecUaqK8/ME97uRwNgwi6k/Fx8cEsx/R60HLA/mqpbw8pfrUECw==
 
 react-native@0.81.5:
   version "0.81.5"
@@ -9474,7 +9459,7 @@ tsconfig-paths@^3.15.0:
     minimist "^1.2.6"
     strip-bom "^3.0.0"
 
-tslib@^2.0.0, tslib@^2.0.3, tslib@^2.1.0, tslib@^2.3.0, tslib@^2.4.0:
+tslib@^2.0.0, tslib@^2.0.3, tslib@^2.1.0, tslib@^2.4.0:
   version "2.8.1"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.8.1.tgz#612efe4ed235d567e8aba5f2a5fab70280ade83f"
   integrity sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==

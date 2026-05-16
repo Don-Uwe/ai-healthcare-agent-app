@@ -9,6 +9,16 @@ import React, {useState} from 'react';
 import Feather from '@expo/vector-icons/Feather';
 import {PRIMARY_COLOR} from '../helper/Theme';
 
+interface PasswordTabProps {
+  old_password: string;
+  new_password: string;
+  confirm_password: string;
+  setOldPassword: (text: string) => void;
+  setNewPassword: (text: string) => void;
+  setConfirmPassword: (text: string) => void;
+  handleSubmitPassword: () => void;
+}
+
 const PasswordTab = ({
   old_password,
   new_password,
@@ -17,7 +27,7 @@ const PasswordTab = ({
   setNewPassword,
   setConfirmPassword,
   handleSubmitPassword,
-}) => {
+}: PasswordTabProps) => {
   // State hooks to manage visibility of passwords
   const [isVisibleOldPassword, setisVisibleOldPassword] = useState(false);
   const [isVisibleNewPassword, setisVisibleNewPassword] = useState(false);

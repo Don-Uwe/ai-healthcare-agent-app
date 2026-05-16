@@ -190,7 +190,7 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
             article_id: null,
             audio_url: audioUrl,
             cover_image: uploadedUrl,
-            duration: player.duration,
+            duration: player.duration as number,
           },
           {
             onSuccess: async data => {
@@ -246,7 +246,7 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
   };
 
   // Helper function to resize an image
-  const resizeImage = async localImage => {
+  const resizeImage = async (localImage: string) => {
     try {
       const resizedImageUri = await ImageResizer.createResizedImage(
         localImage,
@@ -378,14 +378,14 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
               color="#94A3B8"
               fontSize={14}
               fontWeight="600"
-              fontFamily="monospace">
+              style={{fontFamily: 'monospace'}}>
               {formatSecTime(position)}
             </Text>
             <Text
               color="#94A3B8"
               fontSize={14}
               fontWeight="600"
-              fontFamily="monospace">
+              style={{fontFamily: 'monospace'}}>
               {formatSecTime(duration)}
             </Text>
           </XStack>

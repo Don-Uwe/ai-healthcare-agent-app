@@ -349,7 +349,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     dispatch(setTags({tags: categoryData}));
   }, [categoryData, isSuccess]);
 
-  const handleCategorySelection = (category: CategoryType) => {
+  const handleCategorySelection = (category: Category) => {
     // Update Redux State
     setSelectCategoryList(prevList => {
       const updatedList = prevList.some(p => p.id === category.id)
@@ -504,7 +504,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
 
     if (selectedTags.length > 0) {
       filtered = filtered.filter(article =>
-        selectedTags.some(tag =>
+        selectedTags.some((tag: Category) =>
           article.tags.some(category => category.name === tag.name),
         ),
       );
@@ -807,7 +807,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           {selectedTags &&
             selectedTags.length > 0 &&
             !searchMode &&
-            selectedTags.map((item, index) => (
+            selectedTags.map((item: Category, index: number) => (
               <TouchableOpacity
                 key={index}
                 style={{

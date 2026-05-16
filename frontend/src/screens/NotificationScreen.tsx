@@ -13,7 +13,7 @@ import {useMarkNotificationAsRead} from '../hooks/useMarkNoticationAsRead';
 import {useDeleteNotification} from '../hooks/useDeleteNotification';
 
 // PodcastsScreen component displays the list of podcasts and includes a PodcastPlayer
-const NotificationScreen = ({navigation}) => {
+const NotificationScreen = ({navigation}: any) => {
   //const notifications = [];
   const {user_token} = useSelector((state: any) => state.user);
   const [refreshing, setRefreshing] = React.useState(false);

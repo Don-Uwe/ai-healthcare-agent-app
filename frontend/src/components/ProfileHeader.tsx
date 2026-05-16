@@ -134,7 +134,7 @@ const ProfileHeader = ({
                 <TouchableOpacity
                   activeOpacity={0.7}
                   style={[styles.iconButton, {backgroundColor: PRIMARY_COLOR}]}
-                  onPress={() => navigation.navigate('ProfileEditScreen')}>
+                  onPress={() => (navigation as any).navigate('ProfileEditScreen')}>
                   <Feather name="edit-3" size={22} color="#ffffff" />
                 </TouchableOpacity>
               )}
@@ -142,7 +142,7 @@ const ProfileHeader = ({
           ) : other ? (
             <TouchableOpacity
               activeOpacity={0.7}
-              onPress={() => navigation.navigate('ProfileEditScreen')}
+              onPress={() => (navigation as any).navigate('ProfileEditScreen')}
               style={styles.primaryBtn}
             >
               <MaterialIcons name="edit" size={20} color="#ffffff" />
@@ -239,7 +239,7 @@ const ProfileHeader = ({
               style={[styles.listButton, {backgroundColor: themeColors.card, borderColor: themeColors.border}]}
               onPress={() => {
                 if (isConnected) {
-                  navigation.navigate('LogoutScreen', { profile_image: profileImg, username: username });
+                  (navigation as any).navigate('LogoutScreen', { profile_image: profileImg, username: username });
                 } else {
                   Snackbar.show({ text: 'Please check your internet connection!', duration: Snackbar.LENGTH_SHORT });
                 }

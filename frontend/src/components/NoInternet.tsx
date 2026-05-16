@@ -3,7 +3,11 @@ import {StyleSheet, Text, View, Image, TouchableOpacity} from 'react-native';
 import {hp, wp} from '../helper/Metric';
 import {PRIMARY_COLOR} from '../helper/Theme';
 
-const NoInternet = ({onRetry}) => {
+interface NoInternetProps {
+  onRetry: () => void;
+}
+
+const NoInternet = ({onRetry}: NoInternetProps) => {
   return (
     <View style={styles.wrapper}>
       <View style={styles.container}>

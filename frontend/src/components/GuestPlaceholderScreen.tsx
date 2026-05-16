@@ -4,7 +4,7 @@ import { YStack, Text, Button, XStack } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProp } from '@react-navigation/native';
-import { RootStackParamList } from '../../type';
+import { RootStackParamList } from '../type';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 
 interface GuestPlaceholderScreenProps {

@@ -20,7 +20,7 @@ const useUploadImage = () => {
 
 
       const formData = new FormData();
-      formData.append('file', {uri, name: filename, type});
+      formData.append('file', {uri, name: filename, type} as any);
       console.log("Type:", type);
 
       //formData.append('file', uri);

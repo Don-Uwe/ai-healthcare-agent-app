@@ -45,7 +45,7 @@ const NetworkCheck = () => {
         Please wait...
       </Animated.Text>
       <Animated.Text style={[styles.subText, textStyle2]}>
-        We're checking your network connection
+        We&apos;re checking your network connection
       </Animated.Text>
       <Animated.Text style={[styles.subText, textStyle3]}>
         This may take a few moments

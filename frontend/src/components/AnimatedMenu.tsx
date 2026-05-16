@@ -24,7 +24,7 @@ export default function ArticleFloatingMenu(props: ArticleFloatingMenuProp) {
       <View style={styles.arrow} />
       {props.items.map((item, index) => (
         <TouchableOpacity key={index} style={styles.box} onPress={item.action}>
-          <AntDesign name={item.icon} size={20} color="#1F1F1F" />
+          <AntDesign name={item.icon as any} size={20} color="#1F1F1F" />
           <Text style={styles.text}>{item.name}</Text>
         </TouchableOpacity>
       ))}

@@ -132,10 +132,7 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
                 dispatch(setGuestMode(false));
                 setTimeout(() => {
                   if (redirectTo) {
-                    navigation.navigate({
-                      name: redirectTo.name,
-                      params: redirectTo.params,
-                    });
+                    (navigation as any).navigate(redirectTo.name, redirectTo.params);
 
                     return;
                   }

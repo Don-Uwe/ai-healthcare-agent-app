@@ -59,7 +59,7 @@ export default function ArticleFloatingMenuSheet({
                 paddingHorizontal="$3"
                 pressStyle={{backgroundColor: '$gray4'}}>
                 <XStack alignItems="center" gap="$3">
-                  <AntDesign name={item.icon} size={20} color="black" />
+                  <AntDesign name={item.icon as any} size={20} color="black" />
                   <Text fontSize={16} fontWeight="600" color="black">
                     {item.name}
                   </Text>

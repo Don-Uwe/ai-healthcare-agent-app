@@ -124,7 +124,7 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
                 fontWeight="500"
                 lineHeight={22}
                 paddingHorizontal="$2">
-                We've sent a 4-digit verification code to{'\n'}
+                We&apos;ve sent a 4-digit verification code to{'\n'}
                 <Text fontWeight="600" color="$blue10">{email}</Text>
               </Paragraph>
             </YStack>
@@ -133,7 +133,7 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
               {otp.map((digit, index) => (
                 <Input
                   key={index}
-                  ref={ref => (inputs.current[index] = ref)}
+                  ref={ref => { inputs.current[index] = ref; }}
                   value={digit}
                   onChangeText={text => handleChange(text, index)}
                   onKeyPress={e => handleKeyPress(e, index)}
@@ -219,7 +219,7 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
 
             <YStack marginTop="$6" alignItems="center" gap="$3">
               <Paragraph color="$gray10" fontSize={15} textAlign="center">
-                Didn't receive the code?
+                Didn&apos;t receive the code?
               </Paragraph>
               <Button
                 chromeless

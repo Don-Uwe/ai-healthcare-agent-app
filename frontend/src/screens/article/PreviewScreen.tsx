@@ -336,7 +336,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
   };
 
   // Helper function to resize an image
-  const resizeImage = async localImage => {
+  const resizeImage = async (localImage: string) => {
     try {
       const resizedImageUri = await ImageResizer.createResizedImage(
         localImage,

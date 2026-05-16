@@ -4,7 +4,7 @@ import Dropdown from './Dropdown';
 import { useDispatch } from 'react-redux';
 import { showAlert } from '../store/alertSlice';
 
-const DropDownComponent = ({data}) => {
+const DropDownComponent = ({data}: {data: any[]}) => {
   const [specializationData, setspecializationData] = useState(data);
   const [specialization, setspecialization] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -22,7 +22,7 @@ const DropDownComponent = ({data}) => {
       return null;
     }
     const isAlreadyExist = specializationData.filter(
-      specialize =>
+      (specialize: any) =>
         specialize.name.toLowerCase() === specialization.toLocaleLowerCase(),
     );
     //console.log(isAlreadyExist);

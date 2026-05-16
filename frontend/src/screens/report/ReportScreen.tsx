@@ -47,9 +47,9 @@ export default function ReportScreen({navigation, route}: ReportScreenProp) {
           <View style={styles.iconContainer}>
             <MaterialCommunityIcons name="shield-alert" size={48} color={PRIMARY_COLOR} />
           </View>
-          <Text style={styles.header}>What's going on?</Text>
+          <Text style={styles.header}>What&apos;s going on?</Text>
           <Text style={styles.subHeader}>
-            Help us understand the issue. We'll review this report based on our Community Guidelines.
+            Help us understand the issue. We&apos;ll review this report based on our Community Guidelines.
           </Text>
         </View>
 
@@ -103,7 +103,7 @@ export default function ReportScreen({navigation, route}: ReportScreenProp) {
         <View style={styles.infoCard}>
           <Ionicons name="information-circle" size={20} color="#666" />
           <Text style={styles.infoText}>
-            Your report is anonymous. We won't share your identity with the person you're reporting.
+            Your report is anonymous. We won&apos;t share your identity with the person you&apos;re reporting.
           </Text>
         </View>
       </ScrollView>

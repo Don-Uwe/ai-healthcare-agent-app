@@ -79,7 +79,7 @@ export default function NewPasswordScreen({
     {
       onSuccess: () => {
         Alert.alert('Password reset successfully');
-        navigation.navigate('LoginScreen');
+        navigation.navigate('LoginScreen', {});
       },
 
       onError: (error: AxiosError) => {
@@ -110,7 +110,7 @@ export default function NewPasswordScreen({
   );
 };
 
-  const handlePassword = e => {
+  const handlePassword = (e: string) => {
     let pass = e;
     setErrorMessage(null);
     setPassword(pass);
@@ -122,7 +122,7 @@ export default function NewPasswordScreen({
     }
   };
 
-  const handleConfirmPassword = e => {
+  const handleConfirmPassword = (e: string) => {
     let pass = e;
     setErrorMessage(null);
     setConfirmPassword(pass);
@@ -374,7 +374,7 @@ export default function NewPasswordScreen({
                       <>
                         <Text fontSize={14} color="$red10">✗</Text>
                         <Text fontSize={13} color="$red10" fontWeight="500">
-                          Passwords don't match
+                          Passwords don&apos;t match
                         </Text>
                       </>
                     )}
@@ -434,7 +434,7 @@ export default function NewPasswordScreen({
             <Button
               chromeless
               marginTop="$5"
-              onPress={() => navigation.navigate('LoginScreen')}
+              onPress={() => navigation.navigate('LoginScreen', {})}
               padding="$2"
               height="auto">
               <XStack ai="center" gap="$2">

@@ -58,7 +58,7 @@ export default function ReportConfirmationScreen({
               <Ionicons name="shield-checkmark" size={20} color={PRIMARY_COLOR} />
             </View>
             <Text style={styles.infoText}>
-              We'll review your report within 24-48 hours based on our Community Guidelines.
+              We&apos;ll review your report within 24-48 hours based on our Community Guidelines.
             </Text>
           </View>
 
@@ -67,7 +67,7 @@ export default function ReportConfirmationScreen({
               <Ionicons name="eye-off" size={20} color={PRIMARY_COLOR} />
             </View>
             <Text style={styles.infoText}>
-              Your report is confidential. The person you reported won't know it was you.
+              Your report is confidential. The person you reported won&apos;t know it was you.
             </Text>
           </View>
 
@@ -76,7 +76,7 @@ export default function ReportConfirmationScreen({
               <Ionicons name="ban" size={20} color={PRIMARY_COLOR} />
             </View>
             <Text style={styles.infoText}>
-              If we find serious or repeated violations, we may restrict the user's ability to take actions throughout our app.
+              If we find serious or repeated violations, we may restrict the user&apos;s ability to take actions throughout our app.
             </Text>
           </View>
         </View>

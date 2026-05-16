@@ -24,14 +24,14 @@ export default function OverviewScreen({navigation}: OverviewScreenProps) {
     if (item?.status === StatusEnum.PUBLISHED) {
       navigation.navigate('ArticleScreen', {
         articleId: Number(item?._id),
-        authorId: item?.authorId,
+        authorId: item?.authorId as any,
         recordId: item?.pb_recordId,
       });
     } else {
       // navigate to review screen
       // check item status
       if (item?.status === StatusEnum.DISCARDED) {
-        // eslint-disable-next-line prettier/prettier
+
         //continue;
         return;
       } else if (
@@ -40,7 +40,7 @@ export default function OverviewScreen({navigation}: OverviewScreenProps) {
       ) {
         navigation.navigate('ReviewScreen', {
           articleId: Number(item?._id),
-          authorId: item?.authorId,
+          authorId: item?.authorId as any,
           recordId: item?.pb_recordId,
         });
       } else {
@@ -70,13 +70,13 @@ export default function OverviewScreen({navigation}: OverviewScreenProps) {
     } else {
       navigation.navigate('ImprovementReviewScreen', {
         requestId: item._id,
-        authorId: item.article.authorId, // although we don't need to send author id
+        authorId: item.article.authorId as any, // although we don't need to send author id
         recordId: item.pb_recordId,
         articleRecordId: item.article_recordId,
       });
     }
   };
-  const renderTabBar = props => {
+  const renderTabBar = (props: any) => {
     return (
       <MaterialTabBar
         {...props}

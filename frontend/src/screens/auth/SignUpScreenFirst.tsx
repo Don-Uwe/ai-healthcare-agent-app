@@ -99,7 +99,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
               text: 'Verification email sent!',
               duration: Snackbar.LENGTH_LONG,
             });
-            navigation.navigate('LoginScreen');
+            navigation.navigate('LoginScreen', {});
           },
 
           onError: (err: any) => {

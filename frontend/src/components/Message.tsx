@@ -1,9 +1,14 @@
-/* eslint-disable react-native/no-inline-styles */
+
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import {PRIMARY_COLOR} from '../helper/Theme';
 
-const Message = ({message, isUserMessage}) => {
+interface MessageProps {
+  message: string;
+  isUserMessage: boolean;
+}
+
+const Message = ({message, isUserMessage}: MessageProps) => {
   return (
     <View
       style={[

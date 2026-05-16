@@ -58,7 +58,7 @@ const TabNavigation = () => {
           headerRight: () => (
             <HeaderRightMenu
               onClick={() => {
-                navigation.navigate('PodcastSearch');
+                (navigation as any).navigate('PodcastSearch');
               }}
             />
           ),
