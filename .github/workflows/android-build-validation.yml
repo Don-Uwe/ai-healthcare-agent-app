@@ -1,0 +1,89 @@
+name: Android Build Validation
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - 'frontend/android/**'
+      - 'frontend/package.json'
+      - 'frontend/yarn.lock'
+      - '.github/workflows/android-build-validation.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'frontend/android/**'
+      - 'frontend/package.json'
+      - 'frontend/yarn.lock'
+      - '.github/workflows/android-build-validation.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-android:
+    name: Build Android Debug
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: ./frontend
+    env:
+      CI: true
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node & Cache Dependencies
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'yarn'
+          cache-dependency-path: frontend/yarn.lock
+
+      - name: Cache Gradle Wrapper
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('frontend/android/gradle/wrapper/gradle-wrapper.properties') }}
+
+      - name: Cache Gradle Dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-caches-${{ hashFiles('frontend/android/**/*.gradle*', 'frontend/android/**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-caches-
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Install JS Dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Grant Gradle Execute Permission
+        working-directory: ./frontend/android
+        run: chmod +x gradlew
+        
+      - name: Compile Android Debug Build
+        working-directory: ./frontend/android
+        run: ./gradlew assembleDebug --console=plain
+
+      - name: Upload APK Artifact (On Failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-build-logs
+          path: |
+            ~/.gradle/daemon/**/daemon-*.out.log
+            frontend/android/app/build/reports
+          if-no-files-found: ignore
+          retention-days: 7
