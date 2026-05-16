@@ -2135,15 +2135,15 @@
   dependencies:
     merge-options "^3.0.4"
 
-"@react-native-community/netinfo@^11.4.1":
-  version "11.5.2"
-  resolved "https://registry.yarnpkg.com/@react-native-community/netinfo/-/netinfo-11.5.2.tgz#daf3bc1b5cf6e9fc6725600c9e95875b5e50e694"
-  integrity sha512-/g0m65BtX9HU+bPiCH2517bOHpEIUsGrWFXDzi1a5nNKn5KujQgm04WhL7/OSXWKHyrT8VVtUoJA0XKRxueBpQ==
+"@react-native-community/netinfo@11.4.1":
+  version "11.4.1"
+  resolved "https://registry.yarnpkg.com/@react-native-community/netinfo/-/netinfo-11.4.1.tgz#a3c247aceab35f75dd0aa4bfa85d2be5a4508688"
+  integrity sha512-B0BYAkghz3Q2V09BF88RA601XursIEA111tnc2JOaN7axJWmNefmfjZqw/KdSxKZp7CZUuPpjBmz/WCR9uaHYg==
 
-"@react-native-community/slider@^5.0.1":
-  version "5.2.0"
-  resolved "https://registry.yarnpkg.com/@react-native-community/slider/-/slider-5.2.0.tgz#c154ac4ec10537160462d7a9f3e2e43098257302"
-  integrity sha512-484sH8aWEaSjxaZ7HT3YZ8CKDcNes2synko1vdEz5DFEdvKAduxKJTj22L/qBMD7rtIkfbX69DMzWDAGbOAV6w==
+"@react-native-community/slider@5.0.1":
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/@react-native-community/slider/-/slider-5.0.1.tgz#478789e526af31e0660c6f49fa5c5429d8d4287b"
+  integrity sha512-K3JRWkIW4wQ79YJ6+BPZzp1SamoikxfPRw7Yw4B4PElEQmqZFrmH9M5LxvIo460/3QSrZF/wCgi3qizJt7g/iw==
 
 "@react-native-firebase/app@^23.4.1":
   version "23.8.8"
@@ -2388,10 +2388,12 @@
   resolved "https://registry.yarnpkg.com/@rtsao/scc/-/scc-1.1.0.tgz#927dd2fae9bc3361403ac2c7a00c32ddce9ad7e8"
   integrity sha512-zt6OdqaDoOnJ1ZYsCYGt9YmWzDXl4vQdKTyJev62gFhRGKdx7mcT54V9KIjg+d2wi9EXsPvAPKe7i7WjfVWB8g==
 
-"@shopify/flash-list@^2.1.0":
-  version "2.3.1"
-  resolved "https://registry.yarnpkg.com/@shopify/flash-list/-/flash-list-2.3.1.tgz#d4f90b1471a741a97c07d9aadbfaf200e92c86f7"
-  integrity sha512-7oktg2NQR7KAODjFoDaWe8/OBzyYbdTE3zQTrUBMxjIbxHTHN7UXRX1hX3DHk8KvtkgQdRfZOV8Gjj2l4fGrXw==
+"@shopify/flash-list@2.0.2":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@shopify/flash-list/-/flash-list-2.0.2.tgz#644748f883fccf8cf2e0ca251e0ef88673b89120"
+  integrity sha512-zhlrhA9eiuEzja4wxVvotgXHtqd3qsYbXkQ3rsBfOgbFA9BVeErpDE/yEwtlIviRGEqpuFj/oU5owD6ByaNX+w==
+  dependencies:
+    tslib "2.8.1"
 
 "@sinclair/typebox@^0.27.8":
   version "0.27.10"
@@ -5442,10 +5444,10 @@ expo-asset@^12.0.9, expo-asset@~12.0.13:
     "@expo/image-utils" "^0.8.8"
     expo-constants "~18.0.13"
 
-expo-audio@~1.0.14:
-  version "1.0.16"
-  resolved "https://registry.yarnpkg.com/expo-audio/-/expo-audio-1.0.16.tgz#6cee98909c5c8b641832e73d944cf0be1c16d4de"
-  integrity sha512-j7otyjtO+8PVbemoCoRBr2Em0Kv9to3bfz5UpI5tDVVb5gD1dkn7sjv6/W6tWNqx14WLR1Wijh/ACecVv1Py+g==
+expo-audio@~1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/expo-audio/-/expo-audio-1.1.1.tgz#7b9763118e321c5dfbf2771cd4a5b6790ce4fc8d"
+  integrity sha512-CPCpJ+0AEHdzWROc0f00Zh6e+irLSl2ALos/LPvxEeIcJw1APfBa4DuHPkL4CQCWsVe7EnUjFpdwpqsEUWcP0g==
 
 expo-constants@~18.0.10, expo-constants@~18.0.13:
   version "18.0.13"
@@ -8079,10 +8081,10 @@ react-native-is-edge-to-edge@^1.1.6, react-native-is-edge-to-edge@^1.2.1:
   resolved "https://registry.yarnpkg.com/react-native-is-edge-to-edge/-/react-native-is-edge-to-edge-1.3.1.tgz#feb9a6a8faf0874298947edd556e5af22044e139"
   integrity sha512-NIXU/iT5+ORyCc7p0z2nnlkouYKX425vuU1OEm6bMMtWWR9yvb+Xg5AZmImTKoF9abxCPqrKC3rOZsKzUYgYZA==
 
-react-native-keyboard-controller@^1.20.4:
-  version "1.21.7"
-  resolved "https://registry.yarnpkg.com/react-native-keyboard-controller/-/react-native-keyboard-controller-1.21.7.tgz#2e9c6ab2d309a81d678420dcaaa7314b0324d42d"
-  integrity sha512-gs+8nI8HYnRdDt4NWbk1iVuS6kDLf2taJvp+h/TjM1FBdtnQmlYLJ6buNiUqSnkIH4OFEAxdNr3/GOOYdLfkUQ==
+react-native-keyboard-controller@1.18.5:
+  version "1.18.5"
+  resolved "https://registry.yarnpkg.com/react-native-keyboard-controller/-/react-native-keyboard-controller-1.18.5.tgz#ae12131f2019c574178479d2c55784f55e08bb68"
+  integrity sha512-wbYN6Tcu3G5a05dhRYBgjgd74KqoYWuUmroLpigRg9cXy5uYo7prTMIvMgvLtARQtUF7BOtFggUnzgoBOgk0TQ==
   dependencies:
     react-native-is-edge-to-edge "^1.2.1"
 
@@ -8147,13 +8149,14 @@ react-native-svg-transformer@^1.5.1:
     "@svgr/plugin-svgo" "^8.1.0"
     path-dirname "^1.0.2"
 
-react-native-svg@^15.14.0:
-  version "15.15.5"
-  resolved "https://registry.yarnpkg.com/react-native-svg/-/react-native-svg-15.15.5.tgz#822805c14481b8ec16d5fbac1e3ce2b27a5509d7"
-  integrity sha512-L4go5jA+GWutdJ/JucuN20cjAbMg1HmMtAP+wZ+3JLCf6Jd0bhXQHxciRP/AQm/FlrIEZwkMcHNZP+FXAiic0w==
+react-native-svg@15.12.1:
+  version "15.12.1"
+  resolved "https://registry.yarnpkg.com/react-native-svg/-/react-native-svg-15.12.1.tgz#7ba756dd6a235f86a2c312a1e7911f9b0d18ad3a"
+  integrity sha512-vCuZJDf8a5aNC2dlMovEv4Z0jjEUET53lm/iILFnFewa15b4atjVxU6Wirm6O9y6dEsdjDZVD7Q3QM4T1wlI8g==
   dependencies:
     css-select "^5.1.0"
     css-tree "^1.1.3"
+    warn-once "0.1.1"
 
 react-native-tts@^4.1.1:
   version "4.1.1"
@@ -8182,10 +8185,10 @@ react-native-web@~0.21.0:
     postcss-value-parser "^4.2.0"
     styleq "^0.1.3"
 
-react-native-webview@^13.16.0:
-  version "13.16.1"
-  resolved "https://registry.yarnpkg.com/react-native-webview/-/react-native-webview-13.16.1.tgz#d5a6483fcb823eac704bd2a3d82c263771c6ede3"
-  integrity sha512-If0eHhoEdOYDcHsX+xBFwHMbWBGK1BvGDQDQdVkwtSIXiq1uiqjkpWVP2uQ1as94J0CzvFE9PUNDuhiX0Z6ubw==
+react-native-webview@13.15.0:
+  version "13.15.0"
+  resolved "https://registry.yarnpkg.com/react-native-webview/-/react-native-webview-13.15.0.tgz#b6d2f8d8dd65897db76659ddd8198d2c74ec5a79"
+  integrity sha512-Vzjgy8mmxa/JO6l5KZrsTC7YemSdq+qB01diA0FqjUTaWGAGwuykpJ73MDj3+mzBSlaDxAEugHzTtkUQkQEQeQ==
   dependencies:
     escape-string-regexp "^4.0.0"
     invariant "2.2.4"
@@ -9167,7 +9170,7 @@ tsconfig-paths@^3.15.0:
     minimist "^1.2.6"
     strip-bom "^3.0.0"
 
-tslib@^2.0.0, tslib@^2.0.3, tslib@^2.1.0, tslib@^2.4.0:
+tslib@2.8.1, tslib@^2.0.0, tslib@^2.0.3, tslib@^2.1.0, tslib@^2.4.0:
   version "2.8.1"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.8.1.tgz#612efe4ed235d567e8aba5f2a5fab70280ade83f"
   integrity sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==
@@ -9431,7 +9434,7 @@ walker@^1.0.7, walker@^1.0.8:
   dependencies:
     makeerror "1.0.12"
 
-warn-once@^0.1.0, warn-once@^0.1.1:
+warn-once@0.1.1, warn-once@^0.1.0, warn-once@^0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/warn-once/-/warn-once-0.1.1.tgz#952088f4fb56896e73fd4e6a3767272a3fccce43"
   integrity sha512-VkQZJbO8zVImzYFteBXvBOZEl1qL175WH8VmZcxF2fZAoudNhNDvHi+doCaAEdU2l2vtcIwa2zn0QK5+I1HQ3Q==
