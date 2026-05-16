@@ -80,17 +80,27 @@ jobs:
           node -e "
             const fs = require('fs');
             let content = process.env.GOOGLE_SERVICES_JSON;
-            if (!content) {
+            if (!content || content.trim().length === 0) {
               console.error('GOOGLE_SERVICES_JSON is empty!');
               process.exit(1);
             }
+            let parsed;
             try {
-              JSON.parse(content);
-            } catch (e) {
-              console.log('Secret is not valid raw JSON, attempting base64 decode...');
-              content = Buffer.from(content, 'base64').toString('utf8');
+              parsed = JSON.parse(content);
+            } catch (e1) {
+              try {
+                const decoded = Buffer.from(content, 'base64').toString('utf8');
+                parsed = JSON.parse(decoded);
+              } catch (e2) {
+                console.error('CRITICAL ERROR: GOOGLE_SERVICES_JSON secret is corrupted.');
+                console.error('It is neither valid raw JSON nor valid Base64-encoded JSON.');
+                console.error('Raw JSON Error:', e1.message);
+                console.error('Base64 JSON Error:', e2.message);
+                console.error('Please re-copy your google-services.json file and update your GitHub Secret!');
+                process.exit(1);
+              }
             }
-            fs.writeFileSync('android/app/google-services.json', content);
+            fs.writeFileSync('android/app/google-services.json', JSON.stringify(parsed, null, 2));
           "
 
       - name: Compile Android Debug Build
