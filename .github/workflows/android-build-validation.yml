@@ -76,7 +76,22 @@ jobs:
       - name: Inject google-services.json
         env:
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
-        run: node -e "const fs = require('fs'); fs.writeFileSync('android/app/google-services.json', process.env.GOOGLE_SERVICES_JSON);"
+        run: |
+          node -e "
+            const fs = require('fs');
+            let content = process.env.GOOGLE_SERVICES_JSON;
+            if (!content) {
+              console.error('GOOGLE_SERVICES_JSON is empty!');
+              process.exit(1);
+            }
+            try {
+              JSON.parse(content);
+            } catch (e) {
+              console.log('Secret is not valid raw JSON, attempting base64 decode...');
+              content = Buffer.from(content, 'base64').toString('utf8');
+            }
+            fs.writeFileSync('android/app/google-services.json', content);
+          "
 
       - name: Compile Android Debug Build
         working-directory: ./frontend/android
