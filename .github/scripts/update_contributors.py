@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 import re
 import json
 import urllib.request
