@@ -26,7 +26,6 @@ jobs:
         with:
           # Make sure to fetch the full history to easily commit and push
           fetch-depth: 0
-          ref: main
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -44,6 +43,7 @@ jobs:
       - name: Commit and push if changed
         env:
           PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
@@ -55,6 +55,6 @@ jobs:
             echo "User $PR_AUTHOR is already in the README or no changes were made."
           else
             git commit -m "docs: add @$PR_AUTHOR to contributors list"
-            git push origin main
+            git push origin "$BASE_BRANCH"
             echo "Successfully committed and pushed new contributor."
           fi
