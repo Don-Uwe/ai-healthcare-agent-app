@@ -120,6 +120,10 @@ Here’s a cleaner version while keeping your original meaning:
     <th>Description</th>
   </tr>
   <tr>
+    <td><img src="https://user-images.githubusercontent.com/63473496/153487849-4f094c16-d21c-463e-9971-98a8af7ba372.png" width="180" alt="GSSoC 2026"/></td>
+    <td><b>GirlScript Summer of Code 2026</b><br>3-month open source program empowering next-generation developers through real-world contributions</td>
+  </tr>
+  <tr>
     <td><img src="https://github.com/user-attachments/assets/e0a40d06-f5b8-42a7-a5a0-033280f842be" width="180" alt="IEEE"/></td>
     <td><b>IEEE IGDTUW Open Source Week</b><br>November 12–18</td>
   </tr>
@@ -187,6 +191,21 @@ Here’s a cleaner version while keeping your original meaning:
    npx expo run android (for android)
    npx expo run ios (for Ios)
  ```
+
+## 🤝 Contribution Guidelines
+
+We welcome contributions to both our **Mobile Application (Expo/React Native)** and **Web Application (React)**!
+
+### 📱 Mobile Contributions (main branch)
+- Mobile code is located on the `main` branch.
+- Follow the standard guidelines in [CONTRIBUTING.md](CONTRIBUTING.md).
+- Create your feature branch off `main` and target your PRs to `main`.
+
+### 🌐 Web Contributions (web branch)
+- Web code is located on the dedicated `web` branch.
+- Switch to the web branch using `git checkout web`.
+- Read and follow the detailed [Web PR & Contribution Guidelines](https://github.com/SB2318/UltimateHealth/blob/web/PR_GUIDELINES.md) on the `web` branch.
+- **CRITICAL:** Ensure all web-related Pull Requests **target the `web` branch** and NOT `main`.
 
 ## :zap:Our Vision:
 

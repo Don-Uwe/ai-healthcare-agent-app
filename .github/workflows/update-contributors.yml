@@ -10,6 +10,7 @@ on:
       - closed
     branches:
       - main
+      - web
 
 jobs:
   update-readme:
@@ -25,6 +26,7 @@ jobs:
         with:
           # Make sure to fetch the full history to easily commit and push
           fetch-depth: 0
+          ref: main
 
       - name: Set up Python
         uses: actions/setup-python@v5

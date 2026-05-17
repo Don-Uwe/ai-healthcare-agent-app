@@ -35,15 +35,24 @@ You can contribute in many ways:
    cd UltimateHealth
    git checkout main
    ```
-3. **Set up the frontend (React Native + Expo)**
-   ```bash
-   cd frontend
-   yarn install
-   npx expo prebuild --clean
+3. **Set up the project**
 
-   npx expo run android   # For Android
-   # or
-   npx expo run ios       # For iOS (requires macOS + Xcode) ```
+   - **For Mobile Frontend (React Native + Expo)**:
+     ```bash
+     cd frontend
+     yarn install
+     npx expo prebuild --clean
+     npx expo run android   # For Android
+     # or
+     npx expo run ios       # For iOS (requires macOS + Xcode)
+     ```
+
+   - **For Web Application (React)**:
+     If you want to contribute to the Web application, you **must** switch to the `web` branch:
+     ```bash
+     git checkout web
+     ```
+     Refer to the `README.md` and `PR_GUIDELINES.md` on the `web` branch for setup, styling, and contribution instructions.
 
 ## Development Workflow
 
@@ -61,7 +70,9 @@ feat: add multilingual article publishing support
 fix: resolve crash in AI chat when no internet
 docs: update contribution guidelines
 ```
-4. **Push to your fork** and open a **Pull Request** to the **main** branch.
+4. **Push to your fork** and open a **Pull Request**:
+   - Target the **main** branch for mobile app/core contributions.
+   - Target the **web** branch for web application contributions.
 
 
 ## Pull Request Guidelines
