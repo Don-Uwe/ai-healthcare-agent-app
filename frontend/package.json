@@ -16,7 +16,7 @@
     "@brown-bear/react-native-autoheight-webview": "^2.0.4",
     "@expo/vector-icons": "^15.0.3",
     "@gorhom/bottom-sheet": "^5.2.6",
-    "@react-native-async-storage/async-storage": "^2.2.0",
+    "@react-native-async-storage/async-storage": "^3.0.2",
     "@react-native-community/netinfo": "11.4.1",
     "@react-native-community/slider": "5.0.1",
     "@react-native-firebase/app": "^23.4.1",
