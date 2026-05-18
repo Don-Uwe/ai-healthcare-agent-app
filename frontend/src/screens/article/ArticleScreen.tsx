@@ -105,9 +105,11 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
 
   const noDataHtml = '<p>No Data found</p>';
 
-  if (user) {
-    dispatch(setUserHandle(user.user_handle));
-  }
+  useEffect(() => {
+    if (user) {
+      dispatch(setUserHandle(user.user_handle));
+    }
+  }, [user]);
 
   // --- Settings ---
   const handleLike = () => {
@@ -254,6 +256,41 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
       },
     });
   };
+
+  const handleImproveArticle = () => {
+    if (isGuest) {
+      navigation.navigate('GuestPlaceholderScreen', {
+        title: 'Sign In Required',
+        description: 'Please sign in or sign up to improve this article.',
+        iconName: 'auto-fix',
+      });
+      return;
+    }
+    if (!article) {
+      Alert.alert('Article not found');
+      return;
+    }
+    if (!articleContent) {
+      Snackbar.show({
+        text: 'Article content is still loading. Please try again.',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+      return;
+    }
+    navigation.navigate('EditorScreen', {
+      title: article.title,
+      description: article.description,
+      selectedGenres: article.tags,
+      imageUtils: article.imageUtils[0],
+      articleData: article,
+      requestId: undefined,
+      pb_record_id: article.pb_recordId,
+      authorName: user?.user_handle ?? '',
+      htmlContent: articleContent,
+      language: article.language,
+    });
+  };
+
 
   async function convertHtmlToPlainText(html: string) {
     let modifiedHtml = html.replace(/ style="[^"]*"/g, '');
@@ -752,6 +789,17 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
 
           <TouchableOpacity
             style={styles.actionButtonFooter}
+            onPress={handleImproveArticle}>
+            <MaterialCommunityIcons
+              name="auto-fix"
+              size={20}
+              color="#666"
+            />
+            <Text style={styles.actionTextFooter}>Improve</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.actionButtonFooter}
             onPress={handleSave}
             disabled={saveMutationPending}>
             {saveMutationPending ? (
@@ -776,6 +824,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
             )}
           </TouchableOpacity>
         </View>
+
+         {/*Improvement row */}
 
         {/* Author Row */}
         <View style={styles.authorRow}>
