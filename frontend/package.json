@@ -88,7 +88,7 @@
   "devDependencies": {
     "@types/react": "~19.1.0",
     "@types/react-native-version-check": "^3.4.8",
-    "babel-preset-expo": "^54.0.6",
+    "babel-preset-expo": "^55.0.21",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
     "metro-config": "^0.84.4",
