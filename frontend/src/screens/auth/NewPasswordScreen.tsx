@@ -135,10 +135,10 @@ export default function NewPasswordScreen({
   };
 
 
+  const insets = useSafeAreaInsets();
   if (isPending) {
     return <Loader />;
   }
-  const insets = useSafeAreaInsets();
   return (
     <YStack flex={1} backgroundColor="$background" paddingTop={insets.top}>
         <YStack
