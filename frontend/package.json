@@ -75,7 +75,7 @@
     "react-native-screens": "~4.16.0",
     "react-native-share": "^12.2.0",
     "react-native-snackbar": "^2.9.0",
-    "react-native-svg": "15.12.1",
+    "react-native-svg": "15.15.5",
     "react-native-tts": "^4.1.1",
     "react-native-version-check": "^3.5.0",
     "react-native-web": "~0.21.0",
