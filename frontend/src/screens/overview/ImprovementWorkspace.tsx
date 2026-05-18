@@ -5,6 +5,7 @@ import {
   View,
   Text,
   StyleSheet,
+  useColorScheme,
 } from 'react-native';
 import { useTheme } from 'tamagui';
 import {EditRequest} from '../../type';
@@ -23,7 +24,7 @@ export default function ImprovementWorkspace({
   handleImprovementClick: (item: EditRequest) => void;
 }) {
   const theme = useTheme();
-  const isDarkMode = theme.name === 'dark';
+  const isDarkMode = useColorScheme() === 'dark';
   const {user_token} = useSelector((state: any) => state.user);
   const [refreshing, setRefreshing] = useState<boolean>(false);
 

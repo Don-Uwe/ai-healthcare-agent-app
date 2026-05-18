@@ -4,6 +4,7 @@ import {StatusBar} from 'expo-status-bar';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import ActivityOverview from '../components/ActivityOverview';
 import {Tabs, MaterialTabBar} from 'react-native-collapsible-tab-view';
+import ArticleCard from '../components/ArticleCard';
 import {useDispatch, useSelector} from 'react-redux';
 import { useTheme } from 'tamagui';
 import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
@@ -20,6 +21,7 @@ import { NoArticleState } from '../components/EmptyStates';
 
 const ProfileScreen = ({navigation}: ProfileScreenProps) => {
   const theme = useTheme();
+  const isDarkMode = useColorScheme() === 'dark';
   const {user_id} = useSelector((state: any) => state.user);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const {isConnected} = useSelector((state: any) => state.network);
@@ -225,7 +227,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
           {backgroundColor: theme.background.val},
         ]}>
         <StatusBar
-          style={theme.name === 'dark' ? 'light' : 'dark'}
+          style={isDarkMode ? 'light' : 'dark'}
           backgroundColor="#007AFF"
         />
         <Loader />
@@ -237,10 +239,10 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
     <SafeAreaView
       style={[
         styles.container,
-        {backgroundColor: theme.name === 'dark' ? '#000A60' : PRIMARY_COLOR},
+        {backgroundColor: isDarkMode ? '#000A60' : PRIMARY_COLOR},
       ]}>
       <StatusBar
-        style={theme.name === 'dark' ? 'light' : 'dark'}
+        style={isDarkMode ? 'light' : 'dark'}
         backgroundColor="#007AFF"
       />
       <View style={[styles.innerContainer]}>

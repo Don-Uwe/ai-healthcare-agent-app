@@ -31,6 +31,7 @@ import { NoArticleState } from '../components/EmptyStates';
 
 const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   const theme = useTheme();
+  const isDarkMode = useColorScheme() === 'dark';
   const {authorId, author_handle} = route.params;
   const {user_id, user_handle} = useSelector(
     (state: any) => state.user,
@@ -318,7 +319,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
           {backgroundColor: theme.background.val},
         ]}>
         <StatusBar
-          style={theme.name === 'dark' ? 'light' : 'dark'}
+          style={isDarkMode ? 'light' : 'dark'}
           backgroundColor="#007AFF"
         />
         <Loader />
