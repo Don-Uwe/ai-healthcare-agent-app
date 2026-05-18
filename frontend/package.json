@@ -91,7 +91,7 @@
     "babel-preset-expo": "^54.0.6",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
-    "metro-config": "^0.83.3",
+    "metro-config": "^0.84.4",
     "react-native-svg-transformer": "^1.5.1",
     "typescript": "~5.9.2"
   },
