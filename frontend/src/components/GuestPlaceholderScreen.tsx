@@ -1,5 +1,5 @@
 import React from 'react';
-import { useColorScheme, Image } from 'react-native';
+import { Image } from 'react-native';
 import { YStack, Text, Button, XStack } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -18,14 +18,14 @@ const GuestPlaceholderScreen: React.FC<GuestPlaceholderScreenProps> = ({
   description = 'Sign up or sign in to access personalized features, interact with the community, and manage your profile.',
   iconName = 'user-lock',
 }) => {
-  const isDarkMode = useColorScheme() === 'dark';
+  // removed isDarkMode variable
   const inset = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   return (
     <YStack
       flex={1}
-      backgroundColor={isDarkMode ? '$background' : '#fff'}
+      backgroundColor="$background"
       paddingHorizontal="$5"
       paddingTop={inset.top + 40}
       justifyContent="center"
@@ -37,7 +37,7 @@ const GuestPlaceholderScreen: React.FC<GuestPlaceholderScreenProps> = ({
       <YStack 
         alignItems="center" 
         justifyContent="center" 
-        backgroundColor={isDarkMode ? '$gray400' : '$blue3'}
+        backgroundColor="$backgroundLight"
         width={100} 
         height={100} 
         borderRadius={50}
@@ -45,13 +45,13 @@ const GuestPlaceholderScreen: React.FC<GuestPlaceholderScreenProps> = ({
         animation="bouncy"
         enterStyle={{ opacity: 0, scale: 0.5 }}
       >
-        <FontAwesome5 name={iconName} size={40} color={isDarkMode ? 'white' : '#000A60'} />
+        <FontAwesome5 name={iconName} size={40} color="$color" />
       </YStack>
 
       <Text
         fontSize={24}
         fontWeight="800"
-        color={isDarkMode ? '$color' : '$color10'}
+        color="$color"
         textAlign="center"
       >
         {title}
@@ -59,7 +59,7 @@ const GuestPlaceholderScreen: React.FC<GuestPlaceholderScreenProps> = ({
 
       <Text
         fontSize={16}
-        color={isDarkMode ? '$color10' : '$gray11'}
+        color="$color10"
         textAlign="center"
         lineHeight={24}
         paddingHorizontal="$2"
@@ -90,7 +90,7 @@ const GuestPlaceholderScreen: React.FC<GuestPlaceholderScreenProps> = ({
 
         <Button
           variant="outlined"
-          borderColor={isDarkMode ? '$gray600' : '$gray8'}
+          borderColor="$borderColor"
           size="$6"
           borderRadius="$4"
           pressStyle={{ scale: 0.97 }}
@@ -99,7 +99,7 @@ const GuestPlaceholderScreen: React.FC<GuestPlaceholderScreenProps> = ({
              navigation.navigate('SignUpScreenFirst');
           }}
         >
-          <Text fontSize={18} color={isDarkMode ? '$color' : '$black'} fontWeight="600">
+          <Text fontSize={18} color="$color" fontWeight="600">
             Sign Up
           </Text>
         </Button>

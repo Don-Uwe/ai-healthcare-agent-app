@@ -4,8 +4,8 @@ import {StatusBar} from 'expo-status-bar';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import ActivityOverview from '../components/ActivityOverview';
 import {Tabs, MaterialTabBar} from 'react-native-collapsible-tab-view';
-import ArticleCard from '../components/ArticleCard';
 import {useDispatch, useSelector} from 'react-redux';
+import { useTheme } from 'tamagui';
 import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import ProfileHeader from '../components/ProfileHeader';
@@ -19,8 +19,7 @@ import {useUpdateViewCount} from '../hooks/useUpdateViewCount';
 import { NoArticleState } from '../components/EmptyStates';
 
 const ProfileScreen = ({navigation}: ProfileScreenProps) => {
-  const colorScheme = useColorScheme();
-  const isDarkMode = colorScheme === 'dark';
+  const theme = useTheme();
   const {user_id} = useSelector((state: any) => state.user);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const {isConnected} = useSelector((state: any) => state.network);
@@ -223,10 +222,10 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
       <SafeAreaView
         style={[
           styles.loadingContainer,
-          {backgroundColor: isDarkMode ? '#000A60' : '#F0F8FF'},
+          {backgroundColor: theme.background.val},
         ]}>
         <StatusBar
-          style={isDarkMode ? 'light' : 'dark'}
+          style={theme.name === 'dark' ? 'light' : 'dark'}
           backgroundColor="#007AFF"
         />
         <Loader />
@@ -238,10 +237,10 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
     <SafeAreaView
       style={[
         styles.container,
-        {backgroundColor: isDarkMode ? '#000A60' : PRIMARY_COLOR},
+        {backgroundColor: theme.name === 'dark' ? '#000A60' : PRIMARY_COLOR},
       ]}>
       <StatusBar
-        style={isDarkMode ? 'light' : 'dark'}
+        style={theme.name === 'dark' ? 'light' : 'dark'}
         backgroundColor="#007AFF"
       />
       <View style={[styles.innerContainer]}>
@@ -250,7 +249,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
           renderTabBar={renderTabBar}
           containerStyle={[
             styles.tabsContainer,
-            {backgroundColor: isDarkMode ? '#000A60' : '#F0F8FF'},
+            {backgroundColor: theme.background.val},
           ]}>
           {/* Tab 1 */}
           <Tabs.Tab name="Insight">

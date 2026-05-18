@@ -103,7 +103,7 @@ export default function AppContent() {
   useNotificationListeners();
 
   return (
-    <TamaguiProvider config={config}>
+    <TamaguiProvider config={config} defaultTheme={isDarkMode ? 'dark' : 'light'}>
       <FirebaseProvider>
         <SocketProvider>
           <SafeAreaProvider>

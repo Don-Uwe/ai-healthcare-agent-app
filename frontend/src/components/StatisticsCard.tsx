@@ -1,6 +1,6 @@
 import React from 'react';
-import {StyleSheet, View, Text, useColorScheme} from 'react-native';
-import {Card, XStack, YStack} from 'tamagui';
+import {StyleSheet, View} from 'react-native';
+import {Card, XStack, YStack, Text} from 'tamagui';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -21,8 +21,7 @@ const StatisticsCard = ({
   totalPodcasts = 0,
   improvements = 0,
 }:StatisticsCardProps) => {
-  const colorScheme = useColorScheme();
-  const isDarkMode = colorScheme === 'dark';
+  // removed isDarkMode variable
 
   const StatItem = ({
     icon,
@@ -44,7 +43,7 @@ const StatisticsCard = ({
         {icon}
       </View>
       <Text style={[styles.statValue, {color: PRIMARY_COLOR}]}>{value}</Text>
-      <Text style={[styles.statLabel, {color: isDarkMode ? '#ccc' : '#666'}]}>
+      <Text style={[styles.statLabel]} color="$color10">
         {label}
       </Text>
     </YStack>
@@ -60,8 +59,8 @@ const StatisticsCard = ({
       width={"90%"}
       marginHorizontal="$4"
       marginVertical="$1"
-      backgroundColor={isDarkMode ? '#1a1a2e' : '#ffffff'}>
-      <Text style={[styles.sectionTitle, {color: isDarkMode ? '#fff' : '#000'}]}>
+      backgroundColor="$backgroundLight">
+      <Text style={[styles.sectionTitle]} color="$color">
         Statistics Overview
       </Text>
 

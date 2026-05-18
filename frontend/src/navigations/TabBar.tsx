@@ -1,13 +1,14 @@
 import React from 'react';
-import {View, Pressable, StyleSheet, useColorScheme, Image} from 'react-native';
+import {View, Pressable, StyleSheet, Image} from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import {VULTR_CHAT_PROFILE_AVTARS} from '../helper/Utils';
 import { hp } from '../helper/Metric';
+import { useTheme } from 'tamagui';
 
 const TabBar = ({state, descriptors, navigation}: any) => {
-  const isDarkMode = useColorScheme() === 'dark';
+  const theme = useTheme();
 
   // List of routes where the tab bar should be hidden
   const hideTabBarScreens = ['Chatbot'];
@@ -24,7 +25,7 @@ const TabBar = ({state, descriptors, navigation}: any) => {
     <View
       style={[
         styles.mainContainer,
-        {backgroundColor: isDarkMode ? 'black' : 'white'},
+        {backgroundColor: theme.background.val},
       ]}>
       {state.routes.map((route: any, index: number) => {
         const {options} = descriptors[route.key];
@@ -60,9 +61,7 @@ const TabBar = ({state, descriptors, navigation}: any) => {
               style={{
                 backgroundColor: isFocused
                   ? PRIMARY_COLOR
-                  : isDarkMode
-                  ? 'black'
-                  : 'white',
+                  : theme.background.val,
                 borderRadius: 50,
                 width: 40,
                 height: 40,
@@ -80,14 +79,14 @@ const TabBar = ({state, descriptors, navigation}: any) => {
                   <Ionicons
                     name="home"
                     size={24}
-                    color={isFocused ? 'white' : isDarkMode ? 'white' : 'black'}
+                    color={isFocused ? 'white' : theme.color.val}
                   />
                 )}
                 {label === 'Podcasts' && (
                   <FontAwesome
                     name="podcast"
                     size={24}
-                    color={isFocused ? 'white' : isDarkMode ? 'white' : 'black'}
+                    color={isFocused ? 'white' : theme.color.val}
                   />
                 )}
                 {label === 'Chatbot' && (
@@ -97,7 +96,7 @@ const TabBar = ({state, descriptors, navigation}: any) => {
                       width: 50,
                       height: 50,
                       borderRadius: 25,
-                      //tintColor: isFocused ? 'white' : isDarkMode ? 'white' : 'black',
+                      //tintColor: isFocused ? 'white' : theme.color.val,
                     }}
                   />
                 )}
@@ -105,7 +104,7 @@ const TabBar = ({state, descriptors, navigation}: any) => {
                   <FontAwesome
                     name="user-circle"
                     size={24}
-                    color={isFocused ? 'white' : isDarkMode ? 'white' : 'black'}
+                    color={isFocused ? 'white' : theme.color.val}
                   />
                 )}
 
@@ -113,7 +112,7 @@ const TabBar = ({state, descriptors, navigation}: any) => {
                   <FontAwesome
                     name="info-circle"
                     size={24}
-                    color={isFocused ? 'white' : isDarkMode ? 'white' : 'black'}
+                    color={isFocused ? 'white' : theme.color.val}
                   />
                 )}
               </View>

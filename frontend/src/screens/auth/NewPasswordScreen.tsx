@@ -11,7 +11,7 @@ import {
   Text,
   Circle,
 } from 'tamagui';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {NewPasswordScreenProp} from '../../type';
 import {AxiosError} from 'axios';
@@ -28,7 +28,7 @@ export default function NewPasswordScreen({
 }: NewPasswordScreenProp) {
   const {email} = route.params;
   const [password, setPassword] = useState('');
-  const isDarkMode = useColorScheme() === 'dark';
+  // removed isDarkMode variable
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordVerify, setPasswordVerify] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -138,9 +138,9 @@ export default function NewPasswordScreen({
   if (isPending) {
     return <Loader />;
   }
+  const insets = useSafeAreaInsets();
   return (
-    <Theme name="light">
-      <SafeAreaView style={{flex: 1, backgroundColor: '#f8f9fa'}}>
+    <YStack flex={1} backgroundColor="$background" paddingTop={insets.top}>
         <YStack
           flex={1}
           justifyContent="center"
@@ -150,7 +150,7 @@ export default function NewPasswordScreen({
           <Card
             elevate
             bordered
-            backgroundColor="white"
+            backgroundColor="$backgroundLight"
             width="100%"
             maxWidth={440}
             height="auto"
@@ -246,7 +246,7 @@ export default function NewPasswordScreen({
                     }
                     focusStyle={{
                       borderColor: passwordVerify ? '$green9' : '$blue9',
-                      backgroundColor: 'white',
+                      backgroundColor: '$background',
                     }}
                   />
                   <Button
@@ -341,7 +341,7 @@ export default function NewPasswordScreen({
                         confirmPassword && password === confirmPassword
                           ? '$green9'
                           : '$blue9',
-                      backgroundColor: 'white',
+                      backgroundColor: '$background',
                     }}
                   />
                   <Button
@@ -453,7 +453,6 @@ export default function NewPasswordScreen({
             </Button>
           </Card>
         </YStack>
-      </SafeAreaView>
-    </Theme>
+      </YStack>
   );
 }

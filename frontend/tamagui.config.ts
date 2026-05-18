@@ -153,14 +153,16 @@ const config = createTamagui({
   themes: {
     ...themes,
     light: {
-      background: tokens.color.white,
-      color: tokens.color.gray800,
-      primary: tokens.color.primary,
+      background: '#FFFFFF',
+      backgroundLight: '#F5F5F5',
+      color: '#424242',
+      primary: '#4F46E5',
     },
     dark: {
-      background: tokens.color.gray800,
-      color: tokens.color.white,
-      primary: tokens.color.primary,
+      background: '#424242',
+      backgroundLight: '#616161',
+      color: '#FFFFFF',
+      primary: '#4F46E5',
     },
   },
   fonts: {

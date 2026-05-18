@@ -5,13 +5,13 @@ import {
   View,
   Text,
   StyleSheet,
-  useColorScheme,
 } from 'react-native';
+import { useTheme } from 'tamagui';
 import {EditRequest} from '../../type';
 import {useSelector} from 'react-redux';
 import Loader from '../../components/Loader';
 import ImprovementCard from '../../components/ImprovementCard';
-import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
+import {PRIMARY_COLOR} from '../../helper/Theme';
 import {hp, wp} from '../../helper/Metric';
 import {useGetAllImprovementsForReview} from '@/src/hooks/useGetUserAllImprovements';
 import {ProfessionalColors} from '../../styles/GlassStyles';
@@ -22,8 +22,8 @@ export default function ImprovementWorkspace({
 }: {
   handleImprovementClick: (item: EditRequest) => void;
 }) {
-  const colorScheme = useColorScheme();
-  const isDarkMode = colorScheme === 'dark';
+  const theme = useTheme();
+  const isDarkMode = theme.name === 'dark';
   const {user_token} = useSelector((state: any) => state.user);
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
@@ -86,7 +86,7 @@ export default function ImprovementWorkspace({
   );
 
   return (
-    <View style={{flex: 1, backgroundColor: isDarkMode ? '#000A60' : '#F0F8FF'}}>
+    <View style={{flex: 1, backgroundColor: theme.background.val as string}}>
       <View style={styles.container}>
         <View style={styles.buttonContainer}>
           {categories.map((item, index) => (
