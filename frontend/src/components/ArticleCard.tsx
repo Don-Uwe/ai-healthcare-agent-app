@@ -110,11 +110,17 @@ const ArticleCard = ({
   };
 
   useEffect(() => {
-    if (socket) {
-      socket.on('connect', () => {
-        console.log('connection established');
-      });
-    }
+    if (!socket) return;
+
+    const handleConnect = () => {
+      console.log('connection established');
+    };
+
+    socket.on('connect', handleConnect);
+
+    return () => {
+      socket.off('connect', handleConnect);
+    };
   }, [socket]);
 
   // Cleanup timer and close menu when card unmounts (FlatList recycling)
