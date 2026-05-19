@@ -14,175 +14,181 @@ import EvilIcons from '@expo/vector-icons/EvilIcons';
 import Slider from '@react-native-community/slider';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Feather from '@expo/vector-icons/Feather';
-import {PRIMARY_COLOR} from '../helper/Theme'; // Custom theme color
-import Tts from 'react-native-tts'; // Text-to-Speech library
-
-// Helper function to check if two values are approximately equal within a given epsilon (tolerance)
-function approximatelyEqual(v1: number, v2: number, epsilon = 500) {
-  return Math.abs(v1 - v2) < epsilon;
-}
+import {PRIMARY_COLOR} from '../helper/Theme';
+import Tts from 'react-native-tts';
 
 const PodcastPlayer = ({}) => {
-  // State variables
-  const [isLiked, setisLiked] = useState(false); // Track if the podcast is liked
-  const [isPlaying, setisPlaying] = useState(false); // Track if the podcast is playing
-  const [duration, setDuration] = useState(0); // Store the total duration of the podcast
-  const [currentPosition, setCurrentPosition] = useState(0); // Store the current playback position
-  const sliderInterval = useRef<NodeJS.Timeout | null>(null); // Reference to store the interval for updating the slider
+  const [isLiked, setisLiked] = useState(false);
+  const [isPlaying, setisPlaying] = useState(false);
+  const [duration, setDuration] = useState(0);
+  const [currentPosition, setCurrentPosition] = useState(0);
 
-  // Text content of the podcast
+  // Playback-synchronization refs (best-effort, event-driven when supported)
+  const isSliderSeekingRef = useRef(false);
+  const speakingStartTimestampRef = useRef<number | null>(null);
+  const currentSpokenOffsetMsRef = useRef<number>(0);
+
   const text = `You're seeking new ways to diversify your portfolio, but it's not always easy to find new reliable investment opportunities. Each week, our financial expert with four decades of successful investing experience will help you discover opportunities outside of your current strategy that you've probably never considered before. If you want to learn about ways to diversify your portfolio in ways that have various levels of risk, this show is for you.`;
 
-  // Rate at which text is spoken (different for iOS and Android)
   const rateAtTextSpoken = Platform.OS === 'ios' ? 1.1 : 0.9;
   const defaultrate = Platform.OS === 'ios' ? 0.4 : 0.6;
 
-  // Function to initialize Text-to-Speech (TTS) settings and calculate the estimated duration of the text
-  const initTts = async () => {
-    const totalDuration = estimateTTSDuration(text); // Calculate total duration based on text
-    setDuration(totalDuration); // Set the duration state
+  const estimateTTSDuration = (txt: string) => {
+    const wordsPerMinute = 130;
+    const adjustedWordsPerMinute = wordsPerMinute * rateAtTextSpoken;
+    const words = txt.split(' ').length;
+    return (words / adjustedWordsPerMinute) * 60 * 1000;
+  };
 
-    const voices = await Tts.voices(); // Get available TTS voices
+  const initTts = async () => {
+    const totalDuration = estimateTTSDuration(text);
+    setDuration(totalDuration);
+
+    const voices = await Tts.voices();
     const availableVoices = voices
       .filter(
-        v =>
+        (v: any) =>
           !v.networkConnectionRequired &&
           !v.notInstalled &&
           (v.language === 'en-IN' || v.language === 'en-US'),
       )
-      .map(v => {
-        return {id: v.id, name: v.name, language: v.language}; // Map relevant voice properties
-      });
+      .map((v: any) => ({id: v.id, name: v.name, language: v.language}));
 
-    // If there are available voices, set the default language and voice
     if (availableVoices && availableVoices.length > 0) {
       try {
         await Tts.setDefaultLanguage(availableVoices[0].language);
       } catch (err) {
-        //console.log(`setDefaultLanguage error `, err);
+        // ignore
       }
-      await Tts.setDefaultVoice(availableVoices[0].id); // Set default voice
-      Tts.setDefaultRate(defaultrate, true); // Set default speech rate
-      Tts.setDefaultPitch(1.5); // Set default pitch
-      Tts.setDucking(true); // Enable ducking (lower other audio)
-      Tts.setIgnoreSilentSwitch('ignore'); // Ignore silent switch on iOS
+      await Tts.setDefaultVoice(availableVoices[0].id);
+      Tts.setDefaultRate(defaultrate, true);
+      Tts.setDefaultPitch(1.5);
+      Tts.setDucking(true);
+      Tts.setIgnoreSilentSwitch('ignore');
     } else {
-      ('Error playing the audio');
       setisPlaying(false);
     }
   };
 
-  // Function to estimate TTS duration based on text length and speaking rate
-  const estimateTTSDuration = (text: string) => {
-    const wordsPerMinute = 130; // Average speaking rate at normal speed 1.1
-    const adjustedWordsPerMinute = wordsPerMinute * rateAtTextSpoken; // Adjust based on the speech rate
-    const words = text.split(' ').length; // Calculate number of words in the text
-    return (words / adjustedWordsPerMinute) * 60 * 1000; // Duration in milliseconds
-  };
-
-  // useEffect hook to initialize TTS and set up event listeners
+  // Best-effort event-driven sync (react-native-tts varies by version/platform)
   useEffect(() => {
-    Tts.getInitStatus().then(initTts); // Initialize TTS when component mounts
+    const setup = async () => {
+      await Tts.getInitStatus();
+      await initTts();
+    };
+
+    setup();
+
+    const onStart = () => {
+      if (isSliderSeekingRef.current) return;
+      const now = Date.now();
+      speakingStartTimestampRef.current = now;
+      currentSpokenOffsetMsRef.current = currentPosition;
+      setisPlaying(true);
+    };
+
+    const onProgress = (event: any) => {
+      if (isSliderSeekingRef.current) return;
+
+      const eventPosMs: number | null =
+        typeof event?.elapsedTime === 'number'
+          ? event.elapsedTime
+          : typeof event?.currentTime === 'number'
+            ? event.currentTime
+            : null;
+
+      if (eventPosMs == null) return;
+
+      const newPos = Math.min(
+        duration,
+        currentSpokenOffsetMsRef.current + eventPosMs,
+      );
+      setCurrentPosition(newPos);
+    };
+
+    const onFinish = () => {
+      setisPlaying(false);
+      setCurrentPosition(0);
+      speakingStartTimestampRef.current = null;
+      currentSpokenOffsetMsRef.current = 0;
+    };
+
+    const onCancel = () => setisPlaying(false);
+    const onError = () => setisPlaying(false);
+
+    Tts.addEventListener('tts-start', onStart);
+    Tts.addEventListener('tts-progress', onProgress);
+    Tts.addEventListener('tts-finish', onFinish);
+    Tts.addEventListener('tts-cancel', onCancel);
+    Tts.addEventListener('tts-error', onError);
+
     return () => {
-      if (sliderInterval.current) {
-        clearInterval(sliderInterval.current); // Clear the interval
-      }
+      // component-safe cleanup is better, but react-native-tts event APIs differ by version.
+      // Preserve original approach used elsewhere in the repo.
+      Tts.removeAllListeners('tts-finish');
+      Tts.removeAllListeners('tts-error');
+      Tts.removeAllListeners('tts-start');
+      Tts.removeAllListeners('tts-progress');
+      Tts.removeAllListeners('tts-cancel');
     };
   }, []);
 
-  // Handle the 'like' button press
-  const handleLike = () => {
-    setisLiked(!isLiked);
+  const handleLike = () => setisLiked(!isLiked);
+
+  // Best-effort seek: stop + re-speak from an approximated offset
+  const speakFromPositionMs = (seekPositionMs: number) => {
+    const safeDuration = duration || 1;
+    const clamped = Math.max(0, Math.min(safeDuration, seekPositionMs));
+
+    const words = text.split(' ');
+    const totalWords = words.length;
+    const approxElapsedRatio = clamped / safeDuration;
+
+    const wordsToSkip = Math.max(
+      0,
+      Math.min(totalWords - 1, Math.floor(totalWords * approxElapsedRatio)),
+    );
+
+    const newText = words.slice(wordsToSkip).join(' ');
+
+    currentSpokenOffsetMsRef.current = clamped;
+    speakingStartTimestampRef.current = null;
+    isSliderSeekingRef.current = false;
+
+    Tts.stop();
+    Tts.speak(newText);
+
+    setisPlaying(true);
   };
 
-  // Function to handle play/pause actions
   const handlePlay = () => {
     if (isPlaying) {
-      // If currently playing, stop the speech and clear the interval
-      //console.log('paused');
-      Tts.stop(); // Stop the text-to-speech
-      if (sliderInterval.current) {
-        clearInterval(sliderInterval.current); // Clear the interval used for updating position
-      }
-    } else {
-      // If currently paused, calculate new starting position and resume speech
-      Tts.stop(); // Ensure TTS is stopped before starting new speech
-
-      // Calculate the number of words spoken per second
-      const wordsPerSecond = (text.split(' ').length / duration) * 1000;
-
-      // Calculate how many words to skip based on the current position
-      const wordsToSkip = Math.floor((currentPosition / 1000) * wordsPerSecond);
-
-      // Create new text to speak from the current position
-      const newText = text.split(' ').slice(wordsToSkip).join(' ');
-
-      // Start speaking the new text
-      Tts.speak(newText);
-
-      // Set an interval to update the current position every second
-      sliderInterval.current = setInterval(() => {
-        setCurrentPosition(prevPosition => {
-          const newPosition = prevPosition + 1000; // Increment position by 1000 ms (1 second)
-
-          // If the new position is approximately equal to the duration, reset the position
-          if (approximatelyEqual(newPosition, duration)) {
-            if (sliderInterval.current) {
-              clearInterval(sliderInterval.current); // Stop the interval
-            }
-            setCurrentPosition(0); // Reset position to the start
-            setisPlaying(false);
-            return 0;
-          }
-
-          // Return the new position
-          return newPosition;
-        });
-      }, 1000) as any;
+      Tts.stop();
+      setisPlaying(false);
+      return;
     }
 
-    // Toggle the playing state
-    setisPlaying(!isPlaying);
+    speakFromPositionMs(currentPosition);
   };
 
-  // Function to handle slider changes
   const handleSliderChange = (value: number) => {
-    // Calculate the position in milliseconds based on slider value
-    const seekPosition = value * duration;
+    const safeDuration = duration || 1;
+    const seekPosition = Math.max(0, Math.min(safeDuration, value * safeDuration));
 
-    // Update the current position
+    isSliderSeekingRef.current = true;
     setCurrentPosition(seekPosition);
+    speakFromPositionMs(seekPosition);
 
-    // Stop any ongoing speech
-    Tts.stop();
-
-    // Calculate the number of words spoken per second
-    const wordsPerSecond = (text.split(' ').length / duration) * 1000;
-
-    // Calculate how many words to skip based on the seek position
-    const wordsToSkip = Math.floor((seekPosition / 1000) * wordsPerSecond);
-
-    // Create new text to speak from the seek position
-    const newText = text.split(' ').slice(wordsToSkip).join(' ');
-
-    // Set the playing state to true and start speaking the new text
-    setisPlaying(true);
-    Tts.speak(newText);
+    setTimeout(() => {
+      isSliderSeekingRef.current = false;
+    }, 50);
   };
 
-  // Handle forward button press (implementation needed)
   const handleForward = () => {};
-
-  // Handle backward button press (implementation needed)
   const handleBackward = () => {};
-
-  // Handle download button press (implementation needed)
   const handleDownload = () => {};
-
-  // Handle share button press (implementation needed)
   const handleShare = () => {};
 
-  // Render the podcast player UI
   return (
     <>
       <Text style={styles.podcast}>Feel Better. Live More</Text>
@@ -239,10 +245,10 @@ const PodcastPlayer = ({}) => {
         style={styles.slider}
         minimumValue={0}
         maximumValue={1}
-        value={currentPosition / duration} // Slider value is based on the current position
+        value={duration > 0 ? currentPosition / duration : 0}
         minimumTrackTintColor="#FFFFFF"
         maximumTrackTintColor="#000000"
-        onSlidingComplete={handleSliderChange} // Seek to the new position when slider changes
+        onSlidingComplete={handleSliderChange}
       />
 
       <View style={styles.timeContainer}>
@@ -281,7 +287,6 @@ const PodcastPlayer = ({}) => {
 
 export default PodcastPlayer;
 
-// Styles for PodcastPlayer component
 const styles = StyleSheet.create({
   podcast: {
     fontSize: 15,
@@ -374,3 +379,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
+
