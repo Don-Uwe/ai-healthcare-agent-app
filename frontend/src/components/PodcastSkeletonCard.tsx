@@ -1,20 +1,17 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
-import {YStack, XStack} from 'tamagui';
+import {useTheme, YStack, XStack} from 'tamagui';
 import {MotiView} from 'moti';
-import {useColorScheme} from 'react-native';
 
 const PodcastSkeletonCard = () => {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-
-  // Theme-aware colors
-  const baseColor = isDark ? '#2A2A2A' : '#E5E7EB';
-  const highlightColor = isDark ? '#3F3F3F' : '#F3F4F6';
+  const theme = useTheme();
+  const baseColor = (theme.gray200?.val ?? theme.background?.val ?? '#E5E7EB') as string;
+  const highlightColor = (theme.gray100?.val ?? theme.gray300?.val ?? '#F3F4F6') as string;
+  const cardBackground = (theme.background?.val ?? '#FFFFFF') as string;
 
   return (
     <View style={styles.cardWrapper}>
-      <View style={styles.cardContainer}>
+      <View style={[styles.cardContainer, {backgroundColor: cardBackground}]}> 
         {/* Image Skeleton */}
         <MotiView
           style={[styles.imageSkeleton, {backgroundColor: baseColor}]}
@@ -258,7 +255,6 @@ const styles = StyleSheet.create({
   cardContainer: {
     borderRadius: 16,
     overflow: 'hidden',
-    backgroundColor: '#FFF',
   },
   imageSkeleton: {
     width: '100%',
