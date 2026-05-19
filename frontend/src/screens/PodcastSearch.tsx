@@ -4,6 +4,7 @@ import {PodcastData, PodcastSearchProp} from '../type';
 import {AxiosError} from 'axios';
 import {useSelector} from 'react-redux';
 import PodcastCard from '../components/PodcastCard';
+import PodcastSkeletonCard from '../components/PodcastSkeletonCard';
 import {msToTime} from '../helper/Utils';
 import Snackbar from 'react-native-snackbar';
 import NoResults from '../components/NoResult';
@@ -210,8 +211,14 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
 
       {/* Results Section */}
       {isLoading && query !== '' ? (
-        <YStack flex={1} alignItems="center" justifyContent="center" gap="$3">
-          <LoadingSpinner text="Searching podcasts..." />
+        <YStack paddingHorizontal="$3" marginBottom="$8" flex={1}>
+          <FlatList
+            data={[1, 2, 3, 4, 5]}
+            keyExtractor={(_, index) => `skeleton-${index}`}
+            renderItem={() => <PodcastSkeletonCard />}
+            scrollEnabled={false}
+            contentContainerStyle={{paddingTop: 12}}
+          />
         </YStack>
       ) : (
         <YStack paddingHorizontal="$3" marginBottom="$8" flex={1}>
