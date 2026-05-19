@@ -9,6 +9,7 @@ import {SignUpScreenFirstProp, UserDetail} from '../../type';
 import {AxiosError} from 'axios';
 import Snackbar from 'react-native-snackbar';
 import EmailVerifiedModal from '../../components/VerifiedModal';
+import SecurityWarningModal from '../../components/SecurityWarningModal';
 import ImageResizer from '@bam.tech/react-native-image-resizer';
 import Loader from '../../components/Loader';
 import useUploadImage from '../../hooks/useUploadImage';
@@ -37,6 +38,8 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
   const [token, setToken] = useState('');
   const [isFocus, setIsFocus] = useState(false);
   const [isSecureEntry, setIsSecureEntry] = useState(true);
+  const [securityWarningVisible, setSecurityWarningVisible] = useState(false);
+  const [pendingSubmitAction, setPendingSubmitAction] = useState<(() => void) | null>(null);
   //const [error, setError] = useState('');
 
   const {data: checkhandle, isLoading} =
@@ -162,9 +165,9 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
       return;
     }
 
+    // Show security warning before proceeding with registration
     if (role === 'general') {
-      registerGeneralUser();
-      // userRegisterMutation.mutate();
+      setPendingSubmitAction(() => () => registerGeneralUser());
     } else {
       const detail: UserDetail = {
         user_name: name,
@@ -173,11 +176,27 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
         password: password,
         profile_image: user_profile_image,
       };
-      console.log('General');
-      navigation.navigate('SignUpScreenSecond', {
-        user: detail,
+      setPendingSubmitAction(() => () => {
+        console.log('General');
+        navigation.navigate('SignUpScreenSecond', {
+          user: detail,
+        });
       });
     }
+    setSecurityWarningVisible(true);
+  };
+
+  const handleSecurityWarningContinue = () => {
+    setSecurityWarningVisible(false);
+    if (pendingSubmitAction) {
+      pendingSubmitAction();
+      setPendingSubmitAction(null);
+    }
+  };
+
+  const handleSecurityWarningCancel = () => {
+    setSecurityWarningVisible(false);
+    setPendingSubmitAction(null);
   };
 
   const callRegisterAPI = (profile_url: string) => {
@@ -477,6 +496,13 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
             </Text>
           </Button>
         </YStack>
+
+        {/* Security Warning Modal */}
+        <SecurityWarningModal
+          visible={securityWarningVisible}
+          onContinue={handleSecurityWarningContinue}
+          onCancel={handleSecurityWarningCancel}
+        />
 
         {/* Modal */}
         <EmailVerifiedModal

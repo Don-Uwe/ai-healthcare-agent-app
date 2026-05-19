@@ -6,6 +6,7 @@ import Icon from '@expo/vector-icons/MaterialIcons';
 import {Contactdetail, SignUpScreenSecondProp} from '../../type';
 import {AxiosError} from 'axios';
 import EmailVerifiedModal from '../../components/VerifiedModal';
+import SecurityWarningModal from '../../components/SecurityWarningModal';
 import Loader from '../../components/Loader';
 import Snackbar from 'react-native-snackbar';
 import useUploadImage from '../../hooks/useUploadImage';
@@ -25,6 +26,8 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
   const [token, setToken] = useState('');
   const [verifyBtntext, setVerifyBtntxt] = useState('Request Verification');
   const [verifiedModalVisible, setVerifiedModalVisible] = useState(false);
+  const [securityWarningVisible, setSecurityWarningVisible] = useState(false);
+  const [pendingContactDetail, setPendingContactDetail] = useState<Contactdetail | null>(null);
   const {mutate: verifyEmailMutation, isPending: verifyMutationPending} =
     useVerificationMailMutation();
   const {mutate: register, isPending: registerPending} = useRegdMutation();
@@ -178,11 +181,23 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
         phone_no: phone,
       };
 
-      registerDoctor(contactDetail);
-      //doctorRegisterMutation.mutate({
-      //contactDetail: contactDetail,
-      //});
+      // Show security warning before proceeding with registration
+      setPendingContactDetail(contactDetail);
+      setSecurityWarningVisible(true);
     }
+  };
+
+  const handleSecurityWarningContinue = () => {
+    setSecurityWarningVisible(false);
+    if (pendingContactDetail) {
+      registerDoctor(pendingContactDetail);
+      setPendingContactDetail(null);
+    }
+  };
+
+  const handleSecurityWarningCancel = () => {
+    setSecurityWarningVisible(false);
+    setPendingContactDetail(null);
   };
 
   const registerDoctor = async (contactDetail: Contactdetail) => {
@@ -372,6 +387,13 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
               Register
             </Text>
           </Button>
+
+          {/* Security Warning Modal */}
+          <SecurityWarningModal
+            visible={securityWarningVisible}
+            onContinue={handleSecurityWarningContinue}
+            onCancel={handleSecurityWarningCancel}
+          />
 
           {/* Modal */}
           <EmailVerifiedModal
