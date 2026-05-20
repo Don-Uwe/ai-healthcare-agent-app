@@ -24,7 +24,7 @@
 
 UltimateHealth is a React Native + Expo application built with TypeScript, Redux Toolkit, and React Query. This document outlines comprehensive testing guidelines for all aspects of the application.
 
-**Current Status**: Testing infrastructure needs to be established. This document serves as the roadmap for implementing a robust testing strategy.
+**Current Status**: The Jest testing infrastructure is fully operational. Expo SDK 54, React Native Testing Library, and Tamagui compatibility have been properly configured. Contributors can immediately begin writing tests using the existing setup.
 
 ---
 
@@ -58,68 +58,29 @@ UltimateHealth is a React Native + Expo application built with TypeScript, Redux
 ```json
 {
   "devDependencies": {
-    "@testing-library/react-native": "^12.0.0",
-    "@testing-library/jest-native": "^5.4.0",
-    "@testing-library/react-hooks": "^8.0.1",
-    "@testing-library/user-event": "^14.0.0",
-    "jest": "^29.0.0",
-    "jest-expo": "^51.0.0",
-    "@types/jest": "^29.0.0",
-    "react-test-renderer": "^18.0.0",
-    "redux-mock-store": "^1.5.4",
-    "axios-mock-adapter": "^1.22.0",
-    "jest-websocket-mock": "^2.5.0",
-    "@testing-library/jest-dom": "^6.0.0",
-    "detox": "^20.0.0" // For E2E testing
+    "@testing-library/react-native": "^12.4.0",
+    "jest": "^29.2.1",
+    "jest-expo": "~55.0.0",
+    "@types/jest": "^29.2.1",
+    "react-test-renderer": "19.1.0"
   }
 }
 ```
 
 ### Jest Configuration
 
-Create/Update `jest.config.js`:
+The repository includes a working `jest.config.js` and `jest.setup.ts`. The configuration leverages the `jest-expo` preset for Expo SDK 54 compatibility while preserving repository-specific configurations.
 
-```javascript
-module.exports = {
-  preset: 'jest-expo',
-  setupFilesAfterEnv: [
-    '@testing-library/jest-native/extend-expect',
-    '<rootDir>/jest.setup.js'
-  ],
-  transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg|@gorhom/bottom-sheet|tamagui|@tamagui/.*)'
-  ],
-  collectCoverageFrom: [
-    'src/**/*.{ts,tsx}',
-    '!src/**/*.d.ts',
-    '!src/**/*.stories.tsx',
-    '!src/**/index.ts',
-    '!src/assets/**',
-    '!src/type.ts'
-  ],
-  coverageThreshold: {
-    global: {
-      branches: 70,
-      functions: 70,
-      lines: 70,
-      statements: 70
-    }
-  },
-  testMatch: [
-    '**/__tests__/**/*.test.{ts,tsx}',
-    '**/*.test.{ts,tsx}'
-  ],
-  moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1',
-    '^@assets/(.*)$': '<rootDir>/src/assets/$1',
-    '^@components/(.*)$': '<rootDir>/src/components/$1',
-    '^@screens/(.*)$': '<rootDir>/src/screens/$1',
-    '^@hooks/(.*)$': '<rootDir>/src/hooks/$1',
-    '^@helper/(.*)$': '<rootDir>/src/helper/$1',
-    '^@store/(.*)$': '<rootDir>/src/store/$1'
-  }
-};
-```
+### `transformIgnorePatterns`
+The `transformIgnorePatterns` array is strictly configured to ensure proper transpilation behavior for untranspiled ECMAScript Modules (ESM) and native React Native modules during test execution. This allows seamless integration and transpilation for packages like:
+- Expo SDK 54 modules
+- Tamagui components
+- React Native Reanimated
+- Expo Router
+- `react-native` libraries
+
+### Native Module Mocks
+The `jest.setup.ts` file centralizes native module mocks. Since Jest runs in a Node.js environment, native React Native modules (like Gesture Handler, Reanimated, and AsyncStorage) must be mocked. `jest.setup.ts` handles this to prevent module resolution crashes and to maintain stable test executions.
 
 ---
 
@@ -1262,86 +1223,36 @@ it('should auto-save', () => {
 
 ## Running Tests
 
-### Package.json Scripts
+The repository strictly utilizes Yarn as its primary package manager. 
 
-```json
-{
-  "scripts": {
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "test:ci": "jest --ci --coverage --maxWorkers=2",
-    "test:unit": "jest --testPathPattern='test\\.tsx?$'",
-    "test:integration": "jest --testPathPattern='integration\\.test\\.tsx?$'",
-    "test:e2e": "detox test",
-    "test:e2e:build": "detox build -c android.debug",
-    "test:debug": "node --inspect-brk node_modules/.bin/jest --runInBand"
-  }
-}
-```
-
-### Running Tests Locally
+### Core Commands
 
 ```bash
-# Run all tests
-npm test
+# Run all unit tests natively (suitable for CI execution)
+yarn test
 
-# Watch mode for development
-npm run test:watch
+# Run tests in watch mode (best for local development)
+yarn test --watch
 
-# Run specific test file
-npm test -- ArticleCard.test.tsx
-
-# Run tests matching pattern
-npm test -- --testNamePattern="should display article"
-
-# Run with coverage
-npm run test:coverage
-
-# Run only unit tests
-npm run test:unit
-
-# Run E2E tests
-npm run test:e2e:build
-npm run test:e2e
+# Debug open handles (useful if a test suite hangs)
+yarn test --detectOpenHandles
 ```
+
+> **Note**: The default test script is configured as `"test": "jest --passWithNoTests --ci"`. The `--passWithNoTests` flag is intentionally retained to support gradual testing adoption without destabilizing the CI pipeline during the early rollout phase.
 
 ### CI/CD Integration
 
-```yaml
-# .github/workflows/test.yml
-name: Tests
+Unit tests are fully integrated into the existing `frontend-ci.yml` GitHub Actions pipeline. 
 
-on: [push, pull_request]
+GitHub Actions will automatically run `yarn test` on all incoming Pull Requests and merges to `main`. 
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '18'
+### CI Stability Considerations
+The Jest setup has been thoroughly validated to guarantee stable CI execution, meaning:
+- Tests avoid hanging Jest processes.
+- The environment mitigates unresolved native module warnings.
+- Test execution natively integrates with our existing caching mechanisms.
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run linter
-        run: npm run lint
-
-      - name: Run unit tests
-        run: npm run test:ci
-
-      - name: Upload coverage
-        uses: codecov/codecov-action@v3
-        with:
-          file: ./coverage/coverage-final.json
-
-      - name: Run E2E tests
-        run: |
-          npm run test:e2e:build
-          npm run test:e2e
-```
+Contributors must ensure tests pass locally via `yarn test` before opening PRs.
 
 ---
 
@@ -1439,13 +1350,19 @@ This testing guideline provides a comprehensive framework for testing the Ultima
 
 ### Next Steps
 
-1. Install testing dependencies
-2. Set up Jest configuration
-3. Create test utilities and mocks
-4. Write first test suite (start with authentication)
-5. Add pre-commit hooks to run tests
-6. Set up CI/CD pipeline
-7. Gradually increase coverage
+1. Create test utilities and mocks for your specific features.
+2. Write test suites for upcoming components.
+3. Add pre-commit hooks to run tests.
+4. Gradually increase test coverage.
+
+### Real Test Examples
+
+To help you get started, we have provided initial passing tests that validate the core testing infrastructure. These components were deliberately chosen because they are UI-focused, minimally coupled to navigation, and act as stable reference points:
+- `frontend/src/components/__tests__/Loader.test.tsx`
+- `frontend/src/components/__tests__/LoadingSpinner.test.tsx`
+- `frontend/src/components/__tests__/GlassButton.test.tsx`
+
+Feel free to reference these files as templates for React Native Testing Library usage!
 
 ### Resources
 
