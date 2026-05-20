@@ -5,10 +5,10 @@ import {
   YStack,
   XStack,
   Text,
-  ScrollView,
   Button,
   View,
 } from 'tamagui';
+import { ScrollView } from 'react-native';  //use React Native's ScrollView
 
 import {
   Ionicons,
@@ -55,7 +55,7 @@ const AboutScreen = ({ navigation }: AboutScreenProps) => {
         onScroll={onScroll}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
-        flex={1}>
+        style={{ flex: 1 }}>
         <View
           flex={1}
           backgroundColor={isDarkMode ? '#000A60' : '#F0F8FF'}
