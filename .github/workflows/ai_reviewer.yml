@@ -3,6 +3,9 @@ name: Gemini AI PR Reviewer
 on:
   pull_request:
     types: [opened, synchronize]
+    branches:
+      - main
+      - web
 
 jobs:
   review:
