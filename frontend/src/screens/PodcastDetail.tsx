@@ -3,7 +3,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
-  ActivityIndicator,
   Platform,
   View,
 } from 'react-native';
@@ -26,6 +25,7 @@ import {fp} from '../helper/Metric';
 import {useSocket} from '../contexts/SocketContext';
 import {Feather} from '@expo/vector-icons';
 import Loader from '../components/Loader';
+import LoadingSpinner from '../components/LoadingSpinner';
 import {Theme, XStack, YStack, Text, ScrollView} from 'tamagui';
 import LottieView from 'lottie-react-native';
 import {useGetSinglePodcastDetails} from '../hooks/useGetSinglePodcastDetails';
@@ -310,7 +310,7 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
               <XStack alignItems="center" justifyContent="space-evenly">
                 {/* LIKE */}
                 {likePodcastPending ? (
-                  <ActivityIndicator size="small" color={PRIMARY_COLOR} />
+                  <LoadingSpinner size="small" />
                 ) : (
                   <TouchableOpacity
                     style={styles.actionButton}
@@ -364,7 +364,7 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
 
                 {/* DOWNLOAD */}
                 {isLoading ? (
-                  <ActivityIndicator size="small" color={PRIMARY_COLOR} />
+                  <LoadingSpinner size="small" />
                 ) : (
                   <TouchableOpacity
                     style={styles.actionButton}

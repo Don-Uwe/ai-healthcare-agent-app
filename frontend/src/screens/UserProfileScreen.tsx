@@ -12,6 +12,7 @@ import {PRIMARY_COLOR} from '../helper/Theme';
 import ActivityOverview from '../components/ActivityOverview';
 import {Tabs, MaterialTabBar} from 'react-native-collapsible-tab-view';
 import ArticleCard from '../components/ArticleCard';
+import { useTheme } from 'tamagui';
 import {useSelector} from 'react-redux';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import ProfileHeader from '../components/ProfileHeader';
@@ -29,8 +30,8 @@ import {useGetTotalLikeViewStatus} from '../hooks/useGetTotalLikeViewStatus';
 import { NoArticleState } from '../components/EmptyStates';
 
 const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
-  const colorScheme = useColorScheme();
-  const isDarkMode = colorScheme === 'dark';
+  const theme = useTheme();
+  const isDarkMode = useColorScheme() === 'dark';
   const {authorId, author_handle} = route.params;
   const {user_id, user_handle} = useSelector(
     (state: any) => state.user,
@@ -315,7 +316,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
       <SafeAreaView
         style={[
           styles.loadingContainer,
-          {backgroundColor: isDarkMode ? '#000A60' : '#F0F8FF'},
+          {backgroundColor: theme.background.val},
         ]}>
         <StatusBar
           style={isDarkMode ? 'light' : 'dark'}
@@ -330,7 +331,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
     <SafeAreaView
       style={[
         styles.container,
-        {backgroundColor: isDarkMode ? '#007AFF' : '#007AFF'},
+        {backgroundColor: '#007AFF'},
       ]}>
       <StatusBar style="light" backgroundColor="#007AFF" />
       <TouchableOpacity
@@ -343,14 +344,14 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
       <View
         style={[
           styles.innerContainer,
-          {backgroundColor: isDarkMode ? '#000A60' : '#F0F8FF'},
+          {backgroundColor: theme.background.val},
         ]}>
         <Tabs.Container
           renderHeader={renderHeader}
           renderTabBar={renderTabBar}
           containerStyle={[
             styles.tabsContainer,
-            {backgroundColor: isDarkMode ? '#000A60' : '#F0F8FF'},
+            {backgroundColor: theme.background.val},
           ]}>
           {/* Tab 1 */}
           <Tabs.Tab name="User Insight">

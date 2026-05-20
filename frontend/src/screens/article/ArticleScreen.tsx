@@ -1,4 +1,3 @@
-/* eslint-disable react-native/no-inline-styles */
 import {
   Image,
   Platform,
@@ -8,7 +7,6 @@ import {
   View,
   ScrollView,
   Alert,
-  ActivityIndicator,
   Dimensions,
   Share,
 } from 'react-native';
@@ -45,6 +43,7 @@ import {useUpdateReadEvent} from '@/src/hooks/useUpdateReadEvent';
 import {useUpdateViewCount} from '@/src/hooks/useUpdateViewCount';
 import {useSaveArticle} from '@/src/hooks/useSaveArticle';
 import {useSocket} from '../../contexts/SocketContext';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const {articleId, authorId, recordId} = route.params;
@@ -106,9 +105,11 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
 
   const noDataHtml = '<p>No Data found</p>';
 
-  if (user) {
-    dispatch(setUserHandle(user.user_handle));
-  }
+  useEffect(() => {
+    if (user) {
+      dispatch(setUserHandle(user.user_handle));
+    }
+  }, [user]);
 
   // --- Settings ---
   const handleLike = () => {
@@ -256,6 +257,41 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     });
   };
 
+  const handleImproveArticle = () => {
+    if (isGuest) {
+      navigation.navigate('GuestPlaceholderScreen', {
+        title: 'Sign In Required',
+        description: 'Please sign in or sign up to improve this article.',
+        iconName: 'auto-fix',
+      });
+      return;
+    }
+    if (!article) {
+      Alert.alert('Article not found');
+      return;
+    }
+    if (!articleContent) {
+      Snackbar.show({
+        text: 'Article content is still loading. Please try again.',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+      return;
+    }
+    navigation.navigate('EditorScreen', {
+      title: article.title,
+      description: article.description,
+      selectedGenres: article.tags,
+      imageUtils: article.imageUtils[0],
+      articleData: article,
+      requestId: undefined,
+      pb_record_id: article.pb_recordId,
+      authorName: user?.user_handle ?? '',
+      htmlContent: articleContent,
+      language: article.language,
+    });
+  };
+
+
   async function convertHtmlToPlainText(html: string) {
     let modifiedHtml = html.replace(/ style="[^"]*"/g, '');
 
@@ -355,7 +391,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
           />
         )}
         {likeMutationPending ? (
-          <ActivityIndicator size={40} color={PRIMARY_COLOR} />
+          <LoadingSpinner size={40} />
         ) : (
           <TouchableOpacity
             onPress={handleLike}
@@ -663,7 +699,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
             onPress={handleLike}
             disabled={likeMutationPending}>
             {likeMutationPending ? (
-              <ActivityIndicator size={18} color={PRIMARY_COLOR} />
+              <LoadingSpinner size={18} />
             ) : (
               <>
                 <FontAwesome
@@ -753,10 +789,21 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
 
           <TouchableOpacity
             style={styles.actionButtonFooter}
+            onPress={handleImproveArticle}>
+            <MaterialCommunityIcons
+              name="auto-fix"
+              size={20}
+              color="#666"
+            />
+            <Text style={styles.actionTextFooter}>Improve</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.actionButtonFooter}
             onPress={handleSave}
             disabled={saveMutationPending}>
             {saveMutationPending ? (
-              <ActivityIndicator size={18} color={PRIMARY_COLOR} />
+              <LoadingSpinner size={18} />
             ) : (
               <>
                 <FontAwesome
@@ -778,6 +825,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
           </TouchableOpacity>
         </View>
 
+         {/*Improvement row */}
+
         {/* Author Row */}
         <View style={styles.authorRow}>
           <View style={styles.authorContainer}>
@@ -792,16 +841,16 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
                   return;
                 }
                 navigation.navigate('UserProfileScreen', {
-                  authorId: authorId,
+                  authorId: (article?.authorId as any)?._id || authorId,
                   author_handle: undefined,
                 });
               }}>
-              {authorId.Profile_image && authorId.Profile_image !== '' ? (
+              {(article?.authorId as any)?.Profile_image ? (
                 <Image
                   source={{
-                    uri: authorId.Profile_image.startsWith('http')
-                      ? `${authorId.Profile_image}`
-                      : `${GET_STORAGE_DATA}/${authorId.Profile_image}`,
+                    uri: (article?.authorId as any).Profile_image.startsWith('http')
+                      ? `${(article?.authorId as any).Profile_image}`
+                      : `${GET_STORAGE_DATA}/${(article?.authorId as any).Profile_image}`,
                   }}
                   style={styles.authorImage}
                 />
@@ -819,10 +868,10 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
                 {article ? article?.authorName : ''}
               </Text>
               <Text style={styles.authorFollowers}>
-                {article?.authorId.followers
-                  ? article?.authorId.followers.length > 1
-                    ? `${article?.authorId.followers.length} followers`
-                    : `${article?.authorId.followers.length} follower`
+                {(article?.authorId as any)?.followers
+                  ? (article?.authorId as any).followers.length > 1
+                    ? `${(article?.authorId as any).followers.length} followers`
+                    : `${(article?.authorId as any).followers.length} follower`
                   : '0 follower'}
               </Text>
               {article &&
@@ -852,16 +901,16 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
             </View>
           </View>
           {article &&
-            user_id !== article.authorId._id &&
+            user_id !== (article.authorId as any)?._id &&
             (followMutationPending ? (
-              <ActivityIndicator size={40} color={PRIMARY_COLOR} />
+              <LoadingSpinner size={40} />
             ) : (
               <TouchableOpacity
                 style={styles.followButton}
                 onPress={handleFollow}>
                 <Text style={styles.followButtonText}>
-                  {article.authorId.followers &&
-                  article.authorId.followers.some(
+                  {(article.authorId as any)?.followers &&
+                  (article.authorId as any).followers.some(
                     (user: any) => user._id === user_id,
                   )
                     ? 'Following'

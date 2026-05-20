@@ -7,6 +7,7 @@ import {
 } from 'react-native';
 import {
     BottomSheetBackdrop,
+    BottomSheetBackdropProps,
   BottomSheetModal,
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
@@ -29,7 +30,7 @@ const ActionItem = ({
     style={styles.actionItem}
     activeOpacity={0.7}>
     <View style={[styles.iconContainer, iconColor && {backgroundColor: `${iconColor}15`}]}>
-      <Icon name={icon} size={22} color={iconColor || PRIMARY_COLOR} />
+      <Icon name={icon as any} size={22} color={iconColor || PRIMARY_COLOR} />
     </View>
     <Text style={styles.label}>{label}</Text>
   </TouchableOpacity>
@@ -55,7 +56,7 @@ const PodcastActions = React.forwardRef(
     };
 
     const renderBackdrop = useCallback(
-    props => (
+    (props: BottomSheetBackdropProps) => (
       <BottomSheetBackdrop
         {...props}
         pressBehavior="close"

@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  ActivityIndicator,
   Alert,
 } from 'react-native';
 import {useQueryClient} from '@tanstack/react-query';
@@ -19,6 +18,7 @@ import {Category, NotificationPreferencesScreenProp} from '../type';
 import {useGetCategories} from '../hooks/useGetArticleTags';
 import {useGetNotificationPreferences} from '../hooks/useGetNotificationPreferences';
 import {useUpdateNotificationPreferences} from '../hooks/useUpdateNotificationPreferences';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const NotificationPreferencesScreen = ({
   navigation,
@@ -131,7 +131,7 @@ const NotificationPreferencesScreen = ({
 
       {isLoading ? (
         <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color={PRIMARY_COLOR} />
+          <LoadingSpinner text="Loading preferences..." />
         </View>
       ) : (
         <>
@@ -205,7 +205,7 @@ const NotificationPreferencesScreen = ({
               disabled={isSaving}
               activeOpacity={0.85}>
               {isSaving ? (
-                <ActivityIndicator size="small" color="white" />
+                <LoadingSpinner size="small" color="white" />
               ) : (
                 <Text style={styles.saveBtnText}>Save Preferences</Text>
               )}

@@ -94,7 +94,7 @@ const StackNavigation = () => {
       backAction,
     );
 
-    return () => backHandler;
+    return () => backHandler.remove();
   }, [navigation, nav]);
   return (
     <Stack.Navigator>

@@ -56,7 +56,7 @@ const FilterModal = ({
 
   // Render backdrop for bottom sheet
   const renderBackdrop = useCallback(
-    props => (
+    (props: any) => (
       <BottomSheetBackdrop
         {...props}
         disappearsOnIndex={0}
@@ -91,11 +91,10 @@ const FilterModal = ({
 
   // Handle language selection
   const toggleLanguage = (code: string) => {
-    setSelectedLanguages(prev =>
-      prev.includes(code)
-        ? prev.filter(lang => lang !== code)
-        : [...prev, code]
-    );
+    const next = selectedLanguages.includes(code)
+      ? selectedLanguages.filter((lang: string) => lang !== code)
+      : [...selectedLanguages, code];
+    (setSelectedLanguages as any)(next);
   };
 
   // Reset all filters

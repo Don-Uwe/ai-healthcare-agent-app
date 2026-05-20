@@ -10,6 +10,7 @@ on:
 
 jobs:
   check:
+    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - uses: thehanimo/pr-title-checker@v1.3.7
@@ -21,13 +22,13 @@ jobs:
     # "CHECKS": {
     #  "prefixes": [
     #    "docs: ",
-    #   "feat: ",
-    #   "fix: ",
-    #   "build: ",
+    #    "feat: ",
+    #    "fix: ",
+    #    "build: ",
     #    "refactor: ",
     #    "revert: ",
     #    "style: ",
     #    "chore: ",
-    #     "test: "
-    #   ]
+    #    "test: "
+    #  ]
     # },

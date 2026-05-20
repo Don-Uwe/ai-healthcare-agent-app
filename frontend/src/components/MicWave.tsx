@@ -1,6 +1,6 @@
 import Svg, { Rect, Path } from "react-native-svg";
 
-export default function MicWave({ amplitude }) {
+export default function MicWave({ amplitude }: { amplitude: number }) {
   const barHeight = 16 + amplitude * 50; // increase bar with loudness
 
   return (

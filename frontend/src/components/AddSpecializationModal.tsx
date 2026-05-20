@@ -10,13 +10,21 @@ import {
 } from 'react-native';
 import {PRIMARY_COLOR} from '../helper/Theme';
 
+interface AddSpecializationModalProps {
+  isModalVisible: boolean;
+  handleCloseModal: () => void;
+  handleAddSpecialization: (specialization: string) => void;
+  setspecialization: (text: string) => void;
+  specialization: string;
+}
+
 const AddSpecializationModal = ({
   isModalVisible,
   handleCloseModal,
   handleAddSpecialization,
   setspecialization,
   specialization,
-}) => {
+}: AddSpecializationModalProps) => {
   return (
     <Modal
       animationType="fade"

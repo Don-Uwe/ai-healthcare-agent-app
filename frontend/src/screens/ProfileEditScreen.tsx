@@ -5,7 +5,6 @@ import {
   View,
   StyleSheet,
   Alert,
-  ActivityIndicator,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
@@ -17,6 +16,7 @@ import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 import {useDispatch, useSelector} from 'react-redux';
 import {AxiosError} from 'axios';
+import {ProfileEditScreenProp} from '../type';
 import {
   GET_STORAGE_DATA,
 } from '../helper/APIUtils';
@@ -34,11 +34,12 @@ import {useUpdateProfileImage} from '../hooks/useUpdateProfileImage';
 import {useUpdateUserContactDetail} from '../hooks/useUpdateUserContactDetail';
 import {useUpdateUserGeneralDetails} from '../hooks/useUpdateUserGeneralDetails';
 import {useUpdateUserProfDetails} from '../hooks/useUpdateUserProfDetails';
+import LoadingSpinner from '../components/LoadingSpinner';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 let validator = require('email-validator');
 let expr = /^(0|91)?[6-9][0-9]{9}$/;
 
-const ProfileEditScreen = ({navigation}) => {
+const ProfileEditScreen = ({navigation}: ProfileEditScreenProp) => {
   const {uploadImage, loading} = useUploadImage();
 
   const dispatch = useDispatch();
@@ -184,7 +185,7 @@ const ProfileEditScreen = ({navigation}) => {
                 // Handle bad request errors (missing fields or email/user handle already in use)
                 Alert.alert(
                   'Update Failed',
-                  err?.response?.data?.error ||
+                  (err?.response?.data as any)?.error ||
                     'Please fill in all fields correctly.',
                 );
 
@@ -268,7 +269,7 @@ const ProfileEditScreen = ({navigation}) => {
                 // Handle bad request errors (missing fields or email/user handle already in use)
                 Alert.alert(
                   'Update Failed',
-                  err?.response?.data?.error ||
+                  (err?.response?.data as any)?.error ||
                     'Please fill in all fields correctly.',
                 );
 
@@ -349,7 +350,7 @@ const ProfileEditScreen = ({navigation}) => {
                 // Handle bad request errors (missing fields or email/user handle already in use)
                 Alert.alert(
                   'Update Failed',
-                  err?.response?.data?.error ||
+                  (err?.response?.data as any)?.error ||
                     'Please fill in all fields correctly.',
                 );
                 break;
@@ -454,7 +455,7 @@ const ProfileEditScreen = ({navigation}) => {
               case 400:
                 Alert.alert(
                   'Password Update Failed',
-                  err?.response?.data?.error,
+                  (err?.response?.data as any)?.error,
                 );
                 break;
               case 401:
@@ -543,7 +544,7 @@ const ProfileEditScreen = ({navigation}) => {
                             onError: (err: AxiosError) => {
                               if (err.response) {
                                 const statusCode = err.response.status;
-                                const errorMessage = err?.response?.data?.error;
+                                const errorMessage = (err?.response?.data as any)?.error;
 
                                 switch (statusCode) {
                                   case 400:
@@ -761,7 +762,7 @@ const ProfileEditScreen = ({navigation}) => {
       </KeyboardAwareScrollView>
       {Loading && (
         <View style={styles.overlay}>
-          <ActivityIndicator size={50} color={PRIMARY_COLOR} />
+          <LoadingSpinner size={50} />
         </View>
       )}
     </SafeAreaView>

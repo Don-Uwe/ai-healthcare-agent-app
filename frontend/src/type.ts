@@ -92,8 +92,8 @@ export type RootStackParamList = {
   ReportConfirmationScreen: undefined;
   NotificationScreen: undefined;
   UserProfileScreen: {
-    authorId: User | string | undefined;
-    author_handle: string | undefined;
+    authorId?: User | string;
+    author_handle?: string;
   };
   ProfileEditScreen: undefined;
   NotificationPreferencesScreen: undefined;
@@ -283,6 +283,11 @@ export type EditorScreenProp = StackScreenProps<
   'EditorScreen'
 >;
 
+export type ProfileEditScreenProp = StackScreenProps<
+  RootStackParamList,
+  'ProfileEditScreen'
+>;
+
 export type PreviewScreenProp = StackScreenProps<
   RootStackParamList,
   'PreviewScreen'
@@ -465,7 +470,7 @@ export type ProfileHeaderProps = {
 };
 
 export type HomeScreenFilterModalProps = {
-  bottomSheetModalRef: RefObject<BottomSheetModal>;
+  bottomSheetModalRef: RefObject<BottomSheetModal | null>;
   categories: Category[];
   handleCategorySelection: (category: Category) => void;
   selectCategoryList: Category[];
@@ -478,7 +483,7 @@ export type HomeScreenFilterModalProps = {
 };
 
 export type HomeScreenCategoriesFlatlistProps = {
-  bottomSheetModalRef2: RefObject<BottomSheetModal>;
+  bottomSheetModalRef2: RefObject<BottomSheetModal | null>;
   categories: Category[];
   handleCategorySelection: (category: Category) => void;
   selectCategoryList: Category[];

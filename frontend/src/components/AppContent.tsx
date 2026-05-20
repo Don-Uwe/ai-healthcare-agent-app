@@ -5,8 +5,12 @@ import {useVersionCheck} from '@/hooks/useVersionCheck';
 import {SocketProvider} from '../contexts/SocketContext';
 import config from '@/tamagui.config';
 import messaging from '@react-native-firebase/messaging';
-import {NavigationContainer} from '@react-navigation/native';
-import React, {useEffect, useRef} from 'react';
+import {
+  NavigationContainer,
+  type NavigationContainerRef,
+} from '@react-navigation/native';
+import React, {useEffect, useRef, useCallback} from 'react';
+
 import {useColorScheme, View} from 'react-native';
 import {StatusBar} from 'expo-status-bar';
 import {PaperProvider} from 'react-native-paper';
@@ -18,44 +22,50 @@ import {initDeepLinking} from '../helper/DeepLinkService';
 import StackNavigation from '../navigations/StackNavigation';
 import {CustomAlertDialog} from './CustomAlert';
 import UpdateModal from './UpdateModal';
-import {ON_PRIMARY_COLOR} from '../helper/Theme';
 import {setConnected} from '../store/NetworkSlice';
 import {firebaseInit} from '../helper/firebase';
 import {cleanUpDownloads, KEYS, retrieveItem} from '../helper/Utils';
 import { setUserToken, setGuestMode } from '../store/UserSlice';
 import axios from 'axios';
+import {setupAxiosInterceptor} from '../helper/setupAxiosInterceptor';
 
 export default function AppContent() {
-  const navigationRef = useRef(null);
+  const navigationRef = useRef<NavigationContainerRef<any> | null>(null);
+  const hasInitialized = useRef(false);
   const isDarkMode = useColorScheme() === 'dark';
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? '#000' : ON_PRIMARY_COLOR,
-  };
 
-  const {data: tokenRes = null, isLoading} = useCheckTokenStatus();
+  const {data: tokenRes = null} = useCheckTokenStatus();
+
+  setupAxiosInterceptor();
+
+
 
   const {visible, storeUrl} = useVersionCheck();
   const dispatch = useDispatch();
 
+  const checkToken = useCallback(async () => {
+    const token = await retrieveItem(KEYS.USER_TOKEN);
+
+    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    axios.defaults.headers.common["Content-Type"] = "application/json";
+
+    dispatch(setUserToken(token));
+    if (token) {
+      dispatch(setGuestMode(false));
+    }
+
+    if (navigationRef.current) {
+      initDeepLinking(navigationRef.current, tokenRes?.isValid || false);
+    }
+  }, [dispatch, tokenRes]);
+
   useEffect(() => {
-    if (navigationRef.current && tokenRes) {
-      
+    if (navigationRef.current && tokenRes && !hasInitialized.current) {
+      hasInitialized.current = true;
       checkToken();
     }
-  }, [tokenRes, navigationRef]);
+  }, [checkToken, tokenRes]);
 
-  const checkToken = async () =>{
-     const token = await retrieveItem(KEYS.USER_TOKEN);
-     //axios.defaults.headers.
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      axios.defaults.headers.common["Content-Type"] = "application/json";
-      dispatch(setUserToken(token));
-      if (token) {
-        dispatch(setGuestMode(false));
-      }
-      initDeepLinking(navigationRef.current, tokenRes?.isValid || false);
-    
-  }
 
   useEffect(() => {
     const unsubscribe = messaging().onMessage(async remoteMessage => {
@@ -65,13 +75,9 @@ export default function AppContent() {
       );
     });
 
-    messaging().setBackgroundMessageHandler(async remoteMessage => {
-      console.log('Background notification received:', remoteMessage); // wjem app is in bg
-      // const data = remoteMessage.data;
-      //handleNotification(data);
-    });
 
     // On app open
+
 
     const unsubscribe1 = addEventListener(state => {
       console.log('Connection type', state.type);
@@ -100,7 +106,7 @@ export default function AppContent() {
   useNotificationListeners();
 
   return (
-    <TamaguiProvider config={config}>
+    <TamaguiProvider config={config} defaultTheme={isDarkMode ? 'dark' : 'light'}>
       <FirebaseProvider>
         <SocketProvider>
           <SafeAreaProvider>

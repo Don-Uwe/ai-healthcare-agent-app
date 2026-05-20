@@ -98,7 +98,7 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
 
       const elapsed = Date.now() - recordStartTimeRef.current;
       setRecordTime(formatTime(elapsed));
-    }, 1000);
+    }, 1000) as any;
   };
 
   const stopTimer = () => {
@@ -288,7 +288,7 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
             color="#60A5FA"
             fontWeight="800"
             letterSpacing={4}
-            fontFamily="monospace">
+            fontFamily={"monospace" as any}>
             {recordTime}
           </Text>
           <Text color="#94A3B8" fontSize={13} fontWeight="600" mt="$1">
@@ -330,7 +330,7 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
                     description,
                     imageUtils,
                     selectedGenres,
-                    filePath: audioRecorder.uri,
+                    filePath: audioRecorder.uri || '',
                   })
                 }>
                 <Icon name="play" size={36} color="#60A5FA" />

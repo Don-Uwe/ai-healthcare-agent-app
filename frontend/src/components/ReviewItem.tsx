@@ -7,7 +7,7 @@ import {GET_STORAGE_DATA} from '../helper/APIUtils';
 export default function ReviewItem({item}: {item: Comment}) {
 
 
-  const formatWithOrdinal = date => {
+  const formatWithOrdinal = (date: string | Date) => {
     return moment(date).format('D MMM, ddd, h:mm a');
   };
 

@@ -1,0 +1,60 @@
+name: Update Contributors
+
+concurrency:
+  group: update-contributors
+  cancel-in-progress: false
+
+on:
+  pull_request_target:
+    types: 
+      - closed
+    branches:
+      - main
+      - web
+
+jobs:
+  update-readme:
+    # Ensure this only runs if the PR was actually merged, not just closed without merging
+    if: github.event.pull_request.merged == true && github.event.pull_request.user.type != 'Bot'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required to allow GitHub Actions to push commits
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          # Make sure to fetch the full history to easily commit and push
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+
+      - name: Update Contributors in README
+        env:
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Processing contributor: $PR_AUTHOR"
+          python .github/scripts/update_contributors.py "$PR_AUTHOR"
+
+      - name: Commit and push if changed
+        env:
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          
+          git add README.md
+          
+          # Check if there are staged changes
+          if git diff --staged --quiet; then
+            echo "User $PR_AUTHOR is already in the README or no changes were made."
+          else
+            git commit -m "docs: add @$PR_AUTHOR to contributors list"
+            git push origin "$BASE_BRANCH"
+            echo "Successfully committed and pushed new contributor."
+          fi

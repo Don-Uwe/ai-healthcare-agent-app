@@ -5,7 +5,6 @@ import {
   NativeModules,
   Text,
   FlatList,
-  ActivityIndicator,
 } from 'react-native';
 
 import {YStack, View, XStack} from 'tamagui';
@@ -26,6 +25,7 @@ import CreateIcon from '../components/CreateIcon';
 import {useGetAllPodcasts} from '../hooks/useGetAllPodcasts';
 import {useUpdatePodcastViewcount} from '../hooks/useUpdatePodcastViewcount';
 import { PodcastLoadingState, NoPodcastState } from '../components/EmptyStates';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const {WavAudioRecorder} = NativeModules;
 //const recorderEvents = new NativeEventEmitter(WavAudioRecorder);
@@ -206,7 +206,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
             ListFooterComponent={
               isLoading && podcasts?.length > 0 ? (
                 <View style={styles.footerLoading}>
-                  <ActivityIndicator
+                  <LoadingSpinner
                     size="small"
                     color={ProfessionalColors.primary}
                   />

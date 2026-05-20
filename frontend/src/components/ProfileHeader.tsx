@@ -8,6 +8,7 @@ import {
   Platform,
   Alert,
   Pressable,
+  useColorScheme,
 } from 'react-native';
 import React from 'react';
 import EllipseSvg from '../../assets/svg/EllipseSvg';
@@ -46,8 +47,20 @@ const ProfileHeader = ({
   onOverviewClick,
 }: ProfileHeaderProps) => {
   const {isConnected} = useSelector((state: any) => state.network);
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
 
-  const handleCall = phone => {
+  const themeColors = {
+    background: isDark ? '#121212' : '#ffffff',
+    text: isDark ? '#ffffff' : '#111827',
+    textSecondary: isDark ? '#9ca3af' : '#6b7280',
+    card: isDark ? '#1f2937' : '#ffffff',
+    border: isDark ? '#374151' : '#e5e7eb',
+    iconBackground: isDark ? '#374151' : '#f3f4f6',
+  };
+
+  const handleCall = (phone: string | undefined) => {
+    if (!phone) return;
     let phoneNumber = phone;
     if (Platform.OS !== 'android') {
       phoneNumber = `telprompt:+91 ${phone}`;
@@ -56,196 +69,189 @@ const ProfileHeader = ({
     }
     Linking.openURL(phoneNumber).catch(() => Alert.alert('Unable to phone!'));
   };
-  const handleMail = mail => {
+
+  const handleMail = (mail: string | undefined) => {
+    if (!mail) return;
     Linking.openURL(`mailto: ${mail}`).catch(() =>
       Alert.alert('Unable to open mail!'),
     );
   };
+
+  // Safe image parsing
+  const getProfileImageUrl = () => {
+    if (!profileImg) return undefined;
+    return profileImg.startsWith('https')
+      ? profileImg
+      : `${GET_STORAGE_DATA}/${profileImg}`;
+  };
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {backgroundColor: themeColors.background}]}>
       <EllipseSvg style={styles.ellipseSvg} />
       <View style={styles.contentContainer}>
+        {/* Profile Image & Basic Info */}
         <Image
-          source={{
-            uri: profileImg.startsWith('https')
-              ? profileImg
-              : `${GET_STORAGE_DATA}/${profileImg}`,
-          }}
+          source={{ uri: getProfileImageUrl() }}
           style={[
             styles.profileImage,
-            !profileImg && {borderWidth: 0.5, borderColor: 'black'},
+            !profileImg && {borderWidth: 1, borderColor: themeColors.border},
+            { backgroundColor: themeColors.iconBackground }
           ]}
         />
-        <Text style={styles.nameText}>{username}</Text>
-        <Text style={[styles.usernameText, {color: PRIMARY_COLOR}]}>
-          @{userhandle}
+        <Text style={[styles.nameText, {color: themeColors.text}]} numberOfLines={1}>
+          {username || 'Unknown User'}
         </Text>
-        {isDoctor && (
+        <Text style={[styles.usernameText, {color: PRIMARY_COLOR}]} numberOfLines={1}>
+          @{userhandle || 'username'}
+        </Text>
+        
+        {isDoctor && experience && (
           <View style={styles.experienceContainer}>
-            <FontAwesome name="stethoscope" size={hp(3.5)} color="black" />
-            <Text style={styles.experienceText}>{experience} years</Text>
+            <FontAwesome name="stethoscope" size={hp(2.5)} color={themeColors.textSecondary} />
+            <Text style={[styles.experienceText, {color: themeColors.textSecondary}]}>
+              {experience} years experience
+            </Text>
           </View>
         )}
-        {isDoctor ? (
-          <View style={styles.contactContainer}>
-            <TouchableOpacity
-              onPress={() => {
-                handleCall(userPhoneNumber);
-              }}
-              style={[styles.iconButton, {backgroundColor: PRIMARY_COLOR}]}>
-              <MaterialIcons name="phone-in-talk" size={25} color="white" />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => {
-                handleMail(userEmailID);
-              }}
-              style={[styles.iconButton, {backgroundColor: PRIMARY_COLOR}]}>
-              <MaterialIcons name="email" size={25} color="white" />
-            </TouchableOpacity>
-            {other && (
+
+        {/* Primary Actions */}
+        <View style={styles.primaryActionContainer}>
+          {isDoctor ? (
+            <View style={styles.contactContainer}>
               <TouchableOpacity
-                style={[styles.iconButton, {backgroundColor: PRIMARY_COLOR}]}
-                onPress={() => {
-                  navigation.navigate('ProfileEditScreen');
-                }}>
-                <Feather name="edit-3" size={25} color="white" />
+                activeOpacity={0.7}
+                onPress={() => handleCall(userPhoneNumber)}
+                style={[styles.iconButton, {backgroundColor: PRIMARY_COLOR}]}>
+                <MaterialIcons name="phone-in-talk" size={22} color="#ffffff" />
               </TouchableOpacity>
-            )}
-          </View>
-        ) : other ? (
-          // <TouchableOpacity
-          //   style={styles.editProfileButton}
-          //   onPress={() => {
-          //     navigation.navigate('ProfileEditScreen');
-          //   }}>
-          //   <Text style={styles.editProfileButtonText}>Edit Profile</Text>
-          // </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              navigation.navigate('ProfileEditScreen');
-            }}>
-            <View style={styles.btnSM}>
-              <MaterialIcons name="edit" size={20} color="black" />
-              <Text style={styles.btnSMText}>Edit Profile</Text>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => handleMail(userEmailID)}
+                style={[styles.iconButton, {backgroundColor: PRIMARY_COLOR}]}>
+                <MaterialIcons name="email" size={22} color="#ffffff" />
+              </TouchableOpacity>
+              {other && (
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  style={[styles.iconButton, {backgroundColor: PRIMARY_COLOR}]}
+                  onPress={() => (navigation as any).navigate('ProfileEditScreen')}>
+                  <Feather name="edit-3" size={22} color="#ffffff" />
+                </TouchableOpacity>
+              )}
             </View>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity onPress={onFollowClick}>
-            <View
-              style={{
-                ...styles.btnSM,
-                backgroundColor: isFollowing ? PRIMARY_COLOR : '#fff',
-              }}>
+          ) : other ? (
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => (navigation as any).navigate('ProfileEditScreen')}
+              style={styles.primaryBtn}
+            >
+              <MaterialIcons name="edit" size={20} color="#ffffff" />
+              <Text style={styles.primaryBtnText}>Edit Profile</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity 
+              activeOpacity={0.7}
+              onPress={onFollowClick} 
+              style={[
+                styles.primaryBtn, 
+                { 
+                  backgroundColor: isFollowing ? 'transparent' : PRIMARY_COLOR, 
+                  borderWidth: isFollowing ? 1.5 : 0, 
+                  borderColor: PRIMARY_COLOR 
+                }
+              ]}
+            >
               <MaterialIcons
-                name="person"
+                name={isFollowing ? "person-outline" : "person-add"}
                 size={20}
-                color={isFollowing ? '#fff' : 'black'}
+                color={isFollowing ? PRIMARY_COLOR : '#ffffff'}
               />
-              <Text
-                style={{
-                  ...styles.btnSMText,
-                  color: isFollowing ? '#fff' : 'black',
-                }}>
+              <Text style={[styles.primaryBtnText, { color: isFollowing ? PRIMARY_COLOR : '#ffffff' }]}>
                 {isFollowing ? 'Following' : 'Follow'}
               </Text>
-            </View>
-          </TouchableOpacity>
-        )}
-        <TouchableOpacity onPress={onOverviewClick}>
-          {other && (
-            <View style={styles.btnSM}>
-              <MaterialCommunityIcon
-                name="view-dashboard"
-                size={20}
-                color="black"
-              />
-              <Text style={styles.btnSMText}>Your Workspace</Text>
-            </View>
+            </TouchableOpacity>
           )}
-        </TouchableOpacity>
+        </View>
 
-        <TouchableOpacity
-          onPress={() => {
-            if (isConnected) {
-              (navigation as NavigationProp<RootStackParamList>).navigate(
-                'NotificationPreferencesScreen',
-              );
-            } else {
-              Snackbar.show({
-                text: 'Please check your internet connection!',
-                duration: Snackbar.LENGTH_SHORT,
-              });
-            }
-          }}>
-          {other && (
-            <View style={styles.btnSM}>
-              <MaterialCommunityIcon
-                name="bell-cog-outline"
-                size={20}
-                color="black"
-              />
-              <Text style={styles.btnSMText}>Notification Preferences</Text>
-            </View>
-          )}
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => {
-            if (isConnected) {
-              navigation.navigate('LogoutScreen', {
-                profile_image: profileImg,
-                username: username,
-              });
-            } else {
-              Snackbar.show({
-                text: 'Please check your internet connection!',
-                duration: Snackbar.LENGTH_SHORT,
-              });
-            }
-          }}>
-          {other && (
-            <View style={styles.btnSM}>
-              <MaterialIcons name="logout" size={20} color="black" />
-              <Text style={styles.btnSMText}>Logout</Text>
-            </View>
-          )}
-        </TouchableOpacity>
-
+        {/* Stats Cards */}
         {isDoctor && (
-          <View style={styles.infoContainer}>
-            <View style={styles.infoBlock}>
-              <Text style={[styles.infoText, {color: PRIMARY_COLOR}]}>
-                {specialization}
-              </Text>
-              <Text style={styles.infoLabel}>Specialization</Text>
+          <View style={[styles.statsCard, styles.doctorInfoCard, styles.shadowProps, {backgroundColor: themeColors.card, borderColor: themeColors.border}]}>
+            <View style={styles.statItem}>
+              <Text style={[styles.doctorInfoValue, {color: PRIMARY_COLOR}]} numberOfLines={2}>{specialization || 'N/A'}</Text>
+              <Text style={[styles.statLabel, {color: themeColors.textSecondary}]}>Specialization</Text>
             </View>
-            <View style={styles.infoBlock}>
-              <Text style={[styles.infoText, {color: PRIMARY_COLOR}]}>
-                {qualification}
-              </Text>
-              <Text style={styles.infoLabel}>Qualification</Text>
+            <View style={[styles.statDividerFull, {backgroundColor: themeColors.border}]} />
+            <View style={styles.statItem}>
+              <Text style={[styles.doctorInfoValue, {color: PRIMARY_COLOR}]} numberOfLines={2}>{qualification || 'N/A'}</Text>
+              <Text style={[styles.statLabel, {color: themeColors.textSecondary}]}>Qualification</Text>
             </View>
           </View>
         )}
-        <View style={styles.infoContainer}>
-          <Pressable onPress={onFollowerPress} style={styles.infoBlock}>
-            <Text style={[styles.infoText, {color: PRIMARY_COLOR}]}>
-              {followers}
-            </Text>
-            <Text style={styles.infoLabel}>
-              {followers > 1 ? 'Followers' : 'Follower'}
+
+        <View style={[styles.statsCard, styles.shadowProps, {backgroundColor: themeColors.card, borderColor: themeColors.border}]}>
+          <Pressable onPress={onFollowerPress} style={styles.statItem}>
+            <Text style={[styles.statValue, {color: themeColors.text}]} numberOfLines={1}>{followers || 0}</Text>
+            <Text style={[styles.statLabel, {color: themeColors.textSecondary}]}>
+              {followers === 1 ? 'Follower' : 'Followers'}
             </Text>
           </Pressable>
-
-          <Pressable onPress={onFollowingPress} style={styles.infoBlock}>
-            <Text style={[styles.infoText, {color: PRIMARY_COLOR}]}>
-              {followings}
-            </Text>
-            <Text style={styles.infoLabel}>
-              {followings > 1 ? 'Followings' : 'Following'}
-            </Text>
+          <View style={[styles.statDivider, {backgroundColor: themeColors.border}]} />
+          <Pressable onPress={onFollowingPress} style={styles.statItem}>
+            <Text style={[styles.statValue, {color: themeColors.text}]} numberOfLines={1}>{followings || 0}</Text>
+            <Text style={[styles.statLabel, {color: themeColors.textSecondary}]}>Following</Text>
           </Pressable>
         </View>
+
+        {/* Secondary Actions List */}
+        {other && (
+          <View style={styles.secondaryActionContainer}>
+            <TouchableOpacity 
+              activeOpacity={0.7}
+              onPress={onOverviewClick} 
+              style={[styles.listButton, {backgroundColor: themeColors.card, borderColor: themeColors.border}]}
+            >
+              <View style={[styles.listButtonIconBg, { backgroundColor: themeColors.iconBackground }]}>
+                 <MaterialCommunityIcon name="view-dashboard" size={22} color={PRIMARY_COLOR} />
+              </View>
+              <Text style={[styles.listButtonText, {color: themeColors.text}]}>Your Workspace</Text>
+              <MaterialIcons name="chevron-right" size={24} color={themeColors.textSecondary} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              activeOpacity={0.7}
+              style={[styles.listButton, {backgroundColor: themeColors.card, borderColor: themeColors.border}]}
+              onPress={() => {
+                if (isConnected) {
+                  (navigation as NavigationProp<RootStackParamList>).navigate('NotificationPreferencesScreen');
+                } else {
+                  Snackbar.show({ text: 'Please check your internet connection!', duration: Snackbar.LENGTH_SHORT });
+                }
+              }}>
+              <View style={[styles.listButtonIconBg, { backgroundColor: themeColors.iconBackground }]}>
+                 <MaterialCommunityIcon name="bell-cog-outline" size={22} color={PRIMARY_COLOR} />
+              </View>
+              <Text style={[styles.listButtonText, {color: themeColors.text}]}>Notification Preferences</Text>
+              <MaterialIcons name="chevron-right" size={24} color={themeColors.textSecondary} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              activeOpacity={0.7}
+              style={[styles.listButton, {backgroundColor: themeColors.card, borderColor: themeColors.border}]}
+              onPress={() => {
+                if (isConnected) {
+                  (navigation as any).navigate('LogoutScreen', { profile_image: profileImg, username: username });
+                } else {
+                  Snackbar.show({ text: 'Please check your internet connection!', duration: Snackbar.LENGTH_SHORT });
+                }
+              }}>
+              <View style={[styles.listButtonIconBg, { backgroundColor: themeColors.iconBackground }]}>
+                <MaterialIcons name="logout" size={22} color="#EF4444" />
+              </View>
+              <Text style={[styles.listButtonText, {color: '#EF4444'}]}>Logout</Text>
+              <MaterialIcons name="chevron-right" size={24} color={themeColors.textSecondary} />
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
     </View>
   );
@@ -255,118 +261,188 @@ export default ProfileHeader;
 
 const styles = StyleSheet.create({
   container: {
-    paddingBottom: 16,
-    // backgroundColor: ON_PRIMARY_COLOR,
+    paddingBottom: hp(3),
+    flex: 1,
   },
   ellipseSvg: {
     position: 'absolute',
-    top:-1 ,
+    top: -1,
+    width: '100%',
   },
   contentContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: hp(1),
-    paddingHorizontal: wp(4),
-    // backgroundColor: ON_PRIMARY_COLOR
+    marginTop: hp(2.5),
+    paddingHorizontal: wp(5),
   },
   profileImage: {
-    height: 130,
-    width: 130,
-    borderRadius: 100,
-    objectFit: 'cover',
-    resizeMode: 'contain',
+    height: wp(30),
+    width: wp(30),
+    borderRadius: wp(15),
+    resizeMode: 'cover',
+    marginTop: hp(1),
   },
   nameText: {
-    fontSize: fp(5.5),
+    fontSize: fp(6),
     fontWeight: 'bold',
-    color: 'black',
-    marginTop: 6,
+    marginTop: hp(1.5),
+    textAlign: 'center',
   },
   usernameText: {
-    fontSize: fp(4),
-    fontWeight: 'regular',
-    marginTop: 1,
+    fontSize: fp(4.2),
+    fontWeight: '500',
+    marginTop: hp(0.5),
+    textAlign: 'center',
   },
   experienceContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 5,
-    marginTop: 2,
+    gap: wp(2),
+    marginTop: hp(1),
   },
   experienceText: {
-    fontSize: 14,
-    fontWeight: 'medium',
-    color: 'black',
+    fontSize: fp(3.8),
+    fontWeight: '500',
+  },
+  primaryActionContainer: {
+    marginVertical: hp(2.5),
+    width: '100%',
+    alignItems: 'center',
   },
   contactContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
-    marginVertical: 8,
+    justifyContent: 'center',
+    gap: wp(5),
   },
   iconButton: {
-    height: 45,
-    width: 45,
-    borderRadius: 100,
+    height: wp(13),
+    width: wp(13),
+    borderRadius: wp(6.5),
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.15,
+        shadowRadius: 5,
+      },
+      android: {
+        elevation: 6,
+      },
+    }),
   },
-  editProfileButton: {
-    borderWidth: 0.5,
-    width: wp(70),
-    alignItems: 'center',
-    borderRadius: 10,
-    paddingVertical: 5,
-    marginVertical: 10,
-  },
-  editProfileButtonText: {
-    fontSize: 16,
-    fontWeight: 'semibold',
-  },
-  infoContainer: {
-    width: wp(100),
+  primaryBtn: {
     flexDirection: 'row',
-    //numRows: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 14,
+    paddingVertical: hp(1.5),
+    paddingHorizontal: wp(10),
+    gap: wp(2),
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.12,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  primaryBtnText: {
+    fontSize: fp(4.2),
+    fontWeight: '600',
+  },
+  statsCard: {
+    width: '100%',
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-evenly',
-    marginVertical: 8,
+    marginVertical: hp(1),
+    borderRadius: 16,
+    paddingVertical: hp(2.5),
+    borderWidth: 1,
   },
-  infoBlock: {
+  shadowProps: {
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+  },
+  statItem: {
+    flex: 1,
     alignItems: 'center',
+    paddingHorizontal: wp(2),
   },
-  infoText: {
-    fontSize: 20,
+  statDivider: {
+    width: 1,
+    height: '60%',
+  },
+  statValue: {
+    fontSize: fp(5.5),
     fontWeight: 'bold',
+    marginBottom: hp(0.5),
+    textAlign: 'center',
   },
-  infoText2: {
-    fontSize: 19,
+  doctorInfoValue: {
+    fontSize: fp(4.5),
+    fontWeight: 'bold',
+    marginBottom: hp(0.5),
+    textAlign: 'center',
+    flexShrink: 1,
+  },
+  doctorInfoCard: {
+    paddingVertical: hp(2),
+    paddingHorizontal: wp(3),
+    alignItems: 'stretch',
+    minHeight: hp(10),
+  },
+  statDividerFull: {
+    width: 1,
+    alignSelf: 'stretch',
+    marginVertical: hp(1),
+  },
+  statLabel: {
+    fontSize: fp(3.5),
     fontWeight: '600',
+    textAlign: 'center',
   },
-  infoLabel: {
-    fontSize: 16,
-    fontWeight: 'regular',
-    color: 'black',
+  secondaryActionContainer: {
+    width: '100%',
+    marginTop: hp(2),
+    gap: hp(1.5),
   },
-  btnSM: {
+  listButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 8,
-    paddingVertical: 7,
-    marginVertical: 6,
-    paddingHorizontal: 16,
+    borderRadius: 14,
+    paddingVertical: hp(1.5),
+    paddingHorizontal: wp(4),
     borderWidth: 1,
-    backgroundColor: '#fff',
-    borderColor: '#d1d5db',
-    width: wp(70),
-    gap: 10,
   },
-  btnSMText: {
-    fontSize: 16,
-    lineHeight: 20,
+  listButtonIconBg: {
+    width: wp(10),
+    height: wp(10),
+    borderRadius: wp(5),
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: wp(3.5),
+  },
+  listButtonText: {
+    flex: 1,
+    fontSize: fp(4.2),
     fontWeight: '600',
-    color: '#374151',
   },
 });

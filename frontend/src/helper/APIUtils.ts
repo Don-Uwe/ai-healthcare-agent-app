@@ -1,5 +1,5 @@
 // Development vs Production URL configuration
-const __DEV__ = typeof __DEV__ !== 'undefined' ? __DEV__ : false;
+// Use global __DEV__ from React Native environment
 
 // For local development, uncomment and local backend
 // const DEV_URL = "http://10.0.2.2:3000/api"; // Android emulator

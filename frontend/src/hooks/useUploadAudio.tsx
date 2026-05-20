@@ -35,7 +35,7 @@ const useUploadAudio = () => {
         uri: uri.startsWith('file://') ? uri : `file://${uri}`,
         name: filename,
         type
-      });
+      } as any);
 
       console.log(`Uploading audio: ${filename} (${type})`);
 

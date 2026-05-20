@@ -20,7 +20,7 @@ import AddSpecializationModal from './AddSpecializationModal';
 interface Props {
   label: string;
   data: Array<{name: string; id: number}>;
-  handleAddSpecialization: (specialization) => void;
+  handleAddSpecialization: (specialization: string) => void;
   isModalVisible: boolean;
   setIsModalVisible: Dispatch<SetStateAction<boolean>>;
   visible: boolean;
@@ -40,7 +40,7 @@ const Dropdown: FC<Props> = ({
   specialization,
   setspecialization,
 }) => {
-  const DropdownButton = useRef<TouchableOpacity | null>(null);
+  const DropdownButton = useRef<any>(null);
   const [selected, setSelected] = useState<
     {name: string; id: number} | undefined
   >(undefined);
@@ -61,7 +61,7 @@ const Dropdown: FC<Props> = ({
   };
 
   const openDropdown = (): void => {
-    DropdownButton?.current?.measure((_fx, _fy, _w, h, _px, py) => {
+    DropdownButton?.current?.measure((_fx: number, _fy: number, _w: number, h: number, _px: number, py: number) => {
       setDropdownTop(py + h);
     });
     setVisible(true);

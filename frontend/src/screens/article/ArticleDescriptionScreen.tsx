@@ -69,7 +69,7 @@ const ArticleDescriptionScreen = ({
     }
   };
 
-  const isSelected = genre => selectedGenres.includes(genre);
+  const isSelected = (genre: Category) => selectedGenres.includes(genre);
 
   const handleCreatePost = () => {
     if (title === '') {
@@ -137,14 +137,16 @@ const ArticleDescriptionScreen = ({
         }
 
         // Check dimensions
-        ImageResizer.createResizedImage(uri, 1000, 1000, 'JPEG', 100)
-          .then(resizedImageUri => {
-            // If the image is resized successfully, upload it
-          })
-          .catch(err => {
-            console.log(err);
-            Alert.alert('Error', 'Could not resize the image.');
-          });
+        if (uri) {
+          ImageResizer.createResizedImage(uri, 1000, 1000, 'JPEG', 100)
+            .then(resizedImageUri => {
+              // If the image is resized successfully, upload it
+            })
+            .catch(err => {
+              console.log(err);
+              Alert.alert('Error', 'Could not resize the image.');
+            });
+        }
 
         setImageUtils(uri ? uri : '');
       }

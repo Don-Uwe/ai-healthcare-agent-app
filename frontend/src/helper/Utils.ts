@@ -175,7 +175,7 @@ export const storeItem = async (key: string, value: string) => {
 };
 
 // Async storage remove item
-export const removeItem = async key => {
+export const removeItem = async (key: string) => {
   try {
     await AsyncStorage.removeItem(key);
   } catch (error) {
@@ -349,7 +349,7 @@ export const downloadAudio = async (_podcast: PodcastData) => {
       };
     }
     // check for existing downloads
-    const isPodcastFound = existingPodcasts.some(d => d._id === _podcast._id);
+    const isPodcastFound = existingPodcasts.some((d: any) => d._id === _podcast._id);
 
     if (isPodcastFound) {
       return {

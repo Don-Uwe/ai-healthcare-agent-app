@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   Image,
   Platform,
-  ActivityIndicator,
   ScrollView,
 } from 'react-native';
 import {SocialScreenProps} from '../type';
@@ -20,6 +19,7 @@ import Loader from '../components/Loader';
 import {useGetUserSocials} from '../hooks/useGetUserSocialCircle';
 import {useUpdateFollowStatus} from '../hooks/useUpdateFollowStatus';
 import Snackbar from 'react-native-snackbar';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 export default function Socialcreen({navigation, route}: SocialScreenProps) {
   const insets = useSafeAreaInsets();
@@ -127,7 +127,7 @@ export default function Socialcreen({navigation, route}: SocialScreenProps) {
               {follower && user_id !== follower._id && (
                 <>
                   {followMutationPending ? (
-                    <ActivityIndicator size={24} color={PRIMARY_COLOR} />
+                    <LoadingSpinner size="small" />
                   ) : (
                     <TouchableOpacity
                       style={[

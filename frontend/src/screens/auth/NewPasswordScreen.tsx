@@ -11,7 +11,7 @@ import {
   Text,
   Circle,
 } from 'tamagui';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {NewPasswordScreenProp} from '../../type';
 import {AxiosError} from 'axios';
@@ -28,7 +28,7 @@ export default function NewPasswordScreen({
 }: NewPasswordScreenProp) {
   const {email} = route.params;
   const [password, setPassword] = useState('');
-  const isDarkMode = useColorScheme() === 'dark';
+  // removed isDarkMode variable
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordVerify, setPasswordVerify] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -79,7 +79,7 @@ export default function NewPasswordScreen({
     {
       onSuccess: () => {
         Alert.alert('Password reset successfully');
-        navigation.navigate('LoginScreen');
+        navigation.navigate('LoginScreen', {});
       },
 
       onError: (error: AxiosError) => {
@@ -110,7 +110,7 @@ export default function NewPasswordScreen({
   );
 };
 
-  const handlePassword = e => {
+  const handlePassword = (e: string) => {
     let pass = e;
     setErrorMessage(null);
     setPassword(pass);
@@ -122,7 +122,7 @@ export default function NewPasswordScreen({
     }
   };
 
-  const handleConfirmPassword = e => {
+  const handleConfirmPassword = (e: string) => {
     let pass = e;
     setErrorMessage(null);
     setConfirmPassword(pass);
@@ -135,12 +135,12 @@ export default function NewPasswordScreen({
   };
 
 
+  const insets = useSafeAreaInsets();
   if (isPending) {
     return <Loader />;
   }
   return (
-    <Theme name="light">
-      <SafeAreaView style={{flex: 1, backgroundColor: '#f8f9fa'}}>
+    <YStack flex={1} backgroundColor="$background" paddingTop={insets.top}>
         <YStack
           flex={1}
           justifyContent="center"
@@ -150,7 +150,7 @@ export default function NewPasswordScreen({
           <Card
             elevate
             bordered
-            backgroundColor="white"
+            backgroundColor="$backgroundLight"
             width="100%"
             maxWidth={440}
             height="auto"
@@ -246,7 +246,7 @@ export default function NewPasswordScreen({
                     }
                     focusStyle={{
                       borderColor: passwordVerify ? '$green9' : '$blue9',
-                      backgroundColor: 'white',
+                      backgroundColor: '$background',
                     }}
                   />
                   <Button
@@ -341,7 +341,7 @@ export default function NewPasswordScreen({
                         confirmPassword && password === confirmPassword
                           ? '$green9'
                           : '$blue9',
-                      backgroundColor: 'white',
+                      backgroundColor: '$background',
                     }}
                   />
                   <Button
@@ -374,7 +374,7 @@ export default function NewPasswordScreen({
                       <>
                         <Text fontSize={14} color="$red10">✗</Text>
                         <Text fontSize={13} color="$red10" fontWeight="500">
-                          Passwords don't match
+                          Passwords don&apos;t match
                         </Text>
                       </>
                     )}
@@ -434,7 +434,7 @@ export default function NewPasswordScreen({
             <Button
               chromeless
               marginTop="$5"
-              onPress={() => navigation.navigate('LoginScreen')}
+              onPress={() => navigation.navigate('LoginScreen', {})}
               padding="$2"
               height="auto">
               <XStack ai="center" gap="$2">
@@ -453,7 +453,6 @@ export default function NewPasswordScreen({
             </Button>
           </Card>
         </YStack>
-      </SafeAreaView>
-    </Theme>
+      </YStack>
   );
 }
