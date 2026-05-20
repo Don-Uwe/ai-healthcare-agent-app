@@ -105,7 +105,7 @@ def filter_diff(diff_text):
     return final_diff
 
 def generate_review(pr_title, pr_body, diff_text, gemini_api_key):
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={gemini_api_key}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key={gemini_api_key}"
     prompt = f"{SYSTEM_PROMPT}\n\nPR TITLE:\n{pr_title}\n\nPR DESCRIPTION:\n{pr_body}\n\nPR DIFF:\n{diff_text}"
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
