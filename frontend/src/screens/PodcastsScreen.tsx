@@ -25,7 +25,7 @@ import {GlassStyles, ProfessionalColors} from '../styles/GlassStyles';
 import CreateIcon from '../components/CreateIcon';
 import {useGetAllPodcasts} from '../hooks/useGetAllPodcasts';
 import {useUpdatePodcastViewcount} from '../hooks/useUpdatePodcastViewcount';
-import { PodcastLoadingState } from '../components/EmptyStates';
+import { PodcastLoadingState, NoPodcastState } from '../components/EmptyStates';
 
 const {WavAudioRecorder} = NativeModules;
 //const recorderEvents = new NativeEventEmitter(WavAudioRecorder);
@@ -158,22 +158,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
   );
 
   const renderEmptyState = () => (
-    <View style={styles.emptyContainer}>
-      <View
-        style={[GlassStyles.glassCard, {padding: 40, alignItems: 'center'}]}>
-        <View style={styles.emptyIconContainer}>
-          <Ionicons
-            name="headset-outline"
-            size={64}
-            color={ProfessionalColors.gray400}
-          />
-        </View>
-        <Text style={styles.message}>No podcasts found</Text>
-        <Text style={styles.subMessage}>
-          New episodes will appear here once added
-        </Text>
-      </View>
-    </View>
+    <NoPodcastState onRefresh={onRefresh} />
   );
 
   return (

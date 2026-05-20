@@ -83,7 +83,6 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router",
       "@react-native-firebase/app",
       "expo-notifications",
       [
@@ -107,11 +106,9 @@
       ]
     ],
     "experiments": {
-      "typedRoutes": true,
       "reactCompiler": true
     },
     "extra": {
-      "router": {},
       "eas": {
         "projectId": "bdd3feee-d70b-4f27-9be5-33edb8b864f4"
       }

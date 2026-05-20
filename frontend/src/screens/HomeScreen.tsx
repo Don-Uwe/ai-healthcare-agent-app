@@ -40,262 +40,42 @@ import {useGetProfile} from '../hooks/useGetProfile';
 import {useRequestArticleEdit} from '../hooks/useRequestArticleEdit';
 import {useGetUnreadNotificationCount} from '../hooks/useGetUnreadNotificationCount';
 import {useGetPaginatedArticle} from '../hooks/useGetPaginatedArticles';
+import {
+  OfflineArticleState,
+  NoArticleState,
+  BaseEmptyState,
+} from '../components/EmptyStates';
 
 // Loading State Component with Animation
 const LoadingState = () => {
-  const pulseAnim = useRef(new Animated.Value(1)).current;
-  const rotateAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    // Pulse animation
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.2,
-          duration: 1000,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1000,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ]),
-    ).start();
-
-    // Rotate animation
-    Animated.loop(
-      Animated.timing(rotateAnim, {
-        toValue: 1,
-        duration: 2000,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      }),
-    ).start();
-  }, [pulseAnim, rotateAnim]);
-
-  const rotate = rotateAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
-
   return (
-    <View style={styles.stateContainer}>
-      <Animated.View
-        style={[
-          styles.iconCircle,
-          {
-            transform: [{scale: pulseAnim}, {rotate}],
-          },
-        ]}>
-        <Text style={styles.iconEmoji}>📚</Text>
-      </Animated.View>
-      <Text style={styles.stateTitle}>Loading Articles</Text>
-      <Text style={styles.stateDescription}>
-        Gathering the latest health insights for you...
-      </Text>
-      <View style={styles.dotsContainer}>
-        <AnimatedDot delay={0} />
-        <AnimatedDot delay={200} />
-        <AnimatedDot delay={400} />
-      </View>
-    </View>
-  );
-};
-
-// Animated Dot Component
-const AnimatedDot = ({delay}: {delay: number}) => {
-  const fadeAnim = useRef(new Animated.Value(0.3)).current;
-
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.delay(delay),
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-        Animated.timing(fadeAnim, {
-          toValue: 0.3,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-      ]),
-    ).start();
-  }, [delay, fadeAnim]);
-
-  return (
-    <Animated.View
-      style={[
-        styles.dot,
-        {
-          opacity: fadeAnim,
-        },
-      ]}
+    <BaseEmptyState
+      iconEmoji="📚"
+      title="Loading Articles"
+      description="Gathering the latest health insights for you..."
+      loading={true}
     />
   );
 };
 
 // Error State Component
 const ErrorState = ({onRetry}: {onRetry: () => void}) => {
-  const shakeAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.sequence([
-      Animated.timing(shakeAnim, {
-        toValue: 10,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(shakeAnim, {
-        toValue: -10,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(shakeAnim, {
-        toValue: 10,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(shakeAnim, {
-        toValue: 0,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [shakeAnim]);
-
   return (
-    <View style={styles.stateContainer}>
-      <Animated.View
-        style={[
-          styles.iconCircle,
-          styles.errorCircle,
-          {
-            transform: [{translateX: shakeAnim}],
-          },
-        ]}>
-        <Text style={styles.iconEmoji}>📭</Text>
-      </Animated.View>
-      <Text style={styles.stateTitle}>No Articles Found</Text>
-      <Text style={styles.stateDescription}>
-        We couldn&apos;t find any articles at the moment.{'\n'}
-        Please try refreshing or check back later.
-      </Text>
-      <TouchableOpacity style={styles.retryButton} onPress={onRetry}>
-        <Text style={styles.retryButtonText}>Retry</Text>
-      </TouchableOpacity>
-    </View>
+    <NoArticleState onRefresh={onRetry} />
   );
 };
 
 // Offline State Component
 const OfflineState = () => {
-  const bounceAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(bounceAnim, {
-          toValue: -10,
-          duration: 500,
-          easing: Easing.ease,
-          useNativeDriver: true,
-        }),
-        Animated.timing(bounceAnim, {
-          toValue: 0,
-          duration: 500,
-          easing: Easing.ease,
-          useNativeDriver: true,
-        }),
-      ]),
-    ).start();
-  }, [bounceAnim]);
-
   return (
-    <View style={styles.stateContainer}>
-      <Animated.View
-        style={[
-          styles.iconCircle,
-          styles.offlineCircle,
-          {
-            transform: [{translateY: bounceAnim}],
-          },
-        ]}>
-        <Text style={styles.iconEmoji}>📡</Text>
-      </Animated.View>
-      <Text style={styles.stateTitle}>You&apos;re Offline</Text>
-      <Text style={styles.stateDescription}>
-        Connect to the internet to view articles.{'\n'}
-        Offline mode coming in the next update!
-      </Text>
-    </View>
+    <OfflineArticleState />
   );
 };
 
 // Empty Article State Component (for FlatList empty state)
 const EmptyArticleState = () => {
-  const floatAnim = useRef(new Animated.Value(0)).current;
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    // Fade in animation
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 800,
-      useNativeDriver: true,
-    }).start();
-
-    // Float animation
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(floatAnim, {
-          toValue: 1,
-          duration: 2000,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(floatAnim, {
-          toValue: 0,
-          duration: 2000,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ]),
-    ).start();
-  }, [floatAnim, fadeAnim]);
-
-  const translateY = floatAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -15],
-  });
-
   return (
-    <Animated.View style={[styles.emptyArticleContainer, {opacity: fadeAnim}]}>
-      <Animated.View
-        style={[
-          styles.emptyIconCircle,
-          {
-            transform: [{translateY}],
-          },
-        ]}>
-        <Text style={styles.emptyIconEmoji}>🔍</Text>
-      </Animated.View>
-      <Text style={styles.emptyArticleTitle}>No Articles Here</Text>
-      <Text style={styles.emptyArticleDescription}>
-        We couldn&apos;t find any articles in this category.{'\n'}
-        Try selecting a different category or{'\n'}
-        check back later for new content!
-      </Text>
-      <View style={styles.emptyTagsContainer}>
-        <View style={styles.emptyTag}>
-          <Text style={styles.emptyTagText}>Try other tags</Text>
-        </View>
-      </View>
-    </Animated.View>
+    <NoArticleState />
   );
 };
 
