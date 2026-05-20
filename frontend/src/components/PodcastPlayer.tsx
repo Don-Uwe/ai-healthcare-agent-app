@@ -27,6 +27,8 @@ const PodcastPlayer = ({}) => {
   const isSliderSeekingRef = useRef(false);
   const speakingStartTimestampRef = useRef<number | null>(null);
   const currentSpokenOffsetMsRef = useRef<number>(0);
+  const currentPositionRef = useRef(0);
+  const seekResetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const text = `You're seeking new ways to diversify your portfolio, but it's not always easy to find new reliable investment opportunities. Each week, our financial expert with four decades of successful investing experience will help you discover opportunities outside of your current strategy that you've probably never considered before. If you want to learn about ways to diversify your portfolio in ways that have various levels of risk, this show is for you.`;
 
@@ -70,6 +72,22 @@ const PodcastPlayer = ({}) => {
     }
   };
 
+  const syncCurrentPosition = (position: number) => {
+    currentPositionRef.current = position;
+    setCurrentPosition(position);
+  };
+
+  const clearSeekResetTimeout = () => {
+    if (seekResetTimeoutRef.current) {
+      clearTimeout(seekResetTimeoutRef.current);
+      seekResetTimeoutRef.current = null;
+    }
+  };
+
+  const removeTtsSubscription = (subscription: {remove?: () => void} | null) => {
+    subscription?.remove?.();
+  };
+
   // Best-effort event-driven sync (react-native-tts varies by version/platform)
   useEffect(() => {
     const setup = async () => {
@@ -81,9 +99,8 @@ const PodcastPlayer = ({}) => {
 
     const onStart = () => {
       if (isSliderSeekingRef.current) return;
-      const now = Date.now();
-      speakingStartTimestampRef.current = now;
-      currentSpokenOffsetMsRef.current = currentPosition;
+      speakingStartTimestampRef.current = Date.now();
+      currentSpokenOffsetMsRef.current = currentPositionRef.current;
       setisPlaying(true);
     };
 
@@ -103,12 +120,12 @@ const PodcastPlayer = ({}) => {
         duration,
         currentSpokenOffsetMsRef.current + eventPosMs,
       );
-      setCurrentPosition(newPos);
+      syncCurrentPosition(newPos);
     };
 
     const onFinish = () => {
       setisPlaying(false);
-      setCurrentPosition(0);
+      syncCurrentPosition(0);
       speakingStartTimestampRef.current = null;
       currentSpokenOffsetMsRef.current = 0;
     };
@@ -116,20 +133,27 @@ const PodcastPlayer = ({}) => {
     const onCancel = () => setisPlaying(false);
     const onError = () => setisPlaying(false);
 
-    Tts.addEventListener('tts-start', onStart);
-    Tts.addEventListener('tts-progress', onProgress);
-    Tts.addEventListener('tts-finish', onFinish);
-    Tts.addEventListener('tts-cancel', onCancel);
-    Tts.addEventListener('tts-error', onError);
+    const startSub = Tts.addEventListener('tts-start', onStart);
+    const progressSub = Tts.addEventListener('tts-progress', onProgress);
+    const finishSub = Tts.addEventListener('tts-finish', onFinish);
+    const cancelSub = Tts.addEventListener('tts-cancel', onCancel);
+    const errorSub = Tts.addEventListener('tts-error', onError);
 
     return () => {
-      // component-safe cleanup is better, but react-native-tts event APIs differ by version.
-      // Preserve original approach used elsewhere in the repo.
-      Tts.removeAllListeners('tts-finish');
-      Tts.removeAllListeners('tts-error');
-      Tts.removeAllListeners('tts-start');
-      Tts.removeAllListeners('tts-progress');
-      Tts.removeAllListeners('tts-cancel');
+      clearSeekResetTimeout();
+      removeTtsSubscription(startSub);
+      removeTtsSubscription(progressSub);
+      removeTtsSubscription(finishSub);
+      removeTtsSubscription(cancelSub);
+      removeTtsSubscription(errorSub);
+
+      if (typeof Tts.removeEventListener === 'function') {
+        Tts.removeEventListener('tts-start', onStart);
+        Tts.removeEventListener('tts-progress', onProgress);
+        Tts.removeEventListener('tts-finish', onFinish);
+        Tts.removeEventListener('tts-cancel', onCancel);
+        Tts.removeEventListener('tts-error', onError);
+      }
     };
   }, []);
 
@@ -154,6 +178,7 @@ const PodcastPlayer = ({}) => {
     currentSpokenOffsetMsRef.current = clamped;
     speakingStartTimestampRef.current = null;
     isSliderSeekingRef.current = false;
+    currentPositionRef.current = clamped;
 
     Tts.stop();
     Tts.speak(newText);
@@ -176,10 +201,11 @@ const PodcastPlayer = ({}) => {
     const seekPosition = Math.max(0, Math.min(safeDuration, value * safeDuration));
 
     isSliderSeekingRef.current = true;
-    setCurrentPosition(seekPosition);
+    syncCurrentPosition(seekPosition);
     speakFromPositionMs(seekPosition);
 
-    setTimeout(() => {
+    clearSeekResetTimeout();
+    seekResetTimeoutRef.current = setTimeout(() => {
       isSliderSeekingRef.current = false;
     }, 50);
   };
@@ -188,6 +214,12 @@ const PodcastPlayer = ({}) => {
   const handleBackward = () => {};
   const handleDownload = () => {};
   const handleShare = () => {};
+
+  useEffect(() => {
+    return () => {
+      clearSeekResetTimeout();
+    };
+  }, []);
 
   return (
     <>
