@@ -1,6 +1,6 @@
 {
-  "extends": "expo/tsconfig.base",
   "compilerOptions": {
+    "jsx": "react-native",
     "strict": true,
     "paths": {
       "@/*": [
@@ -9,6 +9,11 @@
     },
     "moduleResolution": "bundler",
     "skipLibCheck": true,
+    "lib": [
+      "ES2015"
+    ],
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true
   },
   "include": [
     "**/*.ts",
@@ -18,5 +23,6 @@
   ],
   "exclude": [
     "node_modules"
-  ]
+  ],
+  "extends": "expo/tsconfig.base"
 }

@@ -1,5 +1,5 @@
 import React from 'react';
-import {Share, Linking, Image, useColorScheme} from 'react-native';
+import { Share, Linking, Image, useColorScheme } from 'react-native';
 import VersionCheck from 'react-native-version-check';
 import {
   YStack,
@@ -14,15 +14,17 @@ import {
   Ionicons,
   FontAwesome6,
 } from '@expo/vector-icons';
-import {StatusBar} from 'expo-status-bar';
-import {SafeAreaView} from 'react-native-safe-area-context';
-import {AboutScreenProps} from '../type';
-import {GlassContainer} from '../components/GlassContainer';
-import {ProfessionalColors, Typography, Spacing} from '../styles/GlassStyles';
+import { StatusBar } from 'expo-status-bar';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { AboutScreenProps } from '../type';
+import { GlassContainer } from '../components/GlassContainer';
+import { ProfessionalColors, Typography, Spacing } from '../styles/GlassStyles';
+import { useBackToTop } from '../components/BackToTopScrollView';
 
-const AboutScreen = ({navigation}: AboutScreenProps) => {
+const AboutScreen = ({ navigation }: AboutScreenProps) => {
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === 'dark';
+  const { scrollRef, onScroll, BackToTopButton } = useBackToTop({ threshold: 300 });
   const currentVersion = VersionCheck.getCurrentVersion();
 
   const onShare = async () => {
@@ -48,7 +50,12 @@ const AboutScreen = ({navigation}: AboutScreenProps) => {
       }}>
       <StatusBar style={isDarkMode ? 'light' : 'dark'} backgroundColor="#007AFF" />
 
-      <ScrollView showsVerticalScrollIndicator={false} flex={1}>
+      <ScrollView
+        ref={scrollRef}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
+        showsVerticalScrollIndicator={false}
+        flex={1}>
         <View
           flex={1}
           backgroundColor={isDarkMode ? '#000A60' : '#F0F8FF'}
@@ -101,7 +108,7 @@ const AboutScreen = ({navigation}: AboutScreenProps) => {
               </View>
             </YStack>
 
-            <GlassContainer variant="card" style={{marginTop: Spacing.md}}>
+            <GlassContainer variant="card" style={{ marginTop: Spacing.md }}>
               <Text
                 style={[
                   Typography.body,
@@ -283,6 +290,7 @@ const AboutScreen = ({navigation}: AboutScreenProps) => {
           </YStack>
         </View>
       </ScrollView>
+      <BackToTopButton buttonColor="#007AFF" iconColor="#fff" />
     </SafeAreaView>
   );
 };
@@ -305,7 +313,7 @@ const MenuButton = ({
     unstyled
     onPress={onPress}
     backgroundColor="transparent"
-    pressStyle={{opacity: 0.7}}
+    pressStyle={{ opacity: 0.7 }}
     padding="$3"
     borderRadius={12}>
     <XStack alignItems="center" gap="$3" flex={1}>
