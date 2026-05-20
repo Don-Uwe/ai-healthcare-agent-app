@@ -3,6 +3,22 @@ description: Improve Documentation
 title: "📝[Docs]: "
 labels: 'enhancement'
 body:
+  - type: dropdown
+    id: related-area
+    attributes:
+      label: Related Area
+      description: Select the area related to this issue
+      options:
+        - Documentation
+        - Frontend
+        - Backend
+        - Mobile
+        - Testing
+        - CI/CD
+        - Other
+    validations:
+      required: true
+
   - type: checkboxes
     id: existing-issue
     attributes:
@@ -34,7 +50,7 @@ body:
       description: Why is this documentation update necessary or beneficial?
       placeholder: Explain the importance or reasoning behind the suggested change.
     validations:
-      required: False
+      required: false
   - type: dropdown
     id: urgency
     attributes:

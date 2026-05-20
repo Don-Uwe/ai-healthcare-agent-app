@@ -3,6 +3,20 @@ description: File a bug report
 title: "🐞[Bug]: "
 labels: 'bug'
 body:
+  - type: dropdown
+    id: related-area
+    attributes:
+      label: Related Area
+      description: Select the area related to this issue
+      options:
+        - Frontend
+        - Backend
+        - Mobile
+        - Testing
+        - CI/CD
+        - Other
+    validations:
+      required: true
   - type: checkboxes
     id: existing-issue
     attributes:
