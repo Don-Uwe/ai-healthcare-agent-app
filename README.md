@@ -337,6 +337,7 @@ If you encounter any issues or have any feedback or suggestions, please open an 
     <td align="center"><a href="https://github.com/Randomlyclueless"><img src="https://avatars.githubusercontent.com/u/144950366?v=4" width="120px;" alt=""/><br/><sub><b>Kimaya Chavan</b></sub></a></td>
        <td align="center"><a href="https://github.com/Vaishnavi10706"><img src="https://avatars.githubusercontent.com/u/209587091?v=4" width="120px;" alt=""/><br/><sub><b>Vaishnavi</b></sub></a></td>
      <td align="center"><a href="https://github.com/Chandrika987"><img src="https://avatars.githubusercontent.com/u/221697990?v=4" width="120px;" alt=""/><br/><sub><b>Chandrika</b></sub></a></td>
+     <td align="center"><a href="https://github.com/bhavyaxtech"><img src="https://avatars.githubusercontent.com/u/202380426?v=4" width="120px;" alt=""/><br/><sub><b>Bhavya Reddy</b></sub></a></td>
  </tr>
  </table>
  <!-- CONTRIBUTORS-TABLE-END -->
