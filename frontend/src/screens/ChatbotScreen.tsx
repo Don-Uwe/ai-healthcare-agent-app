@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {
   Bubble,
   GiftedChat,
@@ -54,6 +54,7 @@ const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
 
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [isTyping, setIsTyping] = useState<boolean>(true);
+  const isMountedRef = useRef(true);
   const dispatch = useDispatch();
   const {data: user} = useGetProfile();
   // const token = 'GPMFAQIV2BGXCWYMCVQ3IPVXSOOLI53H5NYA'; //token
@@ -66,9 +67,30 @@ const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
     useLoadAIConversations(isConnected);
 
   useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  const safeSetMessages = useCallback(
+    (updater: React.SetStateAction<IMessage[]>) => {
+      if (isMountedRef.current) {
+        setMessages(updater);
+      }
+    },
+    [],
+  );
+
+  const safeSetIsTyping = useCallback((typing: boolean) => {
+    if (isMountedRef.current) {
+      setIsTyping(typing);
+    }
+  }, []);
+
+  useEffect(() => {
     if (conversations) {
       const refined = convertToGiftedFormat(conversations);
-      setMessages([
+      safeSetMessages([
         {
           _id: refined.length + 1,
           text: "Hello! 👋 I'm here to assist you. How can I help you today?",
@@ -82,9 +104,9 @@ const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
         ...refined.reverse(),
       ]);
 
-      setIsTyping(false);
+      safeSetIsTyping(false);
     }
-  }, [conversations]);
+  }, [conversations, safeSetIsTyping, safeSetMessages]);
 
   const convertToGiftedFormat = (items: Message[]): IMessage[] => {
     return items.map(m => ({
@@ -113,7 +135,7 @@ const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
     }
     sendMessageToAI(messages[0]?.text ?? 'AI in health within 100 words', {
       onSuccess: (responseData: Message) => {
-        setMessages(previousMessages =>
+        safeSetMessages(previousMessages =>
           GiftedChat.append(previousMessages, [
             {
               _id: responseData._id,
@@ -129,6 +151,9 @@ const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
         );
       },
       onError: (error: AxiosError) => {
+        if (!isMountedRef.current) {
+          return;
+        }
         console.log('Error', error);
         if (error.response) {
           const statusCode = error.response.status;
@@ -145,7 +170,7 @@ const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
 
               break;
             case 429:
-              setMessages(previousMessages =>
+              safeSetMessages(previousMessages =>
                 GiftedChat.append(previousMessages, [
                   {
                     _id: previousMessages.length + 1,
@@ -186,11 +211,10 @@ const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
         }
       },
     });
-    setMessages(previousMessages =>
+    safeSetMessages(previousMessages =>
       GiftedChat.append(previousMessages, messages),
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isConnected, safeSetMessages, sendMessageToAI]);
 
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: 'white'}} edges={['top']}>
