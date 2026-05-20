@@ -7,6 +7,9 @@ import {
   Alert,
   Pressable,
   TextInput,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
 } from 'react-native';
 
 import {YStack, H3, Paragraph, Image, Text} from 'tamagui';
@@ -17,6 +20,7 @@ import Loader from '../components/Loader';
 import CommentItem from '../components/CommentItem';
 import {useSocket} from '../contexts/SocketContext';
 import {useArticleRoom} from '../hooks/useArticleRoom';
+
 import {
   useMentions,
   replaceTriggerValues,
@@ -25,30 +29,40 @@ import {
   SuggestionsProvidedProps,
   parseValue,
 } from 'react-native-controlled-mentions';
+
 import {GET_IMAGE, GET_STORAGE_DATA} from '../helper/APIUtils';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 
 const CommentScreen = ({navigation, route}: CommentScreenProp) => {
   const socket = useSocket();
   const {articleId, mentionedUsers, article} = route.params;
 
-  // Auto-join article room
   useArticleRoom(articleId.toString(), null);
+
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const flatListRef = useRef<FlatList<Comment>>(null);
+
   const {user_id} = useSelector((state: any) => state.user);
-  const [selectedCommentId, setSelectedCommentId] = useState<string>('');
+
+  const [selectedCommentId, setSelectedCommentId] =
+    useState<string>('');
+
   const [editMode, setEditMode] = useState<boolean>(false);
-  const [editCommentId, setEditCommentId] = useState<string | null>(null);
-  const [commentLoading, setCommentLoading] = useState<boolean>(false);
-  const [commentLikeLoading, setCommentLikeLoading] = useState<boolean>(false);
+
+  const [editCommentId, setEditCommentId] =
+    useState<string | null>(null);
+
+  const [commentLoading, setCommentLoading] =
+    useState<boolean>(false);
+
+  const [commentLikeLoading, setCommentLikeLoading] =
+    useState<boolean>(false);
+
   const [mentions, setMentions] = useState<User[]>([]);
+
   const dispatch = useDispatch();
 
-  // mention triggers for v3
-  // Create as constants outside component or memoize with useMemo
   const triggersConfig: TriggersConfig<'mention' | 'hashtag'> = {
     mention: {
       trigger: '@',
@@ -69,7 +83,6 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
     },
   };
 
-  // useMentions hook for v3
   const {textInputProps, triggers} = useMentions({
     value: newComment,
     onChange: setNewComment,
@@ -79,15 +92,22 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
 
   useEffect(() => {
     if (!socket) return;
-    
-    socket.emit('fetch-comments', {articleId: route.params.articleId});
 
-    socket.on('connect', () => console.log('connection established'));
-    // socket.on('comment-processing', (data: boolean) => setCommentLoading(data));
+    socket.emit('fetch-comments', {
+      articleId: route.params.articleId,
+    });
+
+    socket.on('connect', () =>
+      console.log('connection established'),
+    );
+
     socket.on('like-comment-processing', (data: boolean) =>
       setCommentLikeLoading(data),
     );
-    socket.on('error', data => console.log('connection error', data));
+
+    socket.on('error', data =>
+      console.log('connection error', data),
+    );
 
     socket.on('fetch-comments', data => {
       if (data.articleId === route.params.articleId) {
@@ -99,9 +119,14 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
       if (data.articleId === route.params.articleId) {
         setComments(prev => {
           const newList = [data.comment, ...prev];
+
           if (flatListRef.current && newList.length > 1) {
-            flatListRef.current.scrollToIndex({index: 0, animated: true});
+            flatListRef.current.scrollToIndex({
+              index: 0,
+              animated: true,
+            });
           }
+
           return newList;
         });
       }
@@ -112,7 +137,10 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
         setComments(prev =>
           prev.map(comment =>
             comment._id === data.parentCommentId
-              ? {...comment, replies: [...comment.replies, data.reply]}
+              ? {
+                  ...comment,
+                  replies: [...comment.replies, data.reply],
+                }
               : comment,
           ),
         );
@@ -122,7 +150,9 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
     socket.on('edit-comment', data => {
       setComments(prev =>
         prev.map(comment =>
-          comment._id === data._id ? {...comment, ...data} : comment,
+          comment._id === data._id
+            ? {...comment, ...data}
+            : comment,
         ),
       );
     });
@@ -130,13 +160,17 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
     socket.on('like-comment', data => {
       setComments(prev =>
         prev.map(comment =>
-          comment._id === data._id ? {...comment, ...data} : comment,
+          comment._id === data._id
+            ? {...comment, ...data}
+            : comment,
         ),
       );
     });
 
     socket.on('delete-comment', data => {
-      setComments(prev => prev.filter(c => c._id !== data.commentId));
+      setComments(prev =>
+        prev.filter(c => c._id !== data.commentId),
+      );
     });
 
     return () => {
@@ -158,7 +192,7 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
   const handleMentionClick = (user_handle: string) => {
     navigation.navigate('UserProfileScreen', {
       author_handle: user_handle.substring(1),
-      authorId: undefined
+      authorId: undefined,
     });
   };
 
@@ -172,12 +206,13 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
           text: 'OK',
           onPress: () => {
             if (!socket) return;
+
             socket.emit('delete-comment', {
               commentId: comment._id,
               articleId: route.params.articleId,
               userId: user_id,
             });
-          }
+          },
         },
       ],
       {cancelable: false},
@@ -186,6 +221,7 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
 
   const handleLikeAction = (comment: Comment) => {
     if (!socket) return;
+
     socket.emit('like-comment', {
       commentId: comment._id,
       articleId: route.params.articleId,
@@ -195,18 +231,17 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
 
   const handleCommentSubmit = () => {
     if (!newComment.trim()) {
-      // dispatch(
-      //   showAlert({
-      //     title: 'Alert!',
-      //     message: 'Please enter a comment before submitting.',
-      //   }),
-      // );
-      Alert.alert('Please enter a comment before submitting.');
+      Alert.alert(
+        'Please enter a comment before submitting.',
+      );
 
       return;
     }
 
-    const formatted = replaceTriggerValues(newComment, ({name}) => `@${name}`);
+    const formatted = replaceTriggerValues(
+      newComment,
+      ({name}) => `@${name}`,
+    );
 
     if (!socket) return;
 
@@ -217,6 +252,7 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
         articleId: route.params.articleId,
         userId: user_id,
       });
+
       setEditMode(false);
       setEditCommentId(null);
     } else {
@@ -227,12 +263,17 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
         parentCommentId: null,
         mentionedUsers: mentions,
       };
+
       socket.emit('comment', newCommentObj);
     }
+
     setNewComment('');
   };
 
-  const handleReportAction = (commentId: string, authorId: string) => {
+  const handleReportAction = (
+    commentId: string,
+    authorId: string,
+  ) => {
     navigation.navigate('ReportScreen', {
       articleId: articleId.toString(),
       authorId,
@@ -241,11 +282,9 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
     });
   };
 
-  const Suggestions: FC<SuggestionsProvidedProps & {suggestions: User[]}> = ({
-    keyword,
-    onSelect,
-    suggestions,
-  }) => {
+  const Suggestions: FC<
+    SuggestionsProvidedProps & {suggestions: User[]}
+  > = ({keyword, onSelect, suggestions}) => {
     if (keyword == null) {
       return null;
     }
@@ -262,14 +301,20 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
             <Pressable
               key={one._id}
               onPress={() => {
-                onSelect({id: one._id, name: one.user_handle});
+                onSelect({
+                  id: one._id,
+                  name: one.user_handle,
+                });
+
                 setMentions(prev => [...prev, one]);
               }}
               style={styles.suggestionItem}>
               {one.Profile_image ? (
                 <Image
                   source={{
-                    uri: one.Profile_image.startsWith('https')
+                    uri: one.Profile_image.startsWith(
+                      'https',
+                    )
                       ? one.Profile_image
                       : `${GET_STORAGE_DATA}/${one.Profile_image}`,
                   }}
@@ -284,7 +329,9 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
                 />
               )}
 
-              <Text style={styles.username2}>{one.user_handle}</Text>
+              <Text style={styles.username2}>
+                {one.user_handle}
+              </Text>
             </Pressable>
           ))}
       </View>
@@ -293,20 +340,23 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
 
   const usedUserIds = useMemo(
     () =>
-      parseValue(newComment, [triggersConfig.mention]).parts.reduce(
-        (acc, part) => {
-          if (part.data?.id) {
-            acc.push(part.data.id);
-          }
-          return acc;
-        },
-        [] as string[],
-      ),
+      parseValue(newComment, [
+        triggersConfig.mention,
+      ]).parts.reduce((acc, part) => {
+        if (part.data?.id) {
+          acc.push(part.data.id);
+        }
+
+        return acc;
+      }, [] as string[]),
     [newComment, triggersConfig.mention],
   );
 
   const filteredUsers = useMemo(
-    () => mentionedUsers.filter(user => !usedUserIds.includes(user._id)),
+    () =>
+      mentionedUsers.filter(
+        user => !usedUserIds.includes(user._id),
+      ),
     [mentionedUsers, usedUserIds],
   );
 
@@ -314,113 +364,135 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-    <KeyboardAwareScrollView
-      style={styles.scrollView}
-      bottomOffset={50}
-      showsVerticalScrollIndicator={false}
-      extraKeyboardSpace={20}
-      keyboardShouldPersistTaps="handled"
-      {...({
-        enableOnAndroid: true,
-        enableAutomaticScroll: true,
-      } as any)}
-      contentContainerStyle={styles.scrollContent}>
-        <YStack gap="$3">
-          {/* Article Title Card */}
-          <View style={styles.articleTitleCard}>
-            <H3 fontSize={20} color="#1F2937" fontWeight={'700'}>
-              {article.title}
-            </H3>
-          </View>
+      <KeyboardAvoidingView
+  style={{flex: 1}}
+  behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+>
+  <ScrollView
+    keyboardShouldPersistTaps="handled"
+    contentContainerStyle={{flexGrow: 1, paddingBottom: 120}}
+    showsVerticalScrollIndicator={false}
+  >
 
-          {/* Article Image */}
-          <View style={styles.imageContainer}>
-            <Image
-              source={{
-                uri: article?.imageUtils[0].startsWith('http')
-                  ? article?.imageUtils[0]
-                  : `${GET_IMAGE}/${article?.imageUtils[0]}`,
-              }}
-              style={styles.articleImage}
-            />
-          </View>
+          <YStack gap="$3">
 
-          {/* View Article Button */}
-          <TouchableOpacity
-            onPress={() =>
-              navigation.navigate('ArticleScreen', {
-                articleId: Number(article._id),
-                authorId: article.authorId.toString(),
-                recordId: article.pb_recordId,
-              })
-            }
-            style={styles.viewArticleButton}
-            activeOpacity={0.8}>
-            <Text style={styles.viewArticleText}>
-              View Full Article
-            </Text>
-          </TouchableOpacity>
+            <View style={styles.articleTitleCard}>
+              <H3
+                fontSize={20}
+                color="#1F2937"
+                fontWeight={'700'}>
+                {article.title}
+              </H3>
+            </View>
 
-          {/* Article Description */}
-          <View style={styles.descriptionCard}>
-            <Paragraph color="#4B5563" fontSize={15} lineHeight={22}>
-              {article.description}
-            </Paragraph>
-          </View>
+            <View style={styles.imageContainer}>
+              <Image
+                source={{
+                  uri: article?.imageUtils[0].startsWith(
+                    'http',
+                  )
+                    ? article?.imageUtils[0]
+                    : `${GET_IMAGE}/${article?.imageUtils[0]}`,
+                }}
+                style={styles.articleImage}
+              />
+            </View>
 
-          {/* Mention Suggestions */}
-          <Suggestions suggestions={filteredUsers} {...triggers.mention} />
-
-          {/* Comment Input */}
-          <TextInput
-            {...textInputProps}
-            style={styles.textInput}
-            placeholder="Add a comment..."
-            placeholderTextColor="#9CA3AF"
-            multiline
-          />
-
-          {/* Submit Button */}
-          {newComment.length > 0 && (
             <TouchableOpacity
-              style={styles.submitButton}
-              onPress={handleCommentSubmit}
+              onPress={() =>
+                navigation.navigate('ArticleScreen', {
+                  articleId: Number(article._id),
+                  authorId:
+                    article.authorId.toString(),
+                  recordId: article.pb_recordId,
+                })
+              }
+              style={styles.viewArticleButton}
               activeOpacity={0.8}>
-              <Text style={styles.submitButtonText}>
-                {editMode ? 'Update Comment' : 'Submit Comment'}
+              <Text style={styles.viewArticleText}>
+                View Full Article
               </Text>
             </TouchableOpacity>
-          )}
 
-          {/* Comments Section Header */}
-          <View style={styles.commentsHeader}>
-            <Text style={styles.commentsHeaderText}>
-              {comments.length} {comments.length === 1 ? 'Comment' : 'Comments'}
-            </Text>
-          </View>
+            <View style={styles.descriptionCard}>
+              <Paragraph
+                color="#4B5563"
+                fontSize={15}
+                lineHeight={22}>
+                {article.description}
+              </Paragraph>
+            </View>
 
-          {/* Comments List */}
-          <YStack marginTop="$2" gap="$3">
-            {comments.map(item => (
-              <CommentItem
-                key={item._id}
-                item={item}
-                isSelected={selectedCommentId === item._id}
-                userId={user_id}
-                setSelectedCommentId={setSelectedCommentId}
-                handleEditAction={handleEditAction}
-                deleteAction={handleDeleteAction}
-                handleLikeAction={handleLikeAction}
-                commentLikeLoading={commentLikeLoading}
-                handleMentionClick={handleMentionClick}
-                handleReportAction={handleReportAction}
-                isFromArticle={false}
-              />
-            ))}
+            <Suggestions
+              suggestions={filteredUsers}
+              {...triggers.mention}
+            />
+
+            <TextInput
+              {...textInputProps}
+              style={styles.textInput}
+              placeholder="Add a comment..."
+              placeholderTextColor="#9CA3AF"
+              multiline
+            />
+
+            {newComment.length > 0 && (
+              <TouchableOpacity
+                style={styles.submitButton}
+                onPress={handleCommentSubmit}
+                activeOpacity={0.8}>
+                <Text style={styles.submitButtonText}>
+                  {editMode
+                    ? 'Update Comment'
+                    : 'Submit Comment'}
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            <View style={styles.commentsHeader}>
+              <Text style={styles.commentsHeaderText}>
+                {comments.length}{' '}
+                {comments.length === 1
+                  ? 'Comment'
+                  : 'Comments'}
+              </Text>
+            </View>
+
+            <YStack marginTop="$2" gap="$3">
+              {comments.map(item => (
+                <CommentItem
+                  key={item._id}
+                  item={item}
+                  isSelected={
+                    selectedCommentId === item._id
+                  }
+                  userId={user_id}
+                  setSelectedCommentId={
+                    setSelectedCommentId
+                  }
+                  handleEditAction={handleEditAction}
+                  deleteAction={handleDeleteAction}
+                  handleLikeAction={handleLikeAction}
+                  commentLikeLoading={
+                    commentLikeLoading
+                  }
+                  handleMentionClick={
+                    handleMentionClick
+                  }
+                  handleReportAction={
+                    handleReportAction
+                  }
+                  isFromArticle={false}
+                />
+              ))}
+            </YStack>
+
           </YStack>
-        </YStack>
-    </KeyboardAwareScrollView>
-      </SafeAreaView>
+
+        </ScrollView>
+
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
@@ -430,15 +502,18 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F9FAFB',
   },
+
   scrollContent: {
     flexGrow: 1,
     paddingBottom: 120,
     paddingHorizontal: 16,
   },
+
   safeArea: {
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
+
   articleTitleCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
@@ -450,14 +525,17 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
+
   imageContainer: {
     position: 'relative',
   },
+
   articleImage: {
     width: '100%',
     height: 200,
     borderRadius: 12,
   },
+
   viewArticleButton: {
     backgroundColor: PRIMARY_COLOR,
     padding: 14,
@@ -469,11 +547,13 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
+
   viewArticleText: {
     color: '#FFFFFF',
     fontWeight: '700',
     fontSize: 16,
   },
+
   descriptionCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
@@ -484,6 +564,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
+
   suggestionsContainer: {
     maxHeight: 200,
     backgroundColor: '#FFFFFF',
@@ -496,6 +577,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E7EB',
   },
+
   suggestionItem: {
     flex: 0,
     padding: 12,
@@ -504,6 +586,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',
   },
+
   profileImage2: {
     height: 36,
     width: 36,
@@ -513,11 +596,13 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#FFFFFF',
   },
+
   username2: {
     fontSize: 14,
     fontWeight: '600',
     color: '#374151',
   },
+
   textInput: {
     minHeight: 100,
     fontSize: 15,
@@ -530,6 +615,7 @@ const styles = StyleSheet.create({
     color: '#1F2937',
     marginTop: 8,
   },
+
   submitButton: {
     backgroundColor: PRIMARY_COLOR,
     padding: 16,
@@ -542,11 +628,13 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 4,
   },
+
   submitButtonText: {
     fontSize: 16,
     color: '#FFFFFF',
     fontWeight: '700',
   },
+
   commentsHeader: {
     backgroundColor: '#F3F4F6',
     padding: 12,
@@ -555,6 +643,7 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     borderLeftColor: PRIMARY_COLOR,
   },
+
   commentsHeaderText: {
     fontWeight: '700',
     fontSize: 18,
