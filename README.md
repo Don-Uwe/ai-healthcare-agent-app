@@ -336,6 +336,17 @@ If you encounter any issues or have any feedback or suggestions, please open an 
    <tr>
     <td align="center"><a href="https://github.com/Randomlyclueless"><img src="https://avatars.githubusercontent.com/u/144950366?v=4" width="120px;" alt=""/><br/><sub><b>Kimaya Chavan</b></sub></a></td>
        <td align="center"><a href="https://github.com/Vaishnavi10706"><img src="https://avatars.githubusercontent.com/u/209587091?v=4" width="120px;" alt=""/><br/><sub><b>Vaishnavi</b></sub></a></td>
+     <td align="center"><a href="https://github.com/Chandrika987"><img src="https://avatars.githubusercontent.com/u/221697990?v=4" width="120px;" alt=""/><br/><sub><b>Chandrika</b></sub></a></td>
+     <td align="center"><a href="https://github.com/bhavyaxtech"><img src="https://avatars.githubusercontent.com/u/202380426?v=4" width="120px;" alt=""/><br/><sub><b>Bhavya Reddy</b></sub></a></td>
+     <td align="center"><a href="https://github.com/Harshit-Maurya838"><img src="https://avatars.githubusercontent.com/u/174622309?v=4" width="120px;" alt=""/><br/><sub><b>Harshit Maurya</b></sub></a></td>
+     <td align="center"><a href="https://github.com/Preksha0401"><img src="https://avatars.githubusercontent.com/u/155712570?v=4" width="120px;" alt=""/><br/><sub><b>Preksha Pravin Salvi</b></sub></a></td>
+ </tr>
+
+   <tr>
+    <td align="center"><a href="https://github.com/Tanisha-sharma7302"><img src="https://avatars.githubusercontent.com/u/227324372?v=4" width="120px;" alt=""/><br/><sub><b>Tanisha-sharma7302</b></sub></a></td>
+       <td align="center"><a href="https://github.com/saurabhhhcodes"><img src="https://avatars.githubusercontent.com/u/157192462?v=4" width="120px;" alt=""/><br/><sub><b>Saurabh Kumar Bajpai</b></sub></a></td>
+     <td align="center"><a href="https://github.com/SarthakKharche"><img src="https://avatars.githubusercontent.com/u/187843039?v=4" width="120px;" alt=""/><br/><sub><b>SarthakKharche</b></sub></a></td>
+     <td align="center"><a href="https://github.com/indresh404"><img src="https://avatars.githubusercontent.com/u/256361574?v=4" width="120px;" alt=""/><br/><sub><b>Indresh </b></sub></a></td>
  </tr>
  </table>
  <!-- CONTRIBUTORS-TABLE-END -->

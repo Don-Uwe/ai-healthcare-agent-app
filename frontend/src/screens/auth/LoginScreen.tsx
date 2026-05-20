@@ -267,188 +267,217 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
           borderRadius="$5"
           gap="$2"
           elevation={1}>
-          <Image
-            source={require('../../../assets/images/icon.png')}
-            style={{
-              height: 60,
-              width: 60,
-              // borderRadius: 60,
-              alignSelf: 'center',
-              resizeMode: 'cover',
-            }}
-          />
-
-          <Text
-            alignSelf="center"
-            textAlign="center"
-            fontSize={16}
-            fontWeight="500"
-            color="$color"
-            maxWidth={300}
-            lineHeight={22}>
-            Enter your email and password to securely access your account
-          </Text>
-
-          {emailMessage && (
-            <Text color="red" fontSize={14}>
-              Please Enter a Valid Email
-            </Text>
-          )}
-
-          <XStack alignItems="center" position="relative">
-            <Icon
-              name="mail"
-              size={22}
-              color="$color"
+          <YStack alignItems="center" marginBottom="$4" gap="$2">
+            <Image
+              source={require('../../../assets/images/icon.png')}
               style={{
-                position: 'absolute',
-                left: 6,
-                zIndex: 1,
+                height: 90,
+                width: 90,
+                alignSelf: 'center',
+                resizeMode: 'contain',
               }}
             />
-            <Input
-              flex={1}
-              height="$6"
-              borderRadius="$3"
-              placeholder="Enter your email"
-              autoCapitalize="none"
-              autoCorrect={false}
-              keyboardType="email-address"
-              onChangeText={handleEmail}
-              color="$color"
-              backgroundColor="$background"
-              paddingStart="$8"
-            />
-          </XStack>
 
-          {passwordMessage && (
-            <Text color="red" fontSize={14}>
-              Password must be 6 Characters Long
+            <Text
+              alignSelf="center"
+              textAlign="center"
+              fontSize={16}
+              fontWeight="500"
+              color={isDarkMode ? '$color' : '$color10'}
+              maxWidth={300}
+              lineHeight={22}>
+              Enter your email and password to securely access your account
             </Text>
-          )}
+          </YStack>
 
-          <XStack alignItems="center" position="relative">
-            <Entypo
-              name="lock"
-              size={22}
-              color="$color"
-              style={{
-                position: 'absolute',
-                left: 12,
-                zIndex: 1,
-              }}
-            />
-            <Input
-              flex={1}
-              height="$6"
-              borderRadius="$3"
-              placeholder="Password"
-              secureTextEntry={secureTextEntry}
-              autoCapitalize="none"
-              onChangeText={handlePassword}
-              value={password}
-              color="$color"
-              backgroundColor="$background"
-              paddingLeft="$8"
-              paddingRight="$8"
-            />
-            <Button
-              chromeless
-              size="$4"
-              circular
-              position="absolute"
-              right={6}
-              onPress={handleSecureEntryClickEvent}>
+          <YStack gap="$3">
+            {emailMessage && (
+              <Text color="$red10" fontSize={14} marginBottom="$-2">
+                Please Enter a Valid Email
+              </Text>
+            )}
+
+            <XStack alignItems="center" position="relative">
               <Icon
-                name={secureTextEntry ? 'eye-off' : 'eye'}
+                name="mail"
                 size={22}
-                color="$color"
+                color={isDarkMode ? 'white' : 'black'}
+                style={{
+                  position: 'absolute',
+                  left: 12,
+                  zIndex: 1,
+                }}
               />
+              <Input
+                flex={1}
+                height="$6"
+                borderRadius="$4"
+                placeholder="Enter your email"
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="email-address"
+                onChangeText={handleEmail}
+                color={isDarkMode ? '$color' : '$color10'}
+                paddingStart="$10"
+              />
+            </XStack>
+
+            {passwordMessage && (
+              <Text color="$red10" fontSize={14} marginBottom="$-2">
+                Password must be 6 Characters Long
+              </Text>
+            )}
+
+            <XStack alignItems="center" position="relative">
+              <Entypo
+                name="lock"
+                size={22}
+                color={isDarkMode ? 'white' : 'black'}
+                style={{
+                  position: 'absolute',
+                  left: 12,
+                  zIndex: 1,
+                }}
+              />
+              <Input
+                flex={1}
+                height="$6"
+                borderRadius="$4"
+                placeholder="Password"
+                secureTextEntry={secureTextEntry}
+                autoCapitalize="none"
+                onChangeText={handlePassword}
+                value={password}
+                color={isDarkMode ? '$color' : '$color10'}
+                paddingLeft="$10"
+                paddingRight="$10"
+              />
+              <Button
+                chromeless
+                size="$4"
+                circular
+                position="absolute"
+                right={6}
+                onPress={handleSecureEntryClickEvent}>
+                <Icon
+                  name={secureTextEntry ? 'eye-off' : 'eye'}
+                  size={22}
+                  color={isDarkMode ? 'white' : 'black'}
+                />
+              </Button>
+            </XStack>
+
+           <XStack
+  justifyContent="space-between"
+  alignItems="center"
+  marginTop="$2"
+  paddingHorizontal="$2"
+>
+  <Text
+    color={isDarkMode ? '$gray10' : '$gray11'}
+    fontWeight="500"
+    fontSize={13}
+    pressStyle={{ opacity: 0.7 }}
+    cursor="pointer"
+    onPress={() => {
+      setRequestVerification(true);
+      setEmailInputVisible(true);
+    }}
+  >
+    Request Verification
+  </Text>
+
+  <Text
+    color="$blue10"
+    fontWeight="600"
+    fontSize={13}
+    pressStyle={{ opacity: 0.7 }}
+    cursor="pointer"
+    onPress={() => {
+      setEmailInputVisible(true);
+      setRequestVerification(false);
+    }}
+  >
+    Forgot Password?
+  </Text>
+</XStack>
+
+            <Button
+              backgroundColor="$blue10"
+              theme="blue"
+              marginTop="$5"
+              size="$5"
+              borderRadius="$4"
+              fontWeight="700"
+              alignSelf="center"
+              onPress={() => {
+                console.log('Login button pressed!');
+                validateAndSubmit();
+              }}
+              disabled={loginPending}
+              opacity={loginPending ? 0.5 : 1}
+              width="100%">
+              <Text fontSize={18} color="$white" fontWeight="600">
+                Login
+              </Text>
             </Button>
-          </XStack>
+          </YStack>
 
-          <Text
-            color="$blue10"
-            fontWeight="600"
-            fontSize={14}
-            alignSelf="flex-end"
-            marginTop="$-1"
-            onPress={() => {
-              setEmailInputVisible(true);
-              setRequestVerification(false);
-            }}>
-            Forgot Password?
-          </Text>
+          <Separator marginVertical="$5" borderColor={isDarkMode ? '$gray6' : '$gray5'} />
 
-          <Button
-            backgroundColor="$blue10"
-            theme="blue"
-            marginTop="$3"
-            size="$5"
-            fontWeight="700"
-            alignSelf="center"
-            onPress={() => {
-              console.log('Login button pressed!');
-              validateAndSubmit();
-            }}
-            disabled={loginPending}
-            opacity={loginPending ? 0.5 : 1}
-            width="100%">
-            <Text fontSize={18} color="$white" fontWeight="600">
-              Login
-            </Text>
-          </Button>
+          <YStack gap="$3">
+            <Button
+  size="$4"
+  backgroundColor="transparent"
+  borderWidth={1}
+  borderRadius="$4"
+  borderColor={isDarkMode ? '$gray8' : '$blue5'}
+  alignSelf="center"
+  width="100%"
+  marginTop="$3"
+  pressStyle={{ opacity: 0.85 }}
+  onPress={() => navigation.navigate('SignUpScreenFirst')}
+>
+  <Text
+    fontWeight="600"
+    fontSize={16}
+    color={isDarkMode ? '$color' : '$blue10'}
+  >
+    Sign Up
+  </Text>
+</Button>
 
-          <Text
-            color="$red10"
-            fontWeight="600"
-            fontSize={14}
-            alignSelf="center"
-            marginTop="$1"
-            onPress={() => {
-              setRequestVerification(true);
-              setEmailInputVisible(true);
-            }}>
-            Request Verification
-          </Text>
-
-          <Separator marginVertical="$2" />
-
-          <Button
-            marginTop="$2"
-            size="$5"
-            backgroundColor="$backgroundLight"
-            borderWidth={1}
-            borderColor="$borderColor"
-            alignSelf="center"
-            width="100%"
-            onPress={() => navigation.navigate('SignUpScreenFirst')}>
-            <Text fontWeight="600" fontSize={16} color="$color">
-              Sign Up
-            </Text>
-          </Button>
-
-          <Button
-            marginTop="$2"
-            size="$5"
-            backgroundColor="$backgroundLight"
-            borderRadius="$6"
-            borderWidth={1}
-            borderColor="$borderColor"
-            alignSelf="center"
-            width="100%"
-            icon={<Icon name="compass-outline" size={22} color="$color" />}
-            onPress={() => {
-              dispatch(setGuestMode(true));
-              navigation.reset({
-                index: 0,
-                routes: [{name: 'TabNavigation'}],
-              });
-            }}>
-            <Text fontWeight="bold" fontSize={16} color="$color">
-              Continue as Guest
-            </Text>
-          </Button>
+            <Button
+  size="$4"
+  chromeless
+  alignSelf="center"
+  width="100%"
+  marginTop="$2"
+  pressStyle={{ opacity: 0.7 }}
+  icon={
+    <Icon
+      name="compass-outline"
+      size={20}
+      color={isDarkMode ? '$gray11' : '$gray11'}
+    />
+  }
+  onPress={() => {
+    dispatch(setGuestMode(true));
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'TabNavigation' }],
+    });
+  }}
+>
+  <Text
+    fontWeight="500"
+    fontSize={15}
+    color={isDarkMode ? '$gray11' : '$gray11'}
+  >
+    Continue as Guest
+  </Text>
+</Button>
+          </YStack>
         </YStack>
 
         <EmailInputBottomSheet

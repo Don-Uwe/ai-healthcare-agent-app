@@ -1,0 +1,15 @@
+{
+  "CHECKS": {
+    "prefixes": [
+      "docs: ",
+      "feat: ",
+      "fix: ",
+      "build: ",
+      "refactor: ",
+      "revert: ",
+      "style: ",
+      "chore: ",
+      "test: "
+    ]
+  }
+}
