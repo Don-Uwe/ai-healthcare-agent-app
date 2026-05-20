@@ -2,6 +2,7 @@ import os
 import json
 import urllib.request
 import urllib.error
+import time
 
 MAX_DIFF_SIZE = 500000
 
@@ -116,17 +117,27 @@ def generate_review(pr_title, pr_body, diff_text, gemini_api_key):
         data=json.dumps(payload).encode("utf-8"),
         headers={"Content-Type": "application/json"}
     )
-    try:
-        with urllib.request.urlopen(request) as resp:
-            resp_data = json.loads(resp.read().decode("utf-8"))
-            return resp_data["candidates"][0]["content"]["parts"][0]["text"]
-    except urllib.error.HTTPError as e:
-        error_body = e.read().decode("utf-8")
-        print(f"HTTP Error from Gemini API: {e.code} - {error_body}")
-        raise e
-    except Exception as e:
-        print(f"Failed to fetch review from Gemini API: {e}")
-        raise e
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            with urllib.request.urlopen(request) as resp:
+                resp_data = json.loads(resp.read().decode("utf-8"))
+                return resp_data["candidates"][0]["content"]["parts"][0]["text"]
+        except urllib.error.HTTPError as e:
+            error_body = e.read().decode("utf-8")
+            print(f"HTTP Error from Gemini API (Attempt {attempt+1}): {e.code} - {error_body}")
+            if e.code in [429, 500, 502, 503, 504] and attempt < max_retries - 1:
+                sleep_time = (2 ** attempt) * 5  # 5s, 10s
+                print(f"Retrying in {sleep_time} seconds...")
+                time.sleep(sleep_time)
+            else:
+                raise e
+        except Exception as e:
+            print(f"Failed to fetch review from Gemini API (Attempt {attempt+1}): {e}")
+            if attempt < max_retries - 1:
+                time.sleep(5)
+            else:
+                raise e
 
 def post_review(repo, pr_number, github_token, review_text):
     url = f"https://api.github.com/repos/{repo}/issues/{pr_number}/comments"
