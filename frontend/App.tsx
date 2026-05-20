@@ -18,7 +18,7 @@ const queryClient = new QueryClient();
 function App() {
   useEffect(() => {
     setAudioModeAsync({
-      staysActiveInBackground: true,
+      //staysActiveInBackground: true,
       playsInSilentMode: true,
       allowsRecording: true,
     });
