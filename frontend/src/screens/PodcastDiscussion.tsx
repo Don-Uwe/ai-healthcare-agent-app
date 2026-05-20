@@ -458,6 +458,25 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
           </View>
 
           {/* Comments List */}
+          {comments.length === 0 && (
+  <View style={styles.emptyContainer}>
+    <Text style={styles.emptyIcon}>🎙️</Text>
+    <Text style={styles.emptyTitle}>
+      No discussions yet!
+    </Text>
+    <Text style={styles.emptySubtitle}>
+      Be the first to start the conversation
+    </Text>
+    <TouchableOpacity
+      style={styles.emptyButton}
+      onPress={() => inputRef.current?.focus()}
+    >
+      <Text style={styles.emptyButtonText}>
+        Start Discussion
+      </Text>
+    </TouchableOpacity>
+  </View>
+)}
           <YStack marginTop="$2" gap="$3">
             {comments.map(item => (
               <CommentItem
@@ -694,6 +713,41 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
+
+  emptyContainer: {
+  alignItems: 'center',
+  justifyContent: 'center',
+  paddingVertical: 60,
+  paddingHorizontal: 20,
+},
+emptyIcon: {
+  fontSize: 60,
+  marginBottom: 16,
+},
+emptyTitle: {
+  fontSize: 20,
+  fontWeight: 'bold',
+  color: PRIMARY_COLOR,
+  marginBottom: 8,
+  textAlign: 'center',
+},
+emptySubtitle: {
+  fontSize: 14,
+  color: '#888',
+  marginBottom: 24,
+  textAlign: 'center',
+},
+emptyButton: {
+  backgroundColor: PRIMARY_COLOR,
+  paddingHorizontal: 24,
+  paddingVertical: 12,
+  borderRadius: 8,
+},
+emptyButtonText: {
+  color: '#fff',
+  fontWeight: 'bold',
+  fontSize: 14,
+},
 });
 
 export default PodcastDiscussion;
