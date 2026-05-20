@@ -44,8 +44,8 @@ def main():
     if len(final_diff) > 200000:
         final_diff = final_diff[:200000] + "\n... [Diff truncated for size limit] ..."
 
-    # 3. Call Gemini 2.5 Flash API via raw HTTP request
-    gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_api_key}"
+    # 3. Call Gemini 1.5 Flash API via raw HTTP request
+    gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={gemini_api_key}"
     prompt = (
         "You are an AI code reviewer. Write a helpful, highly precise, and constructive review of the following pull request diff.\n"
         "Keep your response concise and structured.\n"
@@ -75,6 +75,10 @@ def main():
         with urllib.request.urlopen(req_gemini) as resp:
             resp_data = json.loads(resp.read().decode("utf-8"))
             review_text = resp_data["candidates"][0]["content"]["parts"][0]["text"]
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode("utf-8")
+        print(f"HTTP Error from Gemini API: {e.code} - {error_body}")
+        return
     except Exception as e:
         print(f"Failed to fetch review from Gemini API: {e}")
         return
@@ -101,6 +105,9 @@ def main():
                 print("Review posted successfully!")
             else:
                 print(f"Failed to post review: {resp_comment.status}")
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode("utf-8")
+        print(f"HTTP Error posting comment to GitHub: {e.code} - {error_body}")
     except urllib.error.URLError as e:
         print(f"Failed to post comment to GitHub: {e}")
 
