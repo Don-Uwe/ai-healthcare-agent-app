@@ -47,6 +47,7 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
   const {podcastId, mentionedUsers} = route.params;
 
   // Auto-join podcast room
+  const inputRef = useRef<TextInput>(null);
   useArticleRoom(null, podcastId);
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
@@ -431,6 +432,7 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
 
           {/* Comment Input */}
           <TextInput
+            ref = {inputRef}
             {...textInputProps}
             style={styles.textInput}
             placeholder="Add a comment..."
