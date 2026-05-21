@@ -309,6 +309,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const [selectedCardId, setSelectedCardId] = useState<string>('');
   // const [repostItem, setRepostItem] = useState<ArticleData | null>(null);
   const [selectCategoryList, setSelectCategoryList] = useState<Category[]>([]);
+  const [showSavedOnly, setShowSavedOnly] = useState(false);
   const [filterLoading, setFilterLoading] = useState<boolean>(false);
   const {mutate: requestEdit, isPending: requestEditPending} =
     useRequestArticleEdit();
@@ -399,6 +400,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   };
 
   const handleCategoryClick = (category: Category) => {
+    setShowSavedOnly(false);
     setSelectedCategory(category);
   };
 
@@ -555,6 +557,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       setRefreshing(true);
       refetch();
       if (!isGuest) {
+        refetchUser();
         refetchUnreadCount();
       }
       setRefreshing(false);
@@ -587,6 +590,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   };
 
   const listData = useMemo(() => {
+    if (showSavedOnly) return user?.savedArticles || [];
     if (searchMode) return searchedArticles;
 
     const filtered = filteredArticles.filter(
@@ -596,7 +600,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     );
 
     return filtered.sort(() => Math.random() - 0.5);
-  }, [searchMode, searchedArticles, filteredArticles, selectedCategory]);
+  }, [showSavedOnly, searchMode, searchedArticles, filteredArticles, selectedCategory, user]);
 
   // Check if any filters are active
   const hasActiveFilters = useMemo(() => {
@@ -804,6 +808,21 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           showsHorizontalScrollIndicator={false}
           //contentContainerStyle={{flex:1}}
         >
+          <TouchableOpacity
+            style={{
+              ...styles.button,
+              backgroundColor: showSavedOnly ? '#000A60' : 'white',
+              borderColor: showSavedOnly ? PRIMARY_COLOR : '#D1D5DB',
+            }}
+            onPress={() => setShowSavedOnly(prev => !prev)}>
+            <Text
+              style={{
+                ...styles.labelStyle,
+                color: showSavedOnly ? 'white' : 'black',
+              }}>
+              🔖 Saved
+            </Text>
+          </TouchableOpacity>
           {selectedTags &&
             selectedTags.length > 0 &&
             !searchMode &&
