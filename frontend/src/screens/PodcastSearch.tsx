@@ -1,5 +1,6 @@
+// PodcastSearch.tsx
 import React, {useEffect, useState} from 'react';
-import {Pressable, FlatList} from 'react-native';
+import {Pressable, FlatList, AccessibilityInfo} from 'react-native';
 import {PodcastData, PodcastSearchProp} from '../type';
 import {AxiosError} from 'axios';
 import {useSelector} from 'react-redux';
@@ -13,13 +14,10 @@ import {XStack, YStack, Input, Separator, Text} from 'tamagui';
 import {Feather} from '@expo/vector-icons';
 import {useUpdatePodcastViewcount} from '../hooks/useUpdatePodcastViewcount';
 import {useGetSearchPodcasts} from '../hooks/useGetSearchPodcasts';
-import LoadingSpinner from '../components/LoadingSpinner';
 
 export default function PodcastSearch({navigation}: PodcastSearchProp) {
   const [query, setQuery] = useState<string>('');
-  //const {user_token} = useSelector((state: any) => state.user);
   const {isConnected} = useSelector((state: any) => state.network);
-  // const [results, setResults] = useState<PodcastData>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [searchData, setSearchData] = useState<PodcastData[]>([]);
@@ -35,29 +33,28 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
   useEffect(() => {
     if (Number(page) === 1) {
       if (searchPodcasts && searchPodcasts.totalPages) {
-        const pages = searchPodcasts.totalPages;
-        setTotalPages(pages);
+        setTotalPages(searchPodcasts.totalPages);
       }
-
       if (searchPodcasts && searchPodcasts.matchPodcasts) {
         setSearchData(searchPodcasts.matchPodcasts);
       }
     } else {
       if (searchPodcasts && searchPodcasts.matchPodcasts) {
-        const oldPodcasts = searchData;
-        const newPodcasts = searchPodcasts.matchPodcasts;
-
-        setSearchData([...oldPodcasts, ...newPodcasts]);
+        setSearchData(prev => [...prev, ...searchPodcasts.matchPodcasts]);
       }
     }
   }, [page, searchPodcasts]);
 
+  useEffect(() => {
+    if (isLoading && query !== '') {
+      AccessibilityInfo.announceForAccessibility('Loading podcast results');
+    }
+  }, [isLoading, query]);
 
   const renderItem = ({item}: {item: PodcastData}) => (
     <Pressable
       style={{padding: 10}}
       onPress={() => {
-        //playPodcast(item);
         if (item) {
           updateViewCount(item._id, {
             onSuccess: (data: PodcastData) => {
@@ -107,8 +104,6 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
         }}
         handleReport={() => {}}
         playlistAct={() => {}}
-        //onSelect={()=>{}}
-        //onClear={()=>{}}
       />
     </Pressable>
   );
@@ -120,33 +115,19 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
       backgroundColor="#F9FAFB"
       paddingTop="$2"
       justifyContent="flex-start">
-      {/* Header Section */}
       <YStack
         paddingHorizontal="$4"
         paddingTop="$7"
         paddingBottom="$3"
         backgroundColor="#FFFFFF">
-        {/* Header */}
         <YStack marginBottom="$3">
           <XStack alignItems="center" gap="$3">
             <Feather name="mic" size={24} color={PRIMARY_COLOR} />
-
             <YStack>
-              <Text
-                style={{
-                  fontSize: 24,
-                  fontWeight: '800',
-                  color: '#1F2937',
-                }}>
+              <Text style={{fontSize: 24, fontWeight: '800', color: '#1F2937'}}>
                 Discover Podcasts
               </Text>
-
-              <Text
-                style={{
-                  fontSize: 13,
-                  color: '#6B7280',
-                  marginTop: 2,
-                }}>
+              <Text style={{fontSize: 13, color: '#6B7280', marginTop: 2}}>
                 {searchData.length > 0
                   ? `${searchData.length} results found`
                   : 'Search for your favorite content'}
@@ -155,7 +136,6 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
           </XStack>
         </YStack>
 
-        {/* Search Bar */}
         <XStack
           alignItems="center"
           backgroundColor="#F3F4F6"
@@ -175,7 +155,6 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
             size={20}
             color={query ? PRIMARY_COLOR : '#9CA3AF'}
           />
-
           <Input
             flex={1}
             size="$5"
@@ -194,7 +173,6 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
               boxShadow: 'none',
             }}
           />
-
           {query ? (
             <Pressable
               onPress={() => {
@@ -209,9 +187,8 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
 
       <Separator borderColor="#E5E7EB" />
 
-      {/* Results Section */}
-      {isLoading && query !== '' ? (
-        <YStack paddingHorizontal="$3" marginBottom="$8" flex={1}>
+      <YStack paddingHorizontal="$3" marginBottom="$8" flex={1}>
+        {isLoading && query !== '' ? (
           <FlatList
             data={[1, 2, 3, 4, 5]}
             keyExtractor={(_, index) => `skeleton-${index}`}
@@ -219,9 +196,7 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
             scrollEnabled={false}
             contentContainerStyle={{paddingTop: 12}}
           />
-        </YStack>
-      ) : (
-        <YStack paddingHorizontal="$3" marginBottom="$8" flex={1}>
+        ) : (
           <FlatList
             data={query !== '' ? searchData : []}
             keyExtractor={item => item._id.toString()}
@@ -274,8 +249,8 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{paddingBottom: 20}}
           />
-        </YStack>
-      )}
+        )}
+      </YStack>
     </YStack>
   );
 }
