@@ -102,7 +102,7 @@ export const BaseEmptyState: React.FC<BaseEmptyStateProps> = ({
     <Animated.View style={[styles.stateContainer, { backgroundColor: containerBg, opacity: fadeAnim }]}>
       <View style={[styles.innerCard, { backgroundColor: cardBg, borderColor }]}>
         <Animated.View style={[styles.iconCircle, { backgroundColor: circleBg }, animatedStyle, scaleStyle]}>
-          <Text style={styles.iconEmoji}>{iconEmoji}</Text>
+          <Text style={styles.iconEmoji} accessibilityLabel={`${title} icon`}>{iconEmoji}</Text>
         </Animated.View>
 
         <Text style={[Typography.h4, styles.stateTitle, { color: titleColor }]}>
