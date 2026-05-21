@@ -39,7 +39,6 @@
     "expo": "~54.0.19",
     "expo-asset": "^12.0.9",
     "expo-audio": "~1.1.1",
-    "expo-av": "^16.0.8",
     "expo-constants": "~18.0.10",
     "expo-device": "~8.0.10",
     "expo-font": "~14.0.9",

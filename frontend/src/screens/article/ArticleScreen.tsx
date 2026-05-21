@@ -10,7 +10,7 @@ import {
   Dimensions,
   Share,
 } from 'react-native';
-import {useEffect, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -97,19 +97,36 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     Math.min(FONT_SCALE_MAX, Math.max(FONT_SCALE_MIN, value));
 
   const persistFontScale = async (value: number) => {
-    await storeItem(FONT_SCALE_KEY, value.toFixed(2));
+    try {
+      await storeItem(FONT_SCALE_KEY, value.toFixed(2));
+    } catch (error) {
+      console.error('Failed to persist font scale:', error);
+    }
   };
+
+  const debounce = (func: (...args: any[]) => void, delay: number) => {
+    let timeout: ReturnType<typeof setTimeout>;
+    return (...args: any[]) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func(...args), delay);
+    };
+  };
+
+  const debouncedPersistFontScale = useCallback(
+    debounce(persistFontScale, 300),
+    [],
+  );
 
   const handleDecreaseFont = () => {
     const nextValue = clampFontScale(fontScale - FONT_SCALE_STEP);
     setFontScale(nextValue);
-    persistFontScale(nextValue);
+    debouncedPersistFontScale(nextValue);
   };
 
   const handleIncreaseFont = () => {
     const nextValue = clampFontScale(fontScale + FONT_SCALE_STEP);
     setFontScale(nextValue);
-    persistFontScale(nextValue);
+    debouncedPersistFontScale(nextValue);
   };
 
   useEffect(() => {
@@ -147,12 +164,16 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     let isMounted = true;
 
     const loadFontScale = async () => {
-      const storedValue = await retrieveItem(FONT_SCALE_KEY);
-      if (!isMounted || !storedValue) return;
+      try {
+        const storedValue = await retrieveItem(FONT_SCALE_KEY);
+        if (!isMounted || !storedValue) return;
 
-      const parsed = Number(storedValue);
-      if (!Number.isNaN(parsed)) {
-        setFontScale(clampFontScale(parsed));
+        const parsed = Number(storedValue);
+        if (!Number.isNaN(parsed)) {
+          setFontScale(clampFontScale(parsed));
+        }
+      } catch (error) {
+        console.error('Failed to load font scale:', error);
       }
     };
 
@@ -424,7 +445,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     return <Loader />;
   }
 
-  const articleFontSize = Math.round(BASE_FONT_SIZE * fontScale);
+  const articleFontSize = BASE_FONT_SIZE * fontScale;
   const articleCustomStyle = `
     body { font-family: 'Times New Roman'; font-size: ${articleFontSize}px; line-height: 1.6; }
     p, li { font-size: ${articleFontSize}px; }
@@ -582,13 +603,17 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
                 <View style={styles.fontSizeButtons}>
                   <TouchableOpacity
                     onPress={handleDecreaseFont}
+                    accessibilityRole="button"
                     accessibilityLabel="Decrease article font size"
+                    hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}
                     style={styles.fontSizeButton}>
                     <Text style={styles.fontSizeButtonText}>A-</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={handleIncreaseFont}
+                    accessibilityRole="button"
                     accessibilityLabel="Increase article font size"
+                    hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}
                     style={styles.fontSizeButton}>
                     <Text style={styles.fontSizeButtonText}>A+</Text>
                   </TouchableOpacity>
@@ -750,7 +775,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
                 marginBottom: 40,
               }}
               customStyle={articleCustomStyle}
-              onSizeUpdated={size => console.log(size.height)}
+              onSizeUpdated={_size => {}}
               files={[
                 {
                   href: 'cssfileaddress',
