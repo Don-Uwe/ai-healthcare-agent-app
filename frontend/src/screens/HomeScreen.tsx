@@ -11,7 +11,13 @@ import {
 } from 'react-native';
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
+import {
+  ON_PRIMARY_COLOR,
+  PRIMARY_COLOR,
+  SAVED_CHIP_ACTIVE_BG,
+  SAVED_CHIP_INACTIVE_BG,
+  SAVED_CHIP_INACTIVE_BORDER,
+} from '../helper/Theme';
 import AddIcon from '../components/AddIcon';
 import ArticleCard from '../components/ArticleCard';
 
@@ -298,6 +304,15 @@ const EmptyArticleState = () => {
     </Animated.View>
   );
 };
+
+const SavedArticleEmptyState = () => (
+  <View style={styles.savedEmptyContainer}>
+    <Text style={styles.savedEmptyTitle}>No saved articles yet</Text>
+    <Text style={styles.savedEmptyDescription}>
+      Tap the bookmark icon on any article to save it for later.
+    </Text>
+  </View>
+);
 
 // Here The purpose of using Redux is to maintain filter state throughout the app session. globally
 const HomeScreen = ({navigation}: HomeScreenProps) => {
@@ -590,7 +605,16 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   };
 
   const listData = useMemo(() => {
-    if (showSavedOnly) return user?.savedArticles || [];
+    if (showSavedOnly) {
+      const savedArticles = user?.savedArticles || [];
+      return savedArticles
+        .slice()
+        .sort(
+          (a, b) =>
+            new Date(b.lastUpdated).getTime() -
+            new Date(a.lastUpdated).getTime(),
+        );
+    }
     if (searchMode) return searchedArticles;
 
     const filtered = filteredArticles.filter(
@@ -808,21 +832,27 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           showsHorizontalScrollIndicator={false}
           //contentContainerStyle={{flex:1}}
         >
-          <TouchableOpacity
-            style={{
-              ...styles.button,
-              backgroundColor: showSavedOnly ? '#000A60' : 'white',
-              borderColor: showSavedOnly ? PRIMARY_COLOR : '#D1D5DB',
-            }}
-            onPress={() => setShowSavedOnly(prev => !prev)}>
-            <Text
+          {!isGuest && (
+            <TouchableOpacity
               style={{
-                ...styles.labelStyle,
-                color: showSavedOnly ? 'white' : 'black',
-              }}>
-              🔖 Saved
-            </Text>
-          </TouchableOpacity>
+                ...styles.button,
+                backgroundColor: showSavedOnly
+                  ? SAVED_CHIP_ACTIVE_BG
+                  : SAVED_CHIP_INACTIVE_BG,
+                borderColor: showSavedOnly
+                  ? PRIMARY_COLOR
+                  : SAVED_CHIP_INACTIVE_BORDER,
+              }}
+              onPress={() => setShowSavedOnly(prev => !prev)}>
+              <Text
+                style={{
+                  ...styles.labelStyle,
+                  color: showSavedOnly ? 'white' : 'black',
+                }}>
+                🔖 Saved
+              </Text>
+            </TouchableOpacity>
+          )}
           {selectedTags &&
             selectedTags.length > 0 &&
             !searchMode &&
@@ -858,24 +888,23 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         </ScrollView>
       </View>
       <View style={styles.articleContainer}>
-        {((filteredArticles && filteredArticles.length > 0) ||
-          searchedArticles.length > 0) && (
-          <FlatList
-            data={listData}
-            renderItem={renderItem}
-            keyExtractor={item => item._id.toString()}
-            contentContainerStyle={styles.flatListContentContainer}
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            ListEmptyComponent={<EmptyArticleState />}
-            onEndReached={() => {
-              if (page < totalPages) {
-                setPage(prev => prev + 1);
-              }
-            }}
-            onEndReachedThreshold={0.5}
-          />
-        )}
+        <FlatList
+          data={listData}
+          renderItem={renderItem}
+          keyExtractor={item => item._id.toString()}
+          contentContainerStyle={styles.flatListContentContainer}
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          ListEmptyComponent={
+            showSavedOnly ? <SavedArticleEmptyState /> : <EmptyArticleState />
+          }
+          onEndReached={() => {
+            if (page < totalPages) {
+              setPage(prev => prev + 1);
+            }
+          }}
+          onEndReachedThreshold={0.5}
+        />
       </View>
 
       <View style={styles.homePlusIconview}>
@@ -1096,5 +1125,28 @@ const styles = StyleSheet.create({
     color: '#3F51B5',
     fontSize: 14,
     fontWeight: '600',
+  },
+  savedEmptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 24,
+    minHeight: 400,
+    backgroundColor: '#F8FAFF',
+  },
+  savedEmptyTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#1A1A1A',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  savedEmptyDescription: {
+    fontSize: 15,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 22,
+    marginTop: 8,
   },
 });
