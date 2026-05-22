@@ -2,6 +2,7 @@ import { io, Socket } from 'socket.io-client';
 import { SOCKET_PROD } from './APIUtils';
 
 let socket: Socket | null = null;
+let currentAuthToken: string | null = null;
 
 /**
  * Initialize Socket.IO connection with optional authentication
@@ -9,10 +10,18 @@ let socket: Socket | null = null;
  * @returns {Socket} Socket instance
  */
 export const initializeSocket = (token: string | null = null): Socket => {
-    // Disconnect existing socket if any
+    const tokenChanged = currentAuthToken !== token;
+
+    if (socket && !tokenChanged) {
+        return socket;
+    }
+
     if (socket) {
+        socket.removeAllListeners();
         socket.disconnect();
     }
+
+    currentAuthToken = token;
 
     const socketOptions: any = {
         reconnection: true,
@@ -38,7 +47,7 @@ export const initializeSocket = (token: string | null = null): Socket => {
         console.log('✅ Socket connected:', socket?.id);
     });
 
-    socket.on('disconnect', (reason) => {
+    socket.on('disconnect', (reason: string) => {
         console.log('❌ Socket disconnected:', reason);
         if (reason === 'io server disconnect') {
             // Server forcefully disconnected, reconnect manually
@@ -46,15 +55,15 @@ export const initializeSocket = (token: string | null = null): Socket => {
         }
     });
 
-    socket.on('connect_error', (error) => {
+    socket.on('connect_error', (error: Error) => {
         console.error('⚠️ Socket connection error:', error.message);
     });
 
-    socket.on('reconnect', (attemptNumber) => {
+    socket.on('reconnect', (attemptNumber: number) => {
         console.log('🔄 Socket reconnected after', attemptNumber, 'attempts');
     });
 
-    socket.on('reconnect_attempt', (attemptNumber) => {
+    socket.on('reconnect_attempt', (attemptNumber: number) => {
         console.log('🔄 Reconnection attempt:', attemptNumber);
     });
 
@@ -76,9 +85,12 @@ export const getSocket = (): Socket | null => socket;
  */
 export const disconnectSocket = (): void => {
     if (socket) {
+        socket.removeAllListeners();
         socket.disconnect();
         socket = null;
     }
+
+    currentAuthToken = null;
 };
 
 /**

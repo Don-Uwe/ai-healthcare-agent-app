@@ -14,7 +14,7 @@ interface SocketProviderProps {
     children: ReactNode;
 }
 
-export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
+export const SocketProvider: React.FC<SocketProviderProps> = ({ children }: SocketProviderProps) => {
     const [socket, setSocket] = useState<Socket | null>(null);
     const [isConnected, setIsConnected] = useState(false);
     
@@ -25,6 +25,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         // Only initialize if we have a valid token
         if (!user_token) {
             console.log('Socket Context: No valid token present, skipping connection');
+            disconnectSocket();
             setSocket(null);
             setIsConnected(false);
             return;
@@ -38,11 +39,6 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         const onConnect = () => {
             setIsConnected(true);
             console.log('Socket Context: Connected');
-            
-            // Auto-join user room for notifications if logged in
-            if (user_id) {
-                socketInstance.emit('join-user-notifications', { userId: user_id });
-            }
         };
 
         const onDisconnect = () => {
@@ -57,10 +53,24 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         return () => {
             socketInstance.off('connect', onConnect);
             socketInstance.off('disconnect', onDisconnect);
-            disconnectSocket();
             setIsConnected(false);
         };
-    }, [user_token, user_id]); // Re-initialize when token or user_id changes
+    }, [user_token]); // Re-initialize only when token changes
+
+    useEffect(() => {
+        if (!socket || !user_id) return;
+
+        const joinUserNotifications = () => {
+            socket.emit('join-user-notifications', { userId: user_id });
+        };
+
+        joinUserNotifications();
+        socket.on('connect', joinUserNotifications);
+
+        return () => {
+            socket.off('connect', joinUserNotifications);
+        };
+    }, [socket, user_id]);
 
     const value = {
         socket,
