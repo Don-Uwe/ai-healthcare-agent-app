@@ -1,9 +1,8 @@
-import React, {FC, useEffect, useMemo, useRef, useState} from 'react';
+import React, {FC, useEffect,useMemo, useState} from 'react';
 import {
   View,
   TouchableOpacity,
   StyleSheet,
-  FlatList,
   Alert,
   Pressable,
   TextInput,
@@ -41,7 +40,6 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
 
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
-  const flatListRef = useRef<FlatList<Comment>>(null);
 
   const {user_id} = useSelector((state: any) => state.user);
 
@@ -97,16 +95,8 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
       articleId: route.params.articleId,
     });
 
-    socket.on('connect', () =>
-      console.log('connection established'),
-    );
-
     socket.on('like-comment-processing', (data: boolean) =>
       setCommentLikeLoading(data),
-    );
-
-    socket.on('error', data =>
-      console.log('connection error', data),
     );
 
     socket.on('fetch-comments', data => {
@@ -119,14 +109,6 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
       if (data.articleId === route.params.articleId) {
         setComments(prev => {
           const newList = [data.comment, ...prev];
-
-          if (flatListRef.current && newList.length > 1) {
-            flatListRef.current.scrollToIndex({
-              index: 0,
-              animated: true,
-            });
-          }
-
           return newList;
         });
       }
@@ -370,7 +352,11 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
 >
   <ScrollView
     keyboardShouldPersistTaps="handled"
-    contentContainerStyle={{flexGrow: 1, paddingBottom: 120}}
+    contentContainerStyle={{
+  flexGrow: 1,
+  paddingBottom: 120,
+  paddingHorizontal: 16,
+}}
     showsVerticalScrollIndicator={false}
   >
 
