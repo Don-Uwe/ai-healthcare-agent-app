@@ -347,7 +347,13 @@ If you encounter any issues or have any feedback or suggestions, please open an 
        <td align="center"><a href="https://github.com/saurabhhhcodes"><img src="https://avatars.githubusercontent.com/u/157192462?v=4" width="120px;" alt=""/><br/><sub><b>Saurabh Kumar Bajpai</b></sub></a></td>
      <td align="center"><a href="https://github.com/SarthakKharche"><img src="https://avatars.githubusercontent.com/u/187843039?v=4" width="120px;" alt=""/><br/><sub><b>SarthakKharche</b></sub></a></td>
      <td align="center"><a href="https://github.com/indresh404"><img src="https://avatars.githubusercontent.com/u/256361574?v=4" width="120px;" alt=""/><br/><sub><b>Indresh </b></sub></a></td>
+     <td align="center"><a href="https://github.com/Aditya-br"><img src="https://avatars.githubusercontent.com/u/172393580?v=4" width="120px;" alt=""/><br/><sub><b>Aditya B R</b></sub></a></td>
+     <td align="center"><a href="https://github.com/Kaustav2706"><img src="https://avatars.githubusercontent.com/u/249536131?v=4" width="120px;" alt=""/><br/><sub><b>KAUSTAV HALDER</b></sub></a></td>
  </tr>
+
+   <tr>
+    <td align="center"><a href="https://github.com/abhilashgedela28-lang"><img src="https://avatars.githubusercontent.com/u/251615976?v=4" width="120px;" alt=""/><br/><sub><b>abhilashgedela28-lang</b></sub></a></td>
+   </tr>
  </table>
  <!-- CONTRIBUTORS-TABLE-END -->
 </div>

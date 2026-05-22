@@ -1,510 +1,343 @@
-import React, {useEffect, useRef} from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   Animated,
   Easing,
-  TouchableOpacity,
+  useColorScheme,
+  Platform,
 } from 'react-native';
-import {PRIMARY_COLOR} from '../helper/Theme';
+import { GlassButton } from './GlassButton';
+import { ProfessionalColors, Typography, Spacing, BorderRadius } from '../styles/GlassStyles';
 
+interface BaseEmptyStateProps {
+  iconEmoji: string;
+  title: string;
+  description: string;
+  infoText?: string;
+  actionText?: string;
+  onAction?: () => void;
+  loading?: boolean;
+}
 
-export const OfflineArticleState = () => {
+export const BaseEmptyState: React.FC<BaseEmptyStateProps> = ({
+  iconEmoji,
+  title,
+  description,
+  infoText,
+  actionText,
+  onAction,
+  loading = false,
+}) => {
+  const colorScheme = useColorScheme();
+  const isDarkMode = colorScheme === 'dark';
+
   const bounceAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    // Fade in animation
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 600,
-      useNativeDriver: true,
-    }).start();
-
-    // Bounce animation
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(bounceAnim, {
-          toValue: -10,
-          duration: 500,
-          easing: Easing.ease,
-          useNativeDriver: true,
-        }),
-        Animated.timing(bounceAnim, {
-          toValue: 0,
-          duration: 500,
-          easing: Easing.ease,
-          useNativeDriver: true,
-        }),
-      ]),
-    ).start();
-  }, []);
-
-  return (
-    <Animated.View style={[styles.stateContainer, {opacity: fadeAnim}]}>
-      <Animated.View
-        style={[
-          styles.iconCircle,
-          styles.offlineCircle,
-          {
-            transform: [{translateY: bounceAnim}],
-          },
-        ]}>
-        <Text style={styles.iconEmoji}>📄</Text>
-      </Animated.View>
-      <Text style={styles.stateTitle}>Articles Offline</Text>
-      <Text style={styles.stateDescription}>
-        You need an internet connection to view articles.{'\n'}
-        Connect to WiFi or mobile data to continue.
-      </Text>
-      <View style={styles.infoBox}>
-        <Text style={styles.infoText}>💡 Offline reading coming soon!</Text>
-      </View>
-    </Animated.View>
-  );
-};
-
-
-export const OfflinePodcastState = () => {
-  const bounceAnim = useRef(new Animated.Value(0)).current;
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    // Fade in animation
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 600,
-      useNativeDriver: true,
-    }).start();
-
-    // Bounce animation
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(bounceAnim, {
-          toValue: -10,
-          duration: 500,
-          easing: Easing.ease,
-          useNativeDriver: true,
-        }),
-        Animated.timing(bounceAnim, {
-          toValue: 0,
-          duration: 500,
-          easing: Easing.ease,
-          useNativeDriver: true,
-        }),
-      ]),
-    ).start();
-  }, []);
-
-  return (
-    <Animated.View style={[styles.stateContainer, {opacity: fadeAnim}]}>
-      <Animated.View
-        style={[
-          styles.iconCircle,
-          styles.offlineCircle,
-          {
-            transform: [{translateY: bounceAnim}],
-          },
-        ]}>
-        <Text style={styles.iconEmoji}>🎙️</Text>
-      </Animated.View>
-      <Text style={styles.stateTitle}>Podcasts Offline</Text>
-      <Text style={styles.stateDescription}>
-        You need an internet connection to stream podcasts.{'\n'}
-        Connect to WiFi or mobile data to listen.
-      </Text>
-      <View style={styles.infoBox}>
-        <Text style={styles.infoText}>💡 Offline downloads coming soon!</Text>
-      </View>
-    </Animated.View>
-  );
-};
-
-
-export const NoArticleState = ({onRefresh}: {onRefresh?: () => void}) => {
-  const floatAnim = useRef(new Animated.Value(0)).current;
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    // Fade in animation
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 800,
-      useNativeDriver: true,
-    }).start();
-
-    // Float animation
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(floatAnim, {
-          toValue: 1,
-          duration: 2000,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(floatAnim, {
-          toValue: 0,
-          duration: 2000,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ]),
-    ).start();
-  }, []);
-
-  const translateY = floatAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -15],
-  });
-
-  return (
-    <Animated.View style={[styles.stateContainer, {opacity: fadeAnim}]}>
-      <Animated.View
-        style={[
-          styles.iconCircle,
-          styles.emptyCircle,
-          {
-            transform: [{translateY}],
-          },
-        ]}>
-        <Text style={styles.iconEmoji}>📭</Text>
-      </Animated.View>
-      <Text style={styles.stateTitle}>No Articles Available</Text>
-      <Text style={styles.stateDescription}>
-        There are no articles to display right now.{'\n'}
-        Check back later for new health insights!
-      </Text>
-      {onRefresh && (
-        <TouchableOpacity style={styles.actionButton} onPress={onRefresh}>
-          <Text style={styles.actionButtonText}>Refresh</Text>
-        </TouchableOpacity>
-      )}
-    </Animated.View>
-  );
-};
-
-
-export const NoPodcastState = ({onRefresh}: {onRefresh?: () => void}) => {
-  const floatAnim = useRef(new Animated.Value(0)).current;
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    // Fade in animation
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 800,
-      useNativeDriver: true,
-    }).start();
-
-    // Float animation
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(floatAnim, {
-          toValue: 1,
-          duration: 2000,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(floatAnim, {
-          toValue: 0,
-          duration: 2000,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ]),
-    ).start();
-  }, []);
-
-  const translateY = floatAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -15],
-  });
-
-  return (
-    <Animated.View style={[styles.stateContainer, {opacity: fadeAnim}]}>
-      <Animated.View
-        style={[
-          styles.iconCircle,
-          styles.emptyCircle,
-          {
-            transform: [{translateY}],
-          },
-        ]}>
-        <Text style={styles.iconEmoji}>🎧</Text>
-      </Animated.View>
-      <Text style={styles.stateTitle}>No Podcasts Available</Text>
-      <Text style={styles.stateDescription}>
-        There are no podcasts to display right now.{'\n'}
-        Check back later for new audio content!
-      </Text>
-      {onRefresh && (
-        <TouchableOpacity style={styles.actionButton} onPress={onRefresh}>
-          <Text style={styles.actionButtonText}>Refresh</Text>
-        </TouchableOpacity>
-      )}
-    </Animated.View>
-  );
-};
-
-
-// Animated Dot Component for Loading
-const AnimatedDot = ({delay}: {delay: number}) => {
-  const fadeAnim = useRef(new Animated.Value(0.3)).current;
-
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.delay(delay),
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-        Animated.timing(fadeAnim, {
-          toValue: 0.3,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-      ]),
-    ).start();
-  }, [delay]);
-
-  return (
-    <Animated.View
-      style={[
-        styles.dot,
-        {
-          opacity: fadeAnim,
-        },
-      ]}
-    />
-  );
-};
-
-export const PodcastLoadingState = () => {
   const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    // Fade in
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 600,
+      useNativeDriver: true,
+    }).start();
+
+    // Floating / Bouncing icon
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(bounceAnim, {
+          toValue: -12,
+          duration: 1800,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(bounceAnim, {
+          toValue: 0,
+          duration: 1800,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+
+    if (loading) {
+      // Pulse animation for loading states
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.1,
+            duration: 1000,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1.0,
+            duration: 1000,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    }
+  }, [loading]);
+
+  const containerBg = isDarkMode ? 'transparent' : 'transparent';
+  const cardBg = isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(15, 82, 186, 0.03)';
+  const borderColor = isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
+  const circleBg = isDarkMode ? 'rgba(255, 255, 255, 0.08)' : '#E3F2FD';
+  const titleColor = isDarkMode ? ProfessionalColors.white : ProfessionalColors.gray900;
+  const descColor = isDarkMode ? ProfessionalColors.gray400 : ProfessionalColors.gray600;
+
+  const animatedStyle = {
+    opacity: fadeAnim,
+    transform: [{ translateY: bounceAnim }],
+  };
+
+  const scaleStyle = loading ? { transform: [{ scale: pulseAnim }] } : {};
+
+  return (
+    <Animated.View style={[styles.stateContainer, { backgroundColor: containerBg, opacity: fadeAnim }]}>
+      <View style={[styles.innerCard, { backgroundColor: cardBg, borderColor }]}>
+        <Animated.View style={[styles.iconCircle, { backgroundColor: circleBg }, animatedStyle, scaleStyle]}>
+          <Text style={styles.iconEmoji} accessibilityLabel={`${title} icon`}>{iconEmoji}</Text>
+        </Animated.View>
+
+        <Text style={[Typography.h4, styles.stateTitle, { color: titleColor }]}>
+          {title}
+        </Text>
+
+        <Text style={[Typography.body, styles.stateDescription, { color: descColor }]}>
+          {description}
+        </Text>
+
+        {infoText && (
+          <View
+            style={[
+              styles.infoBox,
+              {
+                backgroundColor: isDarkMode ? 'rgba(245, 158, 11, 0.1)' : '#FFF9C4',
+                borderColor: isDarkMode ? 'rgba(245, 158, 11, 0.2)' : '#FFF59D',
+              },
+            ]}
+          >
+            <Text style={[styles.infoText, { color: isDarkMode ? ProfessionalColors.warningLight : '#F57F17' }]}>
+              {infoText}
+            </Text>
+          </View>
+        )}
+
+        {actionText && onAction && (
+          <GlassButton
+            title={actionText}
+            onPress={onAction}
+            variant="primary"
+            size="md"
+            style={styles.actionButton}
+          />
+        )}
+      </View>
+    </Animated.View>
+  );
+};
+
+// Specialized Empty State Exports
+export const OfflineArticleState = () => (
+  <BaseEmptyState
+    iconEmoji="📄"
+    title="Articles Offline"
+    description="You need an internet connection to view articles. Connect to WiFi or mobile data to continue."
+    infoText="💡 Offline reading coming soon!"
+  />
+);
+
+export const OfflinePodcastState = () => (
+  <BaseEmptyState
+    iconEmoji="🎙️"
+    title="Podcasts Offline"
+    description="You need an internet connection to stream podcasts. Connect to WiFi or mobile data to listen."
+    infoText="💡 Offline downloads coming soon!"
+  />
+);
+
+export const NoArticleState = ({ onRefresh }: { onRefresh?: () => void }) => (
+  <BaseEmptyState
+    iconEmoji="📭"
+    title="No Articles Available"
+    description="There are no articles to display right now. Check back later for new health insights!"
+    actionText={onRefresh ? "Refresh Articles" : undefined}
+    onAction={onRefresh}
+  />
+);
+
+export const NoPodcastState = ({ onRefresh }: { onRefresh?: () => void }) => (
+  <BaseEmptyState
+    iconEmoji="🎧"
+    title="No Podcasts Available"
+    description="There are no podcasts to display right now. Check back later for new audio content!"
+    actionText={onRefresh ? "Refresh Podcasts" : undefined}
+    onAction={onRefresh}
+  />
+);
+
+// Loading State Component with audio waves
+export const PodcastLoadingState = () => {
   const waveAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Pulse animation
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.15,
-          duration: 1000,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1000,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ]),
-    ).start();
-
-    // Wave animation (for audio wave effect)
     Animated.loop(
       Animated.sequence([
         Animated.timing(waveAnim, {
           toValue: 1,
-          duration: 1500,
+          duration: 1200,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
         Animated.timing(waveAnim, {
           toValue: 0,
-          duration: 1500,
+          duration: 1200,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
-      ]),
+      ])
     ).start();
   }, []);
 
   const wave1Scale = waveAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [0.6, 1],
+    outputRange: [0.5, 1.2],
   });
 
   const wave2Scale = waveAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [0.8, 0.6],
+    outputRange: [1.0, 0.5],
   });
 
   const wave3Scale = waveAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [1, 0.7],
+    outputRange: [0.7, 1.0],
   });
 
   return (
-    <View style={styles.stateContainer}>
-      <Animated.View
-        style={[
-          styles.iconCircle,
-          styles.loadingCircle,
-          {
-            transform: [{scale: pulseAnim}],
-          },
-        ]}>
-        <Text style={styles.iconEmoji}>🎙️</Text>
-      </Animated.View>
-      <Text style={styles.stateTitle}>Loading Podcasts</Text>
-      <Text style={styles.stateDescription}>
-        Tuning in to the latest audio content...
-      </Text>
+    <View style={styles.loadingContainer}>
+      <BaseEmptyState
+        iconEmoji="🎙️"
+        title="Loading Podcasts"
+        description="Tuning in to the latest audio content..."
+        loading={true}
+      />
       <View style={styles.waveContainer}>
-        <Animated.View
-          style={[
-            styles.waveLine,
-            {transform: [{scaleY: wave1Scale}]},
-          ]}
-        />
-        <Animated.View
-          style={[
-            styles.waveLine,
-            {transform: [{scaleY: wave2Scale}]},
-          ]}
-        />
-        <Animated.View
-          style={[
-            styles.waveLine,
-            {transform: [{scaleY: wave3Scale}]},
-          ]}
-        />
-        <Animated.View
-          style={[
-            styles.waveLine,
-            {transform: [{scaleY: wave2Scale}]},
-          ]}
-        />
-        <Animated.View
-          style={[
-            styles.waveLine,
-            {transform: [{scaleY: wave1Scale}]},
-          ]}
-        />
-      </View>
-      <View style={styles.dotsContainer}>
-        <AnimatedDot delay={0} />
-        <AnimatedDot delay={200} />
-        <AnimatedDot delay={400} />
+        <Animated.View style={[styles.waveLine, { transform: [{ scaleY: wave1Scale }] }]} />
+        <Animated.View style={[styles.waveLine, { transform: [{ scaleY: wave2Scale }] }]} />
+        <Animated.View style={[styles.waveLine, { transform: [{ scaleY: wave3Scale }] }]} />
+        <Animated.View style={[styles.waveLine, { transform: [{ scaleY: wave2Scale }] }]} />
+        <Animated.View style={[styles.waveLine, { transform: [{ scaleY: wave1Scale }] }]} />
       </View>
     </View>
   );
 };
 
-
 const styles = StyleSheet.create({
   stateContainer: {
-    flex: 1,
+    width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
-    backgroundColor: '#F0F8FF',
-    minHeight: 400,
+    paddingVertical: Spacing.xl,
+    paddingHorizontal: Spacing.lg,
+    minHeight: 380,
+  },
+  innerCard: {
+    width: '100%',
+    maxWidth: 450,
+    borderRadius: BorderRadius.xl,
+    borderWidth: 1,
+    paddingVertical: Spacing.xxl,
+    paddingHorizontal: Spacing.xl,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.05,
+        shadowRadius: 10,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
   },
   iconCircle: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: '#E3F2FD',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 24,
-    shadowColor: PRIMARY_COLOR,
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  offlineCircle: {
-    backgroundColor: '#FFF3E0',
-  },
-  emptyCircle: {
-    backgroundColor: '#F3E5F5',
-  },
-  loadingCircle: {
-    backgroundColor: '#E8F5E9',
+    marginBottom: Spacing.lg,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.06,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   iconEmoji: {
-    fontSize: 56,
+    fontSize: 44,
   },
   stateTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1A1A1A',
-    marginBottom: 12,
+    fontWeight: '700',
     textAlign: 'center',
+    marginBottom: Spacing.xs,
+    paddingHorizontal: Spacing.sm,
   },
   stateDescription: {
-    fontSize: 16,
-    color: '#666',
     textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 24,
-    paddingHorizontal: 16,
+    lineHeight: 22,
+    marginBottom: Spacing.xl,
+    paddingHorizontal: Spacing.md,
   },
   infoBox: {
-    backgroundColor: '#FFF9C4',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 20,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.round,
     borderWidth: 1,
-    borderColor: '#FFF59D',
-    marginTop: 8,
+    marginTop: Spacing.sm,
+    alignSelf: 'center',
   },
   infoText: {
-    color: '#F57F17',
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
     textAlign: 'center',
   },
   actionButton: {
-    backgroundColor: PRIMARY_COLOR,
-    paddingHorizontal: 32,
-    paddingVertical: 14,
-    borderRadius: 25,
-    marginTop: 8,
-    shadowColor: PRIMARY_COLOR,
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+    marginTop: Spacing.sm,
+    paddingHorizontal: Spacing.xxl,
   },
-  actionButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  dotsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+  loadingContainer: {
+    width: '100%',
     alignItems: 'center',
-    marginTop: 16,
-  },
-  dot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: PRIMARY_COLOR,
-    marginHorizontal: 6,
+    justifyContent: 'center',
   },
   waveContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    height: 40,
-    marginVertical: 16,
+    height: 30,
+    marginTop: -Spacing.xl,
+    marginBottom: Spacing.lg,
   },
   waveLine: {
-    width: 6,
-    height: 40,
-    backgroundColor: PRIMARY_COLOR,
-    marginHorizontal: 4,
-    borderRadius: 3,
+    width: 5,
+    height: 30,
+    backgroundColor: '#00BFFF',
+    marginHorizontal: 3,
+    borderRadius: 2.5,
   },
 });

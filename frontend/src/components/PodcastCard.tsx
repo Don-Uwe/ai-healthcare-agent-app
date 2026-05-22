@@ -11,7 +11,7 @@ import {GET_STORAGE_DATA} from '../helper/APIUtils';
 import {GlassStyles, ProfessionalColors, BorderRadius} from '../styles/GlassStyles';
 import {useSelector} from 'react-redux';
 import {useNavigation} from '@react-navigation/native';
-
+import { PODCAST_CARD } from '@/constants/podcastCard';
 
 interface PodcastProps {
   id: string;
@@ -51,7 +51,6 @@ const PodcastCard = ({
   const navigation = useNavigation<any>();
 
   const handleOpenSheet = () => {
-    // onSelect(id);
     if (isGuest) {
       navigation.navigate('GuestPlaceholderScreen', {
         title: 'Sign In Required',
@@ -63,17 +62,12 @@ const PodcastCard = ({
     sheetRef.current?.present();
   };
 
- // console.log("Image url", imageUri);
-
   const handleShare = async () => {
     try {
-
       const url = `https://uhsocial.in/api/share/podcast?trackId=${id}&audioUrl=${audioUrl}`;
-
       const result = await Share.open({
         title: title,
         message: `${title} : Check out this awesome podcast on UltimateHealth app!`,
-        // Most Recent APK: 0.7.4
         url: url,
         subject: 'Podcast Sharing',
       });
@@ -84,7 +78,6 @@ const PodcastCard = ({
     }
   };
 
-  console.log("podcast uri", `${GET_STORAGE_DATA}/${imageUri}`);
   const uri =
     imageUri && imageUri !== ''
       ? imageUri.startsWith('https')
@@ -95,14 +88,12 @@ const PodcastCard = ({
   return (
     <TouchableOpacity onPress={handleClick} activeOpacity={0.9} style={styles.cardWrapper}>
       <View style={[GlassStyles.glassCardElevated, styles.cardContainer]}>
-        {/* Cover Image with Gradient Overlay */}
         <View style={styles.imageContainer}>
           <Image
             source={{uri}}
             style={styles.coverImage}
             borderRadius={BorderRadius.lg}
           />
-          {/* Glass Overlay on Image */}
           <View style={styles.imageOverlay}>
             <View style={[styles.playButton, GlassStyles.glassContainer]}>
               <Ionicons name="play" size={24} color={ProfessionalColors.white} />
@@ -110,9 +101,7 @@ const PodcastCard = ({
           </View>
         </View>
 
-        {/* Content Section */}
         <YStack padding="$3" gap="$2" flex={1}>
-          {/* Title */}
           <Text
             fontSize={17}
             fontWeight="700"
@@ -122,7 +111,6 @@ const PodcastCard = ({
             {title}
           </Text>
 
-          {/* Host Name */}
           <XStack alignItems="center" gap="$2">
             <Ionicons name="person-circle-outline" size={18} color={ProfessionalColors.gray600} />
             <Text fontSize={14} fontWeight="500" color={ProfessionalColors.gray700}>
@@ -130,7 +118,6 @@ const PodcastCard = ({
             </Text>
           </XStack>
 
-          {/* Tags */}
           <XStack flexWrap="wrap" gap="$1.5" marginTop="$1">
             {tags?.slice(0, 3).map((tag, i) => (
               <View key={i} style={styles.tag}>
@@ -139,7 +126,6 @@ const PodcastCard = ({
             ))}
           </XStack>
 
-          {/* Stats Section */}
           <XStack alignItems="center" justifyContent="space-between" marginTop="$2">
             <XStack alignItems="center" gap="$1">
               <Ionicons name="eye-outline" size={16} color={ProfessionalColors.gray600} />
@@ -157,7 +143,6 @@ const PodcastCard = ({
           </XStack>
         </YStack>
 
-        {/* Menu Button (top-right corner) */}
         {display && !isGuest && (
           <TouchableOpacity
             style={[styles.menuButton, GlassStyles.glassContainer]}
@@ -191,7 +176,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     width: '100%',
-    height: 200,
+    height: PODCAST_CARD.imageHeight,
     position: 'relative',
     overflow: 'hidden',
   },
