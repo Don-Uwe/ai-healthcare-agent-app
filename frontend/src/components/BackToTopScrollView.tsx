@@ -1,15 +1,13 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState } from 'react';
 import {
   Animated,
   NativeScrollEvent,
   NativeSyntheticEvent,
   ScrollView,
   StyleSheet,
-  TouchableOpacity,
   ScrollViewProps,
-} from "react-native";
-import Ionicons from "@expo/vector-icons/Ionicons";
- 
+} from 'react-native';
+import { BackToTopButton } from './BackToTopButton';
  
 interface UseBackToTopOptions {
   threshold?: number;
@@ -47,31 +45,8 @@ export function useBackToTop({ threshold = 300 }: UseBackToTopOptions = {}) {
     scrollRef.current?.scrollTo({ y: 0, animated: true });
   };
  
-  // The floating button — rendered by the consumer
-  const BackToTopButton = ({
-    buttonColor = "#4CAF50",
-    iconColor = "#fff",
-  }: {
-    buttonColor?: string;
-    iconColor?: string;
-  }) =>
-    visible ? (
-      <Animated.View style={[styles.fab, { opacity, backgroundColor: buttonColor }]}>
-        <TouchableOpacity
-          onPress={scrollToTop}
-          accessibilityLabel="Back to top"
-          accessibilityRole="button"
-          accessibilityHint="Scrolls the page back to the top"
-        >
-          <Ionicons name="arrow-up" size={22} color={iconColor} />
-        </TouchableOpacity>
-      </Animated.View>
-    ) : null;
- 
-  return { scrollRef, onScroll, BackToTopButton, scrollToTop };
+  return { scrollRef, onScroll, visible, opacity, scrollToTop };
 }
- 
-// ─── Convenience wrapper component ──────────────────────────────────────────
  
 interface BackToTopScrollViewProps extends ScrollViewProps {
   threshold?: number;
@@ -82,12 +57,13 @@ interface BackToTopScrollViewProps extends ScrollViewProps {
  
 export function BackToTopScrollView({
   threshold = 300,
-  buttonColor = "#4CAF50",
-  iconColor = "#fff",
+  buttonColor = '#4CAF50',
+  iconColor = '#fff',
   children,
   ...scrollViewProps
 }: BackToTopScrollViewProps) {
-  const { scrollRef, onScroll, BackToTopButton } = useBackToTop({ threshold });
+  const { scrollRef, onScroll, visible, opacity, scrollToTop } =
+    useBackToTop({ threshold });
  
   return (
     <>
@@ -100,30 +76,15 @@ export function BackToTopScrollView({
         {children}
       </ScrollView>
  
-      {/* FAB floats above the ScrollView */}
-      <BackToTopButton buttonColor={buttonColor} iconColor={iconColor} />
+      <BackToTopButton
+        opacity={opacity}
+        onPress={scrollToTop}
+        visible={visible}
+        buttonColor={buttonColor}
+        iconColor={iconColor}
+      />
     </>
   );
 }
  
-// ─── Styles ──────────────────────────────────────────────────────────────────
- 
-const styles = StyleSheet.create({
-  fab: {
-    position: "absolute",
-    bottom: 24,
-    right: 20,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: "center",
-    justifyContent: "center",
-    // Shadow — iOS
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    // Elevation — Android
-    elevation: 6,
-  },
-});
+const styles = StyleSheet.create({});

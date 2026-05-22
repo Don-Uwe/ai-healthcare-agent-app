@@ -9,12 +9,7 @@
       ]
     },
     "moduleResolution": "bundler",
-    "skipLibCheck": true,
-    "lib": [
-      "ES2015"
-    ],
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true
+    "skipLibCheck": true
   },
   "include": [
     "**/*.ts",

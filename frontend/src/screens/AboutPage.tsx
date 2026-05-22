@@ -5,10 +5,10 @@ import {
   YStack,
   XStack,
   Text,
+  ScrollView,
   Button,
   View,
 } from 'tamagui';
-import { ScrollView } from 'react-native';  //use React Native's ScrollView
 
 import {
   Ionicons,
@@ -20,11 +20,12 @@ import { AboutScreenProps } from '../type';
 import { GlassContainer } from '../components/GlassContainer';
 import { ProfessionalColors, Typography, Spacing } from '../styles/GlassStyles';
 import { useBackToTop } from '../components/BackToTopScrollView';
+import { BackToTopButton } from '../components/BackToTopButton';
 
 const AboutScreen = ({ navigation }: AboutScreenProps) => {
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === 'dark';
-  const { scrollRef, onScroll, BackToTopButton } = useBackToTop({ threshold: 300 });
+  const { onScroll, visible, opacity, scrollToTop } = useBackToTop({ threshold: 300 });
   const currentVersion = VersionCheck.getCurrentVersion();
 
   const onShare = async () => {
@@ -42,6 +43,8 @@ const AboutScreen = ({ navigation }: AboutScreenProps) => {
     Linking.openURL(url).catch(err => console.error('URL error', err));
   };
 
+  
+
   return (
     <SafeAreaView
       style={{
@@ -51,11 +54,10 @@ const AboutScreen = ({ navigation }: AboutScreenProps) => {
       <StatusBar style={isDarkMode ? 'light' : 'dark'} backgroundColor="#007AFF" />
 
       <ScrollView
-        ref={scrollRef}
         onScroll={onScroll}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
-        style={{ flex: 1 }}>
+        flex={1}>
         <View
           flex={1}
           backgroundColor={isDarkMode ? '#000A60' : '#F0F8FF'}
@@ -290,7 +292,13 @@ const AboutScreen = ({ navigation }: AboutScreenProps) => {
           </YStack>
         </View>
       </ScrollView>
-      <BackToTopButton buttonColor="#007AFF" iconColor="#fff" />
+      <BackToTopButton
+        opacity={opacity}
+        onPress={scrollToTop}
+        visible={visible}
+        buttonColor="#007AFF"
+        iconColor="#fff"
+      />
     </SafeAreaView>
   );
 };
