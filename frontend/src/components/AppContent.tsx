@@ -27,6 +27,7 @@ import {firebaseInit} from '../helper/firebase';
 import {cleanUpDownloads, KEYS, retrieveItem} from '../helper/Utils';
 import { setUserToken, setGuestMode } from '../store/UserSlice';
 import axios from 'axios';
+import {setupAxiosInterceptor} from '../helper/setupAxiosInterceptor';
 
 export default function AppContent() {
   const navigationRef = useRef<NavigationContainerRef<any> | null>(null);
@@ -34,6 +35,8 @@ export default function AppContent() {
   const isDarkMode = useColorScheme() === 'dark';
 
   const {data: tokenRes = null} = useCheckTokenStatus();
+
+  setupAxiosInterceptor();
 
 
 
@@ -109,7 +112,7 @@ export default function AppContent() {
           <SafeAreaProvider>
             <PaperProvider>
               <View style={{flex: 1}}>
-                <StatusBar style={isDarkMode ? 'light' : 'dark'} backgroundColor="#007AFF" />
+                <StatusBar style={isDarkMode ? 'light' : 'dark'} backgroundColor={isDarkMode ? '#151718' : '#FFFFFF'} />
                 <NavigationContainer ref={navigationRef}>
                   <StackNavigation />
                 </NavigationContainer>

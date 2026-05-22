@@ -16,12 +16,13 @@ jobs:
   review:
     runs-on: ubuntu-latest
 
-    # For manual trigger: only run if comment is on a PR and contains "/review"
+    # For manual trigger: only run if comment is on a PR, contains "/review", and commenter is authorized
     if: |
       github.event_name == 'pull_request' ||
       (github.event_name == 'issue_comment' &&
        github.event.issue.pull_request != null &&
-       contains(github.event.comment.body, '/review'))
+       contains(github.event.comment.body, '/review') &&
+       contains(fromJson('["SB2318", "Gooichand"]'), github.event.comment.user.login))
 
     permissions:
       contents: read

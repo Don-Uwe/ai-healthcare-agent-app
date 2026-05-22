@@ -422,6 +422,49 @@ glassCard: {
       },
     }),
   },
+
+  // Standardized Button Sizes
+  btnSm: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+  },
+  btnMd: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+  },
+  btnLg: {
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+  },
+
+  // Standardized Button BorderRadius Variants
+  radiusNone: { borderRadius: 0 },
+  radiusSm: { borderRadius: 6 },
+  radiusMd: { borderRadius: 12 },
+  radiusLg: { borderRadius: 18 },
+  radiusFull: { borderRadius: 9999 },
+
+  // Standardized Button Color Schemes
+  btnPrimary: {
+    backgroundColor: '#00BFFF',
+    borderWidth: 1,
+    borderColor: '#00BFFF',
+  },
+  btnSecondary: {
+    backgroundColor: '#0F52BA',
+    borderWidth: 1,
+    borderColor: '#0F52BA',
+  },
+  btnOutline: {
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: '#00BFFF',
+  },
+  btnDanger: {
+    backgroundColor: '#EF4444',
+    borderWidth: 1,
+    borderColor: '#EF4444',
+  },
 });
 
 /**
