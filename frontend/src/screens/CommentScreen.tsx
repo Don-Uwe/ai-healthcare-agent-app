@@ -1,52 +1,74 @@
-import React, {FC, useEffect,useMemo, useState} from 'react';
+import React, { FC, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  View,
-  TouchableOpacity,
-  StyleSheet,
   Alert,
-  Pressable,
-  TextInput,
+  FlatList,
   KeyboardAvoidingView,
-  ScrollView,
   Platform,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
-import {YStack, H3, Paragraph, Image, Text} from 'tamagui';
-import {CommentScreenProp, User, Comment} from '../type';
-import {PRIMARY_COLOR} from '../helper/Theme';
-import {useDispatch, useSelector} from 'react-redux';
-import Loader from '../components/Loader';
+import { useDispatch, useSelector } from 'react-redux';
+import { H3, Image, Paragraph, Text, YStack } from 'tamagui';
+
 import CommentItem from '../components/CommentItem';
-import {useSocket} from '../contexts/SocketContext';
-import {useArticleRoom} from '../hooks/useArticleRoom';
+import Loader from '../components/Loader';
+
+import { useSocket } from '../contexts/SocketContext';
+import { PRIMARY_COLOR } from '../helper/Theme';
+import { useArticleRoom } from '../hooks/useArticleRoom';
+
+import { Comment, CommentScreenProp, User } from '../type';
 
 import {
-  useMentions,
-  replaceTriggerValues,
-  TriggersConfig,
-  PatternsConfig,
-  SuggestionsProvidedProps,
   parseValue,
+  PatternsConfig,
+  replaceTriggerValues,
+  SuggestionsProvidedProps,
+  TriggersConfig,
+  useMentions,
 } from 'react-native-controlled-mentions';
 
-import {GET_IMAGE, GET_STORAGE_DATA} from '../helper/APIUtils';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-const CommentScreen = ({navigation, route}: CommentScreenProp) => {
+import {
+  GET_IMAGE,
+  GET_STORAGE_DATA,
+} from '../helper/APIUtils';
+
+const CommentScreen = ({
+  navigation,
+  route,
+}: CommentScreenProp) => {
   const socket = useSocket();
-  const {articleId, mentionedUsers, article} = route.params;
+
+  const {articleId, mentionedUsers, article} =
+    route.params;
 
   useArticleRoom(articleId.toString(), null);
 
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [newComment, setNewComment] = useState('');
+  const flatListRef =
+    useRef<FlatList<Comment>>(null);
 
-  const {user_id} = useSelector((state: any) => state.user);
+  const [comments, setComments] = useState<
+    Comment[]
+  >([]);
+
+  const [newComment, setNewComment] =
+    useState('');
+
+  const {user_id} = useSelector(
+    (state: any) => state.user,
+  );
 
   const [selectedCommentId, setSelectedCommentId] =
     useState<string>('');
 
-  const [editMode, setEditMode] = useState<boolean>(false);
+  const [editMode, setEditMode] =
+    useState<boolean>(false);
 
   const [editCommentId, setEditCommentId] =
     useState<string | null>(null);
@@ -54,22 +76,35 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
   const [commentLoading, setCommentLoading] =
     useState<boolean>(false);
 
-  const [commentLikeLoading, setCommentLikeLoading] =
-    useState<boolean>(false);
+  const [
+    commentLikeLoading,
+    setCommentLikeLoading,
+  ] = useState<boolean>(false);
 
-  const [mentions, setMentions] = useState<User[]>([]);
+  const [mentions, setMentions] = useState<
+    User[]
+  >([]);
 
   const dispatch = useDispatch();
 
-  const triggersConfig: TriggersConfig<'mention' | 'hashtag'> = {
+  const triggersConfig: TriggersConfig<
+    'mention' | 'hashtag'
+  > = {
     mention: {
       trigger: '@',
-      textStyle: {fontWeight: 'bold', color: 'blue'},
+      textStyle: {
+        fontWeight: 'bold',
+        color: 'blue',
+      },
     },
+
     hashtag: {
       trigger: '#',
       allowedSpacesCount: 0,
-      textStyle: {fontWeight: 'bold', color: 'grey'},
+      textStyle: {
+        fontWeight: 'bold',
+        color: 'grey',
+      },
     },
   };
 
@@ -77,16 +112,20 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
     url: {
       pattern:
         /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi,
-      textStyle: {color: 'blue'},
+
+      textStyle: {
+        color: 'blue',
+      },
     },
   };
 
-  const {textInputProps, triggers} = useMentions({
-    value: newComment,
-    onChange: setNewComment,
-    triggersConfig,
-    patternsConfig,
-  });
+  const {textInputProps, triggers} =
+    useMentions({
+      value: newComment,
+      onChange: setNewComment,
+      triggersConfig,
+      patternsConfig,
+    });
 
   useEffect(() => {
     if (!socket) return;
@@ -95,33 +134,62 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
       articleId: route.params.articleId,
     });
 
-    socket.on('like-comment-processing', (data: boolean) =>
-      setCommentLikeLoading(data),
+    socket.on(
+      'like-comment-processing',
+      (data: boolean) =>
+        setCommentLikeLoading(data),
     );
 
     socket.on('fetch-comments', data => {
-      if (data.articleId === route.params.articleId) {
+      if (
+        data.articleId ===
+        route.params.articleId
+      ) {
         setComments(data.comments);
       }
     });
 
     socket.on('comment', data => {
-      if (data.articleId === route.params.articleId) {
+      if (
+        data.articleId ===
+        route.params.articleId
+      ) {
         setComments(prev => {
-          const newList = [data.comment, ...prev];
+          const newList = [
+            data.comment,
+            ...prev,
+          ];
+
+          if (
+            flatListRef.current &&
+            newList.length > 1
+          ) {
+            flatListRef.current.scrollToIndex({
+              index: 0,
+              animated: true,
+            });
+          }
+
           return newList;
         });
       }
     });
 
     socket.on('new-reply', data => {
-      if (data.articleId === route.params.articleId) {
+      if (
+        data.articleId ===
+        route.params.articleId
+      ) {
         setComments(prev =>
           prev.map(comment =>
-            comment._id === data.parentCommentId
+            comment._id ===
+            data.parentCommentId
               ? {
                   ...comment,
-                  replies: [...comment.replies, data.reply],
+                  replies: [
+                    ...comment.replies,
+                    data.reply,
+                  ],
                 }
               : comment,
           ),
@@ -151,7 +219,9 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
 
     socket.on('delete-comment', data => {
       setComments(prev =>
-        prev.filter(c => c._id !== data.commentId),
+        prev.filter(
+          c => c._id !== data.commentId,
+        ),
       );
     });
 
@@ -165,25 +235,34 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
     };
   }, [socket, route.params.articleId]);
 
-  const handleEditAction = (comment: Comment) => {
+  const handleEditAction = (
+    comment: Comment,
+  ) => {
     setNewComment(comment.content);
     setEditMode(true);
     setEditCommentId(comment._id);
   };
 
-  const handleMentionClick = (user_handle: string) => {
+  const handleMentionClick = (
+    user_handle: string,
+  ) => {
     navigation.navigate('UserProfileScreen', {
       author_handle: user_handle.substring(1),
       authorId: undefined,
     });
   };
 
-  const handleDeleteAction = (comment: Comment) => {
+  const handleDeleteAction = (
+    comment: Comment,
+  ) => {
     Alert.alert(
       'Alert',
       'Are you sure you want to delete this comment?',
       [
-        {text: 'Cancel', style: 'cancel'},
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
         {
           text: 'OK',
           onPress: () => {
@@ -191,7 +270,8 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
 
             socket.emit('delete-comment', {
               commentId: comment._id,
-              articleId: route.params.articleId,
+              articleId:
+                route.params.articleId,
               userId: user_id,
             });
           },
@@ -201,7 +281,9 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
     );
   };
 
-  const handleLikeAction = (comment: Comment) => {
+  const handleLikeAction = (
+    comment: Comment,
+  ) => {
     if (!socket) return;
 
     socket.emit('like-comment', {
@@ -265,8 +347,14 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
   };
 
   const Suggestions: FC<
-    SuggestionsProvidedProps & {suggestions: User[]}
-  > = ({keyword, onSelect, suggestions}) => {
+    SuggestionsProvidedProps & {
+      suggestions: User[];
+    }
+  > = ({
+    keyword,
+    onSelect,
+    suggestions,
+  }) => {
     if (keyword == null) {
       return null;
     }
@@ -276,8 +364,10 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
         {suggestions
           .filter(one =>
             one.user_handle
-              .toLocaleLowerCase()
-              .includes(keyword.toLocaleLowerCase()),
+              .toLowerCase()
+              .includes(
+                keyword.toLowerCase(),
+              ),
           )
           .map(one => (
             <Pressable
@@ -288,28 +378,24 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
                   name: one.user_handle,
                 });
 
-                setMentions(prev => [...prev, one]);
+                setMentions(prev => [
+                  ...prev,
+                  one,
+                ]);
               }}
               style={styles.suggestionItem}>
-              {one.Profile_image ? (
-                <Image
-                  source={{
-                    uri: one.Profile_image.startsWith(
-                      'https',
-                    )
+              <Image
+                source={{
+                  uri: one.Profile_image
+                    ? one.Profile_image.startsWith(
+                        'https',
+                      )
                       ? one.Profile_image
-                      : `${GET_STORAGE_DATA}/${one.Profile_image}`,
-                  }}
-                  style={styles.profileImage2}
-                />
-              ) : (
-                <Image
-                  source={{
-                    uri: 'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-                  }}
-                  style={styles.profileImage2}
-                />
-              )}
+                      : `${GET_STORAGE_DATA}/${one.Profile_image}`
+                    : 'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg',
+                }}
+                style={styles.profileImage2}
+              />
 
               <Text style={styles.username2}>
                 {one.user_handle}
@@ -331,173 +417,215 @@ const CommentScreen = ({navigation, route}: CommentScreenProp) => {
 
         return acc;
       }, [] as string[]),
-    [newComment, triggersConfig.mention],
+
+    [newComment],
   );
 
   const filteredUsers = useMemo(
     () =>
       mentionedUsers.filter(
-        user => !usedUserIds.includes(user._id),
+        user =>
+          !usedUserIds.includes(user._id),
       ),
+
     [mentionedUsers, usedUserIds],
   );
 
-  if (commentLoading) return <Loader />;
+  if (commentLoading) {
+    return <Loader />;
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
-  style={{flex: 1}}
-  behavior={Platform.OS === 'ios' ? 'padding' : undefined}
->
-  <ScrollView
-    keyboardShouldPersistTaps="handled"
-    contentContainerStyle={{
-  flexGrow: 1,
-  paddingBottom: 120,
-  paddingHorizontal: 16,
-}}
-    showsVerticalScrollIndicator={false}
-  >
+        style={{flex: 1}}
+        behavior={
+          Platform.OS === 'ios'
+            ? 'padding'
+            : undefined
+        }>
+        <FlatList
+          ref={flatListRef}
+          data={comments}
+          keyExtractor={item => item._id}
+          keyboardShouldPersistTaps="handled"
+          ListHeaderComponent={
+            <View>
+              <YStack gap="$3">
+                <View
+                  style={
+                    styles.articleTitleCard
+                  }>
+                  <H3
+                    fontSize={20}
+                    color="#1F2937"
+                    fontWeight={'700'}>
+                    {article.title}
+                  </H3>
+                </View>
 
-          <YStack gap="$3">
+                <View
+                  style={
+                    styles.imageContainer
+                  }>
+                  <Image
+                    source={{
+                      uri:
+                        article?.imageUtils[0].startsWith(
+                          'http',
+                        )
+                          ? article
+                              ?.imageUtils[0]
+                          : `${GET_IMAGE}/${article?.imageUtils[0]}`,
+                    }}
+                    style={
+                      styles.articleImage
+                    }
+                  />
+                </View>
 
-            <View style={styles.articleTitleCard}>
-              <H3
-                fontSize={20}
-                color="#1F2937"
-                fontWeight={'700'}>
-                {article.title}
-              </H3>
-            </View>
-
-            <View style={styles.imageContainer}>
-              <Image
-                source={{
-                  uri: article?.imageUtils[0].startsWith(
-                    'http',
-                  )
-                    ? article?.imageUtils[0]
-                    : `${GET_IMAGE}/${article?.imageUtils[0]}`,
-                }}
-                style={styles.articleImage}
-              />
-            </View>
-
-            <TouchableOpacity
-              onPress={() =>
-                navigation.navigate('ArticleScreen', {
-                  articleId: Number(article._id),
-                  authorId:
-                    article.authorId.toString(),
-                  recordId: article.pb_recordId,
-                })
-              }
-              style={styles.viewArticleButton}
-              activeOpacity={0.8}>
-              <Text style={styles.viewArticleText}>
-                View Full Article
-              </Text>
-            </TouchableOpacity>
-
-            <View style={styles.descriptionCard}>
-              <Paragraph
-                color="#4B5563"
-                fontSize={15}
-                lineHeight={22}>
-                {article.description}
-              </Paragraph>
-            </View>
-
-            <Suggestions
-              suggestions={filteredUsers}
-              {...triggers.mention}
-            />
-
-            <TextInput
-              {...textInputProps}
-              style={styles.textInput}
-              placeholder="Add a comment..."
-              placeholderTextColor="#9CA3AF"
-              multiline
-            />
-
-            {newComment.length > 0 && (
-              <TouchableOpacity
-                style={styles.submitButton}
-                onPress={handleCommentSubmit}
-                activeOpacity={0.8}>
-                <Text style={styles.submitButtonText}>
-                  {editMode
-                    ? 'Update Comment'
-                    : 'Submit Comment'}
-                </Text>
-              </TouchableOpacity>
-            )}
-
-            <View style={styles.commentsHeader}>
-              <Text style={styles.commentsHeaderText}>
-                {comments.length}{' '}
-                {comments.length === 1
-                  ? 'Comment'
-                  : 'Comments'}
-              </Text>
-            </View>
-
-            <YStack marginTop="$2" gap="$3">
-              {comments.map(item => (
-                <CommentItem
-                  key={item._id}
-                  item={item}
-                  isSelected={
-                    selectedCommentId === item._id
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate(
+                      'ArticleScreen',
+                      {
+                        articleId: Number(
+                          article._id,
+                        ),
+                        authorId:
+                          article.authorId.toString(),
+                        recordId:
+                          article.pb_recordId,
+                      },
+                    )
                   }
-                  userId={user_id}
-                  setSelectedCommentId={
-                    setSelectedCommentId
+                  style={
+                    styles.viewArticleButton
+                  }>
+                  <Text
+                    style={
+                      styles.viewArticleText
+                    }>
+                    View Full Article
+                  </Text>
+                </TouchableOpacity>
+
+                <View
+                  style={
+                    styles.descriptionCard
+                  }>
+                  <Paragraph
+                    color="#4B5563"
+                    fontSize={15}
+                    lineHeight={22}>
+                    {article.description}
+                  </Paragraph>
+                </View>
+
+                <Suggestions
+                  suggestions={
+                    filteredUsers
                   }
-                  handleEditAction={handleEditAction}
-                  deleteAction={handleDeleteAction}
-                  handleLikeAction={handleLikeAction}
-                  commentLikeLoading={
-                    commentLikeLoading
-                  }
-                  handleMentionClick={
-                    handleMentionClick
-                  }
-                  handleReportAction={
-                    handleReportAction
-                  }
-                  isFromArticle={false}
+                  {...triggers.mention}
                 />
-              ))}
-            </YStack>
 
-          </YStack>
+                <TextInput
+                  {...textInputProps}
+                  style={styles.textInput}
+                  placeholder="Add a comment..."
+                  placeholderTextColor="#9CA3AF"
+                  multiline
+                />
 
-        </ScrollView>
+                {newComment.length > 0 && (
+                  <TouchableOpacity
+                    style={
+                      styles.submitButton
+                    }
+                    onPress={
+                      handleCommentSubmit
+                    }>
+                    <Text
+                      style={
+                        styles.submitButtonText
+                      }>
+                      {editMode
+                        ? 'Update Comment'
+                        : 'Submit Comment'}
+                    </Text>
+                  </TouchableOpacity>
+                )}
 
+                <View
+                  style={
+                    styles.commentsHeader
+                  }>
+                  <Text
+                    style={
+                      styles.commentsHeaderText
+                    }>
+                    {comments.length}{' '}
+                    {comments.length === 1
+                      ? 'Comment'
+                      : 'Comments'}
+                  </Text>
+                </View>
+              </YStack>
+            </View>
+          }
+          renderItem={({item}) => (
+            <CommentItem
+              item={item}
+              isSelected={
+                selectedCommentId ===
+                item._id
+              }
+              userId={user_id}
+              setSelectedCommentId={
+                setSelectedCommentId
+              }
+              handleEditAction={
+                handleEditAction
+              }
+              deleteAction={
+                handleDeleteAction
+              }
+              handleLikeAction={
+                handleLikeAction
+              }
+              commentLikeLoading={
+                commentLikeLoading
+              }
+              handleMentionClick={
+                handleMentionClick
+              }
+              handleReportAction={
+                handleReportAction
+              }
+              isFromArticle={false}
+            />
+          )}
+          contentContainerStyle={
+            styles.scrollContent
+          }
+          showsVerticalScrollIndicator={
+            false
+          }
+        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  scrollView: {
-    width: '100%',
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
-
-  scrollContent: {
-    flexGrow: 1,
-    paddingBottom: 120,
-    paddingHorizontal: 16,
-  },
-
   safeArea: {
     flex: 1,
     backgroundColor: '#FFFFFF',
+  },
+
+  scrollContent: {
+    paddingBottom: 20,
+    paddingHorizontal: 16,
   },
 
   articleTitleCard: {
@@ -505,11 +633,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginTop: 8,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
   },
 
   imageContainer: {
@@ -527,11 +650,6 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 12,
     alignItems: 'center',
-    shadowColor: PRIMARY_COLOR,
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
   },
 
   viewArticleText: {
@@ -544,43 +662,27 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 16,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
   },
 
   suggestionsContainer: {
     maxHeight: 200,
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
     borderWidth: 1,
     borderColor: '#E5E7EB',
   },
 
   suggestionItem: {
-    flex: 0,
     padding: 12,
     flexDirection: 'row',
     alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
   },
 
   profileImage2: {
     height: 36,
     width: 36,
     borderRadius: 18,
-    resizeMode: 'cover',
     marginRight: 12,
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
   },
 
   username2: {
@@ -608,11 +710,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
     borderRadius: 12,
     alignItems: 'center',
-    shadowColor: PRIMARY_COLOR,
-    shadowOffset: {width: 0, height: 3},
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 4,
   },
 
   submitButtonText: {
