@@ -1,6 +1,7 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
+    "jsx": "react-native",
     "strict": true,
     "paths": {
       "@/*": [
@@ -19,4 +20,4 @@
   "exclude": [
     "node_modules"
   ]
-}
+}
