@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Image } from 'react-native';
 import { YStack, Text, Button, XStack } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -6,6 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NavigationProp } from '@react-navigation/native';
 import { RootStackParamList } from '../type';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import BenefitsModal from './BenefitsModal';
 
 interface GuestPlaceholderScreenProps {
   title?: string;
@@ -21,6 +22,7 @@ const GuestPlaceholderScreen: React.FC<GuestPlaceholderScreenProps> = ({
   // removed isDarkMode variable
   const inset = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const [isBenefitsModalVisible, setIsBenefitsModalVisible] = useState(false);
 
   return (
     <YStack
@@ -104,6 +106,29 @@ const GuestPlaceholderScreen: React.FC<GuestPlaceholderScreenProps> = ({
           </Text>
         </Button>
       </YStack>
+
+      <Button
+        variant="outlined"
+        borderWidth={0}
+        backgroundColor="transparent"
+        marginTop="$4"
+        pressStyle={{ scale: 0.97, opacity: 0.7 }}
+        animation="fast"
+        onPress={() => setIsBenefitsModalVisible(true)}
+      >
+        <Text fontSize={15} color="$color10" fontWeight="600" textDecorationLine="underline">
+          Why should I create an account?
+        </Text>
+      </Button>
+
+      <BenefitsModal
+        visible={isBenefitsModalVisible}
+        onDismiss={() => setIsBenefitsModalVisible(false)}
+        onSignUp={() => {
+          setIsBenefitsModalVisible(false);
+          navigation.navigate('SignUpScreenFirst');
+        }}
+      />
     </YStack>
   );
 };
