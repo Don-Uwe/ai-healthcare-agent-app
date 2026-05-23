@@ -353,7 +353,8 @@ If you encounter any issues or have any feedback or suggestions, please open an 
 
    <tr>
     <td align="center"><a href="https://github.com/abhilashgedela28-lang"><img src="https://avatars.githubusercontent.com/u/251615976?v=4" width="120px;" alt=""/><br/><sub><b>abhilashgedela28-lang</b></sub></a></td>
-   </tr>
+       <td align="center"><a href="https://github.com/hari2k7"><img src="https://avatars.githubusercontent.com/u/232849976?v=4" width="120px;" alt=""/><br/><sub><b>Hariharasudhan D</b></sub></a></td>
+ </tr>
  </table>
  <!-- CONTRIBUTORS-TABLE-END -->
 </div>
