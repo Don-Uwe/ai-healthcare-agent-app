@@ -120,14 +120,10 @@ export default function AppContent() {
           <SafeAreaProvider>
             <PaperProvider>
               <View style={{flex: 1}}>
-<<<<<<< HEAD
-                <StatusBar style={isDarkMode ? 'light' : 'dark'} backgroundColor={isDarkMode ? '#151718' : '#FFFFFF'} />
-=======
                 <StatusBar
                   style={isDarkMode ? 'light' : 'dark'}
-                  backgroundColor="#007AFF"
+                  backgroundColor={isDarkMode ? '#151718' : '#FFFFFF'}
                 />
->>>>>>> 459fe9d (feat: auth-aware deep linking and guest-safe article hydration)
                 <NavigationContainer ref={navigationRef}>
                   <StackNavigation />
                 </NavigationContainer>
