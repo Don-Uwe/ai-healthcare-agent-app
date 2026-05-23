@@ -160,6 +160,7 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
       >
         {loading ? (
           <ActivityIndicator
+            testID="loading-spinner"
             size="small"
             color={
               variant === 'primary' || variant === 'secondary' || variant === 'danger'
