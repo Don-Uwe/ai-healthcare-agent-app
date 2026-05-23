@@ -10,7 +10,7 @@ import {
   Dimensions,
   Share,
 } from 'react-native';
-import {useEffect, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -25,7 +25,13 @@ import {
 import Loader from '../../components/Loader';
 import Snackbar from 'react-native-snackbar';
 
-import {formatCount, handleExternalClick, StatusEnum} from '../../helper/Utils';
+import {
+  formatCount,
+  handleExternalClick,
+  retrieveItem,
+  StatusEnum,
+  storeItem,
+} from '../../helper/Utils';
 //import CommentScreen from '../CommentScreen';
 import Tts from 'react-native-tts';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -50,6 +56,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const [spakingStarted, setSpeakingStarted] = useState(false);
   const {user_id, isGuest} = useSelector((state: any) => state.user);
   const [readEventSave, setReadEventSave] = useState(false);
+  const [fontScale, setFontScale] = useState(1);
 
   const {mutate: followMutation, isPending: followMutationPending} =
     useUpdateFollowStatusByArticle();
@@ -79,6 +86,48 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const {mutate: saveMutation, isPending: saveMutationPending} = useSaveArticle(
     Number(articleId),
   );
+
+  const FONT_SCALE_KEY = 'article_font_scale';
+  const FONT_SCALE_MIN = 0.8;
+  const FONT_SCALE_MAX = 1.6;
+  const FONT_SCALE_STEP = 0.1;
+  const BASE_FONT_SIZE = 16;
+
+  const clampFontScale = (value: number) =>
+    Math.min(FONT_SCALE_MAX, Math.max(FONT_SCALE_MIN, value));
+
+  const persistFontScale = async (value: number) => {
+    try {
+      await storeItem(FONT_SCALE_KEY, value.toFixed(2));
+    } catch (error) {
+      console.error('Failed to persist font scale:', error);
+    }
+  };
+
+  const debounce = (func: (...args: any[]) => void, delay: number) => {
+    let timeout: ReturnType<typeof setTimeout>;
+    return (...args: any[]) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func(...args), delay);
+    };
+  };
+
+  const debouncedPersistFontScale = useCallback(
+    debounce(persistFontScale, 300),
+    [],
+  );
+
+  const handleDecreaseFont = () => {
+    const nextValue = clampFontScale(fontScale - FONT_SCALE_STEP);
+    setFontScale(nextValue);
+    debouncedPersistFontScale(nextValue);
+  };
+
+  const handleIncreaseFont = () => {
+    const nextValue = clampFontScale(fontScale + FONT_SCALE_STEP);
+    setFontScale(nextValue);
+    debouncedPersistFontScale(nextValue);
+  };
 
   useEffect(() => {
   
@@ -110,6 +159,30 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
       dispatch(setUserHandle(user.user_handle));
     }
   }, [user]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadFontScale = async () => {
+      try {
+        const storedValue = await retrieveItem(FONT_SCALE_KEY);
+        if (!isMounted || !storedValue) return;
+
+        const parsed = Number(storedValue);
+        if (!Number.isNaN(parsed)) {
+          setFontScale(clampFontScale(parsed));
+        }
+      } catch (error) {
+        console.error('Failed to load font scale:', error);
+      }
+    };
+
+    loadFontScale();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // --- Settings ---
   const handleLike = () => {
@@ -372,6 +445,13 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     return <Loader />;
   }
 
+  const articleFontSize = BASE_FONT_SIZE * fontScale;
+  const articleCustomStyle = `
+    body { font-family: 'Times New Roman'; font-size: ${articleFontSize}px; line-height: 1.6; }
+    p, li { font-size: ${articleFontSize}px; }
+    img, video, iframe { max-width: 100%; height: auto; }
+  `;
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.imageContainer}>
@@ -518,6 +598,27 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
           {article && (
             <>
               <Text style={styles.titleText}>{article?.title}</Text>
+              <View style={styles.fontSizeControls}>
+                <Text style={styles.fontSizeLabel}>Text size</Text>
+                <View style={styles.fontSizeButtons}>
+                  <TouchableOpacity
+                    onPress={handleDecreaseFont}
+                    accessibilityRole="button"
+                    accessibilityLabel="Decrease article font size"
+                    hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}
+                    style={styles.fontSizeButton}>
+                    <Text style={styles.fontSizeButtonText}>A-</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={handleIncreaseFont}
+                    accessibilityRole="button"
+                    accessibilityLabel="Increase article font size"
+                    hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}
+                    style={styles.fontSizeButton}>
+                    <Text style={styles.fontSizeButtonText}>A+</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
               <View style={styles.avatarsContainer}>
                 <View style={styles.avatar}>
                   {/** 3rd image will be display here */}
@@ -673,8 +774,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
                 marginTop: 30,
                 marginBottom: 40,
               }}
-              customStyle={`* { font-family: 'Times New Roman'; } p { font-size: 16px; }`}
-              onSizeUpdated={size => console.log(size.height)}
+              customStyle={articleCustomStyle}
+              onSizeUpdated={_size => {}}
               files={[
                 {
                   href: 'cssfileaddress',
@@ -992,6 +1093,35 @@ const styles = StyleSheet.create({
     fontSize: 25,
     fontWeight: 'bold',
     marginTop: 5,
+  },
+  fontSizeControls: {
+    marginTop: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  fontSizeLabel: {
+    fontSize: 13,
+    color: '#6C6C6D',
+    fontWeight: '500',
+  },
+  fontSizeButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  fontSizeButton: {
+    borderWidth: 1,
+    borderColor: '#D0D0D0',
+    borderRadius: 14,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    backgroundColor: '#FFFFFF',
+  },
+  fontSizeButtonText: {
+    fontSize: 14,
+    color: '#333333',
+    fontWeight: '600',
   },
   avatarsContainer: {
     position: 'relative',
