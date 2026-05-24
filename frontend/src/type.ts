@@ -4,13 +4,11 @@ import type {StackScreenProps} from '@react-navigation/stack';
 import {Dispatch, RefObject, SetStateAction} from 'react';
 import {BottomSheetModal} from '@gorhom/bottom-sheet'; // Adjust this import based on your actual BottomSheetModal component
 
-
-
 export type RootStackParamList = {
   SplashScreen: undefined;
   LoginScreen: {
     redirectTo?: RedirectTo;
-  }
+  };
   TabNavigation: undefined;
   SignUpScreenFirst: undefined;
   SignUpScreenSecond: {user: UserDetail};
@@ -51,8 +49,8 @@ export type RootStackParamList = {
   };
   ArticleScreen: {
     articleId: number;
-    authorId: string;
-    recordId: string;
+    authorId?: string;
+    recordId?: string;
   };
   PodcastProfile: undefined;
   ReviewScreen: {
@@ -67,7 +65,11 @@ export type RootStackParamList = {
     articleRecordId: string;
   };
   OverviewScreen: undefined;
-  GuestPlaceholderScreen: { title?: string; description?: string; iconName?: string };
+  GuestPlaceholderScreen: {
+    title?: string;
+    description?: string;
+    iconName?: string;
+  };
   // ConversationScreen: undefined;
   SocialScreen: {
     type: number;
@@ -103,7 +105,7 @@ export type RootStackParamList = {
   };
   PodcastDetail: {
     trackId: string;
-    audioUrl: string | null;
+    audioUrl?: string | null;
   };
   OfflinePodcastList: undefined;
   OfflinePodcastDetail: {
@@ -137,7 +139,6 @@ export type RedirectTo = {
     params: RootStackParamList[K];
   };
 }[keyof RootStackParamList];
-
 
 export type Message = {
   _id: number;
@@ -330,11 +331,9 @@ export type ProfileScreenProps = CompositeScreenProps<
   | StackScreenProps<RootStackParamList, 'ArticleScreen'>
 >;
 
-
-export type AboutScreenProps =
- CompositeScreenProps<
+export type AboutScreenProps = CompositeScreenProps<
   BottomTabScreenProps<TabParamList, 'About'>,
-  | StackScreenProps<RootStackParamList, 'Privacy'>
+  StackScreenProps<RootStackParamList, 'Privacy'>
 >;
 
 export type PodcastRecorderScreenProps = StackScreenProps<

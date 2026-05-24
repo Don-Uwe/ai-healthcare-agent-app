@@ -3,7 +3,7 @@ import axios, {AxiosError} from 'axios';
 import {GET_ARTICLE_CONTENT} from '../helper/APIUtils';
 
 export const useGetArticleContent = (
-  recordId: string,
+  recordId?: string,
 ): UseQueryResult<string, AxiosError> => {
   return useQuery({
     queryKey: ['get-article-content', recordId],
@@ -11,5 +11,6 @@ export const useGetArticleContent = (
       const response = await axios.get(`${GET_ARTICLE_CONTENT}/${recordId}`);
       return response.data.htmlContent as string;
     },
+    enabled: Boolean(recordId),
   });
 };

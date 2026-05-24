@@ -17,11 +17,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {ArticleData, ArticleScreenProp} from '../../type';
 import {useDispatch, useSelector} from 'react-redux';
 import {hp} from '../../helper/Metric';
-import {
-  GET_IMAGE,
-  GET_STORAGE_DATA,
-  SOCKET_PROD,
-} from '../../helper/APIUtils';
+import {GET_IMAGE, GET_STORAGE_DATA, SOCKET_PROD} from '../../helper/APIUtils';
 import Loader from '../../components/Loader';
 import Snackbar from 'react-native-snackbar';
 
@@ -61,11 +57,9 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const {mutate: followMutation, isPending: followMutationPending} =
     useUpdateFollowStatusByArticle();
 
-  const {mutate: updateReadEvent} =
-    useUpdateReadEvent(articleId);
+  const {mutate: updateReadEvent} = useUpdateReadEvent(articleId);
 
-  const {mutate: updateViewCount} =
-    useUpdateViewCount(articleId ?? 0);
+  const {mutate: updateViewCount} = useUpdateViewCount(articleId ?? 0);
 
   const socket = useSocket();
   const dispatch = useDispatch();
@@ -77,7 +71,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     refetch,
   } = useGetArticleDetails(articleId);
 
-  const {data: articleContent} = useGetArticleContent(recordId);
+  const resolvedRecordId = article?.pb_recordId || recordId;
+  const {data: articleContent} = useGetArticleContent(resolvedRecordId);
 
   const {mutate: likeMutation, isPending: likeMutationPending} = useLikeArticle(
     Number(articleId),
@@ -130,12 +125,11 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   };
 
   useEffect(() => {
-  
     if (!isGuest) {
       updateViewCount(articleId, {
         onError: error => {
           console.log('Update View Count Error', error);
-        //  Alert.alert('Internal server error, try again!');
+          //  Alert.alert('Internal server error, try again!');
         },
       });
     }
@@ -195,7 +189,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
       return;
     }
     if (article) {
-      likeMutation(undefined,{
+      likeMutation(undefined, {
         onSuccess: (data: {article: ArticleData; likeStatus: boolean}) => {
           if (data?.likeStatus && socket) {
             socket.emit('notification', {
@@ -323,7 +317,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
       htmlContent: articleContent,
       translationSource: {
         sourceArticleId: article._id,
-        sourceArticleRecordId: article.pb_recordId || recordId,
+        sourceArticleRecordId: article.pb_recordId || recordId || '',
         sourceLanguage: article.language || 'en-IN',
         sourceTitle: article.title,
       },
@@ -363,7 +357,6 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
       language: article.language,
     });
   };
-
 
   async function convertHtmlToPlainText(html: string) {
     let modifiedHtml = html.replace(/ style="[^"]*"/g, '');
@@ -827,7 +820,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
               if (isGuest) {
                 navigation.navigate('GuestPlaceholderScreen', {
                   title: 'Sign In Required',
-                  description: 'Please sign in or sign up to view and post comments.',
+                  description:
+                    'Please sign in or sign up to view and post comments.',
                   iconName: 'comment',
                 });
                 return;
@@ -880,22 +874,14 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
           <TouchableOpacity
             style={styles.actionButtonFooter}
             onPress={handleTranslateArticle}>
-            <MaterialCommunityIcons
-              name="translate"
-              size={20}
-              color="#666"
-            />
+            <MaterialCommunityIcons name="translate" size={20} color="#666" />
             <Text style={styles.actionTextFooter}>Translate</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.actionButtonFooter}
             onPress={handleImproveArticle}>
-            <MaterialCommunityIcons
-              name="auto-fix"
-              size={20}
-              color="#666"
-            />
+            <MaterialCommunityIcons name="auto-fix" size={20} color="#666" />
             <Text style={styles.actionTextFooter}>Improve</Text>
           </TouchableOpacity>
 
@@ -926,7 +912,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
           </TouchableOpacity>
         </View>
 
-         {/*Improvement row */}
+        {/*Improvement row */}
 
         {/* Author Row */}
         <View style={styles.authorRow}>
@@ -936,7 +922,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
                 if (isGuest) {
                   navigation.navigate('GuestPlaceholderScreen', {
                     title: 'Sign In Required',
-                    description: 'Please sign in or sign up to view user profiles.',
+                    description:
+                      'Please sign in or sign up to view user profiles.',
                     iconName: 'user',
                   });
                   return;
@@ -949,7 +936,9 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
               {(article?.authorId as any)?.Profile_image ? (
                 <Image
                   source={{
-                    uri: (article?.authorId as any).Profile_image.startsWith('http')
+                    uri: (article?.authorId as any).Profile_image.startsWith(
+                      'http',
+                    )
                       ? `${(article?.authorId as any).Profile_image}`
                       : `${GET_STORAGE_DATA}/${(article?.authorId as any).Profile_image}`,
                   }}
@@ -983,7 +972,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
                       if (isGuest) {
                         navigation.navigate('GuestPlaceholderScreen', {
                           title: 'Sign In Required',
-                          description: 'Please sign in or sign up to view all contributors.',
+                          description:
+                            'Please sign in or sign up to view all contributors.',
                           iconName: 'users',
                         });
                         return;
