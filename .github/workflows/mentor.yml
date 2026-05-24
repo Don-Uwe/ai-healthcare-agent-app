@@ -16,7 +16,7 @@ jobs:
       issues: write
     steps:
       - name: Add labels for Mentors
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             // ADD ALL MENTOR GITHUB USERNAMES HERE
@@ -41,7 +41,7 @@ jobs:
       issues: write
     steps:
       - name: Assign Mentor to PR
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const prBody = context.payload.pull_request.body || '';
