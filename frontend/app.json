@@ -26,9 +26,7 @@
         "NSMicrophoneUsageDescription": "App requires microphone access to record audio.",
         "NSPhotoLibraryAddUsageDescription": "App needs access to save recordings.",
         "NSPhotoLibraryUsageDescription": "App needs access to select or manage audio files.",
-        "UIBackgroundModes": [
-          "audio"
-        ]
+        "UIBackgroundModes": ["audio"]
       }
     },
     "android": {
