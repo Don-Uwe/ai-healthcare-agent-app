@@ -108,13 +108,6 @@
           "microphonePermission": "Allow UltimateHealth to access your microphone."
         }
       ]
-      ,
-      [
-        "expo-av",
-        {
-          "microphonePermission": "Allow UltimateHealth to access your microphone."
-        }
-      ]
     ],
     "experiments": {
       "typedRoutes": true,
