@@ -1,6 +1,6 @@
 import React from 'react';
 import {Comment} from '../type';
-import moment from 'moment';
+import { formatWithOrdinalAndDay } from '../helper/dateUtils';
 import {Avatar, XStack, YStack, Text, Paragraph} from 'tamagui';
 import {GET_STORAGE_DATA} from '../helper/APIUtils';
 
@@ -8,7 +8,7 @@ export default function ReviewItem({item}: {item: Comment}) {
 
 
   const formatWithOrdinal = (date: string | Date) => {
-    return moment(date).format('D MMM, ddd, h:mm a');
+    return formatWithOrdinalAndDay(date);
   };
 
 

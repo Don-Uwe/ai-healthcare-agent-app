@@ -9,7 +9,7 @@ import Animated, {
 import Entypo from '@expo/vector-icons/Entypo';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import {FontAwesome, Fontisto} from '@expo/vector-icons';
-import moment from 'moment';
+import { formatWithOrdinalAndDay } from '../helper/dateUtils';
 import ArticleFloatingMenu from './AnimatedMenu';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import {Comment} from '../type';
@@ -67,7 +67,7 @@ export default function CommentItem({
   };
 
   const formatWithOrdinal = (date: string) =>
-    moment(date).format('D MMM, ddd, h:mm a');
+    formatWithOrdinalAndDay(date);
 
   // Render mentions inline
   const renderTextWithMentions = (text: string) => {

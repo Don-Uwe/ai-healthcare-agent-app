@@ -11,7 +11,7 @@ import {
 import {useEffect, useRef, useState} from 'react';
 import {fp} from '../helper/Metric';
 import {ArticleCardProps, ArticleData} from '../type';
-import moment from 'moment';
+import { formatDateShort } from '../helper/dateUtils';
 import {useSelector} from 'react-redux';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import IonIcons from '@expo/vector-icons/Ionicons';
@@ -427,7 +427,7 @@ const ArticleCard = ({
             </Text>
             <Text style={styles.dot}>•</Text>
             <Text style={styles.footerText1}>
-              {moment(item?.lastUpdated).format('DD MMM')}
+              {formatDateShort(item?.lastUpdated)}
             </Text>
           </View>
 
