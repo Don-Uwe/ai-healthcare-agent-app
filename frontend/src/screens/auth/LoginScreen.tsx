@@ -6,13 +6,13 @@ import {StatusBar} from 'expo-status-bar';
 import {
   YStack,
   XStack,
-  ScrollView,
   Input,
   Button,
   Text,
   Separator,
 } from 'tamagui';
-import {KEYS, storeItem} from '../../helper/Utils';
+import {KEYS} from '../../helper/Utils';
+import {secureStoreItem} from '../../helper/SecureStorageUtils';
 
 import Icon from '@expo/vector-icons/Ionicons';
 import {AuthData, LoginScreenProp} from '../../type';
@@ -117,14 +117,14 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
               user_handle: data?.user_handle,
             };
             try {
-              await storeItem(KEYS.USER_ID, auth.userId.toString());
-              await storeItem(KEYS.USER_HANDLE, data?.user_handle);
+              await secureStoreItem(KEYS.USER_ID, auth.userId.toString());
+              await secureStoreItem(KEYS.USER_HANDLE, data?.user_handle);
               if (auth.token) {
                 console.log('Storing token:', auth.token);
                   axios.defaults.headers.common["Authorization"] = `Bearer ${auth.token}`;
                   axios.defaults.headers.common["Content-Type"] = "application/json";
-                await storeItem(KEYS.USER_TOKEN, auth.token.toString());
-                await storeItem(
+                await secureStoreItem(KEYS.USER_TOKEN, auth.token.toString());
+                await secureStoreItem(
                   KEYS.USER_TOKEN_EXPIRY_DATE,
                   new Date().toISOString(),
                 );
