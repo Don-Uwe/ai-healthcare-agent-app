@@ -319,37 +319,30 @@ ${body}
 // General purpose podcast app, no need to encrypted download data here,
 // We will ensure that, there will be no copyrighted content, or we can't give access to download
 // copyrighted content, as per ultimatehealth system
-/** Download podcast */
-export async function requestStoragePermissions() {
+export const requestStoragePermissions = async () => {
   if (Platform.OS !== 'android') return true;
 
-  if (Platform.Version <= 32) {
-    // Android 12 or below
+  if ((Platform.Version as number) < 33) {
     const granted = await PermissionsAndroid.requestMultiple([
       PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
       PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
     ]);
 
     return (
-      granted['android.permission.READ_EXTERNAL_STORAGE'] ===
-        PermissionsAndroid.RESULTS.GRANTED &&
-      granted['android.permission.WRITE_EXTERNAL_STORAGE'] ===
-        PermissionsAndroid.RESULTS.GRANTED
+      granted['android.permission.READ_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED &&
+      granted['android.permission.WRITE_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED
     );
   } else {
-    // Android 13+ (API 33+)
     const granted = await PermissionsAndroid.requestMultiple([
       PermissionsAndroid.PERMISSIONS.READ_MEDIA_AUDIO,
-      PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES,
-      PermissionsAndroid.PERMISSIONS.READ_MEDIA_VIDEO,
     ]);
 
-    return (
-      granted['android.permission.READ_MEDIA_AUDIO'] ===
-      PermissionsAndroid.RESULTS.GRANTED
-    );
+    return granted['android.permission.READ_MEDIA_AUDIO'] === PermissionsAndroid.RESULTS.GRANTED;
   }
-}
+};
+
+/** Download podcast */
+
 export const downloadAudio = async (_podcast: PodcastData) => {
   // Check for existing downloads
   const storageGranted = await requestStoragePermissions();

@@ -9,17 +9,16 @@ export const secureRetrieveItem = async (key: string) => {
     const value = await SecureStore.getItemAsync(key);
     return value;
   } catch (e) {
-    console.error(`Error reading secure value for key "${key}":`, e);
+    console.error(`Error reading secure value for key (redacted):`, e); // Redact key
     return null;
   }
 };
 
 export const secureStoreItem = async (key: string, value: string) => {
   try {
-  
     await SecureStore.setItemAsync(key, value);
   } catch (e) {
-    console.error(`Error storing secure value for key "${key}":`, e);
+    console.error(`Error storing secure value for key (redacted):`, e); // Redact key
   }
 };
 
@@ -27,16 +26,16 @@ export const secureRemoveItem = async (key: string) => {
   try {
     await SecureStore.deleteItemAsync(key);
   } catch (error) {
-    console.error(`Error removing secure item for key "${key}":`, error);
+    console.error(`Error removing secure item for key (redacted):`, error); // Redact key
   }
 };
 
 export const secureClearAllItems = async () => {
   try {
-    const secureKeysToClear = [
-      SECURE_KEYS.USER_TOKEN,
-    ];
-    await Promise.all(secureKeysToClear.map(key => SecureStore.deleteItemAsync(key)));
+    const secureKeysToClear = [SECURE_KEYS.USER_TOKEN];
+    await Promise.all(
+      secureKeysToClear.map(key => SecureStore.deleteItemAsync(key)),
+    );
     console.log('All secure items cleared.');
   } catch (error) {
     console.error('Error clearing all secure items:', error);
