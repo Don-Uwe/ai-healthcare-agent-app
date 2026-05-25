@@ -20,7 +20,7 @@ jobs:
         with:
           script: |
             // ADD ALL MENTOR GITHUB USERNAMES HERE
-            const MENTORS = ['Gooichand']; 
+            const MENTORS = ['Gooichand', 'nitinog10']; 
             
             const creator = context.payload.issue.user.login;
             
