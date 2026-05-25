@@ -16,7 +16,7 @@
     "@brown-bear/react-native-autoheight-webview": "^2.0.4",
     "@expo/vector-icons": "^15.0.3",
     "@gorhom/bottom-sheet": "^5.2.6",
-    "@lottiefiles/dotlottie-react": "^0.13.5",
+    "@lottiefiles/dotlottie-react": "^0.19.4",
     "@react-native-async-storage/async-storage": "^3.1.0",
     "@react-native-community/netinfo": "11.4.1",
     "@react-native-community/slider": "5.2.0",
