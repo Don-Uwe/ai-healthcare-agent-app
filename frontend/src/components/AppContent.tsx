@@ -26,7 +26,6 @@ import {setConnected} from '../store/NetworkSlice';
 import {firebaseInit} from '../helper/firebase';
 import {cleanUpDownloads, KEYS, retrieveItem} from '../helper/Utils';
 import {setUserToken, setGuestMode} from '../store/UserSlice';
-import axios from 'axios';
 import {setupAxiosInterceptor} from '../helper/setupAxiosInterceptor';
 
 export default function AppContent() {
@@ -44,13 +43,6 @@ export default function AppContent() {
 
   const checkToken = useCallback(async () => {
     const token = await retrieveItem(KEYS.USER_TOKEN);
-
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    } else {
-      delete axios.defaults.headers.common['Authorization'];
-    }
-    axios.defaults.headers.common['Content-Type'] = 'application/json';
 
     dispatch(setUserToken(token));
     if (token) {
