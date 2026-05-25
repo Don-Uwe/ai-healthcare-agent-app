@@ -1,0 +1,106 @@
+name: iOS Build Validation
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'frontend/ios/**'
+      - 'frontend/package.json'
+      - 'frontend/yarn.lock'
+      - '.github/workflows/ios-build-validation.yml'
+      - 'frontend/app.json'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'frontend/ios/**'
+      - 'frontend/package.json'
+      - 'frontend/yarn.lock'
+      - '.github/workflows/ios-build-validation.yml'
+      - 'frontend/app.json'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-ios:
+    name: Build iOS Simulator
+    runs-on: macos-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: ./frontend
+    env:
+      CI: true
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node & Cache Dependencies
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'yarn'
+          cache-dependency-path: frontend/yarn.lock
+
+      - name: Setup Ruby (for CocoaPods)
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2' # Standard for React Native
+
+      - name: Install JS Dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Check Google Services Secret
+        id: secret-check
+        env:
+          GOOGLE_SERVICES_INFO_PLIST: ${{ secrets.GOOGLE_SERVICES_INFO_PLIST }}
+        run: |
+          if [ -z "$GOOGLE_SERVICES_INFO_PLIST" ]; then
+            echo "has_secret=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping iOS build: GOOGLE_SERVICES_INFO_PLIST secret is missing."
+          else
+            echo "has_secret=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Inject GoogleService-Info.plist
+        if: steps.secret-check.outputs.has_secret == 'true'
+        env:
+          PLIST_CONTENT: ${{ secrets.GOOGLE_SERVICES_INFO_PLIST }}
+        run: |
+          cat <<EOF > GoogleService-Info.plist
+          $PLIST_CONTENT
+          EOF
+
+      - name: Generate iOS Project (Prebuild)
+        if: steps.secret-check.outputs.has_secret == 'true'
+        # We run prebuild because the 'ios' directory is not tracked in git
+        # This will generate the ios folder and run pod install
+        run: npx expo prebuild --platform ios --clean
+
+      - name: Build iOS App (Simulator)
+        if: steps.secret-check.outputs.has_secret == 'true'
+        working-directory: ./frontend/ios
+        run: |
+          set -o pipefail
+          # Using xcpretty to format the xcodebuild output and prevent log limit overflow
+          xcodebuild \
+            -workspace UltimateHealth.xcworkspace \
+            -scheme UltimateHealth \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'platform=iOS Simulator,name=iPhone 15' \
+            build | xcpretty
+
+      - name: Upload Xcode Build Logs (On Failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build-logs
+          path: ~/Library/Logs/xcodebuild/
+          if-no-files-found: ignore
+          retention-days: 7
