@@ -7,7 +7,7 @@ import {
   setUserId,
   setUserToken,
 } from '../store/UserSlice';
-import { KEYS, removeItem, clearStorage } from './Utils';
+import { KEYS, removeItem, SECURE_KEYS } from './Utils';
 import { secureRemoveItem } from './SecureStorageUtils';
 
 let interceptorInitialized = false;
@@ -32,7 +32,7 @@ export const setupAxiosInterceptor = () => {
         store.dispatch(setGuestMode(true));
 
         axios.defaults.headers.common.Authorization = '';
-        secureRemoveItem(KEYS.USER_TOKEN);
+        secureRemoveItem(SECURE_KEYS.USER_TOKEN);
         removeItem(KEYS.USER_TOKEN_EXPIRY_DATE);
         removeItem(KEYS.USER_ID);
         removeItem(KEYS.USER_HANDLE);

@@ -11,7 +11,7 @@ import {
   Text,
   Separator,
 } from 'tamagui';
-import {KEYS, storeItem} from '../../helper/Utils';
+import {KEYS, SECURE_KEYS, storeItem} from '../../helper/Utils';
 import {secureStoreItem} from '../../helper/SecureStorageUtils';
 
 import Icon from '@expo/vector-icons/Ionicons';
@@ -123,7 +123,7 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
                 console.log('Storing token:', auth.token);
                   axios.defaults.headers.common["Authorization"] = `Bearer ${auth.token}`;
                   axios.defaults.headers.common["Content-Type"] = "application/json";
-                await secureStoreItem(KEYS.USER_TOKEN, auth.token.toString());
+                await secureStoreItem(SECURE_KEYS.USER_TOKEN, auth.token.toString());
                 await storeItem(
                   KEYS.USER_TOKEN_EXPIRY_DATE,
                   new Date().toISOString(),

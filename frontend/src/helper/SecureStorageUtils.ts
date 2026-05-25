@@ -1,5 +1,5 @@
 import * as SecureStore from 'expo-secure-store';
-import {KEYS} from './Utils';
+import {SECURE_KEYS} from './Utils';
 
 // Expo SecureStore is a wrapper around Android Keystore and iOS Keychain.
 // It securely encrypts and stores key-value pairs.
@@ -34,7 +34,7 @@ export const secureRemoveItem = async (key: string) => {
 export const secureClearAllItems = async () => {
   try {
     const secureKeysToClear = [
-      KEYS.USER_TOKEN,
+      SECURE_KEYS.USER_TOKEN,
     ];
     await Promise.all(secureKeysToClear.map(key => SecureStore.deleteItemAsync(key)));
     console.log('All secure items cleared.');

@@ -1,7 +1,7 @@
 
 // hooks/useCheckTokenStatus.ts
 import { GET_TOKEN_STATUS } from '@/src/helper/APIUtils';
-import { KEYS } from '@/src/helper/Utils';
+import { SECURE_KEYS } from '@/src/helper/Utils';
 import { TokenStatus } from '@/src/type';
 import {useQuery} from '@tanstack/react-query';
 import axios from 'axios';
@@ -28,7 +28,7 @@ export const useCheckTokenStatus = () => {
   return useQuery<TokenStatus>({
     queryKey: ['token-status'],
     queryFn: async () => {
-      const token = await secureRetrieveItem(KEYS.USER_TOKEN);
+      const token = await secureRetrieveItem(SECURE_KEYS.USER_TOKEN);
       console.log('Checking token status. Token present:', !!token);
       if (!token) {
         return { isValid: false, message: 'No token found' };
