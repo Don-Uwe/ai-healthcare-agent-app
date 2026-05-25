@@ -10,7 +10,7 @@ import {
   Dimensions,
   Share,
 } from 'react-native';
-import {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../../helper/Theme';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -35,7 +35,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import {setUserHandle} from '../../store/UserSlice';
 import {FontAwesome5} from '@expo/vector-icons';
 import AutoHeightWebView from '@brown-bear/react-native-autoheight-webview';
-import LottieView from 'lottie-react-native';
+
 import {useGetArticleDetails} from '@/src/hooks/useGetArticleDetail';
 import {useGetArticleContent} from '@/src/hooks/useGetArticleContent';
 import {useGetProfile} from '@/src/hooks/useGetProfile';
@@ -53,6 +53,12 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const {user_id, isGuest} = useSelector((state: any) => state.user);
   const [readEventSave, setReadEventSave] = useState(false);
   const [fontScale, setFontScale] = useState(1);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [speechRate, setSpeechRate] = useState(0.5);
+  const [playerVisible, setPlayerVisible] = useState(false);
+  const chunkIndexRef = React.useRef(0);
+  const wordsRef = React.useRef<string[]>([]);
 
   const {mutate: followMutation, isPending: followMutationPending} =
     useUpdateFollowStatusByArticle();
@@ -63,7 +69,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
 
   const socket = useSocket();
   const dispatch = useDispatch();
-  const [speechingMode, setSpeechingMode] = useState(false);
+
   const {data: user} = useGetProfile();
   const {
     data: article,
@@ -135,10 +141,13 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     }
     return () => {
       setSpeakingStarted(false);
+      setIsPlaying(false);
+      setIsPaused(false);
+      setPlayerVisible(false);
       Tts.stop();
-
       Tts.removeAllListeners('tts-finish');
       Tts.removeAllListeners('tts-error');
+      Tts.removeAllListeners('tts-progress');
     };
   }, []);
 
@@ -391,9 +400,23 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     return false;
   };
 
+  const speakNextChunk = () => {
+    const words = wordsRef.current;
+    const chunkIndex = chunkIndexRef.current;
+    if (chunkIndex >= words.length) {
+      // finished all chunks
+      setIsPlaying(false);
+      setIsPaused(false);
+      setSpeakingStarted(false);
+      return;
+    }
+    const chunk = words.slice(chunkIndex, chunkIndex + 120).join(' ');
+    chunkIndexRef.current = chunkIndex + 120;
+    Tts.speak(chunk);
+  };
+
   const speakSection = async (_language = 'en-IN', content: string) => {
     try {
-      setSpeakingStarted(true);
       await Tts.stop();
       Tts.removeAllListeners('tts-finish');
       Tts.removeAllListeners('tts-error');
@@ -403,34 +426,101 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
 
       await Tts.setDefaultLanguage(_language);
       Tts.setDefaultPitch(1.0);
-      Tts.setDefaultRate(0.5);
+      Tts.setDefaultRate(speechRate);
 
       const plainText = await convertHtmlToPlainText(content);
       if (!plainText) return;
 
-      const words = plainText.split(' ');
-      let chunkIndex = 0;
-
-      const speakNextChunk = () => {
-        if (chunkIndex >= words.length) {
-          return;
-        }
-
-        const chunk = words.slice(chunkIndex, chunkIndex + 120).join(' ');
-        chunkIndex += 120;
-
-        Tts.speak(chunk);
-      };
+      const words = plainText.trim().split(/\s+/);
+      wordsRef.current = words;
+      chunkIndexRef.current = 0;
 
       Tts.addEventListener('tts-finish', speakNextChunk);
-
       Tts.addEventListener('tts-error', e => {
         console.log('TTS Error:', e);
+        setIsPlaying(false);
       });
 
+      setSpeakingStarted(true);
+      setIsPlaying(true);
+      setIsPaused(false);
+      setPlayerVisible(true);
       speakNextChunk();
     } catch (error) {
       console.log('TTS Error:', error);
+    }
+  };
+
+  const handleTtsPlay = () => {
+    if (articleContent) {
+      const language = article?.language || 'en-IN';
+      speakSection(language, articleContent);
+    }
+  };
+
+  const handleTtsPause = async () => {
+    try {
+      if (isPaused) {
+        await Tts.resume();
+        setIsPlaying(true);
+        setIsPaused(false);
+      } else {
+        await Tts.pause();
+        setIsPlaying(false);
+        setIsPaused(true);
+      }
+    } catch (e) {
+      console.log('TTS Pause/Resume Error:', e);
+    }
+  };
+
+  const handleTtsStop = async () => {
+    try {
+      await Tts.stop();
+      Tts.removeAllListeners('tts-finish');
+      Tts.removeAllListeners('tts-error');
+      wordsRef.current = [];
+      chunkIndexRef.current = 0;
+      setIsPlaying(false);
+      setIsPaused(false);
+      setSpeakingStarted(false);
+      setPlayerVisible(false);
+    } catch (e) {
+      console.log('TTS Stop Error:', e);
+    }
+  };
+
+  const SPEED_OPTIONS = [0.5, 0.75, 1.0, 1.25, 1.5];
+  const SPEED_LABELS: Record<number, string> = {
+    0.5: '0.5x',
+    0.75: '0.75x',
+    1.0: '1x',
+    1.25: '1.25x',
+    1.5: '1.5x',
+  };
+
+  const handleSpeedChange = () => {
+    const currentIndex = SPEED_OPTIONS.indexOf(speechRate);
+    const nextRate = SPEED_OPTIONS[(currentIndex + 1) % SPEED_OPTIONS.length];
+    setSpeechRate(nextRate);
+    Tts.setDefaultRate(nextRate);
+    // Restart current position with new speed if currently playing
+    if (isPlaying && !isPaused) {
+      Tts.removeAllListeners('tts-finish');
+      Tts.removeAllListeners('tts-error');
+      // Step back one chunk so we replay current chunk at new speed
+      chunkIndexRef.current = Math.max(
+        0,
+        chunkIndexRef.current - 120,
+      );
+      Tts.stop().then(() => {
+        Tts.addEventListener('tts-finish', speakNextChunk);
+        Tts.addEventListener('tts-error', e => {
+          console.log('TTS Error:', e);
+          setIsPlaying(false);
+        });
+        speakNextChunk();
+      });
     }
   };
 
@@ -490,20 +580,10 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
 
         <TouchableOpacity
           onPress={() => {
-            setSpeechingMode(!speechingMode);
-
-            if (!speechingMode) {
-              // setCartoonModalVisible(true);
-              // prepareSection();
-              if (articleContent) {
-                const language = article?.language || 'en-IN';
-                speakSection(language, articleContent);
-              }
+            if (playerVisible) {
+              handleTtsStop();
             } else {
-              setSpeakingStarted(false);
-              Tts.stop();
-              Tts.removeAllListeners('tts-finish');
-              Tts.removeAllListeners('tts-error');
+              handleTtsPlay();
             }
           }}
           style={[
@@ -515,20 +595,9 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
           <FontAwesome5
             name={'headphones'}
             size={30}
-            color={speechingMode ? PRIMARY_COLOR : 'black'}
+            color={playerVisible ? PRIMARY_COLOR : 'black'}
           />
         </TouchableOpacity>
-
-        {spakingStarted && (
-          <View style={styles.botContainer}>
-            <LottieView
-              source={require('../../assets/LottieAnimation/TalkBotAnimation.json')}
-              autoPlay
-              loop={spakingStarted}
-              style={{width: 200, height: 200}}
-            />
-          </View>
-        )}
       </View>
 
       <ScrollView
@@ -1011,6 +1080,45 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
             ))}
         </View>
       </View>
+      {/* Floating TTS Media Player */}
+      {playerVisible && (
+        <View style={styles.ttsPlayerContainer}>
+          <View style={styles.ttsPlayerInner}>
+            {/* Speed button */}
+            <TouchableOpacity
+              style={styles.ttsSpeedButton}
+              onPress={handleSpeedChange}>
+              <Text style={styles.ttsSpeedText}>
+                {SPEED_LABELS[speechRate]}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Play / Pause button */}
+            <TouchableOpacity
+              style={styles.ttsControlButton}
+              onPress={handleTtsPause}
+              disabled={!spakingStarted}>
+              <FontAwesome5
+                name={isPaused ? 'play' : 'pause'}
+                size={18}
+                color={PRIMARY_COLOR}
+              />
+            </TouchableOpacity>
+
+            {/* Stop button */}
+            <TouchableOpacity
+              style={styles.ttsControlButton}
+              onPress={handleTtsStop}>
+              <FontAwesome5 name="stop" size={18} color={'#e53935'} />
+            </TouchableOpacity>
+
+            {/* Status label */}
+            <Text style={styles.ttsStatusText}>
+              {isPaused ? 'Paused' : isPlaying ? 'Playing...' : 'Loading...'}
+            </Text>
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 };
@@ -1264,6 +1372,53 @@ const styles = StyleSheet.create({
     bottom: 60,
     right: 20,
     zIndex: 100,
+  },
+  ttsPlayerContainer: {
+    position: 'absolute',
+    bottom: 90,
+    left: 16,
+    right: 16,
+    zIndex: 200,
+    elevation: 10,
+  },
+  ttsPlayerInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1a1a2e',
+    borderRadius: 50,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    gap: 16,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+  ttsControlButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#ffffff15',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ttsSpeedButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 14,
+    backgroundColor: PRIMARY_COLOR,
+  },
+  ttsSpeedText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  ttsStatusText: {
+    flex: 1,
+    color: '#ffffffaa',
+    fontSize: 13,
+    fontWeight: '500',
+    textAlign: 'right',
   },
 
   submitButtonText: {
