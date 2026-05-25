@@ -7,11 +7,37 @@ import {
   setUserId,
   setUserToken,
 } from '../store/UserSlice';
+import {
+  API_REQUEST_TIMEOUT_MS,
+  API_TIMEOUT_ERROR_MESSAGE,
+} from './ApiTimeout';
 
 let interceptorInitialized = false;
 let sessionExpiredNotified = false;
 
+/**
+ * Configures axios with timeout defaults and response interceptors.
+ * 
+ * Sets up:
+ * - Global timeout configuration for all axios requests
+ * - Response interceptor for handling 401 (unauthorized) errors
+ * - Automatic logout and guest mode activation on session expiry
+ * 
+ * This function is idempotent - calling it multiple times will only
+ * register the interceptor once to prevent duplicate handlers.
+ * 
+ * @example
+ * ```typescript
+ * // Call once during app initialization
+ * useEffect(() => {
+ *   setupAxiosInterceptor();
+ * }, []);
+ * ```
+ */
 export const setupAxiosInterceptor = () => {
+  axios.defaults.timeout = API_REQUEST_TIMEOUT_MS;
+  axios.defaults.timeoutErrorMessage = API_TIMEOUT_ERROR_MESSAGE;
+
   // Guard against duplicate interceptor registration during re-renders.
   if (interceptorInitialized) {
     return;

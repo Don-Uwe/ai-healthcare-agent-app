@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Alert } from 'react-native';
 import { getMimeTypes } from '../helper/Utils';
 import { UPLOAD_STORAGE } from '../helper/APIUtils';
+import { fetchWithTimeout } from '../helper/ApiTimeout';
 
 
 const useUploadAudio = () => {
@@ -39,7 +40,7 @@ const useUploadAudio = () => {
 
       console.log(`Uploading audio: ${filename} (${type})`);
 
-      const response = await fetch(UPLOAD_STORAGE, {
+      const response = await fetchWithTimeout(UPLOAD_STORAGE, {
         method: 'POST',
         body: formData
       });

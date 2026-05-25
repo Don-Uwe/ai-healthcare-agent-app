@@ -37,10 +37,13 @@ export default function AppContent() {
   const {data: tokenRes = null} = useCheckTokenStatus();
   const {user_token, isGuest} = useSelector((state: any) => state.user);
 
-  setupAxiosInterceptor();
-
   const {visible, storeUrl} = useVersionCheck();
   const dispatch = useDispatch();
+
+  // Setup axios interceptor once on mount
+  useEffect(() => {
+    setupAxiosInterceptor();
+  }, []);
 
   const checkToken = useCallback(async () => {
     const token = await retrieveItem(KEYS.USER_TOKEN);
