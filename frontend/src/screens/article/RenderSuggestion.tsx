@@ -4,12 +4,13 @@ import { RenderSuggestionProp } from '../../type';
 import { useDispatch } from 'react-redux';
 import { setSuggestionAccepted } from '../../store/dataSlice';
 import AutoHeightWebView from '@brown-bear/react-native-autoheight-webview';
+// ✅ Re-introduced original project helpers for security sanitization and link safety
+import { createHTMLStructure, handleExternalClick } from '../../helper/Utils';
 
 export default function RenderSuggestion({
   navigation,
   route,
 }: RenderSuggestionProp) {
-  // Extract the readability fields passed from the hook's success response
   const { htmlContent, readability_score, reading_time } = route.params;
   const dispatch = useDispatch();
 
@@ -22,6 +23,9 @@ export default function RenderSuggestion({
     dispatch(setSuggestionAccepted({ selection: false }));
     navigation.goBack();
   };
+
+  // ✅ Wraps the content through the project's sanitization utility to prevent XSS flaws
+  const formattedHtml = createHTMLStructure('', htmlContent || '<p>No suggestions available.</p>', [], '', '');
 
   return (
     <View style={styles.container}>
@@ -37,16 +41,18 @@ export default function RenderSuggestion({
         <Text style={styles.readingTime}>⏱ {reading_time ?? 'Calculating...'}</Text>
       </View>
 
-      {/* 🌐 Render Highlighted Complex Sentences from backend API */}
+      {/* 🌐 Render Highlighted Complex Sentences Safely */}
       <AutoHeightWebView
         style={styles.webView}
         customStyle={`
           * { font-family: -apple-system, Roboto, sans-serif; font-size: 16px; line-height: 1.5; color: #1e293b; }
           .complex-sentence { background-color: #fef08a; padding: 2px; border-radius: 4px; border-bottom: 2px solid #ca8a04; }
         `}
-        source={{ html: htmlContent || '<p>No suggestions available.</p>' }}
+        source={{ html: formattedHtml }}
         scalesPageToFit={false}
         viewportContent={'width=device-width, user-scalable=no'}
+        // ✅ Re-added link interceptor so external links safely launch default system browser
+        onShouldStartLoadWithRequest={handleExternalClick}
       />
 
       {/* Buttons */}
