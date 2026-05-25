@@ -45,7 +45,11 @@ export default function AppContent() {
   const checkToken = useCallback(async () => {
     const token = await retrieveItem(KEYS.USER_TOKEN);
 
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    } else {
+      delete axios.defaults.headers.common['Authorization'];
+    }
     axios.defaults.headers.common['Content-Type'] = 'application/json';
 
     dispatch(setUserToken(token));
