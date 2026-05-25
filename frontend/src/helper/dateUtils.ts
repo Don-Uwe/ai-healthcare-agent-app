@@ -1,4 +1,11 @@
-import { format, isValid, getYear } from 'date-fns';
+import { format, isValid, getYear, parse, parseISO } from 'date-fns';
+
+const COMMON_DATE_FORMATS = [
+  'yyyy-MM-dd HH:mm:ss',
+  "yyyy-MM-dd'T'HH:mm:ss",
+  "yyyy-MM-dd'T'HH:mm:ss.SSSX",
+  "yyyy-MM-dd'T'HH:mm:ssX"
+];
 
 /**
  * Safely parses a date and checks for validity.
@@ -6,8 +13,35 @@ import { format, isValid, getYear } from 'date-fns';
  */
 const getValidDate = (date: Date | string | number | null | undefined): Date | null => {
   if (!date) return null;
-  const parsedDate = new Date(date);
-  return isValid(parsedDate) ? parsedDate : null;
+  
+  if (date instanceof Date) {
+    return isValid(date) ? date : null;
+  }
+  
+  if (typeof date === 'number') {
+    const parsedDate = new Date(date);
+    return isValid(parsedDate) ? parsedDate : null;
+  }
+  
+  if (typeof date === 'string') {
+    let parsedDate = parseISO(date);
+    if (isValid(parsedDate)) {
+      return parsedDate;
+    }
+    
+    for (const formatStr of COMMON_DATE_FORMATS) {
+      parsedDate = parse(date, formatStr, new Date());
+      if (isValid(parsedDate)) {
+        return parsedDate;
+      }
+    }
+    
+    // Final fallback
+    parsedDate = new Date(date);
+    return isValid(parsedDate) ? parsedDate : null;
+  }
+  
+  return null;
 };
 
 /**
@@ -41,13 +75,13 @@ export const formatDateShortYear = (date: Date | string | number | null | undefi
 };
 
 /**
- * Format: "d MMM, EEE, h:mm aaa"
- * Example: "24 Aug, Mon, 10:00 pm"
+ * Format: "d MMM, EEE, h:mm a"
+ * Example: "24 Aug, Mon, 10:00 PM"
  */
 export const formatWithOrdinalAndDay = (date: Date | string | number | null | undefined): string => {
   const validDate = getValidDate(date);
   if (!validDate) return '';
-  return format(validDate, "d MMM, EEE, h:mm aaa");
+  return format(validDate, "d MMM, EEE, h:mm a");
 };
 
 /**
