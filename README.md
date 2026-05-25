@@ -7,7 +7,7 @@
 
 <div align="center">
 
-[![Live Web Demo](https://img.shields.io/badge/Live%20Web%20Demo-4CAF50?style=for-the-badge&logo=globe&logoColor=white)](https://uhsocial.in)
+[![Live Web Demo](https://img.shields.io/badge/Live%20Web%20Demo-4CAF50?style=for-the-badge&logo=globe&logoColor=white)](https://uhsocial.in/frontend/v2)
 [![Android App](https://img.shields.io/badge/Android%20App-Play%20Store-34A853?style=for-the-badge&logo=googleplay&logoColor=white)](https://play.google.com/store/apps/details?id=com.anonymous.UltimateHealth)
 [![API Docs](https://img.shields.io/badge/API%20Docs-007ACC?style=for-the-badge&logo=swagger&logoColor=white)](https://uhsocial.in/docs)
 [![Content API](https://img.shields.io/badge/Content%20API-FF6B00?style=for-the-badge&logo=python&logoColor=white)](https://uhsocial.in/content-intel/docs)
@@ -44,11 +44,11 @@ Here’s a cleaner version while keeping your original meaning:
     <td align="center">
       <img alt="Frontend CI" src="https://github.com/SB2318/UltimateHealth/actions/workflows/frontend-ci.yml/badge.svg?style=flat&logo=github&color=success"/>
     </td>
-   <td align="center">
-  <a href="https://github.com/SB2318/UltimateHealth/actions/workflows/eas-build.yml">
-    <img alt="Expo Build" src="https://github.com/SB2318/UltimateHealth/actions/workflows/eas-build.yml/badge.svg?label=Expo%20Build%20(Android%20%2B%20iOS)&logo=expo&color=blue"/>
-  </a>
-</td>
+    <td align="center">
+      <a href="https://github.com/SB2318/UltimateHealth/actions/workflows/eas-build.yml">
+        <img alt="Expo Build" src="https://github.com/SB2318/UltimateHealth/actions/workflows/eas-build.yml/badge.svg?label=Expo%20Build%20(Android%20%2B%20iOS)&logo=expo&color=blue"/>
+      </a>
+    </td>
     <td align="center">
       <img alt="Stars" src="https://img.shields.io/github/stars/SB2318/UltimateHealth?style=flat&logo=github&color=success"/>
     </td>
@@ -71,7 +71,6 @@ Here’s a cleaner version while keeping your original meaning:
       <img alt="Issues" src="https://img.shields.io/github/issues/SB2318/UltimateHealth?style=flat&logo=github"/>
     </td>
     <td align="center">
-      <!-- FIXED PR BADGE -->
       <img alt="Open PRs" src="https://img.shields.io/github/issues-pr/SB2318/UltimateHealth?style=flat&logo=github"/>
     </td>
     <td align="center">
@@ -81,14 +80,29 @@ Here’s a cleaner version while keeping your original meaning:
 
   <!-- Row 3 -->
   <tr>
-    <td colspan="4" align="center"><b>⏱️ Last Commit</b></td>
+    <td align="center"><b>🤖 Android Build CI</b></td>
+    <td align="center"><b>🍎 iOS Build CI</b></td>
+    <td align="center"><b>⏱️ Last Commit</b></td>
+    <td align="center"><b>📦 Repo Size</b></td>
   </tr>
   <tr>
-    <td colspan="4" align="center">
+    <td align="center">
+      <a href="https://github.com/SB2318/UltimateHealth/actions/workflows/android-build-validation.yml">
+        <img alt="Android Build CI" src="https://github.com/SB2318/UltimateHealth/actions/workflows/android-build-validation.yml/badge.svg?style=flat&logo=android&label=Android%20Build"/>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/SB2318/UltimateHealth/actions/workflows/ios-build-validation.yml">
+        <img alt="iOS Build CI" src="https://github.com/SB2318/UltimateHealth/actions/workflows/ios-build-validation.yml/badge.svg?style=flat&logo=apple&label=iOS%20Build"/>
+      </a>
+    </td>
+    <td align="center">
       <img alt="Last Commit" src="https://img.shields.io/github/last-commit/SB2318/UltimateHealth?style=flat&logo=github&color=informational"/>
     </td>
+    <td align="center">
+      <img alt="Repo Size" src="https://img.shields.io/github/repo-size/SB2318/UltimateHealth?style=flat&logo=github&color=success"/>
+    </td>
   </tr>
-
 </table>
 
 </div>
