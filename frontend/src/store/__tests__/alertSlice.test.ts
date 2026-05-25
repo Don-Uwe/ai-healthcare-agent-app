@@ -1,7 +1,11 @@
+/// <reference types="jest" />
+
 import reducer, { showAlert, hideAlert } from '../alertSlice';
 
+type AlertState = Parameters<typeof reducer>[0];
+
 describe('alertSlice reducers', () => {
-  const initialState = {
+  const initialState: AlertState = {
     visible: false,
     title: '',
     message: '',
@@ -22,6 +26,7 @@ describe('alertSlice reducers', () => {
     };
 
     const actual = reducer(initialState, showAlert(mockPayload));
+
     expect(actual.visible).toEqual(true);
     expect(actual.title).toEqual('Warning');
     expect(actual.message).toEqual('Are you sure?');
@@ -36,6 +41,7 @@ describe('alertSlice reducers', () => {
     };
 
     const actual = reducer(initialState, showAlert(mockPayload));
+
     expect(actual.visible).toEqual(true);
     expect(actual.title).toEqual('Success');
     expect(actual.message).toEqual('Operation completed');
@@ -44,15 +50,16 @@ describe('alertSlice reducers', () => {
   });
 
   it('should handle hideAlert', () => {
-    const visibleState = {
+    const visibleState: AlertState = {
       visible: true,
       title: 'Warning',
       message: 'Are you sure?',
-      onConfirm: () => {},
-      onCancel: () => {},
+      onConfirm: null,
+      onCancel: null,
     };
 
     const actual = reducer(visibleState, hideAlert());
+
     expect(actual).toEqual(initialState);
   });
 });
