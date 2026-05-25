@@ -7,7 +7,7 @@ import {
   setUserId,
   setUserToken,
 } from '../store/UserSlice';
-import { KEYS } from './Utils';
+import { KEYS, removeItem, clearStorage } from './Utils';
 import { secureRemoveItem } from './SecureStorageUtils';
 
 let interceptorInitialized = false;
@@ -33,7 +33,9 @@ export const setupAxiosInterceptor = () => {
 
         axios.defaults.headers.common.Authorization = '';
         secureRemoveItem(KEYS.USER_TOKEN);
-        secureRemoveItem(KEYS.USER_TOKEN_EXPIRY_DATE);
+        removeItem(KEYS.USER_TOKEN_EXPIRY_DATE);
+        removeItem(KEYS.USER_ID);
+        removeItem(KEYS.USER_HANDLE);
 
         // Notify once to avoid alert/toast spam if multiple calls fail together.
         if (!sessionExpiredNotified) {

@@ -37,10 +37,7 @@
         "RECEIVE_BOOT_COMPLETED",
         "POST_NOTIFICATIONS",
         "READ_MEDIA_AUDIO",
-        "MODIFY_AUDIO_SETTINGS",
-        "WAKE_LOCK",
-        "FOREGROUND_SERVICE",
-        "FOREGROUND_SERVICE_MEDIA_PLAYBACK"
+        "MODIFY_AUDIO_SETTINGS"
       ],
       "blockedPermissions": [
         "android.permission.SYSTEM_ALERT_WINDOW",

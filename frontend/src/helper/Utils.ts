@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {GET_STORAGE_DATA} from './APIUtils';
 import {Alert, Linking, PermissionsAndroid, Platform} from 'react-native';
 import RNFS from 'react-native-fs';
+import { secureClearAllItems } from './SecureStorageUtils';
 
 export const checkInternetConnection = (
   callback: (isConnected: boolean) => void,
@@ -186,7 +187,9 @@ export const removeItem = async (key: string) => {
 export const clearStorage = async () => {
   try {
     await AsyncStorage.clear();
+    await secureClearAllItems();
     //navigation.navigate('LoginScreen');
+    console.log('All storage cleared successfully.');
   } catch (error) {
     console.error('Error removing item:', error);
   }
