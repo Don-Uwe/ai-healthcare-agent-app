@@ -7,7 +7,7 @@ on:
       - 'frontend/ios/**'
       - 'frontend/package.json'
       - 'frontend/yarn.lock'
-      - '.github/workflows/ios-build-validation.yml'
+      - '.github/workflows/ios-build-validation-sb2318.yml'
       - 'frontend/app.json'
   pull_request:
     branches: [ main ]
