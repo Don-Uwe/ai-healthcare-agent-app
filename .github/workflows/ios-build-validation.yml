@@ -55,12 +55,60 @@ jobs:
       - name: Install JS Dependencies
         run: yarn install --frozen-lockfile
 
+      - name: Check Google Services Secret
+        id: secret-check
+        env:
+          GOOGLE_SERVICES_INFO_PLIST: ${{ secrets.GOOGLE_SERVICES_INFO_PLIST }}
+        run: |
+          if [ -z "$GOOGLE_SERVICES_INFO_PLIST" ]; then
+            echo "has_secret=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping iOS build: GOOGLE_SERVICES_INFO_PLIST secret is missing."
+          else
+            echo "has_secret=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Inject GoogleService-Info.plist
+        if: steps.secret-check.outputs.has_secret == 'true'
+        env:
+          PLIST_CONTENT: ${{ secrets.GOOGLE_SERVICES_INFO_PLIST }}
+        run: |
+          node -e "
+            const fs = require('fs');
+            let content = process.env.PLIST_CONTENT;
+            if (!content) {
+              console.error('PLIST_CONTENT is empty');
+              process.exit(1);
+            }
+            // Check if it looks like Base64 (doesn't start with <)
+            if (!content.trim().startsWith('<')) {
+              try {
+                content = Buffer.from(content, 'base64').toString('utf8');
+              } catch (e) {
+                console.log('Not base64, using raw content');
+              }
+            }
+            fs.writeFileSync('GoogleService-Info.plist', content);
+          "
+
+      - name: Verify Injection
+        if: steps.secret-check.outputs.has_secret == 'true'
+        run: |
+          if [ -f "GoogleService-Info.plist" ]; then
+            echo "GoogleService-Info.plist successfully created."
+            ls -l GoogleService-Info.plist
+          else
+            echo "ERROR: GoogleService-Info.plist NOT FOUND!"
+            exit 1
+          fi
+
       - name: Generate iOS Project (Prebuild)
+        if: steps.secret-check.outputs.has_secret == 'true'
         # We run prebuild because the 'ios' directory is not tracked in git
         # This will generate the ios folder and run pod install
         run: npx expo prebuild --platform ios --clean
 
       - name: Build iOS App (Simulator)
+        if: steps.secret-check.outputs.has_secret == 'true'
         working-directory: ./frontend/ios
         run: |
           set -o pipefail

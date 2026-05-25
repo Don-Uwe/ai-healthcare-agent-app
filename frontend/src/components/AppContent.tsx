@@ -24,7 +24,8 @@ import {CustomAlertDialog} from './CustomAlert';
 import UpdateModal from './UpdateModal';
 import {setConnected} from '../store/NetworkSlice';
 import {firebaseInit} from '../helper/firebase';
-import {cleanUpDownloads, KEYS, retrieveItem} from '../helper/Utils';
+import {cleanUpDownloads, SECURE_KEYS} from '../helper/Utils';
+import {secureRetrieveItem} from '../helper/SecureStorageUtils';
 import {setUserToken, setGuestMode} from '../store/UserSlice';
 import axios from 'axios';
 import {setupAxiosInterceptor} from '../helper/setupAxiosInterceptor';
@@ -43,7 +44,7 @@ export default function AppContent() {
   const dispatch = useDispatch();
 
   const checkToken = useCallback(async () => {
-    const token = await retrieveItem(KEYS.USER_TOKEN);
+    const token = await secureRetrieveItem(SECURE_KEYS.USER_TOKEN);
 
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     axios.defaults.headers.common['Content-Type'] = 'application/json';
@@ -52,7 +53,7 @@ export default function AppContent() {
     if (token) {
       dispatch(setGuestMode(false));
     }
-  }, [dispatch, tokenRes]);
+  }, [dispatch]);
 
   useEffect(() => {
     if (navigationRef.current && tokenRes && !hasInitialized.current) {
