@@ -701,6 +701,7 @@ export type Contactdetail = {
 };
 
 export type Podcast = {
+  id: string;
   title: string;
   host: string;
   imageUri: string;

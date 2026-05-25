@@ -11,6 +11,8 @@ import {
   API_REQUEST_TIMEOUT_MS,
   API_TIMEOUT_ERROR_MESSAGE,
 } from './ApiTimeout';
+import { KEYS, removeItem, SECURE_KEYS } from './Utils';
+import { secureRemoveItem } from './SecureStorageUtils';
 
 let interceptorInitialized = false;
 let sessionExpiredNotified = false;
@@ -56,6 +58,10 @@ export const setupAxiosInterceptor = () => {
         store.dispatch(setGuestMode(true));
 
         axios.defaults.headers.common.Authorization = '';
+        secureRemoveItem(SECURE_KEYS.USER_TOKEN);
+        removeItem(KEYS.USER_TOKEN_EXPIRY_DATE);
+        removeItem(KEYS.USER_ID);
+        removeItem(KEYS.USER_HANDLE);
 
         // Notify once to avoid alert/toast spam if multiple calls fail together.
         if (!sessionExpiredNotified) {

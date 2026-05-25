@@ -37,13 +37,15 @@ type TtsEventName =
   | 'tts-cancel'
   | 'tts-error';
 
-type TtsEventHandler = (event: TtsProgressEvent) => void;
+type TtsEventHandler<T extends TtsEventName = TtsEventName> = T extends 'tts-progress'
+  ? (event: TtsProgressEvent) => void
+  : (event: any) => void;
 
 type TtsSubscription = {
   remove?: () => void;
 };
 
-const PodcastPlayer = ({}) => {
+const PodcastPlayer = ({navigation}: any) => {
   const [isLiked, setisLiked] = useState(false);
   const [isPlaying, setisPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
@@ -93,7 +95,7 @@ const PodcastPlayer = ({}) => {
         try {
           await Tts.setDefaultLanguage(availableVoices[0].language);
         } catch (err) {
-          // ignore
+          console.warn(`Failed to set TTS language to ${availableVoices[0].language}, using default.`, err);
         }
         await Tts.setDefaultVoice(availableVoices[0].id);
         Tts.setDefaultRate(defaultRate, true);
@@ -115,7 +117,7 @@ const PodcastPlayer = ({}) => {
   };
 
   const removeTtsSubscription = (
-    subscription: TtsSubscription | null | undefined,
+    subscription: TtsSubscription | null | void,
     eventName: TtsEventName,
     handler: TtsEventHandler,
   ) => {
@@ -125,7 +127,7 @@ const PodcastPlayer = ({}) => {
     }
 
     if (typeof Tts.removeEventListener === 'function') {
-      Tts.removeEventListener(eventName, handler);
+      Tts.removeEventListener(eventName, handler as any);
     }
   };
 
@@ -157,7 +159,7 @@ const PodcastPlayer = ({}) => {
       setisPlaying(true);
     };
 
-    const onProgress = (event: TtsProgressEvent) => {
+    const onProgress = (event: any) => {
       if (isSliderActiveRef.current) return;
 
       const eventPosMs: number | null =

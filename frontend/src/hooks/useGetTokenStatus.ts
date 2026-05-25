@@ -1,11 +1,12 @@
 
 // hooks/useCheckTokenStatus.ts
 import { GET_TOKEN_STATUS } from '@/src/helper/APIUtils';
-import { KEYS, retrieveItem } from '@/src/helper/Utils';
+import { SECURE_KEYS } from '@/src/helper/Utils';
 import { TokenStatus } from '@/src/type';
 import {useQuery} from '@tanstack/react-query';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
+import { secureRetrieveItem } from '../helper/SecureStorageUtils';
 
  const checkTokenStatusApi = async (
   token: string,
@@ -27,8 +28,8 @@ export const useCheckTokenStatus = () => {
   return useQuery<TokenStatus>({
     queryKey: ['token-status'],
     queryFn: async () => {
-      const token = await retrieveItem(KEYS.USER_TOKEN);
-      console.log('Checking token status for token:', token);
+      const token = await secureRetrieveItem(SECURE_KEYS.USER_TOKEN);
+      console.log('Checking token status. Token present:', !!token);
       if (!token) {
         return { isValid: false, message: 'No token found' };
       }

@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {GET_STORAGE_DATA} from './APIUtils';
 import {Alert, Linking, PermissionsAndroid, Platform} from 'react-native';
 import RNFS from 'react-native-fs';
+import {secureClearAllItems} from './SecureStorageUtils';
 
 export const checkInternetConnection = (
   callback: (isConnected: boolean) => void,
@@ -107,7 +108,6 @@ export const getMimeTypes = (ext: string): string => {
       type = 'audio/x-ms-wma';
       break;
 
-  
     default:
       type = 'application/octet-stream';
   }
@@ -124,17 +124,17 @@ export function formatCount(count: number) {
   }
 }
 
-export const handleExternalClick = (request:any) => {
-    const { url } = request;
+export const handleExternalClick = (request: any) => {
+  const {url} = request;
 
-    // External link
-    if (url.startsWith("http")) {
-      Linking.openURL(url);
-      return false;
-    }
+  // External link
+  if (url.startsWith('http')) {
+    Linking.openURL(url);
+    return false;
+  }
 
-    return true;
-  };
+  return true;
+};
 
 export function msToTime(ms: number): string {
   let totalSeconds = Math.floor(ms);
@@ -183,12 +183,31 @@ export const removeItem = async (key: string) => {
   }
 };
 
+// export const clearStorage = async () => {
+//   try {
+//     await AsyncStorage.clear();
+//     await secureClearAllItems();
+//     //navigation.navigate('LoginScreen');
+//     console.log('All storage cleared successfully.');
+//   } catch (error) {
+//     console.error('Error removing item:', error);
+//   }
+// };
+
 export const clearStorage = async () => {
   try {
-    await AsyncStorage.clear();
+    //    await AsyncStorage.clear();
+    // Explicitly clear known user-related keys from AsyncStorage
+    await Promise.all([
+      AsyncStorage.removeItem(KEYS.USER_TOKEN_EXPIRY_DATE),
+      AsyncStorage.removeItem(KEYS.USER_ID),
+      AsyncStorage.removeItem(KEYS.USER_HANDLE),
+    ]);
+    await secureClearAllItems();
     //navigation.navigate('LoginScreen');
+    console.log('All user-related storage cleared successfully.');
   } catch (error) {
-    console.error('Error removing item:', error);
+    console.error('Error clearing user-related storage:', error);
   }
 };
 
@@ -297,17 +316,13 @@ ${body}
 `;
 };
 
-
-
 // General purpose podcast app, no need to encrypted download data here,
 // We will ensure that, there will be no copyrighted content, or we can't give access to download
 // copyrighted content, as per ultimatehealth system
-/** Download podcast */
-export async function requestStoragePermissions() {
+export const requestStoragePermissions = async () => {
   if (Platform.OS !== 'android') return true;
 
-  if (Platform.Version <= 32) {
-    // Android 12 or below
+  if ((Platform.Version as number) < 33) {
     const granted = await PermissionsAndroid.requestMultiple([
       PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
       PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
@@ -318,24 +333,23 @@ export async function requestStoragePermissions() {
       granted['android.permission.WRITE_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED
     );
   } else {
-    // Android 13+ (API 33+)
     const granted = await PermissionsAndroid.requestMultiple([
       PermissionsAndroid.PERMISSIONS.READ_MEDIA_AUDIO,
-      PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES, 
-      PermissionsAndroid.PERMISSIONS.READ_MEDIA_VIDEO,
     ]);
 
     return granted['android.permission.READ_MEDIA_AUDIO'] === PermissionsAndroid.RESULTS.GRANTED;
   }
-}
-export const downloadAudio = async (_podcast: PodcastData) => {
+};
 
+/** Download podcast */
+
+export const downloadAudio = async (_podcast: PodcastData) => {
   // Check for existing downloads
-    const storageGranted = await requestStoragePermissions();
-    if (!storageGranted) {
-      Alert.alert('Storage permission denied');
-      return;
-    }
+  const storageGranted = await requestStoragePermissions();
+  if (!storageGranted) {
+    Alert.alert('Storage permission denied');
+    return;
+  }
   const existingPodcastsStr = await retrieveItem('DOWNLOAD_PODCAST_DATA');
   try {
     let existingPodcasts = existingPodcastsStr
@@ -349,7 +363,9 @@ export const downloadAudio = async (_podcast: PodcastData) => {
       };
     }
     // check for existing downloads
-    const isPodcastFound = existingPodcasts.some((d: any) => d._id === _podcast._id);
+    const isPodcastFound = existingPodcasts.some(
+      (d: any) => d._id === _podcast._id,
+    );
 
     if (isPodcastFound) {
       return {
@@ -397,7 +413,6 @@ export const downloadAudio = async (_podcast: PodcastData) => {
 };
 
 const downloadFile = async (key: string, title: string) => {
-
   const safeTitle = title.substring(0, 15).replace(/[^a-zA-Z0-9]/g, '_');
   const fileName = `${safeTitle}_${Date.now()}.mp3`;
   const downloadUrl = `${GET_STORAGE_DATA}/${key}`;
@@ -611,9 +626,12 @@ ${feedback}
 `;
 };
 
+export const SECURE_KEYS = {
+  USER_TOKEN: 'user_token',
+};
+
 export const KEYS = {
   USER_ID: 'USER_ID',
-  USER_TOKEN: 'USER_TOKEN',
   USER_TOKEN_EXPIRY_DATE: 'USER_TOKEN_EXPIRY_DATE',
   VULTR_CHAT_MODEL: 'zephyr-7b-beta-f32',
   VULTR_COLLECTION: 'care_companion',
@@ -634,19 +652,19 @@ export const VULTR_CHAT_PROFILE_AVTARS = {
 };
 
 export const ttsLanguageList = [
-  { name: "English (India)", code: "en-IN" },
-  { name: "Hindi", code: "hi-IN" },
-  { name: "Bengali", code: "bn-IN" },
-  { name: "Tamil", code: "ta-IN" },
-  { name: "Telugu", code: "te-IN" },
-  { name: "Marathi", code: "mr-IN" },
-  { name: "Gujarati", code: "gu-IN" },
-  { name: "Kannada", code: "kn-IN" },
-  { name: "Malayalam", code: "ml-IN" },
-  { name: "Punjabi", code: "pa-IN" },
-  { name: "Odia", code: "or-IN" },
-  { name: "Assamese", code: "as-IN" },
-  { name: "Urdu (India)", code: "ur-IN" }
+  {name: 'English (India)', code: 'en-IN'},
+  {name: 'Hindi', code: 'hi-IN'},
+  {name: 'Bengali', code: 'bn-IN'},
+  {name: 'Tamil', code: 'ta-IN'},
+  {name: 'Telugu', code: 'te-IN'},
+  {name: 'Marathi', code: 'mr-IN'},
+  {name: 'Gujarati', code: 'gu-IN'},
+  {name: 'Kannada', code: 'kn-IN'},
+  {name: 'Malayalam', code: 'ml-IN'},
+  {name: 'Punjabi', code: 'pa-IN'},
+  {name: 'Odia', code: 'or-IN'},
+  {name: 'Assamese', code: 'as-IN'},
+  {name: 'Urdu (India)', code: 'ur-IN'},
 ];
 export const Categories: CategoryType[] = [
   {id: 1, name: 'Cardiology'},
