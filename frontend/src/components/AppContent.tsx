@@ -37,7 +37,9 @@ export default function AppContent() {
   const {data: tokenRes = null} = useCheckTokenStatus();
   const {user_token, isGuest} = useSelector((state: any) => state.user);
 
-  setupAxiosInterceptor();
+  useEffect(() => {
+    setupAxiosInterceptor();
+  }, []);
 
   const {visible, storeUrl} = useVersionCheck();
   const dispatch = useDispatch();
