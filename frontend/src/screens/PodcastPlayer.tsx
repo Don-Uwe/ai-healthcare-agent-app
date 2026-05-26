@@ -13,7 +13,7 @@ import Slider from '@react-native-community/slider';
 import {useAudioPlayer} from 'expo-audio';
 import {Circle, Theme, XStack, YStack, Text} from 'tamagui';
 import {AntDesign, Ionicons} from '@expo/vector-icons';
-import LottieView from 'lottie-react-native';
+import AudioWaveform from '../components/AudioWaveform';
 import {useUploadPodcast} from '../hooks/useUploadPodcast';
 import Loader from '../components/Loader';
 
@@ -341,19 +341,9 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
         </YStack>
 
         {/* Waveform Visualization */}
-        {player.currentStatus.playing && (
-          <YStack alignItems="center" height={120} my="$2">
-            <LottieView
-              source={require('../assets/LottieAnimation/sound-voice-waves.json')}
-              autoPlay
-              loop
-              style={{
-                width: '100%',
-                height: 120,
-              }}
-            />
-          </YStack>
-        )}
+        <YStack alignItems="center" height={80} my="$2">
+          <AudioWaveform isPlaying={player.currentStatus.playing} accentColor="#3B82F6" />
+        </YStack>
 
         {/* Progress Slider Section */}
         <YStack my="$4" bg="#1E293B" borderRadius={16} padding="$4">
