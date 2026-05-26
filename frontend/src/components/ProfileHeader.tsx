@@ -121,12 +121,18 @@ const ProfileHeader = ({
               <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={() => handleCall(userPhoneNumber)}
+                accessibilityRole="button"
+                accessibilityLabel="Call doctor"
+                accessibilityHint="Opens phone dialer to call the doctor"
                 style={[styles.iconButton, {backgroundColor: PRIMARY_COLOR}]}>
                 <MaterialIcons name="phone-in-talk" size={22} color="#ffffff" />
               </TouchableOpacity>
               <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={() => handleMail(userEmailID)}
+                accessibilityRole="button"
+                accessibilityLabel="Send email"
+                accessibilityHint="Opens mail app to send an email"
                 style={[styles.iconButton, {backgroundColor: PRIMARY_COLOR}]}>
                 <MaterialIcons name="email" size={22} color="#ffffff" />
               </TouchableOpacity>
@@ -134,7 +140,10 @@ const ProfileHeader = ({
                 <TouchableOpacity
                   activeOpacity={0.7}
                   style={[styles.iconButton, {backgroundColor: PRIMARY_COLOR}]}
-                  onPress={() => (navigation as any).navigate('ProfileEditScreen')}>
+                  onPress={() => (navigation as any).navigate('ProfileEditScreen')}
+                  accessibilityRole="button"
+                  accessibilityLabel="Edit profile"
+                  accessibilityHint="Navigates to edit profile screen">
                   <Feather name="edit-3" size={22} color="#ffffff" />
                 </TouchableOpacity>
               )}
@@ -143,15 +152,22 @@ const ProfileHeader = ({
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => (navigation as any).navigate('ProfileEditScreen')}
+              accessibilityRole="button"
+              accessibilityLabel="Edit profile"
+              accessibilityHint="Navigates to edit profile screen"
               style={styles.primaryBtn}
             >
+            
               <MaterialIcons name="edit" size={20} color="#ffffff" />
               <Text style={styles.primaryBtnText}>Edit Profile</Text>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity 
               activeOpacity={0.7}
-              onPress={onFollowClick} 
+              onPress={onFollowClick}
+              accessibilityRole="button"
+              accessibilityLabel={isFollowing ? "Following user" : "Follow user"}
+              accessibilityHint={isFollowing ? "Unfollow this user" : "Follow this user"}
               style={[
                 styles.primaryBtn, 
                 { 
@@ -189,14 +205,26 @@ const ProfileHeader = ({
         )}
 
         <View style={[styles.statsCard, styles.shadowProps, {backgroundColor: themeColors.card, borderColor: themeColors.border}]}>
-          <Pressable onPress={onFollowerPress} style={styles.statItem}>
+          <Pressable
+            onPress={onFollowerPress}
+            style={styles.statItem}
+            accessibilityRole="button"
+            accessibilityLabel="Followers"
+            accessibilityHint="Opens followers list"
+          >
             <Text style={[styles.statValue, {color: themeColors.text}]} numberOfLines={1}>{followers || 0}</Text>
             <Text style={[styles.statLabel, {color: themeColors.textSecondary}]}>
               {followers === 1 ? 'Follower' : 'Followers'}
             </Text>
           </Pressable>
           <View style={[styles.statDivider, {backgroundColor: themeColors.border}]} />
-          <Pressable onPress={onFollowingPress} style={styles.statItem}>
+          <Pressable
+            onPress={onFollowingPress}
+            style={styles.statItem}
+            accessibilityRole="button"
+            accessibilityLabel="Following"
+            accessibilityHint="Opens following users list"
+          >
             <Text style={[styles.statValue, {color: themeColors.text}]} numberOfLines={1}>{followings || 0}</Text>
             <Text style={[styles.statLabel, {color: themeColors.textSecondary}]}>Following</Text>
           </Pressable>
@@ -207,7 +235,10 @@ const ProfileHeader = ({
           <View style={styles.secondaryActionContainer}>
             <TouchableOpacity 
               activeOpacity={0.7}
-              onPress={onOverviewClick} 
+              onPress={onOverviewClick}
+              accessibilityRole="button"
+              accessibilityLabel="Your workspace"
+              accessibilityHint="Opens your workspace dashboard"
               style={[styles.listButton, {backgroundColor: themeColors.card, borderColor: themeColors.border}]}
             >
               <View style={[styles.listButtonIconBg, { backgroundColor: themeColors.iconBackground }]}>
@@ -219,6 +250,9 @@ const ProfileHeader = ({
 
             <TouchableOpacity
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Notification preferences"
+              accessibilityHint="Opens notification settings"
               style={[styles.listButton, {backgroundColor: themeColors.card, borderColor: themeColors.border}]}
               onPress={() => {
                 if (isConnected) {
@@ -236,6 +270,9 @@ const ProfileHeader = ({
 
             <TouchableOpacity
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Logout"
+              accessibilityHint="Logs out from your account"
               style={[styles.listButton, {backgroundColor: themeColors.card, borderColor: themeColors.border}]}
               onPress={() => {
                 if (isConnected) {
