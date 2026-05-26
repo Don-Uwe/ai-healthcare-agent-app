@@ -11,7 +11,7 @@ import useUploadAudio from '../hooks/useUploadAudio';
 import Slider from '@react-native-community/slider';
 
 import {useAudioPlayer} from 'expo-audio';
-import {Circle, Theme, XStack, YStack, Text} from 'tamagui';
+import {Circle, Theme, XStack, YStack, Text, useTheme} from 'tamagui';
 import {AntDesign, Ionicons} from '@expo/vector-icons';
 import AudioWaveform from '../components/AudioWaveform';
 import {useUploadPodcast} from '../hooks/useUploadPodcast';
@@ -22,8 +22,9 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
   const {uploadAudio, loading: audioLoading, error} = useUploadAudio();
   const [isPlaying, setIsPlaying] = useState(false);
   const [position, setPosition] = useState(0);
+  
   const [duration, setDuration] = useState(0);
-
+  const theme = useTheme();
   const {title, description, selectedGenres, imageUtils, filePath} =
     route.params;
 
@@ -71,7 +72,6 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
       console.log('enter');
       return;
     }
-    await player.seekTo(0);
     player.play();
     setUiState('playing');
     setIsPlaying(true);
@@ -342,7 +342,7 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
 
         {/* Waveform Visualization */}
         <YStack alignItems="center" height={80} my="$2">
-          <AudioWaveform isPlaying={player.currentStatus.playing} accentColor="#3B82F6" />
+          <AudioWaveform isPlaying={player.currentStatus.playing} accentColor={theme.blue10?.val ?? '#3B82F6'} />
         </YStack>
 
         {/* Progress Slider Section */}
@@ -477,3 +477,4 @@ const styles = StyleSheet.create({
     color: '#777',
   },
 });
+
