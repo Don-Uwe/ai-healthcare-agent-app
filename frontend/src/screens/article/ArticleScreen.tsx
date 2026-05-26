@@ -47,9 +47,10 @@ import {useSaveArticle} from '@/src/hooks/useSaveArticle';
 import {useSocket} from '../../contexts/SocketContext';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
+const CHUNK_SIZE = 120;
+
 const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const {articleId, authorId, recordId} = route.params;
-  const [spakingStarted, setSpeakingStarted] = useState(false);
   const {user_id, isGuest} = useSelector((state: any) => state.user);
   const [readEventSave, setReadEventSave] = useState(false);
   const [fontScale, setFontScale] = useState(1);
@@ -57,8 +58,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const [isPaused, setIsPaused] = useState(false);
   const [speechRate, setSpeechRate] = useState(0.5);
   const [playerVisible, setPlayerVisible] = useState(false);
-  const chunkIndexRef = React.useRef(0);
-  const wordsRef = React.useRef<string[]>([]);
+  const chunkIndexRef = useRef(0);
+  const wordsRef = useRef<string[]>([]);
 
   const {mutate: followMutation, isPending: followMutationPending} =
     useUpdateFollowStatusByArticle();
@@ -140,14 +141,12 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
       });
     }
     return () => {
-      setSpeakingStarted(false);
       setIsPlaying(false);
       setIsPaused(false);
       setPlayerVisible(false);
       Tts.stop();
       Tts.removeAllListeners('tts-finish');
       Tts.removeAllListeners('tts-error');
-      Tts.removeAllListeners('tts-progress');
     };
   }, []);
 
@@ -407,11 +406,10 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
       // finished all chunks
       setIsPlaying(false);
       setIsPaused(false);
-      setSpeakingStarted(false);
       return;
     }
-    const chunk = words.slice(chunkIndex, chunkIndex + 120).join(' ');
-    chunkIndexRef.current = chunkIndex + 120;
+    const chunk = words.slice(chunkIndex, chunkIndex + CHUNK_SIZE).join(' ');
+    chunkIndexRef.current = chunkIndex + CHUNK_SIZE;
     Tts.speak(chunk);
   };
 
@@ -441,7 +439,6 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
         setIsPlaying(false);
       });
 
-      setSpeakingStarted(true);
       setIsPlaying(true);
       setIsPaused(false);
       setPlayerVisible(true);
@@ -483,7 +480,6 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
       chunkIndexRef.current = 0;
       setIsPlaying(false);
       setIsPaused(false);
-      setSpeakingStarted(false);
       setPlayerVisible(false);
     } catch (e) {
       console.log('TTS Stop Error:', e);
@@ -509,9 +505,10 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
       Tts.removeAllListeners('tts-finish');
       Tts.removeAllListeners('tts-error');
       // Step back one chunk so we replay current chunk at new speed
+      // Note: Rewind is approximate and might read earlier parts of a smaller previous chunk.
       chunkIndexRef.current = Math.max(
         0,
-        chunkIndexRef.current - 120,
+        chunkIndexRef.current - CHUNK_SIZE,
       );
       Tts.stop().then(() => {
         Tts.addEventListener('tts-finish', speakNextChunk);
@@ -1097,7 +1094,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
             <TouchableOpacity
               style={styles.ttsControlButton}
               onPress={handleTtsPause}
-              disabled={!spakingStarted}>
+              disabled={!isPlaying && !isPaused}>
               <FontAwesome5
                 name={isPaused ? 'play' : 'pause'}
                 size={18}
@@ -1114,7 +1111,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
 
             {/* Status label */}
             <Text style={styles.ttsStatusText}>
-              {isPaused ? 'Paused' : isPlaying ? 'Playing...' : 'Loading...'}
+              {isPaused ? 'Paused' : isPlaying ? 'Playing...' : 'Stopped'}
             </Text>
           </View>
         </View>
