@@ -1,8 +1,17 @@
 import { format, isValid, getYear, parse, parseISO } from 'date-fns';
+import { enUS } from 'date-fns/locale';
+import type { Locale } from 'date-fns';
 import { TZDateMini } from '@date-fns/tz';
-import { getCalendars } from 'expo-localization';
+import { getCalendars, getLocales } from 'expo-localization';
 
 export const deviceTimeZone = getCalendars()[0]?.timeZone ?? 'UTC';
+export const deviceLocale = getLocales()[0]?.languageTag ?? 'en-US';
+
+const localeMap: Record<string, Locale> = {
+  'en-US': enUS,
+};
+
+const activeLocale = localeMap[deviceLocale] ?? enUS;
 
 const COMMON_DATE_FORMATS = [
   'yyyy-MM-dd HH:mm:ss',
@@ -22,19 +31,19 @@ export const parseDbTimestamp = (timestamp: string): Date | null => {
 
   let parsedDate = parseISO(dateStr);
   if (isValid(parsedDate)) {
-    return new TZDateMini(parsedDate, deviceTimeZone);
+    return new TZDateMini(parsedDate.getTime(), deviceTimeZone);
   }
   
   for (const formatStr of COMMON_DATE_FORMATS) {
     parsedDate = parse(dateStr, formatStr, new Date());
     if (isValid(parsedDate)) {
-      return new TZDateMini(parsedDate, deviceTimeZone);
+      return new TZDateMini(parsedDate.getTime(), deviceTimeZone);
     }
   }
   
   // Final fallback
   parsedDate = new Date(dateStr);
-  return isValid(parsedDate) ? new TZDateMini(parsedDate, deviceTimeZone) : null;
+  return isValid(parsedDate) ? new TZDateMini(parsedDate.getTime(), deviceTimeZone) : null;
 };
 
 /**
@@ -45,12 +54,12 @@ const getValidDate = (date: Date | string | number | null | undefined): Date | n
   if (!date) return null;
   
   if (date instanceof Date) {
-    return isValid(date) ? new TZDateMini(date, deviceTimeZone) : null;
+    return isValid(date) ? new TZDateMini(date.getTime(), deviceTimeZone) : null;
   }
   
   if (typeof date === 'number') {
     const parsedDate = new Date(date);
-    return isValid(parsedDate) ? new TZDateMini(parsedDate, deviceTimeZone) : null;
+    return isValid(parsedDate) ? new TZDateMini(parsedDate.getTime(), deviceTimeZone) : null;
   }
   
   if (typeof date === 'string') {
@@ -67,7 +76,9 @@ const getValidDate = (date: Date | string | number | null | undefined): Date | n
 export const formatDateWithTime = (date: Date | string | number | null | undefined): string => {
   const validDate = getValidDate(date);
   if (!validDate) return '';
-  return format(validDate, "MMMM do yyyy, h:mm a");
+  return format(validDate, "MMMM do yyyy, h:mm a", {
+    locale: activeLocale,
+  });
 };
 
 /**
@@ -77,7 +88,9 @@ export const formatDateWithTime = (date: Date | string | number | null | undefin
 export const formatTimeWithDate = (date: Date | string | number | null | undefined): string => {
   const validDate = getValidDate(date);
   if (!validDate) return '';
-  return format(validDate, "hh:mm a dd/MM/yyyy");
+  return format(validDate, "hh:mm a dd/MM/yyyy", {
+    locale: activeLocale,
+  });
 };
 
 /**
@@ -87,7 +100,9 @@ export const formatTimeWithDate = (date: Date | string | number | null | undefin
 export const formatDateShortYear = (date: Date | string | number | null | undefined): string => {
   const validDate = getValidDate(date);
   if (!validDate) return '';
-  return format(validDate, "dd/MM/yyyy");
+  return format(validDate, "dd/MM/yyyy", {
+    locale: activeLocale,
+  });
 };
 
 /**
@@ -97,7 +112,9 @@ export const formatDateShortYear = (date: Date | string | number | null | undefi
 export const formatWithOrdinalAndDay = (date: Date | string | number | null | undefined): string => {
   const validDate = getValidDate(date);
   if (!validDate) return '';
-  return format(validDate, "d MMM, EEE, h:mm a");
+  return format(validDate, "d MMM, EEE, h:mm a", {
+    locale: activeLocale,
+  });
 };
 
 /**
@@ -107,7 +124,9 @@ export const formatWithOrdinalAndDay = (date: Date | string | number | null | un
 export const formatDateShort = (date: Date | string | number | null | undefined): string => {
   const validDate = getValidDate(date);
   if (!validDate) return '';
-  return format(validDate, "dd MMM");
+  return format(validDate, "dd MMM", {
+    locale: activeLocale,
+  });
 };
 
 /**
