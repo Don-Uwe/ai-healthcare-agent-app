@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {KEYS, retrieveItem} from './Utils';
+import {SECURE_KEYS, secureRetrieveItem} from './SecureStorageUtils';
 
 // Centralized Axios instance with authentication handling
 const authAxios = axios.create({
@@ -12,7 +12,7 @@ const authAxios = axios.create({
 // Request interceptor: dynamically attach Bearer token before every request
 authAxios.interceptors.request.use(
   async (config) => {
-    const token = await retrieveItem(KEYS.USER_TOKEN);
+    const token = await secureRetrieveItem(SECURE_KEYS.USER_TOKEN);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     } else {

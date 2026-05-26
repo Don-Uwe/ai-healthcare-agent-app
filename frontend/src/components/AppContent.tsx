@@ -24,7 +24,8 @@ import {CustomAlertDialog} from './CustomAlert';
 import UpdateModal from './UpdateModal';
 import {setConnected} from '../store/NetworkSlice';
 import {firebaseInit} from '../helper/firebase';
-import {cleanUpDownloads, KEYS, retrieveItem} from '../helper/Utils';
+import {cleanUpDownloads} from '../helper/Utils';
+import {SECURE_KEYS, secureRetrieveItem} from '../helper/SecureStorageUtils';
 import {setUserToken, setGuestMode} from '../store/UserSlice';
 import {setupAxiosInterceptor} from '../helper/setupAxiosInterceptor';
 
@@ -42,7 +43,7 @@ export default function AppContent() {
   const dispatch = useDispatch();
 
   const checkToken = useCallback(async () => {
-    const token = await retrieveItem(KEYS.USER_TOKEN);
+    const token = await secureRetrieveItem(SECURE_KEYS.USER_TOKEN);
 
     dispatch(setUserToken(token));
     if (token) {

@@ -13,6 +13,7 @@ import {
   Separator,
 } from 'tamagui';
 import {KEYS, storeItem} from '../../helper/Utils';
+import {SECURE_KEYS, secureStoreItem} from '../../helper/SecureStorageUtils';
 
 import Icon from '@expo/vector-icons/Ionicons';
 import {AuthData, LoginScreenProp} from '../../type';
@@ -121,7 +122,7 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
               await storeItem(KEYS.USER_HANDLE, data?.user_handle);
               if (auth.token) {
                 console.log('Storing token:', auth.token);
-                await storeItem(KEYS.USER_TOKEN, auth.token.toString());
+                await secureStoreItem(SECURE_KEYS.USER_TOKEN, auth.token.toString());
                 await storeItem(
                   KEYS.USER_TOKEN_EXPIRY_DATE,
                   new Date().toISOString(),

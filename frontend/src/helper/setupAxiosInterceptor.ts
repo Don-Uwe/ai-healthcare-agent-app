@@ -8,6 +8,7 @@ import {
   setUserId,
   setUserToken,
 } from '../store/UserSlice';
+import {SECURE_KEYS, secureRemoveItem} from './SecureStorageUtils';
 
 let interceptorInitialized = false;
 let sessionExpiredNotified = false;
@@ -22,6 +23,9 @@ const handle401Error = (error: any) => {
     store.dispatch(setUserId(''));
     store.dispatch(setUserHandle(''));
     store.dispatch(setGuestMode(true));
+
+    // Clear token from secure storage to prevent re-attachment by request interceptor
+    secureRemoveItem(SECURE_KEYS.USER_TOKEN);
 
     // Clear Authorization on both instances
     delete axios.defaults.headers.common['Authorization'];
