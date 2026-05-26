@@ -35,6 +35,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import {setUserHandle} from '../../store/UserSlice';
 import {FontAwesome5} from '@expo/vector-icons';
 import AutoHeightWebView from '@brown-bear/react-native-autoheight-webview';
+import LottieView from 'lottie-react-native';
 
 import {useGetArticleDetails} from '@/src/hooks/useGetArticleDetail';
 import {useGetArticleContent} from '@/src/hooks/useGetArticleContent';
@@ -595,6 +596,17 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
             color={playerVisible ? PRIMARY_COLOR : 'black'}
           />
         </TouchableOpacity>
+
+        {isPlaying && (
+          <View style={styles.botContainer}>
+            <LottieView
+              source={require('../../assets/LottieAnimation/TalkBotAnimation.json')}
+              autoPlay
+              loop={isPlaying}
+              style={{width: 200, height: 200}}
+            />
+          </View>
+        )}
       </View>
 
       <ScrollView
