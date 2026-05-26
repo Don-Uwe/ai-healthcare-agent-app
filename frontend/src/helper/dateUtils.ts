@@ -1,4 +1,8 @@
 import { format, isValid, getYear, parse, parseISO } from 'date-fns';
+import { TZDateMini } from '@date-fns/tz';
+import { getCalendars } from 'expo-localization';
+
+export const deviceTimeZone = getCalendars()[0]?.timeZone ?? 'UTC';
 
 const COMMON_DATE_FORMATS = [
   'yyyy-MM-dd HH:mm:ss',
@@ -6,6 +10,32 @@ const COMMON_DATE_FORMATS = [
   "yyyy-MM-dd'T'HH:mm:ss.SSSX",
   "yyyy-MM-dd'T'HH:mm:ssX"
 ];
+
+export const parseDbTimestamp = (timestamp: string): Date | null => {
+  if (!timestamp) return null;
+  const hasTimezoneOffset = /Z|[+-]\d{2}:?\d{2}$/.test(timestamp);
+  
+  let dateStr = timestamp;
+  if (!hasTimezoneOffset) {
+    dateStr = dateStr.includes(' ') ? dateStr.replace(' ', 'T') + 'Z' : dateStr + 'Z';
+  }
+
+  let parsedDate = parseISO(dateStr);
+  if (isValid(parsedDate)) {
+    return new TZDateMini(parsedDate, deviceTimeZone);
+  }
+  
+  for (const formatStr of COMMON_DATE_FORMATS) {
+    parsedDate = parse(dateStr, formatStr, new Date());
+    if (isValid(parsedDate)) {
+      return new TZDateMini(parsedDate, deviceTimeZone);
+    }
+  }
+  
+  // Final fallback
+  parsedDate = new Date(dateStr);
+  return isValid(parsedDate) ? new TZDateMini(parsedDate, deviceTimeZone) : null;
+};
 
 /**
  * Safely parses a date and checks for validity.
@@ -15,30 +45,16 @@ const getValidDate = (date: Date | string | number | null | undefined): Date | n
   if (!date) return null;
   
   if (date instanceof Date) {
-    return isValid(date) ? date : null;
+    return isValid(date) ? new TZDateMini(date, deviceTimeZone) : null;
   }
   
   if (typeof date === 'number') {
     const parsedDate = new Date(date);
-    return isValid(parsedDate) ? parsedDate : null;
+    return isValid(parsedDate) ? new TZDateMini(parsedDate, deviceTimeZone) : null;
   }
   
   if (typeof date === 'string') {
-    let parsedDate = parseISO(date);
-    if (isValid(parsedDate)) {
-      return parsedDate;
-    }
-    
-    for (const formatStr of COMMON_DATE_FORMATS) {
-      parsedDate = parse(date, formatStr, new Date());
-      if (isValid(parsedDate)) {
-        return parsedDate;
-      }
-    }
-    
-    // Final fallback
-    parsedDate = new Date(date);
-    return isValid(parsedDate) ? parsedDate : null;
+    return parseDbTimestamp(date);
   }
   
   return null;
@@ -99,5 +115,5 @@ export const formatDateShort = (date: Date | string | number | null | undefined)
  * Example: 2026
  */
 export const getCurrentYear = (): number => {
-  return getYear(new Date());
+  return getYear(new TZDateMini(new Date(), deviceTimeZone));
 };
