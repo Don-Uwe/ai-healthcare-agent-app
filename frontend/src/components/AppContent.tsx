@@ -24,8 +24,13 @@ import {CustomAlertDialog} from './CustomAlert';
 import UpdateModal from './UpdateModal';
 import {setConnected} from '../store/NetworkSlice';
 import {firebaseInit} from '../helper/firebase';
+<<<<<<< HEAD
 import {cleanUpDownloads} from '../helper/Utils';
 import {SECURE_KEYS, secureRetrieveItem} from '../helper/SecureStorageUtils';
+=======
+import {cleanUpDownloads, SECURE_KEYS} from '../helper/Utils';
+import {secureRetrieveItem} from '../helper/SecureStorageUtils';
+>>>>>>> 50b9380e24c7a2c8761533207ac9ad780e3873ee
 import {setUserToken, setGuestMode} from '../store/UserSlice';
 import {setupAxiosInterceptor} from '../helper/setupAxiosInterceptor';
 
@@ -49,7 +54,7 @@ export default function AppContent() {
     if (token) {
       dispatch(setGuestMode(false));
     }
-  }, [dispatch, tokenRes]);
+  }, [dispatch]);
 
   useEffect(() => {
     if (navigationRef.current && tokenRes && !hasInitialized.current) {
