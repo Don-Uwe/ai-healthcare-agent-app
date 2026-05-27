@@ -58,6 +58,9 @@ const TabBar = ({state, descriptors, navigation}: any) => {
             ]}>
             <Pressable
               onPress={onPress}
+              accessibilityRole="button"
+              accessibilityLabel={`${label} tab`}
+              accessibilityHint={`Navigates to the ${label} screen`}
               style={{
                 backgroundColor: isFocused
                   ? PRIMARY_COLOR

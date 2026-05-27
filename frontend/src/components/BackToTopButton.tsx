@@ -1,8 +1,9 @@
 import React from 'react';
+import AccessibleTouchable from './common/AccessibleTouchable';
 import {
   Animated,
   StyleSheet,
-  TouchableOpacity,
+  
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
  
@@ -40,14 +41,14 @@ export const BackToTopButton: React.FC<BackToTopButtonProps> = ({
     <Animated.View
       style={[styles.fab, { opacity, backgroundColor: buttonColor }]}
     >
-      <TouchableOpacity
+      <AccessibleTouchable
         onPress={onPress}
         accessibilityLabel="Back to top"
-        accessibilityRole="button"
+        
         accessibilityHint="Scrolls the page back to the top"
       >
         <Ionicons name="arrow-up" size={22} color={iconColor} />
-      </TouchableOpacity>
+      </AccessibleTouchable>
     </Animated.View>
   );
 };
