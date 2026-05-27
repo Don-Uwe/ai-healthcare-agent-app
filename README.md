@@ -378,6 +378,7 @@ If you encounter any issues or have any feedback or suggestions, please open an 
     <td align="center"><a href="https://github.com/Priya09023"><img src="https://avatars.githubusercontent.com/u/218076920?v=4" width="120px;" alt=""/><br/><sub><b>Priya09023</b></sub></a></td>
        <td align="center"><a href="https://github.com/Krishnx21"><img src="https://avatars.githubusercontent.com/u/194249486?v=4" width="120px;" alt=""/><br/><sub><b>Krishna Kumar</b></sub></a></td>
      <td align="center"><a href="https://github.com/jpdevhub"><img src="https://avatars.githubusercontent.com/u/160400709?v=4" width="120px;" alt=""/><br/><sub><b>Karan Singh</b></sub></a></td>
+     <td align="center"><a href="https://github.com/SiddharthRiot"><img src="https://avatars.githubusercontent.com/u/133003051?v=4" width="120px;" alt=""/><br/><sub><b>Siddharth</b></sub></a></td>
  </tr>
  </table>
  <!-- CONTRIBUTORS-TABLE-END -->
