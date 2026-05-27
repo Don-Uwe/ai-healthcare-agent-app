@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from 'react';
-//import React from 'react';
 import {Alert, Image, useColorScheme} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {StatusBar} from 'expo-status-bar';
@@ -11,12 +10,12 @@ import {
   Text,
   Separator,
 } from 'tamagui';
-import {KEYS, SECURE_KEYS, storeItem} from '../../helper/Utils';
-import {secureStoreItem} from '../../helper/SecureStorageUtils';
+import {KEYS, storeItem} from '../../helper/Utils';
+import {SECURE_KEYS, secureStoreItem} from '../../helper/SecureStorageUtils';
 
 import Icon from '@expo/vector-icons/Ionicons';
 import {AuthData, LoginScreenProp} from '../../type';
-import axios, {AxiosError} from 'axios';
+import {AxiosError, isAxiosError} from 'axios';
 import {useDispatch} from 'react-redux';
 import Loader from '../../components/Loader';
 import {setUserHandle, setUserId, setUserToken, setGuestMode} from '../../store/UserSlice';
@@ -121,13 +120,11 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
               await storeItem(KEYS.USER_HANDLE, data?.user_handle);
               if (auth.token) {
                 console.log('Storing token:', auth.token);
-                  axios.defaults.headers.common["Authorization"] = `Bearer ${auth.token}`;
-                  axios.defaults.headers.common["Content-Type"] = "application/json";
-                await secureStoreItem(SECURE_KEYS.USER_TOKEN, auth.token.toString());
-                await storeItem(
-                  KEYS.USER_TOKEN_EXPIRY_DATE,
-                  new Date().toISOString(),
-                );
+                  await secureStoreItem(SECURE_KEYS.USER_TOKEN, auth.token.toString());
+                  await storeItem(
+                    KEYS.USER_TOKEN_EXPIRY_DATE,
+                    new Date().toISOString(),
+                  );
                 dispatch(setUserId(auth.userId));
                 dispatch(setUserToken(auth.token));
                 dispatch(setUserHandle(auth.user_handle));
@@ -545,7 +542,7 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
                   },
                   onError: error => {
                     // eslint-disable-next-line import/no-named-as-default-member
-                    if (axios.isAxiosError(error)) {
+                    if (isAxiosError(error)) {
                       if (error.response) {
                         if (error.response.status === 400) {
                           Alert.alert(

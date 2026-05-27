@@ -11,9 +11,9 @@ import useUploadAudio from '../hooks/useUploadAudio';
 import Slider from '@react-native-community/slider';
 
 import {useAudioPlayer} from 'expo-audio';
-import {Circle, Theme, XStack, YStack, Text} from 'tamagui';
+import {Circle, Theme, XStack, YStack, Text, useTheme} from 'tamagui';
 import {AntDesign, Ionicons} from '@expo/vector-icons';
-import LottieView from 'lottie-react-native';
+import AudioWaveform from '../components/AudioWaveform';
 import {useUploadPodcast} from '../hooks/useUploadPodcast';
 import Loader from '../components/Loader';
 
@@ -22,8 +22,9 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
   const {uploadAudio, loading: audioLoading, error} = useUploadAudio();
   const [isPlaying, setIsPlaying] = useState(false);
   const [position, setPosition] = useState(0);
+  
   const [duration, setDuration] = useState(0);
-
+  const theme = useTheme();
   const {title, description, selectedGenres, imageUtils, filePath} =
     route.params;
 
@@ -71,7 +72,6 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
       console.log('enter');
       return;
     }
-    await player.seekTo(0);
     player.play();
     setUiState('playing');
     setIsPlaying(true);
@@ -341,19 +341,9 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
         </YStack>
 
         {/* Waveform Visualization */}
-        {player.currentStatus.playing && (
-          <YStack alignItems="center" height={120} my="$2">
-            <LottieView
-              source={require('../assets/LottieAnimation/sound-voice-waves.json')}
-              autoPlay
-              loop
-              style={{
-                width: '100%',
-                height: 120,
-              }}
-            />
-          </YStack>
-        )}
+        <YStack alignItems="center" height={80} my="$2">
+          <AudioWaveform isPlaying={player.currentStatus.playing} accentColor={theme.blue10?.val ?? '#3B82F6'} />
+        </YStack>
 
         {/* Progress Slider Section */}
         <YStack my="$4" bg="#1E293B" borderRadius={16} padding="$4">
@@ -487,3 +477,4 @@ const styles = StyleSheet.create({
     color: '#777',
   },
 });
+
