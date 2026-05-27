@@ -3,7 +3,6 @@ import {
   Text,
   View,
   Image,
-  TouchableOpacity,
   Linking,
   Platform,
   Alert,
@@ -11,6 +10,7 @@ import {
   useColorScheme,
 } from 'react-native';
 import React from 'react';
+import AccessibleTouchable from './common/AccessibleTouchable';
 import EllipseSvg from '../../assets/svg/EllipseSvg';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -118,41 +118,41 @@ const ProfileHeader = ({
         <View style={styles.primaryActionContainer}>
           {isDoctor ? (
             <View style={styles.contactContainer}>
-              <TouchableOpacity
+              <AccessibleTouchable
                 activeOpacity={0.7}
                 onPress={() => handleCall(userPhoneNumber)}
-                accessibilityRole="button"
+                
                 accessibilityLabel="Call doctor"
                 accessibilityHint="Opens phone dialer to call the doctor"
                 style={[styles.iconButton, {backgroundColor: PRIMARY_COLOR}]}>
                 <MaterialIcons name="phone-in-talk" size={22} color="#ffffff" />
-              </TouchableOpacity>
-              <TouchableOpacity
+              </AccessibleTouchable>
+              <AccessibleTouchable
                 activeOpacity={0.7}
                 onPress={() => handleMail(userEmailID)}
-                accessibilityRole="button"
+                
                 accessibilityLabel="Send email"
                 accessibilityHint="Opens mail app to send an email"
                 style={[styles.iconButton, {backgroundColor: PRIMARY_COLOR}]}>
                 <MaterialIcons name="email" size={22} color="#ffffff" />
-              </TouchableOpacity>
+              </AccessibleTouchable>
               {other && (
-                <TouchableOpacity
+                <AccessibleTouchable
                   activeOpacity={0.7}
                   style={[styles.iconButton, {backgroundColor: PRIMARY_COLOR}]}
                   onPress={() => (navigation as any).navigate('ProfileEditScreen')}
-                  accessibilityRole="button"
+                  
                   accessibilityLabel="Edit profile"
                   accessibilityHint="Navigates to edit profile screen">
                   <Feather name="edit-3" size={22} color="#ffffff" />
-                </TouchableOpacity>
+                </AccessibleTouchable>
               )}
             </View>
           ) : other ? (
-            <TouchableOpacity
+            <AccessibleTouchable
               activeOpacity={0.7}
               onPress={() => (navigation as any).navigate('ProfileEditScreen')}
-              accessibilityRole="button"
+              
               accessibilityLabel="Edit profile"
               accessibilityHint="Navigates to edit profile screen"
               style={styles.primaryBtn}
@@ -160,12 +160,12 @@ const ProfileHeader = ({
             
               <MaterialIcons name="edit" size={20} color="#ffffff" />
               <Text style={styles.primaryBtnText}>Edit Profile</Text>
-            </TouchableOpacity>
+            </AccessibleTouchable>
           ) : (
-            <TouchableOpacity 
+            <AccessibleTouchable 
               activeOpacity={0.7}
               onPress={onFollowClick}
-              accessibilityRole="button"
+              
               accessibilityLabel={isFollowing ? "Following user" : "Follow user"}
               accessibilityHint={isFollowing ? "Unfollow this user" : "Follow this user"}
               style={[
@@ -185,7 +185,7 @@ const ProfileHeader = ({
               <Text style={[styles.primaryBtnText, { color: isFollowing ? PRIMARY_COLOR : '#ffffff' }]}>
                 {isFollowing ? 'Following' : 'Follow'}
               </Text>
-            </TouchableOpacity>
+            </AccessibleTouchable>
           )}
         </View>
 
@@ -208,7 +208,7 @@ const ProfileHeader = ({
           <Pressable
             onPress={onFollowerPress}
             style={styles.statItem}
-            accessibilityRole="button"
+            
             accessibilityLabel="Followers"
             accessibilityHint="Opens followers list"
           >
@@ -221,7 +221,7 @@ const ProfileHeader = ({
           <Pressable
             onPress={onFollowingPress}
             style={styles.statItem}
-            accessibilityRole="button"
+            
             accessibilityLabel="Following"
             accessibilityHint="Opens following users list"
           >
@@ -233,10 +233,10 @@ const ProfileHeader = ({
         {/* Secondary Actions List */}
         {other && (
           <View style={styles.secondaryActionContainer}>
-            <TouchableOpacity 
+            <AccessibleTouchable 
               activeOpacity={0.7}
               onPress={onOverviewClick}
-              accessibilityRole="button"
+              
               accessibilityLabel="Your workspace"
               accessibilityHint="Opens your workspace dashboard"
               style={[styles.listButton, {backgroundColor: themeColors.card, borderColor: themeColors.border}]}
@@ -246,11 +246,11 @@ const ProfileHeader = ({
               </View>
               <Text style={[styles.listButtonText, {color: themeColors.text}]}>Your Workspace</Text>
               <MaterialIcons name="chevron-right" size={24} color={themeColors.textSecondary} />
-            </TouchableOpacity>
+            </AccessibleTouchable>
 
-            <TouchableOpacity
+            <AccessibleTouchable
               activeOpacity={0.7}
-              accessibilityRole="button"
+              
               accessibilityLabel="Notification preferences"
               accessibilityHint="Opens notification settings"
               style={[styles.listButton, {backgroundColor: themeColors.card, borderColor: themeColors.border}]}
@@ -266,11 +266,11 @@ const ProfileHeader = ({
               </View>
               <Text style={[styles.listButtonText, {color: themeColors.text}]}>Notification Preferences</Text>
               <MaterialIcons name="chevron-right" size={24} color={themeColors.textSecondary} />
-            </TouchableOpacity>
+            </AccessibleTouchable>
 
-            <TouchableOpacity
+            <AccessibleTouchable
               activeOpacity={0.7}
-              accessibilityRole="button"
+              
               accessibilityLabel="Logout"
               accessibilityHint="Logs out from your account"
               style={[styles.listButton, {backgroundColor: themeColors.card, borderColor: themeColors.border}]}
@@ -286,7 +286,7 @@ const ProfileHeader = ({
               </View>
               <Text style={[styles.listButtonText, {color: '#EF4444'}]}>Logout</Text>
               <MaterialIcons name="chevron-right" size={24} color={themeColors.textSecondary} />
-            </TouchableOpacity>
+            </AccessibleTouchable>
           </View>
         )}
       </View>
