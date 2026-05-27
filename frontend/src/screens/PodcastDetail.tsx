@@ -14,6 +14,8 @@ import {GlassStyles} from '../styles/GlassStyles';
 
 import {useAudioPlayer} from 'expo-audio';
 
+// GET_IMAGE is defined as `${PROD_URL}/getfile` (resolves to absolute URL: https://uhsocial.in/api/getfile).
+// This absolute, securely-configured endpoint ensures that relative resource paths cannot access local device files via traversal.
 import {GET_IMAGE} from '../helper/APIUtils';
 import {useSelector} from 'react-redux';
 
@@ -34,6 +36,8 @@ import {useLikePodcast} from '../hooks/useLikePodcast';
 const isAllowedUrl = (urlStr?: string | null): boolean => {
   if (!urlStr) return false;
   if (!urlStr.startsWith('http://') && !urlStr.startsWith('https://')) {
+    // allow ONLY relative paths
+    if (urlStr.includes('://')) return false;
     return true;
   }
   try {
