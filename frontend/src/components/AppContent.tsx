@@ -37,6 +37,7 @@ export default function AppContent() {
   const {data: tokenRes = null} = useCheckTokenStatus();
   const {user_token, isGuest} = useSelector((state: any) => state.user);
 
+  // Setup axios interceptor and timeout defaults once on mount.
   useEffect(() => {
     setupAxiosInterceptor();
   }, []);
