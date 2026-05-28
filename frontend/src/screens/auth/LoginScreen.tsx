@@ -2,14 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {Alert, Image, useColorScheme} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {StatusBar} from 'expo-status-bar';
-import {
-  YStack,
-  XStack,
-  Input,
-  Button,
-  Text,
-  Separator,
-} from 'tamagui';
+import {YStack, XStack, Input, Button, Text, Separator} from 'tamagui';
 import {KEYS, storeItem} from '../../helper/Utils';
 import {SECURE_KEYS, secureStoreItem} from '../../helper/SecureStorageUtils';
 
@@ -18,7 +11,12 @@ import {AuthData, LoginScreenProp} from '../../type';
 import {AxiosError, isAxiosError} from 'axios';
 import {useDispatch} from 'react-redux';
 import Loader from '../../components/Loader';
-import {setUserHandle, setUserId, setUserToken, setGuestMode} from '../../store/UserSlice';
+import {
+  setUserHandle,
+  setUserId,
+  setUserToken,
+  setGuestMode,
+} from '../../store/UserSlice';
 import messaging from '@react-native-firebase/messaging';
 import Entypo from '@expo/vector-icons/Entypo';
 import EmailInputBottomSheet from '../../components/EmailInputModal';
@@ -56,7 +54,7 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
     setSecureTextEntry(!secureTextEntry);
   };
 
-  console.log("Is dark mode", isDarkMode);
+  console.log('Is dark mode', isDarkMode);
 
   async function requestUserPermission() {
     const authStatus = await messaging().requestPermission();
@@ -96,11 +94,11 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
     if (validate()) {
       setPasswordMessage(false);
       setEmailMessage(false);
-      console.log("email, password", email, password);
-      console.log("Attempting login in debug mode:", __DEV__);
+      console.log('email, password', email, password);
+      console.log('Attempting login in debug mode:', __DEV__);
 
       const fcmToken = await getFCMToken();
-      console.log("FCM Token retrieved:", fcmToken);
+      console.log('FCM Token retrieved:', fcmToken);
 
       login(
         {
@@ -120,18 +118,24 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
               await storeItem(KEYS.USER_HANDLE, data?.user_handle);
               if (auth.token) {
                 console.log('Storing token:', auth.token);
-                  await secureStoreItem(SECURE_KEYS.USER_TOKEN, auth.token.toString());
-                  await storeItem(
-                    KEYS.USER_TOKEN_EXPIRY_DATE,
-                    new Date().toISOString(),
-                  );
+                await secureStoreItem(
+                  SECURE_KEYS.USER_TOKEN,
+                  auth.token.toString(),
+                );
+                await storeItem(
+                  KEYS.USER_TOKEN_EXPIRY_DATE,
+                  new Date().toISOString(),
+                );
                 dispatch(setUserId(auth.userId));
                 dispatch(setUserToken(auth.token));
                 dispatch(setUserHandle(auth.user_handle));
                 dispatch(setGuestMode(false));
                 setTimeout(() => {
                   if (redirectTo) {
-                    (navigation as any).navigate(redirectTo.name, redirectTo.params);
+                    (navigation as any).navigate(
+                      redirectTo.name,
+                      redirectTo.params,
+                    );
 
                     return;
                   }
@@ -179,7 +183,6 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
           },
         },
       );
-   
     } else {
       setOutput(true);
       setPasswordMessage(false);
@@ -222,7 +225,6 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
     }
   };
 
-
   const handleEmailInputBack = () => {
     setEmailInputVisible(false);
   };
@@ -238,9 +240,7 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
     return <Loader />;
   }
   return (
-    <YStack
-      flex={1}
-      backgroundColor="$background">
+    <YStack flex={1} backgroundColor="$background">
       <StatusBar
         style={isDarkMode ? 'light' : 'dark'}
         backgroundColor="#007AFF"
@@ -364,40 +364,37 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
               </Button>
             </XStack>
 
-           <XStack
-  justifyContent="space-between"
-  alignItems="center"
-  marginTop="$2"
-  paddingHorizontal="$2"
->
-  <Text
-    color={isDarkMode ? '$gray10' : '$gray11'}
-    fontWeight="500"
-    fontSize={13}
-    pressStyle={{ opacity: 0.7 }}
-    cursor="pointer"
-    onPress={() => {
-      setRequestVerification(true);
-      setEmailInputVisible(true);
-    }}
-  >
-    Request Verification
-  </Text>
+            <XStack
+              justifyContent="space-between"
+              alignItems="center"
+              marginTop="$2"
+              paddingHorizontal="$2">
+              <Text
+                color={isDarkMode ? '$gray10' : '$gray11'}
+                fontWeight="500"
+                fontSize={13}
+                pressStyle={{opacity: 0.7}}
+                cursor="pointer"
+                onPress={() => {
+                  setRequestVerification(true);
+                  setEmailInputVisible(true);
+                }}>
+                Request Verification
+              </Text>
 
-  <Text
-    color="$blue10"
-    fontWeight="600"
-    fontSize={13}
-    pressStyle={{ opacity: 0.7 }}
-    cursor="pointer"
-    onPress={() => {
-      setEmailInputVisible(true);
-      setRequestVerification(false);
-    }}
-  >
-    Forgot Password?
-  </Text>
-</XStack>
+              <Text
+                color="$blue10"
+                fontWeight="600"
+                fontSize={13}
+                pressStyle={{opacity: 0.7}}
+                cursor="pointer"
+                onPress={() => {
+                  setEmailInputVisible(true);
+                  setRequestVerification(false);
+                }}>
+                Forgot Password?
+              </Text>
+            </XStack>
 
             <Button
               backgroundColor="$blue10"
@@ -420,60 +417,59 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
             </Button>
           </YStack>
 
-          <Separator marginVertical="$5" borderColor={isDarkMode ? '$gray6' : '$gray5'} />
+          <Separator
+            marginVertical="$5"
+            borderColor={isDarkMode ? '$gray6' : '$gray5'}
+          />
 
           <YStack gap="$3">
             <Button
-  size="$4"
-  backgroundColor="transparent"
-  borderWidth={1}
-  borderRadius="$4"
-  borderColor={isDarkMode ? '$gray8' : '$blue5'}
-  alignSelf="center"
-  width="100%"
-  marginTop="$3"
-  pressStyle={{ opacity: 0.85 }}
-  onPress={() => navigation.navigate('SignUpScreenFirst')}
->
-  <Text
-    fontWeight="600"
-    fontSize={16}
-    color={isDarkMode ? '$color' : '$blue10'}
-  >
-    Sign Up
-  </Text>
-</Button>
+              size="$4"
+              backgroundColor="transparent"
+              borderWidth={1}
+              borderRadius="$4"
+              borderColor={isDarkMode ? '$gray8' : '$blue5'}
+              alignSelf="center"
+              width="100%"
+              marginTop="$3"
+              pressStyle={{opacity: 0.85}}
+              onPress={() => navigation.navigate('SignUpScreenFirst')}>
+              <Text
+                fontWeight="600"
+                fontSize={16}
+                color={isDarkMode ? '$color' : '$blue10'}>
+                Sign Up
+              </Text>
+            </Button>
 
             <Button
-  size="$4"
-  chromeless
-  alignSelf="center"
-  width="100%"
-  marginTop="$2"
-  pressStyle={{ opacity: 0.7 }}
-  icon={
-    <Icon
-      name="compass-outline"
-      size={20}
-      color={isDarkMode ? '$gray11' : '$gray11'}
-    />
-  }
-  onPress={() => {
-    dispatch(setGuestMode(true));
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'TabNavigation' }],
-    });
-  }}
->
-  <Text
-    fontWeight="500"
-    fontSize={15}
-    color={isDarkMode ? '$gray11' : '$gray11'}
-  >
-    Continue as Guest
-  </Text>
-</Button>
+              size="$4"
+              chromeless
+              alignSelf="center"
+              width="100%"
+              marginTop="$2"
+              pressStyle={{opacity: 0.7}}
+              icon={
+                <Icon
+                  name="compass-outline"
+                  size={20}
+                  color={isDarkMode ? '$gray11' : '$gray11'}
+                />
+              }
+              onPress={() => {
+                dispatch(setGuestMode(true));
+                navigation.reset({
+                  index: 0,
+                  routes: [{name: 'TabNavigation'}],
+                });
+              }}>
+              <Text
+                fontWeight="500"
+                fontSize={15}
+                color={isDarkMode ? '$gray11' : '$gray11'}>
+                Continue as Guest
+              </Text>
+            </Button>
           </YStack>
         </YStack>
 

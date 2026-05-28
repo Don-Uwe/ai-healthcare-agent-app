@@ -15,14 +15,19 @@ import {
 import {KEYS, removeItem} from './Utils';
 import {SECURE_KEYS, secureRemoveItem} from './SecureStorageUtils';
 
+import { logApiError } from '../services/monitoring/networkLogger';
+
 let interceptorInitialized = false;
 let sessionExpiredNotified = false;
 
 /**
- * Shared 401 error handler used by both axios instances.
- * Clears auth state, switches to guest mode, and notifies the user once.
+ * Shared error handler used by both axios instances.
+ * Logs API errors safely and handles 401 unauthenticated specifically.
  */
-const handle401Error = (error: any) => {
+const handleError = (error: any) => {
+  // Log the API error securely without exposing secrets
+  logApiError(error, undefined, { handler: 'axiosInterceptor' });
+
   if (error?.response?.status === 401) {
     store.dispatch(setUserToken(''));
     store.dispatch(setUserId(''));
@@ -85,8 +90,8 @@ export const setupAxiosInterceptor = () => {
 
   interceptorInitialized = true;
 
-  // Attach 401 handler to both the global axios instance (used by existing hooks)
+  // Attach error handler to both the global axios instance (used by existing hooks)
   // and authAxios (used by new/migrated code with the request interceptor).
-  axios.interceptors.response.use(response => response, handle401Error);
-  authAxios.interceptors.response.use(response => response, handle401Error);
+  axios.interceptors.response.use(response => response, handleError);
+  authAxios.interceptors.response.use(response => response, handleError);
 };
