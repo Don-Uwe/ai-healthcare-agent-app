@@ -13,6 +13,7 @@ import {
   Input,
   Paragraph,
   Card,
+  useTheme,
 } from 'tamagui';
 import {useSendOtpMutation} from '@/src/hooks/useSendOtp';
 import {useVerifyOtpMutation} from '@/src/hooks/useVerifyOtp';
@@ -21,7 +22,7 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
   const [otp, setOtp] = useState(['', '', '', '']);
   const inputs = useRef<(TextInput | null)[]>([]);
   const {email} = route.params;
-
+  const theme = useTheme();
   const [errorMessages, setErrorMessages] = useState<string[]>();
   const {mutate: sendOtp, isPending: sendOtpPending} = useSendOtpMutation();
   const {mutate: checkOtp, isPending: checkOtpPending} = useVerifyOtpMutation();
@@ -83,20 +84,20 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
       <SafeAreaView
         style={{
           flex: 1,
-          backgroundColor: '#f8f9fa',
+          backgroundColor: theme.gray100.val,
           justifyContent: 'center',
           alignItems: 'center',
         }}>
-        <YStack f={1} jc="center" ai="center" bg="#f8f9fa" p="$6" space="$5">
+        <YStack f={1} jc="center" ai="center" bg="$gray100" p="$6" space="$5">
           <Card
             elevate
             bordered
             p="$8"
             width="90%"
             maxWidth={450}
-            bg="white"
+            bg="$white"
             br="$8"
-            shadowColor="rgba(0, 0, 0, 0.08)"
+            shadowColor="$black"
             shadowRadius={24}
             shadowOffset={{ width: 0, height: 8 }}>
             <YStack alignItems="center" gap="$4">
@@ -119,7 +120,7 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
               </Text>
               <Paragraph
                 textAlign="center"
-                color="$gray11"
+                color="$gray700"
                 fontSize={15}
                 fontWeight="500"
                 lineHeight={22}
@@ -153,7 +154,7 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
                   focusStyle={{
                     borderColor: errorMessages ? '$red9' : '$blue10',
                     borderWidth: 2.5,
-                    backgroundColor: 'white',
+                    backgroundColor: '$white',
                     shadowColor: errorMessages ? '$red8' : '$blue8',
                     shadowRadius: 8,
                     shadowOffset: { width: 0, height: 2 },
@@ -218,7 +219,7 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
             </Button>
 
             <YStack marginTop="$6" alignItems="center" gap="$3">
-              <Paragraph color="$gray10" fontSize={15} textAlign="center">
+              <Paragraph color="$gray400" fontSize={15} textAlign="center">
                 Didn&apos;t receive the code?
               </Paragraph>
               <Button

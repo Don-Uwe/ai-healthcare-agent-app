@@ -10,6 +10,7 @@ import {
   Paragraph,
   Text,
   Circle,
+  useTheme,
 } from 'tamagui';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -40,6 +41,8 @@ export default function NewPasswordScreen({
   const handleSecureEntryClickEvent = () => {
     setSecureTextEntry(!secureTextEntry);
   };
+
+  const theme = useTheme()
 
   const handleSecureNewEntryClickEvent = () => {
     setSecureNewTextEntry(!secureNewTextEntry);
@@ -156,7 +159,7 @@ export default function NewPasswordScreen({
             height="auto"
             padding="$6"
             borderRadius="$8"
-            shadowColor="rgba(0, 0, 0, 0.08)"
+            shadowColor="$black"
             shadowRadius={24}
             shadowOffset={{ width: 0, height: 8 }}
             alignItems="center">
@@ -189,7 +192,7 @@ export default function NewPasswordScreen({
             </Text>
 
             <Paragraph
-              color="$gray11"
+              color="$gray700"
               fontSize={15}
               fontWeight="500"
               textAlign="center"
@@ -202,7 +205,7 @@ export default function NewPasswordScreen({
             {/* Inputs */}
             <YStack gap="$4" width="100%" marginTop="$2">
               <YStack gap="$2">
-                <Text fontWeight="600" color="$gray11" fontSize={14}>
+                <Text fontWeight="600" color="$gray700" fontSize={14}>
                   New Password
                 </Text>
 
@@ -210,7 +213,7 @@ export default function NewPasswordScreen({
                   <Entypo
                     name="lock"
                     size={20}
-                    color={passwordVerify ? '#3b82f6' : '#9ca3af'}
+                    color={passwordVerify ? '$blue10' : '$gray500'}
                     style={{
                       position: 'absolute',
                       left: 14,
@@ -260,7 +263,7 @@ export default function NewPasswordScreen({
                     <Icon
                       name={secureTextEntry ? 'eye-off' : 'eye'}
                       size={20}
-                      color="#6b7280"
+                      color={theme.gray700.val}
                     />
                   </Button>
                 </XStack>
@@ -277,12 +280,12 @@ export default function NewPasswordScreen({
                   ) : password ? (
                     <>
                       <Text fontSize={14} color="$red10">✗</Text>
-                      <Text fontSize={13} color="$gray11" fontWeight="500">
+                      <Text fontSize={13} color="$gray700" fontWeight="500">
                         At least 6 characters with lowercase letter
                       </Text>
                     </>
                   ) : (
-                    <Text fontSize={13} color="$gray10" fontWeight="500">
+                    <Text fontSize={13} color="$gray400" fontWeight="500">
                       At least 6 characters with lowercase letter
                     </Text>
                   )}
@@ -290,7 +293,7 @@ export default function NewPasswordScreen({
               </YStack>
 
               <YStack gap="$2">
-                <Text fontWeight="600" color="$gray11" fontSize={14}>
+                <Text fontWeight="600" color="$gray700" fontSize={14}>
                   Confirm Password
                 </Text>
 
@@ -300,8 +303,8 @@ export default function NewPasswordScreen({
                     size={20}
                     color={
                       confirmPassword && password === confirmPassword
-                        ? '#3b82f6'
-                        : '#9ca3af'
+                        ? theme.blue10.val
+                        : theme.gray500.val
                     }
                     style={{
                       position: 'absolute',
@@ -355,7 +358,7 @@ export default function NewPasswordScreen({
                     <Icon
                       name={secureNewTextEntry ? 'eye-off' : 'eye'}
                       size={20}
-                      color="#6b7280"
+                      color={theme.gray600.val}
                     />
                   </Button>
                 </XStack>
@@ -439,7 +442,7 @@ export default function NewPasswordScreen({
               height="auto">
               <XStack ai="center" gap="$2">
                 <Icon
-                  color="$gray10"
+                  color="$gray400"
                   name="arrow-back-circle-outline"
                   size={24}
                 />

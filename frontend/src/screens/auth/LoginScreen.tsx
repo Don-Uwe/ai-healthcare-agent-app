@@ -9,6 +9,7 @@ import {
   Button,
   Text,
   Separator,
+  useTheme,
 } from 'tamagui';
 import {KEYS, storeItem} from '../../helper/Utils';
 import {SECURE_KEYS, secureStoreItem} from '../../helper/SecureStorageUtils';
@@ -55,6 +56,8 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
   const handleSecureEntryClickEvent = () => {
     setSecureTextEntry(!secureTextEntry);
   };
+
+  const theme = useTheme()
 
   console.log("Is dark mode", isDarkMode);
 
@@ -240,10 +243,10 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
   return (
     <YStack
       flex={1}
-      backgroundColor="$background">
+      backgroundColor={theme.blue10.val}>
       <StatusBar
         style={isDarkMode ? 'light' : 'dark'}
-        backgroundColor="#007AFF"
+        backgroundColor={theme.blue10.val}
       />
 
       <YStack
@@ -371,7 +374,7 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
   paddingHorizontal="$2"
 >
   <Text
-    color={isDarkMode ? '$gray10' : '$gray11'}
+    color={isDarkMode ? '$gray400' : '$gray700'}
     fontWeight="500"
     fontSize={13}
     pressStyle={{ opacity: 0.7 }}
