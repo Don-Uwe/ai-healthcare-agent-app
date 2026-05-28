@@ -9,7 +9,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import {SplashScreenProp} from '../type';
 import {useDispatch} from 'react-redux';
-import {KEYS, SECURE_KEYS, clearStorage, retrieveItem} from '../helper/Utils';
+import {KEYS, clearStorage, retrieveItem} from '../helper/Utils';
+import {SECURE_KEYS} from '../helper/SecureStorageUtils';
 import {setUserId, setUserToken, setUserHandle} from '../store/UserSlice';
 import { useCheckTokenStatus } from '@/src/hooks/useGetTokenStatus';
 import { secureRetrieveItem } from '../helper/SecureStorageUtils';
