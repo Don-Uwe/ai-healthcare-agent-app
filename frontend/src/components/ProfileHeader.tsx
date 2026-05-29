@@ -23,6 +23,7 @@ import {fp, hp, wp} from '../helper/Metric';
 import {ProfileHeaderProps} from '../type';
 
 import {GET_STORAGE_DATA} from '../helper/APIUtils';
+import {buildMailLink, buildPhoneLink} from '../helper/contactLinks';
 import {useSelector} from 'react-redux';
 import Snackbar from 'react-native-snackbar';
 
@@ -60,20 +61,40 @@ const ProfileHeader = ({
   };
 
   const handleCall = (phone: string | undefined) => {
-    if (!phone) return;
-    let phoneNumber = phone;
-    if (Platform.OS !== 'android') {
-      phoneNumber = `telprompt:+91 ${phone}`;
-    } else {
-      phoneNumber = `tel:+91 ${phone}`;
+    const phoneLink = buildPhoneLink(phone, Platform.OS);
+
+    if (!phoneLink) {
+      Alert.alert(
+        'Invalid Phone Number',
+        'The provided phone number is not valid.',
+      );
+      return;
     }
-    Linking.openURL(phoneNumber).catch(() => Alert.alert('Unable to phone!'));
+
+    Linking.openURL(phoneLink).catch(() =>
+      Alert.alert(
+        'Unable to make call',
+        'Could not open the phone application. Please ensure a calling app is installed.',
+      ),
+    );
   };
 
   const handleMail = (mail: string | undefined) => {
-    if (!mail) return;
-    Linking.openURL(`mailto: ${mail}`).catch(() =>
-      Alert.alert('Unable to open mail!'),
+    const mailLink = buildMailLink(mail);
+
+    if (!mailLink) {
+      Alert.alert(
+        'Invalid Email Address',
+        'The provided email address is not valid.',
+      );
+      return;
+    }
+
+    Linking.openURL(mailLink).catch(() =>
+      Alert.alert(
+        'Unable to send email',
+        'Could not open the email application. Please ensure an email app is installed.',
+      ),
     );
   };
 
