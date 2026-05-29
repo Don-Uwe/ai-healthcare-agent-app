@@ -55,3 +55,12 @@ export const secureRemoveItem = async (key: SecureKey): Promise<boolean> => {
     return false;
   }
 };
+export const secureClearAllItems = async (): Promise<void> => {
+  try {
+    await Promise.all(
+      Object.values(SECURE_KEYS).map(key => SecureStore.deleteItemAsync(key))
+    );
+  } catch (error) {
+    console.error('[SecureStorage] Error clearing all items:', error);
+  }
+};
