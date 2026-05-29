@@ -19,7 +19,12 @@ import {AuthData, LoginScreenProp} from '../../type';
 import {AxiosError, isAxiosError} from 'axios';
 import {useDispatch} from 'react-redux';
 import Loader from '../../components/Loader';
-import {setUserHandle, setUserId, setUserToken, setGuestMode} from '../../store/UserSlice';
+import {
+  setUserHandle,
+  setUserId,
+  setUserToken,
+  setGuestMode,
+} from '../../store/UserSlice';
 import messaging from '@react-native-firebase/messaging';
 import Entypo from '@expo/vector-icons/Entypo';
 import EmailInputBottomSheet from '../../components/EmailInputModal';
@@ -68,12 +73,16 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
       authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
     if (enabled) {
-      console.log('Authorization status:', authStatus);
+      if (__DEV__) {
+        console.log('Authorization status:', authStatus);
+      }
     }
   }
 
   useEffect(() => {
-    console.log('Email modal visibility state', emailInputVisible);
+    if (__DEV__) {
+      console.log('Email modal visibility state', emailInputVisible);
+    }
   }, [emailInputVisible]);
 
   async function getFCMToken() {
@@ -81,15 +90,21 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
       await requestUserPermission();
       const fcmToken = await messaging().getToken();
       if (fcmToken) {
-        console.log('FCM Token:', fcmToken);
+        if (__DEV__) {
+          console.log('FCM Token:', fcmToken);
+        }
         setFcmToken(fcmToken);
         return fcmToken;
       } else {
-        console.log('Failed to get FCM Token');
+        if (__DEV__) {
+          console.log('Failed to get FCM Token');
+        }
         return null;
       }
     } catch (error) {
-      console.log('Error getting FCM Token:', error);
+      if (__DEV__) {
+        console.log('Error getting FCM Token:', error);
+      }
       // Return a placeholder token in debug mode to allow login to proceed
       return __DEV__ ? 'debug-mode-token' : null;
     }
@@ -99,11 +114,16 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
     if (validate()) {
       setPasswordMessage(false);
       setEmailMessage(false);
-      console.log("email, password", email, password);
-      console.log("Attempting login in debug mode:", __DEV__);
+      if (__DEV__) {
+        console.log('email, password', email, password);
+        console.log('Attempting login in debug mode:', __DEV__);
+      }
 
       const fcmToken = await getFCMToken();
-      console.log("FCM Token retrieved:", fcmToken);
+      
+      if (__DEV__) {
+        console.log('FCM Token retrieved:', fcmToken);
+      }
 
       login(
         {
@@ -122,19 +142,27 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
               await storeItem(KEYS.USER_ID, auth.userId.toString());
               await storeItem(KEYS.USER_HANDLE, data?.user_handle);
               if (auth.token) {
-                console.log('Storing token:', auth.token);
-                  await secureStoreItem(SECURE_KEYS.USER_TOKEN, auth.token.toString());
-                  await storeItem(
-                    KEYS.USER_TOKEN_EXPIRY_DATE,
-                    new Date().toISOString(),
-                  );
+                if (__DEV__) {
+                  console.log('Storing token:', auth.token);
+                }
+                await secureStoreItem(
+                  SECURE_KEYS.USER_TOKEN,
+                  auth.token.toString(),
+                );
+                await storeItem(
+                  KEYS.USER_TOKEN_EXPIRY_DATE,
+                  new Date().toISOString(),
+                );
                 dispatch(setUserId(auth.userId));
                 dispatch(setUserToken(auth.token));
                 dispatch(setUserHandle(auth.user_handle));
                 dispatch(setGuestMode(false));
                 setTimeout(() => {
                   if (redirectTo) {
-                    (navigation as any).navigate(redirectTo.name, redirectTo.params);
+                    (navigation as any).navigate(
+                      redirectTo.name,
+                      redirectTo.params,
+                    );
 
                     return;
                   }
@@ -147,12 +175,16 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
                 Alert.alert('Token not found');
               }
             } catch (e) {
-              console.log('Async Storage ERROR', e);
+              if (__DEV__) {
+                console.log('Async Storage ERROR', e);
+              }
             }
           },
 
           onError: (error: AxiosError) => {
-            console.log('Error', error);
+            if (__DEV__) {
+              console.log('Error', error);
+            }
             setPassword('');
             setEmail('');
             if (error.response) {
@@ -182,7 +214,6 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
           },
         },
       );
-   
     } else {
       setOutput(true);
       setPasswordMessage(false);
@@ -224,7 +255,6 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
       setEmailVerify(true);
     }
   };
-
 
   const handleEmailInputBack = () => {
     setEmailInputVisible(false);
@@ -411,7 +441,9 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
               fontWeight="700"
               alignSelf="center"
               onPress={() => {
-                console.log('Login button pressed!');
+                if (__DEV__) {
+                  console.log('Login button pressed!');
+                }
                 validateAndSubmit();
               }}
               disabled={loginPending}
@@ -423,60 +455,59 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
             </Button>
           </YStack>
 
-          <Separator marginVertical="$5" borderColor={isDarkMode ? '$gray6' : '$gray5'} />
+          <Separator
+            marginVertical="$5"
+            borderColor={isDarkMode ? '$gray6' : '$gray5'}
+          />
 
           <YStack gap="$3">
             <Button
-  size="$4"
-  backgroundColor="transparent"
-  borderWidth={1}
-  borderRadius="$4"
-  borderColor={isDarkMode ? '$gray8' : '$blue5'}
-  alignSelf="center"
-  width="100%"
-  marginTop="$3"
-  pressStyle={{ opacity: 0.85 }}
-  onPress={() => navigation.navigate('SignUpScreenFirst')}
->
-  <Text
-    fontWeight="600"
-    fontSize={16}
-    color={isDarkMode ? '$color' : '$blue10'}
-  >
-    Sign Up
-  </Text>
-</Button>
+              size="$4"
+              backgroundColor="transparent"
+              borderWidth={1}
+              borderRadius="$4"
+              borderColor={isDarkMode ? '$gray8' : '$blue5'}
+              alignSelf="center"
+              width="100%"
+              marginTop="$3"
+              pressStyle={{opacity: 0.85}}
+              onPress={() => navigation.navigate('SignUpScreenFirst')}>
+              <Text
+                fontWeight="600"
+                fontSize={16}
+                color={isDarkMode ? '$color' : '$blue10'}>
+                Sign Up
+              </Text>
+            </Button>
 
             <Button
-  size="$4"
-  chromeless
-  alignSelf="center"
-  width="100%"
-  marginTop="$2"
-  pressStyle={{ opacity: 0.7 }}
-  icon={
-    <Icon
-      name="compass-outline"
-      size={20}
-      color={isDarkMode ? '$gray11' : '$gray11'}
-    />
-  }
-  onPress={() => {
-    dispatch(setGuestMode(true));
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'TabNavigation' }],
-    });
-  }}
->
-  <Text
-    fontWeight="500"
-    fontSize={15}
-    color={isDarkMode ? '$gray11' : '$gray11'}
-  >
-    Continue as Guest
-  </Text>
-</Button>
+              size="$4"
+              chromeless
+              alignSelf="center"
+              width="100%"
+              marginTop="$2"
+              pressStyle={{opacity: 0.7}}
+              icon={
+                <Icon
+                  name="compass-outline"
+                  size={20}
+                  color={isDarkMode ? '$gray11' : '$gray11'}
+                />
+              }
+              onPress={() => {
+                dispatch(setGuestMode(true));
+                navigation.reset({
+                  index: 0,
+                  routes: [{name: 'TabNavigation'}],
+                });
+              }}>
+              <Text
+                fontWeight="500"
+                fontSize={15}
+                color={isDarkMode ? '$gray11' : '$gray11'}>
+                Continue as Guest
+              </Text>
+            </Button>
           </YStack>
         </YStack>
 
@@ -497,7 +528,9 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
                     setPassword('');
                   },
                   onError: (error: AxiosError) => {
-                    console.log('Email Verification error', error);
+                    if (__DEV__) {
+                      console.log('Email Verification error', error);
+                    }
 
                     if (error.response) {
                       const statusCode = error.response.status;
@@ -528,7 +561,9 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
                           );
                       }
                     } else {
-                      console.log('Email Verification error', error);
+                      if (__DEV__) {
+                        console.log('Email Verification error', error);
+                      }
                     }
                   },
                 },
@@ -544,7 +579,7 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
                     navigateToOtpScreen();
                   },
                   onError: error => {
-                    // eslint-disable-next-line import/no-named-as-default-member
+                     
                     if (isAxiosError(error)) {
                       if (error.response) {
                         if (error.response.status === 400) {

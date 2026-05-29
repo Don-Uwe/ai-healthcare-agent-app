@@ -13,6 +13,8 @@ import {setAudioModeAsync} from 'expo-audio';
 
 import AppContent from './src/components/AppContent';
 
+import { wrapWithSentry } from './src/services/monitoring/sentry';
+
 const queryClient = new QueryClient();
 
 function App() {
@@ -31,4 +33,4 @@ function App() {
   );
 }
 
-export default App;
+export default wrapWithSentry(App);
