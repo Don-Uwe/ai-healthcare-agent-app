@@ -1,3 +1,5 @@
+import { logApiError } from '../services/monitoring/networkLogger';
+
 /** Default timeout duration for API requests in milliseconds (15 seconds) */
 export const API_REQUEST_TIMEOUT_MS = 15000;
 
@@ -93,20 +95,25 @@ export async function fetchWithTimeout(
   });
 
   try {
-    return await Promise.race([
+    const response = await Promise.race([
       fetch(input, {
         ...requestInit,
         signal: controller.signal,
       }),
       timeoutPromise,
     ]);
+
+    // HTTP error responses (5xx) are already handled by networkLogger.ts.
+    // This helper only captures timeout failures and hard network errors.
+    return response;
   } catch (error) {
     if (didTimeout) {
-      throw error instanceof ApiTimeoutError
-        ? error
-        : createApiTimeoutError(timeoutMs);
+      const timeoutError = error instanceof ApiTimeoutError ? error : createApiTimeoutError(timeoutMs);
+      logApiError(timeoutError, typeof input === 'string' ? input : undefined, { handler: 'fetchWithTimeout' });
+      throw timeoutError;
     }
 
+    logApiError(error, typeof input === 'string' ? input : undefined, { handler: 'fetchWithTimeout' });
     throw error;
   } finally {
     if (timeoutId) {
