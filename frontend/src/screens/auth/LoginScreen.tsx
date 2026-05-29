@@ -1,37 +1,40 @@
-import React, {useEffect, useState} from 'react';
-import {Alert, Image, useColorScheme} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {StatusBar} from 'expo-status-bar';
-import {
-  YStack,
-  XStack,
-  Input,
-  Button,
-  Text,
-  Separator,
-  useTheme,
-} from 'tamagui';
-import {KEYS, storeItem} from '../../helper/Utils';
-import {SECURE_KEYS, secureStoreItem} from '../../helper/SecureStorageUtils';
-
+import Entypo from '@expo/vector-icons/Entypo';
 import Icon from '@expo/vector-icons/Ionicons';
-import {AuthData, LoginScreenProp} from '../../type';
-import {AxiosError, isAxiosError} from 'axios';
-import {useDispatch} from 'react-redux';
-import Loader from '../../components/Loader';
+import messaging from '@react-native-firebase/messaging';
+import { AxiosError, isAxiosError } from 'axios';
+import { StatusBar } from 'expo-status-bar';
+import React, { useEffect, useState } from 'react';
+import { Alert, Image, useColorScheme } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Snackbar from 'react-native-snackbar';
+import { useDispatch } from 'react-redux';
 import {
+  Button,
+  Input,
+  Separator,
+  Text,
+  useTheme,
+  XStack,
+  YStack,
+} from 'tamagui';
+import { SECURE_KEYS, secureStoreItem } from '../../helper/SecureStorageUtils';
+import { KEYS, storeItem } from '../../helper/Utils';
+
+import { useRequestVerification } from '@/src/hooks/useResendVerification';
+import { useSendOtpMutation } from '@/src/hooks/useSendOtp';
+import { useLoginMutation } from '@/src/hooks/useUserLogin';
+
+import EmailInputBottomSheet from '../../components/EmailInputModal';
+import Loader from '../../components/Loader';
+
+import {
+  setGuestMode,
   setUserHandle,
   setUserId,
   setUserToken,
-  setGuestMode,
 } from '../../store/UserSlice';
-import messaging from '@react-native-firebase/messaging';
-import Entypo from '@expo/vector-icons/Entypo';
-import EmailInputBottomSheet from '../../components/EmailInputModal';
-import {useRequestVerification} from '@/src/hooks/useResendVerification';
-import Snackbar from 'react-native-snackbar';
-import {useSendOtpMutation} from '@/src/hooks/useSendOtp';
-import {useLoginMutation} from '@/src/hooks/useUserLogin';
+
+import { AuthData, LoginScreenProp } from '../../type';
 
 const LoginScreen = ({navigation, route}: LoginScreenProp) => {
   const inset = useSafeAreaInsets();
@@ -62,9 +65,7 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
     setSecureTextEntry(!secureTextEntry);
   };
 
-  const theme = useTheme()
-
-  console.log("Is dark mode", isDarkMode);
+  const theme = useTheme();
 
   async function requestUserPermission() {
     const authStatus = await messaging().requestPermission();
@@ -120,7 +121,7 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
       }
 
       const fcmToken = await getFCMToken();
-      
+
       if (__DEV__) {
         console.log('FCM Token retrieved:', fcmToken);
       }
@@ -145,6 +146,7 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
                 if (__DEV__) {
                   console.log('Storing token:', auth.token);
                 }
+                console.log('Storing token:', auth.token);
                 await secureStoreItem(
                   SECURE_KEYS.USER_TOKEN,
                   auth.token.toString(),
@@ -271,9 +273,7 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
     return <Loader />;
   }
   return (
-    <YStack
-      flex={1}
-      backgroundColor={theme.blue10.val}>
+    <YStack flex={1} backgroundColor={'$background'}>
       <StatusBar
         style={isDarkMode ? 'light' : 'dark'}
         backgroundColor={theme.blue10.val}
@@ -397,40 +397,37 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
               </Button>
             </XStack>
 
-           <XStack
-  justifyContent="space-between"
-  alignItems="center"
-  marginTop="$2"
-  paddingHorizontal="$2"
->
-  <Text
-    color={isDarkMode ? '$gray400' : '$gray700'}
-    fontWeight="500"
-    fontSize={13}
-    pressStyle={{ opacity: 0.7 }}
-    cursor="pointer"
-    onPress={() => {
-      setRequestVerification(true);
-      setEmailInputVisible(true);
-    }}
-  >
-    Request Verification
-  </Text>
+            <XStack
+              justifyContent="space-between"
+              alignItems="center"
+              marginTop="$2"
+              paddingHorizontal="$2">
+              <Text
+                color={isDarkMode ? '$gray400' : '$gray700'}
+                fontWeight="500"
+                fontSize={13}
+                pressStyle={{opacity: 0.7}}
+                cursor="pointer"
+                onPress={() => {
+                  setRequestVerification(true);
+                  setEmailInputVisible(true);
+                }}>
+                Request Verification
+              </Text>
 
-  <Text
-    color="$blue10"
-    fontWeight="600"
-    fontSize={13}
-    pressStyle={{ opacity: 0.7 }}
-    cursor="pointer"
-    onPress={() => {
-      setEmailInputVisible(true);
-      setRequestVerification(false);
-    }}
-  >
-    Forgot Password?
-  </Text>
-</XStack>
+              <Text
+                color="$blue10"
+                fontWeight="600"
+                fontSize={13}
+                pressStyle={{opacity: 0.7}}
+                cursor="pointer"
+                onPress={() => {
+                  setEmailInputVisible(true);
+                  setRequestVerification(false);
+                }}>
+                Forgot Password?
+              </Text>
+            </XStack>
 
             <Button
               backgroundColor="$blue10"
@@ -579,7 +576,6 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
                     navigateToOtpScreen();
                   },
                   onError: error => {
-                     
                     if (isAxiosError(error)) {
                       if (error.response) {
                         if (error.response.status === 400) {
