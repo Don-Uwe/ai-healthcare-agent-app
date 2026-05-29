@@ -128,6 +128,7 @@ export type RootStackParamList = {
     imageUtils: string;
   };
   Privacy: undefined;
+  CommunityGuidelines: undefined;
   ContributorPage: undefined;
   OpenSourcePage: undefined;
   //ChatbotScreen: undefined;
@@ -333,7 +334,8 @@ export type ProfileScreenProps = CompositeScreenProps<
 
 export type AboutScreenProps = CompositeScreenProps<
   BottomTabScreenProps<TabParamList, 'About'>,
-  StackScreenProps<RootStackParamList, 'Privacy'>
+  | StackScreenProps<RootStackParamList, 'Privacy'>
+  | StackScreenProps<RootStackParamList, 'CommunityGuidelines'>
 >;
 
 export type PodcastRecorderScreenProps = StackScreenProps<
@@ -354,6 +356,11 @@ export type ContributorScreenProps = StackScreenProps<
 export type OpenSourceScreenProps = StackScreenProps<
   RootStackParamList,
   'OpenSourcePage'
+>;
+
+export type CommunityGuidelinesScreenProps = StackScreenProps<
+  RootStackParamList,
+  'CommunityGuidelines'
 >;
 
 export type PodcastPlayerScreenProps = StackScreenProps<
