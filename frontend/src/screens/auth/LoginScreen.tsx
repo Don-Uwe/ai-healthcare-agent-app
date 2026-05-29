@@ -54,7 +54,9 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
     setSecureTextEntry(!secureTextEntry);
   };
 
-  console.log('Is dark mode', isDarkMode);
+  if (__DEV__) {
+    console.log('Is dark mode', isDarkMode);
+  }
 
   async function requestUserPermission() {
     const authStatus = await messaging().requestPermission();
@@ -63,12 +65,16 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
       authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
     if (enabled) {
-      console.log('Authorization status:', authStatus);
+      if (__DEV__) {
+        console.log('Authorization status:', authStatus);
+      }
     }
   }
 
   useEffect(() => {
-    console.log('Email modal visibility state', emailInputVisible);
+    if (__DEV__) {
+      console.log('Email modal visibility state', emailInputVisible);
+    }
   }, [emailInputVisible]);
 
   async function getFCMToken() {
@@ -76,15 +82,21 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
       await requestUserPermission();
       const fcmToken = await messaging().getToken();
       if (fcmToken) {
-        console.log('FCM Token:', fcmToken);
+        if (__DEV__) {
+          console.log('FCM Token:', fcmToken);
+        }
         setFcmToken(fcmToken);
         return fcmToken;
       } else {
-        console.log('Failed to get FCM Token');
+        if (__DEV__) {
+          console.log('Failed to get FCM Token');
+        }
         return null;
       }
     } catch (error) {
-      console.log('Error getting FCM Token:', error);
+      if (__DEV__) {
+        console.log('Error getting FCM Token:', error);
+      }
       // Return a placeholder token in debug mode to allow login to proceed
       return __DEV__ ? 'debug-mode-token' : null;
     }
@@ -94,11 +106,16 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
     if (validate()) {
       setPasswordMessage(false);
       setEmailMessage(false);
-      console.log('email, password', email, password);
-      console.log('Attempting login in debug mode:', __DEV__);
+      if (__DEV__) {
+        console.log('email, password', email, password);
+        console.log('Attempting login in debug mode:', __DEV__);
+      }
 
       const fcmToken = await getFCMToken();
-      console.log('FCM Token retrieved:', fcmToken);
+      
+      if (__DEV__) {
+        console.log('FCM Token retrieved:', fcmToken);
+      }
 
       login(
         {
@@ -117,7 +134,9 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
               await storeItem(KEYS.USER_ID, auth.userId.toString());
               await storeItem(KEYS.USER_HANDLE, data?.user_handle);
               if (auth.token) {
-                console.log('Storing token:', auth.token);
+                if (__DEV__) {
+                  console.log('Storing token:', auth.token);
+                }
                 await secureStoreItem(
                   SECURE_KEYS.USER_TOKEN,
                   auth.token.toString(),
@@ -148,12 +167,16 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
                 Alert.alert('Token not found');
               }
             } catch (e) {
-              console.log('Async Storage ERROR', e);
+              if (__DEV__) {
+                console.log('Async Storage ERROR', e);
+              }
             }
           },
 
           onError: (error: AxiosError) => {
-            console.log('Error', error);
+            if (__DEV__) {
+              console.log('Error', error);
+            }
             setPassword('');
             setEmail('');
             if (error.response) {
@@ -405,7 +428,9 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
               fontWeight="700"
               alignSelf="center"
               onPress={() => {
-                console.log('Login button pressed!');
+                if (__DEV__) {
+                  console.log('Login button pressed!');
+                }
                 validateAndSubmit();
               }}
               disabled={loginPending}
@@ -490,7 +515,9 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
                     setPassword('');
                   },
                   onError: (error: AxiosError) => {
-                    console.log('Email Verification error', error);
+                    if (__DEV__) {
+                      console.log('Email Verification error', error);
+                    }
 
                     if (error.response) {
                       const statusCode = error.response.status;
@@ -521,7 +548,9 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
                           );
                       }
                     } else {
-                      console.log('Email Verification error', error);
+                      if (__DEV__) {
+                        console.log('Email Verification error', error);
+                      }
                     }
                   },
                 },
@@ -537,7 +566,7 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
                     navigateToOtpScreen();
                   },
                   onError: error => {
-                    // eslint-disable-next-line import/no-named-as-default-member
+                     
                     if (isAxiosError(error)) {
                       if (error.response) {
                         if (error.response.status === 400) {

@@ -3,19 +3,35 @@ import { captureException } from './errorHandler';
 /**
  * Safely strips sensitive information from headers or payloads.
  */
-const redactSensitiveData = (data: any) => {
-  if (!data) return data;
-  
-  const redacted = { ...data };
+const redactSensitiveData = (data: any, visited = new Set<any>()): any => {
+  if (!data || typeof data !== 'object') {
+    return data;
+  }
+
+  // Prevent circular references
+  if (visited.has(data)) {
+    return '[CIRCULAR]';
+  }
+  visited.add(data);
+
+  if (Array.isArray(data)) {
+    return data.map(item => redactSensitiveData(item, visited));
+  }
+
+  const redacted: Record<string, any> = {};
   const sensitiveKeys = ['authorization', 'token', 'password', 'secret', 'cookie'];
 
-  for (const key in redacted) {
-    if (sensitiveKeys.includes(key.toLowerCase())) {
-      redacted[key] = '[REDACTED]';
-    } else if (typeof redacted[key] === 'object') {
-      redacted[key] = '[OBJECT]';
+  for (const key in data) {
+    if (Object.prototype.hasOwnProperty.call(data, key)) {
+      if (sensitiveKeys.includes(key.toLowerCase())) {
+        redacted[key] = '[REDACTED]';
+      } else {
+        redacted[key] = redactSensitiveData(data[key], visited);
+      }
     }
   }
+
+  visited.delete(data);
 
   return redacted;
 };

@@ -9,8 +9,13 @@ import * as Application from 'expo-application';
  */
 export const initMonitoring = () => {
   const dsn = process.env.EXPO_PUBLIC_SENTRY_DSN;
-  const environment = process.env.EXPO_PUBLIC_APP_ENV || __DEV__ ? 'development' : 'production';
-  console.log('[Monitoring] Sentry initialized');
+  const environment =
+    process.env.EXPO_PUBLIC_APP_ENV ||
+    (__DEV__ ? 'development' : 'production');
+
+  if (__DEV__) {
+    console.log('[Monitoring] Sentry initialized');
+  }
 
   if (!dsn) {
     if (__DEV__) {

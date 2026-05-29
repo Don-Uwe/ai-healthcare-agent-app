@@ -103,9 +103,8 @@ export async function fetchWithTimeout(
       timeoutPromise,
     ]);
 
-    // Note: We are returning the response, but if we want to log HTTP error responses
-    // (like 500s) we could optionally intercept them here.
-    // For now, we only log hard network errors or timeouts.
+    // HTTP error responses (5xx) are already handled by networkLogger.ts.
+    // This helper only captures timeout failures and hard network errors.
     return response;
   } catch (error) {
     if (didTimeout) {
