@@ -35,12 +35,11 @@ const initializeMMKV = (): MMKVStorageLike | null => {
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const mmkvModule = require('react-native-mmkv') as {
-      MMKV?: new (config: {id: string}) => MMKVStorageLike;
+      createMMKV?: (config: {id: string}) => MMKVStorageLike;
     };
 
-    if (mmkvModule?.MMKV) {
-      podcastMMKV = new mmkvModule.MMKV({id: PODCAST_CACHE_ID});
-      console.log('MMKV instance created:', Boolean(podcastMMKV));
+    if (mmkvModule?.createMMKV) {
+      podcastMMKV = mmkvModule.createMMKV({id: PODCAST_CACHE_ID});
     }
   } catch (error) {
     console.log('MMKV module not available, falling back to AsyncStorage', error);
@@ -99,9 +98,10 @@ export const retrieveItem = async (): Promise<PodcastDownloadRecord[]> => {
   const mmkv = initializeMMKV();
 
   if (mmkv) {
+    console.log('Retrieving podcast data from MMKV');
     return parsePodcastData(mmkv.getString(PODCAST_STORAGE_KEY));
   }
-
+  console.log('Retrieving podcast data from AsyncStorage');
   const storedValue = await AsyncStorage.getItem(PODCAST_STORAGE_KEY);
   return parsePodcastData(storedValue);
 };
