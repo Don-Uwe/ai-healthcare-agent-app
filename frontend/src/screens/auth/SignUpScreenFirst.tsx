@@ -34,16 +34,16 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
   const [role, setRole] = useState('');
   const [verifyBtntext, setVerifyBtntxt] = useState('Request Verification');
   const [verifiedModalVisible, setVerifiedModalVisible] = useState(false);
-  // const [isHandleAvailable, setIsHandleAvailable] = useState(false);
   const [token, setToken] = useState('');
   const [isFocus, setIsFocus] = useState(false);
   const [isSecureEntry, setIsSecureEntry] = useState(true);
   const [securityWarningVisible, setSecurityWarningVisible] = useState(false);
   const [pendingSubmitAction, setPendingSubmitAction] = useState<(() => void) | null>(null);
-  //const [error, setError] = useState('');
+
+  const userHandle = username.trim();
 
   const {data: checkhandle, isLoading} =
-    useCheckUserHandleAvailability(username);
+    useCheckUserHandleAvailability(userHandle);
   const {mutate: verifyEmailMutation, isPending: verifyEmailPending} =
     useVerificationMailMutation();
 
@@ -151,10 +151,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
     }
   };
   const handleSubmit = () => {
-    // if (!isHandleAvailable) {
-    //   return;
-    // }
-    if (!name || !username || !email || !password || !role) {
+    if (!name || !userHandle || !email || !password || !role) {
       Alert.alert('Please fill in all fields');
       return;
     } else if (validator.validate(email) === false) {
@@ -162,6 +159,12 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
       return;
     } else if (password.length < 6) {
       Alert.alert('Password must be at least of 6 length');
+      return;
+    } else if (isLoading) {
+      Alert.alert('Please wait while we check the user handle');
+      return;
+    } else if (checkhandle?.isTaken) {
+      Alert.alert('User handle is already in use');
       return;
     }
 
@@ -171,7 +174,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
     } else {
       const detail: UserDetail = {
         user_name: name,
-        user_handle: username,
+        user_handle: userHandle,
         email: email,
         password: password,
         profile_image: user_profile_image,
@@ -203,7 +206,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
     register(
       {
         user_name: name,
-        user_handle: username,
+        user_handle: userHandle,
         email: email,
         password: password,
         isDoctor: false,
@@ -384,15 +387,20 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
             </YStack>
           </XStack>
 
-          {/* Handle Error */}
-          {checkhandle?.status === false && (
+          {/* Handle availability feedback */}
+          {isLoading && (
+            <Text color="green" fontSize={14}>
+              Checking...
+            </Text>
+          )}
+          {!isLoading && checkhandle?.isTaken && (
             <Text color="red" fontSize={14}>
               User handle is already in use.
             </Text>
           )}
-          {isLoading && (
+          {!isLoading && checkhandle?.isAvailable && (
             <Text color="green" fontSize={14}>
-              Checking...
+              User handle is available.
             </Text>
           )}
           {/* User Handle */}
