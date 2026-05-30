@@ -123,7 +123,7 @@ const sections: Section[] = [
   {
     id: 8,
     title: 'Moderation & Enforcement',
-    icon: 'gavel-outline',
+    icon: 'shield-checkmark-outline',
     iconColor: ProfessionalColors.secondary,
     points: [
       'The UltimateHealth team reserves the right to remove inappropriate content',
