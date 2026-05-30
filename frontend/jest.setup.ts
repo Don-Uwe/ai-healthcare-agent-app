@@ -6,9 +6,38 @@ jest.mock('react-native-reanimated', () => {
   return Reanimated;
 });
 
-jest.mock('@react-native-async-storage/async-storage', () =>
-  require('@react-native-async-storage/async-storage/jest/async-storage-mock')
-);
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  setItem: jest.fn(() => Promise.resolve()),
+  getItem: jest.fn(() => Promise.resolve(null)),
+  removeItem: jest.fn(() => Promise.resolve()),
+  clear: jest.fn(() => Promise.resolve()),
+  getAllKeys: jest.fn(() => Promise.resolve([])),
+  multiGet: jest.fn(() => Promise.resolve([])),
+  multiSet: jest.fn(() => Promise.resolve()),
+  multiRemove: jest.fn(() => Promise.resolve()),
+}));
+
+// Mock react-native-fs
+jest.mock('react-native-fs', () => ({
+  DocumentDirectoryPath: '/mock/documents',
+  DownloadDirectoryPath: '/mock/downloads',
+  ExternalDirectoryPath: '/mock/external',
+  ExternalStorageDirectoryPath: '/mock/external-storage',
+  TemporaryDirectoryPath: '/mock/temp',
+  CachesDirectoryPath: '/mock/caches',
+  readDir: jest.fn(),
+  readFile: jest.fn(),
+  writeFile: jest.fn(),
+  unlink: jest.fn(),
+  exists: jest.fn(),
+  mkdir: jest.fn(),
+  moveFile: jest.fn(),
+  copyFile: jest.fn(),
+  downloadFile: jest.fn(() => ({
+    promise: Promise.resolve(),
+    jobId: 1,
+  })),
+}));
 
 // Mock removed as NativeAnimatedHelper is not present in newer React Native versions
 
@@ -26,4 +55,18 @@ jest.mock('expo-constants', () => ({
   expoConfig: {
     extra: {},
   },
+}));
+
+jest.mock('expo-secure-store', () => ({
+  getItemAsync: jest.fn(),
+  setItemAsync: jest.fn(),
+  deleteItemAsync: jest.fn(),
+}));
+
+jest.mock('@sentry/react-native', () => ({
+  init: jest.fn(),
+  wrap: jest.fn((component) => component),
+  captureException: jest.fn(),
+  captureMessage: jest.fn(),
+  setUser: jest.fn(),
 }));

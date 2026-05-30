@@ -8,17 +8,26 @@ import {
   setUserId,
   setUserToken,
 } from '../store/UserSlice';
+import {
+  API_REQUEST_TIMEOUT_MS,
+  API_TIMEOUT_ERROR_MESSAGE,
+} from './ApiTimeout';
 import {KEYS, removeItem} from './Utils';
 import {SECURE_KEYS, secureRemoveItem} from './SecureStorageUtils';
+
+import { logApiError } from '../services/monitoring/networkLogger';
 
 let interceptorInitialized = false;
 let sessionExpiredNotified = false;
 
 /**
- * Shared 401 error handler used by both axios instances.
- * Clears auth state, switches to guest mode, and notifies the user once.
+ * Shared error handler used by both axios instances.
+ * Logs API errors safely and handles 401 unauthenticated specifically.
  */
-const handle401Error = (error: any) => {
+const handleError = (error: any) => {
+  // Log the API error securely without exposing secrets
+  logApiError(error, undefined, { handler: 'axiosInterceptor' });
+
   if (error?.response?.status === 401) {
     store.dispatch(setUserToken(''));
     store.dispatch(setUserId(''));
@@ -47,7 +56,33 @@ const handle401Error = (error: any) => {
   return Promise.reject(error);
 };
 
+/**
+ * Configures axios with timeout defaults and response interceptors.
+ *
+ * Sets up:
+ * - Global timeout configuration for both axios instances (default + authAxios)
+ * - Response interceptor for handling 401 (unauthorized) errors
+ * - Automatic logout and guest mode activation on session expiry
+ *
+ * This function is idempotent - calling it multiple times will only
+ * register the interceptor once to prevent duplicate handlers.
+ *
+ * @example
+ * ```typescript
+ * // Call once during app initialization
+ * useEffect(() => {
+ *   setupAxiosInterceptor();
+ * }, []);
+ * ```
+ */
 export const setupAxiosInterceptor = () => {
+  // Apply shared timeout defaults to both axios instances so requests cannot
+  // hang indefinitely on slow or stalled networks.
+  axios.defaults.timeout = API_REQUEST_TIMEOUT_MS;
+  axios.defaults.timeoutErrorMessage = API_TIMEOUT_ERROR_MESSAGE;
+  authAxios.defaults.timeout = API_REQUEST_TIMEOUT_MS;
+  authAxios.defaults.timeoutErrorMessage = API_TIMEOUT_ERROR_MESSAGE;
+
   // Guard against duplicate interceptor registration during re-renders.
   if (interceptorInitialized) {
     return;
@@ -55,8 +90,8 @@ export const setupAxiosInterceptor = () => {
 
   interceptorInitialized = true;
 
-  // Attach 401 handler to both the global axios instance (used by existing hooks)
+  // Attach error handler to both the global axios instance (used by existing hooks)
   // and authAxios (used by new/migrated code with the request interceptor).
-  axios.interceptors.response.use(response => response, handle401Error);
-  authAxios.interceptors.response.use(response => response, handle401Error);
+  axios.interceptors.response.use(response => response, handleError);
+  authAxios.interceptors.response.use(response => response, handleError);
 };

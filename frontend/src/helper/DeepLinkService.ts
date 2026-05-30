@@ -95,7 +95,6 @@ const resolveDeepLinkTarget = (url: string): DeepLinkTarget | null => {
         name: 'PodcastDetail',
         params: {
           trackId,
-          audioUrl: queryParams.audioUrl,
         },
       };
     }
@@ -129,7 +128,6 @@ const resolveDeepLinkTarget = (url: string): DeepLinkTarget | null => {
       name: 'PodcastDetail',
       params: {
         trackId,
-        audioUrl: queryParams.audioUrl,
       },
     };
   }

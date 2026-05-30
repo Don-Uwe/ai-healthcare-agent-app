@@ -56,17 +56,12 @@ export const secureRemoveItem = async (key: SecureKey): Promise<boolean> => {
   }
 };
 
-/**
- * Clears all known secure keys from SecureStore.
- * Call this on logout or full storage reset.
- */
 export const secureClearAllItems = async (): Promise<void> => {
-  const keys = Object.values(SECURE_KEYS) as SecureKey[];
-  await Promise.all(
-    keys.map(key =>
-      SecureStore.deleteItemAsync(key).catch(error =>
-        console.error(`[SecureStorage] Error clearing key "${key}":`, error),
-      ),
-    ),
-  );
+  try {
+    await Promise.all(
+      Object.values(SECURE_KEYS).map(key => SecureStore.deleteItemAsync(key))
+    );
+  } catch (error) {
+    console.error('[SecureStorage] Error clearing all items:', error);
+  }
 };
