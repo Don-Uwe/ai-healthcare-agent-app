@@ -1,0 +1,173 @@
+name: Knip Dead Code Check
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "frontend/**"
+      - "frontend/pnpm-workspace.yaml"
+      - ".github/workflows/knip-check.yml"
+      - "docs/KNIP_GUIDE.md"
+      - "docs/KNIP_CONTRIBUTOR_GUIDE.md"
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - "frontend/**"
+      - "frontend/pnpm-workspace.yaml"
+      - ".github/workflows/knip-check.yml"
+      - "docs/KNIP_GUIDE.md"
+      - "docs/KNIP_CONTRIBUTOR_GUIDE.md"
+  schedule:
+    - cron: "0 2 * * *"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  knip:
+    name: Analyze unused code
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: ./frontend
+    env:
+      CI: true
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: "pnpm"
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Knip analyses
+        id: knip
+        shell: bash
+        run: |
+          set +e
+
+          run_check() {
+            local name="$1"
+            shift
+            local output="../knip-${name}.txt"
+
+            echo "Running $name: $*"
+            "$@" > "$output" 2>&1
+            local status=$?
+            echo "${name}_status=${status}" >> "$GITHUB_OUTPUT"
+
+            if [ "$status" -eq 0 ]; then
+              echo "PASS: $name"
+            else
+              echo "FAIL: $name"
+              cat "$output"
+            fi
+          }
+
+          run_check full pnpm knip
+          run_check dependencies pnpm knip --dependencies
+          run_check files pnpm knip --files
+          run_check exports pnpm knip --exports
+
+          exit 0
+
+      - name: Comment Knip results on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            const checks = [
+              ['Full analysis', 'full', '${{ steps.knip.outputs.full_status }}'],
+              ['Dependencies', 'dependencies', '${{ steps.knip.outputs.dependencies_status }}'],
+              ['Files', 'files', '${{ steps.knip.outputs.files_status }}'],
+              ['Exports', 'exports', '${{ steps.knip.outputs.exports_status }}']
+            ];
+
+            const root = process.env.GITHUB_WORKSPACE;
+            const rows = checks.map(([label, key, status]) => {
+              const icon = status === '0' ? 'PASS' : 'NEEDS REVIEW';
+              return `| ${label} | ${icon} | \`${status || 'unknown'}\` |`;
+            });
+
+            const sections = checks.map(([label, key]) => {
+              const file = path.join(root, `knip-${key}.txt`);
+              const text = fs.existsSync(file) ? fs.readFileSync(file, 'utf8').trim() : '';
+              const output = text.length > 0 ? text.slice(0, 5000) : 'No output.';
+              return `<details><summary>${label}</summary>\n\n\`\`\`text\n${output}\n\`\`\`\n\n</details>`;
+            });
+
+            const marker = '<!-- knip-dead-code-check -->';
+            const body = `${marker}
+            ## Knip Dead Code Check
+
+            Knip ran in non-blocking mode for this PR. Review any findings before merge.
+
+            | Check | Result | Exit code |
+            | --- | --- | --- |
+            ${rows.join('\n')}
+
+            ${sections.join('\n\n')}
+
+            Docs: \`docs/KNIP_GUIDE.md\` and \`docs/KNIP_CONTRIBUTOR_GUIDE.md\``;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+
+            const previous = comments.find(comment =>
+              comment.user.type === 'Bot' && comment.body.includes(marker)
+            );
+
+            if (previous) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: previous.id,
+                body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body
+              });
+            }
+
+      - name: Enforce Knip on main and develop
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          if [ "${{ steps.knip.outputs.full_status }}" != "0" ] ||
+             [ "${{ steps.knip.outputs.dependencies_status }}" != "0" ] ||
+             [ "${{ steps.knip.outputs.files_status }}" != "0" ] ||
+             [ "${{ steps.knip.outputs.exports_status }}" != "0" ]; then
+            echo "Knip found issues on a protected branch."
+            exit 1
+          fi
