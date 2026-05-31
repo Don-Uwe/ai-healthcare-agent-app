@@ -407,6 +407,9 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
       // finished all chunks
       setIsPlaying(false);
       setIsPaused(false);
+      setPlayerVisible(false);
+      Tts.removeAllListeners('tts-finish');
+      Tts.removeAllListeners('tts-error');
       return;
     }
     const chunk = words.slice(chunkIndex, chunkIndex + CHUNK_SIZE).join(' ');
@@ -438,6 +441,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
       Tts.addEventListener('tts-error', e => {
         console.log('TTS Error:', e);
         setIsPlaying(false);
+        setIsPaused(false);
+        setPlayerVisible(false);
       });
 
       setIsPlaying(true);
@@ -446,6 +451,9 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
       speakNextChunk();
     } catch (error) {
       console.log('TTS Error:', error);
+      setIsPlaying(false);
+      setIsPaused(false);
+      setPlayerVisible(false);
     }
   };
 
@@ -516,6 +524,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
         Tts.addEventListener('tts-error', e => {
           console.log('TTS Error:', e);
           setIsPlaying(false);
+          setIsPaused(false);
+          setPlayerVisible(false);
         });
         speakNextChunk();
       });
@@ -1105,8 +1115,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
             {/* Play / Pause button */}
             <TouchableOpacity
               style={styles.ttsControlButton}
-              onPress={handleTtsPause}
-              disabled={!isPlaying && !isPaused}>
+              onPress={handleTtsPause}>
               <FontAwesome5
                 name={isPaused ? 'play' : 'pause'}
                 size={18}
