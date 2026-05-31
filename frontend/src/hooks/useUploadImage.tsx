@@ -3,6 +3,7 @@ import { showAlert } from '@/src/store/alertSlice';
 import { useDispatch } from 'react-redux';
 import { Alert } from 'react-native';
 import { UPLOAD_STORAGE } from '../helper/APIUtils';
+import { fetchWithTimeout } from '../helper/ApiTimeout';
 
 const useUploadImage = () => {
   const [loading, setLoading] = useState(false);
@@ -25,7 +26,7 @@ const useUploadImage = () => {
 
       //formData.append('file', uri);
 
-      const response = await fetch(UPLOAD_STORAGE, {
+      const response = await fetchWithTimeout(UPLOAD_STORAGE, {
         method: 'POST',
         
         body: formData,

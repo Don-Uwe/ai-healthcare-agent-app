@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {FlatList, Pressable, View, StyleSheet} from 'react-native';
 import {OfflinePodcastListProp, PodcastData} from '../type';
 import {deleteFromDownloads, msToTime, readDownloadedPodcasts} from '../helper/Utils';

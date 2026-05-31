@@ -139,4 +139,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PodcastSkeletonCard;
+export default PodcastSkeletonCard;

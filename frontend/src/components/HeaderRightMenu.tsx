@@ -48,12 +48,21 @@ const HeaderRightMenu = ({onClick}: Props) => {
   }, []);
 
 
-  const handleCategorySelection = (category: CategoryType) => {
-    setSelectedCategoryList(prevList =>
-      prevList.some((p: Category) => p.id === category.id)
-        ? prevList.filter(item => item.id !== category.id)
-        : [...prevList, category as Category],
-    );
+  const handleCategorySelection = (category: any) => {
+    setSelectedCategoryList(prevList => {
+      const isAlreadySelected = prevList.some((p: Category) => 
+        (p.id !== undefined && category.id !== undefined && p.id === category.id) ||
+        (p._id !== undefined && category._id !== undefined && p._id === category._id) ||
+        (p.name === category.name)
+      );
+      return isAlreadySelected
+        ? prevList.filter(item => !(
+            (item.id !== undefined && category.id !== undefined && item.id === category.id) ||
+            (item._id !== undefined && category._id !== undefined && item._id === category._id) ||
+            (item.name === category.name)
+          ))
+        : [...prevList, category as Category];
+    });
   };
 
   const handleFilterReset = () => {
