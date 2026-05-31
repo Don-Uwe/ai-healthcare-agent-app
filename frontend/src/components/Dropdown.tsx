@@ -19,7 +19,7 @@ import AddSpecializationModal from './AddSpecializationModal';
 
 interface Props {
   label: string;
-  data: Array<{name: string; id: number}>;
+  data: {name: string; id: number}[];
   handleAddSpecialization: (specialization: string) => void;
   isModalVisible: boolean;
   setIsModalVisible: Dispatch<SetStateAction<boolean>>;

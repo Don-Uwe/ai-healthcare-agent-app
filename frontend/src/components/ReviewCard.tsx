@@ -8,7 +8,7 @@ import {
 import React, { useState } from 'react';
 import {fp, hp} from '../helper/Metric';
 import {ReviewCardProps} from '../type';
-import moment from 'moment';
+import { formatDateShortYear } from '../helper/dateUtils';
 import {BUTTON_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import {formatCount, StatusEnum} from '../helper/Utils';
 import {
@@ -120,7 +120,7 @@ const ReviewCard = ({
 
           <Text style={styles.footerText1}>
             Last updated: {''}
-            {moment(new Date(item?.lastUpdated)).format('DD/MM/YYYY')}
+            {formatDateShortYear(item?.lastUpdated)}
           </Text>
 
           <View style={styles.viewContainer}>

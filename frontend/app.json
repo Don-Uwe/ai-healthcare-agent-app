@@ -3,7 +3,7 @@
     "name": "UltimateHealth",
     "slug": "UltimateHealth",
 
-    "version": "2.1.0",
+    "version": "2.2.0",
     "orientation": "portrait",
     "icon": "./assets/images/ic_ultimatehealth_appicon.png",
     "scheme": "ultimatehealth",
@@ -77,11 +77,10 @@
       "versionCode": 21
     },
     "web": {
-      "output": "static",
+      "output": "single",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router",
       "@react-native-firebase/app",
       "expo-notifications",
       [
@@ -111,14 +110,13 @@
           }
         }
       ],
-      "./plugins/withWebViewDebug.js"
+      "./plugins/withWebViewDebug.js",
+      "@sentry/react-native/expo"
     ],
     "experiments": {
-      "typedRoutes": true,
       "reactCompiler": true
     },
     "extra": {
-      "router": {},
       "eas": {
         "projectId": "bdd3feee-d70b-4f27-9be5-33edb8b864f4"
       }

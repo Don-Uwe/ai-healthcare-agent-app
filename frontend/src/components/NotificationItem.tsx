@@ -1,4 +1,4 @@
-import moment from 'moment';
+import { formatTimeWithDate } from '../helper/dateUtils';
 import React from 'react';
 import {
   Pressable,
@@ -40,7 +40,7 @@ export default function NotificationItem({
           </Text>
           <Text style={styles.footerText}>
             Received at: {''}
-            {moment(new Date(item?.timestamp)).format('hh:mm A DD/MM/YYYY')}
+            {formatTimeWithDate(item?.timestamp)}
           </Text>
         </View>
 
