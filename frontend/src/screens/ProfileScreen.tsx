@@ -252,6 +252,9 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
           <TouchableOpacity 
             style={[styles.tabButton, activeTab === 'Insight' && { borderBottomColor: tabColors.activeText }]}
             onPress={() => setActiveTab('Insight')}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: activeTab === 'Insight' }}
+            accessibilityLabel="Insight tab"
           >
             <Text style={[styles.tabButtonText, { color: activeTab === 'Insight' ? tabColors.activeText : tabColors.inactiveText }]}>
               Insight
@@ -260,6 +263,9 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
           <TouchableOpacity 
             style={[styles.tabButton, activeTab === 'Reposts' && { borderBottomColor: tabColors.activeText }]}
             onPress={() => setActiveTab('Reposts')}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: activeTab === 'Reposts' }}
+            accessibilityLabel={`Reposts tab, ${user?.repostArticles.length || 0} reposts`}
           >
             <Text style={[styles.tabButtonText, { color: activeTab === 'Reposts' ? tabColors.activeText : tabColors.inactiveText }]}>
               Reposts ({user?.repostArticles.length || 0})
@@ -268,6 +274,9 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
           <TouchableOpacity 
             style={[styles.tabButton, activeTab === 'Saved' && { borderBottomColor: tabColors.activeText }]}
             onPress={() => setActiveTab('Saved')}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: activeTab === 'Saved' }}
+            accessibilityLabel={`Saved tab, ${user?.savedArticles.length || 0} saved articles`}
           >
             <Text style={[styles.tabButtonText, { color: activeTab === 'Saved' ? tabColors.activeText : tabColors.inactiveText }]}>
               Saved ({user?.savedArticles.length || 0})

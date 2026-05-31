@@ -223,19 +223,7 @@ const ProfileHeader = ({
         {/* Secondary Actions List */}
         {other && (
           <View style={styles.secondaryActionContainer}>
-            <AccessibleTouchable 
-              activeOpacity={0.7}
-              onPress={() => (navigation as any).navigate('ProfileEditScreen')}
-              accessibilityLabel="Edit profile"
-              accessibilityHint="Navigates to edit profile screen"
-              style={[styles.listButton, {backgroundColor: themeColors.card, borderColor: themeColors.border}]}
-            >
-              <View style={[styles.listButtonIconBg, { backgroundColor: themeColors.iconBackground }]}>
-                 <MaterialIcons name="edit" size={22} color={PRIMARY_COLOR} />
-              </View>
-              <Text style={[styles.listButtonText, {color: themeColors.text}]}>Edit Profile</Text>
-              <MaterialIcons name="chevron-right" size={24} color={themeColors.textSecondary} />
-            </AccessibleTouchable>
+            {/* Edit Profile is already shown in the primary action button above */}
 
             <AccessibleTouchable 
               activeOpacity={0.7}

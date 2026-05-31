@@ -128,6 +128,9 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   // Accumulates all raw articles fetched across pages so we can
   // re-apply the active category/sort filter whenever either changes.
   const allArticlesRef = useRef<ArticleData[]>([]);
+  // Tracks the last known filtered count for the active category so we don't
+  // keep fetching pages when a niche category yields no new articles per page.
+  const lastCategoryFilteredCountRef = useRef<number>(-1);
   const {data: user, refetch: refetchUser} = useGetProfile();
   const {data: categoryData, isSuccess} = useGetCategories(isConnected);
 
@@ -224,6 +227,9 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     // We do NOT clear already-fetched raw articles, allowing instant switching
     // and seamless client-side filtering.
     setShowSavedOnly(false);
+    // Reset the sparse-category guard so the newly selected category gets a
+    // fresh auto-pagination opportunity from the current page.
+    lastCategoryFilteredCountRef.current = -1;
     setSelectedCategory(category);
   };
 
@@ -397,6 +403,8 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       page >= totalPages ||
       !selectedCategory
     ) {
+      // Reset stale counter whenever the category changes or we stop paginating.
+      if (!selectedCategory) lastCategoryFilteredCountRef.current = -1;
       return;
     }
 
@@ -407,8 +415,14 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     );
 
     // If we have fewer than 5 articles for the active category,
-    // fetch the next page in the background to try and find more matches.
-    if (currentFiltered.length < 5) {
+    // fetch the next page in the background to try and find more matches —
+    // but only if the last fetch actually added new articles for this category.
+    // This prevents infinite fetching when a category is genuinely sparse.
+    if (
+      currentFiltered.length < 5 &&
+      currentFiltered.length > lastCategoryFilteredCountRef.current
+    ) {
+      lastCategoryFilteredCountRef.current = currentFiltered.length;
       setPage(prev => prev + 1);
     }
   }, [
