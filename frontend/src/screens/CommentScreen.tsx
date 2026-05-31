@@ -270,8 +270,10 @@ const CommentScreen = ({
   const handleMentionClick = (
     user_handle: string,
   ) => {
+
+    console.log('Mention clicked:', user_handle);
     navigation.navigate('UserProfileScreen', {
-      author_handle: user_handle.substring(1),
+      author_handle: user_handle,
     });
   };
 
@@ -386,10 +388,13 @@ const CommentScreen = ({
       <View style={styles.suggestionsContainer}>
         {suggestions
           .filter(one =>
+            one &&
+            one.user_handle &&
+            typeof one.user_handle === 'string' &&
             one.user_handle
               .toLowerCase()
               .includes(
-                keyword.toLowerCase(),
+                (keyword || '').toLowerCase(),
               ),
           )
           .map(one => (

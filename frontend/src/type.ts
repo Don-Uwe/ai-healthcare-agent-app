@@ -95,6 +95,7 @@ export type RootStackParamList = {
   NotificationScreen: undefined;
   UserProfileScreen: {
     authorId?: User | string;
+    userId?: string;
     author_handle?: string;
   };
   ProfileEditScreen: undefined;

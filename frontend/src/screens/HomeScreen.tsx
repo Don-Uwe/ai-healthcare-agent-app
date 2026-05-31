@@ -152,8 +152,17 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const handleCategorySelection = (category: Category) => {
     // Update Redux State
     setSelectCategoryList(prevList => {
-      const updatedList = prevList.some(p => p.id === category.id)
-        ? prevList.filter(item => item.id !== category.id)
+      const isAlreadySelected = prevList.some(p => 
+        (p.id !== undefined && category.id !== undefined && p.id === category.id) ||
+        (p._id !== undefined && category._id !== undefined && p._id === category._id) ||
+        (p.name === category.name)
+      );
+      const updatedList = isAlreadySelected
+        ? prevList.filter(item => !(
+            (item.id !== undefined && category.id !== undefined && item.id === category.id) ||
+            (item._id !== undefined && category._id !== undefined && item._id === category._id) ||
+            (item.name === category.name)
+          ))
         : [...prevList, category];
       return updatedList;
     });
@@ -371,6 +380,11 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     }
   }, [articleData, page]);
 
+  // Keep filteredArticles and articles list updated when selectedTags or sortType changes
+  useEffect(() => {
+    updateArticles(allArticlesRef.current);
+  }, [selectedTags, sortType]);
+
   // Proactively auto-paginate in the background if the client-filtered list is too short
   // to ensure that at least a few articles of the selected category are shown
   // or we have exhaustively searched all pages from the backend.
@@ -437,12 +451,15 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     } else {
       dispatch(setSearchMode({searchMode: true}));
       const matchesSearch = articleData?.articles.filter(article => {
-        const matchesTitle = article.title
-          .toLowerCase()
-          .includes(textInput.toLowerCase());
-        const matchesTags = article.tags.some(tag =>
-          tag.name.toLowerCase().includes(textInput.toLowerCase()),
-        );
+        const matchesTitle = article.title && typeof article.title === 'string'
+          ? article.title.toLowerCase().includes((textInput || '').toLowerCase())
+          : false;
+        const matchesTags = article.tags && Array.isArray(article.tags)
+          ? article.tags.some(tag =>
+              tag && tag.name && typeof tag.name === 'string' &&
+              tag.name.toLowerCase().includes((textInput || '').toLowerCase())
+            )
+          : false;
 
         return matchesTitle || matchesTags;
       });
@@ -594,7 +611,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
               selectedTags.length > 0 &&
               !searchMode &&
               selectedTags.map((item: Category, index: number) => {
-                const isActive = selectedCategory && selectedCategory._id === item._id;
+                const isActive = selectedCategory && (selectedCategory._id === item._id || selectedCategory.id === item.id || selectedCategory.name === item.name);
                 return (
                   <TouchableOpacity
                     key={index}
@@ -705,7 +722,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
               // they are still clickable to switch away from Saved mode.
               const isActive = !showSavedOnly &&
                 selectedCategory &&
-                selectedCategory._id === item._id;
+                (selectedCategory._id === item._id || selectedCategory.id === item.id || selectedCategory.name === item.name);
               return (
                 <TouchableOpacity
                   key={index}
@@ -733,7 +750,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       </View>
       <View style={styles.articleContainer}>
         <FlatList
-          data={listData.sort(() => Math.random() - 0.5)}
+          data={listData}
           renderItem={renderItem}
           keyExtractor={item => item._id.toString()}
           contentContainerStyle={styles.flatListContentContainer}

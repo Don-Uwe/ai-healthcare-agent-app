@@ -32,7 +32,7 @@ import { NoArticleState } from '../components/EmptyStates';
 const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   const theme = useTheme();
   const isDarkMode = useColorScheme() === 'dark';
-  const {authorId, author_handle} = route.params;
+  const {authorId, userId, author_handle} = (route.params || {}) as any;
   const {user_id, user_handle} = useSelector(
     (state: any) => state.user,
   );
@@ -53,7 +53,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   const {mutate: updateViewCount} = useUpdateViewCount(articleId ?? 0);
 
   // Get the actual authorId string
-  const actualAuthorId = typeof authorId === 'string' ? authorId : authorId?._id || '';
+  const actualAuthorId = typeof authorId === 'string' ? authorId : authorId?._id || userId || '';
 
   const {
     data: user,

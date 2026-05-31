@@ -113,7 +113,7 @@ const NotificationScreen = ({navigation}: any) => {
       });
     } else if (item.type === NotificationType.UserFollow && item.userId) {
       navigation.navigate('UserProfileScreen', {
-        userId: item.userId._id,
+        authorId: item.userId._id,
       });
     } else if (item.type === NotificationType.CommentLike) {
       if (item.podcastId) {

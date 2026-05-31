@@ -40,14 +40,19 @@ const CategoriesFlatlistModal = ({
   const filteredCategories = useMemo(() => {
     if (!searchQuery.trim()) return categories;
     return categories.filter(cat =>
-      cat.name.toLowerCase().includes(searchQuery.toLowerCase())
+      cat && cat.name && typeof cat.name === 'string' &&
+      cat.name.toLowerCase().includes((searchQuery || '').toLowerCase())
     );
   }, [categories, searchQuery]);
 
   // Function to render each category item
   const renderItem = useCallback(
     ({item}: {item: Category}) => {
-      const isSelected = selectCategoryList.some(i => i.id === item?.id);
+      const isSelected = selectCategoryList.some(i => 
+        (i.id !== undefined && item?.id !== undefined && i.id === item.id) ||
+        (i._id !== undefined && item?._id !== undefined && i._id === item._id) ||
+        (i.name === item?.name)
+      );
       return (
         <AccessibleTouchable
           accessibilityLabel={item.name}

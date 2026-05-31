@@ -9,14 +9,15 @@ export const useGetAuthorProfile = (
   user_id: string,
   isConnected: boolean
 ): UseQueryResult<User | undefined, AxiosError> => {
+  const cleanHandle = author_handle && author_handle.startsWith('@') ? author_handle.slice(1) : author_handle;
   return useQuery({
-    queryKey: ['get-user-profile'],
+    queryKey: ['get-user-profile', authorId, cleanHandle, user_id],
     queryFn: async () => {
       let url: string;
       if (authorId) {
         url = `${PROD_URL}/user/getuserprofile?id=${authorId}`;
-      } else if (author_handle) {
-        url = `${PROD_URL}/user/getuserprofile?handle=${author_handle}`;
+      } else if (cleanHandle) {
+        url = `${PROD_URL}/user/getuserprofile?handle=${cleanHandle}&user_handle=${cleanHandle}&username=${cleanHandle}`;
       } else {
         url = `${PROD_URL}/user/getuserprofile?id=${user_id}`;
       }

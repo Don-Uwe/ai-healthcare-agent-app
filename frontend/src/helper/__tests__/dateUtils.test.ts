@@ -17,8 +17,8 @@ describe('dateUtils', () => {
   describe('parseDbTimestamp', () => {
     it('safely parses timestamps with missing timezone suffixes as local time', () => {
       const parsed = parseDbTimestamp('2026-05-26 14:30:00');
-      // Since deviceTimeZone mock is UTC, local time equals UTC in this test context
-      expect(parsed?.toISOString()).toBe('2026-05-26T14:30:00.000Z');
+      const expectedIso = new Date('2026-05-26T14:30:00').toISOString();
+      expect(parsed?.toISOString()).toBe(expectedIso);
     });
 
     it('safely parses timestamps with existing Z', () => {

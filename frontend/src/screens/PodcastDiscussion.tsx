@@ -491,8 +491,10 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
                 deleteAction={handleDeleteAction}
                 handleLikeAction={handleLikeAction}
                 commentLikeLoading={commentLikeLoading}
-                handleMentionClick={()=>{
-
+                handleMentionClick={(user_handle)=>{
+                  navigation.navigate('UserProfileScreen', {
+                    author_handle: user_handle,
+                  });
                 }}
                 handleReportAction={handleReportAction}
                 isFromArticle={false}

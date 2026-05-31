@@ -70,15 +70,17 @@ export default function CommentItem({
 
   // Render mentions inline
   const renderTextWithMentions = (text: string) => {
-    const regex = /(@\w+)/g;
+    const regex = /(@[\w-]+)/g;
     const parts = text.split(regex);
     return parts.map((part, index) =>
-      regex.test(part) ? (
-        <TouchableOpacity key={index} onPress={() => handleMentionClick(part)}>
-          <Text color="$blue10" fontWeight="700">
-            {part}
-          </Text>
-        </TouchableOpacity>
+      /^@[\w-]+$/.test(part) ? (
+        <Text
+          key={index}
+          color="$blue10"
+          fontWeight="700"
+          onPress={() => handleMentionClick(part)}>
+          {part}
+        </Text>
       ) : (
         <Text key={index}>{part}</Text>
       ),
