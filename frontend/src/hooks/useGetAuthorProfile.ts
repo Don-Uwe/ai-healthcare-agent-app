@@ -9,7 +9,7 @@ export const useGetAuthorProfile = (
   user_id: string,
   isConnected: boolean
 ): UseQueryResult<User | undefined, AxiosError> => {
-  const cleanHandle = author_handle && author_handle.startsWith('@') ? author_handle.slice(1) : author_handle;
+  const cleanHandle = author_handle?.startsWith('@') ? author_handle.slice(1) : author_handle;
   return useQuery({
     queryKey: ['get-user-profile', authorId, cleanHandle, user_id],
     queryFn: async () => {

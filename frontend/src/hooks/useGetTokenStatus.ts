@@ -19,7 +19,7 @@ import { useSelector } from 'react-redux';
         },
         // Use a custom validateStatus so 401 does NOT throw and
         // does NOT trigger the global interceptor's session-clear logic.
-        validateStatus: status => status < 500,
+        //validateStatus: status => status < 500,
       },
     );
     if (res.status === 401 || res.status === 403) {

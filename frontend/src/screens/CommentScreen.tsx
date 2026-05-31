@@ -274,6 +274,7 @@ const CommentScreen = ({
     console.log('Mention clicked:', user_handle);
     navigation.navigate('UserProfileScreen', {
       author_handle: user_handle,
+      userHandle: user_handle,
     });
   };
 

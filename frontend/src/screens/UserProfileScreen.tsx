@@ -1,7 +1,6 @@
 import {
   StyleSheet,
   View,
-  Text,
   Alert,
   TouchableOpacity,
   useColorScheme,
@@ -33,6 +32,7 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   const theme = useTheme();
   const isDarkMode = useColorScheme() === 'dark';
   const {authorId, userId, author_handle} = (route.params || {}) as any;
+  const {userId: routeUserId, userHandle: routeUserHandle} = (route.params || {}) as any; 
   const {user_id, user_handle} = useSelector(
     (state: any) => state.user,
   );
@@ -53,13 +53,13 @@ const UserProfileScreen = ({navigation, route}: UserProfileScreenProp) => {
   const {mutate: updateViewCount} = useUpdateViewCount(articleId ?? 0);
 
   // Get the actual authorId string
-  const actualAuthorId = typeof authorId === 'string' ? authorId : authorId?._id || userId || '';
-
+ // const actualAuthorId = typeof authorId === 'string' ? authorId : authorId?._id || userId || '';
+  const actualAuthorId = routeUserId || user_id; // Prioritize routeUserId, fallback to current user_id
   const {
     data: user,
     refetch,
     isLoading,
-  } = useGetAuthorProfile(actualAuthorId, author_handle, user_id, isConnected);
+  } = useGetAuthorProfile(actualAuthorId, routeUserHandle, user_id, isConnected);
 
   const isDoctor = user !== undefined ? user.isDoctor : false;
   //const bottomBarHeight = useBottomTabBarHeight();

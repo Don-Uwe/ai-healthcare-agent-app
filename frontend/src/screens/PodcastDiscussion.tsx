@@ -494,6 +494,7 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
                 handleMentionClick={(user_handle)=>{
                   navigation.navigate('UserProfileScreen', {
                     author_handle: user_handle,
+                    userHandle: user_handle,
                   });
                 }}
                 handleReportAction={handleReportAction}

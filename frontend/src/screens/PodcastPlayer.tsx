@@ -78,7 +78,7 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
     if (!player) return;
     // If the track has fully finished, restart from the beginning.
     // Otherwise resume from the current paused position.
-    if (duration > 0 && position >= duration) {
+    if (duration > 0 && !isNaN(duration) && position >= duration - 0.5){
       await player.seekTo(0);
       setPosition(0);
     }

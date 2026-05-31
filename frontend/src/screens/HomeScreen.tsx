@@ -131,6 +131,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   // Tracks the last known filtered count for the active category so we don't
   // keep fetching pages when a niche category yields no new articles per page.
   const lastCategoryFilteredCountRef = useRef<number>(-1);
+  const prevSelectedCategoryNameRef = useRef<string | undefined>(undefined);
   const {data: user, refetch: refetchUser} = useGetProfile();
   const {data: categoryData, isSuccess} = useGetCategories(isConnected);
 
@@ -155,17 +156,9 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const handleCategorySelection = (category: Category) => {
     // Update Redux State
     setSelectCategoryList(prevList => {
-      const isAlreadySelected = prevList.some(p => 
-        (p.id !== undefined && category.id !== undefined && p.id === category.id) ||
-        (p._id !== undefined && category._id !== undefined && p._id === category._id) ||
-        (p.name === category.name)
-      );
+       const isAlreadySelected = prevList.some(p => p._id === category._id);
       const updatedList = isAlreadySelected
-        ? prevList.filter(item => !(
-            (item.id !== undefined && category.id !== undefined && item.id === category.id) ||
-            (item._id !== undefined && category._id !== undefined && item._id === category._id) ||
-            (item.name === category.name)
-          ))
+        ? prevList.filter(item => item._id !== category._id)
         : [...prevList, category];
       return updatedList;
     });
@@ -404,7 +397,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       !selectedCategory
     ) {
       // Reset stale counter whenever the category changes or we stop paginating.
-      if (!selectedCategory) lastCategoryFilteredCountRef.current = -1;
+      if (!selectedCategory || selectedCategory.name !== prevSelectedCategoryNameRef.current) lastCategoryFilteredCountRef.current = -1;
       return;
     }
 
@@ -422,6 +415,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       currentFiltered.length < 5 &&
       currentFiltered.length > lastCategoryFilteredCountRef.current
     ) {
+       prevSelectedCategoryNameRef.current = selectedCategory.name; 
       lastCategoryFilteredCountRef.current = currentFiltered.length;
       setPage(prev => prev + 1);
     }

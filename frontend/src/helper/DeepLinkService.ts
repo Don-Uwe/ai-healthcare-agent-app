@@ -130,6 +130,8 @@ const resolveDeepLinkTarget = (url: string): DeepLinkTarget | null => {
       params: {
         authorId,
         author_handle: queryParams.author_handle,
+        userHandle: queryParams.user_handle,
+        userId: queryParams.userId,
       },
     };
   }
