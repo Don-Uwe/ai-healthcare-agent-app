@@ -17,10 +17,10 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import MaterialCommunityIcon from '@expo/vector-icons/MaterialCommunityIcons';
 import Feather from '@expo/vector-icons/Feather';
-import {RootStackParamList} from '../type';
+import {RootStackParamList,ProfileHeaderProps} from '../type';
 import {NavigationProp} from '@react-navigation/native';
 import {fp, hp, wp} from '../helper/Metric';
-import {ProfileHeaderProps} from '../type';
+
 
 import {GET_STORAGE_DATA} from '../helper/APIUtils';
 import {useSelector} from 'react-redux';
@@ -114,55 +114,70 @@ const ProfileHeader = ({
           </View>
         )}
 
-        {/* Primary Actions */}
-        {!other && (
-          <View style={styles.primaryActionContainer}>
-            {isDoctor ? (
-              <View style={styles.contactContainer}>
-                <AccessibleTouchable
-                  activeOpacity={0.7}
-                  onPress={() => handleCall(userPhoneNumber)}
-                  accessibilityLabel="Call doctor"
-                  accessibilityHint="Opens phone dialer to call the doctor"
-                  style={[styles.iconButton, {backgroundColor: PRIMARY_COLOR}]}>
-                  <MaterialIcons name="phone-in-talk" size={22} color="#ffffff" />
-                </AccessibleTouchable>
-                <AccessibleTouchable
-                  activeOpacity={0.7}
-                  onPress={() => handleMail(userEmailID)}
-                  accessibilityLabel="Send email"
-                  accessibilityHint="Opens mail app to send an email"
-                  style={[styles.iconButton, {backgroundColor: PRIMARY_COLOR}]}>
-                  <MaterialIcons name="email" size={22} color="#ffffff" />
-                </AccessibleTouchable>
-              </View>
-            ) : (
-              <AccessibleTouchable 
+        {/* Primary Actions:
+            - other === false: viewing someone else — show Follow/Unfollow OR doctor Call/Email
+            - other === true: viewing own profile — show prominent Edit Profile button
+            Doctors always see their own Call/Email buttons on their own profile too. */}
+        <View style={styles.primaryActionContainer}>
+          {other ? (
+            // Own profile: prominent Edit Profile button
+            <AccessibleTouchable
+              activeOpacity={0.7}
+              onPress={() => (navigation as any).navigate('ProfileEditScreen')}
+              accessibilityLabel="Edit profile"
+              accessibilityHint="Navigates to edit profile screen"
+              style={[styles.primaryBtn, {backgroundColor: PRIMARY_COLOR}]}
+            >
+              <MaterialIcons name="edit" size={20} color="#ffffff" />
+              <Text style={[styles.primaryBtnText, {color: '#ffffff'}]}>Edit Profile</Text>
+            </AccessibleTouchable>
+          ) : isDoctor ? (
+            // Viewing a doctor's profile: Call & Email
+            <View style={styles.contactContainer}>
+              <AccessibleTouchable
                 activeOpacity={0.7}
-                onPress={onFollowClick}
-                accessibilityLabel={isFollowing ? "Following user" : "Follow user"}
-                accessibilityHint={isFollowing ? "Unfollow this user" : "Follow this user"}
-                style={[
-                  styles.primaryBtn, 
-                  { 
-                    backgroundColor: isFollowing ? 'transparent' : PRIMARY_COLOR, 
-                    borderWidth: isFollowing ? 1.5 : 0, 
-                    borderColor: PRIMARY_COLOR 
-                  }
-                ]}
-              >
-                <MaterialIcons
-                  name={isFollowing ? "person-outline" : "person-add"}
-                  size={20}
-                  color={isFollowing ? PRIMARY_COLOR : '#ffffff'}
-                />
-                <Text style={[styles.primaryBtnText, { color: isFollowing ? PRIMARY_COLOR : '#ffffff' }]}>
-                  {isFollowing ? 'Following' : 'Follow'}
-                </Text>
+                onPress={() => handleCall(userPhoneNumber)}
+                accessibilityLabel="Call doctor"
+                accessibilityHint="Opens phone dialer to call the doctor"
+                style={[styles.iconButton, {backgroundColor: PRIMARY_COLOR}]}>
+                <MaterialIcons name="phone-in-talk" size={22} color="#ffffff" />
               </AccessibleTouchable>
-            )}
-          </View>
-        )}
+              <AccessibleTouchable
+                activeOpacity={0.7}
+                onPress={() => handleMail(userEmailID)}
+                accessibilityLabel="Send email"
+                accessibilityHint="Opens mail app to send an email"
+                style={[styles.iconButton, {backgroundColor: PRIMARY_COLOR}]}>
+                <MaterialIcons name="email" size={22} color="#ffffff" />
+              </AccessibleTouchable>
+            </View>
+          ) : (
+            // Viewing a regular user's profile: Follow/Unfollow
+            <AccessibleTouchable
+              activeOpacity={0.7}
+              onPress={onFollowClick}
+              accessibilityLabel={isFollowing ? 'Following user' : 'Follow user'}
+              accessibilityHint={isFollowing ? 'Unfollow this user' : 'Follow this user'}
+              style={[
+                styles.primaryBtn,
+                {
+                  backgroundColor: isFollowing ? 'transparent' : PRIMARY_COLOR,
+                  borderWidth: isFollowing ? 1.5 : 0,
+                  borderColor: PRIMARY_COLOR,
+                },
+              ]}
+            >
+              <MaterialIcons
+                name={isFollowing ? 'person-outline' : 'person-add'}
+                size={20}
+                color={isFollowing ? PRIMARY_COLOR : '#ffffff'}
+              />
+              <Text style={[styles.primaryBtnText, {color: isFollowing ? PRIMARY_COLOR : '#ffffff'}]}>
+                {isFollowing ? 'Following' : 'Follow'}
+              </Text>
+            </AccessibleTouchable>
+          )}
+        </View>
 
         {/* Stats Cards */}
         {isDoctor && (

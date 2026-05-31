@@ -1,8 +1,8 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {FlatList, Pressable, View, StyleSheet} from 'react-native';
 import {OfflinePodcastListProp, PodcastData} from '../type';
 import {deleteFromDownloads, msToTime, retrieveItem} from '../helper/Utils';
-import {useEffect, useState} from 'react';
+
 import PodcastCard from '../components/PodcastCard';
 import PodcastEmptyComponent from '../components/PodcastEmptyComponent';
 import {hp} from '../helper/Metric';

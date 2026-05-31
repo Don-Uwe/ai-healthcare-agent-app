@@ -313,7 +313,7 @@ export default function OfflinePodcastDetail({
           {formatDateWithTime(podcast?.updated_at)}
         </Text>
         {podcast && (
-          // eslint-disable-next-line react/react-in-jsx-scope
+           
           <Text style={styles.metaText}>
             {podcast?.viewUsers.length <= 1
               ? `${podcast?.viewUsers.length} view`

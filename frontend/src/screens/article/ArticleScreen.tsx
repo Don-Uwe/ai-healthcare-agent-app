@@ -1084,10 +1084,11 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
               </Text>
             </TouchableOpacity>
 
-            {/* Play / Pause button */}
+            {/* Play / Pause button — disabled if neither playing nor paused */}
             <TouchableOpacity
-              style={styles.ttsControlButton}
-              onPress={handleTtsPause}>
+              style={[styles.ttsControlButton, (!isPlaying && !isPaused) && {opacity: 0.4}]}
+              onPress={handleTtsPause}
+              disabled={!isPlaying && !isPaused}>
               <FontAwesome5
                 name={isPaused ? 'play' : 'pause'}
                 size={18}

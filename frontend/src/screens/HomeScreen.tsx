@@ -6,8 +6,6 @@ import {
   TouchableOpacity,
   FlatList,
   ScrollView,
-  Animated,
-  Easing,
 } from 'react-native';
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -25,7 +23,7 @@ import AddIcon from '../components/AddIcon';
 import ArticleCard from '../components/ArticleCard';
 
 import HomeScreenHeader from '../components/HomeScreenHeader';
-import {ArticleData, Category, CategoryType, HomeScreenProps} from '../type';
+import {ArticleData, Category, HomeScreenProps} from '../type';
 import FilterModal from '../components/FilterModal';
 import {BottomSheetModal} from '@gorhom/bottom-sheet';
 import {useSelector, useDispatch} from 'react-redux';
@@ -149,7 +147,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
 
     setArticleCategories(categoryData);
     dispatch(setTags({tags: categoryData}));
-  }, [categoryData, isSuccess]);
+  }, [categoryData, dispatch, isSuccess, selectedTags]);
 
   const handleCategorySelection = (category: Category) => {
     // Update Redux State
@@ -735,7 +733,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       </View>
       <View style={styles.articleContainer}>
         <FlatList
-          data={listData}
+          data={listData.sort(() => Math.random() - 0.5)}
           renderItem={renderItem}
           keyExtractor={item => item._id.toString()}
           contentContainerStyle={styles.flatListContentContainer}

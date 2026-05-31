@@ -205,6 +205,8 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
   };
 
 
+  const [activeTab, setActiveTab] = useState<'Insight' | 'Reposts' | 'Saved'>('Insight');
+
   if (isLoading) {
     return (
       <SafeAreaView
@@ -220,8 +222,6 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
       </SafeAreaView>
     );
   }
-
-  const [activeTab, setActiveTab] = useState<'Insight' | 'Reposts' | 'Saved'>('Insight');
 
   const tabColors = {
     background: isDarkMode ? '#121212' : '#ffffff',

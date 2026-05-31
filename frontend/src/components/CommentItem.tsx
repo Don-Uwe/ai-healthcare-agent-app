@@ -137,8 +137,8 @@ export default function CommentItem({
                         handleEditAction(item);
                         handleAnimation();
                       },
-                      // cast to any to satisfy the Item icon type expected by ArticleFloatingMenu
-                      icon: 'pencil' as any,
+                      // 'edit' is the correct AntDesign equivalent of a pencil/edit icon
+                      icon: 'edit' as const,
                     },
                     {
                       name: 'Delete',
@@ -146,7 +146,8 @@ export default function CommentItem({
                         deleteAction(item);
                         handleAnimation();
                       },
-                      icon: 'trash' as any,
+                      // 'delete' is the correct AntDesign equivalent of a trash/remove icon
+                      icon: 'delete' as const,
                     },
                   ]
                 : []),
