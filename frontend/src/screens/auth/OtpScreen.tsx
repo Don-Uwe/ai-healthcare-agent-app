@@ -1,3 +1,9 @@
+import { useSendOtpMutation } from '@/src/hooks/useSendOtp';
+import { useVerifyOtpMutation } from '@/src/hooks/useVerifyOtp';
+import axios, { AxiosError } from 'axios';
+import React, { useRef, useState } from 'react';
+import { Alert, TextInput } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, {useRef, useState} from 'react';
 import {TextInput, Alert} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -5,23 +11,24 @@ import {OtpScreenProp} from '../../type';
 import axios, {AxiosError, isAxiosError} from 'axios';
 import Loader from '../../components/Loader';
 import {
-  Theme,
-  YStack,
-  Text,
   Button,
-  XStack,
+  Card,
   Input,
   Paragraph,
-  Card,
+  Text,
+  Theme,
+  useTheme,
+  XStack,
+  YStack,
 } from 'tamagui';
-import {useSendOtpMutation} from '@/src/hooks/useSendOtp';
-import {useVerifyOtpMutation} from '@/src/hooks/useVerifyOtp';
+import Loader from '../../components/Loader';
+import { OtpScreenProp } from '../../type';
 
 export default function OtpScreen({navigation, route}: OtpScreenProp) {
   const [otp, setOtp] = useState(['', '', '', '']);
   const inputs = useRef<(TextInput | null)[]>([]);
   const {email} = route.params;
-
+  const theme = useTheme();
   const [errorMessages, setErrorMessages] = useState<string[]>();
   const {mutate: sendOtp, isPending: sendOtpPending} = useSendOtpMutation();
   const {mutate: checkOtp, isPending: checkOtpPending} = useVerifyOtpMutation();
@@ -56,7 +63,6 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
     }
   };
 
-
   const handleChange = (text: string, index: number) => {
     setErrorMessages(undefined);
 
@@ -83,22 +89,23 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
       <SafeAreaView
         style={{
           flex: 1,
-          backgroundColor: '#f8f9fa',
+          backgroundColor: theme.gray100.val,
           justifyContent: 'center',
           alignItems: 'center',
         }}>
-        <YStack f={1} jc="center" ai="center" bg="#f8f9fa" p="$6" space="$5">
+        <YStack f={1} jc="center" ai="center" bg="$gray100" p="$6" space="$5">
           <Card
             elevate
             bordered
             p="$8"
             width="90%"
             maxWidth={450}
-            bg="white"
+            bg="$white"
             br="$8"
-            shadowColor="rgba(0, 0, 0, 0.08)"
+            shadowColor="$black"
+            shadowOpacity={0.08}
             shadowRadius={24}
-            shadowOffset={{ width: 0, height: 8 }}>
+            shadowOffset={{width: 0, height: 8}}>
             <YStack alignItems="center" gap="$4">
               {/* Icon */}
               <YStack
@@ -114,26 +121,38 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
                 </Text>
               </YStack>
 
-              <Text fontSize={28} fontWeight="700" color="$color12" textAlign="center">
+              <Text
+                fontSize={28}
+                fontWeight="700"
+                color="$color12"
+                textAlign="center">
                 Verify Your Code
               </Text>
               <Paragraph
                 textAlign="center"
-                color="$gray11"
+                color="$gray700"
                 fontSize={15}
                 fontWeight="500"
                 lineHeight={22}
                 paddingHorizontal="$2">
                 We&apos;ve sent a 4-digit verification code to{'\n'}
-                <Text fontWeight="600" color="$blue10">{email}</Text>
+                <Text fontWeight="600" color="$blue10">
+                  {email}
+                </Text>
               </Paragraph>
             </YStack>
 
-            <XStack gap="$3" justifyContent="center" marginTop="$7" marginBottom="$2">
+            <XStack
+              gap="$3"
+              justifyContent="center"
+              marginTop="$7"
+              marginBottom="$2">
               {otp.map((digit, index) => (
                 <Input
                   key={index}
-                  ref={ref => { inputs.current[index] = ref; }}
+                  ref={ref => {
+                    inputs.current[index] = ref;
+                  }}
                   value={digit}
                   onChangeText={text => handleChange(text, index)}
                   onKeyPress={e => handleKeyPress(e, index)}
@@ -144,20 +163,16 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
                   fontWeight="700"
                   borderWidth={2}
                   borderColor={
-                    errorMessages
-                      ? '$red8'
-                      : digit
-                        ? '$blue9'
-                        : '$gray6'
+                    errorMessages ? '$red8' : digit ? '$blue9' : '$gray6'
                   }
                   focusStyle={{
                     borderColor: errorMessages ? '$red9' : '$blue10',
                     borderWidth: 2.5,
-                    backgroundColor: 'white',
+                    backgroundColor: '$white',
                     shadowColor: errorMessages ? '$red8' : '$blue8',
                     shadowRadius: 8,
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.3
+                    shadowOffset: {width: 0, height: 2},
+                    shadowOpacity: 0.3,
                   }}
                   br="$5"
                   width={60}
@@ -180,7 +195,9 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
                 backgroundColor="$red2"
                 borderRadius="$3"
                 alignSelf="center">
-                <Text color="$red10" fontSize={20}>⚠️</Text>
+                <Text color="$red10" fontSize={20}>
+                  ⚠️
+                </Text>
                 <Paragraph
                   color="$red10"
                   fontSize={14}
@@ -193,32 +210,28 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
 
             <Button
               backgroundColor={otp.every(d => d) ? '$blue10' : '$gray7'}
-              hoverStyle={{ bg: '$blue9', opacity: 0.9 }}
-              pressStyle={{ bg: '$blue11', scale: 0.98 }}
+              hoverStyle={{bg: '$blue9', opacity: 0.9}}
+              pressStyle={{bg: '$blue11', scale: 0.98}}
               borderRadius={12}
               //width="100%"
               alignItems="center"
-              justifyContent='center'
+              justifyContent="center"
               //alignSelf="center"
               height={56}
               marginTop="$5"
               disabled={!otp.every(d => d)}
               shadowColor="$blue8"
               shadowRadius={12}
-              shadowOffset={{ width: 0, height: 4 }}
+              shadowOffset={{width: 0, height: 4}}
               shadowOpacity={0.25}
               onPress={handleSubmit}>
-              <Text
-                fontSize={17}
-                fontWeight="600"
-                color="white"
-                >
+              <Text fontSize={17} fontWeight="600" color="white">
                 Verify & Continue
               </Text>
             </Button>
 
             <YStack marginTop="$6" alignItems="center" gap="$3">
-              <Paragraph color="$gray10" fontSize={15} textAlign="center">
+              <Paragraph color="$gray400" fontSize={15} textAlign="center">
                 Didn&apos;t receive the code?
               </Paragraph>
               <Button
@@ -230,7 +243,10 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
                     },
                     {
                       onSuccess: () => {
-                        Alert.alert('Success', 'A new OTP has been sent to your email');
+                        Alert.alert(
+                          'Success',
+                          'A new OTP has been sent to your email',
+                        );
                         setOtp(Array(4).fill(''));
                         setErrorMessages(undefined);
                       },
