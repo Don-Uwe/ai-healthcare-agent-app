@@ -5,6 +5,7 @@ import {StatusBar} from 'expo-status-bar';
 import {YStack, XStack, Input, Button, Text, Separator} from 'tamagui';
 import {KEYS, storeItem} from '../../helper/Utils';
 import {SECURE_KEYS, secureStoreItem} from '../../helper/SecureStorageUtils';
+import {resetSessionExpiredNotification} from '../../helper/setupAxiosInterceptor';
 
 import Icon from '@expo/vector-icons/Ionicons';
 import {AuthData, LoginScreenProp} from '../../type';
@@ -134,12 +135,9 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
               await storeItem(KEYS.USER_ID, auth.userId.toString());
               await storeItem(KEYS.USER_HANDLE, data?.user_handle);
               if (auth.token) {
-                if (__DEV__) {
-                  console.log('Storing token:', auth.token);
-                }
                 await secureStoreItem(
                   SECURE_KEYS.USER_TOKEN,
-                  auth.token.toString(),
+                  auth.token,
                 );
                 await storeItem(
                   KEYS.USER_TOKEN_EXPIRY_DATE,
@@ -149,6 +147,8 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
                 dispatch(setUserToken(auth.token));
                 dispatch(setUserHandle(auth.user_handle));
                 dispatch(setGuestMode(false));
+                // Reset so the next session expiry triggers the notification again.
+                resetSessionExpiredNotification();
                 setTimeout(() => {
                   if (redirectTo) {
                     (navigation as any).navigate(

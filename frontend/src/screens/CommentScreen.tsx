@@ -2,6 +2,7 @@ import React, { FC, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   FlatList,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -66,6 +67,29 @@ const CommentScreen = ({
 
   const [selectedCommentId, setSelectedCommentId] =
     useState<string>('');
+
+  const [keyboardHeight, setKeyboardHeight] =
+    useState<number>(0);
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      e => {
+        setKeyboardHeight(e.endCoordinates.height);
+      },
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        setKeyboardHeight(0);
+      },
+    );
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
 
   const [editMode, setEditMode] =
     useState<boolean>(false);
@@ -248,7 +272,6 @@ const CommentScreen = ({
   ) => {
     navigation.navigate('UserProfileScreen', {
       author_handle: user_handle.substring(1),
-      authorId: undefined,
     });
   };
 
@@ -605,9 +628,15 @@ const CommentScreen = ({
               isFromArticle={false}
             />
           )}
-          contentContainerStyle={
-            styles.scrollContent
-          }
+          contentContainerStyle={[
+            styles.scrollContent,
+            {
+              paddingBottom:
+                keyboardHeight > 0
+                  ? keyboardHeight + (Platform.OS === 'ios' ? 0 : 20)
+                  : 20,
+            },
+          ]}
           showsVerticalScrollIndicator={
             false
           }

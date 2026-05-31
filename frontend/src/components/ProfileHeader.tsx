@@ -115,79 +115,54 @@ const ProfileHeader = ({
         )}
 
         {/* Primary Actions */}
-        <View style={styles.primaryActionContainer}>
-          {isDoctor ? (
-            <View style={styles.contactContainer}>
-              <AccessibleTouchable
-                activeOpacity={0.7}
-                onPress={() => handleCall(userPhoneNumber)}
-                
-                accessibilityLabel="Call doctor"
-                accessibilityHint="Opens phone dialer to call the doctor"
-                style={[styles.iconButton, {backgroundColor: PRIMARY_COLOR}]}>
-                <MaterialIcons name="phone-in-talk" size={22} color="#ffffff" />
-              </AccessibleTouchable>
-              <AccessibleTouchable
-                activeOpacity={0.7}
-                onPress={() => handleMail(userEmailID)}
-                
-                accessibilityLabel="Send email"
-                accessibilityHint="Opens mail app to send an email"
-                style={[styles.iconButton, {backgroundColor: PRIMARY_COLOR}]}>
-                <MaterialIcons name="email" size={22} color="#ffffff" />
-              </AccessibleTouchable>
-              {other && (
+        {!other && (
+          <View style={styles.primaryActionContainer}>
+            {isDoctor ? (
+              <View style={styles.contactContainer}>
                 <AccessibleTouchable
                   activeOpacity={0.7}
-                  style={[styles.iconButton, {backgroundColor: PRIMARY_COLOR}]}
-                  onPress={() => (navigation as any).navigate('ProfileEditScreen')}
-                  
-                  accessibilityLabel="Edit profile"
-                  accessibilityHint="Navigates to edit profile screen">
-                  <Feather name="edit-3" size={22} color="#ffffff" />
+                  onPress={() => handleCall(userPhoneNumber)}
+                  accessibilityLabel="Call doctor"
+                  accessibilityHint="Opens phone dialer to call the doctor"
+                  style={[styles.iconButton, {backgroundColor: PRIMARY_COLOR}]}>
+                  <MaterialIcons name="phone-in-talk" size={22} color="#ffffff" />
                 </AccessibleTouchable>
-              )}
-            </View>
-          ) : other ? (
-            <AccessibleTouchable
-              activeOpacity={0.7}
-              onPress={() => (navigation as any).navigate('ProfileEditScreen')}
-              
-              accessibilityLabel="Edit profile"
-              accessibilityHint="Navigates to edit profile screen"
-              style={styles.primaryBtn}
-            >
-            
-              <MaterialIcons name="edit" size={20} color="#ffffff" />
-              <Text style={styles.primaryBtnText}>Edit Profile</Text>
-            </AccessibleTouchable>
-          ) : (
-            <AccessibleTouchable 
-              activeOpacity={0.7}
-              onPress={onFollowClick}
-              
-              accessibilityLabel={isFollowing ? "Following user" : "Follow user"}
-              accessibilityHint={isFollowing ? "Unfollow this user" : "Follow this user"}
-              style={[
-                styles.primaryBtn, 
-                { 
-                  backgroundColor: isFollowing ? 'transparent' : PRIMARY_COLOR, 
-                  borderWidth: isFollowing ? 1.5 : 0, 
-                  borderColor: PRIMARY_COLOR 
-                }
-              ]}
-            >
-              <MaterialIcons
-                name={isFollowing ? "person-outline" : "person-add"}
-                size={20}
-                color={isFollowing ? PRIMARY_COLOR : '#ffffff'}
-              />
-              <Text style={[styles.primaryBtnText, { color: isFollowing ? PRIMARY_COLOR : '#ffffff' }]}>
-                {isFollowing ? 'Following' : 'Follow'}
-              </Text>
-            </AccessibleTouchable>
-          )}
-        </View>
+                <AccessibleTouchable
+                  activeOpacity={0.7}
+                  onPress={() => handleMail(userEmailID)}
+                  accessibilityLabel="Send email"
+                  accessibilityHint="Opens mail app to send an email"
+                  style={[styles.iconButton, {backgroundColor: PRIMARY_COLOR}]}>
+                  <MaterialIcons name="email" size={22} color="#ffffff" />
+                </AccessibleTouchable>
+              </View>
+            ) : (
+              <AccessibleTouchable 
+                activeOpacity={0.7}
+                onPress={onFollowClick}
+                accessibilityLabel={isFollowing ? "Following user" : "Follow user"}
+                accessibilityHint={isFollowing ? "Unfollow this user" : "Follow this user"}
+                style={[
+                  styles.primaryBtn, 
+                  { 
+                    backgroundColor: isFollowing ? 'transparent' : PRIMARY_COLOR, 
+                    borderWidth: isFollowing ? 1.5 : 0, 
+                    borderColor: PRIMARY_COLOR 
+                  }
+                ]}
+              >
+                <MaterialIcons
+                  name={isFollowing ? "person-outline" : "person-add"}
+                  size={20}
+                  color={isFollowing ? PRIMARY_COLOR : '#ffffff'}
+                />
+                <Text style={[styles.primaryBtnText, { color: isFollowing ? PRIMARY_COLOR : '#ffffff' }]}>
+                  {isFollowing ? 'Following' : 'Follow'}
+                </Text>
+              </AccessibleTouchable>
+            )}
+          </View>
+        )}
 
         {/* Stats Cards */}
         {isDoctor && (
@@ -233,6 +208,20 @@ const ProfileHeader = ({
         {/* Secondary Actions List */}
         {other && (
           <View style={styles.secondaryActionContainer}>
+            <AccessibleTouchable 
+              activeOpacity={0.7}
+              onPress={() => (navigation as any).navigate('ProfileEditScreen')}
+              accessibilityLabel="Edit profile"
+              accessibilityHint="Navigates to edit profile screen"
+              style={[styles.listButton, {backgroundColor: themeColors.card, borderColor: themeColors.border}]}
+            >
+              <View style={[styles.listButtonIconBg, { backgroundColor: themeColors.iconBackground }]}>
+                 <MaterialIcons name="edit" size={22} color={PRIMARY_COLOR} />
+              </View>
+              <Text style={[styles.listButtonText, {color: themeColors.text}]}>Edit Profile</Text>
+              <MaterialIcons name="chevron-right" size={24} color={themeColors.textSecondary} />
+            </AccessibleTouchable>
+
             <AccessibleTouchable 
               activeOpacity={0.7}
               onPress={onOverviewClick}
@@ -482,4 +471,4 @@ const styles = StyleSheet.create({
     fontSize: fp(4.2),
     fontWeight: '600',
   },
-});
+});
