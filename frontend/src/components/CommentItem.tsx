@@ -1,13 +1,12 @@
 import React, {useState} from 'react';
 import {TouchableOpacity} from 'react-native';
-import {YStack, XStack, Text, Avatar, Paragraph, View} from 'tamagui';
+import {YStack, XStack, Text, Avatar, Paragraph} from 'tamagui';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
 import Entypo from '@expo/vector-icons/Entypo';
-import AntDesign from '@expo/vector-icons/AntDesign';
 import {FontAwesome, Fontisto} from '@expo/vector-icons';
 import { formatWithOrdinalAndDay } from '../helper/dateUtils';
 import ArticleFloatingMenu from './AnimatedMenu';
@@ -128,7 +127,7 @@ export default function CommentItem({
                   handleReportAction(item._id, item.userId._id);
                   handleAnimation();
                 },
-                icon: 'aim',
+                icon: 'aim' as const,
               },
               ...(userId === item.userId._id && isSelected && !isFromArticle
                 ? [
@@ -138,7 +137,8 @@ export default function CommentItem({
                         handleEditAction(item);
                         handleAnimation();
                       },
-                      icon: 'edit',
+                      // cast to any to satisfy the Item icon type expected by ArticleFloatingMenu
+                      icon: 'pencil' as any,
                     },
                     {
                       name: 'Delete',
@@ -146,7 +146,7 @@ export default function CommentItem({
                         deleteAction(item);
                         handleAnimation();
                       },
-                      icon: 'delete',
+                      icon: 'trash' as any,
                     },
                   ]
                 : []),

@@ -98,6 +98,9 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const FONT_SCALE_STEP = 0.1;
   const BASE_FONT_SIZE = 16;
 
+  const likedUsers = article?.likedUsers ?? [];
+  const totalLikes = likedUsers.length;
+
   const clampFontScale = (value: number) =>
     Math.min(FONT_SCALE_MAX, Math.max(FONT_SCALE_MIN, value));
 
@@ -511,10 +514,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
       Tts.removeAllListeners('tts-error');
       // Step back one chunk so we replay current chunk at new speed
       // Note: Rewind is approximate and might read earlier parts of a smaller previous chunk.
-      chunkIndexRef.current = Math.max(
-        0,
-        chunkIndexRef.current - CHUNK_SIZE,
-      );
+      chunkIndexRef.current = Math.max(0, chunkIndexRef.current - CHUNK_SIZE);
       Tts.stop().then(() => {
         Tts.addEventListener('tts-finish', speakNextChunk);
         Tts.addEventListener('tts-error', e => {
@@ -695,178 +695,60 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
                 </View>
               </View>
               <View style={styles.avatarsContainer}>
-                <View style={styles.avatar}>
-                  {article?.likedUsers && article?.likedUsers.length >= 3 ? (
+                {totalLikes >= 3 && (
+                  <View style={styles.avatar}>
                     <Image
                       source={{
-                        uri: article?.likedUsers[
-                          article?.likedUsers.length - 1
+                        uri: likedUsers[
+                          totalLikes - 3
                         ].Profile_image.startsWith('https')
-                          ? article?.likedUsers[article?.likedUsers.length - 1]
-                              .Profile_image
-                          : `${GET_STORAGE_DATA}/${
-                              article?.likedUsers[
-                                article?.likedUsers.length - 1
-                              ].Profile_image
-                            }`,
+                          ? likedUsers[totalLikes - 3].Profile_image
+                          : `${GET_STORAGE_DATA}/${likedUsers[totalLikes - 3].Profile_image}`,
                       }}
                       style={[
                         styles.profileImage,
-                        !article?.likedUsers[2].Profile_image && {
+                        !likedUsers[totalLikes - 3].Profile_image && {
                           borderWidth: 0.5,
                           borderColor: 'black',
                         },
                       ]}
                     />
-                  ) : (
-                    <>
-                      {article?.likedUsers &&
-                        article?.likedUsers.length >= 1 && (
-                          <Image
-                            source={{
-                              uri: article?.likedUsers[
-                                article?.likedUsers.length - 1
-                              ].Profile_image.startsWith('https')
-                                ? article?.likedUsers[
-                                    article?.likedUsers.length - 1
-                                  ].Profile_image
-                                : `${GET_STORAGE_DATA}/${
-                                    article?.likedUsers[
-                                      article?.likedUsers.length - 1
-                                    ].Profile_image
-                                  }`,
-                            }}
-                            style={[
-                              styles.profileImage,
-                              !article?.likedUsers[
-                                article?.likedUsers.length - 1
-                              ].Profile_image && {
-                                borderWidth: 0.5,
-                                borderColor: 'black',
-                              },
-                            ]}
-                          />
-                        )}
-                    </>
-                  )}
-                </View>
-                <View style={[styles.avatar, styles.avatarOverlap]}>
-                  {article?.likedUsers && article?.likedUsers.length >= 2 ? (
+                  </View>
+                )}
+
+                {totalLikes >= 2 && (
+                  <View style={[styles.avatar, styles.avatarOverlap]}>
                     <Image
                       source={{
-                        uri: article?.likedUsers[
-                          article?.likedUsers.length - 2
+                        uri: likedUsers[
+                          totalLikes - 2
                         ].Profile_image.startsWith('https')
-                          ? article?.likedUsers[article?.likedUsers.length - 2]
-                              .Profile_image
-                          : `${GET_STORAGE_DATA}/${
-                              article?.likedUsers[
-                                article?.likedUsers.length - 2
-                              ].Profile_image
-                            }`,
+                          ? likedUsers[totalLikes - 2].Profile_image
+                          : `${GET_STORAGE_DATA}/${likedUsers[totalLikes - 2].Profile_image}`,
                       }}
-                      style={[
-                        styles.profileImage,
-                        !article?.likedUsers[article?.likedUsers.length - 2]
-                          .Profile_image && {
-                          borderWidth: 0.5,
-                          borderColor: 'black',
-                        },
-                      ]}
+                      style={styles.profileImage}
                     />
-                  ) : (
-                    <>
-                      {article?.likedUsers &&
-                        article?.likedUsers.length >= 1 && (
-                          <Image
-                            source={{
-                              uri: article?.likedUsers[
-                                article?.likedUsers.length - 1
-                              ].Profile_image.startsWith('https')
-                                ? article?.likedUsers[
-                                    article?.likedUsers.length - 1
-                                  ].Profile_image
-                                : `${GET_STORAGE_DATA}/${
-                                    article?.likedUsers[
-                                      article?.likedUsers.length - 1
-                                    ].Profile_image
-                                  }`,
-                            }}
-                            style={[
-                              styles.profileImage,
-                              !article?.likedUsers[
-                                article?.likedUsers.length - 1
-                              ].Profile_image && {
-                                borderWidth: 0.5,
-                                borderColor: 'black',
-                              },
-                            ]}
-                          />
-                        )}
-                    </>
-                  )}
-                </View>
-                <View style={[styles.avatar, styles.avatarDoubleOverlap]}>
-                  {article?.likedUsers && article?.likedUsers.length >= 1 ? (
+                  </View>
+                )}
+
+                {totalLikes >= 1 && (
+                  <View style={[styles.avatar, styles.avatarDoubleOverlap]}>
                     <Image
                       source={{
-                        uri: article?.likedUsers[
-                          article?.likedUsers.length - 1
+                        uri: likedUsers[
+                          totalLikes - 1
                         ].Profile_image.startsWith('https')
-                          ? article?.likedUsers[article?.likedUsers.length - 1]
-                              .Profile_image
-                          : `${GET_STORAGE_DATA}/${
-                              article?.likedUsers[
-                                article?.likedUsers.length - 1
-                              ].Profile_image
-                            }`,
+                          ? likedUsers[totalLikes - 1].Profile_image
+                          : `${GET_STORAGE_DATA}/${likedUsers[totalLikes - 1].Profile_image}`,
                       }}
-                      style={[
-                        styles.profileImage,
-                        !article?.likedUsers[article?.likedUsers.length - 1]
-                          .Profile_image && {
-                          borderWidth: 0.5,
-                          borderColor: 'black',
-                        },
-                      ]}
+                      style={styles.profileImage}
                     />
-                  ) : (
-                    <>
-                      {article?.likedUsers &&
-                        article?.likedUsers.length >= 1 && (
-                          <Image
-                            source={{
-                              uri: article?.likedUsers[
-                                article?.likedUsers.length - 1
-                              ].Profile_image.startsWith('https')
-                                ? article?.likedUsers[
-                                    article?.likedUsers.length - 1
-                                  ].Profile_image
-                                : `${GET_STORAGE_DATA}/${
-                                    article?.likedUsers[
-                                      article?.likedUsers.length - 1
-                                    ].Profile_image
-                                  }`,
-                            }}
-                            style={[
-                              styles.profileImage,
-                              !article?.likedUsers[
-                                article?.likedUsers.length - 1
-                              ].Profile_image && {
-                                borderWidth: 0.5,
-                                borderColor: 'black',
-                              },
-                            ]}
-                          />
-                        )}
-                    </>
-                  )}
-                </View>
-                {article?.likedUsers && article?.likedUsers.length > 3 && (
+                  </View>
+                )}
+
+                {totalLikes > 3 && (
                   <View style={[styles.avatar, styles.avatarTripleOverlap]}>
-                    <Text style={styles.moreText}>
-                      +{article?.likedUsers.length - 3}
-                    </Text>
+                    <Text style={styles.moreText}>+{totalLikes - 3}</Text>
                   </View>
                 )}
               </View>
@@ -893,9 +775,13 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
         </View>
       </ScrollView>
 
-      <View style={[styles.footer, { backgroundColor: footerColors.background }]}>
+      <View style={[styles.footer, {backgroundColor: footerColors.background}]}>
         {/* Action Bar Row */}
-        <View style={[styles.actionBarFooter, { borderBottomColor: footerColors.border }]}>
+        <View
+          style={[
+            styles.actionBarFooter,
+            {borderBottomColor: footerColors.border},
+          ]}>
           <TouchableOpacity
             style={[
               styles.actionButtonFooter,
@@ -944,7 +830,10 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.actionButtonFooter, { backgroundColor: footerColors.pillBackground }]}
+            style={[
+              styles.actionButtonFooter,
+              {backgroundColor: footerColors.pillBackground},
+            ]}
             onPress={() => {
               if (isGuest) {
                 navigation.navigate('GuestPlaceholderScreen', {
@@ -968,11 +857,16 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
               size={18}
               color={footerColors.text}
             />
-            <Text style={[styles.actionTextFooter, { color: footerColors.text }]}>Comment</Text>
+            <Text style={[styles.actionTextFooter, {color: footerColors.text}]}>
+              Comment
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.actionButtonFooter, { backgroundColor: footerColors.pillBackground }]}
+            style={[
+              styles.actionButtonFooter,
+              {backgroundColor: footerColors.pillBackground},
+            ]}
             onPress={async () => {
               try {
                 if (article) {
@@ -997,21 +891,41 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
               }
             }}>
             <FontAwesome name="share" size={18} color={footerColors.text} />
-            <Text style={[styles.actionTextFooter, { color: footerColors.text }]}>Share</Text>
+            <Text style={[styles.actionTextFooter, {color: footerColors.text}]}>
+              Share
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.actionButtonFooter, { backgroundColor: footerColors.pillBackground }]}
+            style={[
+              styles.actionButtonFooter,
+              {backgroundColor: footerColors.pillBackground},
+            ]}
             onPress={handleTranslateArticle}>
-            <MaterialCommunityIcons name="translate" size={18} color={footerColors.text} />
-            <Text style={[styles.actionTextFooter, { color: footerColors.text }]}>Translate</Text>
+            <MaterialCommunityIcons
+              name="translate"
+              size={18}
+              color={footerColors.text}
+            />
+            <Text style={[styles.actionTextFooter, {color: footerColors.text}]}>
+              Translate
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.actionButtonFooter, { backgroundColor: footerColors.pillBackground }]}
+            style={[
+              styles.actionButtonFooter,
+              {backgroundColor: footerColors.pillBackground},
+            ]}
             onPress={handleImproveArticle}>
-            <MaterialCommunityIcons name="auto-fix" size={18} color={footerColors.text} />
-            <Text style={[styles.actionTextFooter, { color: footerColors.text }]}>Improve</Text>
+            <MaterialCommunityIcons
+              name="auto-fix"
+              size={18}
+              color={footerColors.text}
+            />
+            <Text style={[styles.actionTextFooter, {color: footerColors.text}]}>
+              Improve
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
