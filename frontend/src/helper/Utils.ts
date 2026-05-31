@@ -627,7 +627,7 @@ ${feedback}
 };
 
 export const SECURE_KEYS = {
-  USER_TOKEN: 'user_token',
+  USER_TOKEN: 'SECURE_USER_TOKEN' as 'SECURE_USER_TOKEN',
 };
 
 export const KEYS = {
