@@ -17,10 +17,10 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import MaterialCommunityIcon from '@expo/vector-icons/MaterialCommunityIcons';
 import Feather from '@expo/vector-icons/Feather';
-import {RootStackParamList} from '../type';
+import {RootStackParamList,ProfileHeaderProps} from '../type';
 import {NavigationProp} from '@react-navigation/native';
 import {fp, hp, wp} from '../helper/Metric';
-import {ProfileHeaderProps} from '../type';
+
 
 import {GET_STORAGE_DATA} from '../helper/APIUtils';
 import {buildMailLink, buildPhoneLink} from '../helper/contactLinks';
@@ -125,7 +125,7 @@ const ProfileHeader = ({
         <Text style={[styles.usernameText, {color: PRIMARY_COLOR}]} numberOfLines={1}>
           @{userhandle || 'username'}
         </Text>
-        
+
         {isDoctor && experience && (
           <View style={styles.experienceContainer}>
             <FontAwesome name="stethoscope" size={hp(2.5)} color={themeColors.textSecondary} />
@@ -135,14 +135,29 @@ const ProfileHeader = ({
           </View>
         )}
 
-        {/* Primary Actions */}
+        {/* Primary Actions:
+            - other === false: viewing someone else — show Follow/Unfollow OR doctor Call/Email
+            - other === true: viewing own profile — show prominent Edit Profile button
+            Doctors always see their own Call/Email buttons on their own profile too. */}
         <View style={styles.primaryActionContainer}>
-          {isDoctor ? (
+          {other ? (
+            // Own profile: prominent Edit Profile button
+            <AccessibleTouchable
+              activeOpacity={0.7}
+              onPress={() => (navigation as any).navigate('ProfileEditScreen')}
+              accessibilityLabel="Edit profile"
+              accessibilityHint="Navigates to edit profile screen"
+              style={[styles.primaryBtn, {backgroundColor: PRIMARY_COLOR}]}
+            >
+              <MaterialIcons name="edit" size={20} color="#ffffff" />
+              <Text style={[styles.primaryBtnText, {color: '#ffffff'}]}>Edit Profile</Text>
+            </AccessibleTouchable>
+          ) : isDoctor ? (
+            // Viewing a doctor's profile: Call & Email
             <View style={styles.contactContainer}>
               <AccessibleTouchable
                 activeOpacity={0.7}
                 onPress={() => handleCall(userPhoneNumber)}
-                
                 accessibilityLabel="Call doctor"
                 accessibilityHint="Opens phone dialer to call the doctor"
                 style={[styles.iconButton, {backgroundColor: PRIMARY_COLOR}]}>
@@ -151,59 +166,34 @@ const ProfileHeader = ({
               <AccessibleTouchable
                 activeOpacity={0.7}
                 onPress={() => handleMail(userEmailID)}
-                
                 accessibilityLabel="Send email"
                 accessibilityHint="Opens mail app to send an email"
                 style={[styles.iconButton, {backgroundColor: PRIMARY_COLOR}]}>
                 <MaterialIcons name="email" size={22} color="#ffffff" />
               </AccessibleTouchable>
-              {other && (
-                <AccessibleTouchable
-                  activeOpacity={0.7}
-                  style={[styles.iconButton, {backgroundColor: PRIMARY_COLOR}]}
-                  onPress={() => (navigation as any).navigate('ProfileEditScreen')}
-                  
-                  accessibilityLabel="Edit profile"
-                  accessibilityHint="Navigates to edit profile screen">
-                  <Feather name="edit-3" size={22} color="#ffffff" />
-                </AccessibleTouchable>
-              )}
             </View>
-          ) : other ? (
+          ) : (
+            // Viewing a regular user's profile: Follow/Unfollow
             <AccessibleTouchable
               activeOpacity={0.7}
-              onPress={() => (navigation as any).navigate('ProfileEditScreen')}
-              
-              accessibilityLabel="Edit profile"
-              accessibilityHint="Navigates to edit profile screen"
-              style={styles.primaryBtn}
-            >
-            
-              <MaterialIcons name="edit" size={20} color="#ffffff" />
-              <Text style={styles.primaryBtnText}>Edit Profile</Text>
-            </AccessibleTouchable>
-          ) : (
-            <AccessibleTouchable 
-              activeOpacity={0.7}
               onPress={onFollowClick}
-              
-              accessibilityLabel={isFollowing ? "Following user" : "Follow user"}
-              accessibilityHint={isFollowing ? "Unfollow this user" : "Follow this user"}
+              accessibilityLabel={isFollowing ? 'Following user' : 'Follow user'}
+              accessibilityHint={isFollowing ? 'Unfollow this user' : 'Follow this user'}
               style={[
-                styles.primaryBtn, 
-                { 
-                  backgroundColor: isFollowing ? 'transparent' : PRIMARY_COLOR, 
-                  borderWidth: isFollowing ? 1.5 : 0, 
-                  borderColor: PRIMARY_COLOR 
-                }
+                styles.primaryBtn,
+                {
+                  backgroundColor: isFollowing ? 'transparent' : PRIMARY_COLOR,
+                  borderWidth: isFollowing ? 1.5 : 0,
+                  borderColor: PRIMARY_COLOR,
+                },
               ]}
             >
               <MaterialIcons
-                name={isFollowing ? "person-outline" : "person-add"}
+                name={isFollowing ? 'person-outline' : 'person-add'}
                 size={20}
                 color={isFollowing ? PRIMARY_COLOR : '#ffffff'}
               />
-              <Text style={[styles.primaryBtnText, { color: isFollowing ? PRIMARY_COLOR : '#ffffff' }]}>
+              <Text style={[styles.primaryBtnText, {color: isFollowing ? PRIMARY_COLOR : '#ffffff'}]}>
                 {isFollowing ? 'Following' : 'Follow'}
               </Text>
             </AccessibleTouchable>
@@ -229,7 +219,7 @@ const ProfileHeader = ({
           <Pressable
             onPress={onFollowerPress}
             style={styles.statItem}
-            
+
             accessibilityLabel="Followers"
             accessibilityHint="Opens followers list"
           >
@@ -242,7 +232,7 @@ const ProfileHeader = ({
           <Pressable
             onPress={onFollowingPress}
             style={styles.statItem}
-            
+
             accessibilityLabel="Following"
             accessibilityHint="Opens following users list"
           >
@@ -254,10 +244,12 @@ const ProfileHeader = ({
         {/* Secondary Actions List */}
         {other && (
           <View style={styles.secondaryActionContainer}>
-            <AccessibleTouchable 
+            {/* Edit Profile is already shown in the primary action button above */}
+
+            <AccessibleTouchable
               activeOpacity={0.7}
               onPress={onOverviewClick}
-              
+
               accessibilityLabel="Your workspace"
               accessibilityHint="Opens your workspace dashboard"
               style={[styles.listButton, {backgroundColor: themeColors.card, borderColor: themeColors.border}]}
@@ -271,7 +263,7 @@ const ProfileHeader = ({
 
             <AccessibleTouchable
               activeOpacity={0.7}
-              
+
               accessibilityLabel="Notification preferences"
               accessibilityHint="Opens notification settings"
               style={[styles.listButton, {backgroundColor: themeColors.card, borderColor: themeColors.border}]}
@@ -291,7 +283,7 @@ const ProfileHeader = ({
 
             <AccessibleTouchable
               activeOpacity={0.7}
-              
+
               accessibilityLabel="Logout"
               accessibilityHint="Logs out from your account"
               style={[styles.listButton, {backgroundColor: themeColors.card, borderColor: themeColors.border}]}

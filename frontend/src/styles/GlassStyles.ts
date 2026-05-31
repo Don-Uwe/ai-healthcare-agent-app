@@ -235,30 +235,6 @@ glassCard: {
     }),
   },
 
-  glassButtonPrimary: {
-    backgroundColor: 'rgba(0, 191, 255, 0.25)',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(0, 191, 255, 0.4)',
-    paddingVertical: 14,
-    paddingHorizontal: 28,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#00BFFF',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.10,
-        shadowRadius: 6,
-      },
-      android: {
-        elevation: 3,
-      },
-      web: {
-        backdropFilter: 'blur(12px)',
-        boxShadow: '0 4px 24px 0 rgba(0, 191, 255, 0.25)',
-      },
-    }),
-  },
-
   // Glass Input Variants
   glassInput: {
     backgroundColor: 'rgba(255, 255, 255, 0.08)',

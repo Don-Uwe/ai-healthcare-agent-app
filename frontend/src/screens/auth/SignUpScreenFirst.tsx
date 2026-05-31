@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {Alert} from 'react-native';
-import {ScrollView, YStack, XStack, Text, Input, Button, Image} from 'tamagui';
+import {ScrollView, YStack, XStack, Text, Input, Button, Image, useTheme} from 'tamagui';
 import Icon from '@expo/vector-icons/MaterialIcons';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {Dropdown} from 'react-native-element-dropdown';
@@ -41,6 +41,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
   const [securityWarningVisible, setSecurityWarningVisible] = useState(false);
   const [pendingSubmitAction, setPendingSubmitAction] = useState<(() => void) | null>(null);
   //const [error, setError] = useState('');
+  const theme = useTheme();
 
   const {data: checkhandle, isLoading} =
     useCheckUserHandleAvailability(username);
@@ -339,7 +340,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
               <AntDesign
                 name="camera"
                 size={26}
-                color="#ffffff"
+                color={theme.white.val}
                 style={{transform: [{scaleX: -1}]}}
               />
             ) : (
@@ -380,7 +381,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
               onChangeText={setName}
             />
             <YStack position="absolute" right={14} top={10}>
-              <Icon name="person" size={20} color="#000" />
+              <Icon name="person" size={20} color={theme.black.val} />
             </YStack>
           </XStack>
 
@@ -408,7 +409,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
               onChangeText={handleUserHandleChange}
             />
             <YStack position="absolute" right={14} top={10}>
-              <Icon name="person" size={20} color="#000" />
+              <Icon name="person" size={20} color={theme.black.val} />
             </YStack>
           </XStack>
 
@@ -426,7 +427,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
               keyboardType="email-address"
             />
             <YStack position="absolute" right={14} top={10}>
-              <Icon name="email" size={20} color="#000" />
+              <Icon name="email" size={20} color={theme.black.val} />
             </YStack>
           </XStack>
 
@@ -452,7 +453,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
               <AntDesign
                 name={isSecureEntry ? 'eye-invisible' : 'eye'}
                 size={17}
-                color="#000"
+                color={theme.black.val}
               />
             </Button>
           </XStack>
@@ -461,7 +462,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
           <Dropdown
             style={{
               height: 40,
-              borderColor: '#0CAFFF',
+              borderColor: theme.blue10.val,
               borderWidth: 1,
               borderRadius: 5,
               paddingHorizontal: 10,

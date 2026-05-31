@@ -13,16 +13,41 @@ import {
   API_TIMEOUT_ERROR_MESSAGE,
 } from './ApiTimeout';
 import {KEYS, removeItem} from './Utils';
-import {SECURE_KEYS, secureRemoveItem} from './SecureStorageUtils';
+import {SECURE_KEYS, secureRemoveItem, secureRetrieveItem} from './SecureStorageUtils';
+import {logApiError} from '../services/monitoring/networkLogger';
 
-let interceptorInitialized = false;
+/**
+ * Module-scoped flag to suppress duplicate "session expired" notifications
+ * within a single session (e.g., when multiple in-flight requests all fail
+ * with 401 at the same time).
+ *
+ * Reset this via `resetSessionExpiredNotification()` whenever a new valid
+ * session starts (i.e., after a successful login).
+ */
 let sessionExpiredNotified = false;
 
 /**
- * Shared 401 error handler used by both axios instances.
- * Clears auth state, switches to guest mode, and notifies the user once.
+ * Resets the session-expired notification flag.
+ * Call this from your login success handler so that if the *new* session
+ * later expires, the user sees the notification again.
+ *
+ * @example
+ * // In LoginScreen onSuccess:
+ * import { resetSessionExpiredNotification } from '../../helper/setupAxiosInterceptor';
+ * resetSessionExpiredNotification();
  */
-const handle401Error = (error: any) => {
+export const resetSessionExpiredNotification = (): void => {
+  sessionExpiredNotified = false;
+};
+
+/**
+ * Shared error handler used by both axios instances.
+ * Logs API errors safely and handles 401 Unauthorized specifically.
+ */
+const handleError = (error: any) => {
+  // Log the API error securely without exposing secrets
+  logApiError(error, undefined, {handler: 'axiosInterceptor'});
+
   if (error?.response?.status === 401) {
     store.dispatch(setUserToken(''));
     store.dispatch(setUserId(''));
@@ -35,6 +60,7 @@ const handle401Error = (error: any) => {
     removeItem(KEYS.USER_ID);
     removeItem(KEYS.USER_HANDLE);
 
+    // Notify once to avoid alert/toast spam if multiple calls fail simultaneously.
     if (!sessionExpiredNotified) {
       sessionExpiredNotified = true;
       const message =
@@ -52,41 +78,55 @@ const handle401Error = (error: any) => {
 };
 
 /**
- * Configures axios with timeout defaults and response interceptors.
+ * Configures axios with timeout defaults and response/request interceptors.
  *
  * Sets up:
  * - Global timeout configuration for both axios instances (default + authAxios)
+ * - Request interceptor to dynamically attach the Bearer token
  * - Response interceptor for handling 401 (unauthorized) errors
  * - Automatic logout and guest mode activation on session expiry
  *
- * This function is idempotent - calling it multiple times will only
- * register the interceptor once to prevent duplicate handlers.
+ * This function is intended to be called **once** inside a `useEffect` with
+ * an empty dependency array in `AppContent.tsx`. The `useEffect` lifecycle
+ * is the idiomatic React guard against duplicate registrations — no global
+ * boolean flag is needed here.
  *
  * @example
  * ```typescript
- * // Call once during app initialization
+ * // AppContent.tsx
  * useEffect(() => {
  *   setupAxiosInterceptor();
  * }, []);
  * ```
  */
 export const setupAxiosInterceptor = () => {
-  // Apply shared timeout defaults to both axios instances so requests cannot
-  // hang indefinitely on slow or stalled networks.
+  // Ensure global axios instance has default Content-Type for JSON requests
+  axios.defaults.headers.common['Content-Type'] = 'application/json';
+
+  // Apply shared timeout defaults so requests cannot hang indefinitely
+  // on slow or stalled networks.
   axios.defaults.timeout = API_REQUEST_TIMEOUT_MS;
   axios.defaults.timeoutErrorMessage = API_TIMEOUT_ERROR_MESSAGE;
   authAxios.defaults.timeout = API_REQUEST_TIMEOUT_MS;
   authAxios.defaults.timeoutErrorMessage = API_TIMEOUT_ERROR_MESSAGE;
 
-  // Guard against duplicate interceptor registration during re-renders.
-  if (interceptorInitialized) {
-    return;
-  }
+  // Request interceptor: dynamically attach Bearer token before every request.
+  axios.interceptors.request.use(
+    async config => {
+      const token = await secureRetrieveItem(SECURE_KEYS.USER_TOKEN);
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      } else {
+        // Remove Authorization header to prevent sending "Bearer undefined/null"
+        delete config.headers.Authorization;
+      }
+      return config;
+    },
+    error => Promise.reject(error),
+  );
 
-  interceptorInitialized = true;
-
-  // Attach 401 handler to both the global axios instance (used by existing hooks)
-  // and authAxios (used by new/migrated code with the request interceptor).
-  axios.interceptors.response.use(response => response, handle401Error);
-  authAxios.interceptors.response.use(response => response, handle401Error);
+  // Attach error handler to both the global axios instance (used by existing hooks)
+  // and authAxios (used by migrated code with the request interceptor).
+  axios.interceptors.response.use(response => response, handleError);
+  authAxios.interceptors.response.use(response => response, handleError);
 };
