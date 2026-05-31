@@ -15,10 +15,10 @@ jest.mock('expo-localization', () => ({
 
 describe('dateUtils', () => {
   describe('parseDbTimestamp', () => {
-    it('safely parses timestamps with missing timezone suffixes to UTC', () => {
+    it('safely parses timestamps with missing timezone suffixes as local time', () => {
       const parsed = parseDbTimestamp('2026-05-26 14:30:00');
-      // UTC
-      expect(parsed?.toISOString()).toBe('2026-05-26T14:30:00.000Z');
+      const expectedIso = new Date('2026-05-26T14:30:00').toISOString();
+      expect(parsed?.toISOString()).toBe(expectedIso);
     });
 
     it('safely parses timestamps with existing Z', () => {

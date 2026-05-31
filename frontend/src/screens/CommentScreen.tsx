@@ -2,6 +2,7 @@ import React, { FC, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   FlatList,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -66,6 +67,29 @@ const CommentScreen = ({
 
   const [selectedCommentId, setSelectedCommentId] =
     useState<string>('');
+
+  const [keyboardHeight, setKeyboardHeight] =
+    useState<number>(0);
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      e => {
+        setKeyboardHeight(e.endCoordinates.height);
+      },
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        setKeyboardHeight(0);
+      },
+    );
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
 
   const [editMode, setEditMode] =
     useState<boolean>(false);
@@ -246,9 +270,11 @@ const CommentScreen = ({
   const handleMentionClick = (
     user_handle: string,
   ) => {
+
+    console.log('Mention clicked:', user_handle);
     navigation.navigate('UserProfileScreen', {
-      author_handle: user_handle.substring(1),
-      authorId: undefined,
+      author_handle: user_handle,
+      userHandle: user_handle,
     });
   };
 
@@ -363,10 +389,13 @@ const CommentScreen = ({
       <View style={styles.suggestionsContainer}>
         {suggestions
           .filter(one =>
+            one &&
+            one.user_handle &&
+            typeof one.user_handle === 'string' &&
             one.user_handle
               .toLowerCase()
               .includes(
-                keyword.toLowerCase(),
+                (keyword || '').toLowerCase(),
               ),
           )
           .map(one => (
@@ -605,9 +634,15 @@ const CommentScreen = ({
               isFromArticle={false}
             />
           )}
-          contentContainerStyle={
-            styles.scrollContent
-          }
+          contentContainerStyle={[
+            styles.scrollContent,
+            {
+              paddingBottom:
+                keyboardHeight > 0
+                  ? keyboardHeight + (Platform.OS === 'ios' ? 0 : 20)
+                  : 20,
+            },
+          ]}
           showsVerticalScrollIndicator={
             false
           }

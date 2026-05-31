@@ -9,10 +9,10 @@ import Animated, {
 } from 'react-native-reanimated';
 import {SplashScreenProp} from '../type';
 import {useDispatch} from 'react-redux';
-import {KEYS, SECURE_KEYS, clearStorage, retrieveItem} from '../helper/Utils';
+import {KEYS, clearStorage, retrieveItem} from '../helper/Utils';
 import {setUserId, setUserToken, setUserHandle} from '../store/UserSlice';
 import { useCheckTokenStatus } from '@/src/hooks/useGetTokenStatus';
-import { secureRetrieveItem } from '../helper/SecureStorageUtils';
+import { SECURE_KEYS, SecureKey, secureRetrieveItem } from '../helper/SecureStorageUtils';
 
 export default function SplashScreen({navigation}: SplashScreenProp) {
   const opacity = useSharedValue(0);
@@ -39,7 +39,7 @@ export default function SplashScreen({navigation}: SplashScreenProp) {
     }
     try {
       const userId = await retrieveItem(KEYS.USER_ID);
-      const user = await secureRetrieveItem(SECURE_KEYS.USER_TOKEN);
+      const user = await secureRetrieveItem(SECURE_KEYS.USER_TOKEN as SecureKey);
       const user_handle = await retrieveItem(KEYS.USER_HANDLE);
       if (
        // user_handle &&

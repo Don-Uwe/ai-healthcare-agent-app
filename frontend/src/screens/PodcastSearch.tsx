@@ -10,10 +10,14 @@ import {msToTime} from '../helper/Utils';
 import Snackbar from 'react-native-snackbar';
 import NoResults from '../components/NoResult';
 import {PRIMARY_COLOR} from '../helper/Theme';
-import {XStack, YStack, Input, Separator, Text} from 'tamagui';
+import {XStack, YStack, Input, Separator, Text, useTheme} from 'tamagui';
 import {Feather} from '@expo/vector-icons';
 import {useUpdatePodcastViewcount} from '../hooks/useUpdatePodcastViewcount';
 import {useGetSearchPodcasts} from '../hooks/useGetSearchPodcasts';
+
+// Number of skeleton placeholders to show while loading.
+// Chosen to fill most phone screens without over-rendering.
+const SKELETON_COUNT = 6;
 
 export default function PodcastSearch({navigation}: PodcastSearchProp) {
   const [query, setQuery] = useState<string>('');
@@ -21,6 +25,7 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [searchData, setSearchData] = useState<PodcastData[]>([]);
+  const theme = useTheme();
 
   const {mutate: updateViewCount} = useUpdatePodcastViewcount();
 
@@ -108,26 +113,31 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
     </Pressable>
   );
 
+  // Consistent list padding used by both the skeleton and results FlatList.
+  const listContentStyle = {paddingTop: 12, paddingBottom: 20};
+
   return (
     <YStack
       flex={1}
       height={'100%'}
-      backgroundColor="#F9FAFB"
+      backgroundColor={theme.background.val}
       paddingTop="$2"
       justifyContent="flex-start">
+
+      {/* Header */}
       <YStack
         paddingHorizontal="$4"
         paddingTop="$7"
         paddingBottom="$3"
-        backgroundColor="#FFFFFF">
+        backgroundColor={theme.backgroundStrong?.val}>
         <YStack marginBottom="$3">
           <XStack alignItems="center" gap="$3">
             <Feather name="mic" size={24} color={PRIMARY_COLOR} />
             <YStack>
-              <Text style={{fontSize: 24, fontWeight: '800', color: '#1F2937'}}>
+              <Text style={{fontSize: 24, fontWeight: '800', color: theme.color.val}}>
                 Discover Podcasts
               </Text>
-              <Text style={{fontSize: 13, color: '#6B7280', marginTop: 2}}>
+              <Text style={{fontSize: 13, color: theme.colorMuted?.val, marginTop: 2}}>
                 {searchData.length > 0
                   ? `${searchData.length} results found`
                   : 'Search for your favorite content'}
@@ -136,14 +146,15 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
           </XStack>
         </YStack>
 
+        {/* Search Bar */}
         <XStack
           alignItems="center"
-          backgroundColor="#F3F4F6"
+          backgroundColor={theme.backgroundHover?.val}
           borderRadius={12}
           paddingHorizontal="$3"
           paddingVertical="$2"
           borderWidth={1.5}
-          borderColor={query ? PRIMARY_COLOR : '#E5E7EB'}
+          borderColor={query ? PRIMARY_COLOR : theme.borderColor.val}
           gap="$3"
           shadowColor="#000"
           shadowOffset={{width: 0, height: 2}}
@@ -153,18 +164,18 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
           <Feather
             name="search"
             size={20}
-            color={query ? PRIMARY_COLOR : '#9CA3AF'}
+            color={query ? PRIMARY_COLOR : (theme.colorMuted?.val as string)}
           />
           <Input
             flex={1}
             size="$5"
             placeholder="Search podcasts, topics, or hosts..."
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={theme.colorMuted?.val as string}
             borderWidth={0}
             backgroundColor="transparent"
             onChangeText={setQuery}
             value={query}
-            color="#1F2937"
+            color={theme.color.val}
             fontSize={14}
             fontWeight="500"
             focusStyle={{
@@ -179,22 +190,23 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
                 setQuery('');
                 setSearchData([]);
               }}>
-              <Feather name="x-circle" size={18} color="#6B7280" />
+              <Feather name="x-circle" size={18} color={theme.colorMuted?.val as string} />
             </Pressable>
           ) : null}
         </XStack>
       </YStack>
 
-      <Separator borderColor="#E5E7EB" />
+      <Separator borderColor={theme.borderColor.val} />
 
-      <YStack paddingHorizontal="$3" marginBottom="$8" flex={1}>
+      {/* Results / Skeleton Section */}
+      <YStack paddingHorizontal="$3" flex={1}>
         {isLoading && query !== '' ? (
           <FlatList
-            data={[1, 2, 3, 4, 5]}
+            data={Array.from({length: SKELETON_COUNT}, (_, i) => i)}
             keyExtractor={(_, index) => `skeleton-${index}`}
             renderItem={() => <PodcastSkeletonCard />}
             scrollEnabled={false}
-            contentContainerStyle={{paddingTop: 12}}
+            contentContainerStyle={listContentStyle}
           />
         ) : (
           <FlatList
@@ -207,7 +219,7 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
                   <Text
                     fontSize={13}
                     fontWeight="700"
-                    color="#6B7280"
+                    color={theme.colorMuted?.val}
                     letterSpacing={1}>
                     SEARCH RESULTS
                   </Text>
@@ -221,13 +233,13 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
                   justifyContent="center"
                   paddingVertical="$10"
                   gap="$3">
-                  <Feather name="headphones" size={64} color="#D1D5DB" />
-                  <Text fontSize={18} fontWeight="700" color="#6B7280">
+                  <Feather name="headphones" size={64} color={theme.colorMuted?.val as string} />
+                  <Text fontSize={18} fontWeight="700" color={theme.colorMuted?.val}>
                     Start Your Search
                   </Text>
                   <Text
                     fontSize={14}
-                    color="#9CA3AF"
+                    color={theme.colorMuted?.val}
                     textAlign="center"
                     paddingHorizontal="$6">
                     Type in the search bar to discover amazing podcasts
@@ -247,7 +259,7 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
             }}
             onEndReachedThreshold={0.5}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{paddingBottom: 20}}
+            contentContainerStyle={listContentStyle}
           />
         )}
       </YStack>
