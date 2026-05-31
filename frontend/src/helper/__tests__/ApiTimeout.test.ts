@@ -58,8 +58,8 @@ describe('fetchWithTimeout', () => {
     await expect(request).rejects.toMatchObject({
       name: 'ApiTimeoutError',
       code: 'ECONNABORTED',
-      message:
-        'Request timed out after 1 seconds. Please check your connection and try again.',
+      // Message is composed of the duration prefix + API_TIMEOUT_ERROR_MESSAGE constant.
+      message: `Request timed out after 1 seconds. ${API_TIMEOUT_ERROR_MESSAGE}`,
     });
   });
 });
@@ -118,5 +118,35 @@ describe('setupAxiosInterceptor', () => {
 
     expect(axios.defaults.timeout).toBe(API_REQUEST_TIMEOUT_MS);
     expect(axios.defaults.timeoutErrorMessage).toBe(API_TIMEOUT_ERROR_MESSAGE);
+  });
+
+  it('attaches authorization header if token exists in secure store', async () => {
+    const SecureStore = require('expo-secure-store');
+    SecureStore.getItemAsync.mockResolvedValue('test-user-token');
+
+    setupAxiosInterceptor();
+
+    const config = { headers: {} as any };
+    const handlers = (axios.interceptors.request as any).handlers;
+    const interceptor = handlers.find((h: any) => h && h.fulfilled);
+    expect(interceptor).toBeDefined();
+
+    const resultConfig = await interceptor.fulfilled(config);
+    expect(resultConfig.headers.Authorization).toBe('Bearer test-user-token');
+  });
+
+  it('removes authorization header if token is missing in secure store', async () => {
+    const SecureStore = require('expo-secure-store');
+    SecureStore.getItemAsync.mockResolvedValue(null);
+
+    setupAxiosInterceptor();
+
+    const config = { headers: { Authorization: 'Bearer old-token' } as any };
+    const handlers = (axios.interceptors.request as any).handlers;
+    const interceptor = handlers.find((h: any) => h && h.fulfilled);
+    expect(interceptor).toBeDefined();
+
+    const resultConfig = await interceptor.fulfilled(config);
+    expect(resultConfig.headers.Authorization).toBeUndefined();
   });
 });

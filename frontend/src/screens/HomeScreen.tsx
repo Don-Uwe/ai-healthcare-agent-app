@@ -6,8 +6,6 @@ import {
   TouchableOpacity,
   FlatList,
   ScrollView,
-  Animated,
-  Easing,
 } from 'react-native';
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -17,12 +15,15 @@ import {
   SAVED_CHIP_ACTIVE_BG,
   SAVED_CHIP_INACTIVE_BG,
   SAVED_CHIP_INACTIVE_BORDER,
+  EMPTY_STATE_BACKGROUND,
+  EMPTY_STATE_TEXT_PRIMARY,
+  EMPTY_STATE_TEXT_SECONDARY,
 } from '../helper/Theme';
 import AddIcon from '../components/AddIcon';
 import ArticleCard from '../components/ArticleCard';
 
 import HomeScreenHeader from '../components/HomeScreenHeader';
-import {ArticleData, Category, CategoryType, HomeScreenProps} from '../type';
+import {ArticleData, Category, HomeScreenProps} from '../type';
 import FilterModal from '../components/FilterModal';
 import {BottomSheetModal} from '@gorhom/bottom-sheet';
 import {useSelector, useDispatch} from 'react-redux';
@@ -124,6 +125,13 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  // Accumulates all raw articles fetched across pages so we can
+  // re-apply the active category/sort filter whenever either changes.
+  const allArticlesRef = useRef<ArticleData[]>([]);
+  // Tracks the last known filtered count for the active category so we don't
+  // keep fetching pages when a niche category yields no new articles per page.
+  const lastCategoryFilteredCountRef = useRef<number>(-1);
+  const prevSelectedCategoryNameRef = useRef<string | undefined>(undefined);
   const {data: user, refetch: refetchUser} = useGetProfile();
   const {data: categoryData, isSuccess} = useGetCategories(isConnected);
 
@@ -143,13 +151,14 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
 
     setArticleCategories(categoryData);
     dispatch(setTags({tags: categoryData}));
-  }, [categoryData, isSuccess]);
+  }, [categoryData, dispatch, isSuccess, selectedTags]);
 
   const handleCategorySelection = (category: Category) => {
     // Update Redux State
     setSelectCategoryList(prevList => {
-      const updatedList = prevList.some(p => p.id === category.id)
-        ? prevList.filter(item => item.id !== category.id)
+       const isAlreadySelected = prevList.some(p => p._id === category._id);
+      const updatedList = isAlreadySelected
+        ? prevList.filter(item => item._id !== category._id)
         : [...prevList, category];
       return updatedList;
     });
@@ -194,8 +203,26 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     });
   };
 
+  /**
+   * Toggles the "Saved" filter chip.
+   * When deactivating, resets page to 1 so the main feed
+   * pagination starts fresh and onEndReached fires correctly.
+   */
+  /**
+   * Toggles the "Saved" filter chip.
+   */
+  const handleToggleSavedOnly = () => {
+    setShowSavedOnly(prev => !prev);
+  };
+
   const handleCategoryClick = (category: Category) => {
+    // Deactivate Saved chip and update the active category.
+    // We do NOT clear already-fetched raw articles, allowing instant switching
+    // and seamless client-side filtering.
     setShowSavedOnly(false);
+    // Reset the sparse-category guard so the newly selected category gets a
+    // fresh auto-pagination opportunity from the current page.
+    lastCategoryFilteredCountRef.current = -1;
     setSelectedCategory(category);
   };
 
@@ -258,7 +285,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       }),
     );
     dispatch(setSortType({sortType: ''}));
-    dispatch(setFilteredArticles({filteredArticles: articleData?.articles}));
+    dispatch(setFilteredArticles({filteredArticles: allArticlesRef.current}));
   };
 
   const handleFilterApply = () => {
@@ -287,7 +314,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       dispatch(setSortType({sortType: sortingType}));
     }
 
-    updateArticles(articleData?.articles);
+    updateArticles(allArticlesRef.current);
   };
 
   const updateArticles = (articleData?: ArticleData[]) => {
@@ -327,30 +354,91 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const {
     data: articleData,
     isLoading,
+    isFetching,
     isError,
     refetch,
   } = useGetPaginatedArticle(isConnected, page);
 
   useEffect(() => {
     if (articleData) {
-      if (Number(page) === 1 && articleData.totalPages) {
-        setTotalPages(articleData.totalPages);
-      }
-
       if (Number(page) === 1) {
-        updateArticles(articleData.articles);
+        // Fresh load: replace accumulated articles entirely.
+        allArticlesRef.current = articleData.articles ?? [];
+        if (articleData.totalPages) {
+          setTotalPages(articleData.totalPages);
+        }
       } else {
-        updateArticles([...filteredArticles, ...articleData.articles]);
+        // Append new page's articles to the accumulated set.
+        allArticlesRef.current = [
+          ...allArticlesRef.current,
+          ...(articleData.articles ?? []),
+        ];
       }
+      // Always re-apply the current filter/sort to the full accumulated list.
+      updateArticles(allArticlesRef.current);
     }
   }, [articleData, page]);
+
+  // Keep filteredArticles and articles list updated when selectedTags or sortType changes
+  useEffect(() => {
+    updateArticles(allArticlesRef.current);
+  }, [selectedTags, sortType]);
+
+  // Proactively auto-paginate in the background if the client-filtered list is too short
+  // to ensure that at least a few articles of the selected category are shown
+  // or we have exhaustively searched all pages from the backend.
+  useEffect(() => {
+    if (
+      showSavedOnly ||
+      searchMode ||
+      isLoading ||
+      isFetching ||
+      page >= totalPages ||
+      !selectedCategory
+    ) {
+      // Reset stale counter whenever the category changes or we stop paginating.
+      if (!selectedCategory || selectedCategory.name !== prevSelectedCategoryNameRef.current) lastCategoryFilteredCountRef.current = -1;
+      return;
+    }
+
+    const currentFiltered = allArticlesRef.current.filter(
+      (article: ArticleData) =>
+        article.tags &&
+        article.tags.some(tag => tag.name === selectedCategory.name),
+    );
+
+    // If we have fewer than 5 articles for the active category,
+    // fetch the next page in the background to try and find more matches —
+    // but only if the last fetch actually added new articles for this category.
+    // This prevents infinite fetching when a category is genuinely sparse.
+    if (
+      currentFiltered.length < 5 &&
+      currentFiltered.length > lastCategoryFilteredCountRef.current
+    ) {
+       prevSelectedCategoryNameRef.current = selectedCategory.name; 
+      lastCategoryFilteredCountRef.current = currentFiltered.length;
+      setPage(prev => prev + 1);
+    }
+  }, [
+    showSavedOnly,
+    searchMode,
+    isLoading,
+    isFetching,
+    page,
+    totalPages,
+    selectedCategory,
+  ]);
 
 
   const onRefresh = () => {
     console.log('is connected', isConnected);
     if (isConnected) {
       setRefreshing(true);
-      refetch();
+      // Reset pagination state on full pull-to-refresh
+      setPage(1);
+      if (page === 1) {
+        refetch();
+      }
       if (!isGuest) {
         refetchUser();
         refetchUnreadCount();
@@ -371,12 +459,15 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     } else {
       dispatch(setSearchMode({searchMode: true}));
       const matchesSearch = articleData?.articles.filter(article => {
-        const matchesTitle = article.title
-          .toLowerCase()
-          .includes(textInput.toLowerCase());
-        const matchesTags = article.tags.some(tag =>
-          tag.name.toLowerCase().includes(textInput.toLowerCase()),
-        );
+        const matchesTitle = article.title && typeof article.title === 'string'
+          ? article.title.toLowerCase().includes((textInput || '').toLowerCase())
+          : false;
+        const matchesTags = article.tags && Array.isArray(article.tags)
+          ? article.tags.some(tag =>
+              tag && tag.name && typeof tag.name === 'string' &&
+              tag.name.toLowerCase().includes((textInput || '').toLowerCase())
+            )
+          : false;
 
         return matchesTitle || matchesTags;
       });
@@ -403,7 +494,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         article.tags.some(tag => tag.name === selectedCategory?.name),
     );
 
-    return filtered.sort(() => Math.random() - 0.5);
+    return filtered;
   }, [showSavedOnly, searchMode, searchedArticles, filteredArticles, selectedCategory, user]);
 
   // Check if any filters are active
@@ -527,35 +618,27 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
             {selectedTags &&
               selectedTags.length > 0 &&
               !searchMode &&
-              selectedTags.map((item: Category, index: number) => (
-                <TouchableOpacity
-                  key={index}
-                  style={{
-                    ...styles.button,
-                    backgroundColor:
-                      selectedCategory && selectedCategory._id !== item._id
-                        ? 'white'
-                        : PRIMARY_COLOR,
-                    borderColor:
-                      selectedCategory && selectedCategory._id !== item._id
-                        ? PRIMARY_COLOR
-                        : 'white',
-                  }}
-                  onPress={() => {
-                    handleCategoryClick(item);
-                  }}>
-                  <Text
+              selectedTags.map((item: Category, index: number) => {
+                const isActive = selectedCategory && (selectedCategory._id === item._id || selectedCategory.id === item.id || selectedCategory.name === item.name);
+                return (
+                  <TouchableOpacity
+                    key={index}
                     style={{
-                      ...styles.labelStyle,
-                      color:
-                        selectedCategory && selectedCategory._id !== item._id
-                          ? 'black'
-                          : 'white',
-                    }}>
-                    {item.name}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+                      ...styles.button,
+                      backgroundColor: isActive ? '#000A60' : 'white',
+                      borderColor: isActive ? '#000A60' : '#D1D5DB',
+                    }}
+                    onPress={() => handleCategoryClick(item)}>
+                    <Text
+                      style={{
+                        ...styles.labelStyle,
+                        color: isActive ? 'white' : '#4B5563',
+                      }}>
+                      {item.name}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
           </ScrollView>
         </View>
 
@@ -620,14 +703,20 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
                   ? SAVED_CHIP_ACTIVE_BG
                   : SAVED_CHIP_INACTIVE_BG,
                 borderColor: showSavedOnly
-                  ? PRIMARY_COLOR
+                  ? SAVED_CHIP_ACTIVE_BG
                   : SAVED_CHIP_INACTIVE_BORDER,
               }}
-              onPress={() => setShowSavedOnly(prev => !prev)}>
+              onPress={handleToggleSavedOnly}
+              accessibilityRole="button"
+              accessibilityLabel={
+                showSavedOnly
+                  ? 'Saved articles filter active. Tap to show all articles.'
+                  : 'Tap to filter by saved articles'
+              }>
               <Text
                 style={{
                   ...styles.labelStyle,
-                  color: showSavedOnly ? 'white' : 'black',
+                  color: showSavedOnly ? 'white' : '#4B5563',
                 }}>
                 🔖 Saved
               </Text>
@@ -636,35 +725,35 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           {selectedTags &&
             selectedTags.length > 0 &&
             !searchMode &&
-            selectedTags.map((item: Category, index: number) => (
-              <TouchableOpacity
-                key={index}
-                style={{
-                  ...styles.button,
-                  backgroundColor:
-                    selectedCategory && selectedCategory._id !== item._id
-                      ? 'white'
-                      : '#000A60',
-                  borderColor:
-                    selectedCategory && selectedCategory._id !== item._id
-                      ? PRIMARY_COLOR
-                      : 'white',
-                }}
-                onPress={() => {
-                  handleCategoryClick(item);
-                }}>
-                <Text
+            selectedTags.map((item: Category, index: number) => {
+              // Category chips visually appear inactive when Saved filter is on —
+              // they are still clickable to switch away from Saved mode.
+              const isActive = !showSavedOnly &&
+                selectedCategory &&
+                (selectedCategory._id === item._id || selectedCategory.id === item.id || selectedCategory.name === item.name);
+              return (
+                <TouchableOpacity
+                  key={index}
                   style={{
-                    ...styles.labelStyle,
-                    color:
-                      selectedCategory && selectedCategory._id !== item._id
-                        ? 'black'
-                        : 'white',
-                  }}>
-                  {item.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                    ...styles.button,
+                    backgroundColor: isActive ? '#000A60' : 'white',
+                    borderColor: isActive ? '#000A60' : '#D1D5DB',
+                  }}
+                  onPress={() => handleCategoryClick(item)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Filter by ${item.name}${
+                    isActive ? ', currently active' : ''
+                  }`}>
+                  <Text
+                    style={{
+                      ...styles.labelStyle,
+                      color: isActive ? 'white' : '#4B5563',
+                    }}>
+                    {item.name}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
         </ScrollView>
       </View>
       <View style={styles.articleContainer}>
@@ -679,7 +768,9 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
             showSavedOnly ? <SavedArticleEmptyState /> : <EmptyArticleState />
           }
           onEndReached={() => {
-            if (page < totalPages) {
+            // Only paginate the main feed — saved articles are a
+            // finite local list and do not use server-side pagination.
+            if (!showSavedOnly && page < totalPages) {
               setPage(prev => prev + 1);
             }
           }}
@@ -737,6 +828,7 @@ const styles = StyleSheet.create({
     zIndex: -2,
   },
   flatListContentContainer: {
+    flexGrow: 1, // Allows empty-state components to fill available height
     paddingHorizontal: 16,
     marginTop: 10,
     paddingBottom: 120,
@@ -855,7 +947,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 60,
     paddingHorizontal: 24,
-    minHeight: 400,
+    // minHeight removed: flex:1 + flexGrow:1 on contentContainerStyle fills space
   },
   emptyIconCircle: {
     width: 100,
@@ -877,13 +969,13 @@ const styles = StyleSheet.create({
   emptyArticleTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: EMPTY_STATE_TEXT_PRIMARY,
     marginBottom: 10,
     textAlign: 'center',
   },
   emptyArticleDescription: {
     fontSize: 15,
-    color: '#757575',
+    color: EMPTY_STATE_TEXT_SECONDARY,
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 20,
@@ -912,19 +1004,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 60,
     paddingHorizontal: 24,
-    minHeight: 400,
-    backgroundColor: '#F8FAFF',
+    // minHeight removed: flex:1 + flexGrow:1 on contentContainerStyle fills space
+    backgroundColor: EMPTY_STATE_BACKGROUND,
   },
   savedEmptyTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: EMPTY_STATE_TEXT_PRIMARY,
     marginBottom: 10,
     textAlign: 'center',
   },
   savedEmptyDescription: {
     fontSize: 15,
-    color: '#666',
+    color: EMPTY_STATE_TEXT_SECONDARY,
     textAlign: 'center',
     lineHeight: 22,
     marginTop: 8,

@@ -11,7 +11,7 @@ export const SECURE_KEYS = {
   USER_TOKEN: 'SECURE_USER_TOKEN',
 } as const;
 
-type SecureKey = (typeof SECURE_KEYS)[keyof typeof SECURE_KEYS];
+export type SecureKey = (typeof SECURE_KEYS)[keyof typeof SECURE_KEYS];
 
 export const secureStoreItem = async (
   key: SecureKey,
@@ -53,5 +53,14 @@ export const secureRemoveItem = async (key: SecureKey): Promise<boolean> => {
   } catch (error) {
     console.error(`[SecureStorage] Error removing key "${key}":`, error);
     return false;
+  }
+};
+export const secureClearAllItems = async (): Promise<void> => {
+  try {
+    await Promise.all(
+      Object.values(SECURE_KEYS).map(key => SecureStore.deleteItemAsync(key))
+    );
+  } catch (error) {
+    console.error('[SecureStorage] Error clearing all items:', error);
   }
 };

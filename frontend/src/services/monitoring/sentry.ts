@@ -13,13 +13,10 @@ export const initMonitoring = () => {
     process.env.EXPO_PUBLIC_APP_ENV ||
     (__DEV__ ? 'development' : 'production');
 
-  if (__DEV__) {
-    console.log('[Monitoring] Sentry initialized');
-  }
-
   if (!dsn) {
     if (__DEV__) {
-      console.log('Sentry monitoring is disabled: EXPO_PUBLIC_SENTRY_DSN is not set.');
+      // Warn rather than log — no DSN is a non-default state worth noticing.
+      console.warn('[Monitoring] Sentry is disabled: EXPO_PUBLIC_SENTRY_DSN is not set.');
     }
     return;
   }
@@ -46,7 +43,7 @@ export const initMonitoring = () => {
   });
 
   if (__DEV__) {
-    console.log(`Sentry monitoring initialized for environment: ${environment}`);
+    console.log(`[Monitoring] Sentry initialized for environment: ${environment}`);
   }
 };
 

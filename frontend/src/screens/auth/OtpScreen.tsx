@@ -4,6 +4,12 @@ import axios, { AxiosError } from 'axios';
 import React, { useRef, useState } from 'react';
 import { Alert, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import React, {useRef, useState} from 'react';
+import {TextInput, Alert} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {OtpScreenProp} from '../../type';
+import axios, {AxiosError, isAxiosError} from 'axios';
+import Loader from '../../components/Loader';
 import {
   Button,
   Card,
@@ -245,8 +251,7 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
                         setErrorMessages(undefined);
                       },
                       onError: error => {
-                        // eslint-disable-next-line import/no-named-as-default-member
-                        if (axios.isAxiosError(error)) {
+                        if (isAxiosError(error)) {
                           if (error.response) {
                             if (error.response.status === 400) {
                               Alert.alert(

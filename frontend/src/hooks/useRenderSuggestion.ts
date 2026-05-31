@@ -4,24 +4,26 @@ import axios, { AxiosError } from "axios";
 import { RENDER_SUGGESTION } from "../helper/APIUtils";
 
 type RenderSuggestionReq = {
-    text: string;
-}
-export const useRenderSuggestion =  (): UseMutationResult<
-ContentSuggestionResponse,
-AxiosError,
-RenderSuggestionReq
->=>{
- return  useMutation({
-    mutationKey: ['render-suggestion-key'],
-    mutationFn: async (req: RenderSuggestionReq) => {
-   
-      const response = await axios.post(
+  text: string;
+};
+
+export const useRenderSuggestion = (): UseMutationResult<
+  ContentSuggestionResponse,
+  AxiosError,
+  RenderSuggestionReq
+> => {
+  return useMutation({
+    mutationFn: async (data: RenderSuggestionReq) => {
+      const response = await axios.post<ContentSuggestionResponse>(
         RENDER_SUGGESTION,
+        data,
         {
-          text: req.text,
-        },
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
       );
-      return response.data as ContentSuggestionResponse;
+      return response.data;
     },
   });
-}
+};

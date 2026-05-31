@@ -1,4 +1,4 @@
-import React, {useCallback, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Text, StyleSheet, View, ScrollView, TextInput, TouchableOpacity} from 'react-native';
 import {
   BottomSheetModal,
@@ -24,6 +24,7 @@ const FilterModal = ({
   handleFilterReset,
   handleFilterApply,
   setSortingType,
+  sortingType,
   selectedLanguages: externalSelectedLanguages,
   setSelectedLanguages: externalSetSelectedLanguages,
 }: HomeScreenFilterModalProps) => {
@@ -31,9 +32,14 @@ const FilterModal = ({
   const bottomSheetModalRef2 = useRef<BottomSheetModal>(null);
 
   const sortBy = ['recent', 'popular', 'oldest'];
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(sortingType || '');
   const [searchQuery, setSearchQuery] = useState('');
   const [internalSelectedLanguages, setInternalSelectedLanguages] = useState<string[]>([]);
+
+  // Sync local selectedCategory with prop sortingType when sortingType changes
+  useEffect(() => {
+    setSelectedCategory(sortingType || '');
+  }, [sortingType]);
 
   // Use external state if provided, otherwise use internal state
   const selectedLanguages = externalSelectedLanguages ?? internalSelectedLanguages;
@@ -76,17 +82,23 @@ const FilterModal = ({
     return shuffled;
   };
 
-  // Filter and shuffle categories, showing only 2
+  // Filter and sort categories stably, showing only 2
   const filteredCategories = useMemo(() => {
     const filtered = !searchQuery.trim()
       ? categories
       : categories.filter(cat =>
-          cat.name.toLowerCase().includes(searchQuery.toLowerCase())
+          cat && cat.name && typeof cat.name === 'string' &&
+          cat.name.toLowerCase().includes((searchQuery || '').toLowerCase())
         );
 
-    // Shuffle and return only 2 categories
-    const shuffled = shuffleArray(filtered);
-    return shuffled.slice(0, 2);
+    // Sort stably to prevent random reshuffling on state updates/re-renders
+    const sorted = [...filtered].sort((a, b) => {
+      if (a.id !== undefined && b.id !== undefined) {
+        return a.id - b.id;
+      }
+      return a.name.localeCompare(b.name);
+    });
+    return sorted.slice(0, 2);
   }, [categories, searchQuery]);
 
   // Handle language selection
@@ -260,28 +272,35 @@ const FilterModal = ({
               )}
 
               <View style={styles.categoryGrid}>
-                {filteredCategories.map((item, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={[
-                      styles.categoryCard,
-                      selectCategoryList.some(i => i.id === item?.id) && styles.categoryCardSelected,
-                    ]}
-                    onPress={() => handleCategorySelection(item)}>
-                    <Text
+                {filteredCategories.map((item, index) => {
+                  const isSelected = selectCategoryList.some(i => 
+                    (i.id !== undefined && item?.id !== undefined && i.id === item.id) ||
+                    (i._id !== undefined && item?._id !== undefined && i._id === item._id) ||
+                    (i.name === item?.name)
+                  );
+                  return (
+                    <TouchableOpacity
+                      key={index}
                       style={[
-                        styles.categoryCardText,
-                        selectCategoryList.some(i => i.id === item?.id) && styles.categoryCardTextSelected,
-                      ]}>
-                      {item?.name}
-                    </Text>
-                    {selectCategoryList.some(i => i.id === item?.id) && (
-                      <View style={styles.checkBadge}>
-                        <MaterialIcons name="check" size={14} color="white" />
-                      </View>
-                    )}
-                  </TouchableOpacity>
-                ))}
+                        styles.categoryCard,
+                        isSelected && styles.categoryCardSelected,
+                      ]}
+                      onPress={() => handleCategorySelection(item)}>
+                      <Text
+                        style={[
+                          styles.categoryCardText,
+                          isSelected && styles.categoryCardTextSelected,
+                        ]}>
+                        {item?.name}
+                      </Text>
+                      {isSelected && (
+                        <View style={styles.checkBadge}>
+                          <MaterialIcons name="check" size={14} color="white" />
+                        </View>
+                      )}
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
 
               {searchQuery && filteredCategories.length === 0 && (

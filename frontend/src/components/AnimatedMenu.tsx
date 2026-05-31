@@ -3,6 +3,8 @@ import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import AccessibleTouchable from './common/AccessibleTouchable';
 
+type AntDesignIconName = React.ComponentProps<typeof AntDesign>['name'];
+
 
 interface ArticleFloatingMenuProp {
   items: Item[];
@@ -14,7 +16,8 @@ interface ArticleFloatingMenuProp {
 interface Item {
   name: string;
   action: () => void;
-  icon: string;
+  /** Must be a valid AntDesign icon name. */
+  icon: AntDesignIconName;
 }
 
 export default function ArticleFloatingMenu(props: ArticleFloatingMenuProp) {
@@ -32,7 +35,7 @@ export default function ArticleFloatingMenu(props: ArticleFloatingMenuProp) {
           accessibilityLabel={item.name}
           accessibilityHint={`Performs ${item.name.toLowerCase()} action`}
         >
-          <AntDesign name={item.icon as any} size={20} color="#1F1F1F" />
+          <AntDesign name={item.icon} size={20} color="#1F1F1F" />
           <Text style={styles.text}>{item.name}</Text>
         </AccessibleTouchable>
       ))}

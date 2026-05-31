@@ -385,7 +385,9 @@ If you encounter any issues or have any feedback or suggestions, please open an 
 
    <tr>
     <td align="center"><a href="https://github.com/PranavAgarkar07"><img src="https://avatars.githubusercontent.com/u/90404176?v=4" width="120px;" alt=""/><br/><sub><b>Pranav Agarkar</b></sub></a></td>
-   </tr>
+       <td align="center"><a href="https://github.com/Maskman014"><img src="https://avatars.githubusercontent.com/u/225333585?v=4" width="120px;" alt=""/><br/><sub><b>Krishna Veernala</b></sub></a></td>
+     <td align="center"><a href="https://github.com/vinalal"><img src="https://avatars.githubusercontent.com/u/121111797?v=4" width="120px;" alt=""/><br/><sub><b>Vinayak Lal</b></sub></a></td>
+ </tr>
  </table>
  <!-- CONTRIBUTORS-TABLE-END -->
 </div>
