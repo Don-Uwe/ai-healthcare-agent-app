@@ -11,17 +11,20 @@ import useUploadAudio from '../hooks/useUploadAudio';
 import Slider from '@react-native-community/slider';
 
 import {useAudioPlayer} from 'expo-audio';
-import {Circle, Theme, XStack, YStack, Text, useTheme} from 'tamagui';
+import {Button, Circle, Theme, XStack, YStack, Text, useTheme} from 'tamagui';
 import {AntDesign, Ionicons} from '@expo/vector-icons';
 import AudioWaveform from '../components/AudioWaveform';
 import {useUploadPodcast} from '../hooks/useUploadPodcast';
 import Loader from '../components/Loader';
+
+const PLAYBACK_SPEEDS = [1, 1.25, 1.5, 2];
 
 const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
   const {uploadImage, loading, error: imageError} = useUploadImage();
   const {uploadAudio, loading: audioLoading, error} = useUploadAudio();
   const [isPlaying, setIsPlaying] = useState(false);
   const [position, setPosition] = useState(0);
+  const [speed, setSpeed] = useState(1);
   
   const [duration, setDuration] = useState(0);
   const theme = useTheme();
@@ -43,6 +46,11 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
       ? `file://${filePath}`
       : require('../../assets/sounds/funny-cartoon-sound-397415.mp3'),
   );
+
+  const formatPlaybackSpeed = (playbackSpeed: number) =>
+    Number.isInteger(playbackSpeed)
+      ? `${playbackSpeed}x`
+      : `${playbackSpeed}x`;
 
   const formatSecTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -67,10 +75,12 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
   // Handle transitions
 
   const handlePlay = async () => {
-    console.log('Play called');
-    if (!player) {
-      console.log('enter');
-      return;
+    if (!player) return;
+    // If the track has fully finished, restart from the beginning.
+    // Otherwise resume from the current paused position.
+    if (duration > 0 && !isNaN(duration) && position >= duration - 0.5){
+      await player.seekTo(0);
+      setPosition(0);
     }
     player.play();
     setUiState('playing');
@@ -84,6 +94,17 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
     player.pause();
     setUiState('paused');
     setIsPlaying(false);
+  };
+
+  const handleCycleSpeed = () => {
+    if (!player) return;
+
+    const currentIndex = PLAYBACK_SPEEDS.indexOf(speed);
+    const nextSpeed =
+      PLAYBACK_SPEEDS[(currentIndex + 1) % PLAYBACK_SPEEDS.length];
+
+    player.setPlaybackRate(nextSpeed, 'high');
+    setSpeed(nextSpeed);
   };
 
   const SKIP_TIME = 5; // seconds
@@ -341,6 +362,7 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
         </YStack>
 
         {/* Waveform Visualization */}
+        {/* height={80} gives 16px of breathing room around the waveform's internal MAX_HEIGHT+16 (64px) container */}
         <YStack alignItems="center" height={80} my="$2">
           <AudioWaveform isPlaying={player.currentStatus.playing} accentColor={theme.blue10?.val ?? '#3B82F6'} />
         </YStack>
@@ -426,6 +448,22 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
               <Ionicons name="play" size={45} color="white" />
             )}
           </Circle>
+
+          {/* Playback Speed Button */}
+          <Button
+            height={42}
+            minWidth={64}
+            paddingHorizontal="$3"
+            borderRadius="$10"
+            backgroundColor="$backgroundHover"
+            borderWidth={1}
+            borderColor="$borderColor"
+            pressStyle={{scale: 0.94, backgroundColor: '$backgroundPress'}}
+            onPress={handleCycleSpeed}>
+            <Text color="$color" fontSize={14} fontWeight="800">
+              {formatPlaybackSpeed(speed)}
+            </Text>
+          </Button>
 
           {/* Forward Button */}
           <Circle

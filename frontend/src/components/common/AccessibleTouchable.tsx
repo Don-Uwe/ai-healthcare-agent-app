@@ -27,4 +27,4 @@ const AccessibleTouchable: React.FC<Props> = ({
   );
 };
 
-export default AccessibleTouchable;
+export default AccessibleTouchable;

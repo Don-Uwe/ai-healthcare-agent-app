@@ -382,6 +382,10 @@ If you encounter any issues or have any feedback or suggestions, please open an 
      <td align="center"><a href="https://github.com/KRUSHAL2956"><img src="https://avatars.githubusercontent.com/u/134606696?v=4" width="120px;" alt=""/><br/><sub><b>Krushal Hirpara</b></sub></a></td>
      <td align="center"><a href="https://github.com/nyxsky404"><img src="https://avatars.githubusercontent.com/u/189461188?v=4" width="120px;" alt=""/><br/><sub><b>Sumit Kumar</b></sub></a></td>
  </tr>
+
+   <tr>
+    <td align="center"><a href="https://github.com/PranavAgarkar07"><img src="https://avatars.githubusercontent.com/u/90404176?v=4" width="120px;" alt=""/><br/><sub><b>Pranav Agarkar</b></sub></a></td>
+   </tr>
  </table>
  <!-- CONTRIBUTORS-TABLE-END -->
 </div>

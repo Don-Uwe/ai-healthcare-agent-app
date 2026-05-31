@@ -626,10 +626,6 @@ ${feedback}
 `;
 };
 
-export const SECURE_KEYS = {
-  USER_TOKEN: 'user_token',
-};
-
 export const KEYS = {
   USER_ID: 'USER_ID',
   USER_TOKEN_EXPIRY_DATE: 'USER_TOKEN_EXPIRY_DATE',
