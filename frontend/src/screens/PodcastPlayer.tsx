@@ -75,10 +75,12 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
   // Handle transitions
 
   const handlePlay = async () => {
-    console.log('Play called');
-    if (!player) {
-      console.log('enter');
-      return;
+    if (!player) return;
+    // If the track has fully finished, restart from the beginning.
+    // Otherwise resume from the current paused position.
+    if (duration > 0 && !isNaN(duration) && position >= duration - 0.5){
+      await player.seekTo(0);
+      setPosition(0);
     }
     player.play();
     setUiState('playing');
@@ -360,6 +362,7 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
         </YStack>
 
         {/* Waveform Visualization */}
+        {/* height={80} gives 16px of breathing room around the waveform's internal MAX_HEIGHT+16 (64px) container */}
         <YStack alignItems="center" height={80} my="$2">
           <AudioWaveform isPlaying={player.currentStatus.playing} accentColor={theme.blue10?.val ?? '#3B82F6'} />
         </YStack>

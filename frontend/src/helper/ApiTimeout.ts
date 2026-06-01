@@ -19,10 +19,12 @@ export class ApiTimeoutError extends Error {
    * @param timeoutMs - The timeout duration in milliseconds that was exceeded
    */
   constructor(timeoutMs: number = API_REQUEST_TIMEOUT_MS) {
+    // Build on top of the shared API_TIMEOUT_ERROR_MESSAGE constant so both
+    // fetch-path and axios-path timeout errors stay textually consistent.
     super(
       `Request timed out after ${Math.round(
         timeoutMs / 1000,
-      )} seconds. Please check your connection and try again.`,
+      )} seconds. ${API_TIMEOUT_ERROR_MESSAGE}`,
     );
     this.name = 'ApiTimeoutError';
   }
@@ -69,7 +71,8 @@ export async function fetchWithTimeout(
   timeoutMs = API_REQUEST_TIMEOUT_MS,
 ): Promise<Response> {
   const controller = new AbortController();
-  const requestInit = init ?? {};
+  // `init` defaults to `{}` via the parameter default, so no need for `?? {}`.
+  const requestInit = init;
   const externalSignal = requestInit.signal;
   let didTimeout = false;
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
@@ -103,8 +106,10 @@ export async function fetchWithTimeout(
       timeoutPromise,
     ]);
 
-    // HTTP error responses (5xx) are already handled by networkLogger.ts.
-    // This helper only captures timeout failures and hard network errors.
+    // Successful HTTP error responses (e.g. 4xx/5xx) are returned normally above
+    // and handled by the caller (typically the Axios response interceptor via networkLogger).
+    // This catch block only fires for hard network failures (e.g. DNS, connection refused)
+    // or when the AbortController fires due to a timeout.
     return response;
   } catch (error) {
     if (didTimeout) {

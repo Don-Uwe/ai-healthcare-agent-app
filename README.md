@@ -5,6 +5,69 @@
   </a>
 </h3>
 
+# Contributor Note
+
+I appreciate everyone’s interest in contributing.
+
+A small note regarding participation and expectations: this project is maintained primarily by me as a single maintainer, so collaboration and review timelines may differ from larger teams.
+
+This may not always be the ideal place to actively coordinate contributors, and contributors should consider possible delays before taking up work.
+
+For this initiative, I’m contributing with limited availability (maximum ~3 hours/day), while balancing other responsibilities. Contributions are welcome, but they should align with this pace and maintain a healthy workflow.
+
+Thank you for understanding and for your interest in the project.
+
+
+<br/>
+
+
+# 🚀 UltimateHealth Frontend — Upcoming Release
+
+**Platform:** React Native (Expo) —  Android
+
+## 🔒 Security
+
+* Added **Sentry request body redaction** to prevent credentials and sensitive health data from being exposed.
+* Improved **sensitive key detection** for tokens, passwords, auth data, and similar fields.
+* Hardened **Axios auth handling** to avoid sending invalid `Bearer undefined/null` headers.
+
+## 🐞 Bug Fixes
+
+* Fixed **TTS player** staying visible after playback completion.
+* Resolved **Home feed pagination inconsistencies** with selected categories and Saved filtering.
+* Fixed **keyboard overlap** in comments input.
+* Unified **API timeout error messaging**.
+* Improved **Podcast playback resume/rewind behavior**.
+* Fixed **guest deep link routing** for restricted screens.
+* Corrected **timezone parsing** to preserve local time behavior.
+
+## ✨ Improvements
+
+* Integrated **Sentry monitoring + safe network logging**.
+* Added centralized **API timeout handling** with fetch + Axios support.
+* Improved **accessibility support** across multiple screens.
+* Introduced **custom audio waveform visualization** for podcast playback.
+* Migrated date utilities from **moment → date-fns** with locale support.
+* Refactored **Axios instance architecture** for cleaner initialization.
+* Improved **TypeScript safety** for AntDesign icons.
+* Added ESLint cleanup and stricter Redux typing.
+
+## 🧪 Testing & DX
+
+* Added unit tests for:
+
+  * API timeout handling
+  * Date utilities
+* Removed production console noise and improved developer comments/logging.
+
+## ⚠️ Deferred
+
+* React Navigation Sentry instrumentation (requires navigation ref architecture changes).
+* Future cleanup for scoped Jest mocks.
+
+---
+
+
 <div align="center">
 
 [![Live Web Demo](https://img.shields.io/badge/Live%20Web%20Demo-4CAF50?style=for-the-badge&logo=globe&logoColor=white)](https://uhsocial.in/frontend/v2)
@@ -14,22 +77,11 @@
 
 </div>
 
-Here’s a cleaner version while keeping your original meaning:
-
-**UltimateHealth Upcoming Release 🚀**
-
-* **Translation Contribution** – Extend any article in your preferred language.
-* **Guest Mode Support** – Read articles and listen to podcasts without signing in.
-* **Content Preference Save** – Save your preferences for a more personalized future experience.
-
-**Coming soon.**
 
 ## Code Quality
 
 Frontend dead-code checks use Knip. See [Knip Guide](docs/KNIP_GUIDE.md) and [Knip Contributor Guide](docs/KNIP_CONTRIBUTOR_GUIDE.md) for local commands, CI behavior, and false-positive handling.
 
-
-<br/>
 
 <div align="center">
 
@@ -389,7 +441,12 @@ If you encounter any issues or have any feedback or suggestions, please open an 
 
    <tr>
     <td align="center"><a href="https://github.com/PranavAgarkar07"><img src="https://avatars.githubusercontent.com/u/90404176?v=4" width="120px;" alt=""/><br/><sub><b>Pranav Agarkar</b></sub></a></td>
-   </tr>
+       <td align="center"><a href="https://github.com/Maskman014"><img src="https://avatars.githubusercontent.com/u/225333585?v=4" width="120px;" alt=""/><br/><sub><b>Krishna Veernala</b></sub></a></td>
+     <td align="center"><a href="https://github.com/vinalal"><img src="https://avatars.githubusercontent.com/u/121111797?v=4" width="120px;" alt=""/><br/><sub><b>Vinayak Lal</b></sub></a></td>
+     <td align="center"><a href="https://github.com/VirenSumbly"><img src="https://avatars.githubusercontent.com/u/56977249?v=4" width="120px;" alt=""/><br/><sub><b>leVir</b></sub></a></td>
+     <td align="center"><a href="https://github.com/vipul674"><img src="https://avatars.githubusercontent.com/u/140911122?v=4" width="120px;" alt=""/><br/><sub><b>vipul674</b></sub></a></td>
+     <td align="center"><a href="https://github.com/palakjaiswal16"><img src="https://avatars.githubusercontent.com/u/116461116?v=4" width="120px;" alt=""/><br/><sub><b>palakjaiswal16</b></sub></a></td>
+ </tr>
  </table>
  <!-- CONTRIBUTORS-TABLE-END -->
 </div>

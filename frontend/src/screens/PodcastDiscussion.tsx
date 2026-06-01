@@ -7,7 +7,7 @@ import {
   Pressable,
   TextInput,
 } from 'react-native';
-// eslint-disable-next-line import/no-duplicates
+ 
 import {PodcastDiscussionProp, User, Comment} from '../type';
 import {PRIMARY_COLOR} from '../helper/Theme';
 //import io from 'socket.io-client';
@@ -491,8 +491,11 @@ const PodcastDiscussion = ({navigation, route}: PodcastDiscussionProp) => {
                 deleteAction={handleDeleteAction}
                 handleLikeAction={handleLikeAction}
                 commentLikeLoading={commentLikeLoading}
-                handleMentionClick={()=>{
-
+                handleMentionClick={(user_handle)=>{
+                  navigation.navigate('UserProfileScreen', {
+                    author_handle: user_handle,
+                    userHandle: user_handle,
+                  });
                 }}
                 handleReportAction={handleReportAction}
                 isFromArticle={false}

@@ -18,6 +18,15 @@ import { FontAwesome5, Ionicons, Entypo, MaterialIcons } from '@expo/vector-icon
 
 const PROGRAMS = [
   {
+    id: 4,
+    name: 'GirlScript Summer of Code 2026',
+    logo: 'https://gssoc.girlscript.org/logo.png',
+    description: 'A nationwide open-source program focused on helping developers contribute to real-world projects through mentorship, collaboration, and community-driven learning.',
+    date: 'May 2026 - Aug 2026',
+    type: 'Summer 2026',
+    link: 'https://gssoc.girlscript.org/'
+  },
+  {
     id: 1,
     name: 'IEEE IGDTUW Open Source Week',
     logo: 'https://github.com/user-attachments/assets/e0a40d06-f5b8-42a7-a5a0-033280f842be',
@@ -80,6 +89,7 @@ const ProgramsPage = () => {
                 backgroundColor="white"
                 animation="bouncy"
                 hoverStyle={{ scale: 0.98 }}
+                focusStyle={{ borderColor: '#1A91FF' }}
                 pressStyle={{ scale: 0.96 }}
                 onPress={() => handlePress(program.link)}
               >
@@ -96,6 +106,7 @@ const ProgramsPage = () => {
                   <Image 
                     source={{ uri: program.logo }} 
                     style={{ width: '90%', height: '100%', resizeMode: 'contain' }} 
+                    accessibilityLabel={`${program.name} logo`}
                   />
                 </YStack>
 
