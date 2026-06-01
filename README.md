@@ -440,6 +440,7 @@ If you encounter any issues or have any feedback or suggestions, please open an 
        <td align="center"><a href="https://github.com/Maskman014"><img src="https://avatars.githubusercontent.com/u/225333585?v=4" width="120px;" alt=""/><br/><sub><b>Krishna Veernala</b></sub></a></td>
      <td align="center"><a href="https://github.com/vinalal"><img src="https://avatars.githubusercontent.com/u/121111797?v=4" width="120px;" alt=""/><br/><sub><b>Vinayak Lal</b></sub></a></td>
      <td align="center"><a href="https://github.com/VirenSumbly"><img src="https://avatars.githubusercontent.com/u/56977249?v=4" width="120px;" alt=""/><br/><sub><b>leVir</b></sub></a></td>
+     <td align="center"><a href="https://github.com/vipul674"><img src="https://avatars.githubusercontent.com/u/140911122?v=4" width="120px;" alt=""/><br/><sub><b>vipul674</b></sub></a></td>
  </tr>
  </table>
  <!-- CONTRIBUTORS-TABLE-END -->
