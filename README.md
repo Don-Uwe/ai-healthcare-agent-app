@@ -26,7 +26,7 @@ Thank you for understanding and for your interest in the project.
 
 </div>
 
-Here’s a cleaner version while keeping your original meaning:
+
 
 **UltimateHealth Upcoming Release 🚀**
 
