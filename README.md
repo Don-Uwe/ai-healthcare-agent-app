@@ -5,7 +5,7 @@
   </a>
 </h3>
 
-## Contributor Note
+# Contributor Note
 
 I appreciate everyone’s interest in contributing.
 
@@ -17,6 +17,57 @@ For this initiative, I’m contributing with limited availability (maximum ~3 ho
 
 Thank you for understanding and for your interest in the project.
 
+
+<br/>
+
+
+# 🚀 UltimateHealth Frontend — Upcoming Release
+
+**Platform:** React Native (Expo) —  Android
+
+## 🔒 Security
+
+* Added **Sentry request body redaction** to prevent credentials and sensitive health data from being exposed.
+* Improved **sensitive key detection** for tokens, passwords, auth data, and similar fields.
+* Hardened **Axios auth handling** to avoid sending invalid `Bearer undefined/null` headers.
+
+## 🐞 Bug Fixes
+
+* Fixed **TTS player** staying visible after playback completion.
+* Resolved **Home feed pagination inconsistencies** with selected categories and Saved filtering.
+* Fixed **keyboard overlap** in comments input.
+* Unified **API timeout error messaging**.
+* Improved **Podcast playback resume/rewind behavior**.
+* Fixed **guest deep link routing** for restricted screens.
+* Corrected **timezone parsing** to preserve local time behavior.
+
+## ✨ Improvements
+
+* Integrated **Sentry monitoring + safe network logging**.
+* Added centralized **API timeout handling** with fetch + Axios support.
+* Improved **accessibility support** across multiple screens.
+* Introduced **custom audio waveform visualization** for podcast playback.
+* Migrated date utilities from **moment → date-fns** with locale support.
+* Refactored **Axios instance architecture** for cleaner initialization.
+* Improved **TypeScript safety** for AntDesign icons.
+* Added ESLint cleanup and stricter Redux typing.
+
+## 🧪 Testing & DX
+
+* Added unit tests for:
+
+  * API timeout handling
+  * Date utilities
+* Removed production console noise and improved developer comments/logging.
+
+## ⚠️ Deferred
+
+* React Navigation Sentry instrumentation (requires navigation ref architecture changes).
+* Future cleanup for scoped Jest mocks.
+
+---
+
+
 <div align="center">
 
 [![Live Web Demo](https://img.shields.io/badge/Live%20Web%20Demo-4CAF50?style=for-the-badge&logo=globe&logoColor=white)](https://uhsocial.in/frontend/v2)
@@ -27,17 +78,6 @@ Thank you for understanding and for your interest in the project.
 </div>
 
 
-
-**UltimateHealth Upcoming Release 🚀**
-
-* **Translation Contribution** – Extend any article in your preferred language.
-* **Guest Mode Support** – Read articles and listen to podcasts without signing in.
-* **Content Preference Save** – Save your preferences for a more personalized future experience.
-
-**Coming soon.**
-
-
-<br/>
 
 <div align="center">
 
