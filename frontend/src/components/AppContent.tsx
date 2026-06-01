@@ -4,6 +4,9 @@ import {useNotificationListeners} from '@/hooks/useNotificationListener';
 import {useVersionCheck} from '@/hooks/useVersionCheck';
 import {SocketProvider} from '../contexts/SocketContext';
 import config from '@/tamagui.config';
+import * as Notifications from 'expo-notifications';
+import {registerAndSyncPushToken} from '../helper/PushNotificationService';
+import {initDeepLinking, navigateDeepLink, resolveNotificationTarget} from '../helper/DeepLinkService';
 import messaging from '@react-native-firebase/messaging';
 import {
   NavigationContainer,
@@ -17,7 +20,6 @@ import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {addEventListener} from '@react-native-community/netinfo';
 import {useDispatch, useSelector} from 'react-redux';
 import {TamaguiProvider} from 'tamagui';
-import {initDeepLinking} from '../helper/DeepLinkService';
 import StackNavigation from '../navigations/StackNavigation';
 import {CustomAlertDialog} from './CustomAlert';
 import UpdateModal from './UpdateModal';
@@ -104,6 +106,42 @@ export default function AppContent() {
       onOpenApp();
     };
   }, [dispatch]);
+
+  useEffect(() => {
+    registerAndSyncPushToken(user_token);
+  }, [user_token]);
+
+  useEffect(() => {
+    const handleNotificationResponse = async (
+      response: Notifications.NotificationResponse,
+    ) => {
+      const data = response.notification.request.content.data;
+      const target = resolveNotificationTarget(data);
+
+      if (!target || !navigationRef.current) {
+        return;
+      }
+
+      const isAuthenticated =
+        Boolean(tokenRes?.isValid || user_token) && !isGuest;
+      navigateDeepLink(navigationRef.current, target, isAuthenticated);
+    };
+
+    const responseListener =
+      Notifications.addNotificationResponseReceivedListener(
+        handleNotificationResponse,
+      );
+
+    Notifications.getLastNotificationResponseAsync().then(response => {
+      if (response) {
+        handleNotificationResponse(response);
+      }
+    });
+
+    return () => {
+      responseListener.remove();
+    };
+  }, [user_token, tokenRes, isGuest]);
 
   useEffect(() => {
     firebaseInit();
