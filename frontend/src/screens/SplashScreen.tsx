@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useCallback, useEffect} from 'react';
 import {Image, StyleSheet} from 'react-native';
 import {YStack, Text, Button} from 'tamagui';
 import Animated, {
@@ -9,9 +9,10 @@ import Animated, {
 } from 'react-native-reanimated';
 import {SplashScreenProp} from '../type';
 import {useDispatch} from 'react-redux';
-import {retrieveItem, KEYS, clearStorage} from '../helper/Utils';
+import {KEYS, clearStorage, retrieveItem} from '../helper/Utils';
 import {setUserId, setUserToken, setUserHandle} from '../store/UserSlice';
 import { useCheckTokenStatus } from '@/src/hooks/useGetTokenStatus';
+import { SECURE_KEYS, SecureKey, secureRetrieveItem } from '../helper/SecureStorageUtils';
 
 export default function SplashScreen({navigation}: SplashScreenProp) {
   const opacity = useSharedValue(0);
@@ -22,12 +23,7 @@ export default function SplashScreen({navigation}: SplashScreenProp) {
 
   const {data: tokenRes, isLoading} = useCheckTokenStatus();
 
-  useEffect(() => {
-    console.log('Token status:', tokenRes);
-    if (tokenRes) {
-      checkLoginStatus();
-    }
-  }, [ tokenRes]);
+ 
   // function isDateMoreThanSevenDaysOld(dateString: string) {
   //   const inputDate = new Date(dateString).getTime();
   //   const currentDate = new Date().getTime();
@@ -36,14 +32,14 @@ export default function SplashScreen({navigation}: SplashScreenProp) {
   //   return daysDifference >= 6;
   // }
 
-  const checkLoginStatus = async () => {
+  const checkLoginStatus = useCallback(async () => {
 
     if(!tokenRes){
       return;
     }
     try {
       const userId = await retrieveItem(KEYS.USER_ID);
-      const user = await retrieveItem(KEYS.USER_TOKEN);
+      const user = await secureRetrieveItem(SECURE_KEYS.USER_TOKEN as SecureKey);
       const user_handle = await retrieveItem(KEYS.USER_HANDLE);
       if (
        // user_handle &&
@@ -77,8 +73,14 @@ export default function SplashScreen({navigation}: SplashScreenProp) {
         routes: [{name: 'LoginScreen'}],
       });
     }
-  };
+  },[dispatch, navigation, tokenRes]);
 
+   useEffect(() => {
+    console.log('Token status:', tokenRes);
+    if (tokenRes) {
+      checkLoginStatus();
+    }
+  }, [checkLoginStatus, tokenRes]);
   useEffect(() => {
     opacity.value = withTiming(1, {
       duration: 1200,

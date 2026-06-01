@@ -1,15 +1,14 @@
 import React, {useState} from 'react';
 import {TouchableOpacity} from 'react-native';
-import {YStack, XStack, Text, Avatar, Paragraph, View} from 'tamagui';
+import {YStack, XStack, Text, Avatar, Paragraph} from 'tamagui';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
 import Entypo from '@expo/vector-icons/Entypo';
-import AntDesign from '@expo/vector-icons/AntDesign';
 import {FontAwesome, Fontisto} from '@expo/vector-icons';
-import moment from 'moment';
+import { formatWithOrdinalAndDay } from '../helper/dateUtils';
 import ArticleFloatingMenu from './AnimatedMenu';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import {Comment} from '../type';
@@ -67,19 +66,21 @@ export default function CommentItem({
   };
 
   const formatWithOrdinal = (date: string) =>
-    moment(date).format('D MMM, ddd, h:mm a');
+    formatWithOrdinalAndDay(date);
 
   // Render mentions inline
   const renderTextWithMentions = (text: string) => {
-    const regex = /(@\w+)/g;
+    const regex = /(@[\w-]+)/g;
     const parts = text.split(regex);
     return parts.map((part, index) =>
-      regex.test(part) ? (
-        <TouchableOpacity key={index} onPress={() => handleMentionClick(part)}>
-          <Text color="$blue10" fontWeight="700">
-            {part}
-          </Text>
-        </TouchableOpacity>
+      /^@[\w-]+$/.test(part) ? (
+        <Text
+          key={index}
+          color="$blue10"
+          fontWeight="700"
+          onPress={() => handleMentionClick(part)}>
+          {part}
+        </Text>
       ) : (
         <Text key={index}>{part}</Text>
       ),
@@ -128,7 +129,7 @@ export default function CommentItem({
                   handleReportAction(item._id, item.userId._id);
                   handleAnimation();
                 },
-                icon: 'aim',
+                icon: 'aim' as const,
               },
               ...(userId === item.userId._id && isSelected && !isFromArticle
                 ? [
@@ -138,7 +139,8 @@ export default function CommentItem({
                         handleEditAction(item);
                         handleAnimation();
                       },
-                      icon: 'edit',
+                      // 'edit' is the correct AntDesign equivalent of a pencil/edit icon
+                      icon: 'edit' as const,
                     },
                     {
                       name: 'Delete',
@@ -146,7 +148,8 @@ export default function CommentItem({
                         deleteAction(item);
                         handleAnimation();
                       },
-                      icon: 'delete',
+                      // 'delete' is the correct AntDesign equivalent of a trash/remove icon
+                      icon: 'delete' as const,
                     },
                   ]
                 : []),

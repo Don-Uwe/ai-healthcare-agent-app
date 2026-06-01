@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {Alert} from 'react-native';
-import {ScrollView, YStack, XStack, Text, Input, Button, Image} from 'tamagui';
+import {ScrollView, YStack, XStack, Text, Input, Button, Image, useTheme} from 'tamagui';
 import Icon from '@expo/vector-icons/MaterialIcons';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {Dropdown} from 'react-native-element-dropdown';
@@ -18,7 +18,7 @@ import {
   launchImageLibrary,
   ImagePickerResponse,
 } from 'react-native-image-picker';
-import {useCheckUserHandleAvailability} from '@/src/hooks/useCheckUserHandle';
+import {useCheckUserHandleAvailability} from '@/src/hooks/useCheckUserHandleAvailability';
 import {useVerificationMailMutation} from '@/src/hooks/useMailVerification';
 import {useRegdMutation} from '@/src/hooks/useUserRegistration';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -34,16 +34,16 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
   const [role, setRole] = useState('');
   const [verifyBtntext, setVerifyBtntxt] = useState('Request Verification');
   const [verifiedModalVisible, setVerifiedModalVisible] = useState(false);
-  // const [isHandleAvailable, setIsHandleAvailable] = useState(false);
   const [token, setToken] = useState('');
   const [isFocus, setIsFocus] = useState(false);
   const [isSecureEntry, setIsSecureEntry] = useState(true);
   const [securityWarningVisible, setSecurityWarningVisible] = useState(false);
   const [pendingSubmitAction, setPendingSubmitAction] = useState<(() => void) | null>(null);
-  //const [error, setError] = useState('');
 
-  const {data: checkhandle, isLoading} =
-    useCheckUserHandleAvailability(username);
+  const userHandle = username.trim();
+
+  const {data: handleAvailability, isLoading: isCheckingHandle} =
+    useCheckUserHandleAvailability(userHandle);
   const {mutate: verifyEmailMutation, isPending: verifyEmailPending} =
     useVerificationMailMutation();
 
@@ -151,10 +151,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
     }
   };
   const handleSubmit = () => {
-    // if (!isHandleAvailable) {
-    //   return;
-    // }
-    if (!name || !username || !email || !password || !role) {
+    if (!name || !userHandle || !email || !password || !role) {
       Alert.alert('Please fill in all fields');
       return;
     } else if (validator.validate(email) === false) {
@@ -162,6 +159,9 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
       return;
     } else if (password.length < 6) {
       Alert.alert('Password must be at least of 6 length');
+      return;
+    } else if (handleAvailability && !handleAvailability.isAvailable) {
+      Alert.alert('User handle is not available', 'Please choose a different handle.');
       return;
     }
 
@@ -171,7 +171,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
     } else {
       const detail: UserDetail = {
         user_name: name,
-        user_handle: username,
+        user_handle: userHandle,
         email: email,
         password: password,
         profile_image: user_profile_image,
@@ -203,7 +203,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
     register(
       {
         user_name: name,
-        user_handle: username,
+        user_handle: userHandle,
         email: email,
         password: password,
         isDoctor: false,
@@ -339,7 +339,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
               <AntDesign
                 name="camera"
                 size={26}
-                color="#ffffff"
+                color={theme.white.val}
                 style={{transform: [{scaleX: -1}]}}
               />
             ) : (
@@ -380,21 +380,10 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
               onChangeText={setName}
             />
             <YStack position="absolute" right={14} top={10}>
-              <Icon name="person" size={20} color="#000" />
+              <Icon name="person" size={20} color={theme.black.val} />
             </YStack>
           </XStack>
 
-          {/* Handle Error */}
-          {checkhandle?.status === false && (
-            <Text color="red" fontSize={14}>
-              User handle is already in use.
-            </Text>
-          )}
-          {isLoading && (
-            <Text color="green" fontSize={14}>
-              Checking...
-            </Text>
-          )}
           {/* User Handle */}
           <XStack position="relative">
             <Input
@@ -408,9 +397,26 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
               onChangeText={handleUserHandleChange}
             />
             <YStack position="absolute" right={14} top={10}>
-              <Icon name="person" size={20} color="#000" />
+              <Icon name="person" size={20} color={theme.black.val} />
             </YStack>
           </XStack>
+
+          {/* Handle Availability Feedback */}
+          {isCheckingHandle && (
+            <Text color="$gray10" fontSize={14}>
+              Checking availability...
+            </Text>
+          )}
+          {!isCheckingHandle && handleAvailability && !handleAvailability.isAvailable && (
+            <Text color="red" fontSize={14}>
+              {handleAvailability.message}
+            </Text>
+          )}
+          {!isCheckingHandle && handleAvailability?.isAvailable && (
+            <Text color="green" fontSize={14}>
+              {handleAvailability.message}
+            </Text>
+          )}
 
           {/* Email */}
           <XStack position="relative">
@@ -426,7 +432,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
               keyboardType="email-address"
             />
             <YStack position="absolute" right={14} top={10}>
-              <Icon name="email" size={20} color="#000" />
+              <Icon name="email" size={20} color={theme.black.val} />
             </YStack>
           </XStack>
 
@@ -452,7 +458,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
               <AntDesign
                 name={isSecureEntry ? 'eye-invisible' : 'eye'}
                 size={17}
-                color="#000"
+                color={theme.black.val}
               />
             </Button>
           </XStack>
@@ -461,7 +467,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
           <Dropdown
             style={{
               height: 40,
-              borderColor: '#0CAFFF',
+              borderColor: theme.blue10.val,
               borderWidth: 1,
               borderRadius: 5,
               paddingHorizontal: 10,
