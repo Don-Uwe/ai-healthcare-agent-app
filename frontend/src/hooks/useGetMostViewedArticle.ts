@@ -2,7 +2,6 @@ import {useQuery, UseQueryResult} from '@tanstack/react-query';
 import axios from 'axios';
 import {ArticleData} from '../type';
 import {GET_MOSTLY_VIEWED} from '../helper/APIUtils';
-import {useSelector} from 'react-redux';
 
 export const useGetAuthorMostViewedArticles = ({
   user_id,
@@ -15,7 +14,6 @@ export const useGetAuthorMostViewedArticles = ({
   others?: boolean;
   isConnected?: boolean;
 }): UseQueryResult<ArticleData[]> => {
-  const isGuest = useSelector((state: any) => state.user.isGuest);
   const targetUserId = others ? userId : user_id;
 
   return useQuery<ArticleData[]>({
@@ -29,6 +27,6 @@ export const useGetAuthorMostViewedArticles = ({
       return response.data as ArticleData[];
     },
 
-    enabled: !!isConnected && (others ? !!userId : !isGuest && !!user_id),
+    enabled: !!isConnected && !!others && !!userId,
   });
 };
