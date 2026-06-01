@@ -34,11 +34,7 @@ import {useGetAuthorYearlyReadReport} from '../hooks/useGetYearlyReadReport';
 import {useGetAuthorYearlyWriteReport} from '../hooks/useGetYearlyWriteReport';
 import StatisticsCard from './StatisticsCard';
 
-const getArticleImageSource = (
-  imageUtils?: string[],
-): ImageSourcePropType => {
-  const image = imageUtils?.[0];
-
+const getArticleImageSource = (image?: string): ImageSourcePropType => {
   if (!image) {
     return require('../../assets/images/article_default.jpg');
   }
@@ -707,7 +703,7 @@ const ActivityOverview = ({
               }>
               <XStack>
                 <Image
-                  source={getArticleImageSource(item.imageUtils)}
+                  source={getArticleImageSource(item.imageUtils?.[0])}
                   width={130}
                   height={130}
                   borderRadius={8}

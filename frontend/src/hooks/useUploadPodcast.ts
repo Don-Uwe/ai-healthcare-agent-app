@@ -25,19 +25,17 @@ export const useUploadPodcast = (): UseMutationResult<
       title,
       description,
       tags,
-      article_id,
       duration,
     }: PodcastReq) => {
       const response = await axios.post(UPLOAD_PODCAST, {
         title,
         description,
         tags,
-        article_id, // send the provided association instead of nulling it
+        article_id: null,
         audio_url,
         cover_image,
         duration,
       });
-
 
       return response.data.message as string;
     },
