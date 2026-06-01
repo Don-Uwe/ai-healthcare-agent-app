@@ -3,7 +3,6 @@ import {
   Text,
   View,
   Image,
-  TouchableOpacity,
   Linking,
   Platform,
   Alert,
@@ -11,16 +10,17 @@ import {
   useColorScheme,
 } from 'react-native';
 import React from 'react';
+import AccessibleTouchable from './common/AccessibleTouchable';
 import EllipseSvg from '../../assets/svg/EllipseSvg';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import MaterialCommunityIcon from '@expo/vector-icons/MaterialCommunityIcons';
 import Feather from '@expo/vector-icons/Feather';
-import {RootStackParamList} from '../type';
+import {RootStackParamList,ProfileHeaderProps} from '../type';
 import {NavigationProp} from '@react-navigation/native';
 import {fp, hp, wp} from '../helper/Metric';
-import {ProfileHeaderProps} from '../type';
+
 
 import {GET_STORAGE_DATA} from '../helper/APIUtils';
 import {useSelector} from 'react-redux';
@@ -114,62 +114,68 @@ const ProfileHeader = ({
           </View>
         )}
 
-        {/* Primary Actions */}
+        {/* Primary Actions:
+            - other === false: viewing someone else — show Follow/Unfollow OR doctor Call/Email
+            - other === true: viewing own profile — show prominent Edit Profile button
+            Doctors always see their own Call/Email buttons on their own profile too. */}
         <View style={styles.primaryActionContainer}>
-          {isDoctor ? (
-            <View style={styles.contactContainer}>
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() => handleCall(userPhoneNumber)}
-                style={[styles.iconButton, {backgroundColor: PRIMARY_COLOR}]}>
-                <MaterialIcons name="phone-in-talk" size={22} color="#ffffff" />
-              </TouchableOpacity>
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() => handleMail(userEmailID)}
-                style={[styles.iconButton, {backgroundColor: PRIMARY_COLOR}]}>
-                <MaterialIcons name="email" size={22} color="#ffffff" />
-              </TouchableOpacity>
-              {other && (
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  style={[styles.iconButton, {backgroundColor: PRIMARY_COLOR}]}
-                  onPress={() => (navigation as any).navigate('ProfileEditScreen')}>
-                  <Feather name="edit-3" size={22} color="#ffffff" />
-                </TouchableOpacity>
-              )}
-            </View>
-          ) : other ? (
-            <TouchableOpacity
+          {other ? (
+            // Own profile: prominent Edit Profile button
+            <AccessibleTouchable
               activeOpacity={0.7}
               onPress={() => (navigation as any).navigate('ProfileEditScreen')}
-              style={styles.primaryBtn}
+              accessibilityLabel="Edit profile"
+              accessibilityHint="Navigates to edit profile screen"
+              style={[styles.primaryBtn, {backgroundColor: PRIMARY_COLOR}]}
             >
               <MaterialIcons name="edit" size={20} color="#ffffff" />
-              <Text style={styles.primaryBtnText}>Edit Profile</Text>
-            </TouchableOpacity>
+              <Text style={[styles.primaryBtnText, {color: '#ffffff'}]}>Edit Profile</Text>
+            </AccessibleTouchable>
+          ) : isDoctor ? (
+            // Viewing a doctor's profile: Call & Email
+            <View style={styles.contactContainer}>
+              <AccessibleTouchable
+                activeOpacity={0.7}
+                onPress={() => handleCall(userPhoneNumber)}
+                accessibilityLabel="Call doctor"
+                accessibilityHint="Opens phone dialer to call the doctor"
+                style={[styles.iconButton, {backgroundColor: PRIMARY_COLOR}]}>
+                <MaterialIcons name="phone-in-talk" size={22} color="#ffffff" />
+              </AccessibleTouchable>
+              <AccessibleTouchable
+                activeOpacity={0.7}
+                onPress={() => handleMail(userEmailID)}
+                accessibilityLabel="Send email"
+                accessibilityHint="Opens mail app to send an email"
+                style={[styles.iconButton, {backgroundColor: PRIMARY_COLOR}]}>
+                <MaterialIcons name="email" size={22} color="#ffffff" />
+              </AccessibleTouchable>
+            </View>
           ) : (
-            <TouchableOpacity 
+            // Viewing a regular user's profile: Follow/Unfollow
+            <AccessibleTouchable
               activeOpacity={0.7}
-              onPress={onFollowClick} 
+              onPress={onFollowClick}
+              accessibilityLabel={isFollowing ? 'Following user' : 'Follow user'}
+              accessibilityHint={isFollowing ? 'Unfollow this user' : 'Follow this user'}
               style={[
-                styles.primaryBtn, 
-                { 
-                  backgroundColor: isFollowing ? 'transparent' : PRIMARY_COLOR, 
-                  borderWidth: isFollowing ? 1.5 : 0, 
-                  borderColor: PRIMARY_COLOR 
-                }
+                styles.primaryBtn,
+                {
+                  backgroundColor: isFollowing ? 'transparent' : PRIMARY_COLOR,
+                  borderWidth: isFollowing ? 1.5 : 0,
+                  borderColor: PRIMARY_COLOR,
+                },
               ]}
             >
               <MaterialIcons
-                name={isFollowing ? "person-outline" : "person-add"}
+                name={isFollowing ? 'person-outline' : 'person-add'}
                 size={20}
                 color={isFollowing ? PRIMARY_COLOR : '#ffffff'}
               />
-              <Text style={[styles.primaryBtnText, { color: isFollowing ? PRIMARY_COLOR : '#ffffff' }]}>
+              <Text style={[styles.primaryBtnText, {color: isFollowing ? PRIMARY_COLOR : '#ffffff'}]}>
                 {isFollowing ? 'Following' : 'Follow'}
               </Text>
-            </TouchableOpacity>
+            </AccessibleTouchable>
           )}
         </View>
 
@@ -189,14 +195,26 @@ const ProfileHeader = ({
         )}
 
         <View style={[styles.statsCard, styles.shadowProps, {backgroundColor: themeColors.card, borderColor: themeColors.border}]}>
-          <Pressable onPress={onFollowerPress} style={styles.statItem}>
+          <Pressable
+            onPress={onFollowerPress}
+            style={styles.statItem}
+            
+            accessibilityLabel="Followers"
+            accessibilityHint="Opens followers list"
+          >
             <Text style={[styles.statValue, {color: themeColors.text}]} numberOfLines={1}>{followers || 0}</Text>
             <Text style={[styles.statLabel, {color: themeColors.textSecondary}]}>
               {followers === 1 ? 'Follower' : 'Followers'}
             </Text>
           </Pressable>
           <View style={[styles.statDivider, {backgroundColor: themeColors.border}]} />
-          <Pressable onPress={onFollowingPress} style={styles.statItem}>
+          <Pressable
+            onPress={onFollowingPress}
+            style={styles.statItem}
+            
+            accessibilityLabel="Following"
+            accessibilityHint="Opens following users list"
+          >
             <Text style={[styles.statValue, {color: themeColors.text}]} numberOfLines={1}>{followings || 0}</Text>
             <Text style={[styles.statLabel, {color: themeColors.textSecondary}]}>Following</Text>
           </Pressable>
@@ -205,9 +223,14 @@ const ProfileHeader = ({
         {/* Secondary Actions List */}
         {other && (
           <View style={styles.secondaryActionContainer}>
-            <TouchableOpacity 
+            {/* Edit Profile is already shown in the primary action button above */}
+
+            <AccessibleTouchable 
               activeOpacity={0.7}
-              onPress={onOverviewClick} 
+              onPress={onOverviewClick}
+              
+              accessibilityLabel="Your workspace"
+              accessibilityHint="Opens your workspace dashboard"
               style={[styles.listButton, {backgroundColor: themeColors.card, borderColor: themeColors.border}]}
             >
               <View style={[styles.listButtonIconBg, { backgroundColor: themeColors.iconBackground }]}>
@@ -215,10 +238,13 @@ const ProfileHeader = ({
               </View>
               <Text style={[styles.listButtonText, {color: themeColors.text}]}>Your Workspace</Text>
               <MaterialIcons name="chevron-right" size={24} color={themeColors.textSecondary} />
-            </TouchableOpacity>
+            </AccessibleTouchable>
 
-            <TouchableOpacity
+            <AccessibleTouchable
               activeOpacity={0.7}
+              
+              accessibilityLabel="Notification preferences"
+              accessibilityHint="Opens notification settings"
               style={[styles.listButton, {backgroundColor: themeColors.card, borderColor: themeColors.border}]}
               onPress={() => {
                 if (isConnected) {
@@ -232,10 +258,13 @@ const ProfileHeader = ({
               </View>
               <Text style={[styles.listButtonText, {color: themeColors.text}]}>Notification Preferences</Text>
               <MaterialIcons name="chevron-right" size={24} color={themeColors.textSecondary} />
-            </TouchableOpacity>
+            </AccessibleTouchable>
 
-            <TouchableOpacity
+            <AccessibleTouchable
               activeOpacity={0.7}
+              
+              accessibilityLabel="Logout"
+              accessibilityHint="Logs out from your account"
               style={[styles.listButton, {backgroundColor: themeColors.card, borderColor: themeColors.border}]}
               onPress={() => {
                 if (isConnected) {
@@ -249,7 +278,7 @@ const ProfileHeader = ({
               </View>
               <Text style={[styles.listButtonText, {color: '#EF4444'}]}>Logout</Text>
               <MaterialIcons name="chevron-right" size={24} color={themeColors.textSecondary} />
-            </TouchableOpacity>
+            </AccessibleTouchable>
           </View>
         )}
       </View>
@@ -445,4 +474,4 @@ const styles = StyleSheet.create({
     fontSize: fp(4.2),
     fontWeight: '600',
   },
-});
+});

@@ -1,7 +1,7 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {FlatList, Pressable, View, StyleSheet} from 'react-native';
 import {OfflinePodcastListProp, PodcastData} from '../type';
-import {deleteFromDownloads, msToTime, retrieveItem} from '../helper/Utils';
+import {deleteFromDownloads, msToTime, readDownloadedPodcasts} from '../helper/Utils';
 import {useEffect, useState} from 'react';
 import PodcastCard from '../components/PodcastCard';
 import PodcastEmptyComponent from '../components/PodcastEmptyComponent';
@@ -41,15 +41,9 @@ export default function OfflinePodcastList({
 
   const loadPodcasts = async () => {
     try {
-      const podCastStr = await retrieveItem('DOWNLOAD_PODCAST_DATA');
-      if (!podCastStr) {
-        return;
-      }
-      const data = JSON.parse(podCastStr);
+      const data = await readDownloadedPodcasts();
 
-      if (!Array.isArray(data)) {
-        return;
-      }
+      if (!Array.isArray(data)) return;
       setPodcasts(data);
     } catch (err) {}
   };

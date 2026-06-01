@@ -1,9 +1,8 @@
-import {StyleSheet, View, Text, Alert, useColorScheme} from 'react-native';
+import {StyleSheet, View, Text, Alert, useColorScheme, ScrollView, FlatList, TouchableOpacity} from 'react-native';
 import React, {useCallback, useState} from 'react';
 import {StatusBar} from 'expo-status-bar';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import ActivityOverview from '../components/ActivityOverview';
-import {Tabs, MaterialTabBar} from 'react-native-collapsible-tab-view';
 import ArticleCard from '../components/ArticleCard';
 import {useDispatch, useSelector} from 'react-redux';
 import { useTheme } from 'tamagui';
@@ -205,19 +204,8 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
     );
   };
 
-  const renderTabBar = (props: any) => {
-    return (
-      <MaterialTabBar
-        {...props}
-        indicatorStyle={styles.indicatorStyle}
-        style={styles.tabBarStyle}
-        activeColor={PRIMARY_COLOR}
-        inactiveColor="#9098A3"
-        labelStyle={styles.labelStyle}
-        contentContainerStyle={styles.contentContainerStyle}
-      />
-    );
-  };
+
+  const [activeTab, setActiveTab] = useState<'Insight' | 'Reposts' | 'Saved'>('Insight');
 
   if (isLoading) {
     return (
@@ -235,6 +223,13 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
     );
   }
 
+  const tabColors = {
+    background: isDarkMode ? '#121212' : '#ffffff',
+    border: isDarkMode ? '#374151' : '#e5e7eb',
+    activeText: PRIMARY_COLOR,
+    inactiveText: isDarkMode ? '#9ca3af' : '#9098A3',
+  };
+
   return (
     <SafeAreaView
       style={[
@@ -245,66 +240,98 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
         style={isDarkMode ? 'light' : 'dark'}
         backgroundColor="#007AFF"
       />
-      <View style={[styles.innerContainer]}>
-        <Tabs.Container
-          renderHeader={renderHeader}
-          renderTabBar={renderTabBar}
-          containerStyle={[
-            styles.tabsContainer,
-            {backgroundColor: theme.background.val},
-          ]}>
-          {/* Tab 1 */}
-          <Tabs.Tab name="Insight">
-            <Tabs.ScrollView
-              automaticallyAdjustContentInsets={true}
-              contentInsetAdjustmentBehavior="always"
-              contentContainerStyle={styles.scrollViewContentContainer}>
+      <ScrollView
+        style={styles.innerContainer}
+        contentContainerStyle={{flexGrow: 1, backgroundColor: theme.background.val}}
+        showsVerticalScrollIndicator={false}
+      >
+        {renderHeader()}
+
+        {/* Custom Tab Bar */}
+        <View style={[styles.tabBarContainer, { backgroundColor: tabColors.background, borderBottomColor: tabColors.border }]}>
+          <TouchableOpacity 
+            style={[styles.tabButton, activeTab === 'Insight' && { borderBottomColor: tabColors.activeText }]}
+            onPress={() => setActiveTab('Insight')}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: activeTab === 'Insight' }}
+            accessibilityLabel="Insight tab"
+          >
+            <Text style={[styles.tabButtonText, { color: activeTab === 'Insight' ? tabColors.activeText : tabColors.inactiveText }]}>
+              Insight
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.tabButton, activeTab === 'Reposts' && { borderBottomColor: tabColors.activeText }]}
+            onPress={() => setActiveTab('Reposts')}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: activeTab === 'Reposts' }}
+            accessibilityLabel={`Reposts tab, ${user?.repostArticles.length || 0} reposts`}
+          >
+            <Text style={[styles.tabButtonText, { color: activeTab === 'Reposts' ? tabColors.activeText : tabColors.inactiveText }]}>
+              Reposts ({user?.repostArticles.length || 0})
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.tabButton, activeTab === 'Saved' && { borderBottomColor: tabColors.activeText }]}
+            onPress={() => setActiveTab('Saved')}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: activeTab === 'Saved' }}
+            accessibilityLabel={`Saved tab, ${user?.savedArticles.length || 0} saved articles`}
+          >
+            <Text style={[styles.tabButtonText, { color: activeTab === 'Saved' ? tabColors.activeText : tabColors.inactiveText }]}>
+              Saved ({user?.savedArticles.length || 0})
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Tab Content */}
+        <View style={styles.tabContentContainer}>
+          {activeTab === 'Insight' && (
+            <View style={styles.scrollViewContentContainer}>
               <ActivityOverview
                 onArticleViewed={onArticleViewed}
                 others={false}
-                
                 user_handle={user?.user_handle || ''}
                 articlePosted={user?.articles ? user.articles.length : 0}
               />
-            </Tabs.ScrollView>
-          </Tabs.Tab>
-          {/* Tab 2 */}
+            </View>
+          )}
 
-          <Tabs.Tab name={`Reposts (${user?.repostArticles.length || 0})`}>
-            <Tabs.FlatList
+          {activeTab === 'Reposts' && (
+            <FlatList
               data={user !== undefined ? user.repostArticles : []}
               renderItem={renderItem}
+              scrollEnabled={false}
               showsVerticalScrollIndicator={false}
               contentContainerStyle={[
                 styles.flatListContentContainer,
                 {paddingBottom: bottomBarHeight + 15},
               ]}
               keyExtractor={item => item?._id}
-              refreshing={refreshing}
               ListEmptyComponent={
                 <NoArticleState/>
               }
             />
-          </Tabs.Tab>
-          {/* Tab 3 */}
-          <Tabs.Tab name={`Saved(${user?.savedArticles.length || 0})`}>
-            <Tabs.FlatList
+          )}
+
+          {activeTab === 'Saved' && (
+            <FlatList
               data={user !== undefined ? user.savedArticles : []}
               renderItem={renderItem}
+              scrollEnabled={false}
               showsVerticalScrollIndicator={false}
               contentContainerStyle={[
                 styles.flatListContentContainer,
                 {paddingBottom: bottomBarHeight + 15},
               ]}
               keyExtractor={item => item?._id}
-              refreshing={refreshing}
               ListEmptyComponent={
                  <NoArticleState/>
               }
             />
-          </Tabs.Tab>
-        </Tabs.Container>
-      </View>
+          )}
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -318,60 +345,41 @@ const styles = StyleSheet.create({
   },
   innerContainer: {
     flex: 1,
-    //  backgroundColor: ON_PRIMARY_COLOR,
-  },
-  tabsContainer: {
-    //  backgroundColor: ON_PRIMARY_COLOR,
-    overflow: 'hidden',
-    flex: 1,
   },
   scrollViewContentContainer: {
     paddingHorizontal: 6,
     marginTop: 6,
-    //backgroundColor: ON_PRIMARY_COLOR,
   },
   flatListContentContainer: {
     paddingHorizontal: 16,
   },
-
+  tabBarContainer: {
+    flexDirection: 'row',
+    width: '100%',
+    borderBottomWidth: 1,
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: 14,
+    alignItems: 'center',
+    borderBottomWidth: 3,
+    borderBottomColor: 'transparent',
+  },
+  tabButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    textTransform: 'capitalize',
+  },
+  tabContentContainer: {
+    flex: 1,
+    width: '100%',
+  },
   profileImage: {
     height: 130,
     width: 130,
     borderRadius: 100,
     objectFit: 'cover',
     resizeMode: 'contain',
-  },
-  indicatorStyle: {
-    backgroundColor: 'white',
-  },
-  tabBarStyle: {
-    //backgroundColor: ON_PRIMARY_COLOR,
-  },
-  labelStyle: {
-    fontWeight: '600',
-    fontSize: 15,
-    color: 'black',
-    textTransform: 'capitalize',
-  },
-  contentContainerStyle: {
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    shadowOpacity: 0,
-    shadowOffset: {width: 0, height: 0},
-    shadowColor: 'white',
-  },
-  message: {
-    fontSize: 16,
-    color: '#555',
-    textAlign: 'center',
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
   },
   loadingContainer: {
     flex: 1,

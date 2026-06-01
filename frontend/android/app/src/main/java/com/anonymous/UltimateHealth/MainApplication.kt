@@ -1,6 +1,7 @@
 package com.anonymous.UltimateHealth
 
 import android.app.Application
+import android.webkit.WebView
 import android.content.res.Configuration
 
 import com.facebook.react.PackageList
@@ -40,6 +41,12 @@ class MainApplication : Application(), ReactApplication {
 
   override fun onCreate() {
     super.onCreate()
+    
+    // Security: Only enable WebView remote debugging in debug builds.
+    // In production, this prevents Chrome DevTools from inspecting WebView
+    // content, extracting session cookies, or reading localStorage.
+    WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
+    
     DefaultNewArchitectureEntryPoint.releaseLevel = try {
       ReleaseLevel.valueOf(BuildConfig.REACT_NATIVE_RELEASE_LEVEL.uppercase())
     } catch (e: IllegalArgumentException) {

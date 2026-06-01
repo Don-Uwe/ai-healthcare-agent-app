@@ -11,8 +11,7 @@ import {
 } from '@react-navigation/native';
 import React, {useEffect, useRef, useCallback} from 'react';
 
-import {useColorScheme, View} from 'react-native';
-import {StatusBar} from 'expo-status-bar';
+import {View, useColorScheme} from 'react-native';
 import {PaperProvider} from 'react-native-paper';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {addEventListener} from '@react-native-community/netinfo';
@@ -24,35 +23,37 @@ import {CustomAlertDialog} from './CustomAlert';
 import UpdateModal from './UpdateModal';
 import {setConnected} from '../store/NetworkSlice';
 import {firebaseInit} from '../helper/firebase';
-import {cleanUpDownloads, KEYS, retrieveItem} from '../helper/Utils';
+import {cleanUpDownloads} from '../helper/Utils';
+import {SECURE_KEYS, secureRetrieveItem} from '../helper/SecureStorageUtils';
 import {setUserToken, setGuestMode} from '../store/UserSlice';
-import axios from 'axios';
+import {RootState} from '../store/ReduxStore';
 import {setupAxiosInterceptor} from '../helper/setupAxiosInterceptor';
 
 export default function AppContent() {
   const navigationRef = useRef<NavigationContainerRef<any> | null>(null);
   const hasInitialized = useRef(false);
+  // Used only for TamaguiProvider theming. StatusBar styling is owned by CustomStatusBar.
   const isDarkMode = useColorScheme() === 'dark';
 
   const {data: tokenRes = null} = useCheckTokenStatus();
-  const {user_token, isGuest} = useSelector((state: any) => state.user);
+  const {user_token, isGuest} = useSelector((state: RootState) => state.user);
 
-  setupAxiosInterceptor();
+  // Setup axios interceptor and timeout defaults once on mount.
+  useEffect(() => {
+    setupAxiosInterceptor();
+  }, []);
 
   const {visible, storeUrl} = useVersionCheck();
   const dispatch = useDispatch();
 
   const checkToken = useCallback(async () => {
-    const token = await retrieveItem(KEYS.USER_TOKEN);
-
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    axios.defaults.headers.common['Content-Type'] = 'application/json';
+    const token = await secureRetrieveItem(SECURE_KEYS.USER_TOKEN);
 
     dispatch(setUserToken(token));
     if (token) {
       dispatch(setGuestMode(false));
     }
-  }, [dispatch, tokenRes]);
+  }, [dispatch]);
 
   useEffect(() => {
     if (navigationRef.current && tokenRes && !hasInitialized.current) {
@@ -120,10 +121,7 @@ export default function AppContent() {
           <SafeAreaProvider>
             <PaperProvider>
               <View style={{flex: 1}}>
-                <StatusBar
-                  style={isDarkMode ? 'light' : 'dark'}
-                  backgroundColor={isDarkMode ? '#151718' : '#FFFFFF'}
-                />
+                {/* StatusBar is managed globally by CustomStatusBar — do not add one here. */}
                 <NavigationContainer ref={navigationRef}>
                   <StackNavigation />
                 </NavigationContainer>

@@ -5,13 +5,13 @@ import {
   Image,
   Pressable,
   Alert,
-  TouchableOpacity,
   Platform,
 } from 'react-native';
 import {useEffect, useRef, useState} from 'react';
+import AccessibleTouchable from './common/AccessibleTouchable';
 import {fp} from '../helper/Metric';
 import {ArticleCardProps, ArticleData} from '../type';
-import moment from 'moment';
+import { formatDateShort } from '../helper/dateUtils';
 import {useSelector} from 'react-redux';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import IonIcons from '@expo/vector-icons/Ionicons';
@@ -275,8 +275,11 @@ const ArticleCard = ({
     }
   };
   return (
-    <Pressable
-      onPress={() => {
+  <Pressable
+    accessibilityRole="button"
+    accessibilityLabel={`Open article ${item?.title}`}
+    accessibilityHint="Opens full article"
+    onPress={() => {
         if (isConnected) {
           width.value = withTiming(0, {duration: 250});
           yValue.value = withTiming(100, {duration: 250});
@@ -427,7 +430,7 @@ const ArticleCard = ({
             </Text>
             <Text style={styles.dot}>•</Text>
             <Text style={styles.footerText1}>
-              {moment(item?.lastUpdated).format('DD MMM')}
+              {formatDateShort(item?.lastUpdated)}
             </Text>
           </View>
 
@@ -448,7 +451,9 @@ const ArticleCard = ({
             {likeMutationPending ? (
               <LoadingSpinner size="small" />
             ) : (
-              <TouchableOpacity
+              <AccessibleTouchable
+                accessibilityLabel="Like article"
+                accessibilityHint="Likes or unlikes this article"
                 onPress={(e) => {
                   e?.stopPropagation?.();
                   if (isGuest) {
@@ -526,10 +531,12 @@ const ArticleCard = ({
                   }}>
                   {formatCount(likeCount)}
                 </Text>
-              </TouchableOpacity>
+              </AccessibleTouchable>
             )}
 
-            <TouchableOpacity
+            <AccessibleTouchable
+              accessibilityLabel="Open comments"
+              accessibilityHint="Opens article comments"
               onPress={(e) => {
                 e?.stopPropagation?.();
                 if (isGuest) {
@@ -550,14 +557,16 @@ const ArticleCard = ({
               }}
               style={styles.likeSaveChildContainer}>
               <FontAwesome name="commenting" size={27} color={'#414A4C'} />
-            </TouchableOpacity>
+            </AccessibleTouchable>
 
             {source === 'home' && (
               <>
                 {repostPending ? (
                   <LoadingSpinner size="small" />
                 ) : (
-                  <TouchableOpacity
+                  <AccessibleTouchable
+                    accessibilityLabel="Repost article"
+                    accessibilityHint="Reposts this article to your feed"
                     onPress={(e) => {
                       e?.stopPropagation?.();
                       repostAction();
@@ -577,26 +586,30 @@ const ArticleCard = ({
                       }}>
                       {formatCount(repostCount)}
                     </Text>
-                  </TouchableOpacity>
+                  </AccessibleTouchable>
                 )}
               </>
             )}
 
             {source === 'home' && (
-              <TouchableOpacity
+              <AccessibleTouchable
+                accessibilityLabel="Share article"
+                accessibilityHint="Shares this article"
                 onPress={(e) => {
                   e?.stopPropagation?.();
                   handleShare();
                 }}
                 style={styles.likeSaveChildContainer}>
                 <FontAwesome name="share-alt" size={24} color={'#414A4C'} />
-              </TouchableOpacity>
+              </AccessibleTouchable>
             )}
 
             {saveMutationPending ? (
               <LoadingSpinner size="small" />
             ) : (
-              <TouchableOpacity
+              <AccessibleTouchable
+                accessibilityLabel="Save article"
+                accessibilityHint="Saves this article for later"
                 onPress={(e) => {
                   e?.stopPropagation?.();
                   if (isGuest) {
@@ -644,11 +657,13 @@ const ArticleCard = ({
                     color={'#414A4C'}
                   />
                 )}
-              </TouchableOpacity>
+              </AccessibleTouchable>
             )}
 
             {source === 'home' && item.status === StatusEnum.PUBLISHED && (
-              <TouchableOpacity
+              <AccessibleTouchable
+                accessibilityLabel="More options"
+                accessibilityHint="Opens article action menu"
                 style={styles.likeSaveChildContainer}
                 onPress={(e) => {
                   e?.stopPropagation?.();
@@ -667,7 +682,7 @@ const ArticleCard = ({
                   size={20}
                   color={'#414A4C'}
                 />
-              </TouchableOpacity>
+              </AccessibleTouchable>
             )}
           </View>
         </View>

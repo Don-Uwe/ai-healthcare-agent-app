@@ -1,5 +1,6 @@
-import {StyleSheet, Text, TouchableOpacity, View, TextInput} from 'react-native';
+import {StyleSheet, Text, View, TextInput} from 'react-native';
 import React, {useCallback, useMemo, useState} from 'react';
+import AccessibleTouchable from './common/AccessibleTouchable';
 import {
   BottomSheetModal,
   BottomSheetFlatList,
@@ -39,16 +40,23 @@ const CategoriesFlatlistModal = ({
   const filteredCategories = useMemo(() => {
     if (!searchQuery.trim()) return categories;
     return categories.filter(cat =>
-      cat.name.toLowerCase().includes(searchQuery.toLowerCase())
+      cat && cat.name && typeof cat.name === 'string' &&
+      cat.name.toLowerCase().includes((searchQuery || '').toLowerCase())
     );
   }, [categories, searchQuery]);
 
   // Function to render each category item
   const renderItem = useCallback(
     ({item}: {item: Category}) => {
-      const isSelected = selectCategoryList.some(i => i.id === item?.id);
+      const isSelected = selectCategoryList.some(i => 
+        (i.id !== undefined && item?.id !== undefined && i.id === item.id) ||
+        (i._id !== undefined && item?._id !== undefined && i._id === item._id) ||
+        (i.name === item?.name)
+      );
       return (
-        <TouchableOpacity
+        <AccessibleTouchable
+          accessibilityLabel={item.name}
+          accessibilityHint="Selects this category"
           style={[
             styles.item,
             isSelected && {
@@ -72,7 +80,7 @@ const CategoriesFlatlistModal = ({
           {isSelected && (
             <MaterialIcons name="check-circle" size={22} color={PRIMARY_COLOR} />
           )}
-        </TouchableOpacity>
+        </AccessibleTouchable>
       );
     },
     [handleCategorySelection, selectCategoryList],
@@ -92,11 +100,13 @@ const CategoriesFlatlistModal = ({
       enablePanDownToClose={true}
       style={{backgroundColor: 'white'}}>
       <View style={styles.header}>
-        <TouchableOpacity
+        <AccessibleTouchable
+          accessibilityLabel="Close categories"
+          accessibilityHint="Closes category selection modal"
           style={styles.headerButton}
           onPress={handleDismissModalPress}>
           <MaterialIcons name="arrow-back" size={24} color={PRIMARY_COLOR} />
-        </TouchableOpacity>
+        </AccessibleTouchable>
         <Text style={styles.title}>All Categories</Text>
         <View style={{width: 24}} />
       </View>
@@ -111,9 +121,12 @@ const CategoriesFlatlistModal = ({
           onChangeText={setSearchQuery}
         />
         {searchQuery.length > 0 && (
-          <TouchableOpacity onPress={() => setSearchQuery('')}>
+          <AccessibleTouchable
+            accessibilityLabel="Clear search"
+            accessibilityHint="Clears category search text"
+            onPress={() => setSearchQuery('')}>
             <MaterialIcons name="close" size={20} color="#9ca3af" />
-          </TouchableOpacity>
+          </AccessibleTouchable>
         )}
       </View>
 

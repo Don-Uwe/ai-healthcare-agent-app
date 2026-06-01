@@ -5,27 +5,79 @@
   </a>
 </h3>
 
+# Contributor Note
+
+I appreciate everyone’s interest in contributing.
+
+A small note regarding participation and expectations: this project is maintained primarily by me as a single maintainer, so collaboration and review timelines may differ from larger teams.
+
+This may not always be the ideal place to actively coordinate contributors, and contributors should consider possible delays before taking up work.
+
+For this initiative, I’m contributing with limited availability (maximum ~3 hours/day), while balancing other responsibilities. Contributions are welcome, but they should align with this pace and maintain a healthy workflow.
+
+Thank you for understanding and for your interest in the project.
+
+
+<br/>
+
+
+# 🚀 UltimateHealth Frontend — Upcoming Release
+
+**Platform:** React Native (Expo) —  Android
+
+## 🔒 Security
+
+* Added **Sentry request body redaction** to prevent credentials and sensitive health data from being exposed.
+* Improved **sensitive key detection** for tokens, passwords, auth data, and similar fields.
+* Hardened **Axios auth handling** to avoid sending invalid `Bearer undefined/null` headers.
+
+## 🐞 Bug Fixes
+
+* Fixed **TTS player** staying visible after playback completion.
+* Resolved **Home feed pagination inconsistencies** with selected categories and Saved filtering.
+* Fixed **keyboard overlap** in comments input.
+* Unified **API timeout error messaging**.
+* Improved **Podcast playback resume/rewind behavior**.
+* Fixed **guest deep link routing** for restricted screens.
+* Corrected **timezone parsing** to preserve local time behavior.
+
+## ✨ Improvements
+
+* Integrated **Sentry monitoring + safe network logging**.
+* Added centralized **API timeout handling** with fetch + Axios support.
+* Improved **accessibility support** across multiple screens.
+* Introduced **custom audio waveform visualization** for podcast playback.
+* Migrated date utilities from **moment → date-fns** with locale support.
+* Refactored **Axios instance architecture** for cleaner initialization.
+* Improved **TypeScript safety** for AntDesign icons.
+* Added ESLint cleanup and stricter Redux typing.
+
+## 🧪 Testing & DX
+
+* Added unit tests for:
+
+  * API timeout handling
+  * Date utilities
+* Removed production console noise and improved developer comments/logging.
+
+## ⚠️ Deferred
+
+* React Navigation Sentry instrumentation (requires navigation ref architecture changes).
+* Future cleanup for scoped Jest mocks.
+
+---
+
+
 <div align="center">
 
-[![Live Web Demo](https://img.shields.io/badge/Live%20Web%20Demo-4CAF50?style=for-the-badge&logo=globe&logoColor=white)](https://uhsocial.in)
+[![Live Web Demo](https://img.shields.io/badge/Live%20Web%20Demo-4CAF50?style=for-the-badge&logo=globe&logoColor=white)](https://uhsocial.in/frontend/v2)
 [![Android App](https://img.shields.io/badge/Android%20App-Play%20Store-34A853?style=for-the-badge&logo=googleplay&logoColor=white)](https://play.google.com/store/apps/details?id=com.anonymous.UltimateHealth)
 [![API Docs](https://img.shields.io/badge/API%20Docs-007ACC?style=for-the-badge&logo=swagger&logoColor=white)](https://uhsocial.in/docs)
 [![Content API](https://img.shields.io/badge/Content%20API-FF6B00?style=for-the-badge&logo=python&logoColor=white)](https://uhsocial.in/content-intel/docs)
 
 </div>
 
-Here’s a cleaner version while keeping your original meaning:
 
-**UltimateHealth Upcoming Release 🚀**
-
-* **Translation Contribution** – Extend any article in your preferred language.
-* **Guest Mode Support** – Read articles and listen to podcasts without signing in.
-* **Content Preference Save** – Save your preferences for a more personalized future experience.
-
-**Coming soon.**
-
-
-<br/>
 
 <div align="center">
 
@@ -44,11 +96,11 @@ Here’s a cleaner version while keeping your original meaning:
     <td align="center">
       <img alt="Frontend CI" src="https://github.com/SB2318/UltimateHealth/actions/workflows/frontend-ci.yml/badge.svg?style=flat&logo=github&color=success"/>
     </td>
-   <td align="center">
-  <a href="https://github.com/SB2318/UltimateHealth/actions/workflows/eas-build.yml">
-    <img alt="Expo Build" src="https://github.com/SB2318/UltimateHealth/actions/workflows/eas-build.yml/badge.svg?label=Expo%20Build%20(Android%20%2B%20iOS)&logo=expo&color=blue"/>
-  </a>
-</td>
+    <td align="center">
+      <a href="https://github.com/SB2318/UltimateHealth/actions/workflows/eas-build.yml">
+        <img alt="Expo Build" src="https://github.com/SB2318/UltimateHealth/actions/workflows/eas-build.yml/badge.svg?label=Expo%20Build%20(Android%20%2B%20iOS)&logo=expo&color=blue"/>
+      </a>
+    </td>
     <td align="center">
       <img alt="Stars" src="https://img.shields.io/github/stars/SB2318/UltimateHealth?style=flat&logo=github&color=success"/>
     </td>
@@ -71,7 +123,6 @@ Here’s a cleaner version while keeping your original meaning:
       <img alt="Issues" src="https://img.shields.io/github/issues/SB2318/UltimateHealth?style=flat&logo=github"/>
     </td>
     <td align="center">
-      <!-- FIXED PR BADGE -->
       <img alt="Open PRs" src="https://img.shields.io/github/issues-pr/SB2318/UltimateHealth?style=flat&logo=github"/>
     </td>
     <td align="center">
@@ -81,14 +132,29 @@ Here’s a cleaner version while keeping your original meaning:
 
   <!-- Row 3 -->
   <tr>
-    <td colspan="4" align="center"><b>⏱️ Last Commit</b></td>
+    <td align="center"><b>🤖 Android Build CI</b></td>
+    <td align="center"><b>🍎 iOS Build CI</b></td>
+    <td align="center"><b>⏱️ Last Commit</b></td>
+    <td align="center"><b>📦 Repo Size</b></td>
   </tr>
   <tr>
-    <td colspan="4" align="center">
+    <td align="center">
+      <a href="https://github.com/SB2318/UltimateHealth/actions/workflows/android-build-validation.yml">
+        <img alt="Android Build CI" src="https://github.com/SB2318/UltimateHealth/actions/workflows/android-build-validation.yml/badge.svg?style=flat&logo=android&label=Android%20Build"/>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/SB2318/UltimateHealth/actions/workflows/ios-build-validation.yml">
+        <img alt="iOS Build CI" src="https://github.com/SB2318/UltimateHealth/actions/workflows/ios-build-validation.yml/badge.svg?style=flat&logo=apple&label=iOS%20Build"/>
+      </a>
+    </td>
+    <td align="center">
       <img alt="Last Commit" src="https://img.shields.io/github/last-commit/SB2318/UltimateHealth?style=flat&logo=github&color=informational"/>
     </td>
+    <td align="center">
+      <img alt="Repo Size" src="https://img.shields.io/github/repo-size/SB2318/UltimateHealth?style=flat&logo=github&color=success"/>
+    </td>
   </tr>
-
 </table>
 
 </div>
@@ -358,6 +424,24 @@ If you encounter any issues or have any feedback or suggestions, please open an 
      <td align="center"><a href="https://github.com/abdullahxyz85"><img src="https://avatars.githubusercontent.com/u/181183976?v=4" width="120px;" alt=""/><br/><sub><b>Abdullah Jameel</b></sub></a></td>
      <td align="center"><a href="https://github.com/hema7392"><img src="https://avatars.githubusercontent.com/u/142394039?v=4" width="120px;" alt=""/><br/><sub><b>Hemadri</b></sub></a></td>
      <td align="center"><a href="https://github.com/basantnema31"><img src="https://avatars.githubusercontent.com/u/208905651?v=4" width="120px;" alt=""/><br/><sub><b>Basant Nema</b></sub></a></td>
+ </tr>
+
+   <tr>
+    <td align="center"><a href="https://github.com/Priya09023"><img src="https://avatars.githubusercontent.com/u/218076920?v=4" width="120px;" alt=""/><br/><sub><b>Priya09023</b></sub></a></td>
+       <td align="center"><a href="https://github.com/Krishnx21"><img src="https://avatars.githubusercontent.com/u/194249486?v=4" width="120px;" alt=""/><br/><sub><b>Krishna Kumar</b></sub></a></td>
+     <td align="center"><a href="https://github.com/jpdevhub"><img src="https://avatars.githubusercontent.com/u/160400709?v=4" width="120px;" alt=""/><br/><sub><b>Karan Singh</b></sub></a></td>
+     <td align="center"><a href="https://github.com/SiddharthRiot"><img src="https://avatars.githubusercontent.com/u/133003051?v=4" width="120px;" alt=""/><br/><sub><b>Siddharth</b></sub></a></td>
+     <td align="center"><a href="https://github.com/KRUSHAL2956"><img src="https://avatars.githubusercontent.com/u/134606696?v=4" width="120px;" alt=""/><br/><sub><b>Krushal Hirpara</b></sub></a></td>
+     <td align="center"><a href="https://github.com/nyxsky404"><img src="https://avatars.githubusercontent.com/u/189461188?v=4" width="120px;" alt=""/><br/><sub><b>Sumit Kumar</b></sub></a></td>
+ </tr>
+
+   <tr>
+    <td align="center"><a href="https://github.com/PranavAgarkar07"><img src="https://avatars.githubusercontent.com/u/90404176?v=4" width="120px;" alt=""/><br/><sub><b>Pranav Agarkar</b></sub></a></td>
+       <td align="center"><a href="https://github.com/Maskman014"><img src="https://avatars.githubusercontent.com/u/225333585?v=4" width="120px;" alt=""/><br/><sub><b>Krishna Veernala</b></sub></a></td>
+     <td align="center"><a href="https://github.com/vinalal"><img src="https://avatars.githubusercontent.com/u/121111797?v=4" width="120px;" alt=""/><br/><sub><b>Vinayak Lal</b></sub></a></td>
+     <td align="center"><a href="https://github.com/VirenSumbly"><img src="https://avatars.githubusercontent.com/u/56977249?v=4" width="120px;" alt=""/><br/><sub><b>leVir</b></sub></a></td>
+     <td align="center"><a href="https://github.com/vipul674"><img src="https://avatars.githubusercontent.com/u/140911122?v=4" width="120px;" alt=""/><br/><sub><b>vipul674</b></sub></a></td>
+     <td align="center"><a href="https://github.com/palakjaiswal16"><img src="https://avatars.githubusercontent.com/u/116461116?v=4" width="120px;" alt=""/><br/><sub><b>palakjaiswal16</b></sub></a></td>
  </tr>
  </table>
  <!-- CONTRIBUTORS-TABLE-END -->

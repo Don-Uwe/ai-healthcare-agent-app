@@ -1,11 +1,14 @@
-import { registerRootComponent } from 'expo';
-import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
-import { Provider } from 'react-redux';
+import {registerRootComponent} from 'expo';
+import {BottomSheetModalProvider} from '@gorhom/bottom-sheet';
+import {Provider} from 'react-redux';
 import store from './src/store/ReduxStore';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import App from './App';
 import messaging from '@react-native-firebase/messaging';
-import { StyleSheet } from 'react-native';
+import {StyleSheet} from 'react-native';
+import {initMonitoring} from './src/services/monitoring/sentry';
+
+initMonitoring();
 
 // Firebase background handler must be registered at the app root (run once).
 messaging().setBackgroundMessageHandler(async remoteMessage => {

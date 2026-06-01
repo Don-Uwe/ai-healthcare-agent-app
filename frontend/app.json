@@ -3,7 +3,7 @@
     "name": "UltimateHealth",
     "slug": "UltimateHealth",
 
-    "version": "2.1.0",
+    "version": "2.2.0",
     "orientation": "portrait",
     "icon": "./assets/images/ic_ultimatehealth_appicon.png",
     "scheme": "ultimatehealth",
@@ -32,22 +32,19 @@
     "android": {
       "permissions": [
         "INTERNET",
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE",
         "RECORD_AUDIO",
         "VIBRATE",
         "RECEIVE_BOOT_COMPLETED",
         "POST_NOTIFICATIONS",
         "READ_MEDIA_AUDIO",
-        "READ_MEDIA_IMAGES",
-        "READ_MEDIA_VIDEO",
-        "MODIFY_AUDIO_SETTINGS",
-        "android.permission.RECORD_AUDIO",
-        "android.permission.MODIFY_AUDIO_SETTINGS",
-        "WAKE_LOCK",
-        "FOREGROUND_SERVICE",
-        "FOREGROUND_SERVICE_MEDIA_PLAYBACK"
+        "MODIFY_AUDIO_SETTINGS"
       ],
+      "blockedPermissions": [
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.READ_PHONE_STATE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ],
+      "allowBackup": false,
 
       "intentFilters": [
         {
@@ -80,11 +77,10 @@
       "versionCode": 21
     },
     "web": {
-      "output": "static",
+      "output": "single",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router",
       "@react-native-firebase/app",
       "expo-notifications",
       [
@@ -105,14 +101,22 @@
         {
           "microphonePermission": "Allow UltimateHealth to access your microphone."
         }
-      ]
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 26
+          }
+        }
+      ],
+      "./plugins/withWebViewDebug.js",
+      "@sentry/react-native/expo"
     ],
     "experiments": {
-      "typedRoutes": true,
       "reactCompiler": true
     },
     "extra": {
-      "router": {},
       "eas": {
         "projectId": "bdd3feee-d70b-4f27-9be5-33edb8b864f4"
       }

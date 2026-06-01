@@ -14,6 +14,8 @@ import {GlassStyles} from '../styles/GlassStyles';
 
 import {useAudioPlayer} from 'expo-audio';
 
+// GET_IMAGE is defined as `${PROD_URL}/getfile` (resolves to absolute URL: https://uhsocial.in/api/getfile).
+// This absolute, securely-configured endpoint ensures that relative resource paths cannot access local device files via traversal.
 import {GET_IMAGE} from '../helper/APIUtils';
 import {useSelector} from 'react-redux';
 
@@ -30,6 +32,27 @@ import {Theme, XStack, YStack, Text, ScrollView} from 'tamagui';
 import LottieView from 'lottie-react-native';
 import {useGetSinglePodcastDetails} from '../hooks/useGetSinglePodcastDetails';
 import {useLikePodcast} from '../hooks/useLikePodcast';
+
+const isAllowedUrl = (urlStr?: string | null): boolean => {
+  if (!urlStr) return false;
+  if (!urlStr.startsWith('http://') && !urlStr.startsWith('https://')) {
+    // allow ONLY relative paths
+    if (urlStr.includes('://')) return false;
+    return true;
+  }
+  try {
+    const match = urlStr.match(/^https?:\/\/([^/?#:]+)/i);
+    if (!match) return false;
+    const hostname = match[1].toLowerCase();
+    return (
+      hostname === 'uhsocial.in' ||
+      hostname === 'localhost' ||
+      hostname === '10.0.2.2'
+    );
+  } catch (e) {
+    return false;
+  }
+};
 
 const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   //const [progress, setProgress] = useState(10);
@@ -53,15 +76,32 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   const {data: podcast, refetch} = useGetSinglePodcastDetails(trackId);
   const {mutate: likePodcast, isPending: likePodcastPending} = useLikePodcast();
 
-  const source = audioUrl?.startsWith('http')
-    ? audioUrl
-    : `${GET_IMAGE}/${audioUrl}`;
+  const defaultFallback = require('../../assets/sounds/funny-cartoon-sound-397415.mp3');
 
-  console.log('source', source);
+  const getFormattedSource = (url?: string | null) => {
+    if (!url) return null;
+    if (!isAllowedUrl(url)) {
+      console.warn('Blocked untrusted media URL:', url);
+      return null;
+    }
+    return url.startsWith('http') ? url : `${GET_IMAGE}/${url}`;
+  };
+
+  const initialSource = getFormattedSource(audioUrl) ?? defaultFallback;
+  const [loadedSource, setLoadedSource] = useState<string | number>(initialSource);
+
   // only initialize once a valid uri exists
-  const player = useAudioPlayer(
-    source ?? require('../../assets/sounds/funny-cartoon-sound-397415.mp3'),
-  );
+  const player = useAudioPlayer(initialSource);
+
+  useEffect(() => {
+    if (podcast?.audio_url) {
+      const secureSource = getFormattedSource(podcast.audio_url);
+      if (secureSource && secureSource !== loadedSource) {
+        player.replace(secureSource);
+        setLoadedSource(secureSource);
+      }
+    }
+  }, [podcast?.audio_url, player, loadedSource]);
 
   useEffect(() => {
     const interval = setInterval(() => {
