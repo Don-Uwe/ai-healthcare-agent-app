@@ -1,22 +1,13 @@
 import Entypo from '@expo/vector-icons/Entypo';
+import Icon from '@expo/vector-icons/Ionicons';
+import {AxiosError, isAxiosError} from 'axios';
+import {StatusBar} from 'expo-status-bar';
+import messaging from '@react-native-firebase/messaging';
 import React, {useEffect, useState} from 'react';
 import {Alert, Image, useColorScheme} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {StatusBar} from 'expo-status-bar';
-import {YStack, XStack, Input, Button, Text, Separator} from 'tamagui';
-import {KEYS, storeItem} from '../../helper/Utils';
-import {SECURE_KEYS, secureStoreItem} from '../../helper/SecureStorageUtils';
-import {resetSessionExpiredNotification} from '../../helper/setupAxiosInterceptor';
-
-import Icon from '@expo/vector-icons/Ionicons';
-import messaging from '@react-native-firebase/messaging';
-import { AxiosError, isAxiosError } from 'axios';
-import { StatusBar } from 'expo-status-bar';
-import React, { useEffect, useState } from 'react';
-import { Alert, Image, useColorScheme } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Snackbar from 'react-native-snackbar';
-import { useDispatch } from 'react-redux';
+import {useDispatch} from 'react-redux';
 import {
   Button,
   Input,
@@ -26,16 +17,15 @@ import {
   XStack,
   YStack,
 } from 'tamagui';
-import { SECURE_KEYS, secureStoreItem } from '../../helper/SecureStorageUtils';
-import { KEYS, storeItem } from '../../helper/Utils';
 
-import { useRequestVerification } from '@/src/hooks/useResendVerification';
-import { useSendOtpMutation } from '@/src/hooks/useSendOtp';
-import { useLoginMutation } from '@/src/hooks/useUserLogin';
-
+import {useRequestVerification} from '@/src/hooks/useResendVerification';
+import {useSendOtpMutation} from '@/src/hooks/useSendOtp';
+import {useLoginMutation} from '@/src/hooks/useUserLogin';
 import EmailInputBottomSheet from '../../components/EmailInputModal';
 import Loader from '../../components/Loader';
-
+import {SECURE_KEYS, secureStoreItem} from '../../helper/SecureStorageUtils';
+import {resetSessionExpiredNotification} from '../../helper/setupAxiosInterceptor';
+import {KEYS, storeItem} from '../../helper/Utils';
 import {
   setGuestMode,
   setUserHandle,
