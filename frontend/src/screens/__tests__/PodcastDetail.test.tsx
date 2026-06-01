@@ -1,5 +1,5 @@
 import React from 'react';
-import {Text, View} from 'react-native';
+import {View} from 'react-native';
 import {render, fireEvent} from '@testing-library/react-native';
 import PodcastDetail from '../PodcastDetail';
 
@@ -23,17 +23,26 @@ const mockPlayer = {
 };
 
 jest.mock('@expo/vector-icons/Ionicons', () => {
-  return ({name}: {name: string}) => <Text>{name}</Text>;
+  const React = require('react');
+  const {Text} = require('react-native');
+  return ({name}: {name: string}) => React.createElement(Text, null, name);
 });
 jest.mock('@expo/vector-icons/AntDesign', () => {
-  return ({name}: {name: string}) => <Text>{name}</Text>;
+  const React = require('react');
+  const {Text} = require('react-native');
+  return ({name}: {name: string}) => React.createElement(Text, null, name);
 });
 jest.mock('@expo/vector-icons/Feather', () => {
-  return ({name}: {name: string}) => <Text>{name}</Text>;
+  const React = require('react');
+  const {Text} = require('react-native');
+  return ({name}: {name: string}) => React.createElement(Text, null, name);
 });
 jest.mock('lottie-react-native', () => 'LottieView');
 jest.mock('@react-native-community/slider', () => {
-  return ({testID}: {testID?: string}) => <View testID={testID ?? 'slider'} />;
+  const React = require('react');
+  const {View} = require('react-native');
+  return ({testID}: {testID?: string}) =>
+    React.createElement(View, {testID: testID ?? 'slider'});
 });
 
 jest.mock('react-native-snackbar', () => ({
@@ -93,6 +102,10 @@ jest.mock('../../hooks/useLikePodcast', () => ({
 jest.mock('expo-audio', () => ({
   useAudioPlayer: jest.fn(() => mockPlayer),
 }));
+
+jest.mock('../../../assets/sounds/funny-cartoon-sound-397415.mp3', () => 1, {
+  virtual: true,
+});
 
 jest.mock('tamagui', () => {
   const React = require('react');
@@ -156,6 +169,7 @@ const mockUseLikePodcast = require('../../hooks/useLikePodcast').useLikePodcast 
 describe('PodcastDetail', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.spyOn(console, 'warn').mockImplementation(() => {});
     mockPlayer.playing = false;
     mockPlayer.currentStatus.playing = false;
     mockPlayer.currentStatus.currentTime = 12;
@@ -250,11 +264,11 @@ describe('PodcastDetail', () => {
   });
 
   it('renders accessible controls and slider labels', () => {
-    const {getByLabelText} = renderScreen();
+    const {getByLabelText, getByTestId} = renderScreen();
 
     expect(getByLabelText('podcast-back-button')).toBeTruthy();
     expect(getByLabelText('podcast-play-pause-button')).toBeTruthy();
     expect(getByLabelText('podcast-forward-button')).toBeTruthy();
-    expect(getByLabelText('podcast-progress-slider')).toBeTruthy();
+    expect(getByTestId('podcast-progress-slider')).toBeTruthy();
   });
 });
