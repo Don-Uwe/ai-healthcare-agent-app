@@ -103,6 +103,8 @@ export type RootStackParamList = {
   LogoutScreen: {profile_image: string; username: string};
   RenderSuggestion: {
     htmlContent: string;
+    readability_score?: number;
+    reading_time?: string;
   };
   PodcastDetail: {
     trackId: string;
@@ -622,6 +624,7 @@ export type PodcastData = {
   filePath: string | undefined;
   downloadAt: Date | null;
   commentCount: number | 0;
+  language?: string;
 };
 
 export type UserStatus = {
@@ -762,9 +765,11 @@ export type ImprovementCardProps = {
 };
 
 export interface ContentSuggestionResponse {
-  readability_score: number;
-  reading_time: string;
-  suggested_html: string;
+  readability_score?: number;
+  reading_time?: string;
+  suggested_html?: string;
+  full_html?: string;
+  suggestion?: string;
 }
 
 export type PlayList = {

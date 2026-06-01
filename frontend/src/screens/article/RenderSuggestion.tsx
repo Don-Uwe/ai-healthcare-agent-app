@@ -13,6 +13,7 @@ export default function RenderSuggestion({
 }: RenderSuggestionProp) {
   const { htmlContent, readability_score, reading_time } = route.params;
   const dispatch = useDispatch();
+  const readabilityScore = readability_score ?? 0;
 
   const handleAccept = () => {
     dispatch(setSuggestionAccepted({ selection: true }));
@@ -34,7 +35,7 @@ export default function RenderSuggestion({
         <Text style={styles.scoreTitle}>Readability Score</Text>
         <Text style={[
           styles.scoreNumber,
-          { color: readability_score >= 60 ? '#059669' : '#dc2626' }
+          { color: readabilityScore >= 60 ? '#059669' : '#dc2626' }
         ]}>
           {readability_score ?? '--'}/100
         </Text>

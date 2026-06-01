@@ -3,6 +3,7 @@ import {useCheckTokenStatus} from '@/src/hooks/useGetTokenStatus';
 import {useNotificationListeners} from '@/hooks/useNotificationListener';
 import {useVersionCheck} from '@/hooks/useVersionCheck';
 import {SocketProvider} from '../contexts/SocketContext';
+import {PreferencesProvider} from '../contexts/PreferencesContext';
 import config from '@/tamagui.config';
 import messaging from '@react-native-firebase/messaging';
 import {
@@ -118,18 +119,20 @@ export default function AppContent() {
       defaultTheme={isDarkMode ? 'dark' : 'light'}>
       <FirebaseProvider>
         <SocketProvider>
-          <SafeAreaProvider>
-            <PaperProvider>
-              <View style={{flex: 1}}>
-                {/* StatusBar is managed globally by CustomStatusBar — do not add one here. */}
-                <NavigationContainer ref={navigationRef}>
-                  <StackNavigation />
-                </NavigationContainer>
-                <CustomAlertDialog key={'alert'} />
-                <UpdateModal visible={visible} storeUrl={storeUrl} />
-              </View>
-            </PaperProvider>
-          </SafeAreaProvider>
+          <PreferencesProvider>
+            <SafeAreaProvider>
+              <PaperProvider>
+                <View style={{flex: 1}}>
+                  {/* StatusBar is managed globally by CustomStatusBar — do not add one here. */}
+                  <NavigationContainer ref={navigationRef}>
+                    <StackNavigation />
+                  </NavigationContainer>
+                  <CustomAlertDialog key={'alert'} />
+                  <UpdateModal visible={visible} storeUrl={storeUrl} />
+                </View>
+              </PaperProvider>
+            </SafeAreaProvider>
+          </PreferencesProvider>
         </SocketProvider>
       </FirebaseProvider>
     </TamaguiProvider>
