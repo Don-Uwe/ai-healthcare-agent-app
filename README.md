@@ -6,6 +6,69 @@
   </a>
 </h3>
 
+# Contributor Note
+
+I appreciate everyone’s interest in contributing.
+
+A small note regarding participation and expectations: this project is maintained primarily by me as a single maintainer, so collaboration and review timelines may differ from larger teams.
+
+This may not always be the ideal place to actively coordinate contributors, and contributors should consider possible delays before taking up work.
+
+For this initiative, I’m contributing with limited availability (maximum ~3 hours/day), while balancing other responsibilities. Contributions are welcome, but they should align with this pace and maintain a healthy workflow.
+
+Thank you for understanding and for your interest in the project.
+
+
+<br/>
+
+
+# 🚀 UltimateHealth Frontend — Upcoming Release
+
+**Platform:** React Native (Expo) —  Android
+
+## 🔒 Security
+
+* Added **Sentry request body redaction** to prevent credentials and sensitive health data from being exposed.
+* Improved **sensitive key detection** for tokens, passwords, auth data, and similar fields.
+* Hardened **Axios auth handling** to avoid sending invalid `Bearer undefined/null` headers.
+
+## 🐞 Bug Fixes
+
+* Fixed **TTS player** staying visible after playback completion.
+* Resolved **Home feed pagination inconsistencies** with selected categories and Saved filtering.
+* Fixed **keyboard overlap** in comments input.
+* Unified **API timeout error messaging**.
+* Improved **Podcast playback resume/rewind behavior**.
+* Fixed **guest deep link routing** for restricted screens.
+* Corrected **timezone parsing** to preserve local time behavior.
+
+## ✨ Improvements
+
+* Integrated **Sentry monitoring + safe network logging**.
+* Added centralized **API timeout handling** with fetch + Axios support.
+* Improved **accessibility support** across multiple screens.
+* Introduced **custom audio waveform visualization** for podcast playback.
+* Migrated date utilities from **moment → date-fns** with locale support.
+* Refactored **Axios instance architecture** for cleaner initialization.
+* Improved **TypeScript safety** for AntDesign icons.
+* Added ESLint cleanup and stricter Redux typing.
+
+## 🧪 Testing & DX
+
+* Added unit tests for:
+
+  * API timeout handling
+  * Date utilities
+* Removed production console noise and improved developer comments/logging.
+
+## ⚠️ Deferred
+
+* React Navigation Sentry instrumentation (requires navigation ref architecture changes).
+* Future cleanup for scoped Jest mocks.
+
+---
+
+
 <div align="center">
 
 [![Live Web Demo](https://img.shields.io/badge/Live%20Web%20Demo-4CAF50?style=for-the-badge&logo=globe&logoColor=white)](https://uhsocial.in/frontend/v2)
@@ -14,6 +77,8 @@
 [![Content API](https://img.shields.io/badge/Content%20API-FF6B00?style=for-the-badge&logo=python&logoColor=white)](https://uhsocial.in/content-intel/docs)
 
 </div>
+
+
 
 <div align="center">
 
@@ -410,18 +475,74 @@ We welcome contributions from everyone — developers, designers, writers, and t
     <th>Description</th>
   </tr>
   <tr>
-    <td><img src="https://user-images.githubusercontent.com/63473496/153487849-4f094c16-d21c-463e-9971-98a8af7ba372.png" width="180" alt="GSSoC 2026"/></td>
-    <td><b>GirlScript Summer of Code 2026</b><br>3-month open source program empowering next-generation developers through real-world contributions</td>
-  </tr>
-  <tr>
-    <td><img src="https://github.com/user-attachments/assets/e0a40d06-f5b8-42a7-a5a0-033280f842be" width="180" alt="IEEE"/></td>
-    <td><b>IEEE IGDTUW Open Source Week</b><br>November 12–18</td>
-  </tr>
-</table>
+   
+   <td align="center"><a href="https://github.com/Maheshwari-Love"><img src="https://avatars.githubusercontent.com/u/142833275?v=4" width="120px;" alt=""/><br/><sub><b>Maheshwari Love</b></sub></a>
+        </td> 
+  <td align="center"><a href="https://github.com/Pujan-sarkar"><img src="https://avatars.githubusercontent.com/u/144250917?v=4" width="120px;" alt=""/><br/><sub><b>Pujan Sarkar</b></sub></a>
+        </td> 
+
+   <td align="center"><a href="https://github.com/tristnaja"><img src="https://avatars.githubusercontent.com/u/121044617?v=4" width="120px;" alt=""/><br/><sub><b>Tristan Al Harrish Basori</b></sub></a>
+        </td> 
+       <td align="center"><a href="https://github.com/ionfwsrijan"><img src="https://avatars.githubusercontent.com/u/201338831?v=4" width="120px;" alt=""/><br/><sub><b>SrijanCodes</b></sub></a></td>
+     <td align="center"><a href="https://github.com/Sparshjoshi-iit"><img src="https://avatars.githubusercontent.com/u/181929259?v=4" width="120px;" alt=""/><br/><sub><b>Sparsh Joshi</b></sub></a></td>
+     <td align="center"><a href="https://github.com/Namraa310806"><img src="https://avatars.githubusercontent.com/u/131944677?v=4" width="120px;" alt=""/><br/><sub><b>Patel Namraa</b></sub></a></td>
+ </tr>
+
+   <tr>
+    <td align="center"><a href="https://github.com/Randomlyclueless"><img src="https://avatars.githubusercontent.com/u/144950366?v=4" width="120px;" alt=""/><br/><sub><b>Kimaya Chavan</b></sub></a></td>
+       <td align="center"><a href="https://github.com/Vaishnavi10706"><img src="https://avatars.githubusercontent.com/u/209587091?v=4" width="120px;" alt=""/><br/><sub><b>Vaishnavi</b></sub></a></td>
+     <td align="center"><a href="https://github.com/Chandrika987"><img src="https://avatars.githubusercontent.com/u/221697990?v=4" width="120px;" alt=""/><br/><sub><b>Chandrika</b></sub></a></td>
+     <td align="center"><a href="https://github.com/bhavyaxtech"><img src="https://avatars.githubusercontent.com/u/202380426?v=4" width="120px;" alt=""/><br/><sub><b>Bhavya Reddy</b></sub></a></td>
+     <td align="center"><a href="https://github.com/Harshit-Maurya838"><img src="https://avatars.githubusercontent.com/u/174622309?v=4" width="120px;" alt=""/><br/><sub><b>Harshit Maurya</b></sub></a></td>
+     <td align="center"><a href="https://github.com/Preksha0401"><img src="https://avatars.githubusercontent.com/u/155712570?v=4" width="120px;" alt=""/><br/><sub><b>Preksha Pravin Salvi</b></sub></a></td>
+ </tr>
+
+   <tr>
+    <td align="center"><a href="https://github.com/Tanisha-sharma7302"><img src="https://avatars.githubusercontent.com/u/227324372?v=4" width="120px;" alt=""/><br/><sub><b>Tanisha-sharma7302</b></sub></a></td>
+       <td align="center"><a href="https://github.com/saurabhhhcodes"><img src="https://avatars.githubusercontent.com/u/157192462?v=4" width="120px;" alt=""/><br/><sub><b>Saurabh Kumar Bajpai</b></sub></a></td>
+     <td align="center"><a href="https://github.com/SarthakKharche"><img src="https://avatars.githubusercontent.com/u/187843039?v=4" width="120px;" alt=""/><br/><sub><b>SarthakKharche</b></sub></a></td>
+     <td align="center"><a href="https://github.com/indresh404"><img src="https://avatars.githubusercontent.com/u/256361574?v=4" width="120px;" alt=""/><br/><sub><b>Indresh </b></sub></a></td>
+     <td align="center"><a href="https://github.com/Aditya-br"><img src="https://avatars.githubusercontent.com/u/172393580?v=4" width="120px;" alt=""/><br/><sub><b>Aditya B R</b></sub></a></td>
+     <td align="center"><a href="https://github.com/Kaustav2706"><img src="https://avatars.githubusercontent.com/u/249536131?v=4" width="120px;" alt=""/><br/><sub><b>KAUSTAV HALDER</b></sub></a></td>
+ </tr>
+
+   <tr>
+    <td align="center"><a href="https://github.com/abhilashgedela28-lang"><img src="https://avatars.githubusercontent.com/u/251615976?v=4" width="120px;" alt=""/><br/><sub><b>abhilashgedela28-lang</b></sub></a></td>
+       <td align="center"><a href="https://github.com/hari2k7"><img src="https://avatars.githubusercontent.com/u/232849976?v=4" width="120px;" alt=""/><br/><sub><b>Hariharasudhan D</b></sub></a></td>
+     <td align="center"><a href="https://github.com/Sujith-RMD"><img src="https://avatars.githubusercontent.com/u/224506968?v=4" width="120px;" alt=""/><br/><sub><b>SujithKumar R</b></sub></a></td>
+     <td align="center"><a href="https://github.com/abdullahxyz85"><img src="https://avatars.githubusercontent.com/u/181183976?v=4" width="120px;" alt=""/><br/><sub><b>Abdullah Jameel</b></sub></a></td>
+     <td align="center"><a href="https://github.com/hema7392"><img src="https://avatars.githubusercontent.com/u/142394039?v=4" width="120px;" alt=""/><br/><sub><b>Hemadri</b></sub></a></td>
+     <td align="center"><a href="https://github.com/basantnema31"><img src="https://avatars.githubusercontent.com/u/208905651?v=4" width="120px;" alt=""/><br/><sub><b>Basant Nema</b></sub></a></td>
+ </tr>
+
+   <tr>
+    <td align="center"><a href="https://github.com/Priya09023"><img src="https://avatars.githubusercontent.com/u/218076920?v=4" width="120px;" alt=""/><br/><sub><b>Priya09023</b></sub></a></td>
+       <td align="center"><a href="https://github.com/Krishnx21"><img src="https://avatars.githubusercontent.com/u/194249486?v=4" width="120px;" alt=""/><br/><sub><b>Krishna Kumar</b></sub></a></td>
+     <td align="center"><a href="https://github.com/jpdevhub"><img src="https://avatars.githubusercontent.com/u/160400709?v=4" width="120px;" alt=""/><br/><sub><b>Karan Singh</b></sub></a></td>
+     <td align="center"><a href="https://github.com/SiddharthRiot"><img src="https://avatars.githubusercontent.com/u/133003051?v=4" width="120px;" alt=""/><br/><sub><b>Siddharth</b></sub></a></td>
+     <td align="center"><a href="https://github.com/KRUSHAL2956"><img src="https://avatars.githubusercontent.com/u/134606696?v=4" width="120px;" alt=""/><br/><sub><b>Krushal Hirpara</b></sub></a></td>
+     <td align="center"><a href="https://github.com/nyxsky404"><img src="https://avatars.githubusercontent.com/u/189461188?v=4" width="120px;" alt=""/><br/><sub><b>Sumit Kumar</b></sub></a></td>
+ </tr>
+
+   <tr>
+    <td align="center"><a href="https://github.com/PranavAgarkar07"><img src="https://avatars.githubusercontent.com/u/90404176?v=4" width="120px;" alt=""/><br/><sub><b>Pranav Agarkar</b></sub></a></td>
+       <td align="center"><a href="https://github.com/Maskman014"><img src="https://avatars.githubusercontent.com/u/225333585?v=4" width="120px;" alt=""/><br/><sub><b>Krishna Veernala</b></sub></a></td>
+     <td align="center"><a href="https://github.com/vinalal"><img src="https://avatars.githubusercontent.com/u/121111797?v=4" width="120px;" alt=""/><br/><sub><b>Vinayak Lal</b></sub></a></td>
+     <td align="center"><a href="https://github.com/VirenSumbly"><img src="https://avatars.githubusercontent.com/u/56977249?v=4" width="120px;" alt=""/><br/><sub><b>leVir</b></sub></a></td>
+     <td align="center"><a href="https://github.com/vipul674"><img src="https://avatars.githubusercontent.com/u/140911122?v=4" width="120px;" alt=""/><br/><sub><b>vipul674</b></sub></a></td>
+     <td align="center"><a href="https://github.com/palakjaiswal16"><img src="https://avatars.githubusercontent.com/u/116461116?v=4" width="120px;" alt=""/><br/><sub><b>palakjaiswal16</b></sub></a></td>
+ </tr>
+
+   <tr>
+    <td align="center"><a href="https://github.com/Pcmhacker-piro"><img src="https://avatars.githubusercontent.com/u/181658297?v=4" width="120px;" alt=""/><br/><sub><b>Prakash Meena</b></sub></a></td>
+   </tr>
+ </table>
+ <!-- CONTRIBUTORS-TABLE-END -->
+</div>
 
 ---
 
-## 🗺️ Upcoming Features
+## 🗺️ LIVE (2.1.0)
 
 - **Translation Contribution** — Extend any article in your preferred language
 - **Guest Mode Support** — Read articles and listen to podcasts without signing in

@@ -1,4 +1,4 @@
-import {StyleSheet, Dimensions} from 'react-native';
+import {StyleSheet, Dimensions, ImageSourcePropType} from 'react-native';
 import {useCallback, useEffect, useState} from 'react';
 
 import {
@@ -33,6 +33,20 @@ import {useGetTotalWrites} from '../hooks/useGetTotalWrites';
 import {useGetAuthorYearlyReadReport} from '../hooks/useGetYearlyReadReport';
 import {useGetAuthorYearlyWriteReport} from '../hooks/useGetYearlyWriteReport';
 import StatisticsCard from './StatisticsCard';
+
+const getArticleImageSource = (image?: string): ImageSourcePropType => {
+  if (!image) {
+    return require('../../assets/images/article_default.jpg');
+  }
+
+  return {
+    uri: image.startsWith('http') ? image : `${GET_IMAGE}/${image}`,
+  };
+};
+
+const getArticleAuthorId = (authorId: ArticleData['authorId']): string => {
+  return typeof authorId === 'string' ? authorId : authorId?._id ?? '';
+};
 
 type LineDataItem = {
   label: string;
@@ -141,6 +155,8 @@ const ActivityOverview = ({
       others: others,
       isConnected: isConnected,
     });
+  const mostViewedArticles = article ?? [];
+  const hasMostViewedArticles = mostViewedArticles.length > 0;
 
   // GET USER STATUS FOR LIKE AND VIEW COUNT
 
@@ -663,28 +679,31 @@ const ActivityOverview = ({
             Most Viewed Articles
           </Text>
 
-          {article?.map((item: ArticleData, index: number) => (
+          {!hasMostViewedArticles && (
+            <Text fontSize={13} color="$gray10">
+              No most viewed articles available yet.
+            </Text>
+          )}
+
+          {mostViewedArticles.map((item: ArticleData) => (
             <Card
-              key={index}
+              key={item.pb_recordId || item._id}
               elevate
               bordered
               borderWidth={0.6}
               borderRadius="$10"
+              marginBottom="$3"
               pressStyle={{scale: 0.98}}
               onPress={() =>
                 onArticleViewed({
                   articleId: Number(item._id),
-                  authorId: item.authorId.toString() ?? '',
+                  authorId: getArticleAuthorId(item.authorId),
                   recordId: item.pb_recordId,
                 })
               }>
               <XStack>
                 <Image
-                  source={{
-                    uri: item?.imageUtils[0]?.startsWith('http')
-                      ? item?.imageUtils[0]
-                      : `${GET_IMAGE}/${item?.imageUtils[0]}`,
-                  }}
+                  source={getArticleImageSource(item.imageUtils?.[0])}
                   width={130}
                   height={130}
                   borderRadius={8}
@@ -692,7 +711,7 @@ const ActivityOverview = ({
 
                 <YStack flex={1} padding="$3">
                   <Text fontSize={12} color="$gray10">
-                    {item?.tags.map(t => t.name).join(' | ')}
+                    {item.tags?.map(t => t.name).join(' | ')}
                   </Text>
 
                   <Text fontSize={17} fontWeight="700" marginTop="$1">
