@@ -5,6 +5,18 @@
   </a>
 </h3>
 
+## Contributor Note
+
+I appreciate everyone’s interest in contributing.
+
+A small note regarding participation and expectations: this project is maintained primarily by me as a single maintainer, so collaboration and review timelines may differ from larger teams.
+
+This may not always be the ideal place to actively coordinate contributors, and contributors should consider possible delays before taking up work.
+
+For this initiative, I’m contributing with limited availability (maximum ~3 hours/day), while balancing other responsibilities. Contributions are welcome, but they should align with this pace and maintain a healthy workflow.
+
+Thank you for understanding and for your interest in the project.
+
 <div align="center">
 
 [![Live Web Demo](https://img.shields.io/badge/Live%20Web%20Demo-4CAF50?style=for-the-badge&logo=globe&logoColor=white)](https://uhsocial.in/frontend/v2)
