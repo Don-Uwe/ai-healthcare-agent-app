@@ -1,5 +1,4 @@
 import React from 'react';
-import {View} from 'react-native';
 import {render, fireEvent} from '@testing-library/react-native';
 import PodcastDetail from '../PodcastDetail';
 
@@ -167,9 +166,11 @@ const mockUseGetSinglePodcastDetails = require('../../hooks/useGetSinglePodcastD
 const mockUseLikePodcast = require('../../hooks/useLikePodcast').useLikePodcast as jest.Mock;
 
 describe('PodcastDetail', () => {
+  let warnSpy: jest.SpyInstance;
+
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.spyOn(console, 'warn').mockImplementation(() => {});
+    warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
     mockPlayer.playing = false;
     mockPlayer.currentStatus.playing = false;
     mockPlayer.currentStatus.currentTime = 12;
@@ -202,6 +203,10 @@ describe('PodcastDetail', () => {
       mutate: mockLikePodcast,
       isPending: false,
     });
+  });
+
+  afterEach(() => {
+    warnSpy.mockRestore();
   });
 
   const renderScreen = () =>
