@@ -226,7 +226,6 @@ export const PodcastLoadingState = () => {
         iconEmoji="🎙️"
         title="Loading Podcasts"
         description="Tuning in to the latest audio content..."
-        loading={true}
       />
       <View style={styles.waveContainer}>
         <Animated.View style={[styles.waveLine, { transform: [{ scaleY: wave1Scale }] }]} />

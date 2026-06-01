@@ -1,29 +1,39 @@
+import Entypo from '@expo/vector-icons/Entypo';
+import Icon from '@expo/vector-icons/Ionicons';
+import {AxiosError, isAxiosError} from 'axios';
+import {StatusBar} from 'expo-status-bar';
+import messaging from '@react-native-firebase/messaging';
 import React, {useEffect, useState} from 'react';
 import {Alert, Image, useColorScheme} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {StatusBar} from 'expo-status-bar';
-import {YStack, XStack, Input, Button, Text, Separator} from 'tamagui';
-import {KEYS, storeItem} from '../../helper/Utils';
-import {SECURE_KEYS, secureStoreItem} from '../../helper/SecureStorageUtils';
-
-import Icon from '@expo/vector-icons/Ionicons';
-import {AuthData, LoginScreenProp} from '../../type';
-import {AxiosError, isAxiosError} from 'axios';
+import Snackbar from 'react-native-snackbar';
 import {useDispatch} from 'react-redux';
-import Loader from '../../components/Loader';
 import {
+  Button,
+  Input,
+  Separator,
+  Text,
+  useTheme,
+  XStack,
+  YStack,
+} from 'tamagui';
+
+import {useRequestVerification} from '@/src/hooks/useResendVerification';
+import {useSendOtpMutation} from '@/src/hooks/useSendOtp';
+import {useLoginMutation} from '@/src/hooks/useUserLogin';
+import EmailInputBottomSheet from '../../components/EmailInputModal';
+import Loader from '../../components/Loader';
+import {SECURE_KEYS, secureStoreItem} from '../../helper/SecureStorageUtils';
+import {resetSessionExpiredNotification} from '../../helper/setupAxiosInterceptor';
+import {KEYS, storeItem} from '../../helper/Utils';
+import {
+  setGuestMode,
   setUserHandle,
   setUserId,
   setUserToken,
-  setGuestMode,
 } from '../../store/UserSlice';
-import messaging from '@react-native-firebase/messaging';
-import Entypo from '@expo/vector-icons/Entypo';
-import EmailInputBottomSheet from '../../components/EmailInputModal';
-import {useRequestVerification} from '@/src/hooks/useResendVerification';
-import Snackbar from 'react-native-snackbar';
-import {useSendOtpMutation} from '@/src/hooks/useSendOtp';
-import {useLoginMutation} from '@/src/hooks/useUserLogin';
+
+import { AuthData, LoginScreenProp } from '../../type';
 
 const LoginScreen = ({navigation, route}: LoginScreenProp) => {
   const inset = useSafeAreaInsets();
@@ -54,9 +64,7 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
     setSecureTextEntry(!secureTextEntry);
   };
 
-  if (__DEV__) {
-    console.log('Is dark mode', isDarkMode);
-  }
+  const theme = useTheme();
 
   async function requestUserPermission() {
     const authStatus = await messaging().requestPermission();
@@ -107,14 +115,13 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
       setPasswordMessage(false);
       setEmailMessage(false);
       if (__DEV__) {
-        console.log('email, password', email, password);
-        console.log('Attempting login in debug mode:', __DEV__);
+        console.log('Login attempt in progress');
       }
 
       const fcmToken = await getFCMToken();
-      
+
       if (__DEV__) {
-        console.log('FCM Token retrieved:', fcmToken);
+        console.log('Attempting to retrieve FCM Token');
       }
 
       login(
@@ -134,12 +141,9 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
               await storeItem(KEYS.USER_ID, auth.userId.toString());
               await storeItem(KEYS.USER_HANDLE, data?.user_handle);
               if (auth.token) {
-                if (__DEV__) {
-                  console.log('Storing token:', auth.token);
-                }
                 await secureStoreItem(
                   SECURE_KEYS.USER_TOKEN,
-                  auth.token.toString(),
+                  auth.token,
                 );
                 await storeItem(
                   KEYS.USER_TOKEN_EXPIRY_DATE,
@@ -149,6 +153,8 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
                 dispatch(setUserToken(auth.token));
                 dispatch(setUserHandle(auth.user_handle));
                 dispatch(setGuestMode(false));
+                // Reset so the next session expiry triggers the notification again.
+                resetSessionExpiredNotification();
                 setTimeout(() => {
                   if (redirectTo) {
                     (navigation as any).navigate(
@@ -263,10 +269,10 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
     return <Loader />;
   }
   return (
-    <YStack flex={1} backgroundColor="$background">
+    <YStack flex={1} backgroundColor={'$background'}>
       <StatusBar
         style={isDarkMode ? 'light' : 'dark'}
-        backgroundColor="#007AFF"
+        backgroundColor={theme.blue10.val}
       />
 
       <YStack
@@ -393,7 +399,7 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
               marginTop="$2"
               paddingHorizontal="$2">
               <Text
-                color={isDarkMode ? '$gray10' : '$gray11'}
+                color={isDarkMode ? '$gray400' : '$gray700'}
                 fontWeight="500"
                 fontSize={13}
                 pressStyle={{opacity: 0.7}}
@@ -566,7 +572,6 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
                     navigateToOtpScreen();
                   },
                   onError: error => {
-                     
                     if (isAxiosError(error)) {
                       if (error.response) {
                         if (error.response.status === 400) {

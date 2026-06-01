@@ -8,8 +8,8 @@ import * as Sentry from '@sentry/react-native';
  * @param context - Optional extra context data to send along with the error
  */
 export const captureException = (error: unknown, context?: Record<string, any>) => {
-  console.log('[Monitoring] Exception captured');
   if(__DEV__){
+    console.log('[Monitoring] Exception captured');
     console.error('Captured Exception (Development):', error);
   }
 

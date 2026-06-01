@@ -11,7 +11,7 @@ export const SECURE_KEYS = {
   USER_TOKEN: 'SECURE_USER_TOKEN',
 } as const;
 
-type SecureKey = (typeof SECURE_KEYS)[keyof typeof SECURE_KEYS];
+export type SecureKey = (typeof SECURE_KEYS)[keyof typeof SECURE_KEYS];
 
 export const secureStoreItem = async (
   key: SecureKey,

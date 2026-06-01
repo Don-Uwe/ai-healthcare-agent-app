@@ -9,7 +9,7 @@ module.exports = {
   expo: {
     name: "UltimateHealth",
     slug: "UltimateHealth",
-    version: "2.1.0",
+    version: "2.2.0",
     orientation: "portrait",
     icon: "./assets/images/ic_ultimatehealth_appicon.png",
     scheme: "ultimatehealth",
@@ -86,7 +86,7 @@ module.exports = {
       versionCode: 21,
     },
     web: {
-      output: "static",
+      output: "single",
       favicon: "./assets/images/favicon.png",
     },
     plugins: [
@@ -122,6 +122,7 @@ module.exports = {
         },
       ],
       "./plugins/withWebViewDebug.js",
+      "@sentry/react-native/expo",
     ],
     experiments: {
       typedRoutes: true,

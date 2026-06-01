@@ -16,14 +16,13 @@ const MAX_HEIGHT = 48;
 const MIN_HEIGHT = 5;
 
 interface BarProps {
-  index: number;
   isPlaying: boolean;
   accentColor: string;
   targetHeight: number;
   animationDuration: number;
 }
 
-const Bar = ({ index, isPlaying, accentColor, targetHeight, animationDuration }: BarProps) => {
+const Bar = ({ isPlaying, accentColor, targetHeight, animationDuration }: BarProps) => {
   const height = useSharedValue(MIN_HEIGHT);
 
   useEffect(() => {
@@ -70,7 +69,8 @@ interface Props {
 
 export default function AudioWaveform({ isPlaying, accentColor = '#3B82F6' }: Props) {
   const barAnimationData = useMemo(() =>
-    Array.from({ length: BAR_COUNT }, () => ({
+    Array.from({ length: BAR_COUNT }, (_, i) => ({
+      id: `bar-${i}`,
       target: Math.random() * (MAX_HEIGHT - MIN_HEIGHT) + MIN_HEIGHT,
       duration: 280 + Math.random() * 420,
     })),
@@ -78,14 +78,13 @@ export default function AudioWaveform({ isPlaying, accentColor = '#3B82F6' }: Pr
 
   return (
     <View style={styles.container}>
-      {Array.from({ length: BAR_COUNT }, (_, i) => (
+      {barAnimationData.map(data => (
         <Bar
-          key={i}
-          index={i}
+          key={data.id}
           isPlaying={isPlaying}
           accentColor={accentColor}
-          targetHeight={barAnimationData[i].target}
-          animationDuration={barAnimationData[i].duration}
+          targetHeight={data.target}
+          animationDuration={data.duration}
         />
       ))}
     </View>

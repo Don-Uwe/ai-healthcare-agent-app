@@ -16,20 +16,6 @@ const prefixes = [
 
 let initialUrlHandled = false;
 
-const deepLinkingConfig = {
-  prefixes,
-  config: {
-    screens: {
-      ArticleScreen: 'article/:articleId',
-      PodcastDetail: 'podcast/:trackId',
-      UserProfileScreen: 'profile/:authorId',
-      EditorScreen: 'create-post',
-      PodcastForm: 'create-podcast',
-      ProfileEditScreen: 'settings/profile',
-      NotificationPreferencesScreen: 'settings/notifications',
-    },
-  },
-};
 
 const restrictedRoutes = new Set([
   'EditorScreen',
@@ -144,6 +130,8 @@ const resolveDeepLinkTarget = (url: string): DeepLinkTarget | null => {
       params: {
         authorId,
         author_handle: queryParams.author_handle,
+        userHandle: queryParams.user_handle,
+        userId: queryParams.userId,
       },
     };
   }
@@ -188,6 +176,8 @@ export const initDeepLinking = (navigation: any, isAuthenticated: boolean) => {
     }
 
     if (target.requiresAuth && !isAuthenticated) {
+      // This path is for routes that explicitly require authentication and should
+      // redirect to the LoginScreen, preserving the intended destination.
       navigation.navigate('LoginScreen', {
         redirectTo: {
           name: target.name,
@@ -198,6 +188,9 @@ export const initDeepLinking = (navigation: any, isAuthenticated: boolean) => {
     }
 
     if (restrictedRoutes.has(target.name) && !isAuthenticated) {
+      // This path is for routes that are generally restricted for guests but
+      // may not have a specific 'redirectTo' login flow, instead showing a placeholder.
+      // Note: Routes with 'requiresAuth: true' will be handled by the above block first.
       navigation.navigate('GuestPlaceholderScreen', {
         title: 'Sign In Required',
         description: 'Please sign in to continue to this part of the app.',
@@ -225,4 +218,4 @@ export const initDeepLinking = (navigation: any, isAuthenticated: boolean) => {
   return () => subscription.remove();
 };
 
-export {deepLinkingConfig, resolveDeepLinkTarget};
+export {resolveDeepLinkTarget};
