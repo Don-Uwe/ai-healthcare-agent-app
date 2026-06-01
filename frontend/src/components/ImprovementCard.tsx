@@ -9,7 +9,7 @@ import {
 import React from 'react';
 import {fp, hp} from '../helper/Metric';
 import {ImprovementCardProps} from '../type';
-import moment from 'moment';
+import { formatDateShortYear } from '../helper/dateUtils';
 import {BUTTON_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import {handleExternalClick, StatusEnum} from '../helper/Utils';
 //import io from 'socket.io-client';
@@ -90,7 +90,7 @@ const ImprovementCard = ({item, onNavigate}: ImprovementCardProps) => {
 
           <Text style={styles.footerText1}>
             Last updated: {''}
-            {moment(new Date(item?.last_updated)).format('DD/MM/YYYY')}
+            {formatDateShortYear(item?.last_updated)}
           </Text>
 
           <View style={styles.viewContainer}>

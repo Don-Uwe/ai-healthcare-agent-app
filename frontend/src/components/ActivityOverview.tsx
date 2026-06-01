@@ -15,7 +15,7 @@ import {
 import {PRIMARY_COLOR} from '../helper/Theme';
 //import {LineChart} from 'react-native-gifted-charts';
 import {BarChart} from 'react-native-chart-kit';
-import moment from 'moment';
+import { getCurrentYear, formatDateShortYear } from '../helper/dateUtils';
 import {fp, hp} from '../helper/Metric';
 import {useSelector} from 'react-redux';
 import {GET_IMAGE} from '../helper/APIUtils';
@@ -293,7 +293,7 @@ const ActivityOverview = ({
     // If month selected
     if (selectedMonth !== -1) {
       const monthName = monthNames[selectedMonth];
-      const year = moment().year(); // current year
+      const year = getCurrentYear(); // current year
       return `${user_handle}'s ${
         userState === 0 ? 'Reading' : 'Writing'
       } activity for ${monthName} ${year}`;
@@ -727,7 +727,7 @@ const ActivityOverview = ({
                   </Text>
 
                   <Text fontSize={12} color="$gray8" marginTop="$1">
-                    Updated: {moment(item.lastUpdated).format('DD/MM/YYYY')}
+                    Updated: {formatDateShortYear(item.lastUpdated)}
                   </Text>
                 </YStack>
               </XStack>

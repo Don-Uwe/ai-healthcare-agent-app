@@ -166,6 +166,14 @@ const AboutScreen = ({ navigation }: AboutScreenProps) => {
                   }
                   isDarkMode={isDarkMode}
                 />
+
+                <MenuButton
+                  icon="book-outline"
+                  title="Community Guidelines"
+                  iconColor="#a855f7"
+                  onPress={() => navigation.navigate('CommunityGuidelines')}
+                  isDarkMode={isDarkMode}
+                />
               </YStack>
             </GlassContainer>
           </YStack>

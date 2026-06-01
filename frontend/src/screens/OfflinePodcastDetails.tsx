@@ -12,7 +12,7 @@ import {OfflinePodcastDetailProp, PodcastData} from '../type';
 import {hp} from '../helper/Metric';
 import {ON_PRIMARY_COLOR, BUTTON_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import Slider from '@react-native-community/slider';
-import moment from 'moment';
+import { formatDateWithTime } from '../helper/dateUtils';
 import Ionicons from '@expo/vector-icons/Ionicons';
 // eslint-disable-next-line import/no-duplicates
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -310,10 +310,10 @@ export default function OfflinePodcastDetail({
 
       <View style={styles.metaInfo}>
         <Text style={styles.metaText}>
-          {moment(podcast?.updated_at).format('MMMM Do YYYY, h:mm A')}
+          {formatDateWithTime(podcast?.updated_at)}
         </Text>
         {podcast && (
-          // eslint-disable-next-line react/react-in-jsx-scope
+           
           <Text style={styles.metaText}>
             {podcast?.viewUsers.length <= 1
               ? `${podcast?.viewUsers.length} view`

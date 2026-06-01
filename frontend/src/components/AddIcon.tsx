@@ -1,6 +1,7 @@
-import { StyleSheet, TouchableOpacity} from 'react-native';
+import { StyleSheet } from 'react-native';
 
 import React from 'react';
+import AccessibleTouchable from './common/AccessibleTouchable';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import {AddIconProp} from '../type';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,9 +9,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 const AddIcon = ({callback}: AddIconProp) => {
   return (
     <SafeAreaView style={styles.firstcontaner}>
-      <TouchableOpacity style={styles.circleview} onPress={callback}>
+      <AccessibleTouchable
+        style={styles.circleview}
+        onPress={callback}
+        accessibilityLabel="Add item"
+        accessibilityHint="Opens add item options"
+      >
         <FontAwesome6 name="pen" size={24} color={'white'} />
-      </TouchableOpacity>
+      </AccessibleTouchable>
     </SafeAreaView>
   );
 };

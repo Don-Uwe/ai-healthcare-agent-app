@@ -5,6 +5,12 @@ import {GET_STORAGE_DATA} from './APIUtils';
 import {Alert, Linking, PermissionsAndroid, Platform} from 'react-native';
 import RNFS from 'react-native-fs';
 import {secureClearAllItems} from './SecureStorageUtils';
+import {
+  deleteItem as deletePodcastCache,
+  retrieveItem as retrievePodcastCache,
+  setItem as setPodcastCache,
+  type PodcastDownloadRecord,
+} from './MMKVUtils';
 
 export const checkInternetConnection = (
   callback: (isConnected: boolean) => void,
@@ -183,6 +189,20 @@ export const removeItem = async (key: string) => {
   }
 };
 
+export const readDownloadedPodcasts = async (): Promise<PodcastDownloadRecord[]> => {
+  return retrievePodcastCache();
+};
+
+export const writeDownloadedPodcasts = async (
+  data: PodcastDownloadRecord[],
+) => {
+  await setPodcastCache(data);
+};
+
+export const removeDownloadedPodcasts = async () => {
+  await deletePodcastCache();
+};
+
 // export const clearStorage = async () => {
 //   try {
 //     await AsyncStorage.clear();
@@ -350,22 +370,18 @@ export const downloadAudio = async (_podcast: PodcastData) => {
     Alert.alert('Storage permission denied');
     return;
   }
-  const existingPodcastsStr = await retrieveItem('DOWNLOAD_PODCAST_DATA');
+  const existingPodcasts = await readDownloadedPodcasts();
   try {
-    let existingPodcasts = existingPodcastsStr
-      ? JSON.parse(existingPodcastsStr)
-      : [];
+    let _existingPodcasts = Array.isArray(existingPodcasts) ? existingPodcasts : [];
 
-    if (Array.isArray(existingPodcasts) && existingPodcasts.length >= 5) {
+    if (_existingPodcasts.length >= 5) {
       return {
         message: "You can't keep more than 5 audio",
         success: false,
       };
     }
     // check for existing downloads
-    const isPodcastFound = existingPodcasts.some(
-      (d: any) => d._id === _podcast._id,
-    );
+    const isPodcastFound = _existingPodcasts.some((d: any) => d._id === _podcast._id);
 
     if (isPodcastFound) {
       return {
@@ -376,22 +392,18 @@ export const downloadAudio = async (_podcast: PodcastData) => {
     // download the file
     const path = await downloadFile(_podcast.audio_url, _podcast.title);
     if (path) {
-      if (!Array.isArray(existingPodcasts)) {
-        existingPodcasts = [];
+      if (!Array.isArray(_existingPodcasts)) {
+        _existingPodcasts = [];
       }
 
-      const newPodcast = {
+      const newPodcast: PodcastDownloadRecord = {
         ..._podcast,
         filePath: path,
         downloadAt: new Date(),
       };
       //_podcast.filePath = path;
-      //_podcast.downloadAt = new Date();
-      existingPodcasts.push(newPodcast);
-      await storeItem(
-        'DOWNLOAD_PODCAST_DATA',
-        JSON.stringify(existingPodcasts),
-      );
+      _existingPodcasts.push(newPodcast);
+      await writeDownloadedPodcasts(_existingPodcasts);
 
       return {
         message: 'File saved successfully',
@@ -444,54 +456,37 @@ const downloadFile = async (key: string, title: string) => {
 };
 
 export const cleanUpDownloads = async () => {
-  const existingPodcastStr = await retrieveItem('DOWNLOAD_PODCAST_DATA');
-  if (!existingPodcastStr) {
+  const existingPodcasts = await readDownloadedPodcasts();
+  if (!Array.isArray(existingPodcasts)) {
     return;
   }
-  try {
-    const existingPodcasts = existingPodcastStr
-      ? JSON.parse(existingPodcastStr)
-      : [];
+  const freshPodcasts: PodcastDownloadRecord[] = [];
+  const now = Date.now();
+  const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
-    if (!Array.isArray(existingPodcasts)) {
-      return;
-    }
-    const freshPodcasts = [];
-    const now = Date.now();
-    const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
-    for (const item of existingPodcasts) {
-      const age = now - item.downloadAt;
-      if (age > THIRTY_DAYS_MS) {
-        // unlink
-        if (item.filePath && (await RNFS.exists(item.filePath))) {
-          await RNFS.unlink(item.filePath);
-          console.log('Deleted old file:', item.filePath);
-        }
-      } else {
-        freshPodcasts.push(item);
+  for (const item of existingPodcasts) {
+    const age = now - item.downloadAt.getTime();
+
+    if (Number.isFinite(age) && age > THIRTY_DAYS_MS) {
+      if (item.filePath && (await RNFS.exists(item.filePath))) {
+        await RNFS.unlink(item.filePath);
+        console.log('Deleted old file:', item.filePath);
       }
+    } else {
+      freshPodcasts.push(item);
     }
-    await storeItem('DOWNLOAD_PODCAST_DATA', JSON.stringify(freshPodcasts));
-    console.log('Cleanup completed. Remaining items:', freshPodcasts.length);
-  } catch (err) {
-    console.log('cleaned up error', err);
   }
+  await writeDownloadedPodcasts(freshPodcasts);
+  console.log('Cleanup completed. Remaining items:', freshPodcasts.length);
 };
 
 export const deleteFromDownloads = async (_podcast: PodcastData) => {
-  const existingPodcastStr = await retrieveItem('DOWNLOAD_PODCAST_DATA');
-  if (!existingPodcastStr) {
+  const existingPodcasts = await readDownloadedPodcasts();
+  if (!Array.isArray(existingPodcasts)) {
     return;
   }
   try {
-    const existingPodcasts = existingPodcastStr
-      ? JSON.parse(existingPodcastStr)
-      : [];
-
-    if (!Array.isArray(existingPodcasts)) {
-      return;
-    }
-    const freshPodcasts = [];
+    const freshPodcasts: PodcastDownloadRecord[] = [];
 
     for (const item of existingPodcasts) {
       if (item._id === _podcast._id) {
@@ -504,7 +499,7 @@ export const deleteFromDownloads = async (_podcast: PodcastData) => {
         freshPodcasts.push(item);
       }
     }
-    await storeItem('DOWNLOAD_PODCAST_DATA', JSON.stringify(freshPodcasts));
+    await writeDownloadedPodcasts(freshPodcasts);
     console.log('Cleanup completed. Remaining items:', freshPodcasts.length);
     return true;
   } catch (err) {
@@ -514,22 +509,23 @@ export const deleteFromDownloads = async (_podcast: PodcastData) => {
 };
 
 export const updateOfflinePodcastLikeStatus = async (_podcast: PodcastData) => {
-  const existingPodcastsStr = await retrieveItem('DOWNLOAD_PODCAST_DATA');
   try {
-    let existingPodcasts = existingPodcastsStr
-      ? JSON.parse(existingPodcastsStr)
-      : [];
-
-    const freshPodcasts: PodcastData[] = [];
+    const existingPodcasts = await readDownloadedPodcasts();
+    const freshPodcasts: PodcastDownloadRecord[] = [];
     for (const item of existingPodcasts) {
       if (item._id === _podcast._id) {
-        freshPodcasts.push(_podcast);
+        freshPodcasts.push({
+          ...item,
+          ..._podcast,
+          downloadAt: item.downloadAt,
+          filePath: item.filePath,
+        });
       } else {
         freshPodcasts.push(item);
       }
     }
 
-    await storeItem('DOWNLOAD_PODCAST_DATA', JSON.stringify(freshPodcasts));
+    await writeDownloadedPodcasts(freshPodcasts);
     console.log('Update completed');
   } catch (err) {
     console.log(err);
@@ -624,10 +620,6 @@ ${feedback}
 <hr>
 </body>
 `;
-};
-
-export const SECURE_KEYS = {
-  USER_TOKEN: 'user_token',
 };
 
 export const KEYS = {
