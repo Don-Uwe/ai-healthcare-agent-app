@@ -9,7 +9,6 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "type-check": "tsc --noEmit",
-    "typecheck": "tsc --noEmit",
     "test": "jest --passWithNoTests --ci",
     "knip": "knip",
     "knip:deps": "knip --dependencies",

@@ -28,8 +28,8 @@ concurrency:
 
 permissions:
   contents: read
+  # pull-requests: write is required to post and update the Knip findings comment on PRs.
   pull-requests: write
-  issues: write
 
 jobs:
   knip:
@@ -116,8 +116,10 @@ jobs:
             const sections = checks.map(([label, key]) => {
               const file = path.join(root, `knip-${key}.txt`);
               const text = fs.existsSync(file) ? fs.readFileSync(file, 'utf8').trim() : '';
+              const truncated = text.length > 5000;
               const output = text.length > 0 ? text.slice(0, 5000) : 'No output.';
-              return `<details><summary>${label}</summary>\n\n\`\`\`text\n${output}\n\`\`\`\n\n</details>`;
+              const truncationNote = truncated ? '\n\n> ⚠️ Output truncated to 5000 characters. Run `pnpm knip` locally for the full report.' : '';
+              return `<details><summary>${label}</summary>\n\n\`\`\`text\n${output}\n\`\`\`${truncationNote}\n\n</details>`;
             });
 
             const marker = '<!-- knip-dead-code-check -->';

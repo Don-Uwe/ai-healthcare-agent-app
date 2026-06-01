@@ -4,22 +4,13 @@
     "App.tsx",
     "index.js",
     "app.json",
-    "babel.config.js",
-    "eslint.config.js",
-    ".eslintrc.js",
-    "jest.config.js",
     "jest.setup.ts",
-    "metro.config.js",
-    "react-native.config.js",
-    "tamagui.config.ts",
     "plugins/**/*.{js,ts}",
     "scripts/**/*.{js,ts}",
     "src/app/**/*.{ts,tsx,js,jsx}",
     "src/pages/**/*.{ts,tsx,js,jsx}",
     "src/middleware.{ts,tsx,js,jsx}",
-    "next.config.{js,mjs,ts}",
-    "instrumentation.{ts,js}",
-    "next-env.d.ts"
+    "instrumentation.{ts,js}"
   ],
   "project": [
     "App.tsx",
@@ -71,7 +62,6 @@
   "ignoreDependencies": [
     "@expo/vector-icons",
     "@sentry/react-native",
-    "audio-module",
     "babel-preset-expo",
     "eslint-config-expo",
     "jest-expo",
