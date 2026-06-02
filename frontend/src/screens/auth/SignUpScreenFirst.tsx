@@ -26,6 +26,7 @@ let validator = require('email-validator');
 
 const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
   const {uploadImage, loading} = useUploadImage();
+  const theme = useTheme();
   const [user_profile_image, setUserProfileImage] = useState('');
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
