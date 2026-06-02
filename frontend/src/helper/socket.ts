@@ -42,37 +42,17 @@ export const initializeSocket = (token: string | null = null): Socket => {
     // Initialize socket connection
     socket = io(SOCKET_PROD, socketOptions);
 
-    // Connection event handlers
-    socket.on('connect', () => {
-        console.log('✅ Socket connected:', socket?.id);
-    });
-
+    // Connection event handlers (keep side-effects minimal; avoid noisy console logs)
     socket.on('disconnect', (reason: string) => {
-        console.log('❌ Socket disconnected:', reason);
         if (reason === 'io server disconnect') {
             // Server forcefully disconnected, reconnect manually
             socket?.connect();
         }
     });
 
-    socket.on('connect_error', (error: Error) => {
-        console.error('⚠️ Socket connection error:', error.message);
-    });
-
-    socket.on('reconnect', (attemptNumber: number) => {
-        console.log('🔄 Socket reconnected after', attemptNumber, 'attempts');
-    });
-
-    socket.on('reconnect_attempt', (attemptNumber: number) => {
-        console.log('🔄 Reconnection attempt:', attemptNumber);
-    });
-
-    socket.on('reconnect_failed', () => {
-        console.error('❌ Reconnection failed');
-    });
-
     return socket;
 };
+
 
 /**
  * Get current socket instance
@@ -92,6 +72,7 @@ export const disconnectSocket = (): void => {
 
     currentAuthToken = null;
 };
+
 
 /**
  * Check if socket is connected

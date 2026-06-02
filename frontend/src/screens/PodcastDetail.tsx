@@ -180,17 +180,16 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   const handleShare = async () => {
     try {
       const url = `https://uhsocial.in/api/share/podcast?trackId=${podcast?._id}&audioUrl=${podcast?.audio_url}`;
-      const result = await Share.open({
+      await Share.open({
         title: podcast?.title,
         message: `${podcast?.title} : Check out this awesome podcast on UltimateHealth app!`,
         // Most Recent APK: 0.7.4
         url: url,
         subject: 'Podcast Sharing',
       });
-      console.log(result);
     } catch (error) {
-      console.log('Error sharing:', error);
       Alert.alert('Error', 'Something went wrong while sharing.');
+
       // dispatch(
       //   showAlert({
       //     title: 'Error!',
@@ -201,11 +200,10 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   };
 
   const handlePlay = async () => {
-    console.log('Play called');
     if (!player) {
-      console.log('enter');
       return;
     }
+
     //await player.seekTo(0);
     player.play();
     //setUiState('playing');
@@ -213,8 +211,8 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   };
 
   const handlePause = async () => {
-    console.log('Pause called');
     if (!player) return;
+
 
     player.pause();
     //  setUiState('paused');
@@ -234,9 +232,22 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
         <Text color="#94A3B8" fontSize={14} marginTop="$2">
           {podcastError instanceof Error ? podcastError.message : 'Please try again later.'}
         </Text>
+
+        <TouchableOpacity
+          testID="podcast-detail-retry-button"
+          accessibilityLabel="podcast-detail-retry-button"
+          style={styles.retryButton}
+          onPress={() => {
+            refetch();
+          }}>
+          <Text color="#0B1425" fontSize={16} fontWeight="800">
+            Retry
+          </Text>
+        </TouchableOpacity>
       </View>
     );
   }
+
 
   return (
     <ScrollView backgroundColor={'#0B1425'}>
@@ -307,10 +318,16 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
               <Slider
                 testID="podcast-progress-slider"
                 accessibilityLabel="podcast-progress-slider"
+                accessibilityValue={{
+                  min: 0,
+                  max: duration,
+                  now: position,
+                }}
                 style={styles.slider}
                 minimumValue={0}
                 maximumValue={duration}
                 value={position}
+
                 minimumTrackTintColor={PRIMARY_COLOR}
                 maximumTrackTintColor="#ccc"
                 thumbTintColor={PRIMARY_COLOR}
@@ -395,7 +412,7 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
                       likePodcast(trackId, {
                         onSuccess: data => {
 
-                          console.log('Like podcast res', data);
+
                           if (data?.likeStatus && podcast) {
                             if (socket) {
                               socket.emit('notification', {
@@ -607,4 +624,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 24,
   },
+  retryButton: {
+    marginTop: 16,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: PRIMARY_COLOR,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
 });
