@@ -1,14 +1,28 @@
-// Development vs Production URL configuration
-// Use global __DEV__ from React Native environment
+// API URL configuration
+// Values are injected at build time from environment variables via app.config.js.
+// To override for local development, set the following in your .env file
+// (see .env.example for the full list):
+//
+//   PROD_URL=http://10.0.2.2:3000/api        # Android emulator
+//   PROD_URL=http://localhost:3000/api        # iOS simulator
+//   SOCKET_PROD=http://10.0.2.2:3000
+//   CONTENT_CHECKER_PROD=http://10.0.2.2:3000/content-intel
+//
+// Production fallbacks are defined in app.config.js and used when the
+// corresponding env var is not set.
 
-// For local development, uncomment and local backend
-// const DEV_URL = "http://10.0.2.2:3000/api"; // Android emulator
-// const DEV_URL = "http://localhost:3000/api"; // iOS simulator
-const DEV_URL = "https://uhsocial.in/api"; // Use production for now
+import Constants from "expo-constants";
 
-const PROD_URL = __DEV__ ? DEV_URL : "https://uhsocial.in/api";
-const SOCKET_PROD = __DEV__ ? (DEV_URL.includes('localhost') || DEV_URL.includes('10.0.2.2') ? DEV_URL.replace('/api', '') : "https://uhsocial.in") : "https://uhsocial.in";
-const CONTENT_CHECKER_PROD = __DEV__ ? `${SOCKET_PROD}/content-intel` : "https://uhsocial.in/content-intel";
+const extra = Constants.expoConfig?.extra ?? {};
+
+const PROD_URL: string =
+  extra.PROD_URL ?? "https://uhsocial.in/api";
+
+const SOCKET_PROD: string =
+  extra.SOCKET_PROD ?? "https://uhsocial.in";
+
+const CONTENT_CHECKER_PROD: string =
+  extra.CONTENT_CHECKER_PROD ?? "https://uhsocial.in/content-intel";
 
 const LOGIN_API = `${PROD_URL}/user/login`;
 const REGISTRATION_API = `${PROD_URL}/user/register`;
@@ -185,4 +199,3 @@ export {
   GET_NOTIFICATION_PREFERENCES,
   UPDATE_NOTIFICATION_PREFERENCES,
 };
-export const RENDER_SUGGESTION = `${CONTENT_CHECKER_PROD}/readability/check`;

@@ -55,6 +55,7 @@ export const secureRemoveItem = async (key: SecureKey): Promise<boolean> => {
     return false;
   }
 };
+
 export const secureClearAllItems = async (): Promise<void> => {
   try {
     await Promise.all(
