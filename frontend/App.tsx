@@ -1,15 +1,26 @@
-import React, {useEffect} from 'react';
-import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
-import {setAudioModeAsync} from 'expo-audio';
+import React, { useEffect, useState } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { setAudioModeAsync } from 'expo-audio';
 import * as Sentry from '@sentry/react-native';
 
 import AppContent from './src/components/AppContent';
-import {wrapWithSentry} from './src/services/monitoring/sentry';
-
-const queryClient = new QueryClient();
 
 function App() {
+const [queryClient] = useState(
+() =>
+new QueryClient({
+defaultOptions: {
+queries: {
+retry: 2,
+staleTime: 1000 * 60,
+},
+},
+})
+);
+
   useEffect(() => {
+    let isMounted = true;
+
     const configureAudio = async () => {
       try {
         await setAudioModeAsync({
@@ -17,10 +28,12 @@ function App() {
           allowsRecording: true,
         });
       } catch (error) {
-        // Report to Sentry so production audio failures are visible to developers
+        // Prevent state/logging side-effects if unmounted
+        if (!isMounted) return;
+
         Sentry.captureException(error, {
-          tags: {feature: 'audio_playback'},
-          extra: {context: 'App startup audio configuration'},
+          tags: { feature: 'audio_playback' },
+          extra: { context: 'App startup audio configuration' },
         });
 
         if (__DEV__) {
@@ -30,6 +43,11 @@ function App() {
     };
 
     configureAudio();
+
+    // Cleanup function
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return (
@@ -39,4 +57,5 @@ function App() {
   );
 }
 
-export default wrapWithSentry(App);
+// 3. Using standard Sentry wrapping (or keep your custom one if verified)
+export default Sentry.wrap(App);

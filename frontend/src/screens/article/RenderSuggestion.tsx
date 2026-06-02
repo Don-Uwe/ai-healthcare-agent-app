@@ -35,7 +35,7 @@ export default function RenderSuggestion({
         <Text style={styles.scoreTitle}>Readability Score</Text>
         <Text style={[
           styles.scoreNumber,
-          { color: readabilityScore >= 60 ? '#059669' : '#dc2626' }
+          { color: (readability_score ?? 0) >= 60 ? '#059669' : '#dc2626' }
         ]}>
           {readability_score ?? '--'}/100
         </Text>

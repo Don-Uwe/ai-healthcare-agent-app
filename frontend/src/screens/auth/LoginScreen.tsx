@@ -115,14 +115,13 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
       setPasswordMessage(false);
       setEmailMessage(false);
       if (__DEV__) {
-        console.log('email, password', email, password);
-        console.log('Attempting login in debug mode:', __DEV__);
+        console.log('Login attempt in progress');
       }
 
       const fcmToken = await getFCMToken();
 
       if (__DEV__) {
-        console.log('FCM Token retrieved:', fcmToken);
+        console.log('Attempting to retrieve FCM Token');
       }
 
       login(

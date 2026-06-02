@@ -2,7 +2,9 @@ import axios from 'axios';
 import {SECURE_KEYS, secureRetrieveItem} from './SecureStorageUtils';
 import {PROD_URL} from './APIUtils';
 
-// Centralized Axios instance with authentication handling
+// Centralized Axios instance with authentication handling.
+// baseURL is sourced from APIUtils so it honors env overrides defined in
+// app.config.js (see .env.example for available variables).
 const authAxios = axios.create({
   baseURL: PROD_URL,
   headers: {

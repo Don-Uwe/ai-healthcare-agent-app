@@ -18,7 +18,7 @@ import {
   launchImageLibrary,
   ImagePickerResponse,
 } from 'react-native-image-picker';
-import {useCheckUserHandleAvailability} from '@/src/hooks/useCheckUserHandle';
+import {useCheckUserHandleAvailability} from '@/src/hooks/useCheckUserHandleAvailability';
 import {useVerificationMailMutation} from '@/src/hooks/useMailVerification';
 import {useRegdMutation} from '@/src/hooks/useUserRegistration';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -26,6 +26,7 @@ let validator = require('email-validator');
 
 const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
   const {uploadImage, loading} = useUploadImage();
+  const theme = useTheme();
   const [user_profile_image, setUserProfileImage] = useState('');
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
@@ -34,17 +35,16 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
   const [role, setRole] = useState('');
   const [verifyBtntext, setVerifyBtntxt] = useState('Request Verification');
   const [verifiedModalVisible, setVerifiedModalVisible] = useState(false);
-  // const [isHandleAvailable, setIsHandleAvailable] = useState(false);
   const [token, setToken] = useState('');
   const [isFocus, setIsFocus] = useState(false);
   const [isSecureEntry, setIsSecureEntry] = useState(true);
   const [securityWarningVisible, setSecurityWarningVisible] = useState(false);
   const [pendingSubmitAction, setPendingSubmitAction] = useState<(() => void) | null>(null);
-  //const [error, setError] = useState('');
-  const theme = useTheme();
 
-  const {data: checkhandle, isLoading} =
-    useCheckUserHandleAvailability(username);
+  const userHandle = username.trim();
+
+  const {data: handleAvailability, isLoading: isCheckingHandle} =
+    useCheckUserHandleAvailability(userHandle);
   const {mutate: verifyEmailMutation, isPending: verifyEmailPending} =
     useVerificationMailMutation();
 
@@ -152,10 +152,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
     }
   };
   const handleSubmit = () => {
-    // if (!isHandleAvailable) {
-    //   return;
-    // }
-    if (!name || !username || !email || !password || !role) {
+    if (!name || !userHandle || !email || !password || !role) {
       Alert.alert('Please fill in all fields');
       return;
     } else if (validator.validate(email) === false) {
@@ -163,6 +160,9 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
       return;
     } else if (password.length < 6) {
       Alert.alert('Password must be at least of 6 length');
+      return;
+    } else if (handleAvailability && !handleAvailability.isAvailable) {
+      Alert.alert('User handle is not available', 'Please choose a different handle.');
       return;
     }
 
@@ -172,7 +172,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
     } else {
       const detail: UserDetail = {
         user_name: name,
-        user_handle: username,
+        user_handle: userHandle,
         email: email,
         password: password,
         profile_image: user_profile_image,
@@ -204,7 +204,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
     register(
       {
         user_name: name,
-        user_handle: username,
+        user_handle: userHandle,
         email: email,
         password: password,
         isDoctor: false,
@@ -385,17 +385,6 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
             </YStack>
           </XStack>
 
-          {/* Handle Error */}
-          {checkhandle?.status === false && (
-            <Text color="red" fontSize={14}>
-              User handle is already in use.
-            </Text>
-          )}
-          {isLoading && (
-            <Text color="green" fontSize={14}>
-              Checking...
-            </Text>
-          )}
           {/* User Handle */}
           <XStack position="relative">
             <Input
@@ -412,6 +401,23 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
               <Icon name="person" size={20} color={theme.black.val} />
             </YStack>
           </XStack>
+
+          {/* Handle Availability Feedback */}
+          {isCheckingHandle && (
+            <Text color="$gray10" fontSize={14}>
+              Checking availability...
+            </Text>
+          )}
+          {!isCheckingHandle && handleAvailability && !handleAvailability.isAvailable && (
+            <Text color="red" fontSize={14}>
+              {handleAvailability.message}
+            </Text>
+          )}
+          {!isCheckingHandle && handleAvailability?.isAvailable && (
+            <Text color="green" fontSize={14}>
+              {handleAvailability.message}
+            </Text>
+          )}
 
           {/* Email */}
           <XStack position="relative">

@@ -1,9 +1,10 @@
 import { useSendOtpMutation } from '@/src/hooks/useSendOtp';
 import { useVerifyOtpMutation } from '@/src/hooks/useVerifyOtp';
-import { AxiosError, isAxiosError } from 'axios';
+import axios, { AxiosError, isAxiosError } from 'axios';
 import React, { useRef, useState } from 'react';
 import { Alert, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import {OtpScreenProp} from '../../type';
 import Loader from '../../components/Loader';
 import {
   Button,
@@ -16,7 +17,6 @@ import {
   XStack,
   YStack,
 } from 'tamagui';
-import { OtpScreenProp } from '../../type';
 
 export default function OtpScreen({navigation, route}: OtpScreenProp) {
   const [otp, setOtp] = useState(['', '', '', '']);
