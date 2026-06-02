@@ -1,5 +1,25 @@
 <h1 align="center">🌟 UltimateHealth (HealthGuide) (PR WILL BE MERGE IN THE EVENING after 8 PM, 020626) </h1>
 
+<h2>New Assignment Process</h2>
+
+<p>
+  New assignments will be announced at scheduled intervals. During that time, contributors may start working on issues based on their eligibility criteria.
+</p>
+
+<ul>
+  <li>You should not have any active issue assigned to you.</li>
+  <li>You must be the first eligible commenter or among the first inactive contributors (i.e., others may already have active issues assigned).</li>
+  <li>The issue you choose must be relevant, non-duplicate, within GSSoC scope, and not part of admin-only tasks.</li>
+  <li>You must be a registered GSSoC contributor to participate.</li>
+</ul>
+
+## Admin Scope
+
+- Any security-related exposure or vulnerability should be reported immediately. Contributors are encouraged to raise such issues for the overall safety and improvement of the product.
+- Admins have the authority to assign or reassign themselves to any active issue when required.
+- Admin-only issues, including infrastructure, moderation, or sensitive system changes, are not eligible for general assignment.
+- Any critical or high-priority system-level changes will be handled exclusively by the admin team.
+
 <h3 align="center">
   <a href="https://git.io/typing-svg">
     <img src="https://readme-typing-svg.herokuapp.com?font=Roboto&size=22&duration=4995&pause=1000&color=006400&width=850&height=58&lines=Open-source+Health+Platform+%7C+React+Native+(Expo)+App+%2B+Node.js+Backend+%2B+MongoDB" alt="Typing SVG" />
