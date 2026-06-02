@@ -120,20 +120,20 @@ const sections: Section[] = [
     note: 'Engaging in prohibited activities may lead to immediate content removal and account restriction.',
     noteType: 'error',
   },
-  // {
-  //   id: 8,
-  //   title: 'Moderation & Enforcement',
-  //   icon: 'gavel-outline',
-  //   iconColor: ProfessionalColors.secondary,
-  //   points: [
-  //     'The UltimateHealth team reserves the right to remove inappropriate content',
-  //     'Discussions may be moderated to maintain a safe and respectful environment',
-  //     'Accounts violating these guidelines may be temporarily or permanently restricted',
-  //     'Repeated or severe violations will result in escalated enforcement actions',
-  //   ],
-  //   note: "Our moderation decisions are made with fairness and the community's best interests in mind.",
-  //   noteType: 'info',
-  // },
+  {
+    id: 8,
+    title: 'Moderation & Enforcement',
+    icon: 'shield-checkmark-outline',
+    iconColor: ProfessionalColors.secondary,
+    points: [
+      'The UltimateHealth team reserves the right to remove inappropriate content',
+      'Discussions may be moderated to maintain a safe and respectful environment',
+      'Accounts violating these guidelines may be temporarily or permanently restricted',
+      'Repeated or severe violations will result in escalated enforcement actions',
+    ],
+    note: "Our moderation decisions are made with fairness and the community's best interests in mind.",
+    noteType: 'info',
+  },
 ];
 
 const NOTE_ICONS = {
