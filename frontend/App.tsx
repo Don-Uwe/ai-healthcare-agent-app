@@ -6,7 +6,17 @@ import * as Sentry from '@sentry/react-native';
 import AppContent from './src/components/AppContent';
 
 function App() {
-  const [queryClient] = useState(() => new QueryClient());
+const [queryClient] = useState(
+() =>
+new QueryClient({
+defaultOptions: {
+queries: {
+retry: 2,
+staleTime: 1000 * 60,
+},
+},
+})
+);
 
   useEffect(() => {
     let isMounted = true;
