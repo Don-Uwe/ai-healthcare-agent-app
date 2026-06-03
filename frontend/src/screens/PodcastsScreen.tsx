@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useState, useMemo} from 'react';
 import {
   StyleSheet,
   TouchableOpacity,
@@ -26,6 +26,7 @@ import {useGetAllPodcasts} from '../hooks/useGetAllPodcasts';
 import {useUpdatePodcastViewcount} from '../hooks/useUpdatePodcastViewcount';
 import { PodcastLoadingState, NoPodcastState } from '../components/EmptyStates';
 import LoadingSpinner from '../components/LoadingSpinner';
+import {usePreferences} from '../contexts/PreferencesContext';
 
 const {WavAudioRecorder} = NativeModules;
 //const recorderEvents = new NativeEventEmitter(WavAudioRecorder);
@@ -41,6 +42,9 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
   // const [selectedCategory, setSelectedCategory] = useState<Category>();
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  // Session-level language filter (can override preferences per session)
+  const [sessionSelectedLanguages, setSessionSelectedLanguages] = useState<string[]>([]);
+  const {preferredLanguages} = usePreferences();
 
   const {
     data: podcastData,
@@ -96,6 +100,27 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
       podcastId: podcastId,
     });
   };
+
+  // Filter podcasts by language preference
+  const filteredPodcasts = useMemo(() => {
+    if (!podcasts || podcasts.length === 0) {
+      return [];
+    }
+
+    // Priority: session-selected languages > preferred languages
+    const effectiveLanguages = sessionSelectedLanguages.length > 0 
+      ? sessionSelectedLanguages 
+      : preferredLanguages;
+    
+    // If no language preference set, show all podcasts
+    if (effectiveLanguages.length === 0) {
+      return podcasts;
+    }
+
+    return podcasts.filter((podcast: PodcastData) =>
+      effectiveLanguages.includes(podcast.language || 'en-IN'),
+    );
+  }, [podcasts, sessionSelectedLanguages, preferredLanguages]);
 
 
   const renderItem = ({item}: {item: PodcastData}) => (
@@ -177,7 +202,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
             <YStack>
               <Text style={styles.headerTitle}>Podcasts</Text>
               <Text style={styles.headerSubtitle}>
-                {podcasts?.length || 0} episodes available
+                {filteredPodcasts?.length || 0} episodes available
               </Text>
             </YStack>
           </XStack>
@@ -189,7 +214,7 @@ const PodcastsScreen = ({navigation}: PodcastScreenProps) => {
           renderLoadingState()
         ) : (
           <FlatList
-            data={podcasts}
+            data={filteredPodcasts}
             renderItem={renderItem}
             keyExtractor={item => item._id.toString()}
             contentContainerStyle={styles.flatListContentContainer}
