@@ -1,6 +1,7 @@
 // PodcastSearch.tsx
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useCallback} from 'react';
 import {Pressable, FlatList, AccessibilityInfo} from 'react-native';
+import {useFocusEffect} from '@react-navigation/native';
 import {PodcastData, PodcastSearchProp} from '../type';
 import {AxiosError} from 'axios';
 import {useSelector} from 'react-redux';
@@ -15,9 +16,6 @@ import {Feather} from '@expo/vector-icons';
 import {useUpdatePodcastViewcount} from '../hooks/useUpdatePodcastViewcount';
 import {useGetSearchPodcasts} from '../hooks/useGetSearchPodcasts';
 
-// Number of skeleton placeholders to show while loading.
-// Chosen to fill most phone screens without over-rendering.
-const SKELETON_COUNT = 6;
 
 export default function PodcastSearch({navigation}: PodcastSearchProp) {
   const [query, setQuery] = useState<string>('');
@@ -26,6 +24,18 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
   const [totalPages, setTotalPages] = useState(0);
   const [searchData, setSearchData] = useState<PodcastData[]>([]);
   const theme = useTheme();
+
+  useFocusEffect(
+    useCallback(() => {
+      // Reset local search state when entering the screen to avoid stale queries.
+      setQuery('');
+      setPage(1);
+      setTotalPages(0);
+      setSearchData([]);
+    }, []),
+  );
+
+
 
   const {mutate: updateViewCount} = useUpdatePodcastViewcount();
 
