@@ -1,7 +1,7 @@
 import React, {useCallback} from 'react';
 import {View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator} from 'react-native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import {INDIAN_LANGUAGES} from '../constants/languages';
+import {INDIAN_LANGUAGES, LanguageCode} from '../constants/languages';
 import {usePreferences} from '../contexts/PreferencesContext';
 import {PRIMARY_COLOR} from '../helper/Theme';
 
@@ -32,9 +32,9 @@ export const LanguagePreferenceSelector: React.FC<LanguagePreferenceSelectorProp
   const {preferredLanguages, setPreferredLanguages, isLoading} = usePreferences();
 
   const toggleLanguage = useCallback(
-    (languageCode: string) => {
-      const isSelected = preferredLanguages.includes(languageCode as any);
-      let updated: string[];
+    (languageCode: LanguageCode) => {
+      const isSelected = preferredLanguages.includes(languageCode);
+      let updated: LanguageCode[];
 
       if (isSelected) {
         updated = preferredLanguages.filter(lang => lang !== languageCode);
@@ -43,16 +43,16 @@ export const LanguagePreferenceSelector: React.FC<LanguagePreferenceSelectorProp
         if (maxLanguagesToSelect && preferredLanguages.length >= maxLanguagesToSelect) {
           return; // Don't allow selecting more than max
         }
-        updated = [...preferredLanguages, languageCode as any];
+        updated = [...preferredLanguages, languageCode];
       }
 
-      setPreferredLanguages(updated as any);
+      setPreferredLanguages(updated);
     },
     [preferredLanguages, setPreferredLanguages, maxLanguagesToSelect]
   );
 
   const selectAll = useCallback(() => {
-    const allCodes = INDIAN_LANGUAGES.map(lang => lang.code as any);
+    const allCodes: LanguageCode[] = INDIAN_LANGUAGES.map(lang => lang.code);
     setPreferredLanguages(allCodes);
   }, [setPreferredLanguages]);
 
@@ -101,28 +101,29 @@ export const LanguagePreferenceSelector: React.FC<LanguagePreferenceSelectorProp
         contentContainerStyle={styles.languagesContentContainer}>
         {INDIAN_LANGUAGES.map((language, index) => {
           const isSelected = preferredLanguages.includes(language.code);
-          const isDisabled =
+          const isDisabled = Boolean(
             maxLanguagesToSelect &&
             !isSelected &&
-            preferredLanguages.length >= maxLanguagesToSelect;
+            preferredLanguages.length >= maxLanguagesToSelect
+          );
 
           return (
             <TouchableOpacity
               key={index}
               style={[
                 styles.languageChip,
-                isSelected && styles.languageChipSelected,
-                isDisabled && styles.languageChipDisabled,
-              ]}
+                isSelected ? styles.languageChipSelected : null,
+                isDisabled ? styles.languageChipDisabled : null,
+              ].filter(Boolean)}
               onPress={() => toggleLanguage(language.code)}
               disabled={isDisabled}
               activeOpacity={isDisabled ? 1 : 0.7}>
               <View
                 style={[
                   styles.checkbox,
-                  isSelected && styles.checkboxSelected,
-                  isDisabled && styles.checkboxDisabled,
-                ]}>
+                  isSelected ? styles.checkboxSelected : null,
+                  isDisabled ? styles.checkboxDisabled : null,
+                ].filter(Boolean)}>
                 {isSelected && (
                   <MaterialIcons name="check" size={14} color="white" />
                 )}
@@ -130,17 +131,17 @@ export const LanguagePreferenceSelector: React.FC<LanguagePreferenceSelectorProp
               <Text
                 style={[
                   styles.languageName,
-                  isSelected && styles.languageNameSelected,
-                  isDisabled && styles.languageNameDisabled,
-                ]}>
+                  isSelected ? styles.languageNameSelected : null,
+                  isDisabled ? styles.languageNameDisabled : null,
+                ].filter(Boolean)}>
                 {language.name}
               </Text>
               <Text
                 style={[
                   styles.languageCode,
-                  isSelected && styles.languageCodeSelected,
-                  isDisabled && styles.languageCodeDisabled,
-                ]}>
+                  isSelected ? styles.languageCodeSelected : null,
+                  isDisabled ? styles.languageCodeDisabled : null,
+                ].filter(Boolean)}>
                 {language.code}
               </Text>
             </TouchableOpacity>
@@ -162,7 +163,10 @@ export const LanguagePreferenceSelector: React.FC<LanguagePreferenceSelectorProp
       {/* Save Button (if callback provided) */}
       {onSave && (
         <TouchableOpacity
-          style={[styles.saveButton, preferredLanguages.length === 0 && styles.saveButtonDisabled]}
+          style={[
+            styles.saveButton,
+            preferredLanguages.length === 0 ? styles.saveButtonDisabled : null
+          ].filter(Boolean)}
           onPress={onSave}
           disabled={preferredLanguages.length === 0}>
           <Text style={styles.saveButtonText}>Save Preferences</Text>

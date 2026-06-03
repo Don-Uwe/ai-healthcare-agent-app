@@ -25,6 +25,19 @@ export default function RenderSuggestion({
     navigation.goBack();
   };
 
+  // ✅ Format reading time display (improved null safety)
+  const formatReadingTime = (time: string | undefined | null): string => {
+    if (!time) {
+      return 'Estimated 2-3 min read';
+    }
+    // If time is a number or numeric string
+    const minutes = parseInt(time, 10);
+    if (isNaN(minutes)) {
+      return time; // Return as-is if not a number
+    }
+    return `${minutes} min read`;
+  };
+
   // ✅ Wraps the content through the project's sanitization utility to prevent XSS flaws
   const formattedHtml = createHTMLStructure('', htmlContent || '<p>No suggestions available.</p>', [], '', '');
 
@@ -39,8 +52,19 @@ export default function RenderSuggestion({
         ]}>
           {readability_score ?? '--'}/100
         </Text>
-        <Text style={styles.readingTime}>⏱ {reading_time ?? 'Calculating...'}</Text>
+        <Text style={styles.readingTime}>
+          ⏱ {formatReadingTime(reading_time)}
+        </Text>
       </View>
+
+      {/* 🌟 Optional: Add warning if reading time is missing (for debugging) */}
+      {!reading_time && __DEV__ && (
+        <View style={styles.debugContainer}>
+          <Text style={styles.debugText}>
+            ⚠️ Debug: reading_time missing from API response
+          </Text>
+        </View>
+      )}
 
       {/* 🌐 Render Highlighted Complex Sentences Safely */}
       <AutoHeightWebView
@@ -87,5 +111,18 @@ const styles = StyleSheet.create({
   cancelButton: { padding: 14, borderRadius: 8, backgroundColor: '#f1f5f9', flex: 0.48, alignItems: 'center' },
   cancelText: { color: '#475569', fontWeight: '600' },
   acceptButton: { padding: 14, borderRadius: 8, backgroundColor: '#0f172a', flex: 0.48, alignItems: 'center' },
-  acceptText: { color: '#ffffff', fontWeight: '600' }
+  acceptText: { color: '#ffffff', fontWeight: '600' },
+  // ✅ Added debug styles (optional, only shows in development)
+  debugContainer: {
+    backgroundColor: '#fef3c7',
+    padding: 8,
+    borderRadius: 8,
+    marginBottom: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#f59e0b',
+  },
+  debugText: {
+    color: '#92400e',
+    fontSize: 12,
+  },
 });

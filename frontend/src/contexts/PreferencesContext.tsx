@@ -6,6 +6,7 @@ import React, {
   ReactNode,
   useCallback,
 } from 'react';
+import * as SecureStore from 'expo-secure-store';  // ✅ ADD THIS IMPORT
 import {
   secureStoreItem,
   secureRetrieveItem,
@@ -81,7 +82,8 @@ export const PreferencesProvider: React.FC<PreferencesProviderProps> = ({
     async (languages: LanguageCode[]): Promise<void> => {
       try {
         if (languages.length === 0) {
-          // Don't store empty preferences
+          // ✅ FIXED: Delete the key when preferences are cleared
+          await SecureStore.deleteItemAsync(SECURE_KEYS.LANGUAGE_PREFERENCES);
           return;
         }
         await secureStoreItem(
@@ -109,6 +111,7 @@ export const PreferencesProvider: React.FC<PreferencesProviderProps> = ({
     [savePreferencesToStorage]
   );
 
+  // ✅ FIXED: Refactored to avoid race conditions
   const addLanguagePreference = useCallback(
     async (language: LanguageCode): Promise<void> => {
       if (!isValidLanguageCode(language)) {
@@ -117,27 +120,25 @@ export const PreferencesProvider: React.FC<PreferencesProviderProps> = ({
         );
         return;
       }
-      setInternalPreferredLanguages(prev => {
-        if (prev.includes(language)) {
-          return prev;
-        }
-        const updated = [...prev, language];
-        savePreferencesToStorage(updated);
-        return updated;
-      });
+      // Use setPreferredLanguages to avoid race conditions
+      if (!preferredLanguages.includes(language)) {
+        await setPreferredLanguages([...preferredLanguages, language]);
+      }
     },
-    [savePreferencesToStorage]
+    [preferredLanguages, setPreferredLanguages]
   );
 
+  // ✅ FIXED: Refactored to avoid race conditions
   const removeLanguagePreference = useCallback(
     async (language: LanguageCode): Promise<void> => {
-      setInternalPreferredLanguages(prev => {
-        const updated = prev.filter(lang => lang !== language);
-        savePreferencesToStorage(updated);
-        return updated;
-      });
+      // Use setPreferredLanguages to avoid race conditions
+      if (preferredLanguages.includes(language)) {
+        await setPreferredLanguages(
+          preferredLanguages.filter(lang => lang !== language)
+        );
+      }
     },
-    [savePreferencesToStorage]
+    [preferredLanguages, setPreferredLanguages]
   );
 
   const value: PreferencesContextType = {
