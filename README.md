@@ -1,4 +1,4 @@
-<h1 align="center">🌟 UltimateHealth (HealthGuide) (PR WILL BE MERGE IN THE EVENING after 8 PM, 020626) </h1>
+<h1 align="center">🌟 UltimateHealth (HealthGuide) (PR WILL BE MERGE IN THE EVENING after 8 PM, 030626) </h1>
 
 <h2>New Assignment Process</h2>
 
@@ -42,51 +42,6 @@ Thank you for understanding and for your interest in the project.
 <br/>
 
 
-# 🚀 UltimateHealth Frontend — Upcoming Release
-
-**Platform:** React Native (Expo) —  Android
-
-## 🔒 Security
-
-* Added **Sentry request body redaction** to prevent credentials and sensitive health data from being exposed.
-* Improved **sensitive key detection** for tokens, passwords, auth data, and similar fields.
-* Hardened **Axios auth handling** to avoid sending invalid `Bearer undefined/null` headers.
-
-## 🐞 Bug Fixes
-
-* Fixed **TTS player** staying visible after playback completion.
-* Resolved **Home feed pagination inconsistencies** with selected categories and Saved filtering.
-* Fixed **keyboard overlap** in comments input.
-* Unified **API timeout error messaging**.
-* Improved **Podcast playback resume/rewind behavior**.
-* Fixed **guest deep link routing** for restricted screens.
-* Corrected **timezone parsing** to preserve local time behavior.
-
-## ✨ Improvements
-
-* Integrated **Sentry monitoring + safe network logging**.
-* Added centralized **API timeout handling** with fetch + Axios support.
-* Improved **accessibility support** across multiple screens.
-* Introduced **custom audio waveform visualization** for podcast playback.
-* Migrated date utilities from **moment → date-fns** with locale support.
-* Refactored **Axios instance architecture** for cleaner initialization.
-* Improved **TypeScript safety** for AntDesign icons.
-* Added ESLint cleanup and stricter Redux typing.
-
-## 🧪 Testing & DX
-
-* Added unit tests for:
-
-  * API timeout handling
-  * Date utilities
-* Removed production console noise and improved developer comments/logging.
-
-## ⚠️ Deferred
-
-* React Navigation Sentry instrumentation (requires navigation ref architecture changes).
-* Future cleanup for scoped Jest mocks.
-
----
 
 
 <div align="center">
@@ -185,6 +140,44 @@ Frontend dead-code checks use Knip. See [Knip Guide](docs/KNIP_GUIDE.md) and [Kn
 </div>
 
 ---
+
+# 🚀 Latest Releases
+
+<table>
+<tr>
+<td width="50%">
+
+## 📱 Mobile App v2.2.0
+
+**Platform:** React Native (Expo)
+
+🔹 Security improvements  
+🔹 Podcast enhancements  
+🔹 Accessibility updates  
+🔹 Performance optimizations
+
+[![View Release](https://img.shields.io/badge/View%20Release-v2.2.0-4CAF50?style=for-the-badge&logo=github)](https://github.com/SB2318/UltimateHealth/releases/tag/mobile-release-2.2.0)
+
+</td>
+
+<td width="50%">
+
+## 🌐 Web App v2.0.0
+
+**Platform:** Next.js
+
+🔹 Modern web experience  
+🔹 Improved routing  
+🔹 Enhanced UI/UX  
+🔹 Better performance
+
+[![View Release](https://img.shields.io/badge/View%20Release-v2.0.0-007ACC?style=for-the-badge&logo=github)](https://github.com/SB2318/UltimateHealth/releases/tag/web-release-2.0.0)
+
+</td>
+</tr>
+</table>
+
+<br>
 
 ## 📖 Overview
 
