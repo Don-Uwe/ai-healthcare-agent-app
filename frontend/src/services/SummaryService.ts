@@ -4,10 +4,9 @@
 // Free tier: 1500 requests/day, no credit card needed
 // ─────────────────────────────────────────────────────────────
 
-// ── 1. Paste your free API key here ──────────────────────────
+// Read API key from environment variable (.env.local)
 // Get free key at: https://aistudio.google.com/app/apikey
-// Replace placeholder with your actual key
-const GEMINI_API_KEY = 'AIza-YOUR-KEY-HERE';
+const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY || 'AIza-YOUR-KEY-HERE';
 
 // ── 2. Gemini endpoint (flash = fastest free model) ──────────
 const GEMINI_URL =
@@ -28,7 +27,7 @@ export async function generateArticleSummary(
 
   // Safety check — don't call API if key is missing
   if (!GEMINI_API_KEY || GEMINI_API_KEY === 'AIza-YOUR-KEY-HERE') {
-    console.warn('[SummaryService] No Gemini API key set. Skipping.');
+    console.warn('[SummaryService] No Gemini API key set. Add EXPO_PUBLIC_GEMINI_API_KEY to .env.local');
     return null;
   }
 
