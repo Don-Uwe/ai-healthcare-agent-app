@@ -64,6 +64,7 @@ You can contribute in many ways:
   git checkout -b bugfix/fix-plagiarism-check
   ```
 2. **Make your changes** and test them thoroughly.
+   - For frontend cleanup checks, run `cd frontend && pnpm quality` before opening a PR. See [Knip Contributor Guide](docs/KNIP_CONTRIBUTOR_GUIDE.md) for dead-code review workflow.
 3. **Commit your changes** using clear, conventional messages:
 ```
 feat: add multilingual article publishing support
@@ -132,4 +133,3 @@ Thank you for helping make **UltimateHealth** a trusted resource for wellness in
 
 — **The UltimateHealth Team**  
 *(Susmita Bhattacharya & contributors)*
-
