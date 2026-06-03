@@ -38,27 +38,26 @@ const useUploadAudio = () => {
         type
       } as any);
 
-      console.log(`Uploading audio: ${filename} (${type})`);
+      if (__DEV__) console.log(`Uploading audio: ${filename} (${type})`);
 
       const response = await fetchWithTimeout(UPLOAD_STORAGE, {
         method: 'POST',
         body: formData
       });
 
-      //const rawText = await response.text();
-      //console.log('Raw response text:', rawText);
-      const data = await response.json();
-      console.log('Audio upload response:', data);
-
       if (!response.ok) {
+        const errorBody = await response.text();
+        if (__DEV__) console.log('Audio upload failed with status', response.status, errorBody);
         throw new Error('Audio upload failed');
       }
 
+      const data = await response.json();
+      if (__DEV__) console.log('Audio upload response:', data);
       setError(false);
       return data.key as string;
 
     } catch (err) {
-      console.log('Audio upload failed', err);
+      if (__DEV__) console.log('Audio upload failed', err);
       Alert.alert('Upload failed', 'Unable to upload audio. Please check your connection.');
     //  dispatch(showAlert({
     //   title: "Upload falied",

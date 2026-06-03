@@ -24,7 +24,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     useEffect(() => {
         // Only initialize if we have a valid token
         if (!user_token) {
-            console.log('Socket Context: No valid token present, skipping connection');
+            if (__DEV__) console.log('Socket Context: No valid token present, skipping connection');
             setSocket(null);
             setIsConnected(false);
             return;
@@ -37,7 +37,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         // Connection listeners
         const onConnect = () => {
             setIsConnected(true);
-            console.log('Socket Context: Connected');
+            if (__DEV__) console.log('Socket Context: Connected');
             
             // Auto-join user room for notifications if logged in
             if (user_id) {
@@ -47,7 +47,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
 
         const onDisconnect = () => {
             setIsConnected(false);
-            console.log('Socket Context: Disconnected');
+            if (__DEV__) console.log('Socket Context: Disconnected');
         };
 
         socketInstance.on('connect', onConnect);

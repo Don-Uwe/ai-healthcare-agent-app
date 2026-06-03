@@ -22,7 +22,7 @@ const useUploadImage = () => {
 
       const formData = new FormData();
       formData.append('file', {uri, name: filename, type} as any);
-      console.log("Type:", type);
+      if (__DEV__) console.log('Type:', type);
 
       //formData.append('file', uri);
 
@@ -32,21 +32,19 @@ const useUploadImage = () => {
         body: formData,
       });
 
-      const data = await response.json();
-
-      console.log('Image upload res', data);
-
       if (!response.ok) {
+        const errorBody = await response.text();
+        if (__DEV__) console.log('Image upload failed with status', response.status, errorBody);
         throw new Error('Image upload failed');
       }
 
-     // const data = await response.json();
+      const data = await response.json();
+      if (__DEV__) console.log('Image upload res', data);
       setError(false);
-      //console.log('Image upload res', data);
-        return data.key as string;
+      return data.key as string;
     } catch (err) {
    
-      console.log('Image upload failed', err);
+      if (__DEV__) console.log('Image upload failed', err);
       Alert.alert('Low network connection, failed to upload image');
     //  dispatch(showAlert({
     //        title: "Upload falied",
