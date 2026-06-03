@@ -115,11 +115,9 @@
         "@sentry/react-native/expo",
         {
           "disableAutoUpload": true,
-          "enableNative": false,
-          
+          "enableNative": true,
           "organization": "ultimatehealth",
           "project": "ultimatehealth"
-
         }
       ]
     ],

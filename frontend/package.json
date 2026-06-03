@@ -113,6 +113,11 @@
     "modules/*"
   ],
   "expo": {
+    "install": {
+      "exclude": [
+        "@sentry/react-native"
+      ]
+    },
     "doctor": {
       "reactNativeDirectoryCheck": {
         "exclude": [

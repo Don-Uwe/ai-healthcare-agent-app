@@ -82,7 +82,7 @@ def enableMinifyInReleaseBuilds = (findProperty('android.enableMinifyInReleaseBu
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
 apply from: new File(["node", "--print", "require('path').dirname(require.resolve('@sentry/react-native/package.json'))"].execute().text.trim(), "sentry.gradle")
-project.ext.shouldSentryAutoUploadGeneral = { -> return false }
+project.ext.shouldSentryAutoUploadGeneral = { -> return System.getenv("EAS_BUILD") == "true" }
 
 android {
     ndkVersion rootProject.ext.ndkVersion
