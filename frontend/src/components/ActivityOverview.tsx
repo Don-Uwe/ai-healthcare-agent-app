@@ -23,7 +23,7 @@ import {ArticleData, MonthStatus, YearStatus} from '../type';
 import Loader from './Loader';
 
 import {useFocusEffect} from '@react-navigation/native';
-import {Dropdown} from 'react-native-element-dropdown';
+import {Dropdown} from 'react-native-element-focus';
 import {useGetAuthorMonthlyReadReport} from '../hooks/useGetMonthlyReadReport';
 import {useGetAuthorMonthlyWriteReport} from '../hooks/useGetMonthlyWriteReport';
 import {useGetAuthorMostViewedArticles} from '../hooks/useGetMostViewedArticle';
@@ -237,38 +237,6 @@ const ActivityOverview = ({
     );
   }
 
-  // const processData = data => {
-  //   if (!Array.isArray(data) || data.length === 0) {
-  //     return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-  //   }
-
-  //   /*
-  //   console.log('data', data.map(item => ({
-  //     value: item.value, // Ensure the value is an integer
-  //     label: item.date.substring(8),
-  //   })));
-
-  //   return data.map(item => ({
-  //     value: item.value, // Ensure the value is an integer
-  //     label: item.date.substring(8),
-  //   }));
-  //   */
-
-  //   return data.map(item =>
-  //     Number.isFinite(Number(item.value)) ? Number(item.value) : 0,
-  //   );
-  // };
-
-  // const processLabels = data => {
-  //   if (!data) {
-  //     return [];
-  //   }
-
-  //   //console.log("Label data", data)
-
-  //   return data.map(item => item.date?.substring(8) ?? '-');
-  // };
-
   const getTrendMessage = () => {
     const monthNames = [
       'January',
@@ -331,9 +299,6 @@ const ActivityOverview = ({
           (sum, d) => sum + Number(d.value || 0),
           0,
         );
-
-        //const startDay = currentWeek[0].date.slice(8);
-        //const endDay = currentWeek[currentWeek.length - 1].date.slice(8);
 
         weeks.push({
           label: `W${weekIndex}`,
@@ -401,7 +366,6 @@ const ActivityOverview = ({
         contentContainerStyle={{
           paddingHorizontal: 2,
           paddingBottom: 32,
-          // backgroundColor: '#fff',
         }}
         showsVerticalScrollIndicator={false}>
         <Card
@@ -423,7 +387,8 @@ const ActivityOverview = ({
             const isLast = index === groupedData.length - 1;
 
             return (
-              <View key={index}>
+              // Fix: use stable key instead of array index
+              <View key={`quarter-${index}`}>
                 {/* Quarter Title */}
                 <Text
                   fontSize={15}
@@ -685,8 +650,9 @@ const ActivityOverview = ({
           )}
 
           {mostViewedArticles.map((item: ArticleData) => (
+            // Fix: use stable identifier instead of array index
             <Card
-              key={item.pb_recordId || item._id}
+              key={item.pb_recordId ?? item._id}
               elevate
               bordered
               borderWidth={0.6}
@@ -764,7 +730,7 @@ const styles = StyleSheet.create({
   },
 
   button: {
-    flex: 1, // ✅ IMPORTANT (instead of width: '45%')
+    flex: 1,
     height: hp(6),
     padding: 8,
     borderRadius: 8,
@@ -776,7 +742,7 @@ const styles = StyleSheet.create({
   },
 
   dropdown: {
-    flex: 1, // ✅ FIX
+    flex: 1,
     height: 40,
     borderColor: '#c1c1c1',
     borderWidth: 0.4,
