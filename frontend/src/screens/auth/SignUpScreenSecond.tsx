@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {Alert} from 'react-native';
 
-import {ScrollView, YStack, XStack, Text, Input, Button, Image} from 'tamagui';
+import {ScrollView, YStack, XStack, Text, Input, Button, Image, useTheme} from 'tamagui';
 import Icon from '@expo/vector-icons/MaterialIcons';
 import {Contactdetail, SignUpScreenSecondProp} from '../../type';
 import {AxiosError} from 'axios';
@@ -31,7 +31,7 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
   const {mutate: verifyEmailMutation, isPending: verifyMutationPending} =
     useVerificationMailMutation();
   const {mutate: register, isPending: registerPending} = useRegdMutation();
-
+  const theme = useTheme();
   const callRegisterAPI = (
     profile_url: string,
     contactDetail: Contactdetail,
@@ -268,7 +268,7 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
           elevation={3}>
           <Text
             fontSize={18}
-            color="white"
+            color="$white"
             textAlign="center"
             lineHeight={26}
             fontWeight="600">
@@ -276,7 +276,7 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
             combination of intellectual and moral interest found in no other
             profession.”
           </Text>
-          <Text fontSize={14} color="white" textAlign="center" marginTop="$2">
+          <Text fontSize={14} color="$white" textAlign="center" marginTop="$2">
             ~ Sir William Osler
           </Text>
         </YStack>
@@ -369,7 +369,7 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
                 maxLength={field.maxLength}
               />
               <YStack position="absolute" right={14} top={12}>
-                <Icon name={field.icon as any} size={20} color="#000" />
+                <Icon name={field.icon as any} size={20} color={theme.black.val} />
               </YStack>
             </XStack>
           ))}
@@ -383,7 +383,7 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
             size="$6"
             marginTop="$2"
             onPress={handleSubmit}>
-            <Text color="white" fontWeight="700" fontSize={18}>
+            <Text color="$white" fontWeight="700" fontSize={18}>
               Register
             </Text>
           </Button>

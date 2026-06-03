@@ -14,19 +14,19 @@ export const useGetAuthorMostViewedArticles = ({
   others?: boolean;
   isConnected?: boolean;
 }): UseQueryResult<ArticleData[]> => {
+  const targetUserId = others ? userId : user_id;
+
   return useQuery<ArticleData[]>({
-    queryKey: ['get-mostly-viewed-article', user_id, userId, others],
+    queryKey: ['get-mostly-viewed-article', targetUserId, others],
 
     queryFn: async () => {
-      const url = others
-        ? `${GET_MOSTLY_VIEWED}${userId}`
-        : `${GET_MOSTLY_VIEWED}${user_id}`;
+      const url = `${GET_MOSTLY_VIEWED}${targetUserId}`;
 
       const response = await axios.get(url);
 
       return response.data as ArticleData[];
     },
 
-    enabled: !!isConnected && !!(!userId && others) && !!(!user_id && !others),
+    enabled: !!isConnected && !!others && !!userId,
   });
 };
