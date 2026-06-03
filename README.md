@@ -11,6 +11,10 @@
   <li>You must be the first eligible commenter or among the first inactive contributors (i.e., others may already have active issues assigned).</li>
   <li>The issue you choose must be relevant, non-duplicate, within GSSoC scope, and not part of admin-only tasks.</li>
   <li>You must be a registered GSSoC contributor to participate.</li>
+  <li> Please make sure to mention your assigned issue number in your Pull Request. PRs without a linked assigned issue may not be considered by the maintainers.</li>
+
+  <li>Also, ensure that you work on the `web` branch if your assigned issue is explicitly labeled <b>WEB</b>.</li>
+
 </ul>
 
 ## Admin Scope
