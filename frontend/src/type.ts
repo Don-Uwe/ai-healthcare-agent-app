@@ -560,6 +560,21 @@ export type Article = {
   imageUtils: string;
 };
 
+export type ArticleSummary = {
+  simplifiedExplanation: string;
+  keyFindings: string[];
+  beginnerTakeaways: string[];
+  whyItMatters: string;
+};
+
+export type RelatedPodcast = {
+  id: string;
+  title: string;
+  description: string;
+  durationMinutes: number;
+  topic: string;
+};
+
 export type ArticleData = {
   _id: string;
   title: string;
@@ -591,6 +606,8 @@ export type ArticleData = {
   sourceLanguage?: string;
   translationOf?: string | number | ArticleData | null;
   translatedArticles?: ArticleData[];
+  summaryData?: ArticleSummary;
+  relatedPodcasts?: RelatedPodcast[];
 };
 
 export type ArticleTranslationSource = {

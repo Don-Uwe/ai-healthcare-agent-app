@@ -21,6 +21,9 @@ import {hp} from '../../helper/Metric';
 import {GET_IMAGE, GET_STORAGE_DATA} from '../../helper/APIUtils';
 import Loader from '../../components/Loader';
 import Snackbar from 'react-native-snackbar';
+import ResearchSummaryCard from '../../components/ResearchSummaryCard';
+import StructuredPodcastCard from '../../components/StructuredPodcastCard';
+import { generateArticleSummary, ArticleSummary } from '../../services/SummaryService';
 
 import {
   formatCount,
@@ -61,6 +64,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const [isPaused, setIsPaused] = useState(false);
   const [speechRate, setSpeechRate] = useState(0.5);
   const [playerVisible, setPlayerVisible] = useState(false);
+  const [summary, setSummary] = useState<ArticleSummary | null>(null);
+  const [summaryLoading, setSummaryLoading] = useState(false);
   const chunkIndexRef = useRef(0);
   const wordsRef = useRef<string[]>([]);
 
@@ -190,6 +195,32 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
       isMounted = false;
     };
   }, []);
+
+  // Generate AI summary using Gemini
+  useEffect(() => {
+    if (!article?.content && !article?.body) {
+      setSummary(null);
+      return;
+    }
+
+    const rawText = article?.content || article?.body || '';
+    
+    // Only call API if there's enough text
+    if (!rawText || rawText.length < 100) {
+      setSummary(null);
+      return;
+    }
+
+    // Reset state then call API
+    setSummary(null);
+    setSummaryLoading(true);
+
+    generateArticleSummary(rawText)
+      .then(result => setSummary(result))
+      .catch(() => setSummary(null))
+      .finally(() => setSummaryLoading(false));
+
+  }, [article?.content, article?.body]);
 
   // --- Settings ---
   const handleLike = () => {
@@ -770,6 +801,13 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
                   onShouldStartLoadWithRequest={handleExternalClick}
                 />
               </View>
+
+              {/* ── Research Summary Card ── */}
+              <ResearchSummaryCard summary={summary} loading={summaryLoading} />
+
+              {article?.relatedPodcasts && article.relatedPodcasts.length > 0 && (
+                <StructuredPodcastCard relatedEpisodes={article.relatedPodcasts} />
+              )}
             </>
           )}
         </View>
