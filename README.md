@@ -7,7 +7,7 @@
 </p>
 
 <ul>
-  <li>You should not have any active issue assigned to you.</li>
+  <li>You should not have any active issue assigned to you.(Or make sure You have submitted a PR before browse)</li>
   <li>You must be the first eligible commenter or among the first inactive contributors (i.e., others may already have active issues assigned).</li>
   <li>The issue you choose must be relevant, non-duplicate, within GSSoC scope, and not part of admin-only tasks.</li>
   <li>You must be a registered GSSoC contributor to participate.</li>
