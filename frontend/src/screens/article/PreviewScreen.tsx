@@ -385,11 +385,15 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
                 },
                 {
                   onSuccess: data => {
-                    if (data.full_html) {
+                    const suggestionHtml = data.full_html ?? data.suggested_html;
+
+                    if (suggestionHtml) {
                       dispatch(setSuggestion({suggestion: data.suggestion}));
 
                       navigation.navigate('RenderSuggestion', {
-                        htmlContent: data.full_html,
+                        htmlContent: suggestionHtml,
+                        readability_score: data.readability_score,
+                        reading_time: data.reading_time,
                       });
                     } else {
                       Snackbar.show({

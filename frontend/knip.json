@@ -1,0 +1,72 @@
+{
+  "$schema": "https://unpkg.com/knip@latest/schema.json",
+  "entry": [
+    "App.tsx",
+    "index.js",
+    "app.json",
+    "jest.setup.ts",
+    "plugins/**/*.{js,ts}",
+    "scripts/**/*.{js,ts}",
+    "src/app/**/*.{ts,tsx,js,jsx}",
+    "src/pages/**/*.{ts,tsx,js,jsx}",
+    "src/middleware.{ts,tsx,js,jsx}",
+    "instrumentation.{ts,js}"
+  ],
+  "project": [
+    "App.tsx",
+    "index.js",
+    "constants/**/*.{ts,tsx,js,jsx}",
+    "hooks/**/*.{ts,tsx,js,jsx}",
+    "src/**/*.{ts,tsx,js,jsx}",
+    "src/**/*.d.ts",
+    "components/**/*.{ts,tsx,js,jsx}",
+    "lib/**/*.{ts,tsx,js,jsx}",
+    "utils/**/*.{ts,tsx,js,jsx}",
+    "types/**/*.{ts,tsx}",
+    "contexts/**/*.{ts,tsx}",
+    "services/**/*.{ts,tsx,js,jsx}",
+    "plugins/**/*.{js,ts}",
+    "scripts/**/*.{js,ts}"
+  ],
+  "ignore": [
+    ".expo/**",
+    ".next/**",
+    ".storybook/**",
+    ".tamagui/**",
+    ".vercel/**",
+    "android/**",
+    "build/**",
+    "coverage/**",
+    "dist/**",
+    "ios/**",
+    "node_modules/**",
+    "public/**",
+    "web-build/**",
+    "**/__mocks__/**",
+    "**/__tests__/**",
+    "**/*.{spec,test}.{ts,tsx,js,jsx}",
+    "**/*.config.{ts,js,mjs,cjs}",
+    "tsconfig.json"
+  ],
+  "ignoreBinaries": [
+    "expo",
+    "jest",
+    "knip",
+    "tsc"
+  ],
+  "paths": {
+    "@/*": [
+      "./*"
+    ]
+  },
+  "ignoreDependencies": [
+    "@expo/vector-icons",
+    "@sentry/react-native",
+    "babel-preset-expo",
+    "eslint-config-expo",
+    "jest-expo",
+    "metro-config",
+    "react-native-svg-transformer",
+    "react-test-renderer"
+  ]
+}

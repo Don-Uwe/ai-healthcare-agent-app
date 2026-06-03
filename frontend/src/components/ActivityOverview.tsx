@@ -150,7 +150,6 @@ const ActivityOverview = ({
   // GET MOST VIEWED ARTICLE
   const {data: article, isLoading: isArticleLoading} =
     useGetAuthorMostViewedArticles({
-      user_id: user_id,
       userId: userId,
       others: others,
       isConnected: isConnected,

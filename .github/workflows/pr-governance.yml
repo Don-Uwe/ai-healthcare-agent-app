@@ -13,6 +13,7 @@ on:
       - converted_to_draft
 
 permissions:
+  contents: read
   pull-requests: read
 
 jobs:
@@ -46,6 +47,18 @@ jobs:
         with:
           script: |
             const pr = context.payload.pull_request;
+            const title = pr.title || "";
+
+            // Types that don't require a label (infrastructure/docs/refactor)
+            const skipLabelTypes = ["ci", "docs", "chore", "build", "test", "style", "refactor", "perf", "revert"];
+            const typeMatch = title.match(/^(\w+)(?:\([^)]*\))?:/);
+            const prType = typeMatch ? typeMatch[1].toLowerCase() : "";
+
+            if (skipLabelTypes.includes(prType)) {
+              core.info(`PR type "${prType}" does not require a label. Skipping label check.`);
+              return;
+            }
+
             const ignoredLabels = ["dependencies"];
 
             const validLabels = pr.labels.filter(
