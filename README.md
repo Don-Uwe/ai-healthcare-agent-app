@@ -99,6 +99,10 @@ Thank you for understanding and for your interest in the project.
 </div>
 
 
+## Code Quality
+
+Frontend dead-code checks use Knip. See [Knip Guide](docs/KNIP_GUIDE.md) and [Knip Contributor Guide](docs/KNIP_CONTRIBUTOR_GUIDE.md) for local commands, CI behavior, and false-positive handling.
+
 
 <div align="center">
 
