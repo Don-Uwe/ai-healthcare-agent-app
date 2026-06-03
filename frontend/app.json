@@ -111,7 +111,17 @@
         }
       ],
       "./plugins/withWebViewDebug.js",
-      "@sentry/react-native/expo"
+      [
+        "@sentry/react-native/expo",
+        {
+          "disableAutoUpload": true,
+          "enableNative": false,
+          
+          "organization": "ultimatehealth",
+          "project": "ultimatehealth"
+
+        }
+      ]
     ],
     "experiments": {
       "reactCompiler": true
