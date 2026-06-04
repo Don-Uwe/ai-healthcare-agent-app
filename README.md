@@ -1,4 +1,6 @@
-<h1 align="center">🌟 UltimateHealth (HealthGuide) (PR WILL BE MERGE IN THE EVENING after 8 PM, 030626) </h1>
+<h1 align="center">🌟 UltimateHealth (HealthGuide) (PR WILL BE MERGED IN THE EVENING after 8 PM, 040626) </h1>
+
+<h3 align="center"> Web(2.0.0) review feedback will be available tomorrow.(050626) </h3>
 
 <h2>New Assignment Process</h2>
 
@@ -11,6 +13,10 @@
   <li>You must be the first eligible commenter or among the first inactive contributors (i.e., others may already have active issues assigned).</li>
   <li>The issue you choose must be relevant, non-duplicate, within GSSoC scope, and not part of admin-only tasks.</li>
   <li>You must be a registered GSSoC contributor to participate.</li>
+  <li> Please make sure to mention your assigned issue number in your Pull Request. PRs without a linked assigned issue may not be considered by the maintainers.</li>
+
+  <li>Also, ensure that you work on the `web` branch if your assigned issue is explicitly labeled <b>WEB</b>.</li>
+
 </ul>
 
 ## Admin Scope

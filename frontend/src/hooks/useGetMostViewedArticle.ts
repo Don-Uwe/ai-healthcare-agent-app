@@ -4,17 +4,20 @@ import {ArticleData} from '../type';
 import {GET_MOSTLY_VIEWED} from '../helper/APIUtils';
 
 export const useGetAuthorMostViewedArticles = ({
-  user_id,
   userId,
   others,
   isConnected,
 }: {
-  user_id: string;
   userId?: string;
   others?: boolean;
   isConnected?: boolean;
 }): UseQueryResult<ArticleData[]> => {
-  const targetUserId = others ? userId : user_id;
+  const targetUserId = userId;
+
+  const shouldFetchMostViewedArticles =
+    Boolean(isConnected) &&
+    Boolean(others) &&
+    Boolean(userId);
 
   return useQuery<ArticleData[]>({
     queryKey: ['get-mostly-viewed-article', targetUserId, others],
@@ -27,6 +30,6 @@ export const useGetAuthorMostViewedArticles = ({
       return response.data as ArticleData[];
     },
 
-    enabled: !!isConnected && !!others && !!userId,
+    enabled: shouldFetchMostViewedArticles,
   });
 };
