@@ -160,6 +160,12 @@ module.exports = ({ config }) => {
         process.env.SOCKET_PROD ?? "https://uhsocial.in",
       CONTENT_CHECKER_PROD:
         process.env.CONTENT_CHECKER_PROD ?? "https://uhsocial.in/content-intel",
-    }
-  };
+      GEMINI_API_KEY:
+        process.env.GEMINI_API_KEY ?? "",
+      router: {},
+      eas: {
+        projectId: "bdd3feee-d70b-4f27-9be5-33edb8b864f4",
+      },
+    },
+  },
 };
