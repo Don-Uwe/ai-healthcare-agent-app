@@ -966,19 +966,6 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
               <LoadingSpinner size={18} />
             ) : (
               <>
-                <FontAwesome
-                  name={
-                    article?.savedUsers?.includes(user_id)
-                      ? 'bookmark'
-                      : 'bookmark-o'
-                  }
-                  size={18}
-                  color={
-                    article?.savedUsers?.includes(user_id)
-                      ? PRIMARY_COLOR
-                      : footerColors.text
-                  }
-                />
                 <Text
                   style={[
                     styles.actionTextFooter,
