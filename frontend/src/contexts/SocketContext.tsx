@@ -32,6 +32,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }: Sock
     useEffect(() => {
         // Only initialize if we have a valid token
         if (!user_token) {
+            if (__DEV__) console.log('Socket Context: No valid token present, skipping connection');
             // Authentication removed: ensure we tear down the singleton.
             disconnectSocket();
             setSocket(null);
@@ -45,9 +46,21 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }: Sock
         tokenInitializedRef.current = user_token;
         setSocket(socketInstance);
 
-        // Connection listeners (per provider instance)
-        const onConnect = () => setIsConnected(true);
-        const onDisconnect = () => setIsConnected(false);
+        // Connection listeners
+        const onConnect = () => {
+            setIsConnected(true);
+            if (__DEV__) console.log('Socket Context: Connected');
+            
+            // Auto-join user room for notifications if logged in
+            if (user_id) {
+                socketInstance.emit('join-user-notifications', { userId: user_id });
+            }
+        };
+
+        const onDisconnect = () => {
+            setIsConnected(false);
+            if (__DEV__) console.log('Socket Context: Disconnected');
+        };
 
         socketInstance.on('connect', onConnect);
         socketInstance.on('disconnect', onDisconnect);
