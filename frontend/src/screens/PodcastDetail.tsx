@@ -5,6 +5,7 @@ import {
   Alert,
   Platform,
   View,
+  Image,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import {PodcastDetailScreenProp} from '../type';
@@ -73,7 +74,7 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   const [isLike, setLike] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
 
-  const {data: podcast, refetch} = useGetSinglePodcastDetails(trackId);
+  const {data: podcast, refetch, isLoading: isPodcastLoading, isError: isPodcastError, error: podcastError} = useGetSinglePodcastDetails(trackId);
   const {mutate: likePodcast, isPending: likePodcastPending} = useLikePodcast();
 
   const defaultFallback = require('../../assets/sounds/funny-cartoon-sound-397415.mp3');
@@ -179,17 +180,16 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   const handleShare = async () => {
     try {
       const url = `https://uhsocial.in/api/share/podcast?trackId=${podcast?._id}&audioUrl=${podcast?.audio_url}`;
-      const result = await Share.open({
+      await Share.open({
         title: podcast?.title,
         message: `${podcast?.title} : Check out this awesome podcast on UltimateHealth app!`,
         // Most Recent APK: 0.7.4
         url: url,
         subject: 'Podcast Sharing',
       });
-      console.log(result);
     } catch (error) {
-      console.log('Error sharing:', error);
       Alert.alert('Error', 'Something went wrong while sharing.');
+
       // dispatch(
       //   showAlert({
       //     title: 'Error!',
@@ -200,11 +200,10 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   };
 
   const handlePlay = async () => {
-    console.log('Play called');
     if (!player) {
-      console.log('enter');
       return;
     }
+
     //await player.seekTo(0);
     player.play();
     //setUiState('playing');
@@ -212,17 +211,43 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   };
 
   const handlePause = async () => {
-    console.log('Pause called');
     if (!player) return;
+
 
     player.pause();
     //  setUiState('paused');
     setIsPlaying(false);
   };
 
-  if (isLoading) {
+  if (isPodcastLoading || isLoading) {
     return <Loader />;
   }
+
+  if (isPodcastError || !podcast) {
+    return (
+      <View testID="podcast-detail-error" style={styles.errorContainer}>
+        <Text color="#F1F5F9" fontSize={18} fontWeight="700">
+          Unable to load podcast details.
+        </Text>
+        <Text color="#94A3B8" fontSize={14} marginTop="$2">
+          {podcastError instanceof Error ? podcastError.message : 'Please try again later.'}
+        </Text>
+
+        <TouchableOpacity
+          testID="podcast-detail-retry-button"
+          accessibilityLabel="podcast-detail-retry-button"
+          style={styles.retryButton}
+          onPress={() => {
+            refetch();
+          }}>
+          <Text color="#0B1425" fontSize={16} fontWeight="800">
+            Retry
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
 
   return (
     <ScrollView backgroundColor={'#0B1425'}>
@@ -235,6 +260,13 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
           justifyContent="space-between">
           {/* TITLE with Glass Effect */}
           <View style={[styles.titleContainer, GlassStyles.glassContainerDark]}>
+            <Image
+              testID="podcast-cover-image"
+              source={{
+                uri: getFormattedSource(podcast.cover_image) ?? undefined,
+              }}
+              style={styles.coverImage}
+            />
             <YStack marginBottom="$4">
               <Text
                 color="#94A3B8"
@@ -284,10 +316,18 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
             <View
               style={[styles.sliderContainer, GlassStyles.glassContainerDark]}>
               <Slider
+                testID="podcast-progress-slider"
+                accessibilityLabel="podcast-progress-slider"
+                accessibilityValue={{
+                  min: 0,
+                  max: duration,
+                  now: position,
+                }}
                 style={styles.slider}
                 minimumValue={0}
                 maximumValue={duration}
                 value={position}
+
                 minimumTrackTintColor={PRIMARY_COLOR}
                 maximumTrackTintColor="#ccc"
                 thumbTintColor={PRIMARY_COLOR}
@@ -318,12 +358,16 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
             style={[styles.controlsContainer, GlassStyles.glassContainerDark]}>
             <XStack justifyContent="space-around" alignItems="center">
               <TouchableOpacity
+                testID="podcast-back-button"
+                accessibilityLabel="podcast-back-button"
                 onPress={handleBackward}
                 style={styles.controlButton}>
                 <Ionicons name="play-back" size={32} color="#9BB3C8" />
               </TouchableOpacity>
 
               <TouchableOpacity
+                testID="podcast-play-pause-button"
+                accessibilityLabel="podcast-play-pause-button"
                 onPress={() =>
                   player.currentStatus.playing ? handlePause() : handlePlay()
                 }
@@ -336,6 +380,8 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
               </TouchableOpacity>
 
               <TouchableOpacity
+                testID="podcast-forward-button"
+                accessibilityLabel="podcast-forward-button"
                 onPress={handleForward}
                 style={styles.controlButton}>
                 <Ionicons name="play-forward" size={32} color="#9BB3C8" />
@@ -366,7 +412,7 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
                       likePodcast(trackId, {
                         onSuccess: data => {
 
-                          console.log('Like podcast res', data);
+
                           if (data?.likeStatus && podcast) {
                             if (socket) {
                               socket.emit('notification', {
@@ -565,4 +611,27 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 40,
   },
+  coverImage: {
+    width: '100%',
+    height: 180,
+    borderRadius: 16,
+    marginBottom: 16,
+  },
+  errorContainer: {
+    flex: 1,
+    backgroundColor: '#0B1425',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  retryButton: {
+    marginTop: 16,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: PRIMARY_COLOR,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
 });
