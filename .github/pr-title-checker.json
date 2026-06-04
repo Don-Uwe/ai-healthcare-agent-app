@@ -9,7 +9,8 @@
       "revert: ",
       "style: ",
       "chore: ",
-      "test: "
+      "test: ",
+      "ci: "
     ]
   }
 }

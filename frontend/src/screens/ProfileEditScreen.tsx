@@ -12,6 +12,7 @@ import GeneralTab from '../components/GeneralTab';
 import ContactTab from '../components/ContactTab';
 import ProfessionalTab from '../components/ProfessionalTab';
 import PasswordTab from '../components/PasswordTab';
+import LanguagePreferenceSelector from '../components/LanguagePreferenceSelector';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 import {useDispatch, useSelector} from 'react-redux';
@@ -48,7 +49,7 @@ const ProfileEditScreen = ({navigation}: ProfileEditScreenProp) => {
   const insets = useSafeAreaInsets();
 
   // Define the tabs available in the profile edit screen
-  const tabs: string[] = ['General', 'Professional', 'Contact', 'Password'];
+  const tabs: string[] = ['General', 'Professional', 'Contact', 'Password', 'Language'];
 
   // State to keep track of the currently selected tab
   const [currentTab, setcurrentTab] = useState<string>(tabs[0]);
@@ -756,6 +757,13 @@ const ProfileEditScreen = ({navigation}: ProfileEditScreenProp) => {
               setConfirmPassword={setConfirmPassword}
               setNewPassword={setNewPassword}
               setOldPassword={setOldPassword}
+            />
+          )}
+          {currentTab === 'Language' && (
+            <LanguagePreferenceSelector
+              title="Preferred Languages"
+              description="Choose the languages you want to see articles and podcasts in"
+              showHeader={false}
             />
           )}
         </View>

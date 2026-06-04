@@ -476,6 +476,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
       Tts.addEventListener('tts-error', e => {
         console.log('TTS Error:', e);
         setIsPlaying(false);
+        setIsPaused(false);
+        setPlayerVisible(false);
       });
 
       setIsPlaying(true);
@@ -484,6 +486,9 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
       speakNextChunk();
     } catch (error) {
       console.log('TTS Error:', error);
+      setIsPlaying(false);
+      setIsPaused(false);
+      setPlayerVisible(false);
     }
   };
 
@@ -497,11 +502,27 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const handleTtsPause = async () => {
     try {
       if (isPaused) {
-        await Tts.resume();
+        // Resume
         setIsPlaying(true);
         setIsPaused(false);
+        // Step back one chunk to resume from the interrupted chunk
+        chunkIndexRef.current = Math.max(0, chunkIndexRef.current - CHUNK_SIZE);
+        
+        // Re-attach listeners
+        Tts.addEventListener('tts-finish', speakNextChunk);
+        Tts.addEventListener('tts-error', e => {
+          console.log('TTS Error:', e);
+          setIsPlaying(false);
+          setIsPaused(false);
+          setPlayerVisible(false);
+        });
+        
+        speakNextChunk();
       } else {
-        await Tts.pause();
+        // Pause
+        Tts.removeAllListeners('tts-finish');
+        Tts.removeAllListeners('tts-error');
+        await Tts.stop();
         setIsPlaying(false);
         setIsPaused(true);
       }
@@ -551,6 +572,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
         Tts.addEventListener('tts-error', e => {
           console.log('TTS Error:', e);
           setIsPlaying(false);
+          setIsPaused(false);
+          setPlayerVisible(false);
         });
         speakNextChunk();
       });
