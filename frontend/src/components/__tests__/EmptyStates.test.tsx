@@ -4,13 +4,14 @@ import { Text } from 'react-native';
 import { BaseEmptyState, NoNotificationState } from '../EmptyStates';
 
 jest.mock('@expo/vector-icons/MaterialCommunityIcons', () => {
+  const React = require('react');
   const { Text } = require('react-native');
   const MockIcon = (props: any) => (
     <Text testID="material-community-icon" name={props.name} color={props.color} size={props.size}>
       {props.name}
     </Text>
   );
-  MockIcon.displayName = 'MockIcon';
+  MockIcon.displayName = 'MaterialCommunityIcons';
   return MockIcon;
 });
 

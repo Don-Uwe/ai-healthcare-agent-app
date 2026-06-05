@@ -24,23 +24,23 @@ const mockPlayer = {
 jest.mock('@expo/vector-icons/Ionicons', () => {
   const React = require('react');
   const {Text} = require('react-native');
-  const MockIonicons = ({name}: {name: string}) => React.createElement(Text, null, name);
-  MockIonicons.displayName = 'MockIonicons';
-  return MockIonicons;
+  const MockIcon = ({name}: {name: string}) => React.createElement(Text, null, name);
+  MockIcon.displayName = 'Ionicons';
+  return MockIcon;
 });
 jest.mock('@expo/vector-icons/AntDesign', () => {
   const React = require('react');
   const {Text} = require('react-native');
-  const MockAntDesign = ({name}: {name: string}) => React.createElement(Text, null, name);
-  MockAntDesign.displayName = 'MockAntDesign';
-  return MockAntDesign;
+  const MockIcon = ({name}: {name: string}) => React.createElement(Text, null, name);
+  MockIcon.displayName = 'AntDesign';
+  return MockIcon;
 });
 jest.mock('@expo/vector-icons/Feather', () => {
   const React = require('react');
   const {Text} = require('react-native');
-  const MockFeather = ({name}: {name: string}) => React.createElement(Text, null, name);
-  MockFeather.displayName = 'MockFeather';
-  return MockFeather;
+  const MockIcon = ({name}: {name: string}) => React.createElement(Text, null, name);
+  MockIcon.displayName = 'Feather';
+  return MockIcon;
 });
 jest.mock('lottie-react-native', () => 'LottieView');
 jest.mock('@react-native-community/slider', () => {
@@ -48,7 +48,7 @@ jest.mock('@react-native-community/slider', () => {
   const {View} = require('react-native');
   const MockSlider = ({testID}: {testID?: string}) =>
     React.createElement(View, {testID: testID ?? 'slider'});
-  MockSlider.displayName = 'MockSlider';
+  MockSlider.displayName = 'Slider';
   return MockSlider;
 });
 
@@ -130,16 +130,16 @@ jest.mock('../../components/Loader', () => {
   const React = require('react');
   const {Text} = require('react-native');
   const MockLoader = () => React.createElement(Text, {testID: 'loader'}, 'Loading');
-  MockLoader.displayName = 'MockLoader';
+  MockLoader.displayName = 'Loader';
   return MockLoader;
 });
 
 jest.mock('../../components/LoadingSpinner', () => {
   const React = require('react');
   const {Text} = require('react-native');
-  const MockLoadingSpinner = () => React.createElement(Text, {testID: 'loading-spinner'}, 'LoadingSpinner');
-  MockLoadingSpinner.displayName = 'MockLoadingSpinner';
-  return MockLoadingSpinner;
+  const MockSpinner = () => React.createElement(Text, {testID: 'loading-spinner'}, 'LoadingSpinner');
+  MockSpinner.displayName = 'LoadingSpinner';
+  return MockSpinner;
 });
 
 const mockPodcast = {
