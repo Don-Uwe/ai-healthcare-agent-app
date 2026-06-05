@@ -1,5 +1,5 @@
 import {FlatList, StyleSheet, Text, View, Image} from 'react-native';
-import React, {useEffect} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import NotificationItem from '../components/NotificationItem';
 import {useDispatch, useSelector} from 'react-redux';
@@ -12,6 +12,14 @@ import {useGetAllNotifications} from '../hooks/useGetAllNotifications';
 import {useMarkNotificationAsRead} from '../hooks/useMarkNoticationAsRead';
 import {useDeleteNotification} from '../hooks/useDeleteNotification';
 
+type PendingDelete = {
+  item: Notification;
+  index: number;
+  timer: ReturnType<typeof setTimeout>;
+};
+
+const UNDO_TIMEOUT_MS = 3500;
+
 // PodcastsScreen component displays the list of podcasts and includes a PodcastPlayer
 const NotificationScreen = ({navigation}: any) => {
   //const notifications = [];
@@ -21,11 +29,14 @@ const NotificationScreen = ({navigation}: any) => {
   const [totalPages, setTotalPages] = React.useState(0);
   const {isConnected} = useSelector((state: any) => state.network);
   const [notificationsData, setNotificationsData] =
-    React.useState<Notification[]>();
+    React.useState<Notification[]>([]);
+  const [openSwipeItemId, setOpenSwipeItemId] = useState<string | null>(null);
+  const pendingDeletesRef = useRef<Map<string, PendingDelete>>(new Map());
+  const isMountedRef = useRef(true);
 
   const dispatch = useDispatch();
   const {mutate: markNotification} = useMarkNotificationAsRead();
-  const {mutate: deleteNotification, isPending} = useDeleteNotification();
+  const {mutate: deleteNotification} = useDeleteNotification();
 
   const {
     data: notificationsRes,
@@ -53,6 +64,16 @@ const NotificationScreen = ({navigation}: any) => {
     }
   }, [notificationsRes, page]);
 
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+      pendingDeletesRef.current.forEach(pendingDelete => {
+        clearTimeout(pendingDelete.timer);
+        deleteNotification(pendingDelete.item._id);
+      });
+      pendingDeletesRef.current.clear();
+    };
+  }, [deleteNotification]);
 
   useEffect(() => {
     if (isConnected) {
@@ -85,6 +106,142 @@ const NotificationScreen = ({navigation}: any) => {
     refetch();
     setRefreshing(false);
   };
+
+  const restoreDeletedNotification = useCallback(
+    (snapshot: PendingDelete) => {
+      setNotificationsData(previous => {
+        const current = previous ?? [];
+
+        if (current.some(notification => notification._id === snapshot.item._id)) {
+          return current;
+        }
+
+        const nextNotifications = [...current];
+        const insertionIndex = Math.min(snapshot.index, nextNotifications.length);
+        nextNotifications.splice(insertionIndex, 0, snapshot.item);
+        return nextNotifications;
+      });
+    },
+    [],
+  );
+
+  const clearPendingDelete = useCallback((id: string) => {
+    const pendingDelete = pendingDeletesRef.current.get(id);
+
+    if (pendingDelete) {
+      clearTimeout(pendingDelete.timer);
+      pendingDeletesRef.current.delete(id);
+    }
+  }, []);
+
+  const commitDeleteNotification = useCallback(
+    (snapshot: PendingDelete) => {
+      deleteNotification(snapshot.item._id, {
+        onSuccess: () => {
+          pendingDeletesRef.current.delete(snapshot.item._id);
+
+          if (isMountedRef.current) {
+            refetch();
+          }
+        },
+
+        onError: error => {
+          console.log(error);
+          pendingDeletesRef.current.delete(snapshot.item._id);
+
+          if (isMountedRef.current) {
+            restoreDeletedNotification(snapshot);
+            Snackbar.show({
+              text: 'Internal server error, failed to delete notification!',
+              duration: Snackbar.LENGTH_SHORT,
+            });
+          }
+        },
+      });
+    },
+    [deleteNotification, refetch, restoreDeletedNotification],
+  );
+
+  const handleDeleteAction = useCallback(
+    (item: Notification) => {
+      console.log('Notification ID', item?._id);
+
+      if (!isConnected) {
+        Snackbar.show({
+          text: 'Please check your internet connection',
+          duration: Snackbar.LENGTH_SHORT,
+        });
+        return;
+      }
+
+      if (pendingDeletesRef.current.has(item._id)) {
+        return;
+      }
+
+      setOpenSwipeItemId(previous => (previous === item._id ? null : previous));
+
+      let snapshot: Omit<PendingDelete, 'timer'> | null = null;
+
+      setNotificationsData(previous => {
+        const current = previous ?? [];
+        const index = current.findIndex(notification => notification._id === item._id);
+
+        if (index === -1) {
+          return current;
+        }
+
+        snapshot = {
+          item,
+          index,
+        };
+
+        return current.filter(notification => notification._id !== item._id);
+      });
+
+      if (!snapshot) {
+        return;
+      }
+
+      const timer = setTimeout(() => {
+        const pendingDelete = pendingDeletesRef.current.get(item._id);
+
+        if (!pendingDelete) {
+          return;
+        }
+
+        commitDeleteNotification(pendingDelete);
+      }, UNDO_TIMEOUT_MS);
+
+      pendingDeletesRef.current.set(item._id, {
+        ...snapshot,
+        timer,
+      });
+
+      Snackbar.show({
+        text: 'Notification deleted',
+        duration: Snackbar.LENGTH_LONG,
+        action: {
+          text: 'UNDO',
+          textColor: '#ffffff',
+          onPress: () => {
+            const pendingDelete = pendingDeletesRef.current.get(item._id);
+
+            if (!pendingDelete) {
+              return;
+            }
+
+            clearPendingDelete(item._id);
+            restoreDeletedNotification(pendingDelete);
+            Snackbar.show({
+              text: 'Deletion undone',
+              duration: Snackbar.LENGTH_SHORT,
+            });
+          },
+        },
+      });
+    },
+    [clearPendingDelete, commitDeleteNotification, isConnected, restoreDeletedNotification],
+  );
 
   const handleNotificationClick = (item: Notification) => {
     if (
@@ -170,40 +327,16 @@ const NotificationScreen = ({navigation}: any) => {
         item={item}
         handleDeleteAction={handleDeleteAction}
         handleClick={handleNotificationClick}
+        isOpen={openSwipeItemId === item._id}
+        onOpenSwipe={setOpenSwipeItemId}
+        onCloseSwipe={id => {
+          setOpenSwipeItemId(previous => (previous === id ? null : previous));
+        }}
       />
     );
   };
 
-  const handleDeleteAction = (item: Notification) => {
-    console.log('Notification ID', item?._id);
-
-    if (isConnected) {
-      deleteNotification(item._id, {
-        onSuccess: async () => {
-          refetch();
-          Snackbar.show({
-            text: 'Notification deleted',
-            duration: Snackbar.LENGTH_SHORT,
-          });
-        },
-
-        onError: error => {
-          console.log(error);
-          Snackbar.show({
-            text: 'Internal server error, failed to delete notification!',
-            duration: Snackbar.LENGTH_SHORT,
-          });
-        },
-      });
-    } else {
-      Snackbar.show({
-        text: 'Please check your internet connection',
-        duration: Snackbar.LENGTH_SHORT,
-      });
-    }
-  };
-
-  if (isPending) {
+  if (isLoading && notificationsData.length === 0) {
     return <Loader />;
   }
 
