@@ -23,7 +23,7 @@ const PROGRAMS = [
     logo: 'https://gssoc.girlscript.org/logo.png',
     description: 'A nationwide open-source program focused on helping developers contribute to real-world projects through mentorship, collaboration, and community-driven learning.',
     date: 'May 2026 - Aug 2026',
-    type: 'Summer 2026',
+   type: 'Open Source Program',
     link: 'https://gssoc.girlscript.org/'
   },
   {
