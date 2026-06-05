@@ -734,8 +734,6 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
                           key={likedUser._id || index}
                           style={[
                             styles.avatar,
-                            index === 1 && styles.avatarOverlap,
-                            index === 2 && styles.avatarDoubleOverlap,
                             { left: index * 15 }
                           ]}>
                           <Image
@@ -757,7 +755,6 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
                       style={[
                         styles.avatar,
                         styles.avatarTripleOverlap,
-                        { left: 45 }
                       ]}>
                       <Text style={styles.moreText}>+{totalLikes - 3}</Text>
                     </View>
@@ -1246,12 +1243,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'white',
     backgroundColor: '#D9D9D9',
-  },
-  avatarOverlap: {
-    left: 15,
-  },
-  avatarDoubleOverlap: {
-    left: 30,
   },
   avatarTripleOverlap: {
     left: 45,
