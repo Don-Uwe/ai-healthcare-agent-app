@@ -13,6 +13,8 @@ const androidConfig = {
   storageBucket: extra.FIREBASE_STORAGE_BUCKET,
   messagingSenderId: extra.FIREBASE_SENDER_ID,
   projectId: extra.FIREBASE_PROJECT_ID,
+  authDomain: extra.FIREBASE_AUTH_DOMAIN,
+  measurementId: extra.FIREBASE_MEASUREMENT_ID,
   persistence: true,
 };
 
