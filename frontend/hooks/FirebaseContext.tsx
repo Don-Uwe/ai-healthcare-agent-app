@@ -1,16 +1,18 @@
 import React, { createContext, useContext, useEffect, ReactNode, useState } from 'react';
 
-import messaging from '@react-native-firebase/messaging'; 
-import { firebase } from '@react-native-firebase/messaging'; 
+import messaging, { firebase } from '@react-native-firebase/messaging'; 
+ 
+import Constants from 'expo-constants';
 
+const extra = Constants.expoConfig?.extra ?? {};
 
 const androidConfig = {
-  appId: `1:393228544987:web:1f4134206db6c1f36395fe`,
-  apiKey: `AIzaSyBtxfBmAVd4g3_yk6ufTLknK_AFiyN8k0M`,
-  databaseURL: `https://ultimatehealth-255dc.firebaseio.com`,
-  storageBucket: `ultimatehealth-255dc.firebasestorage.app`,
-  messagingSenderId: `393228544987`,
-  projectId: `ultimatehealth-255dc`,
+  appId: extra.FIREBASE_APP_ID,
+  apiKey: extra.FIREBASE_API_KEY,
+  databaseURL: extra.FIREBASE_DATABASE_URL,
+  storageBucket: extra.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: extra.FIREBASE_SENDER_ID,
+  projectId: extra.FIREBASE_PROJECT_ID,
   persistence: true,
 };
 
@@ -33,17 +35,27 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
     const initializeFirebase = async () => {
       // Initialize Firebase
       try {
+        if (!androidConfig.apiKey || !androidConfig.appId) {
+          if (__DEV__) {
+            console.warn('Firebase configuration is incomplete. Skipping Firebase initialization.');
+          }
+          return;
+        }
+
         if (!firebase.apps.length) {
-         await firebase.initializeApp(androidConfig);
-       }else {
-         firebase.app(); // if already initialized, use that one
-       }
-        //await firebase.initializeApp(androidConfig);
+          await firebase.initializeApp(androidConfig);
+        } else {
+          firebase.app(); // if already initialized, use that one
+        }
         const token = await messaging().getToken();
-        console.log('Firebase Token:', token);
+        if (__DEV__) {
+          console.log('Firebase Token:', token);
+        }
         setFcmToken(token); // Store the token in state
       } catch (error) {
-        console.error('Error getting token:', error);
+        if (__DEV__) {
+          console.error('Error getting token:', error);
+        }
       }
     };
 
