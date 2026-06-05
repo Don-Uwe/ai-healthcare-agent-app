@@ -24,24 +24,32 @@ const mockPlayer = {
 jest.mock('@expo/vector-icons/Ionicons', () => {
   const React = require('react');
   const {Text} = require('react-native');
-  return ({name}: {name: string}) => React.createElement(Text, null, name);
+  const MockIonicons = ({name}: {name: string}) => React.createElement(Text, null, name);
+  MockIonicons.displayName = 'MockIonicons';
+  return MockIonicons;
 });
 jest.mock('@expo/vector-icons/AntDesign', () => {
   const React = require('react');
   const {Text} = require('react-native');
-  return ({name}: {name: string}) => React.createElement(Text, null, name);
+  const MockAntDesign = ({name}: {name: string}) => React.createElement(Text, null, name);
+  MockAntDesign.displayName = 'MockAntDesign';
+  return MockAntDesign;
 });
 jest.mock('@expo/vector-icons/Feather', () => {
   const React = require('react');
   const {Text} = require('react-native');
-  return ({name}: {name: string}) => React.createElement(Text, null, name);
+  const MockFeather = ({name}: {name: string}) => React.createElement(Text, null, name);
+  MockFeather.displayName = 'MockFeather';
+  return MockFeather;
 });
 jest.mock('lottie-react-native', () => 'LottieView');
 jest.mock('@react-native-community/slider', () => {
   const React = require('react');
   const {View} = require('react-native');
-  return ({testID}: {testID?: string}) =>
+  const MockSlider = ({testID}: {testID?: string}) =>
     React.createElement(View, {testID: testID ?? 'slider'});
+  MockSlider.displayName = 'MockSlider';
+  return MockSlider;
 });
 
 jest.mock('react-native-snackbar', () => ({
@@ -121,13 +129,17 @@ jest.mock('tamagui', () => {
 jest.mock('../../components/Loader', () => {
   const React = require('react');
   const {Text} = require('react-native');
-  return () => React.createElement(Text, {testID: 'loader'}, 'Loading');
+  const MockLoader = () => React.createElement(Text, {testID: 'loader'}, 'Loading');
+  MockLoader.displayName = 'MockLoader';
+  return MockLoader;
 });
 
 jest.mock('../../components/LoadingSpinner', () => {
   const React = require('react');
   const {Text} = require('react-native');
-  return () => React.createElement(Text, {testID: 'loading-spinner'}, 'LoadingSpinner');
+  const MockLoadingSpinner = () => React.createElement(Text, {testID: 'loading-spinner'}, 'LoadingSpinner');
+  MockLoadingSpinner.displayName = 'MockLoadingSpinner';
+  return MockLoadingSpinner;
 });
 
 const mockPodcast = {

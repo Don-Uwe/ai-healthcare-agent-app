@@ -9,12 +9,21 @@ jest.mock('@tamagui/sheet', () => {
 
   const Sheet = ({ open, children }: { open: boolean; children: React.ReactNode }) =>
     open ? <View>{children}</View> : null;
+  Sheet.displayName = 'Sheet';
 
-  Sheet.Overlay = ({ children }: { children?: React.ReactNode }) => <View>{children}</View>;
-  Sheet.Handle = () => <View />;
-  Sheet.Frame = ({ children, ...props }: { children: React.ReactNode }) => (
+  const Overlay = ({ children }: { children?: React.ReactNode }) => <View>{children}</View>;
+  Overlay.displayName = 'Sheet.Overlay';
+  Sheet.Overlay = Overlay;
+
+  const Handle = () => <View />;
+  Handle.displayName = 'Sheet.Handle';
+  Sheet.Handle = Handle;
+
+  const Frame = ({ children, ...props }: { children: React.ReactNode }) => (
     <View {...props}>{children}</View>
   );
+  Frame.displayName = 'Sheet.Frame';
+  Sheet.Frame = Frame;
 
   return { Sheet };
 });

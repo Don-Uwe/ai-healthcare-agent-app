@@ -23,7 +23,7 @@ import {ArticleData, MonthStatus, YearStatus} from '../type';
 import Loader from './Loader';
 
 import {useFocusEffect} from '@react-navigation/native';
-import {Dropdown} from 'react-native-element-focus';
+import {Dropdown} from 'react-native-element-dropdown';
 import {useGetAuthorMonthlyReadReport} from '../hooks/useGetMonthlyReadReport';
 import {useGetAuthorMonthlyWriteReport} from '../hooks/useGetMonthlyWriteReport';
 import {useGetAuthorMostViewedArticles} from '../hooks/useGetMostViewedArticle';
