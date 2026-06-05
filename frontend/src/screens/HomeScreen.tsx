@@ -733,7 +733,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
                   ...styles.labelStyle,
                   color: showSavedOnly ? 'white' : '#4B5563',
                 }}>
-                🔖 Saved
+                Saved
               </Text>
             </TouchableOpacity>
           )}
