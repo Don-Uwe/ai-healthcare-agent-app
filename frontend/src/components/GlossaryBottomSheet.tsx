@@ -62,12 +62,12 @@ export default function GlossaryBottomSheet({
       dismissOnSnapToBottom
       dismissOnOverlayPress
       snapPoints={[55, 35]}
-      animation="medium"
+      animation="bouncy"
       zIndex={100000}
     >
       <Sheet.Overlay
         backgroundColor="rgba(15, 23, 42, 0.55)"
-        animation="quick"
+        animation="fast"
         enterStyle={{ opacity: 0 }}
         exitStyle={{ opacity: 0 }}
       />
