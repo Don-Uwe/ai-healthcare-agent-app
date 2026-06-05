@@ -126,6 +126,7 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
 
   // Consistent list padding used by both the skeleton and results FlatList.
   const listContentStyle = {paddingTop: 12, paddingBottom: 20};
+  const SKELETON_COUNT = 5;
 
   return (
     <YStack
