@@ -1,14 +1,24 @@
 import React, { createContext, useContext, useEffect, ReactNode, useState } from 'react';
-
-import messaging, { firebase } from '@react-native-firebase/messaging'; 
- 
+import { Platform } from 'react-native';
+import firebase from '@react-native-firebase/app';
+import messaging from '@react-native-firebase/messaging'; 
 import Constants from 'expo-constants';
 
 const extra = Constants.expoConfig?.extra ?? {};
 
-const androidConfig = {
-  appId: extra.FIREBASE_APP_ID,
-  apiKey: extra.FIREBASE_API_KEY,
+// Firebase configuration loaded dynamically from environment variables via expo-constants.
+// This single configuration object is platform-agnostic and serves both iOS and Android.
+const firebaseConfig = {
+  appId: Platform.select({
+    ios: extra.FIREBASE_APP_ID_IOS,
+    android: extra.FIREBASE_APP_ID_ANDROID,
+    default: extra.FIREBASE_APP_ID_ANDROID,
+  }),
+  apiKey: Platform.select({
+    ios: extra.FIREBASE_API_KEY_IOS,
+    android: extra.FIREBASE_API_KEY_ANDROID,
+    default: extra.FIREBASE_API_KEY_ANDROID,
+  }),
   databaseURL: extra.FIREBASE_DATABASE_URL,
   storageBucket: extra.FIREBASE_STORAGE_BUCKET,
   messagingSenderId: extra.FIREBASE_SENDER_ID,
@@ -37,15 +47,30 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
     const initializeFirebase = async () => {
       // Initialize Firebase
       try {
-        if (!androidConfig.apiKey || !androidConfig.appId) {
+        const requiredFields = [
+          'apiKey',
+          'appId',
+          'projectId',
+          'messagingSenderId',
+        ];
+
+        const missingFields = requiredFields.filter(
+          (field) => !firebaseConfig[field as keyof typeof firebaseConfig]
+        );
+
+        if (missingFields.length > 0) {
           if (__DEV__) {
-            console.warn('Firebase configuration is incomplete. Skipping Firebase initialization.');
+            console.warn(
+              `Firebase configuration is incomplete. Missing fields: ${missingFields.join(
+                ', '
+              )}. Skipping Firebase initialization.`
+            );
           }
           return;
         }
 
         if (!firebase.apps.length) {
-          await firebase.initializeApp(androidConfig);
+          await firebase.initializeApp(firebaseConfig);
         } else {
           firebase.app(); // if already initialized, use that one
         }
