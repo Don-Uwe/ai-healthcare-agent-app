@@ -1,5 +1,7 @@
 import {FlatList, StyleSheet, Text, View, Image} from 'react-native';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {FlatList, StyleSheet, View} from 'react-native';
+import React, {useEffect} from 'react';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import NotificationItem from '../components/NotificationItem';
 import {useDispatch, useSelector} from 'react-redux';
@@ -11,6 +13,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {useGetAllNotifications} from '../hooks/useGetAllNotifications';
 import {useMarkNotificationAsRead} from '../hooks/useMarkNoticationAsRead';
 import {useDeleteNotification} from '../hooks/useDeleteNotification';
+import {NoNotificationState} from '../components/EmptyStates';
 
 type PendingDelete = {
   item: Notification;
@@ -347,18 +350,17 @@ const NotificationScreen = ({navigation}: any) => {
         data={notificationsData}
         renderItem={renderItem}
         keyExtractor={item => item._id.toString()}
-        contentContainerStyle={styles.flatListContentContainer}
+        contentContainerStyle={[
+          styles.flatListContentContainer,
+          (!notificationsData || notificationsData.length === 0) && {
+            flexGrow: 1,
+            justifyContent: 'center',
+          },
+        ]}
         refreshing={refreshing}
         onRefresh={onRefresh}
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Image
-              source={require('../../assets/images/no_results.jpg')}
-              style={styles.emptyImgStyle}
-            />
-
-            <Text style={styles.message}>No Notifications Found</Text>
-          </View>
+          <NoNotificationState onRefresh={onRefresh} />
         }
         onEndReached={() => {
           if (page < totalPages) {
@@ -408,30 +410,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  message: {
-    fontSize: 16,
-    color: '#fff',
-    fontFamily: 'bold',
-    textAlign: 'center',
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    top: 70,
-  },
-
   flatListContentContainer: {
     paddingHorizontal: 16,
     marginTop: 4,
     paddingBottom: 120,
-  },
-  emptyImgStyle: {
-    width: 300,
-    height: 200,
-    borderRadius: 8,
-    marginBottom: 10,
-    resizeMode: 'contain',
   },
 });
