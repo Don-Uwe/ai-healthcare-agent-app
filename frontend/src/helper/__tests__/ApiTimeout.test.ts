@@ -110,6 +110,13 @@ describe('CallAPI helpers', () => {
 });
 
 describe('setupAxiosInterceptor', () => {
+  beforeEach(() => {
+    // Clear all interceptors so each test starts from a clean slate.
+    // This prevents handler counts from accumulating across tests.
+    (axios.interceptors.request as any).handlers = [];
+    (axios.interceptors.response as any).handlers = [];
+  });
+
   it('configures shared axios timeout defaults', () => {
     axios.defaults.timeout = 0;
     axios.defaults.timeoutErrorMessage = undefined;
@@ -118,6 +125,26 @@ describe('setupAxiosInterceptor', () => {
 
     expect(axios.defaults.timeout).toBe(API_REQUEST_TIMEOUT_MS);
     expect(axios.defaults.timeoutErrorMessage).toBe(API_TIMEOUT_ERROR_MESSAGE);
+  });
+
+  it('does not stack interceptors when called multiple times (idempotency)', () => {
+    setupAxiosInterceptor();
+    setupAxiosInterceptor();
+    setupAxiosInterceptor();
+
+    // The eject-before-register guard should ensure only one handler is active
+    // regardless of how many times the function is called. Without the guard,
+    // duplicate interceptors would accumulate and could trigger multiple logout
+    // dispatches, repeated toasts, and performance degradation.
+    const activeReqHandlers = (axios.interceptors.request as any).handlers.filter(
+      (h: any) => h !== null,
+    );
+    const activeResHandlers = (axios.interceptors.response as any).handlers.filter(
+      (h: any) => h !== null,
+    );
+
+    expect(activeReqHandlers).toHaveLength(1);
+    expect(activeResHandlers).toHaveLength(1);
   });
 
   it('attaches authorization header if token exists in secure store', async () => {
@@ -148,5 +175,23 @@ describe('setupAxiosInterceptor', () => {
 
     const resultConfig = await interceptor.fulfilled(config);
     expect(resultConfig.headers.Authorization).toBeUndefined();
+  });
+
+  it('safely handles undefined headers object on request config', async () => {
+    const SecureStore = require('expo-secure-store');
+    SecureStore.getItemAsync.mockResolvedValue('safe-token');
+
+    setupAxiosInterceptor();
+
+    // Simulate a config where headers is undefined (edge-case Axios adapter behaviour)
+    const config = { headers: undefined as any };
+    const handlers = (axios.interceptors.request as any).handlers;
+    const interceptor = handlers.find((h: any) => h && h.fulfilled);
+    expect(interceptor).toBeDefined();
+
+    // Should not throw a TypeError; headers should be initialised and token attached.
+    const resultConfig = await interceptor.fulfilled(config);
+    expect(resultConfig.headers).toBeDefined();
+    expect(resultConfig.headers.Authorization).toBe('Bearer safe-token');
   });
 });
