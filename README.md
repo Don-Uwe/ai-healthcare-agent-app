@@ -1,6 +1,6 @@
-<h1 align="center">🌟 UltimateHealth (HealthGuide) (PR WILL BE MERGED IN THE EVENING after 8 PM, 040626) </h1>
+<h1 align="center">🌟 UltimateHealth (HealthGuide) (PR WILL BE MERGED IN THE EVENING after 8 PM IST, 050626) </h1>
 
-<h3 align="center"> Web(2.0.0) review feedback will be available tomorrow.(050626) </h3>
+<h3 align="center"> Web(2.0.0) review feedback will be available tomorrow.(050626, after 8 PM IST) </h3>
 
 <h2>New Assignment Process</h2>
 
