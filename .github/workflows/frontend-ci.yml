@@ -110,7 +110,7 @@ jobs:
           key: node-modules-${{ runner.os }}-${{ hashFiles('frontend/yarn.lock') }}
 
       - name: Run TypeScript Check
-        run: yarn typecheck
+        run: yarn type-check
 
   test:
     name: Unit Tests

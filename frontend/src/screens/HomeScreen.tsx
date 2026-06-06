@@ -265,7 +265,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
                 });
               },
               onError: err => {
-                console.log(err);
+                if (__DEV__) console.log(err);
                 Snackbar.show({
                   text: 'Try again!',
                   duration: Snackbar.LENGTH_SHORT,
@@ -295,7 +295,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
 
   const handleFilterApply = () => {
     // Update Redux State Variables
-    console.log('enter');
     if (selectCategoryList.length > 0) {
       //   console.log("enter")
       dispatch(setSelectedTags({selectedTags: selectCategoryList}));
@@ -310,12 +309,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     }
 
     if (sortingType && sortingType !== '') {
-      console.log('Sort type', sortType);
-      dispatch(setSortType({sortType: sortingType}));
-    }
-
-    if (sortingType && sortingType !== '') {
-      console.log('Sort type', sortType);
+      if (__DEV__) console.log('Sort type', sortType);
       dispatch(setSortType({sortType: sortingType}));
     }
 
@@ -450,7 +444,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
 
 
   const onRefresh = () => {
-    console.log('is connected', isConnected);
+    if (__DEV__) console.log('is connected', isConnected);
     if (isConnected) {
       setRefreshing(true);
       // Reset pagination state on full pull-to-refresh
@@ -739,7 +733,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
                   ...styles.labelStyle,
                   color: showSavedOnly ? 'white' : '#4B5563',
                 }}>
-                🔖 Saved
+                Saved
               </Text>
             </TouchableOpacity>
           )}

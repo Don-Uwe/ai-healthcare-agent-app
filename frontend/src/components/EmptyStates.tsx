@@ -8,11 +8,13 @@ import {
   useColorScheme,
   Platform,
 } from 'react-native';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { GlassButton } from './GlassButton';
 import { ProfessionalColors, Typography, Spacing, BorderRadius } from '../styles/GlassStyles';
 
 interface BaseEmptyStateProps {
-  iconEmoji: string;
+  iconEmoji?: string;
+  iconComponent?: React.ReactNode;
   title: string;
   description: string;
   infoText?: string;
@@ -23,6 +25,7 @@ interface BaseEmptyStateProps {
 
 export const BaseEmptyState: React.FC<BaseEmptyStateProps> = ({
   iconEmoji,
+  iconComponent,
   title,
   description,
   infoText,
@@ -102,7 +105,11 @@ export const BaseEmptyState: React.FC<BaseEmptyStateProps> = ({
     <Animated.View style={[styles.stateContainer, { backgroundColor: containerBg, opacity: fadeAnim }]}>
       <View style={[styles.innerCard, { backgroundColor: cardBg, borderColor }]}>
         <Animated.View style={[styles.iconCircle, { backgroundColor: circleBg }, animatedStyle, scaleStyle]}>
-          <Text style={styles.iconEmoji} accessibilityLabel={`${title} icon`}>{iconEmoji}</Text>
+          {iconComponent ? (
+            iconComponent
+          ) : (
+            <Text style={styles.iconEmoji} accessibilityLabel={`${title} icon`}>{iconEmoji}</Text>
+          )}
         </Animated.View>
 
         <Text style={[Typography.h4, styles.stateTitle, { color: titleColor }]}>
@@ -181,6 +188,25 @@ export const NoPodcastState = ({ onRefresh }: { onRefresh?: () => void }) => (
     onAction={onRefresh}
   />
 );
+
+export const NoNotificationState = ({ onRefresh }: { onRefresh?: () => void }) => {
+  const isDarkMode = useColorScheme() === 'dark';
+  return (
+    <BaseEmptyState
+      iconComponent={
+        <MaterialCommunityIcons
+          name="bell-outline"
+          size={48}
+          color={isDarkMode ? ProfessionalColors.primaryLight : ProfessionalColors.secondary}
+        />
+      }
+      title="No Notifications Yet"
+      description="You're all caught up. New notifications will appear here when available."
+      actionText={onRefresh ? "Refresh" : undefined}
+      onAction={onRefresh}
+    />
+  );
+};
 
 // Loading State Component with audio waves
 export const PodcastLoadingState = () => {

@@ -107,6 +107,7 @@
     "@types/jest": "^29.2.1",
     "@types/react": "~19.1.0",
     "@types/react-native-version-check": "^3.4.8",
+    "babel-plugin-transform-remove-console": "^6.9.4",
     "babel-preset-expo": "^54.0.6",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",

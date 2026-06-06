@@ -1,52 +1,6 @@
-<h1 align="center">🌟 UltimateHealth (HealthGuide) (PR WILL BE MERGE IN THE EVENING after 8 PM, 030626) </h1>
-
-<h2>New Assignment Process</h2>
-
-<p>
-  New assignments will be announced at scheduled intervals. During that time, contributors may start working on issues based on their eligibility criteria.
-</p>
-
-<ul>
-  <li>You should not have any active issue assigned to you.(Or make sure You have submitted a PR before browse)</li>
-  <li>You must be the first eligible commenter or among the first inactive contributors (i.e., others may already have active issues assigned).</li>
-  <li>The issue you choose must be relevant, non-duplicate, within GSSoC scope, and not part of admin-only tasks.</li>
-  <li>You must be a registered GSSoC contributor to participate.</li>
-  <li> Please make sure to mention your assigned issue number in your Pull Request. PRs without a linked assigned issue may not be considered by the maintainers.</li>
-
-  <li>Also, ensure that you work on the `web` branch if your assigned issue is explicitly labeled <b>WEB</b>.</li>
-
-</ul>
-
-## Admin Scope
-
-- Any security-related exposure or vulnerability should be reported immediately. Contributors are encouraged to raise such issues for the overall safety and improvement of the product.
-- Admins have the authority to assign or reassign themselves to any active issue when required.
-- Admin-only issues, including infrastructure, moderation, or sensitive system changes, are not eligible for general assignment.
-- Any critical or high-priority system-level changes will be handled exclusively by the admin team.
-
-<h3 align="center">
-  <a href="https://git.io/typing-svg">
-    <img src="https://readme-typing-svg.herokuapp.com?font=Roboto&size=22&duration=4995&pause=1000&color=006400&width=850&height=58&lines=Open-source+Health+Platform+%7C+React+Native+(Expo)+App+%2B+Node.js+Backend+%2B+MongoDB" alt="Typing SVG" />
-  </a>
-</h3>
-
-# Contributor Note
-
-I appreciate everyone’s interest in contributing.
-
-A small note regarding participation and expectations: this project is maintained primarily by me as a single maintainer, so collaboration and review timelines may differ from larger teams.
-
-This may not always be the ideal place to actively coordinate contributors, and contributors should consider possible delays before taking up work.
-
-For this initiative, I’m contributing with limited availability (maximum ~3 hours/day), while balancing other responsibilities. Contributions are welcome, but they should align with this pace and maintain a healthy workflow.
-
-Thank you for understanding and for your interest in the project.
-
+<h1 align="center">🌟 UltimateHealth (HealthGuide) </h1>
 
 <br/>
-
-
-
 
 <div align="center">
 

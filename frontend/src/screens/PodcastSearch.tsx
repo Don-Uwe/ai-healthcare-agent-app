@@ -16,6 +16,7 @@ import {Feather} from '@expo/vector-icons';
 import {useUpdatePodcastViewcount} from '../hooks/useUpdatePodcastViewcount';
 import {useGetSearchPodcasts} from '../hooks/useGetSearchPodcasts';
 
+const SKELETON_COUNT = 3;
 
 export default function PodcastSearch({navigation}: PodcastSearchProp) {
   const [query, setQuery] = useState<string>('');
@@ -125,6 +126,7 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
 
   // Consistent list padding used by both the skeleton and results FlatList.
   const listContentStyle = {paddingTop: 12, paddingBottom: 20};
+  const SKELETON_COUNT = 5;
 
   return (
     <YStack
