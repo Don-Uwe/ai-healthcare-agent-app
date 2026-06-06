@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Button,
@@ -21,6 +20,7 @@ import Icon from '@expo/vector-icons/Ionicons';
 import { AxiosError } from 'axios';
 import Loader from '../../components/Loader';
 import { NewPasswordScreenProp } from '../../type';
+import {Alert, ActivityIndicator} from 'react-native';
 
 export default function NewPasswordScreen({
   navigation,
@@ -46,8 +46,49 @@ export default function NewPasswordScreen({
   const handleSecureNewEntryClickEvent = () => {
     setSecureNewTextEntry(!secureNewTextEntry);
   };
+  const[isSubmitting, setIsSubmitting] = useState(false);
 
   const handlePasswordSubmit = () => {
+      if (isSubmitting) return;
+      setIsSubmitting(true);
+
+  // existing validation
+    const showError = (msg: string) => {
+      Alert.alert(msg);
+      setErrorMessage(msg);
+      setIsSubmitting(false);
+    };
+
+    if (!password?.trim()) return showError('Please give a password');
+    if (!passwordVerify) return showError('Please enter a valid password');
+    if (!confirmPassword?.trim()) return showError('Please confirm your password');
+    if (password !== confirmPassword) return showError('Confirmation password does not match');
+
+    setErrorMessage(null);
+
+    changePassword(
+      {email, newPassword: password},
+      {
+        onSuccess: () => {
+          setIsSubmitting(false);
+          Alert.alert('Password reset successfully');
+          navigation.navigate('LoginScreen', {});
+        },
+        onError: (error: AxiosError) => {
+          setIsSubmitting(false);
+          if (error.response) {
+            switch (error.response.status) {
+              case 400: Alert.alert('Error', 'User not found'); break;
+              case 402: Alert.alert('Error', 'New password should not be same as old'); break;
+              default: Alert.alert('Error', 'Something went wrong.');
+            }
+          } else {
+            Alert.alert('Error', 'Something went wrong.');
+          }
+        },
+      },
+    );
+  };
     const showError = (msg: string) => {
       Alert.alert(msg);
       setErrorMessage(msg);
@@ -441,21 +482,28 @@ export default function NewPasswordScreen({
 
           {/* Return Link */}
           <Button
-            chromeless
-            marginTop="$5"
-            onPress={() => navigation.navigate('LoginScreen', {})}
-            padding="$2"
-            height="auto">
-            <XStack ai="center" gap="$2">
-              <Icon
-                color="$gray400"
-                name="arrow-back-circle-outline"
-                size={24}
-              />
-              <Text color="$blue10" fontWeight="600" fontSize={15}>
-                Back to Login
+            backgroundColor={
+              password && confirmPassword &&
+              password === confirmPassword && passwordVerify
+                ? '$blue10' : '$gray7'
+            }
+            w="100%"
+            h={56}
+            borderRadius={12}
+            disabled={
+              !password || !confirmPassword ||
+              password !== confirmPassword ||
+              !passwordVerify || isSubmitting || isPending
+            }
+            onPress={handlePasswordSubmit}
+            opacity={isSubmitting || isPending ? 0.6 : 1}>
+            {isSubmitting || isPending ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text fontSize={17} fontWeight="600" color="white">
+                Reset Password
               </Text>
-            </XStack>
+            )}
           </Button>
         </Card>
       </YStack>

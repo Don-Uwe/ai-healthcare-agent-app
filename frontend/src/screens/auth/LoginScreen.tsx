@@ -4,7 +4,6 @@ import {AxiosError, isAxiosError} from 'axios';
 import {StatusBar} from 'expo-status-bar';
 import messaging from '@react-native-firebase/messaging';
 import React, {useEffect, useState} from 'react';
-import {Alert, Image, useColorScheme} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Snackbar from 'react-native-snackbar';
 import {useDispatch} from 'react-redux';
@@ -34,6 +33,7 @@ import {
 } from '../../store/UserSlice';
 
 import { AuthData, LoginScreenProp } from '../../type';
+import {Alert, Image, useColorScheme, ActivityIndicator} from 'react-native';
 
 const LoginScreen = ({navigation, route}: LoginScreenProp) => {
   const inset = useSafeAreaInsets();
@@ -53,6 +53,7 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
   const [emailMessage, setEmailMessage] = useState(false);
 
   const [secureTextEntry, setSecureTextEntry] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const {mutate: resendVerification, isPending: resendVerificationPending} =
     useRequestVerification();
 
@@ -110,120 +111,103 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
     }
   }
 
-  const validateAndSubmit = async () => {
-    if (validate()) {
-      setPasswordMessage(false);
-      setEmailMessage(false);
-      if (__DEV__) {
-        console.log('Login attempt in progress');
-      }
+const validateAndSubmit = async () => {
+  if (isSubmitting) return;
+  setIsSubmitting(true);
+  
+  if (validate()) {
+    setPasswordMessage(false);
+    setEmailMessage(false);
 
-      const fcmToken = await getFCMToken();
+    const fcmToken = await getFCMToken();
 
-      if (__DEV__) {
-        console.log('Attempting to retrieve FCM Token');
-      }
-
-      login(
-        {
-          email: email,
-          password: password,
-          fcmToken: fcmToken ?? 'not found',
-        },
-        {
-          onSuccess: async data => {
-            const auth: AuthData = {
-              userId: data._id,
-              token: data?.refreshToken,
-              user_handle: data?.user_handle,
-            };
-            try {
-              await storeItem(KEYS.USER_ID, auth.userId.toString());
-              await storeItem(KEYS.USER_HANDLE, data?.user_handle);
-              if (auth.token) {
-                await secureStoreItem(
-                  SECURE_KEYS.USER_TOKEN,
-                  auth.token,
-                );
-                await storeItem(
-                  KEYS.USER_TOKEN_EXPIRY_DATE,
-                  new Date().toISOString(),
-                );
-                dispatch(setUserId(auth.userId));
-                dispatch(setUserToken(auth.token));
-                dispatch(setUserHandle(auth.user_handle));
-                dispatch(setGuestMode(false));
-                // Reset so the next session expiry triggers the notification again.
-                resetSessionExpiredNotification();
-                setTimeout(() => {
-                  if (redirectTo) {
-                    (navigation as any).navigate(
-                      redirectTo.name,
-                      redirectTo.params,
-                    );
-
-                    return;
-                  }
-                  navigation.reset({
-                    index: 0,
-                    routes: [{name: 'TabNavigation'}],
-                  });
-                }, 1000);
-              } else {
-                Alert.alert('Token not found');
-              }
-            } catch (e) {
-              if (__DEV__) {
-                console.log('Async Storage ERROR', e);
-              }
-            }
-          },
-
-          onError: (error: AxiosError) => {
-            if (__DEV__) {
-              console.log('Error', error);
-            }
-            setPassword('');
-            setEmail('');
-            if (error.response) {
-              const errorCode = error.response.status;
-              switch (errorCode) {
-                case 400:
-                  Alert.alert('Error', 'Please provide email and password');
-                  break;
-                case 401:
-                  Alert.alert('Error', 'Invalid password');
-                  break;
-                case 403:
-                  Alert.alert(
-                    'Error',
-                    'Email not verified. Please check your email.',
+    login(
+      {
+        email: email,
+        password: password,
+        fcmToken: fcmToken ?? 'not found',
+      },
+      {
+        onSuccess: async data => {
+          const auth: AuthData = {
+            userId: data._id,
+            token: data?.refreshToken,
+            user_handle: data?.user_handle,
+          };
+          try {
+            await storeItem(KEYS.USER_ID, auth.userId.toString());
+            await storeItem(KEYS.USER_HANDLE, data?.user_handle);
+            if (auth.token) {
+              await secureStoreItem(SECURE_KEYS.USER_TOKEN, auth.token);
+              await storeItem(
+                KEYS.USER_TOKEN_EXPIRY_DATE,
+                new Date().toISOString(),
+              );
+              dispatch(setUserId(auth.userId));
+              dispatch(setUserToken(auth.token));
+              dispatch(setUserHandle(auth.user_handle));
+              dispatch(setGuestMode(false));
+              resetSessionExpiredNotification();
+              setTimeout(() => {
+                if (redirectTo) {
+                  (navigation as any).navigate(
+                    redirectTo.name,
+                    redirectTo.params,
                   );
-                  break;
-                case 404:
-                  Alert.alert('Error', 'User not found');
-                  break;
-                default:
-                  Alert.alert('Error', 'Internal server error');
-              }
+                  return;
+                }
+                navigation.reset({
+                  index: 0,
+                  routes: [{name: 'TabNavigation'}],
+                });
+              }, 1000);
             } else {
-              Alert.alert('Error', 'User not found');
+              Alert.alert('Token not found');
             }
-          },
+          } catch (e) {
+            if (__DEV__) console.log('Async Storage ERROR', e);
+          } finally {
+            setIsSubmitting(false);
+          }
         },
-      );
-    } else {
-      setOutput(true);
-      setPasswordMessage(false);
-      setEmailMessage(false);
-      if (output && !passwordVerify) {
-        setPasswordMessage(true);
-      }
-      if (output && !emailVerify) {
-        setEmailMessage(true);
-      }
-    }
-  };
+
+        onError: (error: AxiosError) => {
+          setIsSubmitting(false);
+          setPassword('');
+          setEmail('');
+          if (error.response) {
+            const errorCode = error.response.status;
+            switch (errorCode) {
+              case 400:
+                Alert.alert('Error', 'Please provide email and password');
+                break;
+              case 401:
+                Alert.alert('Error', 'Invalid password');
+                break;
+              case 403:
+                Alert.alert('Error', 'Email not verified.');
+                break;
+              case 404:
+                Alert.alert('Error', 'User not found');
+                break;
+              default:
+                Alert.alert('Error', 'Internal server error');
+            }
+          } else {
+            Alert.alert('Error', 'User not found');
+          }
+        },
+      },
+    );
+  } else {
+    setIsSubmitting(false);
+    setOutput(true);
+    setPasswordMessage(false);
+    setEmailMessage(false);
+    if (output && !passwordVerify) setPasswordMessage(true);
+    if (output && !emailVerify) setEmailMessage(true);
+  }
+};
 
   const validate = () => {
     if (emailVerify && passwordVerify) {
@@ -425,7 +409,7 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
               </Text>
             </XStack>
 
-            <Button
+          <Button
               backgroundColor="$blue10"
               theme="blue"
               marginTop="$5"
@@ -433,18 +417,17 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
               borderRadius="$4"
               fontWeight="700"
               alignSelf="center"
-              onPress={() => {
-                if (__DEV__) {
-                  console.log('Login button pressed!');
-                }
-                validateAndSubmit();
-              }}
-              disabled={loginPending}
-              opacity={loginPending ? 0.5 : 1}
+              onPress={validateAndSubmit}
+              disabled={loginPending || isSubmitting}
+              opacity={loginPending || isSubmitting ? 0.6 : 1}
               width="100%">
-              <Text fontSize={18} color="$white" fontWeight="600">
-                Login
-              </Text>
+              {isSubmitting || loginPending ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text fontSize={18} color="$white" fontWeight="600">
+                  Login
+                </Text>
+              )}
             </Button>
           </YStack>
 

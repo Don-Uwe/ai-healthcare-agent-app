@@ -1,5 +1,4 @@
 import React, {useState} from 'react';
-import {Alert} from 'react-native';
 import {ScrollView, YStack, XStack, Text, Input, Button, Image, useTheme} from 'tamagui';
 import Icon from '@expo/vector-icons/MaterialIcons';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -21,6 +20,7 @@ import {
 import {useCheckUserHandleAvailability} from '@/src/hooks/useCheckUserHandleAvailability';
 import {useVerificationMailMutation} from '@/src/hooks/useMailVerification';
 import {useRegdMutation} from '@/src/hooks/useUserRegistration';
+import {Alert, ActivityIndicator} from 'react-native';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 let validator = require('email-validator');
 
@@ -49,6 +49,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
     useVerificationMailMutation();
 
   const {mutate: register, isPending: registerPending} = useRegdMutation();
+  const[isSubmitting, setIsSubmitting] = useState(false);
 
   const selectImage = async () => {
     const options: ImageLibraryOptions = {
@@ -152,6 +153,45 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
     }
   };
   const handleSubmit = () => {
+        const handleSubmit = () => {
+          if (isSubmitting) return;
+          setIsSubmitting(true);
+          
+          if (!name || !userHandle || !email || !password || !role) {
+            Alert.alert('Please fill in all fields');
+            setIsSubmitting(false);
+            return;
+          } else if (validator.validate(email) === false) {
+            Alert.alert('Email id is not valid');
+            setIsSubmitting(false);
+            return;
+          } else if (password.length < 6) {
+            Alert.alert('Password must be at least of 6 length');
+            setIsSubmitting(false);
+            return;
+          } else if (handleAvailability && !handleAvailability.isAvailable) {
+            Alert.alert('User handle is not available');
+            setIsSubmitting(false);
+            return;
+          }
+
+          if (role === 'general') {
+            setPendingSubmitAction(() => () => registerGeneralUser());
+          } else {
+            const detail: UserDetail = {
+              user_name: name,
+              user_handle: userHandle,
+              email: email,
+              password: password,
+              profile_image: user_profile_image,
+            };
+            setPendingSubmitAction(() => () => {
+              navigation.navigate('SignUpScreenSecond', {user: detail});
+            });
+          }
+          setSecurityWarningVisible(true);
+          setIsSubmitting(false);
+        };
     if (!name || !userHandle || !email || !password || !role) {
       Alert.alert('Please fill in all fields');
       return;
@@ -497,10 +537,16 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
             alignItems="center"
             alignSelf="center"
             width="100%"
+            disabled={isSubmitting || registerPending}
+            opacity={isSubmitting || registerPending ? 0.6 : 1}
             onPress={handleSubmit}>
-            <Text color="white" fontWeight="bold" fontSize={18}>
-              {role === 'general' ? 'Register' : 'Continue'}
-            </Text>
+            {isSubmitting || registerPending ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text color="white" fontWeight="bold" fontSize={18}>
+                {role === 'general' ? 'Register' : 'Continue'}
+              </Text>
+            )}
           </Button>
         </YStack>
 
