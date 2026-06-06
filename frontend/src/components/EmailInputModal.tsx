@@ -156,6 +156,8 @@ export default function EmailInputBottomSheet({
                     paddingRight="$4"
                     borderRadius="$4"
                     placeholder="your.email@example.com"
+                    accessibilityLabel="Email Address"
+                    accessibilityHint="Enter your email address to receive verification link or reset code"
                     value={email}
                     onChangeText={(text) => {
                       setEmail(text);
@@ -210,6 +212,9 @@ export default function EmailInputBottomSheet({
                   shadowRadius={12}
                   shadowOffset={{ width: 0, height: 4 }}
                   shadowOpacity={0.3}
+                  accessibilityRole="button"
+                  accessibilityLabel={isRequestVerification ? 'Send Verification Link' : 'Send Reset Code'}
+                  accessibilityState={{ disabled: !email.trim() }}
                 >
                   <Text fontSize={17} fontWeight="600" color="white">
                     {isRequestVerification ? 'Send Verification Link' : 'Send Reset Code'}
@@ -233,6 +238,8 @@ export default function EmailInputBottomSheet({
                     backgroundColor: '$gray3',
                     scale: 0.98
                   }}
+                  accessibilityRole="button"
+                  accessibilityLabel="Cancel"
                 >
                   <Text fontSize={17} fontWeight="600" color="$gray11">
                     Cancel
