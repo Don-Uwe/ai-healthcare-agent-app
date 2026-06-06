@@ -89,64 +89,6 @@ export default function NewPasswordScreen({
       },
     );
   };
-    const showError = (msg: string) => {
-      Alert.alert(msg);
-      setErrorMessage(msg);
-    };
-
-    if (!password?.trim()) {
-      return showError('Please give a password');
-    }
-
-    if (!passwordVerify) {
-      return showError('Please enter a valid password');
-    }
-
-    if (!confirmPassword?.trim()) {
-      return showError('Please confirm your password');
-    }
-
-    if (password !== confirmPassword) {
-      return showError('Confirmation password does not match the new password');
-    }
-
-    setErrorMessage(null);
-
-    changePassword(
-      {
-        email,
-        newPassword: password,
-      },
-      {
-        onSuccess: () => {
-          Alert.alert('Password reset successfully');
-          navigation.navigate('LoginScreen', {});
-        },
-
-        onError: (error: AxiosError) => {
-          if (error.response) {
-            switch (error.response.status) {
-              case 400:
-                Alert.alert('Error', 'User not found');
-                break;
-
-              case 402:
-                Alert.alert(
-                  'Error',
-                  'New password should not be same as old password',
-                );
-                break;
-
-              default:
-                Alert.alert('Error', 'Something went wrong. Please try again.');
-            }
-          } else {
-            Alert.alert('Error', 'Something went wrong. Please try again.');
-          }
-        },
-      },
-    );
-  };
 
   const handlePassword = (e: string) => {
     let pass = e;
@@ -510,3 +452,15 @@ export default function NewPasswordScreen({
     </YStack>
   );
 }
+function setErrorMessage(arg0: null) {
+  throw new Error('Function not implemented.');
+}
+
+function setPassword(pass: string) {
+  throw new Error('Function not implemented.');
+}
+
+function setPasswordVerify(arg0: boolean) {
+  throw new Error('Function not implemented.');
+}
+
