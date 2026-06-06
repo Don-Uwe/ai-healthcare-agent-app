@@ -70,3 +70,36 @@ jest.mock('@sentry/react-native', () => ({
   captureMessage: jest.fn(),
   setUser: jest.fn(),
 }));
+
+jest.mock('tamagui', () => {
+  const React = require('react');
+  const { Text: RNText, View: RNView, ScrollView: RNScrollView, TextInput: RNTextInput } = require('react-native');
+  
+  const createMockComponent = (name: string, BaseComp: any) => {
+    const Comp = ({ children, ...props }: any) => React.createElement(BaseComp, props, children);
+    Comp.displayName = name;
+    return Comp;
+  };
+
+  return {
+    Theme: createMockComponent('Theme', React.Fragment),
+    XStack: createMockComponent('XStack', RNView),
+    YStack: createMockComponent('YStack', RNView),
+    Text: createMockComponent('Text', RNText),
+    ScrollView: createMockComponent('ScrollView', RNScrollView),
+    Button: createMockComponent('Button', RNView),
+    Card: createMockComponent('Card', RNView),
+    Paragraph: createMockComponent('Paragraph', RNText),
+    Input: createMockComponent('Input', RNTextInput),
+    Separator: createMockComponent('Separator', RNView),
+    useTheme: () => ({
+      background: { val: '#ffffff' },
+      backgroundStrong: { val: '#ffffff' },
+      backgroundHover: { val: '#ffffff' },
+      borderColor: { val: '#cccccc' },
+      color: { val: '#000000' },
+      colorMuted: { val: '#888888' },
+    }),
+  };
+});
+

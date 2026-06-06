@@ -27,6 +27,17 @@ import {logApiError} from '../services/monitoring/networkLogger';
 let sessionExpiredNotified = false;
 
 /**
+ * Module-scoped interceptor IDs.
+ *
+ * Storing the numeric IDs returned by `.use()` lets us call `.eject()` before
+ * re-registering — making `setupAxiosInterceptor()` safely idempotent even if
+ * invoked multiple times (e.g. React Strict Mode double-effect, hot reloads).
+ */
+let _axiosReqId: number | null = null;
+let _axiosResId: number | null = null;
+let _authAxiosResId: number | null = null;
+
+/**
  * Resets the session-expired notification flag.
  * Call this from your login success handler so that if the *new* session
  * later expires, the user sees the notification again.
@@ -86,10 +97,12 @@ const handleError = (error: any) => {
  * - Response interceptor for handling 401 (unauthorized) errors
  * - Automatic logout and guest mode activation on session expiry
  *
- * This function is intended to be called **once** inside a `useEffect` with
- * an empty dependency array in `AppContent.tsx`. The `useEffect` lifecycle
- * is the idiomatic React guard against duplicate registrations — no global
- * boolean flag is needed here.
+ * This function is **idempotent**: it ejects any previously registered
+ * interceptors before re-registering, so it is safe to call more than once
+ * (e.g. React Strict Mode double-effect, hot reloads, auth re-initialisation).
+ * The previous doc-comment stated that `useEffect([])` was a sufficient guard —
+ * that is only true in production; in development React Strict Mode deliberately
+ * double-invokes effects, so an explicit eject guard is required.
  *
  * @example
  * ```typescript
@@ -100,6 +113,22 @@ const handleError = (error: any) => {
  * ```
  */
 export const setupAxiosInterceptor = () => {
+  // --- Eject any previously registered interceptors -------------------------
+  // This makes the function idempotent regardless of how many times it is
+  // called. Without ejecting, each call appends a new interceptor handler,
+  // leading to duplicate 401 logouts, repeated error toasts, and performance
+  // degradation from stacked async handlers.
+  if (_axiosReqId !== null) {
+    axios.interceptors.request.eject(_axiosReqId);
+  }
+  if (_axiosResId !== null) {
+    axios.interceptors.response.eject(_axiosResId);
+  }
+  if (_authAxiosResId !== null) {
+    authAxios.interceptors.response.eject(_authAxiosResId);
+  }
+  // --------------------------------------------------------------------------
+
   // Ensure global axios instance has default Content-Type for JSON requests
   axios.defaults.headers.common['Content-Type'] = 'application/json';
 
@@ -111,8 +140,11 @@ export const setupAxiosInterceptor = () => {
   authAxios.defaults.timeoutErrorMessage = API_TIMEOUT_ERROR_MESSAGE;
 
   // Request interceptor: dynamically attach Bearer token before every request.
-  axios.interceptors.request.use(
+  // `config.headers ??= {}` guards against the rare case where an Axios adapter
+  // or custom config omits the headers object entirely.
+  _axiosReqId = axios.interceptors.request.use(
     async config => {
+      config.headers ??= {} as typeof config.headers;
       const token = await secureRetrieveItem(SECURE_KEYS.USER_TOKEN);
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
@@ -127,6 +159,7 @@ export const setupAxiosInterceptor = () => {
 
   // Attach error handler to both the global axios instance (used by existing hooks)
   // and authAxios (used by migrated code with the request interceptor).
-  axios.interceptors.response.use(response => response, handleError);
-  authAxios.interceptors.response.use(response => response, handleError);
+  // Store returned IDs so we can eject on the next call.
+  _axiosResId = axios.interceptors.response.use(response => response, handleError);
+  _authAxiosResId = authAxios.interceptors.response.use(response => response, handleError);
 };

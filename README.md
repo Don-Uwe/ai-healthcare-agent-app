@@ -1,93 +1,6 @@
-<h1 align="center">🌟 UltimateHealth (HealthGuide) (PR WILL BE MERGE IN THE EVENING after 8 PM, 020626) </h1>
-
-<h2>New Assignment Process</h2>
-
-<p>
-  New assignments will be announced at scheduled intervals. During that time, contributors may start working on issues based on their eligibility criteria.
-</p>
-
-<ul>
-  <li>You should not have any active issue assigned to you.</li>
-  <li>You must be the first eligible commenter or among the first inactive contributors (i.e., others may already have active issues assigned).</li>
-  <li>The issue you choose must be relevant, non-duplicate, within GSSoC scope, and not part of admin-only tasks.</li>
-  <li>You must be a registered GSSoC contributor to participate.</li>
-</ul>
-
-## Admin Scope
-
-- Any security-related exposure or vulnerability should be reported immediately. Contributors are encouraged to raise such issues for the overall safety and improvement of the product.
-- Admins have the authority to assign or reassign themselves to any active issue when required.
-- Admin-only issues, including infrastructure, moderation, or sensitive system changes, are not eligible for general assignment.
-- Any critical or high-priority system-level changes will be handled exclusively by the admin team.
-
-<h3 align="center">
-  <a href="https://git.io/typing-svg">
-    <img src="https://readme-typing-svg.herokuapp.com?font=Roboto&size=22&duration=4995&pause=1000&color=006400&width=850&height=58&lines=Open-source+Health+Platform+%7C+React+Native+(Expo)+App+%2B+Node.js+Backend+%2B+MongoDB" alt="Typing SVG" />
-  </a>
-</h3>
-
-# Contributor Note
-
-I appreciate everyone’s interest in contributing.
-
-A small note regarding participation and expectations: this project is maintained primarily by me as a single maintainer, so collaboration and review timelines may differ from larger teams.
-
-This may not always be the ideal place to actively coordinate contributors, and contributors should consider possible delays before taking up work.
-
-For this initiative, I’m contributing with limited availability (maximum ~3 hours/day), while balancing other responsibilities. Contributions are welcome, but they should align with this pace and maintain a healthy workflow.
-
-Thank you for understanding and for your interest in the project.
-
+<h1 align="center">🌟 UltimateHealth (HealthGuide) </h1>
 
 <br/>
-
-
-# 🚀 UltimateHealth Frontend — Upcoming Release
-
-**Platform:** React Native (Expo) —  Android
-
-## 🔒 Security
-
-* Added **Sentry request body redaction** to prevent credentials and sensitive health data from being exposed.
-* Improved **sensitive key detection** for tokens, passwords, auth data, and similar fields.
-* Hardened **Axios auth handling** to avoid sending invalid `Bearer undefined/null` headers.
-
-## 🐞 Bug Fixes
-
-* Fixed **TTS player** staying visible after playback completion.
-* Resolved **Home feed pagination inconsistencies** with selected categories and Saved filtering.
-* Fixed **keyboard overlap** in comments input.
-* Unified **API timeout error messaging**.
-* Improved **Podcast playback resume/rewind behavior**.
-* Fixed **guest deep link routing** for restricted screens.
-* Corrected **timezone parsing** to preserve local time behavior.
-
-## ✨ Improvements
-
-* Integrated **Sentry monitoring + safe network logging**.
-* Added centralized **API timeout handling** with fetch + Axios support.
-* Improved **accessibility support** across multiple screens.
-* Introduced **custom audio waveform visualization** for podcast playback.
-* Migrated date utilities from **moment → date-fns** with locale support.
-* Refactored **Axios instance architecture** for cleaner initialization.
-* Improved **TypeScript safety** for AntDesign icons.
-* Added ESLint cleanup and stricter Redux typing.
-
-## 🧪 Testing & DX
-
-* Added unit tests for:
-
-  * API timeout handling
-  * Date utilities
-* Removed production console noise and improved developer comments/logging.
-
-## ⚠️ Deferred
-
-* React Navigation Sentry instrumentation (requires navigation ref architecture changes).
-* Future cleanup for scoped Jest mocks.
-
----
-
 
 <div align="center">
 
@@ -98,6 +11,10 @@ Thank you for understanding and for your interest in the project.
 
 </div>
 
+
+## Code Quality
+
+Frontend dead-code checks use Knip. See [Knip Guide](docs/KNIP_GUIDE.md) and [Knip Contributor Guide](docs/KNIP_CONTRIBUTOR_GUIDE.md) for local commands, CI behavior, and false-positive handling.
 
 
 <div align="center">
@@ -181,6 +98,44 @@ Thank you for understanding and for your interest in the project.
 </div>
 
 ---
+
+# 🚀 Latest Releases
+
+<table>
+<tr>
+<td width="50%">
+
+## 📱 Mobile App v2.2.0
+
+**Platform:** React Native (Expo)
+
+🔹 Security improvements  
+🔹 Podcast enhancements  
+🔹 Accessibility updates  
+🔹 Performance optimizations
+
+[![View Release](https://img.shields.io/badge/View%20Release-v2.2.0-4CAF50?style=for-the-badge&logo=github)](https://github.com/SB2318/UltimateHealth/releases/tag/mobile-release-2.2.0)
+
+</td>
+
+<td width="50%">
+
+## 🌐 Web App v2.0.0
+
+**Platform:** Next.js
+
+🔹 Modern web experience  
+🔹 Improved routing  
+🔹 Enhanced UI/UX  
+🔹 Better performance
+
+[![View Release](https://img.shields.io/badge/View%20Release-v2.0.0-007ACC?style=for-the-badge&logo=github)](https://github.com/SB2318/UltimateHealth/releases/tag/web-release-2.0.0)
+
+</td>
+</tr>
+</table>
+
+<br>
 
 ## 📖 Overview
 

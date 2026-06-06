@@ -35,7 +35,7 @@ local.properties
 .cxx/
 *.keystore
 !debug.keystore
-google-services.json
+google-services*.json
 
 # node.js
 #
@@ -87,3 +87,4 @@ expo-env.d.ts
 
 # Expo local state (machine-specific device history and dev server settings)
 .expo/
+dist/

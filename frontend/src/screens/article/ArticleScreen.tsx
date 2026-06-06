@@ -445,6 +445,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
       Tts.addEventListener('tts-error', e => {
         console.log('TTS Error:', e);
         setIsPlaying(false);
+        setIsPaused(false);
+        setPlayerVisible(false);
       });
 
       setIsPlaying(true);
@@ -453,6 +455,9 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
       speakNextChunk();
     } catch (error) {
       console.log('TTS Error:', error);
+      setIsPlaying(false);
+      setIsPaused(false);
+      setPlayerVisible(false);
     }
   };
 
@@ -466,11 +471,27 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const handleTtsPause = async () => {
     try {
       if (isPaused) {
-        await Tts.resume();
+        // Resume
         setIsPlaying(true);
         setIsPaused(false);
+        // Step back one chunk to resume from the interrupted chunk
+        chunkIndexRef.current = Math.max(0, chunkIndexRef.current - CHUNK_SIZE);
+        
+        // Re-attach listeners
+        Tts.addEventListener('tts-finish', speakNextChunk);
+        Tts.addEventListener('tts-error', e => {
+          console.log('TTS Error:', e);
+          setIsPlaying(false);
+          setIsPaused(false);
+          setPlayerVisible(false);
+        });
+        
+        speakNextChunk();
       } else {
-        await Tts.pause();
+        // Pause
+        Tts.removeAllListeners('tts-finish');
+        Tts.removeAllListeners('tts-error');
+        await Tts.stop();
         setIsPlaying(false);
         setIsPaused(true);
       }
@@ -520,6 +541,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
         Tts.addEventListener('tts-error', e => {
           console.log('TTS Error:', e);
           setIsPlaying(false);
+          setIsPaused(false);
+          setPlayerVisible(false);
         });
         speakNextChunk();
       });
@@ -694,64 +717,50 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
                   </TouchableOpacity>
                 </View>
               </View>
-              <View style={styles.avatarsContainer}>
-                {totalLikes >= 3 && (
-                  <View style={styles.avatar}>
-                    <Image
-                      source={{
-                        uri: likedUsers[
-                          totalLikes - 3
-                        ].Profile_image.startsWith('https')
-                          ? likedUsers[totalLikes - 3].Profile_image
-                          : `${GET_STORAGE_DATA}/${likedUsers[totalLikes - 3].Profile_image}`,
-                      }}
+              {totalLikes > 0 && (
+                <View style={styles.avatarsContainer}>
+                  {likedUsers
+                    .slice(Math.max(0, totalLikes - 3))
+                    .map((likedUser, index) => {
+                      const profileImage = likedUser.Profile_image;
+                      const uri = profileImage && profileImage.trim() !== ''
+                        ? (profileImage.startsWith('http')
+                          ? profileImage
+                          : `${GET_STORAGE_DATA}/${profileImage}`)
+                        : 'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500';
+
+                      return (
+                        <View
+                          key={likedUser._id || index}
+                          style={[
+                            styles.avatar,
+                            { left: index * 15 }
+                          ]}>
+                          <Image
+                            source={{ uri }}
+                            style={[
+                              styles.profileImage,
+                              !profileImage && {
+                                borderWidth: 0.5,
+                                borderColor: 'black',
+                              },
+                            ]}
+                          />
+                        </View>
+                      );
+                    })}
+
+                  {totalLikes > 3 && (
+                    <View
                       style={[
-                        styles.profileImage,
-                        !likedUsers[totalLikes - 3].Profile_image && {
-                          borderWidth: 0.5,
-                          borderColor: 'black',
-                        },
-                      ]}
-                    />
-                  </View>
-                )}
-
-                {totalLikes >= 2 && (
-                  <View style={[styles.avatar, styles.avatarOverlap]}>
-                    <Image
-                      source={{
-                        uri: likedUsers[
-                          totalLikes - 2
-                        ].Profile_image.startsWith('https')
-                          ? likedUsers[totalLikes - 2].Profile_image
-                          : `${GET_STORAGE_DATA}/${likedUsers[totalLikes - 2].Profile_image}`,
-                      }}
-                      style={styles.profileImage}
-                    />
-                  </View>
-                )}
-
-                {totalLikes >= 1 && (
-                  <View style={[styles.avatar, styles.avatarDoubleOverlap]}>
-                    <Image
-                      source={{
-                        uri: likedUsers[
-                          totalLikes - 1
-                        ].Profile_image.startsWith('https')
-                          ? likedUsers[totalLikes - 1].Profile_image
-                          : `${GET_STORAGE_DATA}/${likedUsers[totalLikes - 1].Profile_image}`,
-                      }}
-                      style={styles.profileImage}
-                    />
-                  </View>
-                )}
-
-                {totalLikes > 3 && (
-                  <View style={[styles.avatar, styles.avatarTripleOverlap]}>
-                    <Text style={styles.moreText}>+{totalLikes - 3}</Text>
-                  </View>
-                )}
-              </View>
+                        styles.avatar,
+                        styles.avatarTripleOverlap,
+                      ]}>
+                      <Text style={styles.moreText}>+{totalLikes - 3}</Text>
+                    </View>
+                  )}
+                </View>
+              )}
               <View style={styles.descriptionContainer}>
                 <AutoHeightWebView
                   style={styles.webView}
@@ -1234,12 +1243,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'white',
     backgroundColor: '#D9D9D9',
-  },
-  avatarOverlap: {
-    left: 15,
-  },
-  avatarDoubleOverlap: {
-    left: 30,
   },
   avatarTripleOverlap: {
     left: 45,

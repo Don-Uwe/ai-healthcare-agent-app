@@ -17,14 +17,9 @@ import Constants from "expo-constants";
 
 const extra = Constants.expoConfig?.extra ?? {};
 
-const PROD_URL: string =
-  extra.PROD_URL ?? "https://uhsocial.in/api";
-
-const SOCKET_PROD: string =
-  extra.SOCKET_PROD ?? "https://uhsocial.in";
-
-const CONTENT_CHECKER_PROD: string =
-  extra.CONTENT_CHECKER_PROD ?? "https://uhsocial.in/content-intel";
+const PROD_URL: string = extra.PROD_URL;
+const SOCKET_PROD: string = extra.SOCKET_PROD;
+const CONTENT_CHECKER_PROD: string = extra.CONTENT_CHECKER_PROD;
 
 const LOGIN_API = `${PROD_URL}/user/login`;
 const REGISTRATION_API = `${PROD_URL}/user/register`;
@@ -87,7 +82,7 @@ const UPLOAD_ARTICLE_TO_POCKETBASE = `${PROD_URL}/upload-pocketbase/article`;
 const UPLOAD_IMPROVEMENT_TO_POCKETBASE = `${PROD_URL}/upload-pocketbase/improvement`;
 
 /** Content Checker */
-const GRAMMAR_SUGGESTION = `${CONTENT_CHECKER_PROD}/grammar/render-suggestions`;
+const RENDER_SUGGESTION = `${CONTENT_CHECKER_PROD}/readability/check`;
 
 /** PODCAST RELATED */
 const GET_ALL_PODCASTS = `${PROD_URL}/podcast/published-podcasts`;

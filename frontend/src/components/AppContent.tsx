@@ -3,6 +3,7 @@ import {useCheckTokenStatus} from '@/src/hooks/useGetTokenStatus';
 import {useNotificationListeners} from '@/hooks/useNotificationListener';
 import {useVersionCheck} from '@/hooks/useVersionCheck';
 import {SocketProvider} from '../contexts/SocketContext';
+import {PreferencesProvider} from '../contexts/PreferencesContext';
 import config from '@/tamagui.config';
 import * as Notifications from 'expo-notifications';
 import {registerAndSyncPushToken} from '../helper/PushNotificationService';
@@ -30,6 +31,7 @@ import {SECURE_KEYS, secureRetrieveItem} from '../helper/SecureStorageUtils';
 import {setUserToken, setGuestMode} from '../store/UserSlice';
 import {RootState} from '../store/ReduxStore';
 import {setupAxiosInterceptor} from '../helper/setupAxiosInterceptor';
+import {initMonitoring} from '../services/monitoring/sentry';
 
 export default function AppContent() {
   const navigationRef = useRef<NavigationContainerRef<any> | null>(null);
@@ -40,8 +42,14 @@ export default function AppContent() {
   const {data: tokenRes = null} = useCheckTokenStatus();
   const {user_token, isGuest} = useSelector((state: RootState) => state.user);
 
-  // Setup axios interceptor and timeout defaults once on mount.
+  // Initialise monitoring and axios interceptors once on mount.
+  // initMonitoring() is placed here (rather than index.js module scope) so that
+  // expo-application metadata is fully available when Sentry reads
+  // nativeApplicationVersion / nativeBuildVersion.
+  // setupAxiosInterceptor() is idempotent — it ejects and re-registers interceptors
+  // on every call, so double-invocations from React Strict Mode are safe.
   useEffect(() => {
+    initMonitoring();
     setupAxiosInterceptor();
   }, []);
 
@@ -80,22 +88,30 @@ export default function AppContent() {
 
   useEffect(() => {
     const unsubscribe = messaging().onMessage(async remoteMessage => {
-      console.log(
-        'Foreground notification received from message:',
-        remoteMessage,
-      );
+      // Only log notification payloads in development to avoid leaking
+      // FCM message content (including user-targeted data fields) to
+      // production log aggregators or crash reporters.
+      if (__DEV__) {
+        console.log(
+          'Foreground notification received from message:',
+          remoteMessage,
+        );
+      }
     });
 
-    // On app open
-
     const unsubscribe1 = addEventListener(state => {
-      console.log('Connection type', state.type);
-      console.log('Is connected?', state.isConnected);
+      if (__DEV__) {
+        console.log('Connection type', state.type);
+        console.log('Is connected?', state.isConnected);
+      }
       /** Dispatch use a reducer to update the value in store */
       dispatch(setConnected(state.isConnected));
     });
+
     const onOpenApp = messaging().onNotificationOpenedApp(remoteMessage => {
-      console.log('Notification caused app to open:', remoteMessage);
+      if (__DEV__) {
+        console.log('Notification caused app to open:', remoteMessage);
+      }
       // const data = remoteMessage.data;
       // handleNotification(data);
     });
@@ -156,18 +172,20 @@ export default function AppContent() {
       defaultTheme={isDarkMode ? 'dark' : 'light'}>
       <FirebaseProvider>
         <SocketProvider>
-          <SafeAreaProvider>
-            <PaperProvider>
-              <View style={{flex: 1}}>
-                {/* StatusBar is managed globally by CustomStatusBar — do not add one here. */}
-                <NavigationContainer ref={navigationRef}>
-                  <StackNavigation />
-                </NavigationContainer>
-                <CustomAlertDialog key={'alert'} />
-                <UpdateModal visible={visible} storeUrl={storeUrl} />
-              </View>
-            </PaperProvider>
-          </SafeAreaProvider>
+          <PreferencesProvider>
+            <SafeAreaProvider>
+              <PaperProvider>
+                <View style={{flex: 1}}>
+                  {/* StatusBar is managed globally by CustomStatusBar — do not add one here. */}
+                  <NavigationContainer ref={navigationRef}>
+                    <StackNavigation />
+                  </NavigationContainer>
+                  <CustomAlertDialog key={'alert'} />
+                  <UpdateModal visible={visible} storeUrl={storeUrl} />
+                </View>
+              </PaperProvider>
+            </SafeAreaProvider>
+          </PreferencesProvider>
         </SocketProvider>
       </FirebaseProvider>
     </TamaguiProvider>

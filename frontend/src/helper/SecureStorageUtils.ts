@@ -3,6 +3,7 @@ import * as SecureStore from 'expo-secure-store';
 export const SECURE_KEYS = {
   USER_TOKEN: 'SECURE_USER_TOKEN',
   EXPO_PUSH_TOKEN: 'SECURE_EXPO_PUSH_TOKEN',
+  LANGUAGE_PREFERENCES: 'SECURE_LANGUAGE_PREFERENCES',
 } as const;
 
 export type SecureKey = (typeof SECURE_KEYS)[keyof typeof SECURE_KEYS];
