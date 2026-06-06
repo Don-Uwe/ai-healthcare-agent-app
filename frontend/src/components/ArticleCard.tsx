@@ -12,6 +12,7 @@ import AccessibleTouchable from './common/AccessibleTouchable';
 import {fp} from '../helper/Metric';
 import {ArticleCardProps, ArticleData} from '../type';
 import { formatDateShort } from '../helper/dateUtils';
+import { getReadTime } from '../utils/readTime';
 import {useSelector} from 'react-redux';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import IonIcons from '@expo/vector-icons/Ionicons';
@@ -423,17 +424,20 @@ const ArticleCard = ({
           <Text style={styles.title}>{item?.title}</Text>
 
           <View style={styles.metaRow}>
-            <Text style={styles.footerText1}>{item?.authorName}</Text>
-            <Text style={styles.dot}>•</Text>
-            <Text style={styles.footerText1}>
-              {formatCount(item?.viewCount || 0)} views
-            </Text>
-            <Text style={styles.dot}>•</Text>
-            <Text style={styles.footerText1}>
-              {formatDateShort(item?.lastUpdated)}
-            </Text>
-          </View>
-
+  <Text style={styles.footerText1}>{item?.authorName}</Text>
+  <Text style={styles.dot}>•</Text>
+  <Text style={styles.footerText1}>
+    {formatCount(item?.viewCount || 0)} views
+  </Text>
+  <Text style={styles.dot}>•</Text>
+  <Text style={styles.footerText1}>
+    {formatDateShort(item?.lastUpdated)}
+  </Text>
+  <Text style={styles.dot}>•</Text>
+  <Text style={styles.footerText1}>
+    {getReadTime(item?.title + ' ' + (item?.description || ''))}
+  </Text>
+</View>
           <EditRequestModal
             visible={requestModalVisible}
             callback={(reason: string) => {
