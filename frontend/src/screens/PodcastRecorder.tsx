@@ -71,7 +71,6 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
 
       const storageGranted = await requestStoragePermissions();
       if (!storageGranted) {
-        Alert.alert('Storage permission denied');
         return;
       }
 
@@ -111,15 +110,9 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
 
   // const startRecording = async () => {
   //   if (Platform.OS === 'android') {
-  //     const granted = await PermissionsAndroid.requestMultiple([
-  //       PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
-  //       PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
   //     ]);
   //     if (
-  //       granted['android.permission.RECORD_AUDIO'] !==
-  //       PermissionsAndroid.RESULTS.GRANTED
   //     ) {
-  //       console.warn('Permission denied');
   //       return;
   //     }
   //   }
