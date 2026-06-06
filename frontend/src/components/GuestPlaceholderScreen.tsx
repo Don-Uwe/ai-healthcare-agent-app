@@ -1,25 +1,21 @@
 import React, { useState } from 'react';
-import { Image } from 'react-native';
-import { YStack, Text, Button, XStack } from 'tamagui';
+import { YStack, Text, Button } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation , NavigationProp } from '@react-navigation/native';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+import LottieView from 'lottie-react-native';
 
 import { RootStackParamList } from '../type';
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import BenefitsModal from './BenefitsModal';
 
 interface GuestPlaceholderScreenProps {
   title?: string;
   description?: string;
-  iconName?: string;
 }
 
 const GuestPlaceholderScreen: React.FC<GuestPlaceholderScreenProps> = ({
   title = 'Join the Community',
   description = 'Sign up or sign in to access personalized features, interact with the community, and manage your profile.',
-  iconName = 'user-lock',
 }) => {
-  // removed isDarkMode variable
   const inset = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [isBenefitsModalVisible, setIsBenefitsModalVisible] = useState(false);
@@ -36,18 +32,22 @@ const GuestPlaceholderScreen: React.FC<GuestPlaceholderScreenProps> = ({
       animation="bouncy"
       enterStyle={{ opacity: 0, y: 15, scale: 0.95 }}
     >
-      <YStack 
-        alignItems="center" 
-        justifyContent="center" 
-        backgroundColor="$backgroundLight"
-        width={100} 
-        height={100} 
-        borderRadius={50}
+      <YStack
+        alignItems="center"
+        justifyContent="center"
         marginBottom="$4"
         animation="bouncy"
         enterStyle={{ opacity: 0, scale: 0.5 }}
       >
-        <FontAwesome5 name={iconName} size={40} color="$color" />
+        <LottieView
+          source={require('../assets/LottieAnimation/lock-animation.json')}
+          autoPlay
+          loop
+          style={{
+            width: 240,
+            height: 240,
+          }}
+        />
       </YStack>
 
       <Text
@@ -81,7 +81,7 @@ const GuestPlaceholderScreen: React.FC<GuestPlaceholderScreenProps> = ({
           onPress={() => {
             navigation.reset({
               index: 0,
-              routes: [{name: 'LoginScreen'}],
+              routes: [{ name: 'LoginScreen' }],
             });
           }}
         >
@@ -98,7 +98,7 @@ const GuestPlaceholderScreen: React.FC<GuestPlaceholderScreenProps> = ({
           pressStyle={{ scale: 0.97 }}
           animation="fast"
           onPress={() => {
-             navigation.navigate('SignUpScreenFirst');
+            navigation.navigate('SignUpScreenFirst');
           }}
         >
           <Text fontSize={18} color="$color" fontWeight="600">
@@ -116,7 +116,12 @@ const GuestPlaceholderScreen: React.FC<GuestPlaceholderScreenProps> = ({
         animation="fast"
         onPress={() => setIsBenefitsModalVisible(true)}
       >
-        <Text fontSize={15} color="$color10" fontWeight="600" textDecorationLine="underline">
+        <Text
+          fontSize={15}
+          color="$color10"
+          fontWeight="600"
+          textDecorationLine="underline"
+        >
           Why should I create an account?
         </Text>
       </Button>

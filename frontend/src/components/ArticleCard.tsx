@@ -149,7 +149,6 @@ const ArticleCard = ({
     try {
       const storageGranted = await requestStoragePermissions();
       if (!storageGranted) {
-        Alert.alert('Storage permission denied');
         return;
       }
       if (!isConnected) {

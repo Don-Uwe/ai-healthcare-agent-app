@@ -444,19 +444,16 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
 
 
   const onRefresh = () => {
-    if (__DEV__) console.log('is connected', isConnected);
     if (isConnected) {
       setRefreshing(true);
-      // Reset pagination state on full pull-to-refresh
+      allArticlesRef.current = [];
+      lastCategoryFilteredCountRef.current = -1;
       setPage(1);
-      if (page === 1) {
-        refetch();
-      }
+      refetch();
       if (!isGuest) {
         refetchUser();
         refetchUnreadCount();
       }
-      setRefreshing(false);
     } else {
       Snackbar.show({
         text: 'Please check your network connection',
@@ -464,6 +461,13 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       });
     }
   };
+
+  useEffect(() => {
+    if (refreshing && !isFetching) {
+      setRefreshing(false);
+    }
+  }, [isFetching, refreshing]);
+
   const handleSearch = (textInput: string) => {
     //console.log('Search Input', textInput);
     if (textInput === '' || articleData === undefined) {
