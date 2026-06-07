@@ -438,7 +438,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
           </XStack>
 
           {/* Password */}
-          <XStack position="relative">
+          <XStack alignItems="center" position="relative">
             <Input
               flex={1}
               height="$5"
@@ -449,16 +449,18 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
               value={password}
               onChangeText={setPassword}
               secureTextEntry={isSecureEntry}
+              paddingRight="$10"
             />
             <Button
               chromeless
+              size="$4"
+              circular
               position="absolute"
-              right={1}
-              top={8}
+              right={6}
               onPress={() => setIsSecureEntry(!isSecureEntry)}>
               <AntDesign
                 name={isSecureEntry ? 'eye-invisible' : 'eye'}
-                size={17}
+                size={20}
                 color={theme.black.val}
               />
             </Button>
