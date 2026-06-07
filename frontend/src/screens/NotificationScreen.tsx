@@ -1,7 +1,5 @@
 import {FlatList, StyleSheet, Text, View, Image} from 'react-native';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {FlatList, StyleSheet, View} from 'react-native';
-import React, {useEffect} from 'react';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import NotificationItem from '../components/NotificationItem';
 import {useDispatch, useSelector} from 'react-redux';
@@ -216,7 +214,7 @@ const NotificationScreen = ({navigation}: any) => {
       }, UNDO_TIMEOUT_MS);
 
       pendingDeletesRef.current.set(item._id, {
-        ...snapshot,
+        ...(snapshot as Omit<PendingDelete, 'timer'>),
         timer,
       });
 
