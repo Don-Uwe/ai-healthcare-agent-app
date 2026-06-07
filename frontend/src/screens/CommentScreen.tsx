@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 
 import { useDispatch, useSelector } from 'react-redux';
-import { H3, Image, Paragraph, Text, YStack } from 'tamagui';
+import { H3, Image, Paragraph, Text, YStack, TextArea, XStack, Button } from 'tamagui';
 
 import CommentItem from '../components/CommentItem';
 import Loader from '../components/Loader';
@@ -57,7 +57,7 @@ const CommentScreen = ({
   const [comments, setComments] = useState<
     Comment[]
   >([]);
-
+  const MAX_COMMENT_LENGTH = 500;
   const [newComment, setNewComment] =
     useState('');
 
@@ -558,32 +558,42 @@ const CommentScreen = ({
                   {...triggers.mention}
                 />
 
+               {/* 1. Updated Input Component with Strict 500 Character Boundary */}
                 <TextInput
                   {...textInputProps}
                   style={styles.textInput}
                   placeholder="Add a comment..."
                   placeholderTextColor="#9CA3AF"
                   multiline
+                  maxLength={MAX_COMMENT_LENGTH} // 👈 Forces the input boundary cap
                 />
 
-                {newComment.length > 0 && (
+                {/* 2. Brand New Layout Row for Counter and Submit Button */}
+                <XStack justifyContent="space-between" alignItems="center" mt="$2" px="$2" width="100%">
+                  
+                  {/* Real-time Dynamic Character Counter */}
+                  <Text 
+                    fontSize="$2" 
+                    color={newComment.length >= 480 ? '$red10' : '$colorMuted'} 
+                    fontWeight={newComment.length >= 480 ? '600' : '400'}
+                  >
+                    {newComment.length} / {MAX_COMMENT_LENGTH}
+                  </Text>
+
+                  {/* 3. Submit Button (Always visible but visually disabled/faded when text is empty) */}
                   <TouchableOpacity
-                    style={
-                      styles.submitButton
-                    }
-                    onPress={
-                      handleCommentSubmit
-                    }>
-                    <Text
-                      style={
-                        styles.submitButtonText
-                      }>
-                      {editMode
-                        ? 'Update Comment'
-                        : 'Submit Comment'}
+                    style={[
+                      styles.submitButton, 
+                      { opacity: newComment.trim().length === 0 ? 0.5 : 1 } // 👈 Fades button out if input is empty
+                    ]}
+                    disabled={newComment.trim().length === 0} // 👈 Block execution if input consists of only blank spaces
+                    onPress={handleCommentSubmit}
+                  >
+                    <Text style={styles.submitButtonText}>
+                      {editMode ? 'Update Comment' : 'Submit Comment'}
                     </Text>
                   </TouchableOpacity>
-                )}
+                </XStack>
 
                 <View
                   style={
@@ -610,7 +620,7 @@ const CommentScreen = ({
                 item._id
               }
               userId={user_id}
-              setSelectedCommentId={
+              setSelectedCommentId={0
                 setSelectedCommentId
               }
               handleEditAction={

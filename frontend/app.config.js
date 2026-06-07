@@ -45,7 +45,6 @@ const defaultStaticConfig = {
     blockedPermissions: [
       "android.permission.SYSTEM_ALERT_WINDOW",
       "android.permission.READ_PHONE_STATE",
-      "android.permission.WRITE_EXTERNAL_STORAGE"
     ],
     allowBackup: false,
     intentFilters: [
