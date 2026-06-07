@@ -1,5 +1,5 @@
 // PodcastSearch.tsx
-import React, {useEffect, useState, useCallback} from 'react';
+import React, {useEffect, useState, useCallback, useRef} from 'react';
 import {Pressable, FlatList, AccessibilityInfo} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import {PodcastData, PodcastSearchProp} from '../type';
@@ -16,34 +16,53 @@ import {Feather} from '@expo/vector-icons';
 import {useUpdatePodcastViewcount} from '../hooks/useUpdatePodcastViewcount';
 import {useGetSearchPodcasts} from '../hooks/useGetSearchPodcasts';
 
-const SKELETON_COUNT = 3;
+const SKELETON_COUNT = 5;
+const SEARCH_DEBOUNCE_MS = 350;
 
 export default function PodcastSearch({navigation}: PodcastSearchProp) {
   const [query, setQuery] = useState<string>('');
+  const [debouncedQuery, setDebouncedQuery] = useState<string>('');
   const {isConnected} = useSelector((state: any) => state.network);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [searchData, setSearchData] = useState<PodcastData[]>([]);
   const theme = useTheme();
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useFocusEffect(
     useCallback(() => {
       // Reset local search state when entering the screen to avoid stale queries.
       setQuery('');
+      setDebouncedQuery('');
       setPage(1);
       setTotalPages(0);
       setSearchData([]);
+      return () => {
+        if (debounceTimer.current) clearTimeout(debounceTimer.current);
+      };
     }, []),
   );
 
-
+  // Debounce query changes and reset pagination so a new search always starts at page 1.
+  useEffect(() => {
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      setDebouncedQuery(query);
+      setPage(1);
+      setTotalPages(0);
+      setSearchData([]);
+    }, SEARCH_DEBOUNCE_MS);
+    return () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    };
+  }, [query]);
 
   const {mutate: updateViewCount} = useUpdatePodcastViewcount();
 
   const {data: searchPodcasts, isLoading} = useGetSearchPodcasts(
     isConnected,
     page,
-    query,
+    debouncedQuery,
   );
 
   useEffect(() => {
@@ -62,10 +81,10 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
   }, [page, searchPodcasts]);
 
   useEffect(() => {
-    if (isLoading && query !== '') {
+    if (isLoading && debouncedQuery !== '') {
       AccessibilityInfo.announceForAccessibility('Loading podcast results');
     }
-  }, [isLoading, query]);
+  }, [isLoading, debouncedQuery]);
 
   const renderItem = ({item}: {item: PodcastData}) => (
     <Pressable
@@ -124,9 +143,7 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
     </Pressable>
   );
 
-  // Consistent list padding used by both the skeleton and results FlatList.
   const listContentStyle = {paddingTop: 12, paddingBottom: 20};
-  const SKELETON_COUNT = 5;
 
   return (
     <YStack
@@ -200,6 +217,9 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
             <Pressable
               onPress={() => {
                 setQuery('');
+                setDebouncedQuery('');
+                setPage(1);
+                setTotalPages(0);
                 setSearchData([]);
               }}>
               <Feather name="x-circle" size={18} color={theme.colorMuted?.val as string} />
@@ -212,7 +232,7 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
 
       {/* Results / Skeleton Section */}
       <YStack paddingHorizontal="$3" flex={1}>
-        {isLoading && query !== '' ? (
+        {isLoading && debouncedQuery !== '' ? (
           <FlatList
             data={Array.from({length: SKELETON_COUNT}, (_, i) => i)}
             keyExtractor={(_, index) => `skeleton-${index}`}
@@ -222,11 +242,11 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
           />
         ) : (
           <FlatList
-            data={query !== '' ? searchData : []}
+            data={debouncedQuery !== '' ? searchData : []}
             keyExtractor={item => item._id.toString()}
             renderItem={renderItem}
             ListHeaderComponent={
-              query !== '' && searchData.length > 0 ? (
+              debouncedQuery !== '' && searchData.length > 0 ? (
                 <YStack paddingVertical="$3" paddingHorizontal="$2">
                   <Text
                     fontSize={13}
@@ -239,7 +259,7 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
               ) : null
             }
             ListEmptyComponent={
-              query === '' ? (
+              debouncedQuery === '' ? (
                 <YStack
                   alignItems="center"
                   justifyContent="center"
