@@ -34,6 +34,7 @@ import {Theme, XStack, YStack, Text, ScrollView} from 'tamagui';
 import LottieView from 'lottie-react-native';
 import {useGetSinglePodcastDetails} from '../hooks/useGetSinglePodcastDetails';
 import {useLikePodcast} from '../hooks/useLikePodcast';
+import {getPlaybackPosition, savePlaybackPosition} from '../helper/PlaybackManager';
 
 const isAllowedUrl = (urlStr?: string | null): boolean => {
   if (!urlStr) return false;
@@ -112,16 +113,63 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   }, [podcast?.audio_url, player, loadedSource]);
 
   useEffect(() => {
+    let lastSaveTime = 0;
     const interval = setInterval(() => {
       if (player.playing) {
-        setPosition(player.currentTime || 0);
-        setDuration(player.duration || 1);
-        // setIsPlaying(player.playing || false);
+        const currentPos = player.currentTime || 0;
+        const totalDur = player.duration || 1;
+        setPosition(currentPos);
+        setDuration(totalDur);
+
+        // Save position every 5 seconds to reduce AsyncStorage writes
+        const now = Date.now();
+        if (now - lastSaveTime > 5000) {
+          savePlaybackPosition(trackId, currentPos, totalDur);
+          lastSaveTime = now;
+        }
       }
     }, 500);
 
     return () => clearInterval(interval);
-  }, [player.currentTime, player.duration, player.playing]);
+  }, [player.currentTime, player.duration, player.playing, trackId]);
+
+  // Check for saved position on mount
+  useEffect(() => {
+    let isCancelled = false;
+    const checkResume = async () => {
+      const saved = await getPlaybackPosition(trackId);
+      if (!isCancelled && saved && saved.position > 5) {
+        Alert.alert(
+          'Resume Podcast',
+          `Do you want to resume from ${formatSecTime(saved.position)}?`,
+          [
+            { 
+              text: 'Start Over', 
+              style: 'cancel', 
+              onPress: async () => { 
+                await player.seekTo(0); 
+                setPosition(0);
+              } 
+            },
+            { 
+              text: 'Resume', 
+              onPress: async () => { 
+                await player.seekTo(saved.position); 
+                setPosition(saved.position); 
+                player.play(); 
+                setIsPlaying(true); 
+              } 
+            }
+          ]
+        );
+      }
+    };
+    // Give player a brief moment to initialize before asking
+    setTimeout(() => {
+      checkResume();
+    }, 500);
+    return () => { isCancelled = true; };
+  }, [trackId]);
 
   useEffect(()=>{
 
@@ -172,17 +220,7 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
       return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
     }
   };
-  // For position update
-
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      if (player) {
-        const status = player.currentStatus;
-        if (status.isLoaded) setPosition(status.currentTime);
-      }
-    }, 500);
-    return () => clearInterval(interval);
-  }, [player, player.currentTime, player.duration, player.playing]);
+  // For position update (removed redundant interval)
 
   const handleShare = async () => {
     try {
@@ -220,10 +258,10 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   const handlePause = async () => {
     if (!player) return;
 
-
     player.pause();
-    //  setUiState('paused');
     setIsPlaying(false);
+    // Ensure we save exact position on pause
+    savePlaybackPosition(trackId, player.currentTime || 0, player.duration || 1);
   };
 
   if (isPodcastLoading || isLoading) {
