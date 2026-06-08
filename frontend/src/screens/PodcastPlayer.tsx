@@ -479,17 +479,7 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
           </Circle>
         </XStack>
 
-        {/* Footer Info */}
-        <Text
-          marginTop="$4"
-          marginBottom="$2"
-          textAlign="center"
-          color="#64748B"
-          fontSize={11}
-          numberOfLines={1}
-          ellipsizeMode="middle">
-          {filePath}
-        </Text>
+
       </YStack>
     </Theme>
   );
