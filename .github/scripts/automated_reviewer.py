@@ -270,16 +270,26 @@ def post_review(repo, pr_number, github_token, review_text):
         print(f"Failed to post comment to GitHub: {e}")
 
 def fetch_open_prs(repo, github_token):
-    url = f"https://api.github.com/repos/{repo}/pulls?state=open&per_page=100"
-    request = urllib.request.Request(url)
-    request.add_header("Authorization", f"token {github_token}")
-    request.add_header("Accept", "application/vnd.github.v3+json")
-    try:
-        with urllib.request.urlopen(request) as response:
-            return json.loads(response.read().decode("utf-8"))
-    except urllib.error.URLError as e:
-        print(f"Failed to fetch open PRs: {e}")
-        return []
+    prs = []
+    page = 1
+    while True:
+        url = f"https://api.github.com/repos/{repo}/pulls?state=open&per_page=100&page={page}"
+        request = urllib.request.Request(url)
+        request.add_header("Authorization", f"token {github_token}")
+        request.add_header("Accept", "application/vnd.github.v3+json")
+        try:
+            with urllib.request.urlopen(request) as response:
+                data = json.loads(response.read().decode("utf-8"))
+                if not data:
+                    break
+                prs.extend(data)
+                if len(data) < 100:
+                    break
+                page += 1
+        except urllib.error.URLError as e:
+            print(f"Failed to fetch open PRs: {e}")
+            break
+    return prs
 
 def run_review_for_pr(repo, pr_number, github_token, gemini_api_key):
     print(f"Running review for PR #{pr_number}...")

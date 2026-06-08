@@ -12,6 +12,8 @@ on:
     branches:
       - main
       - web
+  schedule:
+    - cron: '30 1 * * *'
   workflow_dispatch:
 
 jobs:
