@@ -45,14 +45,37 @@ const CategoriesFlatlistModal = ({
     );
   }, [categories, searchQuery]);
 
+  // Memoize selected category identifiers for constant-time lookup during item rendering
+  const selectCategoryKeys = useMemo(() => {
+
+    const keys = new Set<string>();
+
+    selectCategoryList.forEach((category) => {
+      if(category.id !== undefined){
+        keys.add(`id:${category.id}`);
+      }
+
+      if(category._id !== undefined){
+        keys.add(`_id:${category._id}`);
+      }
+
+      if(category.name !== undefined){
+        keys.add(`name:${category.name}`);
+      }
+    });
+
+    return keys;
+  }, [selectCategoryList]);
+
   // Function to render each category item
   const renderItem = useCallback(
     ({item}: {item: Category}) => {
-      const isSelected = selectCategoryList.some(i => 
-        (i.id !== undefined && item?.id !== undefined && i.id === item.id) ||
-        (i._id !== undefined && item?._id !== undefined && i._id === item._id) ||
-        (i.name === item?.name)
-      );
+
+      const isSelected = 
+        (item?.id !== undefined && selectCategoryKeys.has(`id:${item.id}`)) ||
+        (item?._id !== undefined && selectCategoryKeys.has(`_id:${item._id}`)) ||
+        (item?.name !== undefined && selectCategoryKeys.has(`name:${item.name}`));
+        
       return (
         <AccessibleTouchable
           accessibilityLabel={item.name}
