@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 
 MAX_DIFF_SIZE = 500000
 
+
 IGNORED_PATTERNS = [
     "package-lock.json",
     "yarn.lock",
