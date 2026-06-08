@@ -1,5 +1,5 @@
 import {StyleSheet, Text, View, TextInput} from 'react-native';
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import AccessibleTouchable from './common/AccessibleTouchable';
 import {
   BottomSheetModal,
@@ -21,6 +21,7 @@ const CategoriesFlatlistModal = ({
   selectCategoryList,
 }: HomeScreenCategoriesFlatlistProps) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
 
   const renderBackdrop = useCallback(
     (props: BottomSheetBackdropProps) => (
@@ -36,14 +37,26 @@ const CategoriesFlatlistModal = ({
   // Define snap points for the bottom sheet
   const snapPoints = useMemo(() => ['25%', '75%', '95%'], []);
 
+  // Debounce search input to avoid filtering categories on every keystroke
+  useEffect(() => {
+
+    const timeout = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [searchQuery]);
+
   // Filter categories based on search
   const filteredCategories = useMemo(() => {
-    if (!searchQuery.trim()) return categories;
+    if (!debouncedSearchQuery.trim()) return categories;
     return categories.filter(cat =>
       cat && cat.name && typeof cat.name === 'string' &&
-      cat.name.toLowerCase().includes((searchQuery || '').toLowerCase())
+      cat.name.toLowerCase().includes((debouncedSearchQuery || '').toLowerCase())
     );
-  }, [categories, searchQuery]);
+  }, [categories, debouncedSearchQuery]);
 
   // Memoize selected category identifiers for constant-time lookup during item rendering
   const selectCategoryKeys = useMemo(() => {
@@ -75,7 +88,7 @@ const CategoriesFlatlistModal = ({
         (item?.id !== undefined && selectCategoryKeys.has(`id:${item.id}`)) ||
         (item?._id !== undefined && selectCategoryKeys.has(`_id:${item._id}`)) ||
         (item?.name !== undefined && selectCategoryKeys.has(`name:${item.name}`));
-        
+
       return (
         <AccessibleTouchable
           accessibilityLabel={item.name}
