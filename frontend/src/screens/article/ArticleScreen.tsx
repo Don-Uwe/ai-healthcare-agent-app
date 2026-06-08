@@ -68,6 +68,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const [summaryLoading, setSummaryLoading] = useState(false);
   const chunkIndexRef = useRef(0);
   const wordsRef = useRef<string[]>([]);
+  const readEventFiredRef = useRef(false);
 
   const {mutate: followMutation, isPending: followMutationPending} =
     useUpdateFollowStatusByArticle();
@@ -161,6 +162,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   }, [articleId, isGuest, updateViewCount]);
 
   useEffect(() => {
+    readEventFiredRef.current = false;
+    setReadEventSave(false);
     refetch();
   }, [articleId, refetch]);
 
@@ -678,6 +681,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
 
       <ScrollView
         style={styles.scrollView}
+        scrollEventThrottle={16}
         onScroll={e => {
           let windowHeight = Dimensions.get('window').height,
             height = e.nativeEvent.contentSize.height,
@@ -685,10 +689,11 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
           if (windowHeight + offset >= height) {
             if (
               article &&
-              !readEventSave &&
+              !readEventFiredRef.current &&
               !isGuest &&
               article.status === StatusEnum.PUBLISHED
             ) {
+              readEventFiredRef.current = true;
               updateReadEvent(undefined, {
                 onSuccess: () => {
                   console.log('Read Event Updated');
@@ -700,6 +705,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
                 },
                 onError: err => {
                   console.log('Update Read Status mutation error', err);
+                  readEventFiredRef.current = false;
                   Snackbar.show({
                     text: 'Failed to update your read status.',
                     duration: Snackbar.LENGTH_SHORT,
