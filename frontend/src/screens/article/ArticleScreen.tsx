@@ -34,6 +34,7 @@ import {
 //import CommentScreen from '../CommentScreen';
 import Tts from 'react-native-tts';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import FloatingSpeedSelector from '../../components/FloatingSpeedSelector';
 
 import {setUserHandle} from '../../store/UserSlice';
 import {FontAwesome5} from '@expo/vector-icons';
@@ -71,6 +72,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [speechRate, setSpeechRate] = useState(0.5);
+  const [isSpeedSelectorVisible, setIsSpeedSelectorVisible] = useState(false);
   const [playerVisible, setPlayerVisible] = useState(false);
   const [summary, setSummary] = useState<ArticleSummary | null>(null);
   const [summaryLoading, setSummaryLoading] = useState(false);
@@ -559,20 +561,9 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     }
   };
 
-  const SPEED_OPTIONS = [0.5, 0.75, 1.0, 1.25, 1.5];
-  const SPEED_LABELS: Record<number, string> = {
-    0.5: '0.5x',
-    0.75: '0.75x',
-    1.0: '1x',
-    1.25: '1.25x',
-    1.5: '1.5x',
-  };
-
-  const handleSpeedChange = () => {
-    const currentIndex = SPEED_OPTIONS.indexOf(speechRate);
-    const nextRate = SPEED_OPTIONS[(currentIndex + 1) % SPEED_OPTIONS.length];
-    setSpeechRate(nextRate);
-    Tts.setDefaultRate(nextRate);
+  const handleSpeedSelect = (selectedSpeed: number) => {
+    setSpeechRate(selectedSpeed);
+    Tts.setDefaultRate(selectedSpeed);
     // Restart current position with new speed if currently playing
     if (isPlaying && !isPaused) {
       Tts.removeAllListeners('tts-finish');
@@ -1187,9 +1178,9 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
             {/* Speed button */}
             <TouchableOpacity
               style={styles.ttsSpeedButton}
-              onPress={handleSpeedChange}>
+              onPress={() => setIsSpeedSelectorVisible(true)}>
               <Text style={styles.ttsSpeedText}>
-                {SPEED_LABELS[speechRate]}
+                {`${speechRate}x`}
               </Text>
             </TouchableOpacity>
 
@@ -1219,6 +1210,13 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
           </View>
         </View>
       )}
+
+      <FloatingSpeedSelector
+        currentSpeed={speechRate}
+        onSpeedSelect={handleSpeedSelect}
+        visible={isSpeedSelectorVisible}
+        onClose={() => setIsSpeedSelectorVisible(false)}
+      />
     </SafeAreaView>
   );
 };
