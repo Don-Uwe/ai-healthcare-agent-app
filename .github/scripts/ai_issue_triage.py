@@ -323,11 +323,13 @@ def main():
                 
                 labels = [l.get("name", "").lower() for l in issue.get("labels", [])]
                 
-                # Check for every open issue, which has not yet tagged gssoc and skipped outside-ultimatehealth
-                has_gssoc = any("gssoc" in lbl for lbl in labels)
-                has_outside = any("outside-ultimatehealth" in lbl for lbl in labels)
+                # Check for every open issue, which has not yet tagged gssoc or other triage labels
+                skip_labels = {
+                    "gssoc", "outside-ultimatehealth", "duplicate", "out-of-scope",
+                    "needs-information", "backend", "maintainer-review-required"
+                }
                 
-                if not has_gssoc and not has_outside:
+                if not any(lbl in skip_labels for lbl in labels):
                     num = issue["number"]
                     print(f"\n--- Batch Triaging Issue #{num} ---")
                     handle_issue_opened(repo, num, github_token, gemini_api_key)

@@ -375,19 +375,19 @@ def run_review_for_pr(repo, pr_number, github_token, gemini_api_key,
             reason = "Initial: no previous review exists."
     else:
         elapsed = current_time - latest_new_review_time
-        cooldown_period = 48 * 3600
+        cooldown_period = 168 * 3600
 
         if elapsed.total_seconds() < cooldown_period:
             hrs = elapsed.total_seconds() / 3600
-            reason = f"Skipped: cooldown active ({hrs:.1f} h / 48 h elapsed)."
+            reason = f"Skipped: cooldown active ({hrs:.1f} h / 168 h elapsed)."
         elif is_scheduled:
             should_run = True
-            reason = "Scheduled re-check: 48 h elapsed, checking unresolved feedback."
+            reason = "Scheduled re-check: 168 h elapsed, checking unresolved feedback."
         elif last_commit_time <= latest_new_review_time:
             reason = "Skipped: no new commits since last bot review."
         else:
             should_run = True
-            reason = "Subsequent: 48 h elapsed + new commits detected."
+            reason = "Subsequent: 168 h elapsed + new commits detected."
 
     print(f"Trigger Decision: {reason}")
     if not should_run:
@@ -468,6 +468,10 @@ def run_review_for_pr(repo, pr_number, github_token, gemini_api_key,
 
     print("Posting review comment to GitHub...")
     post_review(repo, pr_number, github_token, review_text)
+
+    # Always ensure gssoc is appended to mark that it was reviewed by the bot
+    if "gssoc" not in [l.lower() for l in selected_labels]:
+        selected_labels.append("gssoc")
 
     if selected_labels:
         print(f"Adding labels to PR: {selected_labels}")
@@ -560,6 +564,10 @@ def main():
 
                 num = pr.get("number")
                 if not num:
+                    continue
+                    
+                pr_labels = [l.get("name", "").lower() for l in pr.get("labels", [])]
+                if "gssoc" in pr_labels:
                     continue
 
                 print(f"\n--- [{processed + 1}/{min(total, MAX_BATCH_PER_RUN)}] Reviewing PR #{num} ---")
