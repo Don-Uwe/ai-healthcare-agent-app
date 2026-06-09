@@ -620,7 +620,7 @@ const CommentScreen = ({
                 item._id
               }
               userId={user_id}
-              setSelectedCommentId={0
+              setSelectedCommentId={
                 setSelectedCommentId
               }
               handleEditAction={
