@@ -18,8 +18,8 @@ import GuestPlaceholderScreen from '../components/GuestPlaceholderScreen';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
-const ChatbotGuestScreen = () => <GuestPlaceholderScreen title="AI Chatbot" description="Sign in or sign up to get instant health advice and personalized answers from our AI assistant." iconName="robot" />;
-const ProfileGuestScreen = () => <GuestPlaceholderScreen title="Your Profile" description="Create an account to manage your details and preferences." iconName="user-alt" />;
+const ChatbotGuestScreen = () => <GuestPlaceholderScreen title="AI Chatbot" description="Sign in or sign up to get instant health advice and personalized answers from our AI assistant." />;
+const ProfileGuestScreen = () => <GuestPlaceholderScreen title="Your Profile" description="Create an account to manage your details and preferences." />;
 
 const TabNavigation = () => {
   const isGuest = useSelector((state: any) => state.user.isGuest);
