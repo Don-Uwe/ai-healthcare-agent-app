@@ -17,7 +17,7 @@ import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { addEventListener } from '@react-native-community/netinfo';
 import { useDispatch, useSelector } from 'react-redux';
-import { TamaguiProvider } from 'tamagui';
+import { TamaguiProvider, useTheme } from 'tamagui';
 import { initDeepLinking } from '../helper/DeepLinkService';
 import StackNavigation from '../navigations/StackNavigation';
 import { CustomAlertDialog } from './CustomAlert';
@@ -32,6 +32,7 @@ import { setupAxiosInterceptor } from '../helper/setupAxiosInterceptor';
 import { initMonitoring } from '../services/monitoring/sentry';
 
 export default function AppContent() {
+  const theme = useTheme();
   const navigationRef = useRef<NavigationContainerRef<any> | null>(null);
   const hasInitialized = useRef(false);
   // Used only for TamaguiProvider theming. StatusBar styling is owned by CustomStatusBar.
@@ -136,19 +137,11 @@ export default function AppContent() {
         <SocketProvider>
           <PreferencesProvider>
             <SafeAreaProvider>
-              <PaperProvider
-                theme={{
-                  dark: isDarkMode,
-                  colors: {
-                    primary: '#000A60',
-                    background: isDarkMode ? '#0F172A' : '#FFFFFF',
-                    text: isDarkMode ? '#FFFFFF' : '#000000',
-                  },
-                }}>
+              <PaperProvider>
                 <View
                   style={{
                     flex: 1,
-                    backgroundColor: isDarkMode ? '#0F172A' : '#F8FAFC',
+                    backgroundColor: theme.background.val,
                   }}>
                   {/* StatusBar is managed globally by CustomStatusBar — do not add one here. */}
                   <NavigationContainer ref={navigationRef}>
