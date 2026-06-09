@@ -6,7 +6,16 @@ import urllib.parse
 import traceback
 import time
 
-def make_request(url, method="GET", data=None, headers=None, token=None):
+def _write_step_summary(lines):
+    summary_file = os.environ.get("GITHUB_STEP_SUMMARY")
+    if not summary_file: return
+    try:
+        with open(summary_file, "a", encoding="utf-8") as f:
+            f.write("\n".join(lines) + "\n")
+    except Exception as e:
+        print(f"[WARN] Could not write step summary: {e}")
+
+def make_request(url, method="GET", data=None, headers=None, token=None, max_retries=3):
     if headers is None:
         headers = {
             "Accept": "application/vnd.github.v3+json",
@@ -20,30 +29,50 @@ def make_request(url, method="GET", data=None, headers=None, token=None):
         req.data = json.dumps(data).encode("utf-8")
         req.add_header("Content-Type", "application/json")
         
-    try:
-        with urllib.request.urlopen(req, timeout=30) as response:
-            resp_body = response.read().decode("utf-8")
-            return json.loads(resp_body) if resp_body else {}
-    except urllib.error.HTTPError as e:
-        print(f"HTTP Error {e.code} for {url}: {e.read().decode('utf-8')}")
-        return None
-    except Exception as e:
-        print(f"Request failed for {url}: {e}")
-        return None
+    for attempt in range(max_retries):
+        try:
+            with urllib.request.urlopen(req, timeout=30) as response:
+                resp_body = response.read().decode("utf-8")
+                return json.loads(resp_body) if resp_body else {}
+        except urllib.error.HTTPError as e:
+            if e.code in [403, 429]:
+                retry_after = e.headers.get("Retry-After")
+                sleep_time = int(retry_after) + 1 if retry_after else 15 * (2 ** attempt)
+                print(f"[WARN] GitHub API Rate Limit ({e.code}) on {url}. Retrying in {sleep_time}s...")
+                time.sleep(sleep_time)
+            else:
+                print(f"HTTP Error {e.code} for {url}: {e.read().decode('utf-8')}")
+                return None
+        except Exception as e:
+            print(f"Request failed for {url}: {e}")
+            if attempt < max_retries - 1:
+                time.sleep(5)
+            else:
+                return None
+    return None
 
 def fetch_issue(repo, issue_number, token):
     url = f"https://api.github.com/repos/{repo}/issues/{issue_number}"
     return make_request(url, token=token)
 
+def fetch_all_open_issues(repo, token):
+    issues = []
+    page = 1
+    while True:
+        url = f"https://api.github.com/repos/{repo}/issues?state=open&per_page=100&page={page}"
+        data = make_request(url, token=token)
+        if not data: break
+        issues.extend(data)
+        if len(data) < 100: break
+        page += 1
+    return issues
+
 def fetch_recent_issues(repo, token, limit=50):
-    # Fetch recent issues for duplicate checking context
     url = f"https://api.github.com/repos/{repo}/issues?state=all&per_page={limit}&sort=created&direction=desc"
     issues = make_request(url, token=token)
     if not issues: return []
-    
     context = []
     for issue in issues:
-        # Avoid including PRs in issue duplicate check if not needed, but PRs can be duplicates too
         context.append({
             "number": issue["number"],
             "title": issue["title"],
@@ -121,12 +150,13 @@ Output a single JSON object. DO NOT wrap in Markdown code blocks. Output exactly
         with urllib.request.urlopen(req, timeout=60) as response:
             result = json.loads(response.read().decode("utf-8"))
             text_response = result["candidates"][0]["content"]["parts"][0]["text"].strip()
-            # Clean up markdown if accidentally included
-            if text_response.startswith("```json"):
-                text_response = text_response[7:]
-            if text_response.endswith("```"):
-                text_response = text_response[:-3]
+            if text_response.startswith("```json"): text_response = text_response[7:]
+            if text_response.endswith("```"): text_response = text_response[:-3]
             return json.loads(text_response)
+    except urllib.error.HTTPError as e:
+        print(f"Gemini API HTTP Error {e.code}: {e.read().decode('utf-8')}")
+        if e.code == 429: raise e # Bubble up 429
+        return None
     except Exception as e:
         print(f"Gemini API failed: {e}")
         return None
@@ -144,14 +174,11 @@ def close_issue(repo, issue_number, token):
     make_request(url, method="PATCH", data={"state": "closed"}, token=token)
 
 def check_active_assignments(repo, username, token):
-    """Returns True if the user has >= 1 open assigned issue in this repo."""
     url = f"https://api.github.com/repos/{repo}/issues?assignee={username}&state=open"
     issues = make_request(url, token=token)
     return issues is not None and len(issues) > 0
 
 def check_previous_prs(repo, username, token):
-    """Returns True if the user has submitted at least one PR (open or closed) in this repo."""
-    # Search for PRs created by the user in this repo
     query = urllib.parse.quote(f"repo:{repo} is:pr author:{username}")
     url = f"https://api.github.com/search/issues?q={query}"
     result = make_request(url, token=token)
@@ -166,19 +193,18 @@ def assign_user(repo, issue_number, username, token):
 def handle_issue_opened(repo, issue_number, token, gemini_api_key):
     print(f"Triaging new issue #{issue_number}...")
     issue = fetch_issue(repo, issue_number, token)
-    if not issue: return
+    if not issue: return "error", "Failed to fetch issue data"
     
     title = issue.get("title", "")
     body = issue.get("body", "")
     
     recent_issues = fetch_recent_issues(repo, token)
-    # Remove self from recent issues to avoid false duplicate
     recent_issues = [i for i in recent_issues if str(i["number"]) != str(issue_number)]
     
     decision = generate_triage_decision(title, body, recent_issues, gemini_api_key)
     if not decision:
         print("Failed to get triage decision.")
-        return
+        return "error", "Failed to get triage decision from Gemini"
         
     print(f"Triage Decision: {json.dumps(decision, indent=2)}")
     
@@ -191,27 +217,30 @@ def handle_issue_opened(repo, issue_number, token, gemini_api_key):
         post_comment(repo, issue_number, msg, token)
         add_labels(repo, issue_number, labels_to_add, token)
         close_issue(repo, issue_number, token)
-        return
+        return "duplicate", f"Closed as duplicate of #{dup_num}"
 
     if not decision.get("is_in_scope"):
         labels_to_add.append("out-of-scope")
         if decision.get("is_doctor_related"):
             labels_to_add.append("doctor-module")
             msg = f"This repository currently focuses on health content, podcasts, analytics, AI assistant features, and related user experiences.\n\nDoctor and clinical workflow features are currently outside the scope of the GSSoC contribution program.\n\nMaintainer review may be required for future consideration. cc @SB2318\n\n> **Reasoning:** {decision.get('reasoning')}"
+            post_comment(repo, issue_number, msg, token)
+            add_labels(repo, issue_number, labels_to_add, token)
+            close_issue(repo, issue_number, token)
+            return "out-of-scope", "Closed as doctor-related"
         else:
             msg = f"This issue has been marked as out of scope for the current contribution program.\n\n> **Reasoning:** {decision.get('reasoning')}"
-        
-        post_comment(repo, issue_number, msg, token)
-        add_labels(repo, issue_number, labels_to_add, token)
-        close_issue(repo, issue_number, token)
-        return
+            post_comment(repo, issue_number, msg, token)
+            add_labels(repo, issue_number, labels_to_add, token)
+            close_issue(repo, issue_number, token)
+            return "out-of-scope", "Closed as out of scope"
 
     if not decision.get("is_valid"):
         labels_to_add.append("needs-information")
         msg = f"Thank you for opening this issue! However, it currently lacks sufficient information for triage.\n\nPlease provide a clear problem statement, reproduction steps (if applicable), and expected behavior.\n\n> **Note:** {decision.get('reasoning')}"
         post_comment(repo, issue_number, msg, token)
         add_labels(repo, issue_number, labels_to_add, token)
-        return
+        return "needs-info", "Marked as needs-information"
 
     # Valid and In Scope
     classification = decision.get("classification")
@@ -228,22 +257,22 @@ def handle_issue_opened(repo, issue_number, token, gemini_api_key):
         msg = "This issue requires backend investigation and has been routed to @SB2318 for review and prioritization."
         post_comment(repo, issue_number, msg, token)
         assign_user(repo, issue_number, "SB2318", token)
-        return
+        return "backend", "Assigned to @SB2318"
         
     elif classification == "frontend":
         labels_to_add.append("frontend")
         if difficulty: labels_to_add.append(difficulty)
-        # Apply gssoc label to mark it as successfully triaged for the batch runner
         labels_to_add.append("gssoc")
         add_labels(repo, issue_number, labels_to_add, token)
         
         if escalate:
             msg = f"This issue has been triaged as a **frontend** task, but requires maintainer review. cc @SB2318\n\n> **Reasoning:** {decision.get('reasoning')}"
+            post_comment(repo, issue_number, msg, token)
+            return "frontend", "Frontend (escalated)"
         else:
             msg = f"This issue has been triaged as a **frontend** task.\n\nIt is now open for community contribution! To request assignment, please comment below.\n\n*Eligibility Reminder: You must have zero active assigned issues to be assigned.*"
-            
-        post_comment(repo, issue_number, msg, token)
-        return
+            post_comment(repo, issue_number, msg, token)
+            return "frontend", "Frontend (open)"
         
     else:
         # Broad or uncategorized
@@ -252,75 +281,52 @@ def handle_issue_opened(repo, issue_number, token, gemini_api_key):
         add_labels(repo, issue_number, labels_to_add, token)
         msg = "This issue covers a broad scope or requires architectural decisions. Escalating to @SB2318 for maintainer review."
         post_comment(repo, issue_number, msg, token)
-
+        return "broad", "Broad/Uncategorized (escalated)"
 
 def handle_issue_comment(repo, issue_number, commenter, token):
     print(f"Evaluating assignment request for @{commenter} on PR/Issue #{issue_number}...")
     issue = fetch_issue(repo, issue_number, token)
-    if not issue: return
+    if not issue: return "error", "Failed to fetch issue"
     
-    # Check if issue is closed
     if issue.get("state") == "closed":
         print("Issue is closed. Ignoring comment.")
-        return
+        return "ignored", "Issue is closed"
         
-    # Check if issue already has assignees
     if issue.get("assignees"):
-        # The user's spec states "first eligible commenter". If it's already assigned, we ignore new requests.
         print("Issue already assigned. Ignoring comment.")
-        return
+        return "ignored", "Already assigned"
         
-    # Check labels: Must be frontend solvable and not admin-only/backend
     labels = [l.get("name", "").lower() for l in issue.get("labels", [])]
     if "backend" in labels or "maintainer-review-required" in labels or "needs-information" in labels or "out-of-scope" in labels:
         print("Issue is not open for standard frontend contribution.")
-        return
+        return "ignored", "Not an open frontend task"
         
     if "frontend" not in labels:
         print("Issue is not marked as frontend. Triage might be incomplete. Ignoring.")
-        return
+        return "ignored", "Missing frontend label"
 
-    # Eligibility Check 1: Active assignments
     has_active = check_active_assignments(repo, commenter, token)
     if has_active:
         msg = f"@{commenter} You currently have an active assigned issue. Please complete your existing work before requesting a new assignment."
         post_comment(repo, issue_number, msg, token)
-        return
+        return "rejected", "Active assignments limit"
         
-    # Eligibility Check 2: Previous PR submitted (if they ever had an issue)
-    # This is tricky because we can't easily query "all past assigned issues for a user".
-    # The rule: "If you previously had an assigned issue, ensure that a Pull Request has been submitted before requesting another assignment."
-    # We will enforce this by checking if the user has submitted at least one PR to the repo if they've been active.
-    # To be perfectly accurate, we'd need to cross-reference closed assigned issues with their PRs.
-    # For now, we assume if they have 0 active, we assign. If we want to strictly check "if had previous issue -> must have PR",
-    # we can check if they have closed issues assigned to them.
-    
     query = urllib.parse.quote(f"repo:{repo} is:issue assignee:{commenter} is:closed")
     url = f"https://api.github.com/search/issues?q={query}"
     past_issues = make_request(url, token=token)
     
     if past_issues and past_issues.get("total_count", 0) > 0:
-        # User had past assigned issues. Check if they have submitted any PRs.
         has_prs = check_previous_prs(repo, commenter, token)
         if not has_prs:
             msg = f"@{commenter} It appears you previously had an assigned issue but haven't submitted a Pull Request to this repository yet. Ensure that a Pull Request has been submitted before requesting another assignment."
             post_comment(repo, issue_number, msg, token)
-            return
+            return "rejected", "No PRs submitted yet"
 
-    # Eligible!
     assign_user(repo, issue_number, commenter, token)
-    
-    msg = f"""> Thank you for volunteering, @{commenter}!
->
-> The issue has been reviewed and determined to be suitable for community contribution.
->
-> Assignment has been made based on current contributor availability.
->
-> Please ensure your pull request references this issue (`Fixes #{issue_number}`) and follows repository contribution guidelines.
->
-> Maintainer: @SB2318"""
+    msg = f"""> Thank you for volunteering, @{commenter}!\n>\n> The issue has been reviewed and determined to be suitable for community contribution.\n>\n> Assignment has been made based on current contributor availability.\n>\n> Please ensure your pull request references this issue (`Fixes #{issue_number}`) and follows repository contribution guidelines.\n>\n> Maintainer: @SB2318"""
     post_comment(repo, issue_number, msg, token)
     print(f"Successfully assigned #{issue_number} to {commenter}.")
+    return "assigned", f"Assigned to {commenter}"
 
 def main():
     gemini_api_key = os.environ.get("GEMINI_API_KEY")
@@ -337,36 +343,63 @@ def main():
         test_issue = os.environ.get("ISSUE_NUMBER", "").strip()
         if test_issue:
             print(f"Running manual test triage on #{test_issue}...")
-            handle_issue_opened(repo, test_issue, github_token, gemini_api_key)
+            status, detail = handle_issue_opened(repo, test_issue, github_token, gemini_api_key)
+            _write_step_summary([
+                "## 🤖 AI Issue Triage Report",
+                f"**Issue:** #{test_issue}",
+                f"**Status:** {status}",
+                f"**Detail:** {detail}"
+            ])
         else:
             print("Running batch triage on untriaged open issues...")
-            url = f"https://api.github.com/repos/{repo}/issues?state=open&per_page=100"
-            issues = make_request(url, token=github_token)
+            issues = fetch_all_open_issues(repo, github_token)
             if not issues:
                 print("No open issues found or failed to fetch.")
+                _write_step_summary(["## 🤖 AI Issue Triage Report", "No open issues found."])
                 return
             
-            processed = 0
+            skip_labels = {
+                "gssoc", "outside-ultimatehealth", "duplicate", "out-of-scope",
+                "needs-information", "backend", "maintainer-review-required"
+            }
+            
+            to_process = []
             for issue in issues:
-                if "pull_request" in issue:
-                    continue
-                
+                if "pull_request" in issue: continue
                 labels = [l.get("name", "").lower() for l in issue.get("labels", [])]
-                
-                # Check for every open issue, which has not yet tagged gssoc or other triage labels
-                skip_labels = {
-                    "gssoc", "outside-ultimatehealth", "duplicate", "out-of-scope",
-                    "needs-information", "backend", "maintainer-review-required"
-                }
-                
                 if not any(lbl in skip_labels for lbl in labels):
-                    num = issue["number"]
-                    print(f"\n--- Batch Triaging Issue #{num} ---")
-                    handle_issue_opened(repo, num, github_token, gemini_api_key)
-                    processed += 1
-                    time.sleep(10) # delay to avoid rate limiting
-                    
-            print(f"\nBatch triage complete. Processed {processed} issues.")
+                    to_process.append(issue)
+            
+            if not to_process:
+                print("All open issues are already triaged or skipped.")
+                _write_step_summary(["## 🤖 AI Issue Triage Report", "All open issues are already triaged or skipped."])
+                return
+                
+            audit_log = []
+            print(f"Found {len(to_process)} untriaged issues out of {len(issues)} total open issues/PRs.")
+            for issue in to_process:
+                num = issue["number"]
+                print(f"\n--- Batch Triaging Issue #{num} ---")
+                try:
+                    status, detail = handle_issue_opened(repo, num, github_token, gemini_api_key)
+                    audit_log.append((num, status, detail))
+                except urllib.error.HTTPError as e:
+                    if e.code == 429:
+                        audit_log.append((num, "error", "Gemini Quota API Limit 429 Hit"))
+                        print("Gemini rate limit exceeded. Aborting batch.")
+                        break
+                    audit_log.append((num, "error", str(e)))
+                except Exception as e:
+                    audit_log.append((num, "error", str(e)))
+                    traceback.print_exc()
+                
+                time.sleep(10) # delay to avoid rate limiting
+                
+            print(f"\nBatch triage complete. Processed {len(audit_log)} issues.")
+            lines = ["## 🤖 AI Issue Triage Report", "", "| Issue | Status | Detail |", "|---|---|---|"]
+            for num, status, detail in audit_log:
+                lines.append(f"| #{num} | {status} | {detail} |")
+            _write_step_summary(lines)
         return
 
     with open(event_path, "r") as f:
@@ -376,19 +409,28 @@ def main():
     
     if event_name == "issues" and action == "opened":
         issue_number = event_data["issue"]["number"]
-        handle_issue_opened(repo, issue_number, github_token, gemini_api_key)
+        status, detail = handle_issue_opened(repo, issue_number, github_token, gemini_api_key)
+        _write_step_summary([
+            "## 🤖 AI Issue Triage Report",
+            f"**Issue:** #{issue_number}",
+            f"**Status:** {status}",
+            f"**Detail:** {detail}"
+        ])
         
     elif event_name == "issue_comment" and action == "created":
-        # Only process if comment is on an issue, not a PR
         if "pull_request" not in event_data["issue"]:
             issue_number = event_data["issue"]["number"]
             commenter = event_data["comment"]["user"]["login"]
-            
-            # Avoid responding to our own comments
             if commenter == "github-actions[bot]" or "bot" in commenter.lower():
                 return
-                
-            handle_issue_comment(repo, issue_number, commenter, github_token)
+            status, detail = handle_issue_comment(repo, issue_number, commenter, github_token)
+            _write_step_summary([
+                "## 🤖 AI Issue Assignment Report",
+                f"**Issue:** #{issue_number}",
+                f"**Commenter:** @{commenter}",
+                f"**Status:** {status}",
+                f"**Detail:** {detail}"
+            ])
 
 if __name__ == "__main__":
     main()
