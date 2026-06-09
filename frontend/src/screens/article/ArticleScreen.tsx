@@ -5,7 +5,6 @@ import {
   Text,
   TouchableOpacity,
   View,
-  ScrollView,
   Alert,
   Dimensions,
   Share,
@@ -47,10 +46,19 @@ import {useGetProfile} from '@/src/hooks/useGetProfile';
 import {useLikeArticle} from '@/src/hooks/useLikeArticle';
 import {useUpdateFollowStatusByArticle} from '@/src/hooks/useUpdateFollowStatus';
 import {useUpdateReadEvent} from '@/src/hooks/useUpdateReadEvent';
+import {getReadTime} from '../../utils/readTime';
 import {useUpdateViewCount} from '@/src/hooks/useUpdateViewCount';
 import {useSaveArticle} from '@/src/hooks/useSaveArticle';
 import {useSocket} from '../../contexts/SocketContext';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import Animated, {
+  useSharedValue,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  interpolate,
+  Extrapolate,
+  runOnJS,
+} from 'react-native-reanimated';
 
 const CHUNK_SIZE = 120;
 
@@ -68,6 +76,11 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const [summaryLoading, setSummaryLoading] = useState(false);
   const chunkIndexRef = useRef(0);
   const wordsRef = useRef<string[]>([]);
+
+  // Progress Bar Shared Values
+  const scrollY = useSharedValue(0);
+  const contentHeight = useSharedValue(0);
+  const layoutHeight = useSharedValue(0);
 
   const {mutate: followMutation, isPending: followMutationPending} =
     useUpdateFollowStatusByArticle();
@@ -580,6 +593,72 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     }
   };
 
+  // Function to handle the Read Status logic (preserved from original onScroll)
+  const handleReadStatusUpdate = (offset: number, height: number, layout: number) => {
+    if (layout + offset >= height) {
+      if (
+        article &&
+        !readEventSave &&
+        !isGuest &&
+        article.status === StatusEnum.PUBLISHED
+      ) {
+        updateReadEvent(undefined, {
+          onSuccess: () => {
+            setReadEventSave(true);
+            Snackbar.show({
+              text: 'Your read status updated.',
+              duration: Snackbar.LENGTH_SHORT,
+            });
+          },
+          onError: err => {
+            console.log('Update Read Status mutation error', err);
+            Snackbar.show({
+              text: 'Failed to update your read status.',
+              duration: Snackbar.LENGTH_SHORT,
+            });
+          },
+        });
+      }
+    }
+  };
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: event => {
+      scrollY.value = event.contentOffset.y;
+      contentHeight.value = event.contentSize.height;
+      layoutHeight.value = event.layoutMeasurement.height;
+
+      // Execute existing read-status logic on JS thread
+      runOnJS(handleReadStatusUpdate)(
+        event.contentOffset.y,
+        event.contentSize.height,
+        event.layoutMeasurement.height,
+      );
+    },
+  });
+
+  const progressStyle = useAnimatedStyle(() => {
+  const scrollableDistance =
+    contentHeight.value - layoutHeight.value;
+
+  if (scrollableDistance <= 0 && contentHeight.value > 0) {
+    return {
+      width: Dimensions.get('window').width,
+    };
+  }
+
+  const width = interpolate(
+    scrollY.value,
+    [0, Math.max(1, scrollableDistance)],
+    [0, Dimensions.get('window').width],
+    Extrapolate.CLAMP,
+  );
+
+  return {
+    width,
+  };
+});
+
   if (articleLoading) {
     return <Loader />;
   }
@@ -602,6 +681,9 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Reading Progress Bar */}
+      <Animated.View style={[styles.progressBar, progressStyle]} />
+
       <View style={styles.imageContainer}>
         {article && article?.imageUtils && article?.imageUtils.length > 0 ? (
           <Image
@@ -676,39 +758,10 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
         )}
       </View>
 
-      <ScrollView
+      <Animated.ScrollView
         style={styles.scrollView}
-        onScroll={e => {
-          let windowHeight = Dimensions.get('window').height,
-            height = e.nativeEvent.contentSize.height,
-            offset = e.nativeEvent.contentOffset.y;
-          if (windowHeight + offset >= height) {
-            if (
-              article &&
-              !readEventSave &&
-              !isGuest &&
-              article.status === StatusEnum.PUBLISHED
-            ) {
-              updateReadEvent(undefined, {
-                onSuccess: () => {
-                  console.log('Read Event Updated');
-                  setReadEventSave(true);
-                  Snackbar.show({
-                    text: 'Your read status updated.',
-                    duration: Snackbar.LENGTH_SHORT,
-                  });
-                },
-                onError: err => {
-                  console.log('Update Read Status mutation error', err);
-                  Snackbar.show({
-                    text: 'Failed to update your read status.',
-                    duration: Snackbar.LENGTH_SHORT,
-                  });
-                },
-              });
-            }
-          }
-        }}
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
         contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.contentContainer}>
           {article && (
@@ -727,7 +780,16 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
           {article && (
             <>
               <Text style={styles.titleText}>{article?.title}</Text>
-              <View style={styles.fontSizeControls}>
+<Text style={{
+  fontSize: 13,
+  color: '#6C6C6D',
+  marginTop: 6,
+  marginBottom: 4,
+  fontWeight: '500',
+}}>
+  🕐 {getReadTime(articleContent ?? '')}
+</Text>
+<View style={styles.fontSizeControls}>
                 <Text style={styles.fontSizeLabel}>Text size</Text>
                 <View style={styles.fontSizeButtons}>
                   <TouchableOpacity
@@ -1168,6 +1230,16 @@ const styles = StyleSheet.create({
     flex: 1,
     position: 'relative',
     backgroundColor: '#ffffff',
+  },
+  progressBar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    height: 4,
+    backgroundColor: PRIMARY_COLOR,
+    zIndex: 1000,
+    borderBottomRightRadius: 2,
+    borderTopRightRadius: 2,
   },
   scrollView: {
     flex: 0,
