@@ -9842,10 +9842,10 @@ react-native-reanimated@~4.1.1:
     react-native-is-edge-to-edge "^1.2.1"
     semver "^7.7.2"
 
-react-native-safe-area-context@~5.6.0:
-  version "5.6.2"
-  resolved "https://registry.yarnpkg.com/react-native-safe-area-context/-/react-native-safe-area-context-5.6.2.tgz#283e006f5b434fb247fcb4be0971ad7473d5c560"
-  integrity sha512-4XGqMNj5qjUTYywJqpdWZ9IG8jgkS3h06sfVjfw5yZQZfWnRFXczi0GnYyFyCc2EBps/qFmoCH8fez//WumdVg==
+react-native-safe-area-context@~5.8.0:
+  version "5.8.0"
+  resolved "https://registry.yarnpkg.com/react-native-safe-area-context/-/react-native-safe-area-context-5.8.0.tgz#d2fb9fc8e0f0583311e261dc484b95ceb80f8902"
+  integrity sha512-t+ZsAVzY/wWzzx34vqGbo3/as9EEESJdbyZNL7Yg5EYX+toYMtMqFoDDCvqZUi35eeGVsXc6pAaEk4edMwbuCQ==
 
 react-native-screens@~4.16.0:
   version "4.16.0"
