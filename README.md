@@ -414,6 +414,108 @@ eas build --platform ios --profile production
 > The **backend** and **content intelligence** service are hosted separately. For local development, update your `.env` file to point to either the live APIs or locally running services.
 
 ---
+## 🛠️ Troubleshooting
+
+### 1. Android SDK Path Not Found
+   Error: 
+   ```bash
+ANDROID_HOME is not set or SDK not found
+```
+Fix:
+```bash
+# Add to ~/.bashrc or ~/.zshrc
+export ANDROID_HOME=$HOME/Android/Sdk
+export PATH=$PATH:$ANDROID_HOME/emulator
+export PATH=$PATH:$ANDROID_HOME/tools
+export PATH=$PATH:$ANDROID_HOME/platform-tools
+
+# Then reload
+source ~/.bashrc
+```
+### 2. Expo Go Version Mismatch
+Error: 
+```bash
+SDK version mismatch — project uses SDK X but Expo Go supports SDK Y
+```
+**Fix:**
+
+- Update Expo Go on your device to the latest version from Play Store / App Store
+- Or use a Development Build instead of Expo Go:
+```bash
+  npx expo start --dev-client
+```
+### 3. Metro Bundler Port Conflict
+   Error: 
+   ```bash
+Port 8081 is already in use
+```
+Fix:
+```bash
+# Kill the process using port 8081
+npx kill-port 8081
+
+# Or start Metro on a different port
+npx expo start --port 8082
+```
+### 4. iOS Build Failing Without Apple Developer Account
+   Error: 
+```bash
+No signing certificate or provisioning profile found
+```
+**Fix:**
+
+- iOS builds require a paid Apple Developer Account ($99/year)
+- For local testing without an account, use the iOS Simulator on macOS:
+```bash
+npx expo start --simulator
+```
+For production iOS builds, configure credentials via EAS:
+```bash
+eas credentials
+```
+### 5. yarn install Failing / Dependency Conflicts
+   Error: 
+```bash
+Cannot find module or peer dependency conflict
+```
+Fix:
+```bash
+# Clear cache and reinstall
+rm -rf node_modules
+yarn cache clean
+yarn install
+```
+### 6. npx expo prebuild Errors
+   Error: 
+```bash
+Native project already exists
+```
+Fix:
+```bash
+# Use --clean flag to reset native project
+npx expo prebuild --clean
+```
+### 7. Node.js Version Incompatibility
+   Error: 
+```bash
+Unsupported engine — expected Node >= 18.x
+```
+Fix:
+  Use nvm (Node Version Manager) to switch versions easily:
+```bash
+# Install nvm
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+
+# Install and use correct Node version
+nvm install 18
+nvm use 18
+```
+Or use fnm (Fast Node Manager) as a lighter alternative:
+```bash
+fnm use 18
+```
+
+  
 
 ## 🤝 Contribution Guidelines
 
