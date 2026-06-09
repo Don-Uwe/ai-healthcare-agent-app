@@ -57,19 +57,38 @@ def generate_triage_decision(title, body, recent_issues_context, api_key):
     headers = {"Content-Type": "application/json"}
     
     prompt = f"""
-You are an automated Issue Triage Assistant for the UltimateHealth repository.
-Your job is to review a newly created issue and output a STRICT JSON response evaluating it against repository rules.
+You are an automated Issue Triage Assistant responsible for reviewing newly created issues, validating them against repository rules, checking for duplicates, assigning labels, and determining assignment eligibility.
 
-# Repository Scope
-IN SCOPE: Health Articles, Health Content Discovery, Podcasts, AI Chat Assistant, User Analytics, User Engagement Features, Content Intelligence, Frontend Experience (React Native UI, UX), Backend APIs supporting these.
-OUT OF SCOPE: Doctor consultation systems, Hospital management systems, Clinical workflows, Doctor onboarding, Doctor appointment management, Medical practitioner management, Healthcare provider administration.
+## Repository Context
+This repository is focused on: Health Articles, Health Content Discovery, Podcasts, AI Chat Assistant, User Analytics, User Engagement Features, Content Intelligence, Frontend Experience, Backend APIs supporting the above features.
+The repository is NOT intended for: Doctor consultation systems, Hospital management systems, Clinical workflows, Doctor onboarding, Doctor appointment management, Medical practitioner management, Healthcare provider administration.
 
-# Rules
-1. Is it a duplicate? Check the recent issues provided below. If it describes the exact same bug, feature, or enhancement, mark it as duplicate and provide the duplicate_number.
-2. Is it in scope? If it involves doctors, hospitals, appointments, or clinical workflows, mark is_in_scope=false and is_doctor_related=true. If it's another out-of-scope topic (extremely broad, product strategy, etc.), mark is_in_scope=false.
-3. Is it valid? Does it have a clear problem statement, reproduction steps (if bug), expected behavior, and sufficient details? If too vague, mark is_valid=false.
-4. Classification: "backend" (APIs, DB, Auth, server-side) or "frontend" (React Native UI, components, navigation, state, client-side validation). If both, classify based on primary work. If neither or broad, set "broad".
-5. Difficulty: "level1" (small fixes, alignment, typos), "level2" (medium, new screens, features, state updates, API integration), "level3" (advanced, architecture, performance). Leave null if invalid/out-of-scope.
+## Initial Validation
+Check whether the issue contains: Clear problem statement, Reproduction steps (if bug), Expected behavior, Relevant screenshots/logs when applicable, Sufficient implementation details.
+If the issue lacks enough information, mark `is_valid = false`.
+
+## Scope Validation
+If the issue involves Doctors, Practitioners, Appointments, Clinical workflows, Hospitals, or Medical staff management, mark `is_in_scope = false` and `is_doctor_related = true`.
+If the issue is: Extremely broad, Product strategy discussion, Long-term roadmap item, Infrastructure migration, Security-sensitive, or Requires maintainer-only access, mark `is_in_scope = false`.
+
+## Technical Classification
+Classify as backend if it involves: APIs, Database, Authentication, Authorization, Server-side validation, Backend integrations, Content processing services, Analytics pipelines.
+Classify as frontend if it involves: React Native UI, UX improvements, Components, Navigation, State management, Client-side validation, Frontend performance, Accessibility, Styling.
+
+## Difficulty Level Assignment
+Level 1: Small fixes (UI alignment, Typo fixes, Simple validations, Minor component updates).
+Level 2: Medium complexity (New screens, Feature enhancements, State management updates, API integrations).
+Level 3: Advanced (Architecture changes, Complex analytics, Performance optimizations, Large feature additions).
+
+## Maintainer Escalation
+You must set `escalate_to_maintainer = true` when:
+* Backend issue
+* Scope ambiguity
+* Doctor-related request
+* Architecture change
+* Security concern
+* Large feature proposal
+* Level 3 issue
 
 # Recent Issues for Duplicate Check
 {json.dumps(recent_issues_context, indent=2)}
@@ -79,7 +98,7 @@ Title: {title}
 Body:
 {body}
 
-Output a single JSON object. DO NOT wrap in Markdown code blocks (no ```json). Output exactly this structure:
+Output a single JSON object. DO NOT wrap in Markdown code blocks. Output exactly this structure:
 {{
   "is_valid": boolean,
   "is_duplicate": boolean,
@@ -88,7 +107,8 @@ Output a single JSON object. DO NOT wrap in Markdown code blocks (no ```json). O
   "is_doctor_related": boolean,
   "classification": "backend" | "frontend" | "broad" | null,
   "difficulty": "level1" | "level2" | "level3" | null,
-  "reasoning": "A short, polite explanation for your decision. If closing, explain why. If valid, briefly state why it's classified this way."
+  "escalate_to_maintainer": boolean,
+  "reasoning": "A short, polite explanation for your decision."
 }}
 """
     data = {
@@ -196,6 +216,10 @@ def handle_issue_opened(repo, issue_number, token, gemini_api_key):
     # Valid and In Scope
     classification = decision.get("classification")
     difficulty = decision.get("difficulty")
+    escalate = decision.get("escalate_to_maintainer")
+    
+    if escalate:
+        labels_to_add.append("maintainer-review-required")
     
     if classification == "backend":
         labels_to_add.extend(["backend", "level:backend"])
@@ -212,13 +236,19 @@ def handle_issue_opened(repo, issue_number, token, gemini_api_key):
         # Apply gssoc label to mark it as successfully triaged for the batch runner
         labels_to_add.append("gssoc")
         add_labels(repo, issue_number, labels_to_add, token)
-        msg = f"This issue has been triaged as a **frontend** task.\n\nIt is now open for community contribution! To request assignment, please comment below.\n\n*Eligibility Reminder: You must have zero active assigned issues to be assigned.*"
+        
+        if escalate:
+            msg = f"This issue has been triaged as a **frontend** task, but requires maintainer review. cc @SB2318\n\n> **Reasoning:** {decision.get('reasoning')}"
+        else:
+            msg = f"This issue has been triaged as a **frontend** task.\n\nIt is now open for community contribution! To request assignment, please comment below.\n\n*Eligibility Reminder: You must have zero active assigned issues to be assigned.*"
+            
         post_comment(repo, issue_number, msg, token)
         return
         
     else:
         # Broad or uncategorized
-        labels_to_add.append("maintainer-review-required")
+        if "maintainer-review-required" not in labels_to_add:
+            labels_to_add.append("maintainer-review-required")
         add_labels(repo, issue_number, labels_to_add, token)
         msg = "This issue covers a broad scope or requires architectural decisions. Escalating to @SB2318 for maintainer review."
         post_comment(repo, issue_number, msg, token)
