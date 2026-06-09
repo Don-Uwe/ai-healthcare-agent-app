@@ -15,7 +15,7 @@ def _write_step_summary(lines):
     except Exception as e:
         print(f"[WARN] Could not write step summary: {e}")
 
-def make_request(url, method="GET", data=None, headers=None, token=None, max_retries=3):
+def make_request(url, method="GET", data=None, headers=None, token=None, max_retries=2):
     if headers is None:
         headers = {
             "Accept": "application/vnd.github.v3+json",
@@ -37,8 +37,8 @@ def make_request(url, method="GET", data=None, headers=None, token=None, max_ret
         except urllib.error.HTTPError as e:
             if e.code in [403, 429]:
                 retry_after = e.headers.get("Retry-After")
-                sleep_time = int(retry_after) + 1 if retry_after else 15 * (2 ** attempt)
-                print(f"[WARN] GitHub API Rate Limit ({e.code}) on {url}. Retrying in {sleep_time}s...")
+                sleep_time = int(retry_after) + 1 if retry_after else 10
+                print(f"[WARN] GitHub Rate Limit ({e.code}) on attempt {attempt+1}. Retrying in {sleep_time}s...")
                 time.sleep(sleep_time)
             else:
                 print(f"HTTP Error {e.code} for {url}: {e.read().decode('utf-8')}")
@@ -148,14 +148,24 @@ Output a single JSON object. DO NOT wrap in Markdown code blocks. Output exactly
         "generationConfig": {"temperature": 0.1, "responseMimeType": "application/json"}
     }
     
+    import re
     req = urllib.request.Request(url, method="POST", headers=headers, data=json.dumps(data).encode("utf-8"))
     try:
         with urllib.request.urlopen(req, timeout=60) as response:
             result = json.loads(response.read().decode("utf-8"))
             text_response = result["candidates"][0]["content"]["parts"][0]["text"].strip()
-            if text_response.startswith("```json"): text_response = text_response[7:]
-            if text_response.endswith("```"): text_response = text_response[:-3]
-            return json.loads(text_response)
+            
+            try:
+                if text_response.startswith("```json"): text_response = text_response[7:]
+                if text_response.endswith("```"): text_response = text_response[:-3]
+                return json.loads(text_response.strip())
+            except json.JSONDecodeError:
+                match = re.search(r'\{.*\}', text_response, re.DOTALL)
+                if match:
+                    return json.loads(match.group(0))
+                else:
+                    print(f"Failed to extract JSON from: {text_response}")
+                    return None
     except urllib.error.HTTPError as e:
         print(f"Gemini API HTTP Error {e.code}: {e.read().decode('utf-8')}")
         if e.code == 429: raise e # Bubble up 429
