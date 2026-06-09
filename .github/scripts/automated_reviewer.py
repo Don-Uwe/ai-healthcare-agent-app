@@ -307,8 +307,9 @@ def fetch_open_prs(repo, github_token):
 def run_review_for_pr(repo, pr_number, github_token, gemini_api_key,
                       is_scheduled=False, filtered_labels=None):
     """
-    is_scheduled=True  → re-check even without new commits (catches unresolved feedback).
-    filtered_labels    → pre-fetched label list; fetched here only if not provided.
+    Returns a (status, detail) tuple:
+      status : "reviewed" | "skipped" | "error"
+      detail : human-readable reason string
     """
     if filtered_labels is None:
         filtered_labels = []
@@ -317,8 +318,9 @@ def run_review_for_pr(repo, pr_number, github_token, gemini_api_key,
 
     # 1. Skip review entirely if the PR currently contains the label: gssoc:invalid
     if "gssoc:invalid" in pr_labels:
-        print("PR contains 'gssoc:invalid' label. Skipping review entirely.")
-        return
+        msg = "Skipped: PR has 'gssoc:invalid' label."
+        print(msg)
+        return "skipped", msg
 
     print("Fetching PR comments...")
     comments = fetch_pr_comments(repo, pr_number, github_token)
@@ -339,8 +341,9 @@ def run_review_for_pr(repo, pr_number, github_token, gemini_api_key,
     print("Fetching PR commits...")
     commits = fetch_pr_commits(repo, pr_number, github_token)
     if not commits:
-        print("No commits found for this PR. Skipping.")
-        return
+        msg = "Skipped: no commits found."
+        print(msg)
+        return "skipped", msg
 
     # Parse timestamps
     commit_dates = [parse_github_date(cmt["commit"]["committer"]["date"]) for cmt in commits]
@@ -362,55 +365,49 @@ def run_review_for_pr(repo, pr_number, github_token, gemini_api_key,
 
     if not has_new_review:
         if has_old_review:
-            # Migration Rule: on scheduled runs always review once;
-            # on PR-triggered runs require a new commit.
             if is_scheduled or (latest_old_review_time and last_commit_time > latest_old_review_time):
                 should_run = True
-                reason = "Migration review: triggered for first new-bot review."
+                reason = "Migration: first new-bot review."
             else:
-                reason = "Migration review: waiting for the first new commit since the last old review."
+                reason = "Skipped: migration waiting for new commit since old review."
         else:
-            # Brand new PR — always review immediately
             should_run = True
-            reason = "Initial review: no previous reviews exist for this PR."
+            reason = "Initial: no previous review exists."
     else:
-        # Subsequent reviews — always enforce the 48-hour cooldown.
-        # On scheduled/manual runs: re-check even without new commits (catches unresolved feedback).
-        # On PR-event runs: also require a new commit so we don't re-post on the same code.
         elapsed = current_time - latest_new_review_time
-        cooldown_period = 48 * 3600  # seconds
+        cooldown_period = 48 * 3600
 
         if elapsed.total_seconds() < cooldown_period:
-            reason = (f"Cooldown period of 48 h has not elapsed. "
-                      f"Only {elapsed.total_seconds() / 3600:.1f} h since last review.")
+            hrs = elapsed.total_seconds() / 3600
+            reason = f"Skipped: cooldown active ({hrs:.1f} h / 48 h elapsed)."
         elif is_scheduled:
-            # Scheduled / manual: re-check regardless of new commits
             should_run = True
-            reason = "Scheduled re-check: 48 h elapsed, reviewing for unresolved feedback."
+            reason = "Scheduled re-check: 48 h elapsed, checking unresolved feedback."
         elif last_commit_time <= latest_new_review_time:
-            reason = "No new commits since the last bot review (PR-triggered run)."
+            reason = "Skipped: no new commits since last bot review."
         else:
             should_run = True
-            reason = "Subsequent review: 48 h elapsed and new commits detected."
+            reason = "Subsequent: 48 h elapsed + new commits detected."
 
     print(f"Trigger Decision: {reason}")
     if not should_run:
         print("Exiting review workflow without posting.")
-        return
+        return "skipped", reason
 
-    print("Fetching PR diff...")
     diff_text = fetch_pr_diff(repo, pr_number, github_token)
     if not diff_text:
-        print("No diff found or failed to fetch diff.")
-        return
+        msg = "Skipped: no diff found or fetch failed."
+        print(msg)
+        return "skipped", msg
 
     print("Filtering diff...")
     filtered_diff = filter_diff(diff_text)
     if not filtered_diff.strip():
-         print("Diff is empty after filtering out ignored files.")
-         return
+        msg = "Skipped: diff empty after filtering ignored files."
+        print(msg)
+        return "skipped", msg
 
-    # Prepare previous reviews context for the model to avoid duplication
+    # Prepare previous reviews context
     previous_reviews_text = ""
     if new_reviews:
         previous_reviews_text += "\n--- PREVIOUS NEW BOT REVIEWS ---\n"
@@ -418,7 +415,7 @@ def run_review_for_pr(repo, pr_number, github_token, gemini_api_key,
             previous_reviews_text += f"\nReview {i+1} on {rev['created_at']}:\n{rev['body']}\n"
     if old_reviews:
         previous_reviews_text += "\n--- PREVIOUS OLD BOT REVIEWS ---\n"
-        for i, rev in enumerate(old_reviews[:3]): # Pass at most 3 old reviews to keep prompt clean
+        for i, rev in enumerate(old_reviews[:3]):
             previous_reviews_text += f"\nReview {i+1} on {rev['created_at']}:\n{rev['body']}\n"
 
     print(f"Using pre-fetched labels: {filtered_labels}")
@@ -428,9 +425,10 @@ def run_review_for_pr(repo, pr_number, github_token, gemini_api_key,
                                      previous_reviews_text, filtered_labels, gemini_api_key)
 
     if not model_response:
-        print("Gemini returned an empty response. Skipping PR.")
-        return
-    
+        msg = "Skipped: Gemini returned an empty response."
+        print(msg)
+        return "skipped", msg
+
     # Extract selected labels
     selected_labels = []
     clean_model_response = model_response
@@ -440,7 +438,7 @@ def run_review_for_pr(repo, pr_number, github_token, gemini_api_key,
             labels_part = line.split("SELECTED_LABELS:", 1)[1].strip()
             if labels_part.lower() != "none":
                 selected_labels = [l.strip() for l in labels_part.split(",") if l.strip()]
-                break
+            break
 
     # Check if the model response indicates no issues found
     no_issues_found = "NO_ISSUES_FOUND" in clean_model_response or not any(
@@ -456,6 +454,7 @@ def run_review_for_pr(repo, pr_number, github_token, gemini_api_key,
             "> Maintainer **@SB2318** will review this pull request after the initial automated review cycle is complete.\n\n"
             f"{NEW_BOT_SIG}"
         )
+        outcome = "reviewed (no issues)"
     else:
         review_text = (
             "### Automated Review Feedback\n\n"
@@ -465,6 +464,7 @@ def run_review_for_pr(repo, pr_number, github_token, gemini_api_key,
             "> Once the initial automated feedback has been addressed, maintainer **@SB2318** will review the pull request for final evaluation.\n\n"
             f"{NEW_BOT_SIG}"
         )
+        outcome = "reviewed (issues found)"
 
     print("Posting review comment to GitHub...")
     post_review(repo, pr_number, github_token, review_text)
@@ -472,6 +472,8 @@ def run_review_for_pr(repo, pr_number, github_token, gemini_api_key,
     if selected_labels:
         print(f"Adding labels to PR: {selected_labels}")
         add_pr_labels(repo, pr_number, github_token, selected_labels)
+
+    return "reviewed", f"{outcome} | labels: {selected_labels if selected_labels else 'none'}"
 
 def _get_filtered_labels(repo, github_token):
     """Fetch all repo labels once and filter to the relevant subset."""
@@ -484,6 +486,18 @@ def _get_filtered_labels(repo, github_token):
             result.append(label)
     print(f"Relevant labels fetched once: {result}")
     return result
+
+
+def _write_step_summary(lines):
+    """Append markdown lines to $GITHUB_STEP_SUMMARY if running inside GitHub Actions."""
+    summary_file = os.environ.get("GITHUB_STEP_SUMMARY")
+    if not summary_file:
+        return
+    try:
+        with open(summary_file, "a", encoding="utf-8") as f:
+            f.write("\n".join(lines) + "\n")
+    except Exception as e:
+        print(f"[WARN] Could not write step summary: {e}")
 
 
 def main():
@@ -499,24 +513,36 @@ def main():
     is_scheduled = event_name in ("schedule", "workflow_dispatch", "push")
 
     if not all([gemini_api_key, github_token, repo]):
-        print("Missing required environment variables (GEMINI_API_KEY, GITHUB_TOKEN, GITHUB_REPOSITORY).")
+        msg = "Missing required environment variables (GEMINI_API_KEY, GITHUB_TOKEN, GITHUB_REPOSITORY)."
+        print(msg)
+        _write_step_summary(["## \u274c Automated PR Reviewer", "", f"**Fatal:** {msg}"])
         return
 
-    print(f"Event: {event_name} | Scheduled mode: {is_scheduled}")
+    run_start = datetime.now(timezone.utc)
+    print(f"Event: {event_name} | Scheduled mode: {is_scheduled} | Started: {run_start.isoformat()}")
 
     # --- Validate PR_NUMBER: must be a positive integer string ---
     single_pr_mode = pr_number.isdigit() and int(pr_number) > 0
 
+    # audit_log entries: (pr_num, status, detail)
+    audit_log = []
+    stop_reason = None
+
     try:
         if single_pr_mode:
-            # Triggered by a real pull_request event — review just that PR
             print(f"Single-PR mode: reviewing PR #{pr_number}")
-            # Fetch labels once even in single-PR mode
             filtered_labels = _get_filtered_labels(repo, github_token)
-            run_review_for_pr(repo, pr_number, github_token, gemini_api_key,
-                              is_scheduled=is_scheduled, filtered_labels=filtered_labels)
+            try:
+                status, detail = run_review_for_pr(
+                    repo, pr_number, github_token, gemini_api_key,
+                    is_scheduled=is_scheduled, filtered_labels=filtered_labels
+                )
+                audit_log.append((pr_number, status, detail))
+            except Exception as e:
+                audit_log.append((pr_number, "error", str(e)))
+                traceback.print_exc()
         else:
-            # Batch mode: fetch all open PRs and review them
+            # Batch mode
             print("Batch mode: fetching all open PRs...")
             open_prs = fetch_open_prs(repo, github_token)
             total = len(open_prs)
@@ -528,7 +554,8 @@ def main():
             processed = 0
             for pr in open_prs:
                 if processed >= MAX_BATCH_PER_RUN:
-                    print(f"Reached batch limit of {MAX_BATCH_PER_RUN}. Stopping for this run.")
+                    stop_reason = f"Batch limit reached ({MAX_BATCH_PER_RUN} PRs per run)."
+                    print(f"\n[STOP] {stop_reason}")
                     break
 
                 num = pr.get("number")
@@ -537,25 +564,84 @@ def main():
 
                 print(f"\n--- [{processed + 1}/{min(total, MAX_BATCH_PER_RUN)}] Reviewing PR #{num} ---")
                 try:
-                    run_review_for_pr(repo, str(num), github_token, gemini_api_key,
-                                      is_scheduled=is_scheduled, filtered_labels=filtered_labels)
+                    status, detail = run_review_for_pr(
+                        repo, str(num), github_token, gemini_api_key,
+                        is_scheduled=is_scheduled, filtered_labels=filtered_labels
+                    )
+                    audit_log.append((num, status, detail))
                 except Exception as e:
-                    # Log the full stack and move on — one bad PR must NOT stop the batch
+                    audit_log.append((num, "error", str(e)))
                     print(f"[WARN] Error reviewing PR #{num}: {e}")
                     traceback.print_exc()
 
                 processed += 1
 
-                # Pause between PRs so we don't exhaust the Gemini API quota
                 if processed < min(total, MAX_BATCH_PER_RUN):
                     print(f"Waiting {BATCH_DELAY}s before next PR...")
                     time.sleep(BATCH_DELAY)
 
-            print(f"\nBatch complete. Reviewed {processed}/{total} PRs.")
+            if stop_reason is None:
+                stop_reason = f"All {processed} PR(s) processed (no more to review)."
 
     except Exception as e:
-        print(f"Execution failed: {e}")
+        stop_reason = f"Fatal exception: {e}"
+        print(f"\n[FATAL] {stop_reason}")
         traceback.print_exc()
+
+    # ------------------------------------------------------------------ #
+    #  Final summary (stdout + GitHub Actions Step Summary)               #
+    # ------------------------------------------------------------------ #
+    run_end = datetime.now(timezone.utc)
+    duration_s = int((run_end - run_start).total_seconds())
+    duration_str = f"{duration_s // 60}m {duration_s % 60}s"
+
+    reviewed = [e for e in audit_log if e[1] == "reviewed"]
+    skipped  = [e for e in audit_log if e[1] == "skipped"]
+    errored  = [e for e in audit_log if e[1] == "error"]
+
+    separator = "=" * 60
+    print(f"\n{separator}")
+    print(f"  AUTOMATED REVIEWER \u2014 RUN SUMMARY")
+    print(separator)
+    print(f"  Event       : {event_name}")
+    print(f"  Duration    : {duration_str}")
+    print(f"  PRs seen    : {len(audit_log)}")
+    print(f"  Reviewed    : {len(reviewed)}")
+    print(f"  Skipped     : {len(skipped)}")
+    print(f"  Errors      : {len(errored)}")
+    print(f"  Stop reason : {stop_reason or 'N/A'}")
+    print(separator)
+    print("  PR-BY-PR DETAIL")
+    print(separator)
+    for num, status, detail in audit_log:
+        icon = {"reviewed": "\u2705", "skipped": "\u23ed", "error": "\u274c"}.get(status, "?")
+        print(f"  {icon} PR #{num:>5} | {status:<8} | {detail}")
+    print(separator)
+
+    # Write GitHub Actions Job Summary (visible in the Actions UI)
+    md_lines = [
+        "## \U0001f916 Automated PR Reviewer \u2014 Run Summary",
+        "",
+        f"| Field | Value |",
+        f"|---|---|",
+        f"| **Event** | `{event_name}` |",
+        f"| **Duration** | {duration_str} |",
+        f"| **PRs evaluated** | {len(audit_log)} |",
+        f"| **Reviewed** | {len(reviewed)} |",
+        f"| **Skipped** | {len(skipped)} |",
+        f"| **Errors** | {len(errored)} |",
+        f"| **Stop reason** | {stop_reason or 'N/A'} |",
+        "",
+        "### Per-PR Detail",
+        "",
+        "| PR | Status | Detail |",
+        "|---|---|---|",
+    ]
+    for num, status, detail in audit_log:
+        icon = {"reviewed": "\u2705", "skipped": "\u23ed", "error": "\u274c"}.get(status, "?")
+        md_lines.append(f"| [#{num}](https://github.com/{repo}/pull/{num}) | {icon} {status} | {detail} |")
+
+    _write_step_summary(md_lines)
 
 
 if __name__ == "__main__":
