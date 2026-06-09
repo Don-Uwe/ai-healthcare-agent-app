@@ -2,10 +2,10 @@ import { useMutation, UseMutationResult } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import { SEND_OTP } from "../helper/APIUtils";
 
-export const useSendOtpMutation = ():UseMutationResult<
- string,
- AxiosError,
- {email: string}
+export const useSendOtpMutation = ():UseMutationResult
+  void,
+  AxiosError,
+  {email: string}
 > =>{
     return useMutation({
     mutationKey: ['forgot-password-otp'],
@@ -13,7 +13,7 @@ export const useSendOtpMutation = ():UseMutationResult<
       const res = await axios.post(SEND_OTP, {
         email: email,
       });
-      return res.data.otp as string;
+      void res;
     },
   });
-}
+};

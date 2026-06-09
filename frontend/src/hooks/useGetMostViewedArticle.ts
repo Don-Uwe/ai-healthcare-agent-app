@@ -14,6 +14,11 @@ export const useGetAuthorMostViewedArticles = ({
 }): UseQueryResult<ArticleData[]> => {
   const targetUserId = userId;
 
+  const shouldFetchMostViewedArticles =
+    Boolean(isConnected) &&
+    Boolean(others) &&
+    Boolean(userId);
+
   return useQuery<ArticleData[]>({
     queryKey: ['get-mostly-viewed-article', targetUserId, others],
 
@@ -25,6 +30,6 @@ export const useGetAuthorMostViewedArticles = ({
       return response.data as ArticleData[];
     },
 
-    enabled: !!isConnected && !!others && !!userId,
+    enabled: shouldFetchMostViewedArticles,
   });
 };

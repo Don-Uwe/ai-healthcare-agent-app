@@ -28,6 +28,7 @@ import FilterModal from '../components/FilterModal';
 import {BottomSheetModal} from '@gorhom/bottom-sheet';
 import {useSelector, useDispatch} from 'react-redux';
 import Loader from '../components/Loader';
+import {usePreferences} from '../contexts/PreferencesContext';
 
 import {
   setFilteredArticles,
@@ -107,6 +108,9 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const [selectCategoryList, setSelectCategoryList] = useState<Category[]>([]);
   const [showSavedOnly, setShowSavedOnly] = useState(false);
   const [filterLoading, setFilterLoading] = useState<boolean>(false);
+  // Session-level language filter (can override preferences per session)
+  const [sessionSelectedLanguages, setSessionSelectedLanguages] = useState<string[]>([]);
+  const {preferredLanguages, isLoading: preferencesLoading} = usePreferences();
   const {mutate: requestEdit, isPending: requestEditPending} =
     useRequestArticleEdit();
 
@@ -261,7 +265,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
                 });
               },
               onError: err => {
-                console.log(err);
+                if (__DEV__) console.log(err);
                 Snackbar.show({
                   text: 'Try again!',
                   duration: Snackbar.LENGTH_SHORT,
@@ -279,6 +283,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     // Update Redux State Variables
     setSelectCategoryList([]);
     setSortingType('');
+    setSessionSelectedLanguages([]);
     dispatch(
       setSelectedTags({
         selectedTags: articleCategories,
@@ -290,7 +295,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
 
   const handleFilterApply = () => {
     // Update Redux State Variables
-    console.log('enter');
     if (selectCategoryList.length > 0) {
       //   console.log("enter")
       dispatch(setSelectedTags({selectedTags: selectCategoryList}));
@@ -305,12 +309,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     }
 
     if (sortingType && sortingType !== '') {
-      console.log('Sort type', sortType);
-      dispatch(setSortType({sortType: sortingType}));
-    }
-
-    if (sortingType && sortingType !== '') {
-      console.log('Sort type', sortType);
+      if (__DEV__) console.log('Sort type', sortType);
       dispatch(setSortType({sortType: sortingType}));
     }
 
@@ -326,6 +325,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
 
     let filtered = articleData;
 
+    // Filter by selected tags (categories)
     if (selectedTags.length > 0) {
       filtered = filtered.filter(article =>
         selectedTags.some((tag: Category) =>
@@ -333,7 +333,20 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         ),
       );
     }
-    //  console.log('Filtered before sort', filtered);
+
+    // Filter by language preference
+    // Priority: session-selected languages > preferred languages
+    const effectiveLanguages = sessionSelectedLanguages.length > 0 
+      ? sessionSelectedLanguages 
+      : preferredLanguages;
+    
+    if (effectiveLanguages.length > 0) {
+      filtered = filtered.filter(article =>
+        effectiveLanguages.includes(article.language || 'en-IN'),
+      );
+    }
+
+    // Apply sorting
     if (sortType && sortType === 'recent' && filtered.length > 1) {
       filtered = filtered.sort(
         (a, b) =>
@@ -379,10 +392,10 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     }
   }, [articleData, page]);
 
-  // Keep filteredArticles and articles list updated when selectedTags or sortType changes
+  // Keep filteredArticles and articles list updated when selectedTags, sortType, or languages change
   useEffect(() => {
     updateArticles(allArticlesRef.current);
-  }, [selectedTags, sortType]);
+  }, [selectedTags, sortType, sessionSelectedLanguages, preferredLanguages]);
 
   // Proactively auto-paginate in the background if the client-filtered list is too short
   // to ensure that at least a few articles of the selected category are shown
@@ -431,19 +444,16 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
 
 
   const onRefresh = () => {
-    console.log('is connected', isConnected);
     if (isConnected) {
       setRefreshing(true);
-      // Reset pagination state on full pull-to-refresh
+      allArticlesRef.current = [];
+      lastCategoryFilteredCountRef.current = -1;
       setPage(1);
-      if (page === 1) {
-        refetch();
-      }
+      refetch();
       if (!isGuest) {
         refetchUser();
         refetchUnreadCount();
       }
-      setRefreshing(false);
     } else {
       Snackbar.show({
         text: 'Please check your network connection',
@@ -451,6 +461,13 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       });
     }
   };
+
+  useEffect(() => {
+    if (refreshing && !isFetching) {
+      setRefreshing(false);
+    }
+  }, [isFetching, refreshing]);
+
   const handleSearch = (textInput: string) => {
     //console.log('Search Input', textInput);
     if (textInput === '' || articleData === undefined) {
@@ -688,6 +705,8 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         handleFilterApply={handleFilterApply}
         setSortingType={setSortingType}
         sortingType={sortingType}
+        selectedLanguages={sessionSelectedLanguages}
+        setSelectedLanguages={setSessionSelectedLanguages}
       />
       <View style={styles.buttonContainer}>
         <ScrollView
@@ -718,7 +737,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
                   ...styles.labelStyle,
                   color: showSavedOnly ? 'white' : '#4B5563',
                 }}>
-                🔖 Saved
+                Saved
               </Text>
             </TouchableOpacity>
           )}

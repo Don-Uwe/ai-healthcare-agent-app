@@ -2,6 +2,7 @@ import { io, Socket } from 'socket.io-client';
 import { SOCKET_PROD } from './APIUtils';
 
 let socket: Socket | null = null;
+let currentAuthToken: string | null = null;
 
 /**
  * Initialize Socket.IO connection with optional authentication
@@ -9,10 +10,18 @@ let socket: Socket | null = null;
  * @returns {Socket} Socket instance
  */
 export const initializeSocket = (token: string | null = null): Socket => {
-    // Disconnect existing socket if any
+    const tokenChanged = currentAuthToken !== token;
+
+    if (socket && !tokenChanged) {
+        return socket;
+    }
+
     if (socket) {
+        socket.removeAllListeners();
         socket.disconnect();
     }
+
+    currentAuthToken = token;
 
     const socketOptions: any = {
         reconnection: true,
@@ -33,37 +42,17 @@ export const initializeSocket = (token: string | null = null): Socket => {
     // Initialize socket connection
     socket = io(SOCKET_PROD, socketOptions);
 
-    // Connection event handlers
-    socket.on('connect', () => {
-        console.log('✅ Socket connected:', socket?.id);
-    });
-
-    socket.on('disconnect', (reason) => {
-        console.log('❌ Socket disconnected:', reason);
+    // Connection event handlers (keep side-effects minimal; avoid noisy console logs)
+    socket.on('disconnect', (reason: string) => {
         if (reason === 'io server disconnect') {
             // Server forcefully disconnected, reconnect manually
             socket?.connect();
         }
     });
 
-    socket.on('connect_error', (error) => {
-        console.error('⚠️ Socket connection error:', error.message);
-    });
-
-    socket.on('reconnect', (attemptNumber) => {
-        console.log('🔄 Socket reconnected after', attemptNumber, 'attempts');
-    });
-
-    socket.on('reconnect_attempt', (attemptNumber) => {
-        console.log('🔄 Reconnection attempt:', attemptNumber);
-    });
-
-    socket.on('reconnect_failed', () => {
-        console.error('❌ Reconnection failed');
-    });
-
     return socket;
 };
+
 
 /**
  * Get current socket instance
@@ -76,10 +65,14 @@ export const getSocket = (): Socket | null => socket;
  */
 export const disconnectSocket = (): void => {
     if (socket) {
+        socket.removeAllListeners();
         socket.disconnect();
         socket = null;
     }
+
+    currentAuthToken = null;
 };
+
 
 /**
  * Check if socket is connected

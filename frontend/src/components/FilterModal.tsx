@@ -11,7 +11,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import CategoriesFlatlistModal from './CategoriesFlatlistModal';
 import {PRIMARY_COLOR} from '../helper/Theme';
 import {HomeScreenFilterModalProps} from '../type';
-import {ttsLanguageList} from '../helper/Utils';
+import {INDIAN_LANGUAGES} from '../constants/languages';
 
 // Helper function to format date as DD/MM/YYY
 
@@ -206,7 +206,7 @@ const FilterModal = ({
                 <MaterialIcons name="language" size={18} color="#222" /> Language
               </Text>
               <View style={styles.chipContainer}>
-                {ttsLanguageList.slice(0, 6).map((lang, index) => (
+                {INDIAN_LANGUAGES.map((lang, index) => (
                   <TouchableOpacity
                     key={index}
                     style={[

@@ -1,49 +1,58 @@
-import {FirebaseProvider} from '@/hooks/FirebaseContext';
-import {useCheckTokenStatus} from '@/src/hooks/useGetTokenStatus';
-import {useNotificationListeners} from '@/hooks/useNotificationListener';
-import {useVersionCheck} from '@/hooks/useVersionCheck';
-import {SocketProvider} from '../contexts/SocketContext';
+import { FirebaseProvider } from '@/hooks/FirebaseContext';
+import { useCheckTokenStatus } from '@/src/hooks/useGetTokenStatus';
+import { useNotificationListeners } from '@/hooks/useNotificationListener';
+import { useVersionCheck } from '@/hooks/useVersionCheck';
+import { SocketProvider } from '../contexts/SocketContext';
+import { PreferencesProvider } from '../contexts/PreferencesContext';
 import config from '@/tamagui.config';
 import messaging from '@react-native-firebase/messaging';
 import {
   NavigationContainer,
   type NavigationContainerRef,
 } from '@react-navigation/native';
-import React, {useEffect, useRef, useCallback} from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 
-import {View, useColorScheme} from 'react-native';
-import {PaperProvider} from 'react-native-paper';
-import {SafeAreaProvider} from 'react-native-safe-area-context';
-import {addEventListener} from '@react-native-community/netinfo';
-import {useDispatch, useSelector} from 'react-redux';
-import {TamaguiProvider} from 'tamagui';
-import {initDeepLinking} from '../helper/DeepLinkService';
+import { View, useColorScheme } from 'react-native';
+import { PaperProvider } from 'react-native-paper';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { addEventListener } from '@react-native-community/netinfo';
+import { useDispatch, useSelector } from 'react-redux';
+import { TamaguiProvider, useTheme } from 'tamagui';
+import { initDeepLinking } from '../helper/DeepLinkService';
 import StackNavigation from '../navigations/StackNavigation';
-import {CustomAlertDialog} from './CustomAlert';
+import { CustomAlertDialog } from './CustomAlert';
 import UpdateModal from './UpdateModal';
-import {setConnected} from '../store/NetworkSlice';
-import {firebaseInit} from '../helper/firebase';
-import {cleanUpDownloads} from '../helper/Utils';
-import {SECURE_KEYS, secureRetrieveItem} from '../helper/SecureStorageUtils';
-import {setUserToken, setGuestMode} from '../store/UserSlice';
-import {RootState} from '../store/ReduxStore';
-import {setupAxiosInterceptor} from '../helper/setupAxiosInterceptor';
+import { setConnected } from '../store/NetworkSlice';
+import { firebaseInit } from '../helper/firebase';
+import { cleanUpDownloads } from '../helper/Utils';
+import { SECURE_KEYS, secureRetrieveItem } from '../helper/SecureStorageUtils';
+import { setUserToken, setGuestMode } from '../store/UserSlice';
+import { RootState } from '../store/ReduxStore';
+import { setupAxiosInterceptor } from '../helper/setupAxiosInterceptor';
+import { initMonitoring } from '../services/monitoring/sentry';
 
 export default function AppContent() {
+  const theme = useTheme();
   const navigationRef = useRef<NavigationContainerRef<any> | null>(null);
   const hasInitialized = useRef(false);
   // Used only for TamaguiProvider theming. StatusBar styling is owned by CustomStatusBar.
   const isDarkMode = useColorScheme() === 'dark';
 
-  const {data: tokenRes = null} = useCheckTokenStatus();
-  const {user_token, isGuest} = useSelector((state: RootState) => state.user);
+  const { data: tokenRes = null } = useCheckTokenStatus();
+  const { user_token, isGuest } = useSelector((state: RootState) => state.user);
 
-  // Setup axios interceptor and timeout defaults once on mount.
+  // Initialise monitoring and axios interceptors once on mount.
+  // initMonitoring() is placed here (rather than index.js module scope) so that
+  // expo-application metadata is fully available when Sentry reads
+  // nativeApplicationVersion / nativeBuildVersion.
+  // setupAxiosInterceptor() is idempotent — it ejects and re-registers interceptors
+  // on every call, so double-invocations from React Strict Mode are safe.
   useEffect(() => {
+    initMonitoring();
     setupAxiosInterceptor();
   }, []);
 
-  const {visible, storeUrl} = useVersionCheck();
+  const { visible, storeUrl } = useVersionCheck();
   const dispatch = useDispatch();
 
   const checkToken = useCallback(async () => {
@@ -78,22 +87,30 @@ export default function AppContent() {
 
   useEffect(() => {
     const unsubscribe = messaging().onMessage(async remoteMessage => {
-      console.log(
-        'Foreground notification received from message:',
-        remoteMessage,
-      );
+      // Only log notification payloads in development to avoid leaking
+      // FCM message content (including user-targeted data fields) to
+      // production log aggregators or crash reporters.
+      if (__DEV__) {
+        console.log(
+          'Foreground notification received from message:',
+          remoteMessage,
+        );
+      }
     });
 
-    // On app open
-
     const unsubscribe1 = addEventListener(state => {
-      console.log('Connection type', state.type);
-      console.log('Is connected?', state.isConnected);
+      if (__DEV__) {
+        console.log('Connection type', state.type);
+        console.log('Is connected?', state.isConnected);
+      }
       /** Dispatch use a reducer to update the value in store */
       dispatch(setConnected(state.isConnected));
     });
+
     const onOpenApp = messaging().onNotificationOpenedApp(remoteMessage => {
-      console.log('Notification caused app to open:', remoteMessage);
+      if (__DEV__) {
+        console.log('Notification caused app to open:', remoteMessage);
+      }
       // const data = remoteMessage.data;
       // handleNotification(data);
     });
@@ -118,18 +135,24 @@ export default function AppContent() {
       defaultTheme={isDarkMode ? 'dark' : 'light'}>
       <FirebaseProvider>
         <SocketProvider>
-          <SafeAreaProvider>
-            <PaperProvider>
-              <View style={{flex: 1}}>
-                {/* StatusBar is managed globally by CustomStatusBar — do not add one here. */}
-                <NavigationContainer ref={navigationRef}>
-                  <StackNavigation />
-                </NavigationContainer>
-                <CustomAlertDialog key={'alert'} />
-                <UpdateModal visible={visible} storeUrl={storeUrl} />
-              </View>
-            </PaperProvider>
-          </SafeAreaProvider>
+          <PreferencesProvider>
+            <SafeAreaProvider>
+              <PaperProvider>
+                <View
+                  style={{
+                    flex: 1,
+                    backgroundColor: theme.background.val,
+                  }}>
+                  {/* StatusBar is managed globally by CustomStatusBar — do not add one here. */}
+                  <NavigationContainer ref={navigationRef}>
+                    <StackNavigation />
+                  </NavigationContainer>
+                  <CustomAlertDialog key={'alert'} />
+                  <UpdateModal visible={visible} storeUrl={storeUrl} />
+                </View>
+              </PaperProvider>
+            </SafeAreaProvider>
+          </PreferencesProvider>
         </SocketProvider>
       </FirebaseProvider>
     </TamaguiProvider>
