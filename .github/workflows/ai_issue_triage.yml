@@ -28,7 +28,7 @@ jobs:
 
       - name: Run AI Triage Script
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_ISSUE_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE_NUMBER: ${{ github.event.inputs.issue_number }}
         run: |
