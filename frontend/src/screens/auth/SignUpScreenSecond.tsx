@@ -3,6 +3,9 @@ import {Alert} from 'react-native';
 
 import {ScrollView, YStack, XStack, Text, Input, Button, Image, useTheme} from 'tamagui';
 import Icon from '@expo/vector-icons/MaterialIcons';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import {Contactdetail, SignUpScreenSecondProp} from '../../type';
 import {AxiosError} from 'axios';
 import EmailVerifiedModal from '../../components/VerifiedModal';
@@ -14,20 +17,42 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {useVerificationMailMutation} from '@/src/hooks/useMailVerification';
 import {useRegdMutation} from '@/src/hooks/useUserRegistration';
 let validator = require('email-validator');
+const signupSecondSchema = z.object({
+  specialization: z.string().min(1, 'Specialization is required'),
+  education: z.string().min(1, 'Educational Qualification is required'),
+  experience: z.string().min(1, 'Years of Experience is required'),
+  businessEmail: z.string().email('Please enter a valid email'),
+  phone: z.string().min(10, 'Phone number must be at least 10 characters'),
+});
+type SignupSecondFormData = z.infer<typeof signupSecondSchema>;
 
 const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
   const {user} = route.params;
   const {uploadImage, loading} = useUploadImage();
-  const [specialization, setSpecialization] = useState('');
-  const [education, setEducation] = useState('');
-  const [experience, setExperience] = useState('');
-  const [businessEmail, setBusinessEmail] = useState('');
-  const [phone, setPhone] = useState('');
   const [token, setToken] = useState('');
   const [verifyBtntext, setVerifyBtntxt] = useState('Request Verification');
   const [verifiedModalVisible, setVerifiedModalVisible] = useState(false);
   const [securityWarningVisible, setSecurityWarningVisible] = useState(false);
-  const [pendingContactDetail, setPendingContactDetail] = useState<Contactdetail | null>(null);
+  const [pendingSubmitData, setPendingSubmitData] = useState<{
+    contactDetail: Contactdetail;
+    data: SignupSecondFormData;
+  } | null>(null);
+
+  const {
+    control,
+    handleSubmit,
+    formState: { isValid },
+  } = useForm<SignupSecondFormData>({
+    resolver: zodResolver(signupSecondSchema),
+    mode: 'onChange',
+    defaultValues: {
+      specialization: '',
+      education: '',
+      experience: '',
+      businessEmail: '',
+      phone: '',
+    },
+  });
   const {mutate: verifyEmailMutation, isPending: verifyMutationPending} =
     useVerificationMailMutation();
   const {mutate: register, isPending: registerPending} = useRegdMutation();
@@ -35,6 +60,7 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
   const callRegisterAPI = (
     profile_url: string,
     contactDetail: Contactdetail,
+    data: SignupSecondFormData,
   ) => {
     register(
       {
@@ -43,9 +69,9 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
         email: user.email,
         password: user.password,
         isDoctor: true,
-        specialization: specialization,
-        qualification: education,
-        Years_of_experience: experience,
+        specialization: data.specialization,
+        qualification: data.education,
+        Years_of_experience: data.experience,
         Profile_image: profile_url,
         contact_detail: contactDetail,
       },
@@ -158,51 +184,34 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
     }
   };
 
-  const handleSubmit = () => {
-    if (
-      !specialization ||
-      !education ||
-      !experience ||
-      !businessEmail ||
-      !phone
-    ) {
-      Alert.alert('Please fill in all fields');
-      return;
-    } else if (validator.validate(businessEmail) === false) {
-      Alert.alert('Please enter a valid mail id');
-      return;
-    } else if (phone.length < 10) {
-      Alert.alert('Please enter a valid phone number');
-      return;
-    } else {
-      let contactDetail: Contactdetail = {
-        email_id:
-          businessEmail && businessEmail !== '' ? businessEmail : user.email,
-        phone_no: phone,
-      };
+  const onSubmit = (data: SignupSecondFormData) => {
+    let contactDetail: Contactdetail = {
+      email_id:
+        data.businessEmail && data.businessEmail !== '' ? data.businessEmail : user.email,
+      phone_no: data.phone,
+    };
 
-      // Show security warning before proceeding with registration
-      setPendingContactDetail(contactDetail);
-      setSecurityWarningVisible(true);
-    }
+    // Show security warning before proceeding with registration
+    setPendingSubmitData({ contactDetail, data });
+    setSecurityWarningVisible(true);
   };
 
   const handleSecurityWarningContinue = () => {
     setSecurityWarningVisible(false);
-    if (pendingContactDetail) {
-      registerDoctor(pendingContactDetail);
-      setPendingContactDetail(null);
+    if (pendingSubmitData) {
+      registerDoctor(pendingSubmitData.contactDetail, pendingSubmitData.data);
+      setPendingSubmitData(null);
     }
   };
 
   const handleSecurityWarningCancel = () => {
     setSecurityWarningVisible(false);
-    setPendingContactDetail(null);
+    setPendingSubmitData(null);
   };
 
-  const registerDoctor = async (contactDetail: Contactdetail) => {
+  const registerDoctor = async (contactDetail: Contactdetail, data: SignupSecondFormData) => {
     if (!user.profile_image || user.profile_image === '') {
-      callRegisterAPI('', contactDetail);
+      callRegisterAPI('', contactDetail, data);
     } else {
       Alert.alert(
         '',
@@ -217,7 +226,7 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
                 text: 'Your profile image will not be uploaded.',
                 duration: Snackbar.LENGTH_SHORT,
               });
-              callRegisterAPI('', contactDetail);
+              callRegisterAPI('', contactDetail, data);
             },
             style: 'cancel',
           },
@@ -231,7 +240,7 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
                   result = await uploadImage(user.profile_image);
                 }
                 
-               callRegisterAPI(result ?? "", contactDetail);
+               callRegisterAPI(result ?? "", contactDetail, data);
               
               } catch (err) {
                 console.error('Registration failed', err);
@@ -319,59 +328,65 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
           {[
             {
               placeholder: 'What is your Specialization?',
-              value: specialization,
-              onChangeText: setSpecialization,
+              name: 'specialization',
               icon: 'business',
             },
             {
               placeholder: 'Educational Qualification',
-              value: education,
-              onChangeText: setEducation,
+              name: 'education',
               icon: 'school',
             },
             {
               placeholder: 'Years of Experience',
-              value: experience,
-              onChangeText: setExperience,
+              name: 'experience',
               icon: 'numbers',
               keyboardType: 'numeric',
               maxLength: 3,
             },
             {
               placeholder: 'Professional Email',
-              value: businessEmail,
-              onChangeText: setBusinessEmail,
+              name: 'businessEmail',
               icon: 'email',
               keyboardType: 'email-address',
             },
             {
               placeholder: 'Phone number with country code',
-              value: phone,
-              onChangeText: setPhone,
+              name: 'phone',
               icon: 'phone',
               keyboardType: 'phone-pad',
               maxLength: 14,
             },
           ].map((field, index) => (
-            <XStack key={index} position="relative">
-              <Input
-                flex={1}
-                height="$6"
-                borderColor="$blue10"
-                borderWidth={1}
-                borderRadius="$4"
-                paddingHorizontal="$4"
-                marginVertical="$2"
-                placeholder={field.placeholder}
-                value={field.value}
-                onChangeText={field.onChangeText}
-                keyboardType={field.keyboardType as any}
-                maxLength={field.maxLength}
-              />
-              <YStack position="absolute" right={14} top={12}>
-                <Icon name={field.icon as any} size={20} color={theme.black.val} />
-              </YStack>
-            </XStack>
+            <Controller
+              key={index}
+              control={control}
+              name={field.name as any}
+              render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
+                <YStack gap="$1">
+                  <XStack position="relative">
+                    <Input
+                      flex={1}
+                      height="$6"
+                      borderColor={error ? "$red10" : "$blue10"}
+                      borderWidth={1}
+                      borderRadius="$4"
+                      paddingHorizontal="$4"
+                      marginVertical="$2"
+                      placeholder={field.placeholder}
+                      value={value}
+                      onChangeText={onChange}
+                      onBlur={onBlur}
+                      keyboardType={field.keyboardType as any}
+                      maxLength={field.maxLength}
+                    />
+                    <YStack position="absolute" right={14} top={12}>
+                      <Icon name={field.icon as any} size={20} color={theme.black.val} />
+                    </YStack>
+                  </XStack>
+                  {error && <Text color="$red10" fontSize={12}>{error.message}</Text>}
+                </YStack>
+              )}
+            />
           ))}
 
           {/* Submit Button */}
@@ -382,7 +397,9 @@ const SignupPageSecond = ({navigation, route}: SignUpScreenSecondProp) => {
             width="100%"
             size="$6"
             marginTop="$2"
-            onPress={handleSubmit}>
+            onPress={handleSubmit(onSubmit)}
+            disabled={!isValid || registerPending}
+            opacity={!isValid || registerPending ? 0.5 : 1}>
             <Text color="$white" fontWeight="700" fontSize={18}>
               Register
             </Text>
