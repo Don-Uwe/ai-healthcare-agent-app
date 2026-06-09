@@ -1,11 +1,14 @@
 import os
 import json
+import socket
 import urllib.request
 import urllib.error
 import time
 from datetime import datetime, timezone
 
 MAX_DIFF_SIZE = 500000
+API_TIMEOUT = 30      # seconds for all GitHub API calls
+GEMINI_TIMEOUT = 120  # seconds for Gemini API (response can be long)
 
 
 IGNORED_PATTERNS = [
@@ -88,13 +91,13 @@ def fetch_pr_metadata(repo, pr_number, github_token):
     request.add_header("Authorization", f"token {github_token}")
     request.add_header("Accept", "application/vnd.github.v3+json")
     try:
-        with urllib.request.urlopen(request) as response:
+        with urllib.request.urlopen(request, timeout=API_TIMEOUT) as response:
             data = json.loads(response.read().decode("utf-8"))
             title = data.get("title", "No Title")
             body = data.get("body", "No Description")
             labels = [label["name"] for label in data.get("labels", [])]
             return title, body, labels
-    except urllib.error.URLError as e:
+    except (urllib.error.URLError, socket.timeout) as e:
         print(f"Failed to fetch PR metadata: {e}")
         return "Unknown Title", "Unknown Description", []
 
@@ -107,7 +110,7 @@ def fetch_pr_comments(repo, pr_number, github_token):
         request.add_header("Authorization", f"token {github_token}")
         request.add_header("Accept", "application/vnd.github.v3+json")
         try:
-            with urllib.request.urlopen(request) as response:
+            with urllib.request.urlopen(request, timeout=API_TIMEOUT) as response:
                 data = json.loads(response.read().decode("utf-8"))
                 if not data:
                     break
@@ -115,7 +118,7 @@ def fetch_pr_comments(repo, pr_number, github_token):
                 if len(data) < 100:
                     break
                 page += 1
-        except urllib.error.URLError as e:
+        except (urllib.error.URLError, socket.timeout) as e:
             print(f"Failed to fetch PR comments: {e}")
             break
     return comments
@@ -129,7 +132,7 @@ def fetch_pr_commits(repo, pr_number, github_token):
         request.add_header("Authorization", f"token {github_token}")
         request.add_header("Accept", "application/vnd.github.v3+json")
         try:
-            with urllib.request.urlopen(request) as response:
+            with urllib.request.urlopen(request, timeout=API_TIMEOUT) as response:
                 data = json.loads(response.read().decode("utf-8"))
                 if not data:
                     break
@@ -137,7 +140,7 @@ def fetch_pr_commits(repo, pr_number, github_token):
                 if len(data) < 100:
                     break
                 page += 1
-        except urllib.error.URLError as e:
+        except (urllib.error.URLError, socket.timeout) as e:
             print(f"Failed to fetch PR commits: {e}")
             break
     return commits
@@ -148,9 +151,9 @@ def fetch_pr_diff(repo, pr_number, github_token):
     request.add_header("Authorization", f"token {github_token}")
     request.add_header("Accept", "application/vnd.github.v3.diff")
     try:
-        with urllib.request.urlopen(request) as response:
+        with urllib.request.urlopen(request, timeout=API_TIMEOUT) as response:
             return response.read().decode("utf-8")
-    except urllib.error.URLError as e:
+    except (urllib.error.URLError, socket.timeout) as e:
         print(f"Failed to fetch PR diff: {e}")
         return ""
 
@@ -173,10 +176,10 @@ def fetch_repo_labels(repo, github_token):
     request.add_header("Authorization", f"token {github_token}")
     request.add_header("Accept", "application/vnd.github.v3+json")
     try:
-        with urllib.request.urlopen(request) as response:
+        with urllib.request.urlopen(request, timeout=API_TIMEOUT) as response:
             data = json.loads(response.read().decode("utf-8"))
             return [label["name"] for label in data]
-    except urllib.error.URLError as e:
+    except (urllib.error.URLError, socket.timeout) as e:
         print(f"Failed to fetch repo labels: {e}")
         return []
 
@@ -195,7 +198,7 @@ def add_pr_labels(repo, pr_number, github_token, labels):
         }
     )
     try:
-        with urllib.request.urlopen(request) as response:
+        with urllib.request.urlopen(request, timeout=API_TIMEOUT) as response:
             if response.status in [200, 201]:
                 print(f"Successfully added labels: {labels}")
             else:
@@ -203,7 +206,7 @@ def add_pr_labels(repo, pr_number, github_token, labels):
     except urllib.error.HTTPError as e:
         error_body = e.read().decode("utf-8")
         print(f"HTTP Error adding labels: {e.code} - {error_body}")
-    except urllib.error.URLError as e:
+    except (urllib.error.URLError, socket.timeout) as e:
         print(f"Failed to add labels: {e}")
 
 def generate_review(pr_title, pr_body, diff_text, previous_reviews_text, available_labels, gemini_api_key):
@@ -226,7 +229,7 @@ def generate_review(pr_title, pr_body, diff_text, previous_reviews_text, availab
     max_retries = 3
     for attempt in range(max_retries):
         try:
-            with urllib.request.urlopen(request) as resp:
+            with urllib.request.urlopen(request, timeout=GEMINI_TIMEOUT) as resp:
                 resp_data = json.loads(resp.read().decode("utf-8"))
                 return resp_data["candidates"][0]["content"]["parts"][0]["text"]
         except urllib.error.HTTPError as e:
@@ -236,6 +239,12 @@ def generate_review(pr_title, pr_body, diff_text, previous_reviews_text, availab
                 sleep_time = (2 ** attempt) * 5
                 print(f"Retrying in {sleep_time} seconds...")
                 time.sleep(sleep_time)
+            else:
+                raise e
+        except (socket.timeout, urllib.error.URLError) as e:
+            print(f"Gemini API timed out (Attempt {attempt+1}): {e}")
+            if attempt < max_retries - 1:
+                time.sleep(5)
             else:
                 raise e
         except Exception as e:
@@ -258,7 +267,7 @@ def post_review(repo, pr_number, github_token, review_text):
         }
     )
     try:
-        with urllib.request.urlopen(request) as response:
+        with urllib.request.urlopen(request, timeout=API_TIMEOUT) as response:
             if response.status in [200, 201]:
                 print("Review posted successfully.")
             else:
@@ -266,7 +275,7 @@ def post_review(repo, pr_number, github_token, review_text):
     except urllib.error.HTTPError as e:
         error_body = e.read().decode("utf-8")
         print(f"HTTP Error posting comment to GitHub: {e.code} - {error_body}")
-    except urllib.error.URLError as e:
+    except (urllib.error.URLError, socket.timeout) as e:
         print(f"Failed to post comment to GitHub: {e}")
 
 def fetch_open_prs(repo, github_token):
@@ -278,7 +287,7 @@ def fetch_open_prs(repo, github_token):
         request.add_header("Authorization", f"token {github_token}")
         request.add_header("Accept", "application/vnd.github.v3+json")
         try:
-            with urllib.request.urlopen(request) as response:
+            with urllib.request.urlopen(request, timeout=API_TIMEOUT) as response:
                 data = json.loads(response.read().decode("utf-8"))
                 if not data:
                     break
@@ -286,13 +295,18 @@ def fetch_open_prs(repo, github_token):
                 if len(data) < 100:
                     break
                 page += 1
-        except urllib.error.URLError as e:
+        except (urllib.error.URLError, socket.timeout) as e:
             print(f"Failed to fetch open PRs: {e}")
             break
     return prs
 
-def run_review_for_pr(repo, pr_number, github_token, gemini_api_key):
-    print(f"Running review for PR #{pr_number}...")
+def run_review_for_pr(repo, pr_number, github_token, gemini_api_key, is_scheduled=False):
+    """
+    is_scheduled=True when triggered by schedule or workflow_dispatch.
+    In that mode, re-check a PR if 48 h have elapsed since the last review,
+    even when no new commits were pushed (catches unresolved feedback).
+    """
+    print(f"Running review for PR #{pr_number} (scheduled={is_scheduled})...")
     pr_title, pr_body, pr_labels = fetch_pr_metadata(repo, pr_number, github_token)
 
     # 1. Skip review entirely if the PR currently contains the label: gssoc:invalid
@@ -303,7 +317,7 @@ def run_review_for_pr(repo, pr_number, github_token, gemini_api_key):
     print("Fetching PR comments...")
     comments = fetch_pr_comments(repo, pr_number, github_token)
 
-    OLD_BOT_SIG = "### 🤖 Gemini AI Code Review"
+    OLD_BOT_SIG = "### \U0001f916 Gemini AI Code Review"
     NEW_BOT_SIG = "<!-- automated-ai-reviewer-bot-v2 -->"
 
     old_reviews = []
@@ -342,28 +356,36 @@ def run_review_for_pr(repo, pr_number, github_token, gemini_api_key):
 
     if not has_new_review:
         if has_old_review:
-            # Migration Rule
-            if latest_old_review_time and last_commit_time > latest_old_review_time:
+            # Migration Rule: on scheduled runs always review once;
+            # on PR-triggered runs require a new commit.
+            if is_scheduled or (latest_old_review_time and last_commit_time > latest_old_review_time):
                 should_run = True
-                reason = "Migration review: new commit pushed since the last old review."
+                reason = "Migration review: triggered for first new-bot review."
             else:
-                reason = "Migration review: waiting for the first new commit to be pushed since the last old review."
+                reason = "Migration review: waiting for the first new commit since the last old review."
         else:
-            # Brand new PR
+            # Brand new PR — always review immediately
             should_run = True
             reason = "Initial review: no previous reviews exist for this PR."
     else:
-        # Subsequent reviews cooldown & feedback check
+        # Subsequent reviews — always enforce the 48-hour cooldown.
+        # On scheduled/manual runs: re-check even without new commits (catches unresolved feedback).
+        # On PR-event runs: also require a new commit so we don't re-post on the same code.
         elapsed = current_time - latest_new_review_time
-        cooldown_period = 48 * 3600  # 48 hours in seconds
-        
+        cooldown_period = 48 * 3600  # seconds
+
         if elapsed.total_seconds() < cooldown_period:
-            reason = f"Cooldown period of 48 hours has not elapsed. Only {elapsed.total_seconds() / 3600:.1f} hours elapsed."
+            reason = (f"Cooldown period of 48 h has not elapsed. "
+                      f"Only {elapsed.total_seconds() / 3600:.1f} h since last review.")
+        elif is_scheduled:
+            # Scheduled / manual: re-check regardless of new commits
+            should_run = True
+            reason = "Scheduled re-check: 48 h elapsed, reviewing for unresolved feedback."
         elif last_commit_time <= latest_new_review_time:
-            reason = "No new commits have been pushed since the last new bot review."
+            reason = "No new commits since the last bot review (PR-triggered run)."
         else:
             should_run = True
-            reason = "Subsequent review: cooldown elapsed and new commits detected."
+            reason = "Subsequent review: 48 h elapsed and new commits detected."
 
     print(f"Trigger Decision: {reason}")
     if not should_run:
@@ -452,18 +474,26 @@ def main():
     github_token = os.environ.get("GITHUB_TOKEN")
     repo = os.environ.get("GITHUB_REPOSITORY")
     pr_number = os.environ.get("PR_NUMBER")
+    event_name = os.environ.get("GITHUB_EVENT_NAME", "")
+
+    # Treat scheduled and manual dispatches the same way:
+    # re-check PRs even without new commits (catches unresolved feedback)
+    is_scheduled = event_name in ("schedule", "workflow_dispatch", "push")
 
     if not all([gemini_api_key, github_token, repo]):
         print("Missing required environment variables (GEMINI_API_KEY, GITHUB_TOKEN, GITHUB_REPOSITORY).")
         return
 
+    print(f"Event: {event_name} | Scheduled mode: {is_scheduled}")
+
     try:
         if pr_number and pr_number.strip():
-            # Process single PR
-            run_review_for_pr(repo, pr_number.strip(), github_token, gemini_api_key)
+            # PR-triggered: process the single PR that triggered this run
+            run_review_for_pr(repo, pr_number.strip(), github_token, gemini_api_key,
+                              is_scheduled=is_scheduled)
         else:
-            # Process all open PRs
-            print("PR_NUMBER is not set or empty. Fetching all open PRs...")
+            # Scheduled / push / manual: process ALL open PRs
+            print("Fetching all open PRs...")
             open_prs = fetch_open_prs(repo, github_token)
             print(f"Found {len(open_prs)} open PR(s).")
             for pr in open_prs:
@@ -471,11 +501,17 @@ def main():
                 if num:
                     print(f"\n--- Reviewing PR #{num} ---")
                     try:
-                        run_review_for_pr(repo, str(num), github_token, gemini_api_key)
+                        run_review_for_pr(repo, str(num), github_token, gemini_api_key,
+                                          is_scheduled=is_scheduled)
                     except Exception as e:
+                        # Log and continue — one failing PR must not stop the rest
                         print(f"Error reviewing PR #{num}: {e}")
+                        import traceback
+                        traceback.print_exc()
     except Exception as e:
         print(f"Execution failed: {e}")
+        import traceback
+        traceback.print_exc()
 
 if __name__ == "__main__":
     main()
