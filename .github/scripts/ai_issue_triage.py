@@ -59,11 +59,14 @@ def fetch_all_open_issues(repo, token):
     issues = []
     page = 1
     while True:
-        url = f"https://api.github.com/repos/{repo}/issues?state=open&per_page=100&page={page}"
+        query = urllib.parse.quote(f"repo:{repo} is:issue is:open")
+        url = f"https://api.github.com/search/issues?q={query}&per_page=100&page={page}"
         data = make_request(url, token=token)
-        if not data: break
-        issues.extend(data)
-        if len(data) < 100: break
+        if not data or "items" not in data: break
+        
+        items = data["items"]
+        issues.extend(items)
+        if len(items) < 100: break
         page += 1
     return issues
 
