@@ -88,43 +88,64 @@ def parse_github_date(date_str: str) -> datetime:
         dt = datetime.strptime(date_str[:19], "%Y-%m-%dT%H:%M:%S")
         return dt.replace(tzinfo=timezone.utc)
 
+def make_github_request(url, headers, is_json=True, max_retries=3):
+    request = urllib.request.Request(url)
+    for k, v in headers.items():
+        request.add_header(k, v)
+        
+    for attempt in range(max_retries):
+        try:
+            with urllib.request.urlopen(request, timeout=API_TIMEOUT) as response:
+                if is_json:
+                    return json.loads(response.read().decode("utf-8"))
+                else:
+                    return response.read().decode("utf-8")
+        except urllib.error.HTTPError as e:
+            if e.code in [403, 429]:
+                retry_after = e.headers.get("Retry-After")
+                if retry_after:
+                    sleep_time = int(retry_after) + 1
+                else:
+                    sleep_time = 15 * (2 ** attempt) # fallback exponential
+                print(f"[WARN] GitHub API Rate Limit ({e.code}) on {url}. Retrying in {sleep_time}s...")
+                time.sleep(sleep_time)
+            else:
+                print(f"HTTP Error {e.code} on {url}: {e.read().decode('utf-8')}")
+                if is_json: return None
+                return ""
+        except (urllib.error.URLError, socket.timeout) as e:
+            print(f"Network error on {url}: {e}")
+            if attempt < max_retries - 1:
+                time.sleep(5)
+            else:
+                if is_json: return None
+                return ""
+    if is_json: return None
+    return ""
+
 def fetch_pr_metadata(repo, pr_number, github_token):
     url = f"https://api.github.com/repos/{repo}/pulls/{pr_number}"
-    request = urllib.request.Request(url)
-    request.add_header("Authorization", f"token {github_token}")
-    request.add_header("Accept", "application/vnd.github.v3+json")
-    try:
-        with urllib.request.urlopen(request, timeout=API_TIMEOUT) as response:
-            data = json.loads(response.read().decode("utf-8"))
-            title = data.get("title", "Unknown Title")
-            body = data.get("body", "No Description")
-            labels = [label["name"] for label in data.get("labels", [])]
-            author = data.get("user", {}).get("login", "")
-            return title, body, labels, author
-    except (urllib.error.URLError, socket.timeout) as e:
-        print(f"Failed to fetch PR metadata: {e}")
-        return "Unknown Title", "Unknown Description", [], ""
+    headers = {"Authorization": f"token {github_token}", "Accept": "application/vnd.github.v3+json"}
+    data = make_github_request(url, headers, is_json=True)
+    if data:
+        title = data.get("title", "Unknown Title")
+        body = data.get("body", "No Description")
+        labels = [label["name"] for label in data.get("labels", [])]
+        author = data.get("user", {}).get("login", "")
+        return title, body, labels, author
+    return "Unknown Title", "Unknown Description", [], ""
 
 def fetch_pr_comments(repo, pr_number, github_token):
     comments = []
     page = 1
     while True:
         url = f"https://api.github.com/repos/{repo}/issues/{pr_number}/comments?per_page=100&page={page}"
-        request = urllib.request.Request(url)
-        request.add_header("Authorization", f"token {github_token}")
-        request.add_header("Accept", "application/vnd.github.v3+json")
-        try:
-            with urllib.request.urlopen(request, timeout=API_TIMEOUT) as response:
-                data = json.loads(response.read().decode("utf-8"))
-                if not data:
-                    break
-                comments.extend(data)
-                if len(data) < 100:
-                    break
-                page += 1
-        except (urllib.error.URLError, socket.timeout) as e:
-            print(f"Failed to fetch PR comments: {e}")
-            break
+        headers = {"Authorization": f"token {github_token}", "Accept": "application/vnd.github.v3+json"}
+        data = make_github_request(url, headers, is_json=True)
+        if not data: break
+        comments.extend(data)
+        if len(data) < 100: break
+        page += 1
     return comments
 
 def fetch_pr_commits(repo, pr_number, github_token):
@@ -132,34 +153,19 @@ def fetch_pr_commits(repo, pr_number, github_token):
     page = 1
     while True:
         url = f"https://api.github.com/repos/{repo}/pulls/{pr_number}/commits?per_page=100&page={page}"
-        request = urllib.request.Request(url)
-        request.add_header("Authorization", f"token {github_token}")
-        request.add_header("Accept", "application/vnd.github.v3+json")
-        try:
-            with urllib.request.urlopen(request, timeout=API_TIMEOUT) as response:
-                data = json.loads(response.read().decode("utf-8"))
-                if not data:
-                    break
-                commits.extend(data)
-                if len(data) < 100:
-                    break
-                page += 1
-        except (urllib.error.URLError, socket.timeout) as e:
-            print(f"Failed to fetch PR commits: {e}")
-            break
+        headers = {"Authorization": f"token {github_token}", "Accept": "application/vnd.github.v3+json"}
+        data = make_github_request(url, headers, is_json=True)
+        if not data: break
+        commits.extend(data)
+        if len(data) < 100: break
+        page += 1
     return commits
 
 def fetch_pr_diff(repo, pr_number, github_token):
     url = f"https://api.github.com/repos/{repo}/pulls/{pr_number}"
-    request = urllib.request.Request(url)
-    request.add_header("Authorization", f"token {github_token}")
-    request.add_header("Accept", "application/vnd.github.v3.diff")
-    try:
-        with urllib.request.urlopen(request, timeout=API_TIMEOUT) as response:
-            return response.read().decode("utf-8")
-    except (urllib.error.URLError, socket.timeout) as e:
-        print(f"Failed to fetch PR diff: {e}")
-        return ""
+    headers = {"Authorization": f"token {github_token}", "Accept": "application/vnd.github.v3.diff"}
+    diff = make_github_request(url, headers, is_json=False)
+    return diff if diff else ""
 
 def filter_diff(diff_text):
     filtered_lines = []
