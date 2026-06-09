@@ -2,7 +2,7 @@ import NetInfo from '@react-native-community/netinfo';
 import {Category, CategoryType, PodcastData} from '../type';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {GET_STORAGE_DATA} from './APIUtils';
-import {Alert, Linking, PermissionsAndroid, Platform} from 'react-native';
+import {Alert, Linking, Platform} from 'react-native';
 import RNFS from 'react-native-fs';
 import {secureClearAllItems} from './SecureStorageUtils';
 import {
@@ -344,13 +344,9 @@ export const requestStoragePermissions = async () => {
 
   if ((Platform.Version as number) < 33) {
     const granted = await PermissionsAndroid.requestMultiple([
-      PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-      PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
     ]);
 
     return (
-      granted['android.permission.READ_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED &&
-      granted['android.permission.WRITE_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED
     );
   } else {
     const granted = await PermissionsAndroid.requestMultiple([
@@ -367,7 +363,6 @@ export const downloadAudio = async (_podcast: PodcastData) => {
   // Check for existing downloads
   const storageGranted = await requestStoragePermissions();
   if (!storageGranted) {
-    Alert.alert('Storage permission denied');
     return;
   }
   const existingPodcasts = await readDownloadedPodcasts();
