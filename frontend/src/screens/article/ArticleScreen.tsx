@@ -611,6 +611,10 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
           },
           onError: err => {
             console.log('Update Read Status mutation error', err);
+            Snackbar.show({
+              text: 'Failed to update your read status.',
+              duration: Snackbar.LENGTH_SHORT,
+            });
           },
         });
       }
@@ -633,17 +637,26 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   });
 
   const progressStyle = useAnimatedStyle(() => {
-    const scrollableDistance = contentHeight.value - layoutHeight.value;
-    const width = interpolate(
-      scrollY.value,
-      [0, scrollableDistance > 0 ? scrollableDistance : 1],
-      [0, Dimensions.get('window').width],
-      Extrapolate.CLAMP,
-    );
+  const scrollableDistance =
+    contentHeight.value - layoutHeight.value;
+
+  if (scrollableDistance <= 0 && contentHeight.value > 0) {
     return {
-      width: width,
+      width: Dimensions.get('window').width,
     };
-  });
+  }
+
+  const width = interpolate(
+    scrollY.value,
+    [0, Math.max(1, scrollableDistance)],
+    [0, Dimensions.get('window').width],
+    Extrapolate.CLAMP,
+  );
+
+  return {
+    width,
+  };
+});
 
   if (articleLoading) {
     return <Loader />;
