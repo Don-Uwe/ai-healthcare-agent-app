@@ -46,6 +46,7 @@ import {useGetProfile} from '@/src/hooks/useGetProfile';
 import {useLikeArticle} from '@/src/hooks/useLikeArticle';
 import {useUpdateFollowStatusByArticle} from '@/src/hooks/useUpdateFollowStatus';
 import {useUpdateReadEvent} from '@/src/hooks/useUpdateReadEvent';
+import {getReadTime} from '../../utils/readTime';
 import {useUpdateViewCount} from '@/src/hooks/useUpdateViewCount';
 import {useSaveArticle} from '@/src/hooks/useSaveArticle';
 import {useSocket} from '../../contexts/SocketContext';
@@ -779,7 +780,16 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
           {article && (
             <>
               <Text style={styles.titleText}>{article?.title}</Text>
-              <View style={styles.fontSizeControls}>
+<Text style={{
+  fontSize: 13,
+  color: '#6C6C6D',
+  marginTop: 6,
+  marginBottom: 4,
+  fontWeight: '500',
+}}>
+  🕐 {getReadTime(articleContent ?? '')}
+</Text>
+<View style={styles.fontSizeControls}>
                 <Text style={styles.fontSizeLabel}>Text size</Text>
                 <View style={styles.fontSizeButtons}>
                   <TouchableOpacity
