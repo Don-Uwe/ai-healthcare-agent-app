@@ -85,7 +85,7 @@ def fetch_recent_issues(repo, token, limit=50):
     return context
 
 def generate_triage_decision(title, body, recent_issues_context, api_key):
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
     headers = {"Content-Type": "application/json"}
     
     prompt = f"""
