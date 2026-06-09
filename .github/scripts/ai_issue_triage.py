@@ -4,6 +4,7 @@ import urllib.request
 import urllib.error
 import urllib.parse
 import traceback
+import time
 
 def make_request(url, method="GET", data=None, headers=None, token=None):
     if headers is None:
@@ -208,7 +209,8 @@ def handle_issue_opened(repo, issue_number, token, gemini_api_key):
     elif classification == "frontend":
         labels_to_add.append("frontend")
         if difficulty: labels_to_add.append(difficulty)
-        # Add basic domain label if possible, here we just keep it simple
+        # Apply gssoc label to mark it as successfully triaged for the batch runner
+        labels_to_add.append("gssoc")
         add_labels(repo, issue_number, labels_to_add, token)
         msg = f"This issue has been triaged as a **frontend** task.\n\nIt is now open for community contribution! To request assignment, please comment below.\n\n*Eligibility Reminder: You must have zero active assigned issues to be assigned.*"
         post_comment(repo, issue_number, msg, token)
@@ -301,13 +303,38 @@ def main():
         return
         
     event_path = os.environ.get("GITHUB_EVENT_PATH")
-    if not event_path or not os.path.exists(event_path):
-        print(f"Event path {event_path} not found.")
-        # Try PR_NUMBER mode for manual testing
-        test_issue = os.environ.get("ISSUE_NUMBER")
+    if not event_path or not os.path.exists(event_path) or event_name == "workflow_dispatch":
+        test_issue = os.environ.get("ISSUE_NUMBER", "").strip()
         if test_issue:
             print(f"Running manual test triage on #{test_issue}...")
             handle_issue_opened(repo, test_issue, github_token, gemini_api_key)
+        else:
+            print("Running batch triage on untriaged open issues...")
+            url = f"https://api.github.com/repos/{repo}/issues?state=open&per_page=100"
+            issues = make_request(url, token=github_token)
+            if not issues:
+                print("No open issues found or failed to fetch.")
+                return
+            
+            processed = 0
+            for issue in issues:
+                if "pull_request" in issue:
+                    continue
+                
+                labels = [l.get("name", "").lower() for l in issue.get("labels", [])]
+                
+                # Check for every open issue, which has not yet tagged gssoc and skipped outside-ultimatehealth
+                has_gssoc = any("gssoc" in lbl for lbl in labels)
+                has_outside = any("outside-ultimatehealth" in lbl for lbl in labels)
+                
+                if not has_gssoc and not has_outside:
+                    num = issue["number"]
+                    print(f"\n--- Batch Triaging Issue #{num} ---")
+                    handle_issue_opened(repo, num, github_token, gemini_api_key)
+                    processed += 1
+                    time.sleep(10) # delay to avoid rate limiting
+                    
+            print(f"\nBatch triage complete. Processed {processed} issues.")
         return
 
     with open(event_path, "r") as f:

@@ -8,8 +8,8 @@ on:
   workflow_dispatch:
     inputs:
       issue_number:
-        description: 'Issue number to test triage on'
-        required: true
+        description: 'Issue number to test triage on (leave blank for batch mode)'
+        required: false
         type: string
 
 jobs:
