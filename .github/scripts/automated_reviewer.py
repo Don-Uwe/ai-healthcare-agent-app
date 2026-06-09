@@ -591,6 +591,13 @@ def main():
                         is_scheduled=is_scheduled, filtered_labels=filtered_labels
                     )
                     audit_log.append((num, status, detail))
+                except urllib.error.HTTPError as e:
+                    audit_log.append((num, "error", f"HTTP {e.code}: {e.reason}"))
+                    print(f"[WARN] HTTP Error reviewing PR #{num}: {e}")
+                    if e.code == 429:
+                        stop_reason = "Gemini API Rate Limit (429) fully exhausted. Aborting batch run to save Actions minutes."
+                        print(f"\n[STOP] {stop_reason}")
+                        break
                 except Exception as e:
                     audit_log.append((num, "error", str(e)))
                     print(f"[WARN] Error reviewing PR #{num}: {e}")
