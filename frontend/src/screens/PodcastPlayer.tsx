@@ -25,7 +25,6 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [position, setPosition] = useState(0);
   const [speed, setSpeed] = useState(1);
-  
   const [duration, setDuration] = useState(0);
   const theme = useTheme();
   const {title, description, selectedGenres, imageUtils, filePath} =
@@ -47,9 +46,7 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
       : require('../../assets/sounds/funny-cartoon-sound-397415.mp3'),
   );
 
-  const formatPlaybackSpeed = (playbackSpeed: number) =>
-    Number.isInteger(playbackSpeed) ? `${playbackSpeed}x` : `${playbackSpeed}x`;
-
+  const formatPlaybackSpeed = (playbackSpeed: number) => `${playbackSpeed}x`;
   const formatSecTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
@@ -88,7 +85,6 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
   const handlePause = async () => {
     console.log('Pause called');
     if (!player) return;
-
     player.pause();
     setUiState('paused');
     setIsPlaying(false);

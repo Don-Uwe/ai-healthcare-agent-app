@@ -420,7 +420,6 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
           py="$3"
           bg="#1E293B"
           borderRadius={12}
-          width="90%"
           maxWidth="90%">
           <Text color="#64748B" fontSize={12} fontWeight="600" mb="$1">
             PODCAST TITLE
