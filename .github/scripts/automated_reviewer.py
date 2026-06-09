@@ -96,13 +96,14 @@ def fetch_pr_metadata(repo, pr_number, github_token):
     try:
         with urllib.request.urlopen(request, timeout=API_TIMEOUT) as response:
             data = json.loads(response.read().decode("utf-8"))
-            title = data.get("title", "No Title")
+            title = data.get("title", "Unknown Title")
             body = data.get("body", "No Description")
             labels = [label["name"] for label in data.get("labels", [])]
-            return title, body, labels
+            author = data.get("user", {}).get("login", "")
+            return title, body, labels, author
     except (urllib.error.URLError, socket.timeout) as e:
         print(f"Failed to fetch PR metadata: {e}")
-        return "Unknown Title", "Unknown Description", []
+        return "Unknown Title", "Unknown Description", [], ""
 
 def fetch_pr_comments(repo, pr_number, github_token):
     comments = []
@@ -313,8 +314,15 @@ def run_review_for_pr(repo, pr_number, github_token, gemini_api_key,
     """
     if filtered_labels is None:
         filtered_labels = []
-    print(f"Running review for PR #{pr_number} (scheduled={is_scheduled})...")
-    pr_title, pr_body, pr_labels = fetch_pr_metadata(repo, pr_number, github_token)
+    print(f"Fetching data for PR #{pr_number}...")
+    pr_title, pr_body, pr_labels, pr_author = fetch_pr_metadata(repo, pr_number, github_token)
+
+    if not pr_title or pr_title == "Unknown Title":
+        return "error", "Could not fetch PR data."
+
+    if "dependabot" in pr_author.lower() or "dependency-bot" in pr_author.lower():
+        print(f"Skipping PR #{pr_number} because author is {pr_author}.")
+        return "skipped", f"PR authored by {pr_author}"
 
     # 1. Skip review entirely if the PR currently contains the label: gssoc:invalid
     if "gssoc:invalid" in pr_labels:
