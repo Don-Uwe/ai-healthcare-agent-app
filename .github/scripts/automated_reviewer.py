@@ -6,9 +6,12 @@ import urllib.error
 import time
 from datetime import datetime, timezone
 
-MAX_DIFF_SIZE = 500000
-API_TIMEOUT = 30      # seconds for all GitHub API calls
-GEMINI_TIMEOUT = 120  # seconds for Gemini API (response can be long)
+MAX_DIFF_SIZE = 300000        # max diff bytes sent to Gemini per PR
+API_TIMEOUT = 30              # seconds for all GitHub API calls
+GEMINI_TIMEOUT = 120          # seconds for Gemini API (response can be long)
+BATCH_DELAY = 10              # seconds to wait between PR reviews (avoids rate limits)
+RATE_LIMIT_SLEEP_BASE = 60    # base seconds for 429 back-off (doubles each retry)
+MAX_BATCH_PER_RUN = 30        # max PRs to process per scheduled/manual run
 
 
 IGNORED_PATTERNS = [
@@ -236,7 +239,8 @@ def generate_review(pr_title, pr_body, diff_text, previous_reviews_text, availab
             error_body = e.read().decode("utf-8")
             print(f"HTTP Error from Gemini API (Attempt {attempt+1}): {e.code} - {error_body}")
             if e.code in [429, 500, 502, 503, 504] and attempt < max_retries - 1:
-                sleep_time = (2 ** attempt) * 5
+                # Exponential back-off: 60 s, 120 s, 240 s — much longer for rate limits
+                sleep_time = RATE_LIMIT_SLEEP_BASE * (2 ** attempt)
                 print(f"Retrying in {sleep_time} seconds...")
                 time.sleep(sleep_time)
             else:
@@ -244,13 +248,13 @@ def generate_review(pr_title, pr_body, diff_text, previous_reviews_text, availab
         except (socket.timeout, urllib.error.URLError) as e:
             print(f"Gemini API timed out (Attempt {attempt+1}): {e}")
             if attempt < max_retries - 1:
-                time.sleep(5)
+                time.sleep(15)
             else:
                 raise e
         except Exception as e:
             print(f"Failed to fetch review from Gemini API (Attempt {attempt+1}): {e}")
             if attempt < max_retries - 1:
-                time.sleep(5)
+                time.sleep(15)
             else:
                 raise e
 
@@ -300,12 +304,14 @@ def fetch_open_prs(repo, github_token):
             break
     return prs
 
-def run_review_for_pr(repo, pr_number, github_token, gemini_api_key, is_scheduled=False):
+def run_review_for_pr(repo, pr_number, github_token, gemini_api_key,
+                      is_scheduled=False, filtered_labels=None):
     """
-    is_scheduled=True when triggered by schedule or workflow_dispatch.
-    In that mode, re-check a PR if 48 h have elapsed since the last review,
-    even when no new commits were pushed (catches unresolved feedback).
+    is_scheduled=True  → re-check even without new commits (catches unresolved feedback).
+    filtered_labels    → pre-fetched label list; fetched here only if not provided.
     """
+    if filtered_labels is None:
+        filtered_labels = []
     print(f"Running review for PR #{pr_number} (scheduled={is_scheduled})...")
     pr_title, pr_body, pr_labels = fetch_pr_metadata(repo, pr_number, github_token)
 
@@ -415,17 +421,15 @@ def run_review_for_pr(repo, pr_number, github_token, gemini_api_key, is_schedule
         for i, rev in enumerate(old_reviews[:3]): # Pass at most 3 old reviews to keep prompt clean
             previous_reviews_text += f"\nReview {i+1} on {rev['created_at']}:\n{rev['body']}\n"
 
-    print("Fetching repo labels...")
-    available_labels = fetch_repo_labels(repo, github_token)
-    relevant_prefixes = ("type:", "quality:", "level:", "gssoc")
-    filtered_labels = []
-    for label in available_labels:
-        if any(label.lower().startswith(p) for p in relevant_prefixes) or label.lower() == "in-progress" or "gssoc" in label.lower():
-            filtered_labels.append(label)
-    print(f"Filtered Available Labels: {filtered_labels}")
+    print(f"Using pre-fetched labels: {filtered_labels}")
 
     print("Generating review with Gemini...")
-    model_response = generate_review(pr_title, pr_body, filtered_diff, previous_reviews_text, filtered_labels, gemini_api_key)
+    model_response = generate_review(pr_title, pr_body, filtered_diff,
+                                     previous_reviews_text, filtered_labels, gemini_api_key)
+
+    if not model_response:
+        print("Gemini returned an empty response. Skipping PR.")
+        return
     
     # Extract selected labels
     selected_labels = []
@@ -469,15 +473,29 @@ def run_review_for_pr(repo, pr_number, github_token, gemini_api_key, is_schedule
         print(f"Adding labels to PR: {selected_labels}")
         add_pr_labels(repo, pr_number, github_token, selected_labels)
 
-def main():
-    gemini_api_key = os.environ.get("GEMINI_API_KEY")
-    github_token = os.environ.get("GITHUB_TOKEN")
-    repo = os.environ.get("GITHUB_REPOSITORY")
-    pr_number = os.environ.get("PR_NUMBER")
-    event_name = os.environ.get("GITHUB_EVENT_NAME", "")
+def _get_filtered_labels(repo, github_token):
+    """Fetch all repo labels once and filter to the relevant subset."""
+    available_labels = fetch_repo_labels(repo, github_token)
+    relevant_prefixes = ("type:", "quality:", "level:", "gssoc")
+    result = []
+    for label in available_labels:
+        lower = label.lower()
+        if any(lower.startswith(p) for p in relevant_prefixes) or lower == "in-progress" or "gssoc" in lower:
+            result.append(label)
+    print(f"Relevant labels fetched once: {result}")
+    return result
 
-    # Treat scheduled and manual dispatches the same way:
-    # re-check PRs even without new commits (catches unresolved feedback)
+
+def main():
+    import traceback
+
+    gemini_api_key = os.environ.get("GEMINI_API_KEY")
+    github_token   = os.environ.get("GITHUB_TOKEN")
+    repo           = os.environ.get("GITHUB_REPOSITORY")
+    pr_number      = os.environ.get("PR_NUMBER", "").strip()
+    event_name     = os.environ.get("GITHUB_EVENT_NAME", "")
+
+    # Scheduled / manual / push events re-check PRs even without new commits
     is_scheduled = event_name in ("schedule", "workflow_dispatch", "push")
 
     if not all([gemini_api_key, github_token, repo]):
@@ -486,32 +504,59 @@ def main():
 
     print(f"Event: {event_name} | Scheduled mode: {is_scheduled}")
 
+    # --- Validate PR_NUMBER: must be a positive integer string ---
+    single_pr_mode = pr_number.isdigit() and int(pr_number) > 0
+
     try:
-        if pr_number and pr_number.strip():
-            # PR-triggered: process the single PR that triggered this run
-            run_review_for_pr(repo, pr_number.strip(), github_token, gemini_api_key,
-                              is_scheduled=is_scheduled)
+        if single_pr_mode:
+            # Triggered by a real pull_request event — review just that PR
+            print(f"Single-PR mode: reviewing PR #{pr_number}")
+            # Fetch labels once even in single-PR mode
+            filtered_labels = _get_filtered_labels(repo, github_token)
+            run_review_for_pr(repo, pr_number, github_token, gemini_api_key,
+                              is_scheduled=is_scheduled, filtered_labels=filtered_labels)
         else:
-            # Scheduled / push / manual: process ALL open PRs
-            print("Fetching all open PRs...")
+            # Batch mode: fetch all open PRs and review them
+            print("Batch mode: fetching all open PRs...")
             open_prs = fetch_open_prs(repo, github_token)
-            print(f"Found {len(open_prs)} open PR(s).")
+            total = len(open_prs)
+            print(f"Found {total} open PR(s). Will process up to {MAX_BATCH_PER_RUN}.")
+
+            # Fetch labels ONCE for the entire batch run
+            filtered_labels = _get_filtered_labels(repo, github_token)
+
+            processed = 0
             for pr in open_prs:
+                if processed >= MAX_BATCH_PER_RUN:
+                    print(f"Reached batch limit of {MAX_BATCH_PER_RUN}. Stopping for this run.")
+                    break
+
                 num = pr.get("number")
-                if num:
-                    print(f"\n--- Reviewing PR #{num} ---")
-                    try:
-                        run_review_for_pr(repo, str(num), github_token, gemini_api_key,
-                                          is_scheduled=is_scheduled)
-                    except Exception as e:
-                        # Log and continue — one failing PR must not stop the rest
-                        print(f"Error reviewing PR #{num}: {e}")
-                        import traceback
-                        traceback.print_exc()
+                if not num:
+                    continue
+
+                print(f"\n--- [{processed + 1}/{min(total, MAX_BATCH_PER_RUN)}] Reviewing PR #{num} ---")
+                try:
+                    run_review_for_pr(repo, str(num), github_token, gemini_api_key,
+                                      is_scheduled=is_scheduled, filtered_labels=filtered_labels)
+                except Exception as e:
+                    # Log the full stack and move on — one bad PR must NOT stop the batch
+                    print(f"[WARN] Error reviewing PR #{num}: {e}")
+                    traceback.print_exc()
+
+                processed += 1
+
+                # Pause between PRs so we don't exhaust the Gemini API quota
+                if processed < min(total, MAX_BATCH_PER_RUN):
+                    print(f"Waiting {BATCH_DELAY}s before next PR...")
+                    time.sleep(BATCH_DELAY)
+
+            print(f"\nBatch complete. Reviewed {processed}/{total} PRs.")
+
     except Exception as e:
         print(f"Execution failed: {e}")
-        import traceback
         traceback.print_exc()
+
 
 if __name__ == "__main__":
     main()
