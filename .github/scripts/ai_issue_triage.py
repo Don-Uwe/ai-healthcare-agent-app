@@ -38,13 +38,13 @@ def make_request(url, method="GET", data=None, headers=None, token=None, max_ret
             if e.code in [403, 429]:
                 retry_after = e.headers.get("Retry-After")
                 sleep_time = int(retry_after) + 1 if retry_after else 10
-                print(f"[WARN] GitHub Rate Limit ({e.code}) on attempt {attempt+1}. Retrying in {sleep_time}s...")
+                print(f"[WARN] GitHub Rate Limit ({e.code}) on attempt {attempt+1}. Retrying in {sleep_time}s...", flush=True)
                 time.sleep(sleep_time)
             else:
-                print(f"HTTP Error {e.code} for {url}: {e.read().decode('utf-8')}")
+                print(f"HTTP Error {e.code} for {url}: {e.read().decode('utf-8')}", flush=True)
                 return None
         except Exception as e:
-            print(f"Request failed for {url}: {e}")
+            print(f"Request failed for {url}: {e}", flush=True)
             if attempt < max_retries - 1:
                 time.sleep(5)
             else:
@@ -85,7 +85,7 @@ def fetch_recent_issues(repo, token, limit=50):
     return context
 
 def generate_triage_decision(title, body, recent_issues_context, api_key):
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key={api_key}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
     headers = {"Content-Type": "application/json"}
     
     prompt = f"""

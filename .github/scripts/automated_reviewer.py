@@ -220,7 +220,7 @@ def add_pr_labels(repo, pr_number, github_token, labels):
         print(f"Failed to add labels: {e}")
 
 def generate_review(pr_title, pr_body, diff_text, previous_reviews_text, available_labels, gemini_api_key):
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_api_key}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={gemini_api_key}"
     formatted_prompt = SYSTEM_PROMPT.replace("{available_labels}", ", ".join(available_labels) if available_labels else "None")
     prompt = f"{formatted_prompt}\n\nPR TITLE:\n{pr_title}\n\nPR DESCRIPTION:\n{pr_body}\n"
     if previous_reviews_text:
