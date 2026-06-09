@@ -5,6 +5,9 @@ import Icon from '@expo/vector-icons/MaterialIcons';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {Dropdown} from 'react-native-element-dropdown';
 import AntDesign from '@expo/vector-icons/AntDesign';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import {SignUpScreenFirstProp, UserDetail} from '../../type';
 import {AxiosError} from 'axios';
 import Snackbar from 'react-native-snackbar';
@@ -21,18 +24,20 @@ import {
 import {useCheckUserHandleAvailability} from '@/src/hooks/useCheckUserHandleAvailability';
 import {useVerificationMailMutation} from '@/src/hooks/useMailVerification';
 import {useRegdMutation} from '@/src/hooks/useUserRegistration';
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-let validator = require('email-validator');
+
+const signupSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  username: z.string().min(1, 'User Handle is required'),
+  email: z.string().email('Please enter a valid email'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+  role: z.string().min(1, 'Please select a role'),
+});
+type SignupFormData = z.infer<typeof signupSchema>;
 
 const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
   const {uploadImage, loading} = useUploadImage();
   const theme = useTheme();
   const [user_profile_image, setUserProfileImage] = useState('');
-  const [name, setName] = useState('');
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState('');
   const [verifyBtntext, setVerifyBtntxt] = useState('Request Verification');
   const [verifiedModalVisible, setVerifiedModalVisible] = useState(false);
   const [token, setToken] = useState('');
@@ -41,7 +46,25 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
   const [securityWarningVisible, setSecurityWarningVisible] = useState(false);
   const [pendingSubmitAction, setPendingSubmitAction] = useState<(() => void) | null>(null);
 
-  const userHandle = username.trim();
+  const {
+    control,
+    handleSubmit,
+    watch,
+    formState: { isValid },
+  } = useForm<SignupFormData>({
+    resolver: zodResolver(signupSchema),
+    mode: 'onChange',
+    defaultValues: {
+      name: '',
+      username: '',
+      email: '',
+      password: '',
+      role: '',
+    },
+  });
+
+  const username = watch('username');
+  const userHandle = username?.trim();
 
   const {data: handleAvailability, isLoading: isCheckingHandle} =
     useCheckUserHandleAvailability(userHandle);
@@ -82,10 +105,6 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
         }
       }
     });
-  };
-
-  const handleUserHandleChange = (text: string) => {
-    setUsername(text);
   };
 
 
@@ -151,30 +170,22 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
       );
     }
   };
-  const handleSubmit = () => {
-    if (!name || !userHandle || !email || !password || !role) {
-      Alert.alert('Please fill in all fields');
-      return;
-    } else if (validator.validate(email) === false) {
-      Alert.alert('Email id is not valid');
-      return;
-    } else if (password.length < 6) {
-      Alert.alert('Password must be at least of 6 length');
-      return;
-    } else if (handleAvailability && !handleAvailability.isAvailable) {
+
+  const onSubmit = (data: SignupFormData) => {
+    if (handleAvailability && !handleAvailability.isAvailable) {
       Alert.alert('User handle is not available', 'Please choose a different handle.');
       return;
     }
 
     // Show security warning before proceeding with registration
-    if (role === 'general') {
-      setPendingSubmitAction(() => () => registerGeneralUser());
+    if (data.role === 'general') {
+      setPendingSubmitAction(() => () => registerGeneralUser(data));
     } else {
       const detail: UserDetail = {
-        user_name: name,
-        user_handle: userHandle,
-        email: email,
-        password: password,
+        user_name: data.name,
+        user_handle: data.username.trim(),
+        email: data.email,
+        password: data.password,
         profile_image: user_profile_image,
       };
       setPendingSubmitAction(() => () => {
@@ -200,13 +211,13 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
     setPendingSubmitAction(null);
   };
 
-  const callRegisterAPI = (profile_url: string) => {
+  const callRegisterAPI = (profile_url: string, data: SignupFormData) => {
     register(
       {
-        user_name: name,
-        user_handle: userHandle,
-        email: email,
-        password: password,
+        user_name: data.name,
+        user_handle: data.username.trim(),
+        email: data.email,
+        password: data.password,
         isDoctor: false,
         Profile_image: profile_url,
       },
@@ -253,9 +264,9 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
     );
   };
 
-  const registerGeneralUser = async () => {
+  const registerGeneralUser = async (data: SignupFormData) => {
     if (user_profile_image === '') {
-      callRegisterAPI('');
+      callRegisterAPI('', data);
     } else {
       Alert.alert(
         '',
@@ -270,7 +281,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
                 text: 'Your profile image will not  be uploaded.',
                 duration: Snackbar.LENGTH_SHORT,
               });
-             callRegisterAPI('');
+             callRegisterAPI('', data);
             },
             style: 'cancel',
           },
@@ -281,7 +292,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
                 // Upload the resized image
                 const result = await uploadImage(user_profile_image);
 
-                callRegisterAPI(result ?? '');
+                callRegisterAPI(result ?? '', data);
               } catch (err) {
                 console.error('Upload failed');
                 Alert.alert('Error', 'Upload failed');
@@ -369,38 +380,58 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
         {/* Form */}
         <YStack padding="$4" space="$4">
           {/* Name */}
-          <XStack position="relative">
-            <Input
-              flex={1}
-              height="$5"
-              borderColor="$blue10"
-              borderWidth={1}
-              borderRadius="$3"
-              placeholder="Name"
-              value={name}
-              onChangeText={setName}
-            />
-            <YStack position="absolute" right={14} top={10}>
-              <Icon name="person" size={20} color={theme.black.val} />
-            </YStack>
-          </XStack>
+          <Controller
+            control={control}
+            name="name"
+            render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
+              <YStack gap="$1">
+                <XStack position="relative">
+                  <Input
+                    flex={1}
+                    height="$5"
+                    borderColor={error ? "$red10" : "$blue10"}
+                    borderWidth={1}
+                    borderRadius="$3"
+                    placeholder="Name"
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                  />
+                  <YStack position="absolute" right={14} top={10}>
+                    <Icon name="person" size={20} color={theme.black.val} />
+                  </YStack>
+                </XStack>
+                {error && <Text color="$red10" fontSize={12}>{error.message}</Text>}
+              </YStack>
+            )}
+          />
 
           {/* User Handle */}
-          <XStack position="relative">
-            <Input
-              flex={1}
-              height="$5"
-              borderColor="$blue10"
-              borderWidth={1}
-              borderRadius="$3"
-              placeholder="User Handle"
-              value={username}
-              onChangeText={handleUserHandleChange}
-            />
-            <YStack position="absolute" right={14} top={10}>
-              <Icon name="person" size={20} color={theme.black.val} />
-            </YStack>
-          </XStack>
+          <Controller
+            control={control}
+            name="username"
+            render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
+              <YStack gap="$1">
+                <XStack position="relative">
+                  <Input
+                    flex={1}
+                    height="$5"
+                    borderColor={error ? "$red10" : "$blue10"}
+                    borderWidth={1}
+                    borderRadius="$3"
+                    placeholder="User Handle"
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                  />
+                  <YStack position="absolute" right={14} top={10}>
+                    <Icon name="person" size={20} color={theme.black.val} />
+                  </YStack>
+                </XStack>
+                {error && <Text color="$red10" fontSize={12}>{error.message}</Text>}
+              </YStack>
+            )}
+          />
 
           {/* Handle Availability Feedback */}
           {isCheckingHandle && (
@@ -409,7 +440,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
             </Text>
           )}
           {!isCheckingHandle && handleAvailability && !handleAvailability.isAvailable && (
-            <Text color="red" fontSize={14}>
+            <Text color="$red10" fontSize={14}>
               {handleAvailability.message}
             </Text>
           )}
@@ -420,72 +451,103 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
           )}
 
           {/* Email */}
-          <XStack position="relative">
-            <Input
-              flex={1}
-              height="$5"
-              borderColor="$blue10"
-              borderWidth={1}
-              borderRadius="$3"
-              placeholder="Email"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-            />
-            <YStack position="absolute" right={14} top={10}>
-              <Icon name="email" size={20} color={theme.black.val} />
-            </YStack>
-          </XStack>
+          <Controller
+            control={control}
+            name="email"
+            render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
+              <YStack gap="$1">
+                <XStack position="relative">
+                  <Input
+                    flex={1}
+                    height="$5"
+                    borderColor={error ? "$red10" : "$blue10"}
+                    borderWidth={1}
+                    borderRadius="$3"
+                    placeholder="Email"
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                  />
+                  <YStack position="absolute" right={14} top={10}>
+                    <Icon name="email" size={20} color={theme.black.val} />
+                  </YStack>
+                </XStack>
+                {error && <Text color="$red10" fontSize={12}>{error.message}</Text>}
+              </YStack>
+            )}
+          />
 
           {/* Password */}
-          <XStack position="relative">
-            <Input
-              flex={1}
-              height="$5"
-              borderColor="$blue10"
-              borderWidth={1}
-              borderRadius="$3"
-              placeholder="Password"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={isSecureEntry}
-            />
-            <Button
-              chromeless
-              position="absolute"
-              right={1}
-              top={8}
-              onPress={() => setIsSecureEntry(!isSecureEntry)}>
-              <AntDesign
-                name={isSecureEntry ? 'eye-invisible' : 'eye'}
-                size={17}
-                color={theme.black.val}
-              />
-            </Button>
-          </XStack>
+          <Controller
+            control={control}
+            name="password"
+            render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
+              <YStack gap="$1">
+                <XStack position="relative">
+                  <Input
+                    flex={1}
+                    height="$5"
+                    borderColor={error ? "$red10" : "$blue10"}
+                    borderWidth={1}
+                    borderRadius="$3"
+                    placeholder="Password"
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    secureTextEntry={isSecureEntry}
+                    autoCapitalize="none"
+                  />
+                  <Button
+                    chromeless
+                    position="absolute"
+                    right={1}
+                    top={8}
+                    onPress={() => setIsSecureEntry(!isSecureEntry)}>
+                    <AntDesign
+                      name={isSecureEntry ? 'eye-invisible' : 'eye'}
+                      size={17}
+                      color={theme.black.val}
+                    />
+                  </Button>
+                </XStack>
+                {error && <Text color="$red10" fontSize={12}>{error.message}</Text>}
+              </YStack>
+            )}
+          />
 
           {/* Role Dropdown */}
-          <Dropdown
-            style={{
-              height: 40,
-              borderColor: theme.blue10.val,
-              borderWidth: 1,
-              borderRadius: 5,
-              paddingHorizontal: 10,
-              marginBottom: 20,
-            }}
-            placeholderStyle={{fontSize: 15}}
-            data={data}
-            labelField="label"
-            valueField="value"
-            placeholder={!isFocus ? 'Select your role' : '...'}
-            value={role}
-            onFocus={() => setIsFocus(true)}
-            onBlur={() => setIsFocus(false)}
-            onChange={item => {
-              setRole(item.value);
-              setIsFocus(false);
-            }}
+          <Controller
+            control={control}
+            name="role"
+            render={({ field: { onChange, value }, fieldState: { error } }) => (
+              <YStack gap="$1">
+                <Dropdown
+                  style={{
+                    height: 40,
+                    borderColor: error ? 'red' : theme.blue10.val,
+                    borderWidth: 1,
+                    borderRadius: 5,
+                    paddingHorizontal: 10,
+                    marginBottom: error ? 0 : 20,
+                  }}
+                  placeholderStyle={{fontSize: 15}}
+                  data={data}
+                  labelField="label"
+                  valueField="value"
+                  placeholder={!isFocus ? 'Select your role' : '...'}
+                  value={value}
+                  onFocus={() => setIsFocus(true)}
+                  onBlur={() => setIsFocus(false)}
+                  onChange={item => {
+                    onChange(item.value);
+                    setIsFocus(false);
+                  }}
+                />
+                {error && <Text color="$red10" fontSize={12} marginBottom="$4">{error.message}</Text>}
+              </YStack>
+            )}
           />
 
           {/* Submit Button */}
@@ -497,9 +559,11 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
             alignItems="center"
             alignSelf="center"
             width="100%"
-            onPress={handleSubmit}>
+            onPress={handleSubmit(onSubmit)}
+            disabled={!isValid || registerPending}
+            opacity={!isValid || registerPending ? 0.5 : 1}>
             <Text color="white" fontWeight="bold" fontSize={18}>
-              {role === 'general' ? 'Register' : 'Continue'}
+              {watch('role') === 'general' ? 'Register' : 'Continue'}
             </Text>
           </Button>
         </YStack>
