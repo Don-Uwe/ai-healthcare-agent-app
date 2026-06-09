@@ -84,8 +84,10 @@ def fetch_recent_issues(repo, token, limit=50):
         })
     return context
 
+MAX_BATCH_PER_RUN = 20
+
 def generate_triage_decision(title, body, recent_issues_context, api_key):
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
     headers = {"Content-Type": "application/json"}
     
     prompt = f"""
@@ -393,24 +395,35 @@ def main():
                 return
                 
             audit_log = []
-            print(f"Found {len(to_process)} untriaged issues out of {len(issues)} total open issues/PRs.")
-            for issue in to_process:
+            total = len(to_process)
+            batch = to_process[:MAX_BATCH_PER_RUN]
+            print(f"Found {total} untriaged issues. Processing {len(batch)} this run (limit={MAX_BATCH_PER_RUN}).", flush=True)
+            gemini_quota_exhausted = False
+            for issue in batch:
                 num = issue["number"]
-                print(f"\n--- Batch Triaging Issue #{num} ---")
+                print(f"\n--- Batch Triaging Issue #{num} ---", flush=True)
                 try:
                     status, detail = handle_issue_opened(repo, num, github_token, gemini_api_key)
                     audit_log.append((num, status, detail))
                 except urllib.error.HTTPError as e:
                     if e.code == 429:
-                        audit_log.append((num, "error", "Gemini Quota API Limit 429 Hit"))
-                        print("Gemini rate limit exceeded. Aborting batch.")
-                        break
-                    audit_log.append((num, "error", str(e)))
+                        print("[WARN] Gemini 429 hit. Waiting 60s before one final retry...", flush=True)
+                        time.sleep(60)
+                        try:
+                            status, detail = handle_issue_opened(repo, num, github_token, gemini_api_key)
+                            audit_log.append((num, status, detail))
+                        except urllib.error.HTTPError as e2:
+                            audit_log.append((num, "error", f"Gemini Quota Exhausted (429) after retry"))
+                            print("Gemini rate limit exceeded after retry. Aborting batch.", flush=True)
+                            gemini_quota_exhausted = True
+                            break
+                    else:
+                        audit_log.append((num, "error", str(e)))
                 except Exception as e:
                     audit_log.append((num, "error", str(e)))
                     traceback.print_exc()
                 
-                time.sleep(10) # delay to avoid rate limiting
+                time.sleep(5) # short delay to avoid per-minute rate limiting
                 
             print(f"\nBatch triage complete. Processed {len(audit_log)} issues.")
             lines = ["## 🤖 AI Issue Triage Report", "", "| Issue | Status | Detail |", "|---|---|---|"]
