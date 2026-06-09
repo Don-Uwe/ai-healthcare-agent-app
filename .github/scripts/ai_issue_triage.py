@@ -165,14 +165,15 @@ Output a single JSON object. DO NOT wrap in Markdown code blocks. Output exactly
                     return json.loads(match.group(0))
                 else:
                     print(f"Failed to extract JSON from: {text_response}")
-                    return None
+                    return {"internal_api_error": "JSON extraction failed"}
     except urllib.error.HTTPError as e:
-        print(f"Gemini API HTTP Error {e.code}: {e.read().decode('utf-8')}")
+        err_msg = e.read().decode('utf-8')
+        print(f"Gemini API HTTP Error {e.code}: {err_msg}", flush=True)
         if e.code == 429: raise e # Bubble up 429
-        return None
+        return {"internal_api_error": f"HTTP {e.code}: {err_msg[:100]}"}
     except Exception as e:
-        print(f"Gemini API failed: {e}")
-        return None
+        print(f"Gemini API failed: {e}", flush=True)
+        return {"internal_api_error": f"Error: {str(e)}"}
 
 def add_labels(repo, issue_number, labels, token):
     url = f"https://api.github.com/repos/{repo}/issues/{issue_number}/labels"
@@ -216,10 +217,13 @@ def handle_issue_opened(repo, issue_number, token, gemini_api_key):
     
     decision = generate_triage_decision(title, body, recent_issues, gemini_api_key)
     if not decision:
-        print("Failed to get triage decision.")
+        print("Failed to get triage decision.", flush=True)
         return "error", "Failed to get triage decision from Gemini"
+    
+    if "internal_api_error" in decision:
+        return "error", decision["internal_api_error"]
         
-    print(f"Triage Decision: {json.dumps(decision, indent=2)}")
+    print(f"Triage Decision: {json.dumps(decision, indent=2)}", flush=True)
     
     labels_to_add = []
     
