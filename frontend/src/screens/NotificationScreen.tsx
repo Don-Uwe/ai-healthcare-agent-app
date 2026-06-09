@@ -1,6 +1,11 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { AppState, FlatList, StyleSheet } from 'react-native';
+import {AppState, FlatList, StyleSheet, Text, View, Image} from 'react-native';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
+import NotificationItem from '../components/NotificationItem';
+import {useDispatch, useSelector} from 'react-redux';
+import {Notification, NotificationType} from '../type';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Loader from '../components/Loader';
 import Snackbar from 'react-native-snackbar';
 import { useDispatch, useSelector } from 'react-redux';
 import { NoNotificationState } from '../components/EmptyStates';
@@ -235,7 +240,7 @@ const NotificationScreen = ({navigation}: any) => {
       }, UNDO_TIMEOUT_MS);
 
       pendingDeletesRef.current.set(item._id, {
-        ...(snapshot as any),
+        ...(snapshot as Omit<PendingDelete, 'timer'>),
         timer,
       });
 
