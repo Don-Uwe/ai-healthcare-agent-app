@@ -358,79 +358,10 @@ def main():
         return
         
     event_path = os.environ.get("GITHUB_EVENT_PATH")
-    if not event_path or not os.path.exists(event_path) or event_name == "workflow_dispatch":
-        test_issue = os.environ.get("ISSUE_NUMBER", "").strip()
-        if test_issue:
-            print(f"Running manual test triage on #{test_issue}...")
-            status, detail = handle_issue_opened(repo, test_issue, github_token, gemini_api_key)
-            _write_step_summary([
-                "## 🤖 AI Issue Triage Report",
-                f"**Issue:** #{test_issue}",
-                f"**Status:** {status}",
-                f"**Detail:** {detail}"
-            ])
-        else:
-            print("Running batch triage on untriaged open issues...")
-            issues = fetch_all_open_issues(repo, github_token)
-            if not issues:
-                print("No open issues found or failed to fetch.")
-                _write_step_summary(["## 🤖 AI Issue Triage Report", "No open issues found."])
-                return
-            
-            skip_labels = {
-                "gssoc", "outside-ultimatehealth", "duplicate", "out-of-scope",
-                "needs-information", "backend", "maintainer-review-required"
-            }
-            
-            to_process = []
-            for issue in issues:
-                if "pull_request" in issue: continue
-                labels = [l.get("name", "").lower() for l in issue.get("labels", [])]
-                if not any(lbl in skip_labels for lbl in labels):
-                    to_process.append(issue)
-            
-            if not to_process:
-                print("All open issues are already triaged or skipped.")
-                _write_step_summary(["## 🤖 AI Issue Triage Report", "All open issues are already triaged or skipped."])
-                return
-                
-            audit_log = []
-            total = len(to_process)
-            batch = to_process[:MAX_BATCH_PER_RUN]
-            print(f"Found {total} untriaged issues. Processing {len(batch)} this run (limit={MAX_BATCH_PER_RUN}).", flush=True)
-            gemini_quota_exhausted = False
-            for issue in batch:
-                num = issue["number"]
-                print(f"\n--- Batch Triaging Issue #{num} ---", flush=True)
-                try:
-                    status, detail = handle_issue_opened(repo, num, github_token, gemini_api_key)
-                    audit_log.append((num, status, detail))
-                except urllib.error.HTTPError as e:
-                    if e.code == 429:
-                        print("[WARN] Gemini 429 hit. Waiting 60s before one final retry...", flush=True)
-                        time.sleep(60)
-                        try:
-                            status, detail = handle_issue_opened(repo, num, github_token, gemini_api_key)
-                            audit_log.append((num, status, detail))
-                        except urllib.error.HTTPError as e2:
-                            audit_log.append((num, "error", f"Gemini Quota Exhausted (429) after retry"))
-                            print("Gemini rate limit exceeded after retry. Aborting batch.", flush=True)
-                            gemini_quota_exhausted = True
-                            break
-                    else:
-                        audit_log.append((num, "error", str(e)))
-                except Exception as e:
-                    audit_log.append((num, "error", str(e)))
-                    traceback.print_exc()
-                
-                time.sleep(5) # short delay to avoid per-minute rate limiting
-                
-            print(f"\nBatch triage complete. Processed {len(audit_log)} issues.")
-            lines = ["## 🤖 AI Issue Triage Report", "", "| Issue | Status | Detail |", "|---|---|---|"]
-            for num, status, detail in audit_log:
-                lines.append(f"| #{num} | {status} | {detail} |")
-            _write_step_summary(lines)
+    if not event_path or not os.path.exists(event_path):
+        print("No event data found. This workflow only runs on issue/comment events.", flush=True)
         return
+
 
     with open(event_path, "r") as f:
         event_data = json.load(f)
