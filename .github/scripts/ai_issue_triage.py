@@ -197,10 +197,10 @@ Output a single JSON object. DO NOT wrap in Markdown code blocks. Output exactly
         except urllib.error.HTTPError as e:
             err_msg = e.read().decode('utf-8')
             print(f"Gemini API HTTP Error {e.code}: {err_msg}", flush=True)
-            if e.code == 429:
+            if e.code in [429, 500, 502, 503, 504]:
                 if attempt < max_retries - 1:
                     wait_time = base_wait * (2 ** attempt)
-                    print(f"[WARN] Gemini API Rate Limited (429). Retrying in {wait_time}s (attempt {attempt+1}/{max_retries})...", flush=True)
+                    print(f"[WARN] Gemini API Error ({e.code}). Retrying in {wait_time}s (attempt {attempt+1}/{max_retries})...", flush=True)
                     time.sleep(wait_time)
                 else:
                     print(f"[ERROR] Gemini API quota exceeded after {max_retries} retries.", flush=True)
