@@ -204,8 +204,8 @@ Output a single JSON object. DO NOT wrap in Markdown code blocks. Output exactly
                     print(f"[WARN] Gemini API Error ({e.code}). Retrying in {wait_time}s (attempt {attempt+1}/{max_retries})...", flush=True)
                     time.sleep(wait_time)
                 else:
-                    print(f"[ERROR] Gemini API quota exceeded after {max_retries} retries.", flush=True)
-                    return {"internal_api_error": "Gemini API quota exhausted"}
+                    print(f"[ERROR] Gemini API quota exceeded after {max_retries} retries across {len(api_keys)} keys.", flush=True)
+                    return {"internal_api_error": f"Gemini API quota exhausted after {max_retries} retries using {len(api_keys)} keys."}
             else:
                 return {"internal_api_error": f"HTTP {e.code}: {err_msg[:100]}"}
         except Exception as e:
