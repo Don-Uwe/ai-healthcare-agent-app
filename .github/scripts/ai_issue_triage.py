@@ -172,7 +172,7 @@ Output a single JSON object. DO NOT wrap in Markdown code blocks. Output exactly
     import re
     import time
     
-    max_retries = 3
+    max_retries = max(3, len(api_keys) + 1)
     base_wait = 50
     
     for attempt in range(max_retries):
@@ -198,7 +198,7 @@ Output a single JSON object. DO NOT wrap in Markdown code blocks. Output exactly
         except urllib.error.HTTPError as e:
             err_msg = e.read().decode('utf-8')
             print(f"Gemini API HTTP Error {e.code}: {err_msg}", flush=True)
-            if e.code in [429, 500, 502, 503, 504]:
+            if e.code in [403, 429, 500, 502, 503, 504]:
                 if attempt < max_retries - 1:
                     wait_time = base_wait * (2 ** attempt)
                     print(f"[WARN] Gemini API Error ({e.code}). Retrying in {wait_time}s (attempt {attempt+1}/{max_retries})...", flush=True)

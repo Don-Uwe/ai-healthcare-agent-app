@@ -230,7 +230,7 @@ def generate_review(pr_title, pr_body, diff_text, previous_reviews_text, availab
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {"temperature": 0.2, "topP": 0.8, "topK": 40, "maxOutputTokens": 8192}
     }
-    max_retries = 3
+    max_retries = max(3, len(api_keys) + 1)
     for attempt in range(max_retries):
         current_key = api_keys[attempt % len(api_keys)]
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={current_key}"
@@ -246,7 +246,7 @@ def generate_review(pr_title, pr_body, diff_text, previous_reviews_text, availab
         except urllib.error.HTTPError as e:
             error_body = e.read().decode("utf-8")
             print(f"HTTP Error from Gemini API (Attempt {attempt+1}): {e.code} - {error_body}")
-            if e.code in [429, 500, 502, 503, 504] and attempt < max_retries - 1:
+            if e.code in [403, 429, 500, 502, 503, 504] and attempt < max_retries - 1:
                 # Exponential back-off: 60 s, 120 s, 240 s — much longer for rate limits
                 sleep_time = RATE_LIMIT_SLEEP_BASE * (2 ** attempt)
                 print(f"Retrying in {sleep_time} seconds with alternative key...")
