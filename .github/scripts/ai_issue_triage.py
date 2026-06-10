@@ -100,8 +100,7 @@ def fetch_recent_commits(repo, token, limit=15):
 
 MAX_BATCH_PER_RUN = 5
 
-def generate_triage_decision(title, body, recent_issues_context, recent_commits_context, api_key):
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+def generate_triage_decision(title, body, recent_issues_context, recent_commits_context, api_keys):
     headers = {"Content-Type": "application/json"}
     
     prompt = f"""
@@ -177,6 +176,8 @@ Output a single JSON object. DO NOT wrap in Markdown code blocks. Output exactly
     base_wait = 50
     
     for attempt in range(max_retries):
+        current_key = api_keys[attempt % len(api_keys)]
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={current_key}"
         req = urllib.request.Request(url, method="POST", headers=headers, data=json.dumps(data).encode("utf-8"))
         try:
             with urllib.request.urlopen(req, timeout=60) as response:
@@ -242,7 +243,7 @@ def assign_user(repo, issue_number, username, token):
     url = f"https://api.github.com/repos/{repo}/issues/{issue_number}/assignees"
     make_request(url, method="POST", data={"assignees": [username]}, token=token)
 
-def handle_issue_opened(repo, issue_number, token, gemini_api_key):
+def handle_issue_opened(repo, issue_number, token, gemini_api_keys):
     print(f"Triaging new issue #{issue_number}...")
     issue = fetch_issue(repo, issue_number, token)
     if not issue: return "error", "Failed to fetch issue data"
@@ -255,7 +256,7 @@ def handle_issue_opened(repo, issue_number, token, gemini_api_key):
     
     recent_commits = fetch_recent_commits(repo, token, limit=15)
     
-    decision = generate_triage_decision(title, body, recent_issues, recent_commits, gemini_api_key)
+    decision = generate_triage_decision(title, body, recent_issues, recent_commits, gemini_api_keys)
     if not decision:
         print("Failed to get triage decision.", flush=True)
         return "error", "Failed to get triage decision from Gemini"
@@ -400,12 +401,19 @@ def handle_issue_comment(repo, issue_number, commenter, token):
     return "assigned", f"Assigned to {commenter}"
 
 def main():
-    gemini_api_key = os.environ.get("GEMINI_API_KEY")
+    gemini_keys_str = os.environ.get("GEMINI_API_KEYS", "")
+    gemini_api_keys = [k.strip() for k in gemini_keys_str.split(",") if k.strip()]
+    if not gemini_api_keys:
+        # Fallback to single key if available
+        single_key = os.environ.get("GEMINI_API_KEY", "").strip()
+        if single_key:
+            gemini_api_keys = [single_key]
+            
     github_token = os.environ.get("GITHUB_TOKEN")
     repo = os.environ.get("GITHUB_REPOSITORY")
     event_name = os.environ.get("GITHUB_EVENT_NAME")
     
-    if not all([gemini_api_key, github_token, repo]):
+    if not gemini_api_keys or not github_token or not repo:
         print("Missing required environment variables.")
         return
         
@@ -418,7 +426,7 @@ def main():
             print("workflow_dispatch: No issue_number provided.", flush=True)
             return
         print(f"Manual triage triggered for issue #{issue_number}...", flush=True)
-        status, detail = handle_issue_opened(repo, issue_number, github_token, gemini_api_key)
+        status, detail = handle_issue_opened(repo, issue_number, github_token, gemini_api_keys)
         _write_step_summary([
             "## 🤖 AI Issue Triage Report (Manual)",
             f"**Issue:** #{issue_number}",
@@ -435,7 +443,7 @@ def main():
     
     if event_name == "issues" and action == "opened":
         issue_number = event_data["issue"]["number"]
-        status, detail = handle_issue_opened(repo, issue_number, github_token, gemini_api_key)
+        status, detail = handle_issue_opened(repo, issue_number, github_token, gemini_api_keys)
         _write_step_summary([
             "## 🤖 AI Issue Triage Report",
             f"**Issue:** #{issue_number}",

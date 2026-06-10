@@ -219,8 +219,7 @@ def add_pr_labels(repo, pr_number, github_token, labels):
     except (urllib.error.URLError, socket.timeout) as e:
         print(f"Failed to add labels: {e}")
 
-def generate_review(pr_title, pr_body, diff_text, previous_reviews_text, available_labels, gemini_api_key):
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_api_key}"
+def generate_review(pr_title, pr_body, diff_text, previous_reviews_text, available_labels, api_keys):
     formatted_prompt = SYSTEM_PROMPT.replace("{available_labels}", ", ".join(available_labels) if available_labels else "None")
     prompt = f"{formatted_prompt}\n\nPR TITLE:\n{pr_title}\n\nPR DESCRIPTION:\n{pr_body}\n"
     if previous_reviews_text:
@@ -231,13 +230,15 @@ def generate_review(pr_title, pr_body, diff_text, previous_reviews_text, availab
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {"temperature": 0.2, "topP": 0.8, "topK": 40, "maxOutputTokens": 8192}
     }
-    request = urllib.request.Request(
-        url,
-        data=json.dumps(payload).encode("utf-8"),
-        headers={"Content-Type": "application/json"}
-    )
     max_retries = 3
     for attempt in range(max_retries):
+        current_key = api_keys[attempt % len(api_keys)]
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={current_key}"
+        request = urllib.request.Request(
+            url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"}
+        )
         try:
             with urllib.request.urlopen(request, timeout=GEMINI_TIMEOUT) as resp:
                 resp_data = json.loads(resp.read().decode("utf-8"))
@@ -248,7 +249,7 @@ def generate_review(pr_title, pr_body, diff_text, previous_reviews_text, availab
             if e.code in [429, 500, 502, 503, 504] and attempt < max_retries - 1:
                 # Exponential back-off: 60 s, 120 s, 240 s — much longer for rate limits
                 sleep_time = RATE_LIMIT_SLEEP_BASE * (2 ** attempt)
-                print(f"Retrying in {sleep_time} seconds...")
+                print(f"Retrying in {sleep_time} seconds with alternative key...")
                 time.sleep(sleep_time)
             else:
                 raise e
@@ -311,8 +312,7 @@ def fetch_open_prs(repo, github_token):
             break
     return prs
 
-def run_review_for_pr(repo, pr_number, github_token, gemini_api_key,
-                      is_scheduled=False, filtered_labels=None):
+def run_review_for_pr(repo, pr_number, github_token, api_keys, is_scheduled=False, filtered_labels=None):
     """
     Returns a (status, detail) tuple:
       status : "reviewed" | "skipped" | "error"
@@ -436,7 +436,7 @@ def run_review_for_pr(repo, pr_number, github_token, gemini_api_key,
 
     print("Generating review with Gemini...")
     model_response = generate_review(pr_title, pr_body, filtered_diff,
-                                     previous_reviews_text, filtered_labels, gemini_api_key)
+                                     previous_reviews_text, filtered_labels, api_keys)
 
     if not model_response:
         msg = "Skipped: Gemini returned an empty response."
@@ -521,7 +521,13 @@ def _write_step_summary(lines):
 def main():
     import traceback
 
-    gemini_api_key = os.environ.get("GEMINI_API_KEY")
+    gemini_keys_str = os.environ.get("GEMINI_API_KEYS", "")
+    gemini_api_keys = [k.strip() for k in gemini_keys_str.split(",") if k.strip()]
+    if not gemini_api_keys:
+        single_key = os.environ.get("GEMINI_API_KEY", "").strip()
+        if single_key:
+            gemini_api_keys = [single_key]
+            
     github_token   = os.environ.get("GITHUB_TOKEN")
     repo           = os.environ.get("GITHUB_REPOSITORY")
     pr_number      = os.environ.get("PR_NUMBER", "").strip()
@@ -530,8 +536,8 @@ def main():
     # Scheduled / manual / push events re-check PRs even without new commits
     is_scheduled = event_name in ("schedule", "workflow_dispatch", "push")
 
-    if not all([gemini_api_key, github_token, repo]):
-        msg = "Missing required environment variables (GEMINI_API_KEY, GITHUB_TOKEN, GITHUB_REPOSITORY)."
+    if not gemini_api_keys or not github_token or not repo:
+        msg = "Missing required environment variables (GEMINI_API_KEYS, GITHUB_TOKEN, GITHUB_REPOSITORY)."
         print(msg)
         _write_step_summary(["## \u274c Automated PR Reviewer", "", f"**Fatal:** {msg}"])
         return
@@ -552,7 +558,7 @@ def main():
             filtered_labels = _get_filtered_labels(repo, github_token)
             try:
                 status, detail = run_review_for_pr(
-                    repo, pr_number, github_token, gemini_api_key,
+                    repo, pr_number, github_token, gemini_api_keys,
                     is_scheduled=is_scheduled, filtered_labels=filtered_labels
                 )
                 audit_log.append((pr_number, status, detail))
@@ -587,7 +593,7 @@ def main():
                 print(f"\n--- [{processed + 1}/{min(total, MAX_BATCH_PER_RUN)}] Reviewing PR #{num} ---")
                 try:
                     status, detail = run_review_for_pr(
-                        repo, str(num), github_token, gemini_api_key,
+                        repo, str(num), github_token, gemini_api_keys,
                         is_scheduled=is_scheduled, filtered_labels=filtered_labels
                     )
                     audit_log.append((num, status, detail))

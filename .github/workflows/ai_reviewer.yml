@@ -39,7 +39,7 @@ jobs:
 
       - name: Run AI Reviewer Script
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_API_KEYS: ${{ secrets.GEMINI_KEY_1 }},${{ secrets.GEMINI_KEY_2 }},${{ secrets.GEMINI_KEY_3 }},${{ secrets.GEMINI_KEY_4 }},${{ secrets.GEMINI_KEY_5 }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Resolve PR number from either trigger source
           PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
