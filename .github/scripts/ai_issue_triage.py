@@ -84,9 +84,23 @@ def fetch_recent_issues(repo, token, limit=50):
         })
     return context
 
+def fetch_recent_commits(repo, token, limit=15):
+    url = f"https://api.github.com/repos/{repo}/commits?per_page={limit}"
+    commits = make_request(url, token=token)
+    if not commits: return []
+    context = []
+    for commit in commits:
+        info = commit.get("commit", {})
+        context.append({
+            "sha": commit.get("sha")[:7],
+            "message": info.get("message", "").split("\n")[0],
+            "date": info.get("author", {}).get("date")
+        })
+    return context
+
 MAX_BATCH_PER_RUN = 5
 
-def generate_triage_decision(title, body, recent_issues_context, api_key):
+def generate_triage_decision(title, body, recent_issues_context, recent_commits_context, api_key):
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
     headers = {"Content-Type": "application/json"}
     
@@ -107,7 +121,8 @@ If the issue is: Extremely broad, Product strategy discussion, Long-term roadmap
 
 ## Technical Classification
 Classify as backend if it involves: APIs, Database, Authentication, Authorization, Server-side validation, Backend integrations, Content processing services, Analytics pipelines.
-Classify as frontend if it involves: React Native UI, UX improvements, Components, Navigation, State management, Client-side validation, Frontend performance, Accessibility, Styling.
+Classify as frontend-web if it involves: React, Web UI, Browser compatibility, Web accessibility, Web routing, standard DOM elements.
+Classify as frontend-mobile if it involves: React Native, Mobile UI, Android/iOS specific features, App navigation, Mobile gestures.
 
 ## Difficulty Level Assignment
 Use the following labels for difficulty:
@@ -126,8 +141,11 @@ You must set `escalate_to_maintainer = true` when:
 * Large feature proposal
 * Level 3 issue
 
-# Recent Issues for Duplicate Check
+# Recent Issues for Duplicate/Completion Check
 {json.dumps(recent_issues_context, indent=2)}
+
+# Recent Commits for Context
+{json.dumps(recent_commits_context, indent=2)}
 
 # New Issue
 Title: {title}
@@ -141,7 +159,7 @@ Output a single JSON object. DO NOT wrap in Markdown code blocks. Output exactly
   "duplicate_number": integer or null,
   "is_in_scope": boolean,
   "is_doctor_related": boolean,
-  "classification": "backend" | "frontend" | "broad" | null,
+  "classification": "backend" | "frontend-web" | "frontend-mobile" | "broad" | null,
   "difficulty": "level:beginner" | "level:intermediate" | "level:advanced" | "level:critical" | null,
   "escalate_to_maintainer": boolean,
   "reasoning": "A short, polite explanation for your decision."
@@ -232,10 +250,12 @@ def handle_issue_opened(repo, issue_number, token, gemini_api_key):
     title = issue.get("title", "")
     body = issue.get("body", "")
     
-    recent_issues = fetch_recent_issues(repo, token)
+    recent_issues = fetch_recent_issues(repo, token, limit=30)
     recent_issues = [i for i in recent_issues if str(i["number"]) != str(issue_number)]
     
-    decision = generate_triage_decision(title, body, recent_issues, gemini_api_key)
+    recent_commits = fetch_recent_commits(repo, token, limit=15)
+    
+    decision = generate_triage_decision(title, body, recent_issues, recent_commits, gemini_api_key)
     if not decision:
         print("Failed to get triage decision.", flush=True)
         return "error", "Failed to get triage decision from Gemini"
@@ -296,8 +316,13 @@ def handle_issue_opened(repo, issue_number, token, gemini_api_key):
         assign_user(repo, issue_number, "SB2318", token)
         return "backend", "Assigned to @SB2318"
         
-    elif classification == "frontend":
+    elif classification in ["frontend-web", "frontend-mobile"]:
         labels_to_add.append("frontend")
+        if classification == "frontend-web":
+            labels_to_add.append("web")
+        elif classification == "frontend-mobile":
+            labels_to_add.append("mobile")
+            
         if difficulty: labels_to_add.append(difficulty)
         labels_to_add.append("gssoc")
         add_labels(repo, issue_number, labels_to_add, token)
