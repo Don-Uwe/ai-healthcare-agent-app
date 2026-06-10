@@ -173,10 +173,14 @@ Output a single JSON object. DO NOT wrap in Markdown code blocks. Output exactly
     import time
     
     max_retries = max(3, len(api_keys) + 1)
-    base_wait = 50
+    # With multiple keys, rotate fast with short wait — only wait if same key is reused
+    base_wait = 5 if len(api_keys) > 1 else 50
+    print(f"[INFO] Starting Gemini call. Keys available: {len(api_keys)}, max_retries: {max_retries}", flush=True)
     
     for attempt in range(max_retries):
         current_key = api_keys[attempt % len(api_keys)]
+        key_index = attempt % len(api_keys) + 1
+        print(f"[INFO] Attempt {attempt+1}/{max_retries} using key #{key_index}", flush=True)
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={current_key}"
         req = urllib.request.Request(url, method="POST", headers=headers, data=json.dumps(data).encode("utf-8"))
         try:
@@ -425,7 +429,7 @@ def main():
         if not issue_number:
             print("workflow_dispatch: No issue_number provided.", flush=True)
             return
-        print(f"Manual triage triggered for issue #{issue_number}...", flush=True)
+        print(f"Manual triage triggered for issue #{issue_number}... (Keys loaded: {len(gemini_api_keys)})", flush=True)
         status, detail = handle_issue_opened(repo, issue_number, github_token, gemini_api_keys)
         _write_step_summary([
             "## 🤖 AI Issue Triage Report (Manual)",
