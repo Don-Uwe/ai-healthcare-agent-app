@@ -151,31 +151,47 @@ Output a single JSON object. DO NOT wrap in Markdown code blocks. Output exactly
     }
     
     import re
-    req = urllib.request.Request(url, method="POST", headers=headers, data=json.dumps(data).encode("utf-8"))
-    try:
-        with urllib.request.urlopen(req, timeout=60) as response:
-            result = json.loads(response.read().decode("utf-8"))
-            text_response = result["candidates"][0]["content"]["parts"][0]["text"].strip()
-            
-            try:
-                if text_response.startswith("```json"): text_response = text_response[7:]
-                if text_response.endswith("```"): text_response = text_response[:-3]
-                return json.loads(text_response.strip())
-            except json.JSONDecodeError:
-                match = re.search(r'\{.*\}', text_response, re.DOTALL)
-                if match:
-                    return json.loads(match.group(0))
+    import time
+    
+    max_retries = 3
+    base_wait = 5
+    
+    for attempt in range(max_retries):
+        req = urllib.request.Request(url, method="POST", headers=headers, data=json.dumps(data).encode("utf-8"))
+        try:
+            with urllib.request.urlopen(req, timeout=60) as response:
+                result = json.loads(response.read().decode("utf-8"))
+                text_response = result["candidates"][0]["content"]["parts"][0]["text"].strip()
+                
+                try:
+                    if text_response.startswith("```json"): text_response = text_response[7:]
+                    if text_response.endswith("```"): text_response = text_response[:-3]
+                    return json.loads(text_response.strip())
+                except json.JSONDecodeError:
+                    match = re.search(r'\{.*\}', text_response, re.DOTALL)
+                    if match:
+                        return json.loads(match.group(0))
+                    else:
+                        print(f"Failed to extract JSON from: {text_response}")
+                        return {"internal_api_error": "JSON extraction failed"}
+        except urllib.error.HTTPError as e:
+            err_msg = e.read().decode('utf-8')
+            print(f"Gemini API HTTP Error {e.code}: {err_msg}", flush=True)
+            if e.code == 429:
+                if attempt < max_retries - 1:
+                    wait_time = base_wait * (2 ** attempt)
+                    print(f"[WARN] Gemini API Rate Limited (429). Retrying in {wait_time}s (attempt {attempt+1}/{max_retries})...", flush=True)
+                    time.sleep(wait_time)
                 else:
-                    print(f"Failed to extract JSON from: {text_response}")
-                    return {"internal_api_error": "JSON extraction failed"}
-    except urllib.error.HTTPError as e:
-        err_msg = e.read().decode('utf-8')
-        print(f"Gemini API HTTP Error {e.code}: {err_msg}", flush=True)
-        if e.code == 429: raise e # Bubble up 429
-        return {"internal_api_error": f"HTTP {e.code}: {err_msg[:100]}"}
-    except Exception as e:
-        print(f"Gemini API failed: {e}", flush=True)
-        return {"internal_api_error": f"Error: {str(e)}"}
+                    print(f"[ERROR] Gemini API quota exceeded after {max_retries} retries.", flush=True)
+                    return {"internal_api_error": "Gemini API quota exhausted"}
+            else:
+                return {"internal_api_error": f"HTTP {e.code}: {err_msg[:100]}"}
+        except Exception as e:
+            print(f"Gemini API failed: {e}", flush=True)
+            return {"internal_api_error": f"Error: {str(e)}"}
+            
+    return {"internal_api_error": "Gemini API request failed after retries"}
 
 def add_labels(repo, issue_number, labels, token):
     url = f"https://api.github.com/repos/{repo}/issues/{issue_number}/labels"
