@@ -1,13 +1,15 @@
 <div align="center">
 
-<img src="https://github.com/user-attachments/assets/433e6b0e-6d79-4335-85d8-7977bbddae5e" alt="UltimateHealth" width="100%"/>
+   <a href="https://git.io/typing-svg">
+     <img src="https://readme-typing-svg.herokuapp.com?font=Roboto&size=22&duration=4995&pause=1000&color=006400&width=850&height=58&lines=Open-source+Health+Platform+%7C+React+Native+(Expo)+App+%2B+Node.js+Backend+%2B+MongoDB" alt="Typing SVG" />
+   </a>
 
 <h2>UltimateHealth &mdash; Open-Source Health Intelligence Platform</h2>
 
 <p>A fully open-source health library, article management, and AI-powered wellness platform delivering trusted, multilingual content worldwide.</p>
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-4CAF50?style=for-the-badge&logo=vercel&logoColor=white)](https://uhsocial.in/frontend/v2)
-[![Android App](https://img.shields.io/badge/Android%20App-34A853?style=for-the-badge&logo=googleplay&logoColor=white)](https://play.google.com/store/apps/details?id=com.anonymous.UltimateHealth)
+[![Live Web Demo](https://img.shields.io/badge/Live%20Web%20Demo-4CAF50?style=for-the-badge&logo=globe&logoColor=white)](https://uhsocial.in/frontend/v2)
+[![Android App](https://img.shields.io/badge/Android%20App-Play%20Store-34A853?style=for-the-badge&logo=googleplay&logoColor=white)](https://play.google.com/store/apps/details?id=com.anonymous.UltimateHealth)
 [![API Docs](https://img.shields.io/badge/API%20Docs-007ACC?style=for-the-badge&logo=swagger&logoColor=white)](https://uhsocial.in/docs)
 [![Content API](https://img.shields.io/badge/Content%20API-FF6B00?style=for-the-badge&logo=python&logoColor=white)](https://uhsocial.in/content-intel/docs)
 
@@ -17,18 +19,83 @@
 
 <div align="center">
 
-![License](https://img.shields.io/github/license/SB2318/UltimateHealth?style=flat-square&color=success)
-![Stars](https://img.shields.io/github/stars/SB2318/UltimateHealth?style=flat-square&color=yellow)
-![Forks](https://img.shields.io/github/forks/SB2318/UltimateHealth?style=flat-square&color=blue)
-![Issues](https://img.shields.io/github/issues/SB2318/UltimateHealth?style=flat-square)
-![Open PRs](https://img.shields.io/github/issues-pr/SB2318/UltimateHealth?style=flat-square)
-![Last Commit](https://img.shields.io/github/last-commit/SB2318/UltimateHealth?style=flat-square&color=informational)
-![Repo Size](https://img.shields.io/github/repo-size/SB2318/UltimateHealth?style=flat-square&color=success)
+<table>
+  <!-- Row 1 -->
+  <tr>
+    <td align="center"><b>🧾 License</b></td>
+    <td align="center"><b>🛠️ Frontend CI</b></td>
+    <td align="center"><b>📱 Expo CI</b></td>
+    <td align="center"><b>🌟 Stars</b></td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img alt="License" src="https://img.shields.io/github/license/SB2318/UltimateHealth?style=flat&logo=github&color=success"/>
+    </td>
+    <td align="center">
+      <img alt="Frontend CI" src="https://github.com/SB2318/UltimateHealth/actions/workflows/frontend-ci.yml/badge.svg?style=flat&logo=github&color=success"/>
+    </td>
+    <td align="center">
+      <a href="https://github.com/SB2318/UltimateHealth/actions/workflows/eas-build.yml">
+        <img alt="Expo Build" src="https://github.com/SB2318/UltimateHealth/actions/workflows/eas-build.yml/badge.svg?label=Expo%20Build%20(Android%20%2B%20iOS)&logo=expo&color=blue"/>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/SB2318/UltimateHealth/stargazers">
+        <img alt="Stars" src="https://img.shields.io/github/stars/SB2318/UltimateHealth?style=social"/>
+      </a>
+    </td>
+  </tr>
 
-[![Frontend CI](https://github.com/SB2318/UltimateHealth/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/SB2318/UltimateHealth/actions/workflows/frontend-ci.yml)
-[![Expo Build](https://github.com/SB2318/UltimateHealth/actions/workflows/eas-build.yml/badge.svg)](https://github.com/SB2318/UltimateHealth/actions/workflows/eas-build.yml)
-[![Android Build](https://github.com/SB2318/UltimateHealth/actions/workflows/android-build-validation.yml/badge.svg)](https://github.com/SB2318/UltimateHealth/actions/workflows/android-build-validation.yml)
-[![iOS Build](https://github.com/SB2318/UltimateHealth/actions/workflows/ios-build-validation.yml/badge.svg)](https://github.com/SB2318/UltimateHealth/actions/workflows/ios-build-validation.yml)
+  <!-- Row 2 -->
+  <tr>
+    <td align="center"><b>🍴 Forks</b></td>
+    <td align="center"><b>🐛 Issues</b></td>
+    <td align="center"><b>🔄 Open PRs</b></td>
+    <td align="center"><b>✅ Closed PRs</b></td>
+  </tr>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/SB2318/UltimateHealth/network/members">
+        <img alt="Forks" src="https://img.shields.io/github/forks/SB2318/UltimateHealth?style=flat&logo=github&color=success"/>
+      </a>
+    </td>
+    <td align="center">
+      <img alt="Issues" src="https://img.shields.io/github/issues/SB2318/UltimateHealth?style=flat&logo=github"/>
+    </td>
+    <td align="center">
+      <img alt="Open PRs" src="https://img.shields.io/github/issues-pr/SB2318/UltimateHealth?style=flat&logo=github"/>
+    </td>
+    <td align="center">
+      <img alt="Closed PRs" src="https://img.shields.io/github/issues-pr-closed/SB2318/UltimateHealth?style=flat&logo=github&color=critical"/>
+    </td>
+  </tr>
+
+  <!-- Row 3 -->
+  <tr>
+    <td align="center"><b>🤖 Android Build CI</b></td>
+    <td align="center"><b>🍎 iOS Build CI</b></td>
+    <td align="center"><b>⏱️ Last Commit</b></td>
+    <td align="center"><b>📦 Repo Size</b></td>
+  </tr>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/SB2318/UltimateHealth/actions/workflows/android-build-validation.yml">
+        <img alt="Android Build CI" src="https://github.com/SB2318/UltimateHealth/actions/workflows/android-build-validation.yml/badge.svg?style=flat&logo=android&label=Android%20Build"/>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/SB2318/UltimateHealth/actions/workflows/ios-build-validation.yml">
+        <img alt="iOS Build CI" src="https://github.com/SB2318/UltimateHealth/actions/workflows/ios-build-validation.yml/badge.svg?style=flat&logo=apple&label=iOS%20Build"/>
+      </a>
+    </td>
+    <td align="center">
+      <img alt="Last Commit" src="https://img.shields.io/github/last-commit/SB2318/UltimateHealth?style=flat&logo=github&color=informational"/>
+    </td>
+    <td align="center">
+      <img alt="Repo Size" src="https://img.shields.io/github/repo-size/SB2318/UltimateHealth?style=flat&logo=github&color=success"/>
+    </td>
+  </tr>
+</table>
 
 </div>
 
