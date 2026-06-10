@@ -67,7 +67,10 @@ interface Props {
   accentColor?: string;
 }
 
-export default function AudioWaveform({ isPlaying, accentColor = '#3B82F6' }: Props) {
+// Uses primary accent color from tamagui config (tokens.color.primary = #4F46E5)
+const TAMAGUI_PRIMARY = '#4F46E5';
+
+export default function AudioWaveform({ isPlaying, accentColor = TAMAGUI_PRIMARY }: Props) {
   const barAnimationData = useMemo(() =>
     Array.from({ length: BAR_COUNT }, (_, i) => ({
       id: `bar-${i}`,

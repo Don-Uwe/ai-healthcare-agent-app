@@ -314,7 +314,7 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
           styles.visualizerContainer,
           GlassStyles.glassContainerDark,
         ]}>
-        <AudioWaveform isPlaying={playing} accentColor="#4F46E5" />
+        <AudioWaveform isPlaying={playing} />
       </View>
     </YStack>
   );
