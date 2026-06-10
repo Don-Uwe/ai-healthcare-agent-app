@@ -358,8 +358,21 @@ def main():
         return
         
     event_path = os.environ.get("GITHUB_EVENT_PATH")
-    if not event_path or not os.path.exists(event_path):
-        print("No event data found. This workflow only runs on issue/comment events.", flush=True)
+    
+    # Manual run via workflow_dispatch — triage a specific issue
+    if event_name == "workflow_dispatch" or not event_path or not os.path.exists(event_path):
+        issue_number = os.environ.get("ISSUE_NUMBER", "").strip()
+        if not issue_number:
+            print("workflow_dispatch: No issue_number provided.", flush=True)
+            return
+        print(f"Manual triage triggered for issue #{issue_number}...", flush=True)
+        status, detail = handle_issue_opened(repo, issue_number, github_token, gemini_api_key)
+        _write_step_summary([
+            "## 🤖 AI Issue Triage Report (Manual)",
+            f"**Issue:** #{issue_number}",
+            f"**Status:** {status}",
+            f"**Detail:** {detail}"
+        ])
         return
 
 

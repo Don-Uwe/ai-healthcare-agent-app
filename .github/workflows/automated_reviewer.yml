@@ -6,6 +6,12 @@ on:
     branches:
       - main
       - web
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to manually review (required)'
+        required: true
+        type: string
 
 jobs:
   review:
@@ -29,7 +35,7 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.inputs.pr_number }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_EVENT_NAME: ${{ github.event_name }}
         run: python .github/scripts/automated_reviewer.py
