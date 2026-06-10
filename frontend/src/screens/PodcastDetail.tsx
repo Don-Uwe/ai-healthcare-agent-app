@@ -61,7 +61,7 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   //const [progress, setProgress] = useState(10);
   // const insets = useSafeAreaInsets();
   const {trackId, audioUrl} = route.params;
-
+ 
   const {width, height} = useWindowDimensions();
   const isLandscape = width > height;
   const isTablet = width >= 768;
@@ -310,11 +310,14 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   const visualizerEl = (
     <YStack alignItems="center" width="100%">
       <View
+        accessible={true}
+        accessibilityLabel="Audio waveform visualizer"
+        accessibilityHint={playing ? "Currently animating, audio is playing" : "Currently paused"}
         style={[
           styles.visualizerContainer,
           GlassStyles.glassContainerDark,
         ]}>
-        <AudioWaveform isPlaying={playing} />
+        <AudioWaveform isPlaying={playing} accentColor="#4F46E5" />
       </View>
     </YStack>
   );
