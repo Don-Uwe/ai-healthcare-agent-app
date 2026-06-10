@@ -81,9 +81,11 @@ const LogoutScreen = ({navigation, route}: LogoutScreenProp) => {
                 !profile_image && {borderWidth: 0.5, borderColor: theme.black.val},
               ]}
               source={{
-                uri: profile_image.startsWith('https')
-                  ? profile_image
-                  : `${GET_STORAGE_DATA}/${profile_image}`,
+                uri: profile_image
+                  ? profile_image.startsWith('https')
+                    ? profile_image
+                    : `${GET_STORAGE_DATA}/${profile_image}`
+                  : undefined,
               }}
             />
 
