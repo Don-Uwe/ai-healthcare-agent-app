@@ -406,9 +406,8 @@ eas build --platform ios --profile production
 
 > **Current Status — GSSoC 2026 Season Active**
 
-Due to the high volume of participation in **GirlScript Summer of Code 2026**, this repository is currently receiving a very large number of forks, issues, and pull requests — **many of which are unrelated to the project's actual roadmap** (spam issues, off-topic PRs, duplicate contributions, etc.).
+Due to the high volume of participation in **GirlScript Summer of Code 2026**, this repository is currently receiving a very large number of forks, issues, and pull requests.
 
-As a result, **manual review times may be slower than usual**. Please be patient — every genuine contribution *will* be reviewed. To help manage the load, we have deployed a suite of AI-powered automation bots (described below) that handle initial triage, PR review, and assignment automatically.
 
 **What this means for contributors:**
 - ✅ Your issue will be **automatically triaged** within seconds of opening
