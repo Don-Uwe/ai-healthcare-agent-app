@@ -10,6 +10,7 @@ import {
   Share,
   useColorScheme,
 } from 'react-native';
+import ArticleShareModal from '../components/ArticleShareModal';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import {PRIMARY_COLOR} from '../../helper/Theme';
@@ -76,6 +77,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const [playerVisible, setPlayerVisible] = useState(false);
   const [summary, setSummary] = useState<ArticleSummary | null>(null);
   const [summaryLoading, setSummaryLoading] = useState(false);
+  const [shareModalVisible, setShareModalVisible] = useState(false);
   const chunkIndexRef = useRef(0);
   const wordsRef = useRef<string[]>([]);
 
@@ -874,6 +876,17 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
           )}
         </View>
       </ScrollView>
+      <ArticleShareModal
+        visible={shareModalVisible}
+        onClose={() => setShareModalVisible(false)}
+        article={{
+          title: article.title,               // string
+          authorName: article.author?.name,   // string  — adjust to your model shape
+          category: article.category ?? 'Health',  // string
+          coverImageUrl: article.cover_image ?? null,
+          authorAvatarUrl: article.author?.profile_picture ?? null,
+        }}
+      />
 
       <View style={[styles.footer, {backgroundColor: footerColors.background}]}>
         {/* Action Bar Row */}
@@ -967,29 +980,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
               styles.actionButtonFooter,
               {backgroundColor: footerColors.pillBackground},
             ]}
-            onPress={async () => {
-              try {
-                if (article) {
-                  const result = await Share.share({
-                    message: `Check out this article: ${article.title}\n\n${article.description}`,
-                    title: article.title,
-                  });
-
-                  if (result.action === Share.sharedAction) {
-                    Snackbar.show({
-                      text: 'Article shared successfully!',
-                      duration: Snackbar.LENGTH_SHORT,
-                    });
-                  }
-                }
-              } catch (error) {
-                console.log('Error sharing:', error);
-                Snackbar.show({
-                  text: 'Failed to share article',
-                  duration: Snackbar.LENGTH_SHORT,
-                });
-              }
-            }}>
+            onPress={async () => {() => setShareModalVisible(true)}}>
+            
             <FontAwesome name="share" size={18} color={footerColors.text} />
             <Text style={[styles.actionTextFooter, {color: footerColors.text}]}>
               Share
