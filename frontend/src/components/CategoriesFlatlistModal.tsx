@@ -20,6 +20,7 @@ const CategoriesFlatlistModal = ({
   handleCategorySelection,
   selectCategoryList,
 }: HomeScreenCategoriesFlatlistProps) => {
+  const SEARCH_DEBOUNCE_DELAY = 300; // ms
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
 
@@ -42,7 +43,7 @@ const CategoriesFlatlistModal = ({
 
     const timeout = setTimeout(() => {
       setDebouncedSearchQuery(searchQuery);
-    }, 300);
+    }, SEARCH_DEBOUNCE_DELAY);
 
     return () => {
       clearTimeout(timeout);
