@@ -153,8 +153,8 @@ Output a single JSON object. DO NOT wrap in Markdown code blocks. Output exactly
     import re
     import time
     
-    max_retries = 4
-    base_wait = 15
+    max_retries = 3
+    base_wait = 50
     
     for attempt in range(max_retries):
         req = urllib.request.Request(url, method="POST", headers=headers, data=json.dumps(data).encode("utf-8"))
