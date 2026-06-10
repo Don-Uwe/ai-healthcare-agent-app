@@ -110,9 +110,11 @@ Classify as backend if it involves: APIs, Database, Authentication, Authorizatio
 Classify as frontend if it involves: React Native UI, UX improvements, Components, Navigation, State management, Client-side validation, Frontend performance, Accessibility, Styling.
 
 ## Difficulty Level Assignment
-Level 1: Small fixes (UI alignment, Typo fixes, Simple validations, Minor component updates).
-Level 2: Medium complexity (New screens, Feature enhancements, State management updates, API integrations).
-Level 3: Advanced (Architecture changes, Complex analytics, Performance optimizations, Large feature additions).
+Use the following labels for difficulty:
+- level:beginner: Small fixes (UI alignment, Typo fixes, Simple validations, Minor component updates).
+- level:intermediate: Medium complexity (New screens, Feature enhancements, State management updates, API integrations).
+- level:advanced: Advanced (Architecture changes, Complex analytics, Performance optimizations, Large feature additions).
+- level:critical: Critical production issues, severe bugs, or security patches.
 
 ## Maintainer Escalation
 You must set `escalate_to_maintainer = true` when:
@@ -140,7 +142,7 @@ Output a single JSON object. DO NOT wrap in Markdown code blocks. Output exactly
   "is_in_scope": boolean,
   "is_doctor_related": boolean,
   "classification": "backend" | "frontend" | "broad" | null,
-  "difficulty": "level1" | "level2" | "level3" | null,
+  "difficulty": "level:beginner" | "level:intermediate" | "level:advanced" | "level:critical" | null,
   "escalate_to_maintainer": boolean,
   "reasoning": "A short, polite explanation for your decision."
 }}
@@ -289,7 +291,7 @@ def handle_issue_opened(repo, issue_number, token, gemini_api_key):
         labels_to_add.extend(["backend", "level:backend"])
         if difficulty: labels_to_add.append(difficulty)
         add_labels(repo, issue_number, labels_to_add, token)
-        msg = "This issue requires backend investigation and has been routed to @SB2318 for review and prioritization."
+        msg = f"This issue has been triaged as a **backend** task ({difficulty or 'Unclassified Difficulty'}).\n\n> **Expected Effect & Scope:** {decision.get('reasoning')}\n\nThis requires backend investigation and has been routed to @SB2318 for review and prioritization."
         post_comment(repo, issue_number, msg, token)
         assign_user(repo, issue_number, "SB2318", token)
         return "backend", "Assigned to @SB2318"
@@ -301,20 +303,29 @@ def handle_issue_opened(repo, issue_number, token, gemini_api_key):
         add_labels(repo, issue_number, labels_to_add, token)
         
         if escalate:
-            msg = f"This issue has been triaged as a **frontend** task, but requires maintainer review. cc @SB2318\n\n> **Reasoning:** {decision.get('reasoning')}"
+            msg = f"This issue has been triaged as a **frontend** task ({difficulty or 'Unclassified Difficulty'}), but requires maintainer review. cc @SB2318\n\n> **Expected Effect & Scope:** {decision.get('reasoning')}"
             post_comment(repo, issue_number, msg, token)
             return "frontend", "Frontend (escalated)"
         else:
-            msg = f"This issue has been triaged as a **frontend** task.\n\nIt is now open for community contribution! To request assignment, please comment below.\n\n*Eligibility Reminder: You must have zero active assigned issues to be assigned.*"
-            post_comment(repo, issue_number, msg, token)
-            return "frontend", "Frontend (open)"
+            author = issue.get("user", {}).get("login")
+            has_active = check_active_assignments(repo, author, token)
+            
+            if not has_active:
+                assign_user(repo, issue_number, author, token)
+                msg = f"This issue has been triaged as a **frontend** task ({difficulty or 'Unclassified Difficulty'}).\n\n> **Expected Effect & Scope:** {decision.get('reasoning')}\n\nHi @{author}! Since you opened this issue and have no other active assignments, I have automatically assigned it to you. Happy coding!"
+                post_comment(repo, issue_number, msg, token)
+                return "frontend", f"Frontend (auto-assigned to @{author})"
+            else:
+                msg = f"This issue has been triaged as a **frontend** task ({difficulty or 'Unclassified Difficulty'}).\n\n> **Expected Effect & Scope:** {decision.get('reasoning')}\n\nIt is now open for community contribution!\n\nHi @{author}, I couldn't assign this to you automatically because you currently have another active assignment. Please complete your current task first!"
+                post_comment(repo, issue_number, msg, token)
+                return "frontend", "Frontend (open)"
         
     else:
         # Broad or uncategorized
         if "maintainer-review-required" not in labels_to_add:
             labels_to_add.append("maintainer-review-required")
         add_labels(repo, issue_number, labels_to_add, token)
-        msg = "This issue covers a broad scope or requires architectural decisions. Escalating to @SB2318 for maintainer review."
+        msg = f"This issue covers a broad scope or requires architectural decisions.\n\n> **Analysis:** {decision.get('reasoning')}\n\nEscalating to @SB2318 for maintainer review."
         post_comment(repo, issue_number, msg, token)
         return "broad", "Broad/Uncategorized (escalated)"
 
