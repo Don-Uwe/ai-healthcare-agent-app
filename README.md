@@ -402,6 +402,130 @@ eas build --platform ios --profile production
 
 ---
 
+## 📢 Maintainer Status & Response Times
+
+> **Current Status — GSSoC 2026 Season Active**
+
+Due to the high volume of participation in **GirlScript Summer of Code 2026**, this repository is currently receiving a very large number of forks, issues, and pull requests — **many of which are unrelated to the project's actual roadmap** (spam issues, off-topic PRs, duplicate contributions, etc.).
+
+As a result, **manual review times may be slower than usual**. Please be patient — every genuine contribution *will* be reviewed. To help manage the load, we have deployed a suite of AI-powered automation bots (described below) that handle initial triage, PR review, and assignment automatically.
+
+**What this means for contributors:**
+- ✅ Your issue will be **automatically triaged** within seconds of opening
+- ✅ Your PR will receive an **automated code review** within minutes
+- ✅ You can **self-request assignment** by commenting on any open, labelled issue
+- ⏳ Final human approval by **@SB2318** may take 24–72 hours depending on the queue
+
+---
+
+## 🤖 Automation & Bot Workflows
+
+This repository uses a set of custom AI-powered GitHub Actions bots to automate the contribution pipeline. Here is a full breakdown so contributors know what to expect:
+
+### 1. 🏷️ AI Issue Triage Bot
+**Workflow:** [`ai_issue_triage.yml`](.github/workflows/ai_issue_triage.yml) | **Script:** [`.github/scripts/ai_issue_triage.py`](.github/scripts/ai_issue_triage.py)
+
+| Property | Details |
+|---|---|
+| **Trigger** | Every new issue opened, every issue comment, or manual dispatch |
+| **Model** | Gemini 2.5 Flash |
+| **What it does** | Reads the issue title & body, compares against recent issues & commit history to understand context, then classifies and labels the issue automatically |
+
+**Labels it applies automatically:**
+
+| Label | Meaning |
+|---|---|
+| `type:bug` | A confirmed bug report |
+| `type:feature` | A new feature request |
+| `type:documentation` | Docs-only change |
+| `type:question` | A question or help request |
+| `frontend-web` | Affects the Next.js web frontend |
+| `frontend-mobile` | Affects the React Native mobile app |
+| `backend` | Affects the Node.js API |
+| `level:beginner` | Good first issue — simple change |
+| `level:intermediate` | Requires some codebase familiarity |
+| `level:advanced` | Requires deep architectural knowledge |
+| `level:critical` | Urgent issue — affects production |
+
+**Duplicate detection:** The bot checks recent issues to avoid labelling/assigning duplicates.
+
+**Escalation:** Issues flagged as `level:critical` or doctor/medical related are escalated to the maintainer directly.
+
+---
+
+### 2. 🙋 AI Auto-Assignment Bot
+**Part of:** `ai_issue_triage.yml` (same workflow, `issue_comment` trigger)
+
+| Property | Details |
+|---|---|
+| **Trigger** | Every comment posted on an issue |
+| **What it does** | Detects if a contributor is requesting assignment (e.g., "Can I work on this?", "Assign me") and automatically assigns them if eligible |
+
+**Assignment rules:**
+- ✅ Issue must already be labelled (triaged) and open
+- ✅ Contributor must have **zero currently active assigned issues** in this repo
+- ❌ Bots and `github-actions[bot]` comments are ignored
+- ❌ Already-assigned issues are not reassigned
+
+**No Gemini API is used for assignments** — it's instant logic using only the free GitHub API.
+
+---
+
+### 3. 🔍 AI PR Reviewer (New PRs)
+**Workflow:** [`ai_reviewer.yml`](.github/workflows/ai_reviewer.yml) | **Script:** [`.github/scripts/ai_reviewer.py`](.github/scripts/ai_reviewer.py)
+
+| Property | Details |
+|---|---|
+| **Trigger** | Every new pull request opened, or `workflow_dispatch` with PR number |
+| **Model** | Gemini 2.5 Flash |
+| **What it does** | Fetches the PR diff, filters out lockfiles/build artifacts, and posts a structured code review comment |
+
+**Review format:**
+- **Critical** — Must fix before merge
+- **Important** — Should fix
+- **Suggestions** — Optional improvements
+
+After review, the bot applies a `gssoc` label to track reviewed PRs.
+
+---
+
+### 4. 🔄 Automated PR Reviewer (Recurring)
+**Workflow:** [`automated_reviewer.yml`](.github/workflows/automated_reviewer.yml) | **Script:** [`.github/scripts/automated_reviewer.py`](.github/scripts/automated_reviewer.py)
+
+| Property | Details |
+|---|---|
+| **Trigger** | New PR opened, or `workflow_dispatch` with PR number |
+| **Model** | Gemini 2.5 Flash |
+| **What it does** | More advanced reviewer with label-awareness, previous-review context, and a 168-hour cooldown to avoid spamming re-reviews |
+| **Cooldown** | Will not re-review a PR until 168 hours have passed **and** new commits have been pushed |
+
+**Smart skip logic:**
+- Skips PRs that only change lockfiles, build artifacts, or auto-generated files
+- Skips PRs already reviewed within the cooldown window
+- Skips PRs with no diff
+
+---
+
+### 5. 📋 Other Automation Workflows
+
+| Workflow | Trigger | What it does |
+|---|---|---|
+| `greetings_issue.yml` | New issue or PR | Posts a friendly welcome message |
+| `pr_greet.yml` | New PR | Greets first-time contributors |
+| `close-old-issue.yml` | Scheduled | Closes stale issues with no activity |
+| `close-old-pr.yml` | Scheduled | Closes stale PRs with no activity |
+| `auto-comment-pr-merge.yml` | PR merged | Posts a thank-you message when PR is merged |
+| `close-on-merge.yml` | PR merged | Closes the linked issue automatically |
+| `autocomment-iss-close.yml` | Issue closed | Posts a closing message on the issue |
+| `update-contributors.yml` | Push to `main` | Keeps the contributors table in README up to date |
+| `pr-governance.yml` | PR events | Enforces PR standards and governance rules |
+| `pr-title-checker.yml` | PR opened/edited | Validates PR title follows Conventional Commits |
+| `mentor.yml` | Issue/PR events | Mentor guidance for new contributors |
+
+
+
+---
+
 ## 🔌 Services & API Dependencies
 
 | Service | URL | Purpose |
