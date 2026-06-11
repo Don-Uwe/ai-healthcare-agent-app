@@ -367,7 +367,7 @@ def run_review_for_pr(repo, pr_number, github_token, api_keys, is_scheduled=Fals
         return "skipped", msg
 
     # 2. Check Author Authorization (GSSoC logic)
-    maintainers = ["SB2318", "Gooichand", "nitinog10"]
+    maintainers = ["SB2318", "rushiii3"]
     if pr_author not in maintainers:
         is_authorized, auth_reason = check_author_authorization(repo, pr_body, pr_author, github_token)
         if not is_authorized:
