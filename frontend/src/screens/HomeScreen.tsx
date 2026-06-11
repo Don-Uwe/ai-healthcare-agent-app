@@ -685,7 +685,12 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <HomeScreenHeader
+      <HomeScreenHeader 
+        onTextInputChange={handleSearch}
+        hasActiveFilters={activeFiltersCount > 0} 
+        onFilterReset={clearAllFiltersFunctionalLogic} 
+        // ... existing properties ...
+      />
         handlePresentModalPress={handlePresentModalPress}
         onTextInputChange={handleSearch}
         onNotificationClick={() => {
