@@ -45,7 +45,6 @@ const defaultStaticConfig = {
     blockedPermissions: [
       "android.permission.SYSTEM_ALERT_WINDOW",
       "android.permission.READ_PHONE_STATE",
-      "android.permission.WRITE_EXTERNAL_STORAGE"
     ],
     allowBackup: false,
     intentFilters: [
@@ -160,6 +159,16 @@ module.exports = ({ config }) => {
         process.env.SOCKET_PROD ?? "https://uhsocial.in",
       CONTENT_CHECKER_PROD:
         process.env.CONTENT_CHECKER_PROD ?? "https://uhsocial.in/content-intel",
+      FIREBASE_API_KEY_ANDROID: process.env.FIREBASE_API_KEY_ANDROID,
+      FIREBASE_API_KEY_IOS: process.env.FIREBASE_API_KEY_IOS,
+      FIREBASE_APP_ID_ANDROID: process.env.FIREBASE_APP_ID_ANDROID,
+      FIREBASE_APP_ID_IOS: process.env.FIREBASE_APP_ID_IOS,
+      FIREBASE_AUTH_DOMAIN: process.env.FIREBASE_AUTH_DOMAIN,
+      FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID,
+      FIREBASE_STORAGE_BUCKET: process.env.FIREBASE_STORAGE_BUCKET,
+      FIREBASE_SENDER_ID: process.env.FIREBASE_SENDER_ID,
+      FIREBASE_MEASUREMENT_ID: process.env.FIREBASE_MEASUREMENT_ID,
+      FIREBASE_DATABASE_URL: process.env.FIREBASE_DATABASE_URL,
     }
   };
 };

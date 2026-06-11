@@ -343,21 +343,16 @@ export const requestStoragePermissions = async () => {
   if (Platform.OS !== 'android') return true;
 
   if ((Platform.Version as number) < 33) {
-    const granted = await PermissionsAndroid.requestMultiple([
-      PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-      PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-    ]);
-
-    return (
-      granted['android.permission.READ_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED &&
-      granted['android.permission.WRITE_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED
-    );
+    return true;
   } else {
     const granted = await PermissionsAndroid.requestMultiple([
       PermissionsAndroid.PERMISSIONS.READ_MEDIA_AUDIO,
     ]);
 
-    return granted['android.permission.READ_MEDIA_AUDIO'] === PermissionsAndroid.RESULTS.GRANTED;
+    return (
+      granted['android.permission.READ_MEDIA_AUDIO'] ===
+      PermissionsAndroid.RESULTS.GRANTED
+    );
   }
 };
 
@@ -367,7 +362,6 @@ export const downloadAudio = async (_podcast: PodcastData) => {
   // Check for existing downloads
   const storageGranted = await requestStoragePermissions();
   if (!storageGranted) {
-    Alert.alert('Storage permission denied');
     return;
   }
   const existingPodcasts = await readDownloadedPodcasts();

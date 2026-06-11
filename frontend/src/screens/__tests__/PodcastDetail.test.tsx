@@ -24,23 +24,23 @@ const mockPlayer = {
 jest.mock('@expo/vector-icons/Ionicons', () => {
   const React = require('react');
   const {Text} = require('react-native');
-  const MockIonicons = ({name}: {name: string}) => React.createElement(Text, null, name);
-  MockIonicons.displayName = 'MockIonicons';
-  return MockIonicons;
+  const MockIcon = ({name}: {name: string}) => React.createElement(Text, null, name);
+  MockIcon.displayName = 'Ionicons';
+  return MockIcon;
 });
 jest.mock('@expo/vector-icons/AntDesign', () => {
   const React = require('react');
   const {Text} = require('react-native');
-  const MockAntDesign = ({name}: {name: string}) => React.createElement(Text, null, name);
-  MockAntDesign.displayName = 'MockAntDesign';
-  return MockAntDesign;
+  const MockIcon = ({name}: {name: string}) => React.createElement(Text, null, name);
+  MockIcon.displayName = 'AntDesign';
+  return MockIcon;
 });
 jest.mock('@expo/vector-icons/Feather', () => {
   const React = require('react');
   const {Text} = require('react-native');
-  const MockFeather = ({name}: {name: string}) => React.createElement(Text, null, name);
-  MockFeather.displayName = 'MockFeather';
-  return MockFeather;
+  const MockIcon = ({name}: {name: string}) => React.createElement(Text, null, name);
+  MockIcon.displayName = 'Feather';
+  return MockIcon;
 });
 jest.mock('lottie-react-native', () => 'LottieView');
 jest.mock('@react-native-community/slider', () => {
@@ -48,7 +48,7 @@ jest.mock('@react-native-community/slider', () => {
   const {View} = require('react-native');
   const MockSlider = ({testID}: {testID?: string}) =>
     React.createElement(View, {testID: testID ?? 'slider'});
-  MockSlider.displayName = 'MockSlider';
+  MockSlider.displayName = 'Slider';
   return MockSlider;
 });
 
@@ -130,16 +130,16 @@ jest.mock('../../components/Loader', () => {
   const React = require('react');
   const {Text} = require('react-native');
   const MockLoader = () => React.createElement(Text, {testID: 'loader'}, 'Loading');
-  MockLoader.displayName = 'MockLoader';
+  MockLoader.displayName = 'Loader';
   return MockLoader;
 });
 
 jest.mock('../../components/LoadingSpinner', () => {
   const React = require('react');
   const {Text} = require('react-native');
-  const MockLoadingSpinner = () => React.createElement(Text, {testID: 'loading-spinner'}, 'LoadingSpinner');
-  MockLoadingSpinner.displayName = 'MockLoadingSpinner';
-  return MockLoadingSpinner;
+  const MockSpinner = () => React.createElement(Text, {testID: 'loading-spinner'}, 'LoadingSpinner');
+  MockSpinner.displayName = 'LoadingSpinner';
+  return MockSpinner;
 });
 
 const mockPodcast = {
@@ -287,5 +287,66 @@ describe('PodcastDetail', () => {
     expect(getByLabelText('podcast-play-pause-button')).toBeTruthy();
     expect(getByLabelText('podcast-forward-button')).toBeTruthy();
     expect(getByTestId('podcast-progress-slider')).toBeTruthy();
+  });
+
+  it('truncates long description and toggles between Read More and Read Less', () => {
+    const longDescription = 'This is an extremely long podcast description designed to test the layout wrapping and truncation features. It needs to exceed 180 characters in length to trigger the toggle button, so we make it long, detailed, and informative to simulate real-world content correctly.';
+    
+    mockUseGetSinglePodcastDetails.mockReturnValue({
+      data: {
+        ...mockPodcast,
+        description: longDescription,
+      },
+      refetch: mockRefetch,
+      isLoading: false,
+      isError: false,
+      error: null,
+    });
+
+    const {getByText, getByTestId, queryByText} = renderScreen();
+
+    // Check that the truncated text is displayed
+    const expectedTruncatedText = `${longDescription.slice(0, 180)}...`;
+    expect(getByText(expectedTruncatedText)).toBeTruthy();
+
+    // Check that the full description is NOT shown initially
+    expect(queryByText(longDescription)).toBeNull();
+
+    // Find the toggle button
+    const toggleButton = getByTestId('description-toggle-button');
+    expect(toggleButton).toBeTruthy();
+    expect(getByText('Read More')).toBeTruthy();
+
+    // Press the button to expand description
+    fireEvent.press(toggleButton);
+
+    // Verify it is expanded now
+    expect(getByText(longDescription)).toBeTruthy();
+    expect(getByText('Read Less')).toBeTruthy();
+    expect(queryByText(expectedTruncatedText)).toBeNull();
+
+    // Press the button to collapse description again
+    fireEvent.press(toggleButton);
+
+    // Verify it is collapsed again
+    expect(getByText(expectedTruncatedText)).toBeTruthy();
+    expect(getByText('Read More')).toBeTruthy();
+  });
+
+  it('supports rendering a long title without errors', () => {
+    const longTitle = 'A'.repeat(210);
+    mockUseGetSinglePodcastDetails.mockReturnValue({
+      data: {
+        ...mockPodcast,
+        title: longTitle,
+      },
+      refetch: mockRefetch,
+      isLoading: false,
+      isError: false,
+      error: null,
+    });
+
+    const {getByText} = renderScreen();
+    expect(getByText(longTitle)).toBeTruthy();
   });
 });

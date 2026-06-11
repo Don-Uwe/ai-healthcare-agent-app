@@ -1,16 +1,30 @@
 import React, { createContext, useContext, useEffect, ReactNode, useState } from 'react';
-
+import { Platform } from 'react-native';
+import firebase from '@react-native-firebase/app';
 import messaging from '@react-native-firebase/messaging'; 
-import { firebase } from '@react-native-firebase/messaging'; 
+import Constants from 'expo-constants';
 
+const extra = Constants.expoConfig?.extra ?? {};
 
-const androidConfig = {
-  appId: `1:393228544987:web:1f4134206db6c1f36395fe`,
-  apiKey: `AIzaSyBtxfBmAVd4g3_yk6ufTLknK_AFiyN8k0M`,
-  databaseURL: `https://ultimatehealth-255dc.firebaseio.com`,
-  storageBucket: `ultimatehealth-255dc.firebasestorage.app`,
-  messagingSenderId: `393228544987`,
-  projectId: `ultimatehealth-255dc`,
+// Firebase configuration loaded dynamically from environment variables via expo-constants.
+// This single configuration object is platform-agnostic and serves both iOS and Android.
+const firebaseConfig = {
+  appId: Platform.select({
+    ios: extra.FIREBASE_APP_ID_IOS,
+    android: extra.FIREBASE_APP_ID_ANDROID,
+    default: extra.FIREBASE_APP_ID_ANDROID,
+  }),
+  apiKey: Platform.select({
+    ios: extra.FIREBASE_API_KEY_IOS,
+    android: extra.FIREBASE_API_KEY_ANDROID,
+    default: extra.FIREBASE_API_KEY_ANDROID,
+  }),
+  databaseURL: extra.FIREBASE_DATABASE_URL,
+  storageBucket: extra.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: extra.FIREBASE_SENDER_ID,
+  projectId: extra.FIREBASE_PROJECT_ID,
+  authDomain: extra.FIREBASE_AUTH_DOMAIN,
+  measurementId: extra.FIREBASE_MEASUREMENT_ID,
   persistence: true,
 };
 
@@ -33,17 +47,42 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
     const initializeFirebase = async () => {
       // Initialize Firebase
       try {
+        const requiredFields = [
+          'apiKey',
+          'appId',
+          'projectId',
+          'messagingSenderId',
+        ];
+
+        const missingFields = requiredFields.filter(
+          (field) => !firebaseConfig[field as keyof typeof firebaseConfig]
+        );
+
+        if (missingFields.length > 0) {
+          if (__DEV__) {
+            console.warn(
+              `Firebase configuration is incomplete. Missing fields: ${missingFields.join(
+                ', '
+              )}. Skipping Firebase initialization.`
+            );
+          }
+          return;
+        }
+
         if (!firebase.apps.length) {
-         await firebase.initializeApp(androidConfig);
-       }else {
-         firebase.app(); // if already initialized, use that one
-       }
-        //await firebase.initializeApp(androidConfig);
+          await firebase.initializeApp(firebaseConfig);
+        } else {
+          firebase.app(); // if already initialized, use that one
+        }
         const token = await messaging().getToken();
-        console.log('Firebase Token:', token);
+        if (__DEV__) {
+          console.log('Firebase Token:', token);
+        }
         setFcmToken(token); // Store the token in state
       } catch (error) {
-        console.error('Error getting token:', error);
+        if (__DEV__) {
+          console.error('Error getting token:', error);
+        }
       }
     };
 

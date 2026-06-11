@@ -47,6 +47,8 @@ export function CustomAlertDialog() {
                       close();
                       onCancel?.();
                     }}
+                    accessibilityRole="button"
+                    accessibilityLabel="Cancel Alert"
                   >
                     Cancel
                   </Button>
@@ -59,6 +61,8 @@ export function CustomAlertDialog() {
                     close();
                     onConfirm?.();
                   }}
+                  accessibilityRole="button"
+                  accessibilityLabel="Confirm Alert"
                 >
                   OK
                 </Button>

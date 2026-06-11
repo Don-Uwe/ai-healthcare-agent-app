@@ -67,6 +67,7 @@ export default function GlossaryBottomSheet({
     >
       <Sheet.Overlay
         backgroundColor="rgba(15, 23, 42, 0.55)"
+        animation="fast"
         enterStyle={{ opacity: 0 }}
         exitStyle={{ opacity: 0 }}
       />
