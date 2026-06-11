@@ -37,7 +37,12 @@ const EmailVerifiedModal: React.FC<Props> = ({
           <Text style={styles.message}>
             Registration successful. Please verify your email.
           </Text>
-          <TouchableOpacity style={styles.button} onPress={onClick}>
+          <TouchableOpacity 
+            style={styles.button} 
+            onPress={onClick}
+            accessibilityRole="button"
+            accessibilityLabel={message}
+          >
             <Text style={styles.buttonText}>{message}</Text>
           </TouchableOpacity>
         </View>
