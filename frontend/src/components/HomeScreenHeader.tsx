@@ -1,18 +1,11 @@
 import React from 'react';
 import { Input, XStack, YStack, Button, Text } from "tamagui";
 import Feather from '@expo/vector-icons/Feather';
+import AntDesign from '@expo/vector-icons/AntDesign';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { HomeScreenHeaderProps } from '../types'; // Purani types file mapping back as bot requested
 
-interface HomeScreenHeaderProps {
-  handlePresentModalPress: () => void;
-  onTextInputChange: (text: string) => void;
-  onNotificationClick: () => void;
-  unreadCount: number;
-  hasActiveFilters?: boolean;
-  onFilterReset?: () => void;
-  searchText: string; // AI Review Bug Fix: Input field ka value control karne ke liye
-}
-
-export const HomeScreenHeader = ({
+const HomeScreenHeader = ({
   handlePresentModalPress,
   onTextInputChange,
   onNotificationClick,
@@ -25,7 +18,12 @@ export const HomeScreenHeader = ({
     <YStack backgroundColor="#000A60" width="100%" paddingHorizontal="$3" paddingVertical="$3" elevation={1}>
       <XStack alignItems="center" justifyContent="space-between" gap="$3">
         
-        {/* Search Bar Wrapper */}
+        {/* Left Side Menu Button - Restored! */}
+        <Button chromeless onPress={handlePresentModalPress} padding="$0">
+          <AntDesign name="menu-fold" size={24} color="white" />
+        </Button>
+
+        {/* Center Search Bar Wrapper */}
         <XStack 
           flex={1} 
           alignItems="center" 
@@ -38,30 +36,29 @@ export const HomeScreenHeader = ({
         >
           <Feather name="search" size={18} color="#778599" style={{ marginLeft: 4 }} />
           
-          {/* SINGLE INPUT COMPONENT (No Duplication) */}
           <Input 
             unstyled
             flex={1}
             placeholder="Search articles..."
             placeholderTextColor="#778599"
             fontSize="$4"
-            value={searchText} // State binding fix
+            value={searchText}
             onChangeText={onTextInputChange}
+            accessibilityLabel="Search articles"
           />
           
-          {/* REPOSITIONED CLEAR ALL BUTTON WITH BETTER TAP TARGET & CONTRAST */}
           {hasActiveFilters && onFilterReset && (
             <Button 
               chromeless 
               onPress={onFilterReset}
-              paddingHorizontal="$3" // Target size improved for mobile accessibility
+              paddingHorizontal="$3"
               paddingVertical="$2"
               marginRight="$1"
-              accessibilityLabel="Clear all active filters" // Added accessibility label
+              accessibilityLabel="Clear all active filters"
             >
               <Text 
-                color="$color" // Using Tamagui theme token instead of hardcoded magic hex
-                fontWeight="$fontWeight.semibold" // Design token compliance
+                color="$color"
+                fontWeight="$fontWeight.semibold"
                 fontSize="$2"
               >
                 Clear All
@@ -70,9 +67,31 @@ export const HomeScreenHeader = ({
           )}
         </XStack>
 
-        {/* ... (Baqi ka notification aur menu button code bilkul pehle jaisa same rane dein) ... */}
+        {/* Right Side Notification Bell with Unread Badge - Restored! */}
+        <Button chromeless onPress={onNotificationClick} padding="$0" position="relative">
+          <Ionicons name="notifications-outline" size={24} color="white" />
+          {unreadCount > 0 && (
+            <XStack 
+              position="absolute" 
+              top={-4} 
+              right={-4} 
+              backgroundColor="red" 
+              borderRadius={10} 
+              width={16} 
+              height={16} 
+              alignItems="center" 
+              justifyContent="center"
+            >
+              <Text color="white" fontSize={10} fontWeight="bold">
+                {unreadCount}
+              </Text>
+            </XStack>
+          )}
+        </Button>
 
       </XStack>
     </YStack>
   );
 };
+
+export default HomeScreenHeader; // Restored default export to prevent component breaking!

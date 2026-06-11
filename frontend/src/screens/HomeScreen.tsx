@@ -527,12 +527,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     const hasSorting = sortType !== '';
     return hasCustomCategories || hasSorting;
   }, [selectedTags, sortType, articleCategories]);
-
-  // Quick reset handler for header
-  const handleQuickReset = () => {
-    handleFilterReset();
-  };
-
   if (!articleData || articleData.articles?.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
