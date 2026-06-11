@@ -102,6 +102,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const [articleCategories, setArticleCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<Category>();
   const [sortingType, setSortingType] = useState<string>('');
+  const [searchText, setSearchText] = useState('');
   const {isConnected} = useSelector((state: any) => state.network);
   const [selectedCardId, setSelectedCardId] = useState<string>('');
   // const [repostItem, setRepostItem] = useState<ArticleData | null>(null);
@@ -117,13 +118,12 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     // 1. Local state categories reset
     setSelectedCategory('');
     setSortingType('');
-    
-    
+    setSearchText('');
+
     dispatch(setSearchMode(false));
     dispatch(setSearchedArticles([]));
     dispatch(setFilteredArticles([]));
-    
-    dispatch(setTags([])); 
+    dispatch(setTags([]));
   };
   const {
     filteredArticles,
@@ -685,29 +685,28 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <HomeScreenHeader 
-        onTextInputChange={handleSearch}
-        hasActiveFilters={activeFiltersCount > 0} 
-        onFilterReset={clearAllFiltersFunctionalLogic} 
-        // ... existing properties ...
-      />
-        handlePresentModalPress={handlePresentModalPress}
-        onTextInputChange={handleSearch}
-        onNotificationClick={() => {
-          if (isGuest) {
-            navigation.navigate('GuestPlaceholderScreen', {
-              title: 'Notifications',
-              description: 'Sign in to see your notifications.',
-              iconName: 'bell',
-            });
-          } else {
-            navigation.navigate('NotificationScreen');
-          }
-        }}
-        unreadCount={unreadCount ? unreadCount : 0}
-        hasActiveFilters={hasActiveFilters}
-        onFilterReset={handleQuickReset}
-      />
+      <HomeScreenHeader
+            handlePresentModalPress={handlePresentModalPress}
+            onTextInputChange={(text) => {
+              setSearchText(text);
+              handleSearch(text);
+            }}
+            onNotificationClick={() => {
+              if (isGuest) {
+                navigation.navigate('GuestPlaceholderScreen', {
+                  title: 'Notifications',
+                  description: 'Sign in to see your notifications.',
+                  iconName: 'bell',
+                });
+              } else {
+                navigation.navigate('NotificationScreen');
+              }
+            }}
+            unreadCount={unreadCount ? unreadCount : 0}
+            hasActiveFilters={selectedCategory !== '' || sortingType !== '' || searchText !== ''}
+            onFilterReset={handleClearAllFilters}
+            searchText={searchText}
+          />
       <FilterModal
         bottomSheetModalRef={bottomSheetModalRef}
         categories={articleCategories}
