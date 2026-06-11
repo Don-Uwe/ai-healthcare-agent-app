@@ -17,7 +17,7 @@ import AudioWaveform from '../components/AudioWaveform';
 import {useUploadPodcast} from '../hooks/useUploadPodcast';
 import Loader from '../components/Loader';
 
-const PLAYBACK_SPEEDS = [1, 1.25, 1.5, 2];
+import FloatingSpeedSelector from '../components/FloatingSpeedSelector';
 
 const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
   const {uploadImage, loading, error: imageError} = useUploadImage();
@@ -25,6 +25,7 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [position, setPosition] = useState(0);
   const [speed, setSpeed] = useState(1);
+  const [isSpeedSelectorVisible, setIsSpeedSelectorVisible] = useState(false);
   
   const [duration, setDuration] = useState(0);
   const theme = useTheme();
@@ -47,11 +48,7 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
       : require('../../assets/sounds/funny-cartoon-sound-397415.mp3'),
   );
 
-  const formatPlaybackSpeed = (playbackSpeed: number) =>
-    Number.isInteger(playbackSpeed)
-      ? `${playbackSpeed}x`
-      : `${playbackSpeed}x`;
-
+  const formatPlaybackSpeed = (playbackSpeed: number) => `${playbackSpeed}x`;
   const formatSecTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
@@ -78,7 +75,7 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
     if (!player) return;
     // If the track has fully finished, restart from the beginning.
     // Otherwise resume from the current paused position.
-    if (duration > 0 && !isNaN(duration) && position >= duration - 0.5){
+    if (duration > 0 && !isNaN(duration) && position >= duration - 0.5) {
       await player.seekTo(0);
       setPosition(0);
     }
@@ -90,22 +87,12 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
   const handlePause = async () => {
     console.log('Pause called');
     if (!player) return;
-
     player.pause();
     setUiState('paused');
     setIsPlaying(false);
   };
 
-  const handleCycleSpeed = () => {
-    if (!player) return;
 
-    const currentIndex = PLAYBACK_SPEEDS.indexOf(speed);
-    const nextSpeed =
-      PLAYBACK_SPEEDS[(currentIndex + 1) % PLAYBACK_SPEEDS.length];
-
-    player.setPlaybackRate(nextSpeed, 'high');
-    setSpeed(nextSpeed);
-  };
 
   const SKIP_TIME = 5; // seconds
 
@@ -164,7 +151,6 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
     }
   };
 
-
   const handlePostSubmit = async () => {
     if (!isConnected) {
       Alert.alert('Please check your internet and try again!');
@@ -202,7 +188,6 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
       console.log('Image', uploadedUrl);
 
       if (uploadedUrl && audioUrl) {
-
         uploadPodcast(
           {
             title: title,
@@ -303,7 +288,6 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
     }
   }, [error, handleUpload, imageError]);
 
-
   // if(uploadPodcastPending){
   //   return <Loader/>
   // }
@@ -316,7 +300,7 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
         paddingTop="$8"
         justifyContent="space-between">
         {/* Header Section */}
-        <YStack mb="$4">
+        <YStack mb="$4" width="100%" paddingHorizontal="$1">
           <Text
             color="#94A3B8"
             fontSize={13}
@@ -325,10 +309,24 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
             letterSpacing={1}>
             NOW PLAYING
           </Text>
-          <Text color="#F1F5F9" fontSize={28} fontWeight="800" lineHeight={34}>
+          <Text
+            color="#F1F5F9"
+            fontSize={28}
+            fontWeight="800"
+            lineHeight={34}
+            flexShrink={1}
+            flexWrap="wrap"
+            allowFontScaling>
             {title}
           </Text>
-          <Text color="#94A3B8" fontSize={16} marginTop="$3" lineHeight={24}>
+          <Text
+            color="#94A3B8"
+            fontSize={16}
+            marginTop="$3"
+            lineHeight={24}
+            flexShrink={1}
+            flexWrap="wrap"
+            allowFontScaling>
             {description}
           </Text>
         </YStack>
@@ -364,7 +362,10 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
         {/* Waveform Visualization */}
         {/* height={80} gives 16px of breathing room around the waveform's internal MAX_HEIGHT+16 (64px) container */}
         <YStack alignItems="center" height={80} my="$2">
-          <AudioWaveform isPlaying={player.currentStatus.playing} accentColor={theme.blue10?.val ?? '#3B82F6'} />
+          <AudioWaveform
+            isPlaying={player.currentStatus.playing}
+            accentColor={theme.blue10?.val ?? '#3B82F6'}
+          />
         </YStack>
 
         {/* Progress Slider Section */}
@@ -459,7 +460,7 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
             borderWidth={1}
             borderColor="$borderColor"
             pressStyle={{scale: 0.94, backgroundColor: '$backgroundPress'}}
-            onPress={handleCycleSpeed}>
+            onPress={() => setIsSpeedSelectorVisible(true)}>
             <Text color="$color" fontSize={14} fontWeight="800">
               {formatPlaybackSpeed(speed)}
             </Text>
@@ -479,7 +480,29 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
           </Circle>
         </XStack>
 
+        {/* Footer Info */}
+        <Text
+          marginTop="$4"
+          marginBottom="$2"
+          textAlign="center"
+          color="#64748B"
+          fontSize={11}
+          numberOfLines={1}
+          ellipsizeMode="middle">
+          {filePath}
+        </Text>
 
+        <FloatingSpeedSelector
+          currentSpeed={speed}
+          onSpeedSelect={(selectedSpeed) => {
+            if (player) {
+              player.setPlaybackRate(selectedSpeed, 'high');
+              setSpeed(selectedSpeed);
+            }
+          }}
+          visible={isSpeedSelectorVisible}
+          onClose={() => setIsSpeedSelectorVisible(false)}
+        />
       </YStack>
     </Theme>
   );
@@ -505,4 +528,3 @@ const styles = StyleSheet.create({
     color: '#777',
   },
 });
-

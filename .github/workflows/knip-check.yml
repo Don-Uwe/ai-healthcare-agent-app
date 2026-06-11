@@ -52,10 +52,17 @@ jobs:
           node-version: 20
           cache: "yarn"
           cache-dependency-path: frontend/yarn.lock
- 
+      - name: Cache node_modules
+        id: node-cache
+        uses: actions/cache@v4
+        with:
+          path: frontend/node_modules
+          key: node-modules-${{ runner.os }}-${{ hashFiles('frontend/yarn.lock') }}
+
       - name: Install dependencies
+        if: steps.node-cache.outputs.cache-hit != 'true'
         run: yarn install --frozen-lockfile
- 
+
       - name: Run Knip analyses
         id: knip
         shell: bash
@@ -79,12 +86,12 @@ jobs:
               cat "$output"
             fi
           }
- 
+
           run_check full yarn knip
           run_check dependencies yarn knip --dependencies
           run_check files yarn knip --files
           run_check exports yarn knip --exports
- 
+
           exit 0
 
       - name: Comment Knip results on PR
@@ -114,7 +121,7 @@ jobs:
               const text = fs.existsSync(file) ? fs.readFileSync(file, 'utf8').trim() : '';
               const truncated = text.length > 5000;
               const output = text.length > 0 ? text.slice(0, 5000) : 'No output.';
-              const truncationNote = truncated ? '\n\n> ⚠️ Output truncated to 5000 characters. Run `pnpm knip` locally for the full report.' : '';
+              const truncationNote = truncated ? '\n\n> ⚠️ Output truncated to 5000 characters. Run `yarn knip` locally for the full report.' : '';
               return `<details><summary>${label}</summary>\n\n\`\`\`text\n${output}\n\`\`\`${truncationNote}\n\n</details>`;
             });
 

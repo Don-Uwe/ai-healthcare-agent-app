@@ -2,9 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { YStack, Button, Input, Spacer, Text, XStack, Card, Circle, Paragraph, ScrollView as TamaguiScrollView } from 'tamagui';
 import { Sheet } from '@tamagui/sheet';
 import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { EmailInputModalProp } from '../type';
 import Icon from '@expo/vector-icons/MaterialCommunityIcons';
 import Feather from '@expo/vector-icons/Feather';
+
+const emailInputSchema = z.object({
+  email: z.string().min(1, "Email is required").email("Please enter a valid email address"),
+});
+type EmailInputFormData = z.infer<typeof emailInputSchema>;
 
 export default function EmailInputBottomSheet({
   visible,
@@ -13,23 +21,32 @@ export default function EmailInputBottomSheet({
   onDismiss,
   isRequestVerification,
 }: EmailInputModalProp) {
-  const [email, setEmail] = useState('');
-  const [isValid, setIsValid] = useState(true);
   const [open, setOpen] = useState(visible);
   const [isFocused, setIsFocused] = useState(false);
+
+  const {
+    control,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { isValid, errors },
+  } = useForm<EmailInputFormData>({
+    resolver: zodResolver(emailInputSchema),
+    mode: 'onChange',
+    defaultValues: {
+      email: '',
+    },
+  });
+
+  const emailValue = watch('email');
 
   useEffect(() => {
     setOpen(visible);
   }, [visible]);
 
-  const verifyEmail = () => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const valid = emailRegex.test(email);
-    setIsValid(valid);
-    if (valid) {
-      callback(email);
-      setEmail('');
-    }
+  const verifyEmail = (data: EmailInputFormData) => {
+    callback(data.email);
+    reset();
   };
 
   const handleOpenChange = (isOpen: boolean) => {
@@ -40,8 +57,7 @@ export default function EmailInputBottomSheet({
   };
 
   const handleBackClick = () => {
-    setIsValid(true);
-    setEmail('');
+    reset();
     setIsFocused(false);
     backButtonClick();
     setOpen(false);
@@ -100,13 +116,13 @@ export default function EmailInputBottomSheet({
 
               {/* Title */}
               <Text
-                color={isValid ? '$color12' : '$red10'}
+                color={!errors.email ? '$color12' : '$red10'}
                 textAlign="center"
                 fontSize={26}
                 fontWeight="700"
                 lineHeight={32}
               >
-                {isValid
+                {!errors.email
                   ? isRequestVerification
                     ? 'Email Verification'
                     : 'Forgot Password?'
@@ -122,7 +138,7 @@ export default function EmailInputBottomSheet({
                 lineHeight={22}
                 marginBottom="$2"
               >
-                {isValid
+                {!errors.email
                   ? isRequestVerification
                     ? 'Please enter your registered email to receive the verification link.'
                     : 'Enter your email address and we\'ll send you a code to reset your password.'
@@ -134,62 +150,70 @@ export default function EmailInputBottomSheet({
                 <Text fontSize={14} fontWeight="600" color="$gray11">
                   Email Address
                 </Text>
-                <XStack
-                  alignItems="center"
-                  position="relative"
-                  width="100%"
-                >
-                  <Icon
-                    name="email-outline"
-                    size={20}
-                    color={isFocused ? (isValid ? '#3b82f6' : '#ef4444') : '#9ca3af'}
-                    style={{
-                      position: 'absolute',
-                      left: 14,
-                      zIndex: 1,
-                    }}
-                  />
-                  <Input
-                    flex={1}
-                    height={56}
-                    paddingLeft={46}
-                    paddingRight="$4"
-                    borderRadius="$4"
-                    placeholder="your.email@example.com"
-                    value={email}
-                    onChangeText={(text) => {
-                      setEmail(text);
-                      setIsValid(true);
-                    }}
-                    onFocus={() => setIsFocused(true)}
-                    onBlur={() => setIsFocused(false)}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    borderWidth={2}
-                    borderColor={
-                      !isValid
-                        ? '$red8'
-                        : isFocused
-                          ? '$blue8'
-                          : '$gray6'
-                    }
-                    backgroundColor={!isValid ? '$red1' : '$gray1'}
-                    focusStyle={{
-                      borderColor: isValid ? '$blue9' : '$red8',
-                      backgroundColor: 'white',
-                    }}
-                    pointerEvents="auto"
-                  />
-                </XStack>
-                {!isValid && (
-                  <XStack gap="$2" alignItems="center" paddingLeft="$2">
-                    <Feather name="alert-circle" size={14} color="#ef4444" />
-                    <Text fontSize={13} color="$red10" fontWeight="500">
-                      Please enter a valid email address
-                    </Text>
-                  </XStack>
-                )}
+                <Controller
+                  control={control}
+                  name="email"
+                  render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
+                    <>
+                      <XStack
+                        alignItems="center"
+                        position="relative"
+                        width="100%"
+                      >
+                        <Icon
+                          name="email-outline"
+                          size={20}
+                          color={isFocused ? (!error ? '#3b82f6' : '#ef4444') : '#9ca3af'}
+                          style={{
+                            position: 'absolute',
+                            left: 14,
+                            zIndex: 1,
+                          }}
+                        />
+                        <Input
+                          flex={1}
+                          height={56}
+                          paddingLeft={46}
+                          paddingRight="$4"
+                          borderRadius="$4"
+                          placeholder="your.email@example.com"
+                          value={value}
+                          onChangeText={onChange}
+                          onFocus={() => setIsFocused(true)}
+                          onBlur={() => {
+                            setIsFocused(false);
+                            onBlur();
+                          }}
+                          keyboardType="email-address"
+                          autoCapitalize="none"
+                          autoCorrect={false}
+                          borderWidth={2}
+                          borderColor={
+                            error
+                              ? '$red8'
+                              : isFocused
+                                ? '$blue8'
+                                : '$gray6'
+                          }
+                          backgroundColor={error ? '$red1' : '$gray1'}
+                          focusStyle={{
+                            borderColor: !error ? '$blue9' : '$red8',
+                            backgroundColor: 'white',
+                          }}
+                          pointerEvents="auto"
+                        />
+                      </XStack>
+                      {error && (
+                        <XStack gap="$2" alignItems="center" paddingLeft="$2">
+                          <Feather name="alert-circle" size={14} color="#ef4444" />
+                          <Text fontSize={13} color="$red10" fontWeight="500">
+                            {error.message}
+                          </Text>
+                        </XStack>
+                      )}
+                    </>
+                  )}
+                />
               </YStack>
 
               <Spacer size="$2" />
@@ -199,17 +223,20 @@ export default function EmailInputBottomSheet({
                 <Button
                   size="$5"
                   height={56}
-                  onPress={verifyEmail}
+                  onPress={handleSubmit(verifyEmail)}
                   width="100%"
                   borderRadius="$4"
-                  backgroundColor={email.trim() ? '$blue10' : '$gray7'}
+                  backgroundColor={isValid && emailValue ? '$blue10' : '$gray7'}
                   hoverStyle={{ backgroundColor: '$blue9', opacity: 0.9 }}
                   pressStyle={{ backgroundColor: '$blue11', scale: 0.98 }}
-                  disabled={!email.trim()}
+                  disabled={!isValid || !emailValue}
                   shadowColor="$blue8"
                   shadowRadius={12}
                   shadowOffset={{ width: 0, height: 4 }}
                   shadowOpacity={0.3}
+                  accessibilityRole="button"
+                  accessibilityLabel={isRequestVerification ? 'Send Verification Link' : 'Send Reset Code'}
+                  accessibilityState={{ disabled: !email.trim() }}
                 >
                   <Text fontSize={17} fontWeight="600" color="white">
                     {isRequestVerification ? 'Send Verification Link' : 'Send Reset Code'}
@@ -233,6 +260,8 @@ export default function EmailInputBottomSheet({
                     backgroundColor: '$gray3',
                     scale: 0.98
                   }}
+                  accessibilityRole="button"
+                  accessibilityLabel="Cancel"
                 >
                   <Text fontSize={17} fontWeight="600" color="$gray11">
                     Cancel

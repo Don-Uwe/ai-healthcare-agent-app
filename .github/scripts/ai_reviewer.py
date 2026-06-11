@@ -105,20 +105,26 @@ def filter_diff(diff_text):
         final_diff = final_diff[:MAX_DIFF_SIZE] + "\n\n[Diff truncated due to size limits]"
     return final_diff
 
-def generate_review(pr_title, pr_body, diff_text, gemini_api_key):
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_api_key}"
+def generate_review(pr_title, pr_body, diff_text, api_keys):
     prompt = f"{SYSTEM_PROMPT}\n\nPR TITLE:\n{pr_title}\n\nPR DESCRIPTION:\n{pr_body}\n\nPR DIFF:\n{diff_text}"
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {"temperature": 0.2, "topP": 0.8, "topK": 40, "maxOutputTokens": 8192}
     }
-    request = urllib.request.Request(
-        url,
-        data=json.dumps(payload).encode("utf-8"),
-        headers={"Content-Type": "application/json"}
-    )
-    max_retries = 3
+    max_retries = max(3, len(api_keys) + 1)
+    base_wait = 5 if len(api_keys) > 1 else 50
+    print(f"[INFO] Starting Gemini call. Keys available: {len(api_keys)}, max_retries: {max_retries}", flush=True)
+
     for attempt in range(max_retries):
+        current_key = api_keys[attempt % len(api_keys)]
+        key_index = attempt % len(api_keys) + 1
+        print(f"[INFO] Attempt {attempt+1}/{max_retries} using key #{key_index}", flush=True)
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={current_key}"
+        request = urllib.request.Request(
+            url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"}
+        )
         try:
             with urllib.request.urlopen(request) as resp:
                 resp_data = json.loads(resp.read().decode("utf-8"))
@@ -126,16 +132,18 @@ def generate_review(pr_title, pr_body, diff_text, gemini_api_key):
         except urllib.error.HTTPError as e:
             error_body = e.read().decode("utf-8")
             print(f"HTTP Error from Gemini API (Attempt {attempt+1}): {e.code} - {error_body}")
-            if e.code in [429, 500, 502, 503, 504] and attempt < max_retries - 1:
-                sleep_time = (2 ** attempt) * 5  # 5s, 10s
-                print(f"Retrying in {sleep_time} seconds...")
+            if e.code in [403, 429, 500, 502, 503, 504] and attempt < max_retries - 1:
+                sleep_time = base_wait * (2 ** attempt)
+                print(f"[WARN] Gemini API Error ({e.code}). Retrying in {sleep_time}s with alternative key...", flush=True)
                 time.sleep(sleep_time)
             else:
+                if attempt == max_retries - 1:
+                    print(f"[ERROR] Gemini API quota exceeded after {max_retries} retries across {len(api_keys)} keys.", flush=True)
                 raise e
         except Exception as e:
             print(f"Failed to fetch review from Gemini API (Attempt {attempt+1}): {e}")
             if attempt < max_retries - 1:
-                time.sleep(5)
+                time.sleep(10)
             else:
                 raise e
 
@@ -164,12 +172,18 @@ def post_review(repo, pr_number, github_token, review_text):
         print(f"Failed to post comment to GitHub: {e}")
 
 def main():
-    gemini_api_key = os.environ.get("GEMINI_API_KEY")
+    gemini_keys_str = os.environ.get("GEMINI_API_KEYS", "")
+    gemini_api_keys = [k.strip() for k in gemini_keys_str.split(",") if k.strip()]
+    if not gemini_api_keys:
+        single_key = os.environ.get("GEMINI_API_KEY", "").strip()
+        if single_key:
+            gemini_api_keys = [single_key]
+            
     github_token = os.environ.get("GITHUB_TOKEN")
     repo = os.environ.get("GITHUB_REPOSITORY")
     pr_number = os.environ.get("PR_NUMBER")
 
-    if not all([gemini_api_key, github_token, repo, pr_number]):
+    if not gemini_api_keys or not github_token or not repo or not pr_number:
         print("Missing required environment variables.")
         return
 
@@ -193,7 +207,7 @@ def main():
              return
 
         print("Generating comprehensive review...")
-        final_review = generate_review(pr_title, pr_body, filtered_diff, gemini_api_key)
+        final_review = generate_review(pr_title, pr_body, filtered_diff, gemini_api_keys)
 
         print("Posting review to GitHub...")
         post_review(repo, pr_number, github_token, final_review)
