@@ -30,6 +30,8 @@ export default function UpdateModal({ visible, storeUrl }: any) {
 
           <Pressable
             onPress={() => Linking.openURL(storeUrl)}
+            accessibilityRole="button"
+            accessibilityLabel="Update Now"
             style={{
               backgroundColor: '#000',
               paddingVertical: 10,
