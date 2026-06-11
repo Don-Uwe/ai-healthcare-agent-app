@@ -231,8 +231,13 @@ def generate_review(pr_title, pr_body, diff_text, previous_reviews_text, availab
         "generationConfig": {"temperature": 0.2, "topP": 0.8, "topK": 40, "maxOutputTokens": 8192}
     }
     max_retries = max(3, len(api_keys) + 1)
+    base_wait = 5 if len(api_keys) > 1 else 50
+    print(f"[INFO] Starting Gemini call. Keys available: {len(api_keys)}, max_retries: {max_retries}", flush=True)
+
     for attempt in range(max_retries):
         current_key = api_keys[attempt % len(api_keys)]
+        key_index = attempt % len(api_keys) + 1
+        print(f"[INFO] Attempt {attempt+1}/{max_retries} using key #{key_index}", flush=True)
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={current_key}"
         request = urllib.request.Request(
             url,
@@ -247,22 +252,23 @@ def generate_review(pr_title, pr_body, diff_text, previous_reviews_text, availab
             error_body = e.read().decode("utf-8")
             print(f"HTTP Error from Gemini API (Attempt {attempt+1}): {e.code} - {error_body}")
             if e.code in [403, 429, 500, 502, 503, 504] and attempt < max_retries - 1:
-                # Exponential back-off: 60 s, 120 s, 240 s — much longer for rate limits
-                sleep_time = RATE_LIMIT_SLEEP_BASE * (2 ** attempt)
-                print(f"Retrying in {sleep_time} seconds with alternative key...")
+                sleep_time = base_wait * (2 ** attempt)
+                print(f"[WARN] Gemini API Error ({e.code}). Retrying in {sleep_time}s with alternative key...", flush=True)
                 time.sleep(sleep_time)
             else:
+                if attempt == max_retries - 1:
+                    print(f"[ERROR] Gemini API quota exceeded after {max_retries} retries across {len(api_keys)} keys.", flush=True)
                 raise e
         except (socket.timeout, urllib.error.URLError) as e:
             print(f"Gemini API timed out (Attempt {attempt+1}): {e}")
             if attempt < max_retries - 1:
-                time.sleep(15)
+                time.sleep(10)
             else:
                 raise e
         except Exception as e:
             print(f"Failed to fetch review from Gemini API (Attempt {attempt+1}): {e}")
             if attempt < max_retries - 1:
-                time.sleep(15)
+                time.sleep(10)
             else:
                 raise e
 
