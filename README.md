@@ -741,6 +741,7 @@ We welcome contributions from everyone — developers, designers, writers, and t
     <td align="center"><a href="https://github.com/PranavAgarkar07"><img src="https://avatars.githubusercontent.com/u/90404176?v=4" width="100px;" alt=""/><br/><sub><b>Pranav Agarkar</b></sub></a></td>
       <td align="center"><a href="https://github.com/Sha-lini3"><img src="https://avatars.githubusercontent.com/u/184716203?v=4" width="120px;" alt=""/><br/><sub><b>Shalini Yadav</b></sub></a></td>
      <td align="center"><a href="https://github.com/Kinara2020"><img src="https://avatars.githubusercontent.com/u/199802893?v=4" width="120px;" alt=""/><br/><sub><b>KINARA PATEL</b></sub></a></td>
+     <td align="center"><a href="https://github.com/SwaraMishra07"><img src="https://avatars.githubusercontent.com/u/197755595?v=4" width="120px;" alt=""/><br/><sub><b>SwaraMishra07</b></sub></a></td>
  </tr>
 </table>
 <!-- CONTRIBUTORS-TABLE-END -->
