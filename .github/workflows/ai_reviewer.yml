@@ -1,0 +1,38 @@
+name: Gemini AI PR Reviewer
+
+on:
+  # Trigger (Manual): When someone comments "/review" on a PR
+  issue_comment:
+    types: [created]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+
+    # For manual trigger: only run if comment is on a PR, contains "/review", and commenter is authorized
+    if: |
+      github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request != null &&
+      contains(github.event.comment.body, '/review') &&
+      contains(fromJson('["SB2318", "Gooichand", "nitinog10"]'), github.event.comment.user.login)
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.10'
+
+      - name: Run AI Reviewer Script
+        env:
+          GEMINI_API_KEYS: ${{ secrets.GEMINI_KEY_1 }},${{ secrets.GEMINI_KEY_2 }},${{ secrets.GEMINI_KEY_3 }},${{ secrets.GEMINI_KEY_4 }},${{ secrets.GEMINI_KEY_5 }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Resolve PR number from either trigger source
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+        run: python .github/scripts/ai_reviewer.py
