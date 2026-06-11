@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/react-native';
 import { Platform } from 'react-native';
 import * as Application from 'expo-application';
+import { logger } from './logger';
 
 /**
  * Initialize Sentry monitoring.
@@ -16,7 +17,7 @@ export const initMonitoring = () => {
   if (!dsn) {
     if (__DEV__) {
       // Warn rather than log — no DSN is a non-default state worth noticing.
-      console.warn('[Monitoring] Sentry is disabled: EXPO_PUBLIC_SENTRY_DSN is not set.');
+      logger.warn('[Monitoring] Sentry is disabled: EXPO_PUBLIC_SENTRY_DSN is not set.');
     }
     return;
   }
@@ -43,7 +44,7 @@ export const initMonitoring = () => {
   });
 
   if (__DEV__) {
-    console.log(`[Monitoring] Sentry initialized for environment: ${environment}`);
+    logger.log(`[Monitoring] Sentry initialized for environment: ${environment}`);
   }
 };
 

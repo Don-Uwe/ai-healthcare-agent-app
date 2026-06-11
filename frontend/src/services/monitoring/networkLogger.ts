@@ -1,4 +1,5 @@
 import { captureException } from './errorHandler';
+import { logger } from './logger';
 
 /**
  * Safely strips sensitive information from headers or payloads.
@@ -79,6 +80,6 @@ export const logApiError = (error: any, url?: string, context?: Record<string, a
   if (!error.response || (status >= 500 && status < 600)) {
     captureException(error, safeContext);
   } else if (__DEV__) {
-    console.warn(`[NetworkLogger] Expected client error (Status: ${status}) for ${endpoint}`);
+   logger.warn(`[NetworkLogger] Expected client error (Status: ${status}) for ${endpoint}`);
   }
 };
