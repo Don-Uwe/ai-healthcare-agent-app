@@ -3,32 +3,18 @@ import AccessibleTouchable from './common/AccessibleTouchable';
 import {
   Animated,
   StyleSheet,
-  
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
- 
-/**
- * BackToTopButton — Standalone floating action button component.
- *
- * Rendered by consumers of useBackToTop hook.
- *
- * Props:
- *   opacity      — Animated.Value controlling fade in/out
- *   onPress      — callback to scroll to top
- *   visible      — whether the button should be rendered
- *   buttonColor  — FAB background colour  (default: '#4CAF50')
- *   iconColor    — arrow icon colour      (default: '#fff')
- */
- 
-export interface BackToTopButtonProps {
+
+export interface ScrollToBottomButtonProps {
   opacity: Animated.Value;
   onPress: () => void;
   visible: boolean;
   buttonColor?: string;
   iconColor?: string;
 }
- 
-export const BackToTopButton: React.FC<BackToTopButtonProps> = ({
+
+export const ScrollToBottomButton: React.FC<ScrollToBottomButtonProps> = ({
   opacity,
   onPress,
   visible,
@@ -36,23 +22,22 @@ export const BackToTopButton: React.FC<BackToTopButtonProps> = ({
   iconColor = '#fff',
 }) => {
   if (!visible) return null;
- 
+
   return (
     <Animated.View
       style={[styles.fab, { opacity, backgroundColor: buttonColor }]}
     >
       <AccessibleTouchable
         onPress={onPress}
-        accessibilityLabel="Back to top"
-        
-        accessibilityHint="Scrolls the page back to the top"
+        accessibilityLabel="Scroll to bottom"
+        accessibilityHint="Scrolls the page to the bottom"
       >
-        <Ionicons name="arrow-up" size={22} color={iconColor} />
+        <Ionicons name="arrow-down" size={22} color={iconColor} />
       </AccessibleTouchable>
     </Animated.View>
   );
 };
- 
+
 const styles = StyleSheet.create({
   fab: {
     width: 44,
