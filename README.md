@@ -753,7 +753,8 @@ We welcome contributions from everyone — developers, designers, writers, and t
 
    <tr>
     <td align="center"><a href="https://github.com/Yogender-verma"><img src="https://avatars.githubusercontent.com/u/232599506?v=4" width="120px;" alt=""/><br/><sub><b>Yogender Verma</b></sub></a></td>
-   </tr>
+       <td align="center"><a href="https://github.com/jyoti-5906"><img src="https://avatars.githubusercontent.com/u/205121361?v=4" width="120px;" alt=""/><br/><sub><b>Jyoti</b></sub></a></td>
+ </tr>
 </table>
 <!-- CONTRIBUTORS-TABLE-END -->
 
