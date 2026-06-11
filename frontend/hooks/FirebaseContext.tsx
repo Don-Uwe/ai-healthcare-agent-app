@@ -60,7 +60,7 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
         );
 
         if (missingFields.length > 0) {
-          if (__DEV__) {
+          
             logger.warn(
               `Firebase configuration is incomplete. Missing fields: ${missingFields.join(
                 ', '
@@ -76,12 +76,12 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
           firebase.app(); // if already initialized, use that one
         }
         const token = await messaging().getToken();
-        if (__DEV__) {
+        if 
           logger.log('Firebase Token:', token);
         }
         setFcmToken(token); // Store the token in state
       } catch (error) {
-        if (__DEV__) {
+        
           logger.error('Error getting token:', error);
         }
       }

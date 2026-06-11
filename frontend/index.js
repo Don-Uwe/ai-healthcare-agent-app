@@ -15,7 +15,7 @@ import { logger } from './src/services/monitoring/logger';// Firebase background
 messaging().setBackgroundMessageHandler(async remoteMessage => {
   // Only log notification payloads in development to avoid leaking user data
   // or FCM tokens in production log aggregators.
-  if (__DEV__) {
+  
     logger.log('Background notification received:', remoteMessage);
   }
 });

@@ -8,10 +8,10 @@ import { logger } from './logger';
  * @param context - Optional extra context data to send along with the error
  */
 export const captureException = (error: unknown, context?: Record<string, any>) => {
-  if(__DEV__){
+
    logger.log('[Monitoring] Exception captured');
   logger.error('Captured Exception (Development):', error);
-  }
+  
 
   Sentry.captureException(error, scope => {
     if(context){
@@ -32,9 +32,9 @@ export const captureMessage = (
   message: string,
   level: Sentry.SeverityLevel = 'info'
 ) => {
-  if(__DEV__){
+
    logger.log(`Captured Message [${level}]:`, message);
-  }
+  
   Sentry.captureMessage(message, level);
 };
 
