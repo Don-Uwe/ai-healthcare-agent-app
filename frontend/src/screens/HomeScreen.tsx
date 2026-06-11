@@ -113,7 +113,18 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const {preferredLanguages, isLoading: preferencesLoading} = usePreferences();
   const {mutate: requestEdit, isPending: requestEditPending} =
     useRequestArticleEdit();
-
+  const handleClearAllFilters = () => {
+    // 1. Local state categories reset
+    setSelectedCategory('');
+    setSortingType('');
+    
+    
+    dispatch(setSearchMode(false));
+    dispatch(setSearchedArticles([]));
+    dispatch(setFilteredArticles([]));
+    
+    dispatch(setTags([])); 
+  };
   const {
     filteredArticles,
     searchedArticles,
