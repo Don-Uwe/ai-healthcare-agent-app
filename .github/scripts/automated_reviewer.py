@@ -5,6 +5,7 @@ import urllib.request
 import urllib.error
 import time
 from datetime import datetime, timezone
+import re
 
 MAX_DIFF_SIZE = 300000        # max diff bytes sent to Gemini per PR
 API_TIMEOUT = 30              # seconds for all GitHub API calls
@@ -134,6 +135,29 @@ def fetch_pr_metadata(repo, pr_number, github_token):
         author = data.get("user", {}).get("login", "")
         return title, body, labels, author
     return "Unknown Title", "Unknown Description", [], ""
+
+def check_author_authorization(repo, pr_body, pr_author, github_token):
+    if not pr_body:
+        return False, "No PR description provided to link issues."
+
+    pattern = r'(?i)(?:fixes|resolves|closes|fixed|resolved|closed)\s+#(\d+)'
+    issue_numbers = re.findall(pattern, pr_body)
+
+    if not issue_numbers:
+        return False, "No linked issues found in the PR description using standard keywords (e.g., 'Fixes #123')."
+
+    for issue_num in issue_numbers:
+        url = f"https://api.github.com/repos/{repo}/issues/{issue_num}"
+        headers = {"Authorization": f"token {github_token}", "Accept": "application/vnd.github.v3+json"}
+        issue_data = make_github_request(url, headers, is_json=True)
+        if issue_data:
+            issue_author = issue_data.get("user", {}).get("login", "")
+            assignees = [a.get("login", "") for a in issue_data.get("assignees", [])]
+            
+            if pr_author == issue_author or pr_author in assignees:
+                return True, "Authorized"
+
+    return False, "You are not the author or an assignee of the linked issue(s)."
 
 def fetch_pr_comments(repo, pr_number, github_token):
     comments = []
@@ -341,6 +365,23 @@ def run_review_for_pr(repo, pr_number, github_token, api_keys, is_scheduled=Fals
         msg = "Skipped: PR has 'gssoc:invalid' label."
         print(msg)
         return "skipped", msg
+
+    # 2. Check Author Authorization (GSSoC logic)
+    maintainers = ["SB2318", "Gooichand", "nitinog10"]
+    if pr_author not in maintainers:
+        is_authorized, auth_reason = check_author_authorization(repo, pr_body, pr_author, github_token)
+        if not is_authorized:
+            msg = f"Skipped: {auth_reason}"
+            print(msg)
+            add_pr_labels(repo, pr_number, github_token, ["gssoc:invalid"])
+            comment = (
+                "### ❌ PR Validation Failed\n\n"
+                f"This PR was marked as `gssoc:invalid` because: **{auth_reason}**\n\n"
+                "To resolve this, please ensure your PR description links an issue (e.g., `Fixes #123`) and that you are either the **creator** or an **assignee** of that issue.\n\n"
+                "<!-- automated-ai-reviewer-bot-v2 -->"
+            )
+            post_review(repo, pr_number, github_token, comment)
+            return "skipped", msg
 
     print("Fetching PR comments...")
     comments = fetch_pr_comments(repo, pr_number, github_token)
