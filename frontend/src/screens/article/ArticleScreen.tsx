@@ -80,6 +80,7 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   const [shareModalVisible, setShareModalVisible] = useState(false);
   const chunkIndexRef = useRef(0);
   const wordsRef = useRef<string[]>([]);
+  const readEventFiredRef = useRef(false);
 
   // Progress Bar Shared Values
   const scrollY = useSharedValue(0);
@@ -178,6 +179,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
   }, [articleId, isGuest, updateViewCount]);
 
   useEffect(() => {
+    readEventFiredRef.current = false;
+    setReadEventSave(false);
     refetch();
   }, [articleId, refetch]);
 
