@@ -152,6 +152,19 @@ export const OfflineArticleState = () => (
     infoText="💡 Offline reading coming soon!"
   />
 );
+export const NoOfflinePodcastsState = ({
+  onBrowse,
+}: {
+  onBrowse?: () => void;
+}) => (
+  <BaseEmptyState
+    iconEmoji="🎧"
+    title="No Offline Podcasts Yet"
+    description="Download podcasts to listen anytime, even without an internet connection."
+    actionText={onBrowse ? "Browse Podcasts" : undefined}
+    onAction={onBrowse}
+  />
+);
 
 export const OfflinePodcastState = () => (
   <BaseEmptyState
@@ -172,15 +185,8 @@ export const NoArticleState = ({ onRefresh }: { onRefresh?: () => void }) => (
   />
 );
 
-export const NoPodcastState = ({ onRefresh }: { onRefresh?: () => void }) => (
-  <BaseEmptyState
-    iconEmoji="🎧"
-    title="No Podcasts Available"
-    description="There are no podcasts to display right now. Check back later for new audio content!"
-    actionText={onRefresh ? "Refresh Podcasts" : undefined}
-    onAction={onRefresh}
-  />
-);
+
+
 
 // Loading State Component with audio waves
 export const PodcastLoadingState = () => {

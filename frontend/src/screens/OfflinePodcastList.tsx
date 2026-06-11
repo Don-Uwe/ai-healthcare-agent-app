@@ -10,6 +10,7 @@ import Snackbar from 'react-native-snackbar';
 import {useDispatch, useSelector} from 'react-redux';
 import CreatePlaylist from '../components/CreatePlaylist';
 import { setaddedPodcastId, setRemovePlaylistId } from '../store/dataSlice';
+import { NoOfflinePodcastsState } from '../components/EmptyStates';
 
 export default function OfflinePodcastList({
   navigation,
@@ -113,7 +114,11 @@ export default function OfflinePodcastList({
         data={podcasts}
         keyExtractor={item => item._id.toString()}
         renderItem={renderItem}
-        ListEmptyComponent={<PodcastEmptyComponent />}
+        ListEmptyComponent={
+  <NoOfflinePodcastsState
+    onBrowse={() => navigation.navigate('Podcasts')}
+  />
+}
       />
       <CreatePlaylist
         visible={playlistModalOpen}
