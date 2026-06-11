@@ -193,6 +193,13 @@ const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
               );
 
               break;
+              case 503:
+                Alert.alert(
+                    'Service Unavailable',
+                    'AI service is currently unavailable. Please try again later.',
+  );
+
+              break;
             default:
               Alert.alert(
                 'Unknown Error',
