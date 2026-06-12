@@ -128,7 +128,7 @@ const ArticleDescriptionScreen = ({
       if (response.didCancel) {
         //console.log('User cancelled image picker');
       } else if (response.errorMessage) {
-        console.log('ImagePicker Error: ', response.errorMessage);
+        if (__DEV__) console.log('ImagePicker Error:', response.errorMessage);
       } else if (response.assets) {
         const {uri, fileSize} = response.assets[0];
 
@@ -138,19 +138,16 @@ const ArticleDescriptionScreen = ({
           return;
         }
 
-        // Check dimensions
         if (uri) {
-          ImageResizer.createResizedImage(uri, 1000, 1000, 'JPEG', 100)
-            .then(resizedImageUri => {
-              // If the image is resized successfully, upload it
+          ImageResizer.createResizedImage(uri, 1000, 1000, 'JPEG', 80)
+            .then(resizedImage => {
+              setImageUtils(resizedImage.uri);
             })
             .catch(err => {
-              console.log(err);
-              Alert.alert('Error', 'Could not resize the image.');
+              if (__DEV__) console.log('Image resize failed, using original:', err);
+              setImageUtils(uri);
             });
         }
-
-        setImageUtils(uri ? uri : '');
       }
     });
   };
