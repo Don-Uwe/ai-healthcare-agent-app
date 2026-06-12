@@ -469,28 +469,29 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   }, [isFetching, refreshing]);
 
   const handleSearch = (textInput: string) => {
-    //console.log('Search Input', textInput);
-    if (textInput === '' || articleData === undefined) {
-      dispatch(setSearchedArticles({searchedArticles: []}));
-      dispatch(setSearchMode({searchMode: false}));
-    } else {
-      dispatch(setSearchMode({searchMode: true}));
-      const matchesSearch = articleData?.articles.filter(article => {
-        const matchesTitle = article.title && typeof article.title === 'string'
+  if (textInput === '' || allArticlesRef.current.length === 0) {
+    dispatch(setSearchedArticles({ searchedArticles: [] }));
+    dispatch(setSearchMode({ searchMode: false }));
+  } else {
+    dispatch(setSearchMode({ searchMode: true }));
+    const matchesSearch = allArticlesRef.current.filter(article => {  // ✅ use full accumulated list
+      const matchesTitle =
+        article.title && typeof article.title === 'string'
           ? article.title.toLowerCase().includes((textInput || '').toLowerCase())
           : false;
-        const matchesTags = article.tags && Array.isArray(article.tags)
-          ? article.tags.some(tag =>
-              tag && tag.name && typeof tag.name === 'string' &&
-              tag.name.toLowerCase().includes((textInput || '').toLowerCase())
+      const matchesTags =
+        article.tags && Array.isArray(article.tags)
+          ? article.tags.some(
+              tag =>
+                tag && tag.name && typeof tag.name === 'string' &&
+                tag.name.toLowerCase().includes((textInput || '').toLowerCase()),
             )
           : false;
-
-        return matchesTitle || matchesTags;
-      });
-      dispatch(setSearchedArticles({searchedArticles: matchesSearch}));
-    }
-  };
+      return matchesTitle || matchesTags;
+    });
+    dispatch(setSearchedArticles({ searchedArticles: matchesSearch }));
+  }
+};
 
   const listData = useMemo(() => {
     if (showSavedOnly) {

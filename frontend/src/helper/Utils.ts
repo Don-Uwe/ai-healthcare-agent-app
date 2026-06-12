@@ -1,6 +1,7 @@
 import NetInfo from '@react-native-community/netinfo';
 import {Category, CategoryType, PodcastData} from '../type';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {GET_STORAGE_DATA} from './APIUtils';
 import {Alert, Linking, PermissionsAndroid, Platform} from 'react-native';
 import RNFS from 'react-native-fs';
 import {secureClearAllItems} from './SecureStorageUtils';
@@ -341,17 +342,17 @@ ${body}
 export const requestReadStoragePermissions = async () => {
   if (Platform.OS !== 'android') return true;
 
- if ((Platform.Version as number) < 33) {
-    const granted = await PermissionsAndroid.requestMultiple([
-      PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-    ]);
-    return granted['android.permission.READ_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED;
+  if ((Platform.Version as number) < 33) {
+    return true;
   } else {
     const granted = await PermissionsAndroid.requestMultiple([
       PermissionsAndroid.PERMISSIONS.READ_MEDIA_AUDIO,
     ]);
 
-    return granted['android.permission.READ_MEDIA_AUDIO'] === PermissionsAndroid.RESULTS.GRANTED;
+    return (
+      granted['android.permission.READ_MEDIA_AUDIO'] ===
+      PermissionsAndroid.RESULTS.GRANTED
+    );
   }
 };
 
