@@ -123,15 +123,14 @@ We will review your PR as soon as possible. Feedback will be provided constructi
   - Explain the use case
   - Describe why it benefits the community
 
-  ---
 
 ## Frequently Asked Questions
 
 - Do I need to get assigned to an issue before working on it?
 
-  Yes. It is recommended to comment on the issue and wait for maintainer          assignment before starting work. This helps prevent duplicate efforts and conflicting Pull
+Yes. It is recommended to comment on the issue and wait for maintainer       assignment before starting work. This helps prevent duplicate efforts and conflicting Pull
 
--  Which branch should I target for my Pull Request?
+- Which branch should I target for my Pull Request?
 
 main → Mobile app and core project contributions
 web → Web application contributions
