@@ -757,6 +757,7 @@ We welcome contributions from everyone — developers, designers, writers, and t
      <td align="center"><a href="https://github.com/Jay-Jay-Tee"><img src="https://avatars.githubusercontent.com/u/48431463?v=4" width="120px;" alt=""/><br/><sub><b>Joshua Jacob Thomas</b></sub></a></td>
      <td align="center"><a href="https://github.com/vedant7007"><img src="https://avatars.githubusercontent.com/u/170861579?v=4" width="120px;" alt=""/><br/><sub><b>Vedant</b></sub></a></td>
      <td align="center"><a href="https://github.com/riya-dumbare"><img src="https://avatars.githubusercontent.com/u/223732363?v=4" width="120px;" alt=""/><br/><sub><b>Riya Dumbare</b></sub></a></td>
+     <td align="center"><a href="https://github.com/minhajparveenh2008"><img src="https://avatars.githubusercontent.com/u/252563726?v=4" width="120px;" alt=""/><br/><sub><b>Minhaj Parveen.H</b></sub></a></td>
  </tr>
 </table>
 <!-- CONTRIBUTORS-TABLE-END -->
