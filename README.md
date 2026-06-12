@@ -435,20 +435,20 @@ Builds are also triggered automatically via GitHub Actions on pushes to `main`.
 
 ## Services & API Dependencies
 
-| Service | URL | Purpose |
-|---|---|---|
-| REST API | [uhsocial.in/docs](https://uhsocial.in/docs) | Backend API (Node.js + MongoDB) |
-| Content Intelligence | [uhsocial.in/content-intel/docs](https://uhsocial.in/content-intel/docs) | Plagiarism and grammar checks (Python) |
-| Web Frontend | [uhsocial.in/frontend/v2](https://uhsocial.in/frontend/v2) | React web app (web branch) |
-| Android App | [Play Store](https://play.google.com/store/apps/details?id=com.anonymous.UltimateHealth) | Published Android app |
+| Service | URL | Purpose | Repository |
+|---|---|---|---|
+| REST API | [uhsocial.in/docs](https://uhsocial.in/docs) | Backend API (Node.js + MongoDB) | [ultimatehealth-backend](https://github.com/SB2318/ultimatehealth-backend) |
+| Content Intelligence | [uhsocial.in/content-intel/docs](https://uhsocial.in/content-intel/docs) | Plagiarism and grammar checks (Python) | [VeriWise-Content-Check](https://github.com/SB2318/VeriWise-Content-Check) |
+| Web Frontend | [uhsocial.in/frontend/v2](https://uhsocial.in/frontend/v2) | React web app (web branch) | [UltimateHealth](https://github.com/SB2318/UltimateHealth) |
+| Android App | [Play Store](https://play.google.com/store/apps/details?id=com.anonymous.UltimateHealth) | Published Android app | [UltimateHealth](https://github.com/SB2318/UltimateHealth) |
 
 ### Submodule Repositories
 
-| Repository | Purpose |
-|---|---|
-| [ultimatehealth-backend](https://github.com/SB2318/ultimatehealth-backend) | Node.js + MongoDB backend |
-| [ultimatehealth-admin](https://github.com/SB2318/ultimatehealth-admin-app) | Admin panel app |
-| [VeriWise-Content-Check](https://github.com/SB2318/VeriWise-Content-Check) | Content integrity checker |
+| Service | Repository |
+|----------|------------|
+| Backend | [ultimatehealth-backend](https://github.com/SB2318/ultimatehealth-backend) |
+| Admin Panel | [ultimatehealth-admin](https://github.com/SB2318/ultimatehealth-admin-app) |
+| Content Checker | [VeriWise-Content-Check](https://github.com/SB2318/VeriWise-Content-Check) |
 
 For local development, update your `.env` to point to either the live APIs or locally running services.
 
