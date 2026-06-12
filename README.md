@@ -890,7 +890,8 @@ We welcome contributions from everyone — developers, designers, writers, and t
 
    <tr>
     <td align="center"><a href="https://github.com/Ashley-Shine"><img src="https://avatars.githubusercontent.com/u/197347819?v=4" width="120px;" alt=""/><br/><sub><b>Ashley-Shine</b></sub></a></td>
-   </tr>
+       <td align="center"><a href="https://github.com/PeswikaBavagni-30"><img src="https://avatars.githubusercontent.com/u/229588032?v=4" width="120px;" alt=""/><br/><sub><b>PeswikaBavagni-30</b></sub></a></td>
+ </tr>
 </table>
 <!-- CONTRIBUTORS-TABLE-END -->
 
