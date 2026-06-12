@@ -763,6 +763,7 @@ We welcome contributions from everyone — developers, designers, writers, and t
    <tr>
     <td align="center"><a href="https://github.com/anushkasrvstv"><img src="https://avatars.githubusercontent.com/u/172965285?v=4" width="120px;" alt=""/><br/><sub><b>anushkasrvstv</b></sub></a></td>
        <td align="center"><a href="https://github.com/manishworkss"><img src="https://avatars.githubusercontent.com/u/187859194?v=4" width="120px;" alt=""/><br/><sub><b>Manish Kumar</b></sub></a></td>
+     <td align="center"><a href="https://github.com/codecrafted1"><img src="https://avatars.githubusercontent.com/u/238506609?v=4" width="120px;" alt=""/><br/><sub><b>Khushi Ambastha</b></sub></a></td>
  </tr>
 </table>
 <!-- CONTRIBUTORS-TABLE-END -->
