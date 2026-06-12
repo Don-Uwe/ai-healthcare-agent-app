@@ -124,6 +124,7 @@ This repository is currently receiving a very large number of forks, issues, and
 - [🛠️ Tech Stack](#%EF%B8%8F-tech-stack)
 - [📊 Code Quality](#code-quality)
 - [🚀 Latest Releases](#-latest-releases)
+- [🗺️ Project Roadmap](#️-project-roadmap)
 - [⚙️ Getting Started](#%EF%B8%8F-getting-started)
 - [🔧 Environment Setup](#%EF%B8%8F-environment-setup)
 - [🚀 Installation](#-installation)
@@ -261,6 +262,17 @@ Our AI bot suite handles the initial pipeline automatically. See [Automation & B
 </table>
 
 ---
+## 🗺️ Project Roadmap
+
+| Area | Planned Improvements |
+|--------|----------------------|
+| 📱 Mobile Application | UI/UX enhancements, accessibility improvements, performance optimization |
+| 🌐 Web Platform | New user-facing features, responsiveness improvements, better user experience |
+| 🤖 AI & Content Intelligence | Improved AI assistant, advanced plagiarism detection, smarter recommendations |
+| ♿ Accessibility | Better navigation, readability improvements, accessibility compliance |
+| 🤝 Community & Contributions | Documentation expansion, contributor onboarding, testing initiatives |
+
+> **Note:** Roadmap priorities may evolve based on project requirements and community feedback.
 
 ## Getting Started
 
