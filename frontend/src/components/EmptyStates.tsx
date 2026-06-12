@@ -185,7 +185,19 @@ export const NoArticleState = ({ onRefresh }: { onRefresh?: () => void }) => (
   />
 );
 
-
+export const NoPodcastState = ({
+  onRefresh,
+}: {
+  onRefresh?: () => void;
+}) => (
+  <BaseEmptyState
+    iconEmoji="🎙️"
+    title="No Podcasts Available"
+    description="There are no podcasts available right now. Check back later for new content."
+    actionText={onRefresh ? 'Refresh Podcasts' : undefined}
+    onAction={onRefresh}
+  />
+);
 
 
 // Loading State Component with audio waves
