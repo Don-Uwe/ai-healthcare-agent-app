@@ -33,7 +33,7 @@ const initializeMMKV = (): MMKVStorageLike | null => {
   hasAttemptedInitialization = true;
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+     
     const mmkvModule = require('react-native-mmkv') as {
       createMMKV?: (config: {id: string}) => MMKVStorageLike;
     };

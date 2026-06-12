@@ -54,6 +54,14 @@ import GuestPlaceholderScreen from '../components/GuestPlaceholderScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
+
+const ROOT_SCREENS: string[] = [
+  'TabNavigation',
+  'LoginScreen',
+  'LogoutScreen',
+  'GuestPlaceholderScreen',
+];
+
 const StackNavigation = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const nav = useNavigation<NavigationProp<TabParamList>>();
@@ -63,30 +71,34 @@ const StackNavigation = () => {
       const currentRoute =
         navigation?.getState()?.routes[navigation?.getState()?.index || 0]
           ?.name;
-      const currTab = nav?.getState().routes[nav?.getState()?.index || 0]?.name;
+      const currTab = nav?.getState()?.routes[nav?.getState()?.index || 0]?.name;
 
-      //console.log('Current Route', currentRoute);
-      //console.log('Current Route', currTab);
-      if (
-        currentRoute === 'TabNavigation' ||
-        currentRoute === 'LoginScreen' ||
+      // Show exit dialog when the user is on a root-level screen (no meaningful
+      // back destination), or when a tab-root is active. ROOT_SCREENS includes
+      // LogoutScreen and GuestPlaceholderScreen so pressing Back mid-logout or
+      // from the guest placeholder doesn't silently fall through.
+      const isRootScreen = currentRoute ? ROOT_SCREENS.includes(currentRoute) : false;
+      const isRootTab =
         currTab === 'Home' ||
         currTab === 'Podcasts' ||
-        currTab === 'Profile'
-      ) {
+        currTab === 'Profile';
+
+      if (isRootScreen || isRootTab) {
         Alert.alert('Warning', 'Do you want to exit?', [
           {text: 'No', onPress: () => null},
           {text: 'Yes', onPress: () => BackHandler.exitApp()},
         ]);
-        return true; // Prevent default behavior
+        return true; // Prevent default back behaviour
       } else if (navigation.canGoBack()) {
-        navigation.goBack(); // Allow back navigation for other screens
+        navigation.goBack(); // Allow back navigation for non-root screens
+        return true;
       } else {
+        // Fallback: no back history and not a known root — treat as exit.
         Alert.alert('Warning', 'Do you want to exit?', [
           {text: 'No', onPress: () => null},
           {text: 'Yes', onPress: () => BackHandler.exitApp()},
         ]);
-        return true; // Prevent default behavior
+        return true;
       }
     };
 

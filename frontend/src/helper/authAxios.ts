@@ -12,9 +12,13 @@ const authAxios = axios.create({
   },
 });
 
-// Request interceptor: dynamically attach Bearer token before every request
+// Request interceptor: dynamically attach Bearer token before every request.
+// `config.headers ??= {}` guards against the rare case where an Axios adapter
+// or custom config omits the headers object entirely, preventing a runtime
+// TypeError when setting `config.headers.Authorization`.
 authAxios.interceptors.request.use(
   async (config) => {
+    config.headers ??= {} as typeof config.headers;
     const token = await secureRetrieveItem(SECURE_KEYS.USER_TOKEN);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;

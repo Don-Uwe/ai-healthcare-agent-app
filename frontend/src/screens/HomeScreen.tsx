@@ -265,7 +265,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
                 });
               },
               onError: err => {
-                console.log(err);
+                if (__DEV__) console.log(err);
                 Snackbar.show({
                   text: 'Try again!',
                   duration: Snackbar.LENGTH_SHORT,
@@ -295,7 +295,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
 
   const handleFilterApply = () => {
     // Update Redux State Variables
-    console.log('enter');
     if (selectCategoryList.length > 0) {
       //   console.log("enter")
       dispatch(setSelectedTags({selectedTags: selectCategoryList}));
@@ -310,12 +309,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     }
 
     if (sortingType && sortingType !== '') {
-      console.log('Sort type', sortType);
-      dispatch(setSortType({sortType: sortingType}));
-    }
-
-    if (sortingType && sortingType !== '') {
-      console.log('Sort type', sortType);
+      if (__DEV__) console.log('Sort type', sortType);
       dispatch(setSortType({sortType: sortingType}));
     }
 
@@ -450,19 +444,16 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
 
 
   const onRefresh = () => {
-    console.log('is connected', isConnected);
     if (isConnected) {
       setRefreshing(true);
-      // Reset pagination state on full pull-to-refresh
+      allArticlesRef.current = [];
+      lastCategoryFilteredCountRef.current = -1;
       setPage(1);
-      if (page === 1) {
-        refetch();
-      }
+      refetch();
       if (!isGuest) {
         refetchUser();
         refetchUnreadCount();
       }
-      setRefreshing(false);
     } else {
       Snackbar.show({
         text: 'Please check your network connection',
@@ -470,29 +461,37 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       });
     }
   };
+
+  useEffect(() => {
+    if (refreshing && !isFetching) {
+      setRefreshing(false);
+    }
+  }, [isFetching, refreshing]);
+
   const handleSearch = (textInput: string) => {
-    //console.log('Search Input', textInput);
-    if (textInput === '' || articleData === undefined) {
-      dispatch(setSearchedArticles({searchedArticles: []}));
-      dispatch(setSearchMode({searchMode: false}));
-    } else {
-      dispatch(setSearchMode({searchMode: true}));
-      const matchesSearch = articleData?.articles.filter(article => {
-        const matchesTitle = article.title && typeof article.title === 'string'
+  if (textInput === '' || allArticlesRef.current.length === 0) {
+    dispatch(setSearchedArticles({ searchedArticles: [] }));
+    dispatch(setSearchMode({ searchMode: false }));
+  } else {
+    dispatch(setSearchMode({ searchMode: true }));
+    const matchesSearch = allArticlesRef.current.filter(article => {  // ✅ use full accumulated list
+      const matchesTitle =
+        article.title && typeof article.title === 'string'
           ? article.title.toLowerCase().includes((textInput || '').toLowerCase())
           : false;
-        const matchesTags = article.tags && Array.isArray(article.tags)
-          ? article.tags.some(tag =>
-              tag && tag.name && typeof tag.name === 'string' &&
-              tag.name.toLowerCase().includes((textInput || '').toLowerCase())
+      const matchesTags =
+        article.tags && Array.isArray(article.tags)
+          ? article.tags.some(
+              tag =>
+                tag && tag.name && typeof tag.name === 'string' &&
+                tag.name.toLowerCase().includes((textInput || '').toLowerCase()),
             )
           : false;
-
-        return matchesTitle || matchesTags;
-      });
-      dispatch(setSearchedArticles({searchedArticles: matchesSearch}));
-    }
-  };
+      return matchesTitle || matchesTags;
+    });
+    dispatch(setSearchedArticles({ searchedArticles: matchesSearch }));
+  }
+};
 
   const listData = useMemo(() => {
     if (showSavedOnly) {
@@ -739,7 +738,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
                   ...styles.labelStyle,
                   color: showSavedOnly ? 'white' : '#4B5563',
                 }}>
-                🔖 Saved
+                Saved
               </Text>
             </TouchableOpacity>
           )}

@@ -4,7 +4,7 @@ import { Feather, AntDesign, Ionicons } from '@expo/vector-icons';
 import { HomeScreenHeaderProps } from '../type';
 import { StatusBar } from 'expo-status-bar';
 
- const HomeScreenHeader = ({
+const HomeScreenHeader = ({
   handlePresentModalPress,
   onTextInputChange,
   onNotificationClick,
@@ -33,7 +33,7 @@ import { StatusBar } from 'expo-status-bar';
           <Input
             unstyled
             flex={1}
-           // marginLeft="$1"
+            // marginLeft="$1"
             placeholder="Search articles..."
             placeholderTextColor="#778599"
             onChangeText={onTextInputChange}

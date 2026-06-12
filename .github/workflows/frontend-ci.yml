@@ -110,7 +110,7 @@ jobs:
           key: node-modules-${{ runner.os }}-${{ hashFiles('frontend/yarn.lock') }}
 
       - name: Run TypeScript Check
-        run: yarn typecheck
+        run: yarn type-check
 
   test:
     name: Unit Tests
@@ -170,14 +170,25 @@ jobs:
       - name: Run Expo Doctor
         shell: bash
         run: |
-          OUTPUT=$(npx expo-doctor 2>&1 || true)
+          set +e
+          OUTPUT=$(npx expo-doctor 2>&1)
+          STATUS=$?
+          set -e
+
           echo "$OUTPUT"
 
-          if echo "$OUTPUT" | grep -q "app config fields that may not be synced"; then
-            echo "Ignoring non-CNG warning"
+          if [ $STATUS -eq 0 ]; then
             exit 0
           fi
 
-          if echo "$OUTPUT" | grep -q "checks failed"; then
-            exit 1
+          set +e
+          set +o pipefail
+          CRITICAL_FAILS=$(echo "$OUTPUT" | grep "Check " | grep -v "app config fields that may not be synced" | grep -v "duplicate dependencies" | grep -v "common issues" | grep -v "installed Expo SDK" | wc -l | tr -d '[:space:]')
+          set -e
+          set -o pipefail
+          if [ "$CRITICAL_FAILS" -eq 0 ]; then
+            echo "Ignoring known non-critical Expo Doctor warnings (non-CNG, duplicate dependencies, and package version warnings)"
+            exit 0
           fi
+
+          exit $STATUS

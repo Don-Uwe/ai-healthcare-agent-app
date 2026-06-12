@@ -1,5 +1,5 @@
 import {StyleSheet, Text, View, TextInput} from 'react-native';
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import AccessibleTouchable from './common/AccessibleTouchable';
 import {
   BottomSheetModal,
@@ -20,7 +20,9 @@ const CategoriesFlatlistModal = ({
   handleCategorySelection,
   selectCategoryList,
 }: HomeScreenCategoriesFlatlistProps) => {
+  const SEARCH_DEBOUNCE_DELAY = 300; // ms
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
 
   const renderBackdrop = useCallback(
     (props: BottomSheetBackdropProps) => (
@@ -36,23 +38,58 @@ const CategoriesFlatlistModal = ({
   // Define snap points for the bottom sheet
   const snapPoints = useMemo(() => ['25%', '75%', '95%'], []);
 
+  // Debounce search input to avoid filtering categories on every keystroke
+  useEffect(() => {
+
+    const timeout = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, SEARCH_DEBOUNCE_DELAY);
+
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [searchQuery]);
+
   // Filter categories based on search
   const filteredCategories = useMemo(() => {
-    if (!searchQuery.trim()) return categories;
+    if (!debouncedSearchQuery.trim()) return categories;
     return categories.filter(cat =>
       cat && cat.name && typeof cat.name === 'string' &&
-      cat.name.toLowerCase().includes((searchQuery || '').toLowerCase())
+      cat.name.toLowerCase().includes((debouncedSearchQuery || '').toLowerCase())
     );
-  }, [categories, searchQuery]);
+  }, [categories, debouncedSearchQuery]);
+
+  // Memoize selected category identifiers for constant-time lookup during item rendering
+  const selectCategoryKeys = useMemo(() => {
+
+    const keys = new Set<string>();
+
+    selectCategoryList.forEach((category) => {
+      if(category.id !== undefined){
+        keys.add(`id:${category.id}`);
+      }
+
+      if(category._id !== undefined){
+        keys.add(`_id:${category._id}`);
+      }
+
+      if(category.name !== undefined){
+        keys.add(`name:${category.name}`);
+      }
+    });
+
+    return keys;
+  }, [selectCategoryList]);
 
   // Function to render each category item
   const renderItem = useCallback(
     ({item}: {item: Category}) => {
-      const isSelected = selectCategoryList.some(i => 
-        (i.id !== undefined && item?.id !== undefined && i.id === item.id) ||
-        (i._id !== undefined && item?._id !== undefined && i._id === item._id) ||
-        (i.name === item?.name)
-      );
+
+      const isSelected = 
+        (item?.id !== undefined && selectCategoryKeys.has(`id:${item.id}`)) ||
+        (item?._id !== undefined && selectCategoryKeys.has(`_id:${item._id}`)) ||
+        (item?.name !== undefined && selectCategoryKeys.has(`name:${item.name}`));
+
       return (
         <AccessibleTouchable
           accessibilityLabel={item.name}
