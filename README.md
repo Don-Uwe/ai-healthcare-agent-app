@@ -264,15 +264,20 @@ Our AI bot suite handles the initial pipeline automatically. See [Automation & B
 ---
 ## 🗺️ Project Roadmap
 
-| Area | Planned Improvements |
-|--------|----------------------|
-| 📱 Mobile Application | UI/UX enhancements, accessibility improvements, performance optimization |
-| 🌐 Web Platform | New user-facing features, responsiveness improvements, better user experience |
-| 🤖 AI & Content Intelligence | Improved AI assistant, advanced plagiarism detection, smarter recommendations |
-| ♿ Accessibility | Better navigation, readability improvements, accessibility compliance |
-| 🤝 Community & Contributions | Documentation expansion, contributor onboarding, testing initiatives |
+The following table outlines planned improvements based on active issues and community feedback. Priorities may evolve as the project grows.
 
-> **Note:** Roadmap priorities may evolve based on project requirements and community feedback.
+| Area | Planned Improvements | Status |
+|------|----------------------|--------|
+| 📱 **Mobile UI** | Full dark mode support with Tamagui ([#713](https://github.com/SB2318/UltimateHealth/issues/713)), consolidated loading components ([#676](https://github.com/SB2318/UltimateHealth/issues/676)), improved ProfileHeader ([#677](https://github.com/SB2318/UltimateHealth/issues/677)), general UI polish ([#678](https://github.com/SB2318/UltimateHealth/issues/678)) | 🔜 In Progress |
+| 🔐 **Guest / Auth Experience** | Read-only unauthenticated mode before login ([#681](https://github.com/SB2318/UltimateHealth/issues/681)) | 🔜 In Progress |
+| 🌐 **Translation & i18n** | Multi-language translation module for frontend and backend ([#644](https://github.com/SB2318/UltimateHealth/issues/644)) | 📋 Planned |
+| 🤖 **AI & Content Intelligence** | Trending/popular article ranking algorithm ([#550](https://github.com/SB2318/UltimateHealth/issues/550)), community tag suggestion with moderation ([#670](https://github.com/SB2318/UltimateHealth/issues/670)) | 📋 Planned |
+| 🧪 **Testing** | Setup Jest + React Native Testing Library ([#672](https://github.com/SB2318/UltimateHealth/issues/672)), unit tests for key Redux slices ([#673](https://github.com/SB2318/UltimateHealth/issues/673)) | 📋 Planned |
+| ⚙️ **CI/CD & DevOps** | Enhanced GitHub Actions workflows and automated contributor updates ([#679](https://github.com/SB2318/UltimateHealth/issues/679), [#680](https://github.com/SB2318/UltimateHealth/issues/680)) | 📋 Planned |
+| 🛡️ **Code Quality** | Shared Zod validation schemas and TypeScript types across frontend/backend ([#658](https://github.com/SB2318/UltimateHealth/issues/658)) | 📋 Planned |
+| ✅ **Completed** | Android App on Play Store, AI chat assistant, podcast support, article management system, automated bot pipeline | ✅ Done |
+
+> **Note:** Roadmap priorities may evolve based on project requirements and community feedback. Check the [Issues](https://github.com/SB2318/UltimateHealth/issues) tab for the latest status.
 
 ## Getting Started
 
