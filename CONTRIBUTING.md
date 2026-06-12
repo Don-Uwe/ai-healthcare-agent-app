@@ -132,9 +132,8 @@ Yes. It is recommended to comment on the issue and wait for maintainer       ass
 
 - Which branch should I target for my Pull Request?
 
-main → Mobile app and core project contributions
-web → Web application contributions
-
+For mobile app and core project contributions, target the main branch.
+For web application contributions, target the web branch.
 Always verify the target branch before creating your PR.
 
 -  How do I know whether an issue belongs to the mobile app or web app?
