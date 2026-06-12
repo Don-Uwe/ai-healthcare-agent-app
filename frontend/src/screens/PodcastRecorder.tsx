@@ -66,7 +66,6 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
       const status = await AudioModule.requestRecordingPermissionsAsync();
       if (!status.granted) {
         Alert.alert('Permission to access microphone was denied');
-
       }
 
       const storageGranted = await requestStoragePermissions();
@@ -242,7 +241,11 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
       <YStack flex={1} bg="#0F172A" ai="center" jc="center" px="$4" space="$4">
         {/* Header Section */}
         <YStack ai="center" space="$2" mb="$4">
-          <Text color="#F1F5F9" fontSize={32} fontWeight="800" letterSpacing={1}>
+          <Text
+            color="#F1F5F9"
+            fontSize={32}
+            fontWeight="800"
+            letterSpacing={1}>
             Podcast Studio
           </Text>
           <Text color="#94A3B8" fontSize={15} fontWeight="500">
@@ -275,17 +278,27 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
         </YStack>
 
         {/* Timer Display */}
-        <YStack alignItems="center" bg="#1E293B" px="$6" py="$4" borderRadius={16} mb="$2">
+        <YStack
+          alignItems="center"
+          bg="#1E293B"
+          px="$6"
+          py="$4"
+          borderRadius={16}
+          mb="$2">
           <Text
             fontSize={50}
             color="#60A5FA"
             fontWeight="800"
             letterSpacing={4}
-            fontFamily={"monospace" as any}>
+            fontFamily={'monospace' as any}>
             {recordTime}
           </Text>
           <Text color="#94A3B8" fontSize={13} fontWeight="600" mt="$1">
-            {uiState === 'recording' ? 'RECORDING IN PROGRESS' : uiState === 'review' ? 'RECORDING COMPLETE' : 'READY TO RECORD'}
+            {uiState === 'recording'
+              ? 'RECORDING IN PROGRESS'
+              : uiState === 'review'
+                ? 'RECORDING COMPLETE'
+                : 'READY TO RECORD'}
           </Text>
         </YStack>
 
@@ -393,11 +406,25 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
         </XStack>
 
         {/* Article Title Display */}
-        <YStack ai="center" mt="$6" px="$4" py="$3" bg="#1E293B" borderRadius={12} maxWidth="90%">
+        <YStack
+          ai="center"
+          mt="$6"
+          px="$4"
+          py="$3"
+          bg="#1E293B"
+          borderRadius={12}
+          maxWidth="90%">
           <Text color="#64748B" fontSize={12} fontWeight="600" mb="$1">
             PODCAST TITLE
           </Text>
-          <Text color="#E2E8F0" fontSize={17} fontWeight="700" textAlign="center">
+          <Text
+            color="#E2E8F0"
+            fontSize={17}
+            fontWeight="700"
+            textAlign="center"
+            flexWrap="wrap"
+            flexShrink={1}
+            allowFontScaling>
             {title}
           </Text>
         </YStack>
