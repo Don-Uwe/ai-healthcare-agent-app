@@ -40,6 +40,7 @@ import {useLikeArticle} from '../hooks/useLikeArticle';
 import {useSaveArticle} from '../hooks/useSaveArticle';
 import {useLazyGetArticleContent} from '../hooks/useLazyGetArticleContent';
 import {useRepostArticle} from '../hooks/useArticleRepost';
+import { ImageFallback } from './ImageFallback';
 
 const ArticleCard = ({
   item,
@@ -303,16 +304,17 @@ const ArticleCard = ({
       }}>
       <View style={styles.cardContainer}>
         {/* Image Section */}
-        <Image
-          source={{
-            uri: item?.imageUtils[0]
-              ? item?.imageUtils[0].startsWith('http')
-                ? item?.imageUtils[0]
-                : `${GET_IMAGE}/${item?.imageUtils[0]}`
-              : undefined,
-          }}
-          style={styles.coverImage}
-        />
+        <ImageFallback
+  source={{
+    uri: item?.imageUtils[0]
+      ? item?.imageUtils[0].startsWith('http')
+        ? item?.imageUtils[0]
+        : `${GET_IMAGE}/${item?.imageUtils[0]}`
+      : undefined,
+  }}
+  fallbackSource={require('../assets/images/article_default.jpg')}
+  style={styles.coverImage}
+/>
 
         <View style={styles.contentContainer}>
           {/* Share Icon */}
