@@ -193,6 +193,24 @@ const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
               );
 
               break;
+              case 503:
+  safeSetMessages(previousMessages =>
+    GiftedChat.append(previousMessages, [
+      {
+        _id: Date.now(),
+        text: "⚠️ AI service is temporarily unavailable. Please try again later.",
+        createdAt: new Date(),
+        user: {
+          _id: 2,
+          avatar:
+            'https://static.vecteezy.com/system/resources/previews/026/309/247/non_2x/robot-chat-or-chat-bot-logo-modern-conversation-automatic-technology-logo.jpg',
+        },
+      },
+    ]),
+  );
+  break;
+              
+
             default:
               Alert.alert(
                 'Unknown Error',
