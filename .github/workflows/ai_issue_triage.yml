@@ -8,8 +8,8 @@ on:
   workflow_dispatch:
     inputs:
       issue_number:
-        description: 'Issue number to test triage on (leave blank for batch mode)'
-        required: false
+        description: 'Issue number to manually triage (required)'
+        required: true
         type: string
 
 jobs:
@@ -28,8 +28,8 @@ jobs:
 
       - name: Run AI Triage Script
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_API_KEYS: ${{ secrets.GEMINI_KEY_1 }},${{ secrets.GEMINI_KEY_2 }},${{ secrets.GEMINI_KEY_3 }},${{ secrets.GEMINI_KEY_4 }},${{ secrets.GEMINI_KEY_5 }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ISSUE_NUMBER: ${{ github.event.inputs.issue_number }}
+          ISSUE_NUMBER: ${{ github.event.issue.number || github.event.comment.issue_id || github.event.inputs.issue_number }}
         run: |
           python .github/scripts/ai_issue_triage.py

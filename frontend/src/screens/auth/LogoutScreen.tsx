@@ -18,6 +18,9 @@ import {LogoutScreenProp} from '@/src/type';
 import {useUserLogout} from '@/src/hooks/useUserLogout';
 import {useTheme} from 'tamagui';
 
+const DEFAULT_PROFILE_IMAGE =
+  'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500';
+
 const LogoutScreen = ({navigation, route}: LogoutScreenProp) => {
   const {profile_image, username} = route.params;
  // const {user_token} = useSelector((state: any) => state.user);
@@ -85,7 +88,7 @@ const LogoutScreen = ({navigation, route}: LogoutScreenProp) => {
                   ? profile_image.startsWith('https')
                     ? profile_image
                     : `${GET_STORAGE_DATA}/${profile_image}`
-                  : undefined,
+                  : DEFAULT_PROFILE_IMAGE,
               }}
             />
 
