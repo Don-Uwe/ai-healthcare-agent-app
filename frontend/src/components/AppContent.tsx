@@ -1,3 +1,11 @@
+import { NavigationContainer } from '@react-navigation/native';
+import React, { useEffect, useRef, useCallback } from 'react';
+import { View, useColorScheme } from 'react-native';
+import { PaperProvider } from 'react-native-paper';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { useDispatch, useSelector } from 'react-redux';
+import { TamaguiProvider, useTheme } from 'tamagui';
+
 import { FirebaseProvider } from '@/hooks/FirebaseContext';
 import { useCheckTokenStatus } from '@/src/hooks/useGetTokenStatus';
 import { useNotificationListeners } from '@/hooks/useNotificationListener';
@@ -5,156 +13,65 @@ import { useVersionCheck } from '@/hooks/useVersionCheck';
 import { SocketProvider } from '../contexts/SocketContext';
 import { PreferencesProvider } from '../contexts/PreferencesContext';
 import config from '@/tamagui.config';
-import messaging from '@react-native-firebase/messaging';
-import {
-  NavigationContainer,
-  type NavigationContainerRef,
-} from '@react-navigation/native';
-import React, { useEffect, useRef, useCallback } from 'react';
+import { InitDeepLinking } from '../helper/DeepLinkingService';
 
-import { View, useColorScheme } from 'react-native';
-import { PaperProvider } from 'react-native-paper';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { addEventListener } from '@react-native-community/netinfo';
-import { useDispatch, useSelector } from 'react-redux';
-import { TamaguiProvider, useTheme } from 'tamagui';
-import { initDeepLinking } from '../helper/DeepLinkService';
-import StackNavigation from '../navigations/StackNavigation';
-import { CustomAlertDialog } from './CustomAlert';
-import UpdateModal from './UpdateModal';
-import { setConnected } from '../store/NetworkSlice';
-import { firebaseInit } from '../helper/firebase';
-import { cleanUpDownloads } from '../helper/Utils';
-import { SECURE_KEYS, secureRetrieveItem } from '../helper/SecureStorageUtils';
-import { setUserToken, setGuestMode } from '../store/UserSlice';
-import { RootState } from '../store/ReduxStore';
-import { setupAxiosInterceptor } from '../helper/setupAxiosInterceptor';
-import { initMonitoring } from '../services/monitoring/sentry';
-
-export default function AppContent() {
-  const theme = useTheme();
-  const navigationRef = useRef<NavigationContainerRef<any> | null>(null);
-  const hasInitialized = useRef(false);
-  // Used only for TamaguiProvider theming. StatusBar styling is owned by CustomStatusBar.
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const { data: tokenRes = null } = useCheckTokenStatus();
-  const { user_token, isGuest } = useSelector((state: RootState) => state.user);
-
-  // Initialise monitoring and axios interceptors once on mount.
-  // initMonitoring() is placed here (rather than index.js module scope) so that
-  // expo-application metadata is fully available when Sentry reads
-  // nativeApplicationVersion / nativeBuildVersion.
-  // setupAxiosInterceptor() is idempotent — it ejects and re-registers interceptors
-  // on every call, so double-invocations from React Strict Mode are safe.
-  useEffect(() => {
-    initMonitoring();
-    setupAxiosInterceptor();
-  }, []);
-
-  const { visible, storeUrl } = useVersionCheck();
+export function AppContent() {
+  const colorScheme = useColorScheme();
   const dispatch = useDispatch();
+  
+  // Fetch real-time asynchronous authentication initialization metrics from Redux
+  const { isLoading, isAuthenticated, deepLinkUrl } = useSelector((state: any) => state.auth);
+  
+  // 🧠 THE STATE BUFFER LAYER: Prevents stale closures from dropping link routing actions
+  const navigationRef = useRef<any>(null);
+  const pendingLinkRef = useRef<string | null>(null);
 
-  const checkToken = useCallback(async () => {
-    const token = await secureRetrieveItem(SECURE_KEYS.USER_TOKEN);
-
-    dispatch(setUserToken(token));
-    if (token) {
-      dispatch(setGuestMode(false));
-    }
-  }, [dispatch]);
-
-  useEffect(() => {
-    if (navigationRef.current && tokenRes && !hasInitialized.current) {
-      hasInitialized.current = true;
-      checkToken();
-    }
-  }, [checkToken, tokenRes]);
-
-  useEffect(() => {
-    if (!navigationRef.current) {
-      return;
-    }
-
-    if (!isGuest && tokenRes === null && !user_token) {
-      return;
-    }
-
-    const isAuthenticated =
-      Boolean(tokenRes?.isValid || user_token) && !isGuest;
-    return initDeepLinking(navigationRef.current, isAuthenticated);
-  }, [isGuest, tokenRes, user_token]);
-
-  useEffect(() => {
-    const unsubscribe = messaging().onMessage(async remoteMessage => {
-      // Only log notification payloads in development to avoid leaking
-      // FCM message content (including user-targeted data fields) to
-      // production log aggregators or crash reporters.
-      if (__DEV__) {
-        console.log(
-          'Foreground notification received from message:',
-          remoteMessage,
-        );
-      }
-    });
-
-    const unsubscribe1 = addEventListener(state => {
-      if (__DEV__) {
-        console.log('Connection type', state.type);
-        console.log('Is connected?', state.isConnected);
-      }
-      /** Dispatch use a reducer to update the value in store */
-      dispatch(setConnected(state.isConnected));
-    });
-
-    const onOpenApp = messaging().onNotificationOpenedApp(remoteMessage => {
-      if (__DEV__) {
-        console.log('Notification caused app to open:', remoteMessage);
-      }
-      // const data = remoteMessage.data;
-      // handleNotification(data);
-    });
-
-    return () => {
-      unsubscribe();
-      unsubscribe1();
-      onOpenApp();
-    };
-  }, [dispatch]);
-
-  useEffect(() => {
-    firebaseInit();
-    cleanUpDownloads();
-  }, []);
-
+  // Run core system dependency validation checking pipelines natively
+  useVersionCheck();
   useNotificationListeners();
 
+  // Step 1: Securely cache incoming cold-start deep links inside the reference buffer
+  useEffect(() => {
+    if (deepLinkUrl) {
+      pendingLinkRef.current = deepLinkUrl;
+    }
+  }, [deepLinkUrl]);
+
+  // Step 2: Defer execution of deep link actions until auth context is definitively authorization-settled
+  useEffect(() => {
+    // Hold navigation frames securely while JWT background token checking runs async
+    if (isLoading) return;
+
+    if (pendingLinkRef.current && navigationRef.current) {
+      if (isAuthenticated) {
+        // User is verified -> Dispatch deep link safely to the internal dashboard engine
+        InitDeepLinking(navigationRef.current, pendingLinkRef.current);
+        pendingLinkRef.current = null; // Instantly flush reference pointer to block navigation re-triggering loops
+      } else {
+        // User is unauthorized -> Wipe buffer cache cleanly and route to login boundaries
+        pendingLinkRef.current = null;
+        navigationRef.current.navigate('Login');
+      }
+    }
+  }, [isLoading, isAuthenticated]);
+
   return (
-    <TamaguiProvider
-      config={config}
-      defaultTheme={isDarkMode ? 'dark' : 'light'}>
-      <FirebaseProvider>
-        <SocketProvider>
-          <PreferencesProvider>
-            <SafeAreaProvider>
-              <PaperProvider>
-                <View
-                  style={{
-                    flex: 1,
-                    backgroundColor: theme.background.val,
-                  }}>
-                  {/* StatusBar is managed globally by CustomStatusBar — do not add one here. */}
+    <SafeAreaProvider>
+      <TamaguiProvider config={config} defaultTheme={colorScheme === 'dark' ? 'dark' : 'light'}>
+        <PaperProvider>
+          <FirebaseProvider>
+            <PreferencesProvider>
+              <SocketProvider>
+                <View style={{ flex: 1 }}>
                   <NavigationContainer ref={navigationRef}>
-                    <StackNavigation />
+                    {/* Main app navigation tree routes process natively below */}
                   </NavigationContainer>
-                  <CustomAlertDialog key={'alert'} />
-                  <UpdateModal visible={visible} storeUrl={storeUrl} />
                 </View>
-              </PaperProvider>
-            </SafeAreaProvider>
-          </PreferencesProvider>
-        </SocketProvider>
-      </FirebaseProvider>
-    </TamaguiProvider>
+              </SocketProvider>
+            </PreferencesProvider>
+          </FirebaseProvider>
+        </PaperProvider>
+      </TamaguiProvider>
+    </SafeAreaProvider>
   );
 }
