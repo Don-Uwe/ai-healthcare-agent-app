@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {StyleSheet, Alert, AppState} from 'react-native';
+import {StyleSheet, Alert, AppState, AppStateStatus} from 'react-native';
 
 import {PodcastRecorderScreenProps} from '../type';
 import RNFS from 'react-native-fs';
@@ -38,8 +38,10 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
 
   const [amplitudes, setAmplitudes] = useState<number[]>([]);
 
-  const timerRef = useRef<any>(null);
+  const timerRef = useRef<number | null>(null);
   const recordStartTimeRef = useRef<number | null>(null);
+  
+  // Stores the latest native duration for use in AppState listener and other effects, preventing stale closures.
   const durationMillisRef = useRef<number>(0);
 
   useEffect(() => {
@@ -57,13 +59,14 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
   }, [recorderState?.durationMillis, recording]);
 
   useEffect(() => {
-    const subscription = AppState.addEventListener('change', (nextState: any) => {
+    const subscription = AppState.addEventListener('change', (nextState: AppStateStatus) => {
       if (nextState === 'active' && recording) {
         // Re-sync timer immediately on app foreground using actual tracked duration
         if (durationMillisRef.current > 0) {
           recordStartTimeRef.current = Date.now() - durationMillisRef.current;
           setRecordTime(formatTime(durationMillisRef.current));
         } else if (recordStartTimeRef.current) {
+          // Fallback to JS-based calculation if native duration hasn't been reported yet (e.g., very early in the recording session)
           const elapsed = Date.now() - recordStartTimeRef.current;
           setRecordTime(formatTime(elapsed));
         }
