@@ -140,11 +140,11 @@ def check_author_authorization(repo, pr_body, pr_author, github_token):
     if not pr_body:
         return False, "No PR description provided to link issues."
 
-    pattern = r'(?i)(?:fixes|resolves|closes|fixed|resolved|closed)\s+#(\d+)'
+    pattern = r'(?i)(?:fixes|resolves|closes|fixed|resolved|closed|issue|#)\s*#?(\d+)'
     issue_numbers = re.findall(pattern, pr_body)
 
     if not issue_numbers:
-        return False, "No linked issues found in the PR description using standard keywords (e.g., 'Fixes #123')."
+        return False, "No linked issues found in the PR description using standard keywords (e.g., 'Fixes #123', 'Issue #123')."
 
     for issue_num in issue_numbers:
         url = f"https://api.github.com/repos/{repo}/issues/{issue_num}"
