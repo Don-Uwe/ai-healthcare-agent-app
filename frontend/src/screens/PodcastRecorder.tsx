@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {StyleSheet, Alert} from 'react-native';
+import {StyleSheet, Alert, AppState} from 'react-native';
 
 import {PodcastRecorderScreenProps} from '../type';
 import RNFS from 'react-native-fs';
@@ -31,15 +31,46 @@ const PodcastRecorder = ({navigation, route}: PodcastRecorderScreenProps) => {
   const dispatch = useDispatch();
 
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
-  const recorderState = useAudioRecorderState(audioRecorder);
+  const recorderState = useAudioRecorderState(audioRecorder, 500);
   const [recordTime, setRecordTime] = useState('00:00:00');
   const {title, description, selectedGenres, imageUtils} = route.params;
   const [filePath, setFilePath] = useState<string | null>(null);
 
   const [amplitudes, setAmplitudes] = useState<number[]>([]);
 
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<any>(null);
   const recordStartTimeRef = useRef<number | null>(null);
+  const durationMillisRef = useRef<number>(0);
+
+  useEffect(() => {
+    if (recorderState?.durationMillis !== undefined) {
+      durationMillisRef.current = recorderState.durationMillis;
+    }
+  }, [recorderState?.durationMillis]);
+
+  useEffect(() => {
+    if (recording && recorderState?.durationMillis && recorderState.durationMillis > 0) {
+      // Keep recordStartTimeRef in sync with the actual duration
+      recordStartTimeRef.current = Date.now() - recorderState.durationMillis;
+      setRecordTime(formatTime(recorderState.durationMillis));
+    }
+  }, [recorderState?.durationMillis, recording]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextState: any) => {
+      if (nextState === 'active' && recording) {
+        // Re-sync timer immediately on app foreground using actual tracked duration
+        if (durationMillisRef.current > 0) {
+          recordStartTimeRef.current = Date.now() - durationMillisRef.current;
+          setRecordTime(formatTime(durationMillisRef.current));
+        } else if (recordStartTimeRef.current) {
+          const elapsed = Date.now() - recordStartTimeRef.current;
+          setRecordTime(formatTime(elapsed));
+        }
+      }
+    });
+    return () => subscription.remove();
+  }, [recording]);
 
   useFocusEffect(
     useCallback(() => {
