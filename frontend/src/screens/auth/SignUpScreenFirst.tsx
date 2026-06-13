@@ -1,7 +1,6 @@
 import React, {useState} from 'react';
 import {ScrollView, YStack, XStack, Text, Input, Button, Image, useTheme} from 'tamagui';
 import Icon from '@expo/vector-icons/MaterialIcons';
-import {SafeAreaView} from 'react-native-safe-area-context';
 import { Alert } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {Dropdown} from 'react-native-element-dropdown';
