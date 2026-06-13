@@ -16,7 +16,7 @@ import Snackbar from 'react-native-snackbar';
 import {setUserHandle} from '../store/UserSlice';
 import {useGetProfile} from '../hooks/useGetProfile';
 import {useUpdateViewCount} from '../hooks/useUpdateViewCount';
-import {useGetReadHistory} from '../hooks/useGetReadHistory';
+import {useGetReadHistory, ReadHistoryArticle} from '../hooks/useGetReadHistory';
 import { NoArticleState } from '../components/EmptyStates';
 
 const ProfileScreen = ({navigation}: ProfileScreenProps) => {
@@ -34,7 +34,6 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
     useUpdateViewCount(articleId ?? 0);
 
   const {data: user, refetch, isLoading} = useGetProfile();
-  const {data: readHistory, isLoading: isHistoryLoading} = useGetReadHistory();
 
   if (user) {
     dispatch(setUserHandle(user.user_handle));
@@ -208,6 +207,36 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
 
 
   const [activeTab, setActiveTab] = useState<'Insight' | 'Reposts' | 'Saved' | 'History'>('Insight');
+  const [historyPage, setHistoryPage] = useState<number>(1);
+  const [historyArticles, setHistoryArticles] = useState<ReadHistoryArticle[]>([]);
+  const [historyTotalPages, setHistoryTotalPages] = useState<number>(1);
+
+  const {
+    data: readHistory,
+    isLoading: isHistoryLoading,
+    isFetching: isHistoryFetching,
+    isError: isHistoryError,
+    refetch: refetchHistory,
+  } = useGetReadHistory(historyPage);
+
+  React.useEffect(() => {
+    if (readHistory) {
+      if (historyPage === 1) {
+        setHistoryArticles(readHistory.articles ?? []);
+      } else {
+        setHistoryArticles(prev => [...prev, ...(readHistory.articles ?? [])]);
+      }
+      if (readHistory.totalPages) {
+        setHistoryTotalPages(readHistory.totalPages);
+      }
+    }
+  }, [readHistory, historyPage]);
+
+  const handleLoadMoreHistory = () => {
+    if (!isHistoryFetching && historyPage < historyTotalPages) {
+      setHistoryPage(prev => prev + 1);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -289,10 +318,10 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
             onPress={() => setActiveTab('History')}
             accessibilityRole="tab"
             accessibilityState={{ selected: activeTab === 'History' }}
-            accessibilityLabel={`History tab, ${readHistory?.articles.length || 0} recently read articles`}
+            accessibilityLabel={`History tab, ${historyArticles.length || 0} recently read articles`}
           >
             <Text style={[styles.tabButtonText, { color: activeTab === 'History' ? tabColors.activeText : tabColors.inactiveText }]}>
-              History ({readHistory?.articles.length || 0})
+              History ({historyArticles.length || 0})
             </Text>
           </TouchableOpacity>
         </View>
@@ -346,9 +375,21 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
           {activeTab === 'History' && (
             isHistoryLoading ? (
               <Loader />
+            ) : isHistoryError ? (
+              <View style={styles.historyErrorContainer}>
+                <Text style={[styles.historyErrorText, {color: theme.color10?.val}]}>
+                  Couldn't load your read history. Please try again.
+                </Text>
+                <TouchableOpacity
+                  style={[styles.historyRetryButton, {borderColor: PRIMARY_COLOR}]}
+                  onPress={() => refetchHistory()}
+                >
+                  <Text style={{color: PRIMARY_COLOR, fontWeight: '600'}}>Retry</Text>
+                </TouchableOpacity>
+              </View>
             ) : (
               <FlatList
-                data={readHistory?.articles ?? []}
+                data={historyArticles}
                 renderItem={renderItem}
                 scrollEnabled={false}
                 showsVerticalScrollIndicator={false}
@@ -359,6 +400,23 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
                 keyExtractor={item => item?._id}
                 ListEmptyComponent={
                   <NoArticleState/>
+                }
+                ListFooterComponent={
+                  historyPage < historyTotalPages ? (
+                    <TouchableOpacity
+                      style={[styles.loadMoreButton, {borderColor: PRIMARY_COLOR}]}
+                      onPress={handleLoadMoreHistory}
+                      disabled={isHistoryFetching}
+                    >
+                      {isHistoryFetching ? (
+                        <Loader />
+                      ) : (
+                        <Text style={{color: PRIMARY_COLOR, fontWeight: '600'}}>
+                          Load More
+                        </Text>
+                      )}
+                    </TouchableOpacity>
+                  ) : null
                 }
               />
             )
@@ -418,5 +476,30 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  loadMoreButton: {
+    marginTop: 12,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  historyErrorContainer: {
+    padding: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  historyErrorText: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  historyRetryButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    borderWidth: 1,
+    borderRadius: 8,
   },
 });
