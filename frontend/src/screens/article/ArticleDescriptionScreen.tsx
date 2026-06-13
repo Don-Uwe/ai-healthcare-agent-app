@@ -15,6 +15,9 @@ import {useSelector} from 'react-redux';
 import {ArticleDescriptionProp, Category} from '../../type';
 import Ionicon from '@expo/vector-icons/Ionicons';
 import {PRIMARY_COLOR} from '../../helper/Theme';
+import { useRef, useState, useEffect, useCallback } from "react";
+import { Animated } from "react-native";
+import { saveProgress, getProgress } from "../../services/ReadingProgressService";
 import {
   ImageLibraryOptions,
   ImagePickerResponse,
@@ -29,7 +32,41 @@ import { ttsLanguageList } from '@/src/helper/Utils';
 const ARTICLE_TITLE_MAX_LENGTH = 150;
 const ARTICLE_DESCRIPTION_MAX_LENGTH = 500;
 const COUNTER_WARNING_THRESHOLD = 0.9;
-
+const scrollY = useRef(new Animated.Value(0)).current;
+const [contentHeight, setContentHeight] = useState(0);
+const [viewHeight, setViewHeight] = useState(0);const progress = scrollY.interpolate({
+  inputRange: [0, contentHeight - viewHeight],
+  outputRange: [0, 1],
+  extrapolate: "clamp",
+});const onScrollEnd = useCallback(async () => {
+  const currentY = scrollY.__getValue();
+  const pct = contentHeight > 0 ? Math.min(currentY / (contentHeight - viewHeight), 1) : 0;
+  await saveProgress(article._id, Math.round(pct * 100));
+}, [article?._id, contentHeight, viewHeight]);useEffect(() => {
+  if (article) {
+    getProgress(article._id).then((p) => {
+      if (p && p.scrollPosition > 0.05) {
+        // Optionally show a "Resume from XX%" toast
+        // Scroll to the saved position
+      }
+    });
+  }
+}, [article]);<Animated.View
+  style={{
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 3,
+    backgroundColor: "#4F46E5",
+    opacity: progress.interpolate({
+      inputRange: [0, 0.02],
+      outputRange: [0, 1],
+    }),
+    transform: [{ scaleX: progress }],
+    transformOrigin: "left",
+  }}
+/>
 const ArticleDescriptionScreen = ({
   navigation,
   route,
