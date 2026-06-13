@@ -47,6 +47,7 @@ import {useLikeArticle} from '../hooks/useLikeArticle';
 import {useSaveArticle} from '../hooks/useSaveArticle';
 import {useLazyGetArticleContent} from '../hooks/useLazyGetArticleContent';
 import {useRepostArticle} from '../hooks/useArticleRepost';
+import {useDoubleTap} from '../hooks/useDoubleTap';
 
 const ArticleCard = ({
   item,
@@ -197,24 +198,11 @@ const ArticleCard = ({
     }
   };
 
-  const lastTap = useRef(0);
-  const doubleTapTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleImagePressRaw = useDoubleTap(handleCardPress, () => handleLikeAction(true), 300);
 
   const handleImagePress = (e: any) => {
     e?.stopPropagation?.();
-    const now = Date.now();
-    const DOUBLE_TAP_DELAY = 300;
-    
-    if (now - lastTap.current < DOUBLE_TAP_DELAY) {
-      if (doubleTapTimeout.current) clearTimeout(doubleTapTimeout.current);
-      lastTap.current = 0;
-      handleLikeAction(true);
-    } else {
-      lastTap.current = now;
-      doubleTapTimeout.current = setTimeout(() => {
-        handleCardPress();
-      }, DOUBLE_TAP_DELAY);
-    }
+    handleImagePressRaw();
   };
 
   const handleShare = async () => {
