@@ -16,6 +16,7 @@ import Snackbar from 'react-native-snackbar';
 import {setUserHandle} from '../store/UserSlice';
 import {useGetProfile} from '../hooks/useGetProfile';
 import {useUpdateViewCount} from '../hooks/useUpdateViewCount';
+import {useGetReadHistory} from '../hooks/useGetReadHistory';
 import { NoArticleState } from '../components/EmptyStates';
 
 const ProfileScreen = ({navigation}: ProfileScreenProps) => {
@@ -33,6 +34,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
     useUpdateViewCount(articleId ?? 0);
 
   const {data: user, refetch, isLoading} = useGetProfile();
+  const {data: readHistory, isLoading: isHistoryLoading} = useGetReadHistory();
 
   if (user) {
     dispatch(setUserHandle(user.user_handle));
@@ -205,7 +207,7 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
   };
 
 
-  const [activeTab, setActiveTab] = useState<'Insight' | 'Reposts' | 'Saved'>('Insight');
+  const [activeTab, setActiveTab] = useState<'Insight' | 'Reposts' | 'Saved' | 'History'>('Insight');
 
   if (isLoading) {
     return (
@@ -282,6 +284,17 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
               Saved ({user?.savedArticles.length || 0})
             </Text>
           </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.tabButton, activeTab === 'History' && { borderBottomColor: tabColors.activeText }]}
+            onPress={() => setActiveTab('History')}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: activeTab === 'History' }}
+            accessibilityLabel={`History tab, ${readHistory?.articles.length || 0} recently read articles`}
+          >
+            <Text style={[styles.tabButtonText, { color: activeTab === 'History' ? tabColors.activeText : tabColors.inactiveText }]}>
+              History ({readHistory?.articles.length || 0})
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* Tab Content */}
@@ -329,6 +342,26 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
                  <NoArticleState/>
               }
             />
+          )}
+          {activeTab === 'History' && (
+            isHistoryLoading ? (
+              <Loader />
+            ) : (
+              <FlatList
+                data={readHistory?.articles ?? []}
+                renderItem={renderItem}
+                scrollEnabled={false}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={[
+                  styles.flatListContentContainer,
+                  {paddingBottom: bottomBarHeight + 15},
+                ]}
+                keyExtractor={item => item?._id}
+                ListEmptyComponent={
+                  <NoArticleState/>
+                }
+              />
+            )
           )}
         </View>
       </ScrollView>
