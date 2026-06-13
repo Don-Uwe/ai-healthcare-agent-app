@@ -114,13 +114,13 @@ const ArticleCard = ({
     }
 
     if (isDoubleTap) {
+      if (isLiked) return;
+
       heartScale.value = withSequence(
         withSpring(1.2, { damping: 10, stiffness: 100 }),
         withTiming(1, { duration: 100 }),
         withDelay(500, withSpring(0, { damping: 12, stiffness: 100 }))
       );
-
-      if (isLiked) return;
     }
 
     if (isConnected) {
