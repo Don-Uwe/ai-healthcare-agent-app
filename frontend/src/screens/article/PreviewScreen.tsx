@@ -29,6 +29,7 @@ import {useSubmitSuggestedChanges} from '@/src/hooks/useSubmitSuggestedChanges';
 import {useUploadArticleToPocketbase} from '@/src/hooks/useUploadArticlePocketbase';
 import {useUploadImprovementToPocketbase} from '@/src/hooks/useUploadImprovementToPocketbase';
 import {useRenderSuggestion} from '@/src/hooks/useRenderSuggestion';
+import {useDeletePocketbaseRecord} from '@/src/hooks/useDeletePocketbaseRecord';
 
 export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
   const {
@@ -73,6 +74,11 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
 
   const {mutate: renderAISuggestion, isPending: renderSuggestionPending} =
     useRenderSuggestion();
+
+  // Compensating-delete hook: removes an orphaned PocketBase record when
+  // the downstream main-DB write (step 2) fails after PocketBase write
+  // (step 1) succeeded.
+  const {mutate: deletePocketbaseRecord} = useDeletePocketbaseRecord();
 
   const {uploadImage, loading} = useUploadImage();
 
@@ -174,7 +180,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
                     imageUtils: finalImageUtils,
                   },
                   {
-                    onSuccess: data => {
+                    onSuccess: _result => {
                       Snackbar.show({
                         text: 'Changes submitted for review',
                         duration: Snackbar.LENGTH_SHORT,
@@ -184,6 +190,19 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
                     },
                     onError: error => {
                       console.log('Article post Error', error);
+
+                      // Step 2 failed — issue a compensating DELETE to remove
+                      // the PocketBase record created in step 1 so it does not
+                      // become a permanent orphan.
+                      deletePocketbaseRecord(data.recordId, {
+                        onError: cleanupErr => {
+                          console.warn(
+                            'PocketBase orphan cleanup failed for recordId:',
+                            data.recordId,
+                            cleanupErr,
+                          );
+                        },
+                      });
 
                       Alert.alert('Error', 'Failed to upload your post');
                     },
@@ -197,6 +216,8 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
               console.log('Article post Error', error);
               // console.log(error);
 
+              // Step 1 itself failed — no PocketBase record was created,
+              // so no compensating delete is needed here.
               Alert.alert('Failed to upload your post');
             },
           },
@@ -232,7 +253,7 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
                       description: description,
                     },
                     {
-                      onSuccess: data => {
+                      onSuccess: _result => {
                         // User will not get notified, until the article published
 
                         Snackbar.show({
@@ -245,6 +266,18 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
                       onError: error => {
                         console.log('Article post Error', error);
                         // console.log(error);
+
+                        // Step 2 failed — compensating DELETE for the PocketBase
+                        // record created in step 1.
+                        deletePocketbaseRecord(data.recordId, {
+                          onError: cleanupErr => {
+                            console.warn(
+                              'PocketBase orphan cleanup failed for recordId:',
+                              data.recordId,
+                              cleanupErr,
+                            );
+                          },
+                        });
 
                         Alert.alert('Failed to upload your post');
                       },
@@ -285,6 +318,19 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
 
                       onError: error => {
                         console.log('Article post Error', error);
+
+                        // Step 2 failed — compensating DELETE for the PocketBase
+                        // article record created in step 1.
+                        deletePocketbaseRecord(data.recordId, {
+                          onError: cleanupErr => {
+                            console.warn(
+                              'PocketBase orphan cleanup failed for recordId:',
+                              data.recordId,
+                              cleanupErr,
+                            );
+                          },
+                        });
+
                         Snackbar.show({
                           text: 'Failed to upload your post',
                           duration: Snackbar.LENGTH_SHORT,
@@ -302,6 +348,9 @@ export default function PreviewScreen({navigation, route}: PreviewScreenProp) {
             },
             onError: error => {
               console.log('Article post Error pb', error.message);
+
+              // Step 1 itself failed — no PocketBase record was created,
+              // so no compensating delete is needed here.
               Alert.alert('Failed to upload your post');
             },
           },

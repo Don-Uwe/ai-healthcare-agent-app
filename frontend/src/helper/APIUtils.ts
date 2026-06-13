@@ -78,6 +78,7 @@ const GET_IMPROVEMENT_BY_ID = `${PROD_URL}/get-improvement`;
 const SUBMIT_IMPROVEMENT = `${PROD_URL}/article/submit-improvement`;
 const UPLOAD_ARTICLE_TO_POCKETBASE = `${PROD_URL}/upload-pocketbase/article`;
 const UPLOAD_IMPROVEMENT_TO_POCKETBASE = `${PROD_URL}/upload-pocketbase/improvement`;
+const DELETE_POCKETBASE_RECORD = `${PROD_URL}/upload-pocketbase/record`;
 
 /** Content Checker */
 const RENDER_SUGGESTION = `${CONTENT_CHECKER_PROD}/readability/check`;
@@ -170,6 +171,7 @@ export {
   UPLOAD_ARTICLE_TO_POCKETBASE,
   
   UPLOAD_IMPROVEMENT_TO_POCKETBASE,
+  DELETE_POCKETBASE_RECORD,
   RENDER_SUGGESTION,
   // PODCAST
   GET_ALL_PODCASTS,
