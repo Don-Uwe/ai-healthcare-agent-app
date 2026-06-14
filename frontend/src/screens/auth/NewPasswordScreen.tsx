@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Button,
@@ -24,6 +23,7 @@ import Icon from '@expo/vector-icons/Ionicons';
 import { AxiosError } from 'axios';
 import Loader from '../../components/Loader';
 import { NewPasswordScreenProp } from '../../type';
+import {Alert, ActivityIndicator} from 'react-native';
 
 const newPasswordSchema = z.object({
   password: z.string()
@@ -73,39 +73,28 @@ export default function NewPasswordScreen({
   const handleSecureNewEntryClickEvent = () => {
     setSecureNewTextEntry(!secureNewTextEntry);
   };
+  const[isSubmitting, setIsSubmitting] = useState(false);
 
   const handlePasswordSubmit = (data: NewPasswordFormData) => {
 
     changePassword(
-      {
-        email,
-        newPassword: password,
-      },
+      {email, newPassword: password},
       {
         onSuccess: () => {
+          setIsSubmitting(false);
           Alert.alert('Password reset successfully');
           navigation.navigate('LoginScreen', {});
         },
-
         onError: (error: AxiosError) => {
+          setIsSubmitting(false);
           if (error.response) {
             switch (error.response.status) {
-              case 400:
-                Alert.alert('Error', 'User not found');
-                break;
-
-              case 402:
-                Alert.alert(
-                  'Error',
-                  'New password should not be same as old password',
-                );
-                break;
-
-              default:
-                Alert.alert('Error', 'Something went wrong. Please try again.');
+              case 400: Alert.alert('Error', 'User not found'); break;
+              case 402: Alert.alert('Error', 'New password should not be same as old'); break;
+              default: Alert.alert('Error', 'Something went wrong.');
             }
           } else {
-            Alert.alert('Error', 'Something went wrong. Please try again.');
+            Alert.alert('Error', 'Something went wrong.');
           }
         },
       },
@@ -429,24 +418,43 @@ export default function NewPasswordScreen({
 
           {/* Return Link */}
           <Button
-            chromeless
-            marginTop="$5"
-            onPress={() => navigation.navigate('LoginScreen', {})}
-            padding="$2"
-            height="auto">
-            <XStack ai="center" gap="$2">
-              <Icon
-                color="$gray400"
-                name="arrow-back-circle-outline"
-                size={24}
-              />
-              <Text color="$blue10" fontWeight="600" fontSize={15}>
-                Back to Login
+            backgroundColor={
+              password && confirmPassword &&
+              password === confirmPassword && passwordVerify
+                ? '$blue10' : '$gray7'
+            }
+            w="100%"
+            h={56}
+            borderRadius={12}
+            disabled={
+              !password || !confirmPassword ||
+              password !== confirmPassword ||
+              !passwordVerify || isSubmitting || isPending
+            }
+            onPress={handlePasswordSubmit}
+            opacity={isSubmitting || isPending ? 0.6 : 1}>
+            {isSubmitting || isPending ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text fontSize={17} fontWeight="600" color="white">
+                Reset Password
               </Text>
-            </XStack>
+            )}
           </Button>
         </Card>
       </YStack>
     </YStack>
   );
 }
+function setErrorMessage(arg0: null) {
+  throw new Error('Function not implemented.');
+}
+
+function setPassword(pass: string) {
+  throw new Error('Function not implemented.');
+}
+
+function setPasswordVerify(arg0: boolean) {
+  throw new Error('Function not implemented.');
+}
+

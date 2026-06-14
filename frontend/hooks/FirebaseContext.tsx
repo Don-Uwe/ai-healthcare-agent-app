@@ -3,6 +3,7 @@ import { Platform } from 'react-native';
 import firebase from '@react-native-firebase/app';
 import messaging from '@react-native-firebase/messaging'; 
 import Constants from 'expo-constants';
+import { logger } from '../src/services/monitoring/logger';
 
 const extra = Constants.expoConfig?.extra ?? {};
 
@@ -59,8 +60,8 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
         );
 
         if (missingFields.length > 0) {
-          if (__DEV__) {
-            console.warn(
+          
+            logger.warn(
               `Firebase configuration is incomplete. Missing fields: ${missingFields.join(
                 ', '
               )}. Skipping Firebase initialization.`
@@ -75,13 +76,13 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
           firebase.app(); // if already initialized, use that one
         }
         const token = await messaging().getToken();
-        if (__DEV__) {
-          console.log('Firebase Token:', token);
+        if 
+          logger.log('Firebase Token:', token);
         }
         setFcmToken(token); // Store the token in state
       } catch (error) {
-        if (__DEV__) {
-          console.error('Error getting token:', error);
+        
+          logger.error('Error getting token:', error);
         }
       }
     };

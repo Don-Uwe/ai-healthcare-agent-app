@@ -559,14 +559,16 @@ const CommentScreen = ({
                 />
 
                {/* 1. Updated Input Component with Strict 500 Character Boundary */}
-                <TextInput
-                  {...textInputProps}
-                  style={styles.textInput}
-                  placeholder="Add a comment..."
-                  placeholderTextColor="#9CA3AF"
-                  multiline
-                  maxLength={MAX_COMMENT_LENGTH} // 👈 Forces the input boundary cap
-                />
+          <TextInput
+           {...textInputProps}
+            id="article-comment-input"    // 👈 Added unique id attribute
+             name="commentContent"         // 👈 Added explicit name attribute
+             style={styles.textInput}
+               placeholder="Add a comment..."
+               placeholderTextColor="#9CA3AF"
+                         multiline
+                    maxLength={MAX_COMMENT_LENGTH} // 👈 Forces the input boundary cap
+                    />
 
                 {/* 2. Brand New Layout Row for Counter and Submit Button */}
                 <XStack justifyContent="space-between" alignItems="center" mt="$2" px="$2" width="100%">

@@ -84,10 +84,23 @@ def fetch_recent_issues(repo, token, limit=50):
         })
     return context
 
+def fetch_recent_commits(repo, token, limit=15):
+    url = f"https://api.github.com/repos/{repo}/commits?per_page={limit}"
+    commits = make_request(url, token=token)
+    if not commits: return []
+    context = []
+    for commit in commits:
+        info = commit.get("commit", {})
+        context.append({
+            "sha": commit.get("sha")[:7],
+            "message": info.get("message", "").split("\n")[0],
+            "date": info.get("author", {}).get("date")
+        })
+    return context
+
 MAX_BATCH_PER_RUN = 5
 
-def generate_triage_decision(title, body, recent_issues_context, api_key):
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
+def generate_triage_decision(title, body, recent_issues_context, recent_commits_context, api_keys):
     headers = {"Content-Type": "application/json"}
     
     prompt = f"""
@@ -107,12 +120,15 @@ If the issue is: Extremely broad, Product strategy discussion, Long-term roadmap
 
 ## Technical Classification
 Classify as backend if it involves: APIs, Database, Authentication, Authorization, Server-side validation, Backend integrations, Content processing services, Analytics pipelines.
-Classify as frontend if it involves: React Native UI, UX improvements, Components, Navigation, State management, Client-side validation, Frontend performance, Accessibility, Styling.
+Classify as frontend-web if it involves: React, Web UI, Browser compatibility, Web accessibility, Web routing, standard DOM elements.
+Classify as frontend-mobile if it involves: React Native, Mobile UI, Android/iOS specific features, App navigation, Mobile gestures.
 
 ## Difficulty Level Assignment
-Level 1: Small fixes (UI alignment, Typo fixes, Simple validations, Minor component updates).
-Level 2: Medium complexity (New screens, Feature enhancements, State management updates, API integrations).
-Level 3: Advanced (Architecture changes, Complex analytics, Performance optimizations, Large feature additions).
+Use the following labels for difficulty:
+- level:beginner: Small fixes (UI alignment, Typo fixes, Simple validations, Minor component updates).
+- level:intermediate: Medium complexity (New screens, Feature enhancements, State management updates, API integrations).
+- level:advanced: Advanced (Architecture changes, Complex analytics, Performance optimizations, Large feature additions).
+- level:critical: Critical production issues, severe bugs, or security patches.
 
 ## Maintainer Escalation
 You must set `escalate_to_maintainer = true` when:
@@ -124,8 +140,11 @@ You must set `escalate_to_maintainer = true` when:
 * Large feature proposal
 * Level 3 issue
 
-# Recent Issues for Duplicate Check
+# Recent Issues for Duplicate/Completion Check
 {json.dumps(recent_issues_context, indent=2)}
+
+# Recent Commits for Context
+{json.dumps(recent_commits_context, indent=2)}
 
 # New Issue
 Title: {title}
@@ -139,8 +158,8 @@ Output a single JSON object. DO NOT wrap in Markdown code blocks. Output exactly
   "duplicate_number": integer or null,
   "is_in_scope": boolean,
   "is_doctor_related": boolean,
-  "classification": "backend" | "frontend" | "broad" | null,
-  "difficulty": "level1" | "level2" | "level3" | null,
+  "classification": "backend" | "frontend-web" | "frontend-mobile" | "broad" | null,
+  "difficulty": "level:beginner" | "level:intermediate" | "level:advanced" | "level:critical" | null,
   "escalate_to_maintainer": boolean,
   "reasoning": "A short, polite explanation for your decision."
 }}
@@ -151,31 +170,53 @@ Output a single JSON object. DO NOT wrap in Markdown code blocks. Output exactly
     }
     
     import re
-    req = urllib.request.Request(url, method="POST", headers=headers, data=json.dumps(data).encode("utf-8"))
-    try:
-        with urllib.request.urlopen(req, timeout=60) as response:
-            result = json.loads(response.read().decode("utf-8"))
-            text_response = result["candidates"][0]["content"]["parts"][0]["text"].strip()
-            
-            try:
-                if text_response.startswith("```json"): text_response = text_response[7:]
-                if text_response.endswith("```"): text_response = text_response[:-3]
-                return json.loads(text_response.strip())
-            except json.JSONDecodeError:
-                match = re.search(r'\{.*\}', text_response, re.DOTALL)
-                if match:
-                    return json.loads(match.group(0))
+    import time
+    
+    max_retries = max(3, len(api_keys) + 1)
+    # With multiple keys, rotate fast with short wait — only wait if same key is reused
+    base_wait = 5 if len(api_keys) > 1 else 50
+    print(f"[INFO] Starting Gemini call. Keys available: {len(api_keys)}, max_retries: {max_retries}", flush=True)
+    
+    for attempt in range(max_retries):
+        current_key = api_keys[attempt % len(api_keys)]
+        key_index = attempt % len(api_keys) + 1
+        print(f"[INFO] Attempt {attempt+1}/{max_retries} using key #{key_index}", flush=True)
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={current_key}"
+        req = urllib.request.Request(url, method="POST", headers=headers, data=json.dumps(data).encode("utf-8"))
+        try:
+            with urllib.request.urlopen(req, timeout=60) as response:
+                result = json.loads(response.read().decode("utf-8"))
+                text_response = result["candidates"][0]["content"]["parts"][0]["text"].strip()
+                
+                try:
+                    if text_response.startswith("```json"): text_response = text_response[7:]
+                    if text_response.endswith("```"): text_response = text_response[:-3]
+                    return json.loads(text_response.strip())
+                except json.JSONDecodeError:
+                    match = re.search(r'\{.*\}', text_response, re.DOTALL)
+                    if match:
+                        return json.loads(match.group(0))
+                    else:
+                        print(f"Failed to extract JSON from: {text_response}")
+                        return {"internal_api_error": "JSON extraction failed"}
+        except urllib.error.HTTPError as e:
+            err_msg = e.read().decode('utf-8')
+            print(f"Gemini API HTTP Error {e.code}: {err_msg}", flush=True)
+            if e.code in [403, 429, 500, 502, 503, 504]:
+                if attempt < max_retries - 1:
+                    wait_time = base_wait * (2 ** attempt)
+                    print(f"[WARN] Gemini API Error ({e.code}). Retrying in {wait_time}s (attempt {attempt+1}/{max_retries})...", flush=True)
+                    time.sleep(wait_time)
                 else:
-                    print(f"Failed to extract JSON from: {text_response}")
-                    return {"internal_api_error": "JSON extraction failed"}
-    except urllib.error.HTTPError as e:
-        err_msg = e.read().decode('utf-8')
-        print(f"Gemini API HTTP Error {e.code}: {err_msg}", flush=True)
-        if e.code == 429: raise e # Bubble up 429
-        return {"internal_api_error": f"HTTP {e.code}: {err_msg[:100]}"}
-    except Exception as e:
-        print(f"Gemini API failed: {e}", flush=True)
-        return {"internal_api_error": f"Error: {str(e)}"}
+                    print(f"[ERROR] Gemini API quota exceeded after {max_retries} retries across {len(api_keys)} keys.", flush=True)
+                    return {"internal_api_error": f"Gemini API quota exhausted after {max_retries} retries using {len(api_keys)} keys."}
+            else:
+                return {"internal_api_error": f"HTTP {e.code}: {err_msg[:100]}"}
+        except Exception as e:
+            print(f"Gemini API failed: {e}", flush=True)
+            return {"internal_api_error": f"Error: {str(e)}"}
+            
+    return {"internal_api_error": "Gemini API request failed after retries"}
 
 def add_labels(repo, issue_number, labels, token):
     url = f"https://api.github.com/repos/{repo}/issues/{issue_number}/labels"
@@ -206,7 +247,7 @@ def assign_user(repo, issue_number, username, token):
     url = f"https://api.github.com/repos/{repo}/issues/{issue_number}/assignees"
     make_request(url, method="POST", data={"assignees": [username]}, token=token)
 
-def handle_issue_opened(repo, issue_number, token, gemini_api_key):
+def handle_issue_opened(repo, issue_number, token, gemini_api_keys):
     print(f"Triaging new issue #{issue_number}...")
     issue = fetch_issue(repo, issue_number, token)
     if not issue: return "error", "Failed to fetch issue data"
@@ -214,10 +255,12 @@ def handle_issue_opened(repo, issue_number, token, gemini_api_key):
     title = issue.get("title", "")
     body = issue.get("body", "")
     
-    recent_issues = fetch_recent_issues(repo, token)
+    recent_issues = fetch_recent_issues(repo, token, limit=30)
     recent_issues = [i for i in recent_issues if str(i["number"]) != str(issue_number)]
     
-    decision = generate_triage_decision(title, body, recent_issues, gemini_api_key)
+    recent_commits = fetch_recent_commits(repo, token, limit=15)
+    
+    decision = generate_triage_decision(title, body, recent_issues, recent_commits, gemini_api_keys)
     if not decision:
         print("Failed to get triage decision.", flush=True)
         return "error", "Failed to get triage decision from Gemini"
@@ -273,32 +316,46 @@ def handle_issue_opened(repo, issue_number, token, gemini_api_key):
         labels_to_add.extend(["backend", "level:backend"])
         if difficulty: labels_to_add.append(difficulty)
         add_labels(repo, issue_number, labels_to_add, token)
-        msg = "This issue requires backend investigation and has been routed to @SB2318 for review and prioritization."
+        msg = f"This issue has been triaged as a **backend** task ({difficulty or 'Unclassified Difficulty'}).\n\n> **Expected Effect & Scope:** {decision.get('reasoning')}\n\nThis requires backend investigation and has been routed to @SB2318 for review and prioritization."
         post_comment(repo, issue_number, msg, token)
         assign_user(repo, issue_number, "SB2318", token)
         return "backend", "Assigned to @SB2318"
         
-    elif classification == "frontend":
+    elif classification in ["frontend-web", "frontend-mobile"]:
         labels_to_add.append("frontend")
+        if classification == "frontend-web":
+            labels_to_add.append("web")
+        elif classification == "frontend-mobile":
+            labels_to_add.append("mobile")
+            
         if difficulty: labels_to_add.append(difficulty)
         labels_to_add.append("gssoc")
         add_labels(repo, issue_number, labels_to_add, token)
         
         if escalate:
-            msg = f"This issue has been triaged as a **frontend** task, but requires maintainer review. cc @SB2318\n\n> **Reasoning:** {decision.get('reasoning')}"
+            msg = f"This issue has been triaged as a **frontend** task ({difficulty or 'Unclassified Difficulty'}), but requires maintainer review. cc @SB2318\n\n> **Expected Effect & Scope:** {decision.get('reasoning')}"
             post_comment(repo, issue_number, msg, token)
             return "frontend", "Frontend (escalated)"
         else:
-            msg = f"This issue has been triaged as a **frontend** task.\n\nIt is now open for community contribution! To request assignment, please comment below.\n\n*Eligibility Reminder: You must have zero active assigned issues to be assigned.*"
-            post_comment(repo, issue_number, msg, token)
-            return "frontend", "Frontend (open)"
+            author = issue.get("user", {}).get("login")
+            has_active = check_active_assignments(repo, author, token)
+            
+            if not has_active:
+                assign_user(repo, issue_number, author, token)
+                msg = f"This issue has been triaged as a **frontend** task ({difficulty or 'Unclassified Difficulty'}).\n\n> **Expected Effect & Scope:** {decision.get('reasoning')}\n\nHi @{author}! Since you opened this issue and have no other active assignments, I have automatically assigned it to you. Happy coding!"
+                post_comment(repo, issue_number, msg, token)
+                return "frontend", f"Frontend (auto-assigned to @{author})"
+            else:
+                msg = f"This issue has been triaged as a **frontend** task ({difficulty or 'Unclassified Difficulty'}).\n\n> **Expected Effect & Scope:** {decision.get('reasoning')}\n\nIt is now open for community contribution!\n\nHi @{author}, I couldn't assign this to you automatically because you currently have another active assignment. Please complete your current task first!\n\n---\n### 🤖 Assignment Guidelines\nTo get assigned to this issue, simply leave a comment requesting assignment.\nThe AI bot will automatically assign you if you meet the following eligibility criteria:\n1. You do not currently have any other active assigned issues in this repository.\n2. If you were previously assigned an issue, you must have submitted a Pull Request for it before requesting a new one."
+                post_comment(repo, issue_number, msg, token)
+                return "frontend", "Frontend (open)"
         
     else:
         # Broad or uncategorized
         if "maintainer-review-required" not in labels_to_add:
             labels_to_add.append("maintainer-review-required")
         add_labels(repo, issue_number, labels_to_add, token)
-        msg = "This issue covers a broad scope or requires architectural decisions. Escalating to @SB2318 for maintainer review."
+        msg = f"This issue covers a broad scope or requires architectural decisions.\n\n> **Analysis:** {decision.get('reasoning')}\n\nEscalating to @SB2318 for maintainer review."
         post_comment(repo, issue_number, msg, token)
         return "broad", "Broad/Uncategorized (escalated)"
 
@@ -348,89 +405,40 @@ def handle_issue_comment(repo, issue_number, commenter, token):
     return "assigned", f"Assigned to {commenter}"
 
 def main():
-    gemini_api_key = os.environ.get("GEMINI_API_KEY")
+    gemini_keys_str = os.environ.get("GEMINI_API_KEYS", "")
+    gemini_api_keys = [k.strip() for k in gemini_keys_str.split(",") if k.strip()]
+    if not gemini_api_keys:
+        # Fallback to single key if available
+        single_key = os.environ.get("GEMINI_API_KEY", "").strip()
+        if single_key:
+            gemini_api_keys = [single_key]
+            
     github_token = os.environ.get("GITHUB_TOKEN")
     repo = os.environ.get("GITHUB_REPOSITORY")
     event_name = os.environ.get("GITHUB_EVENT_NAME")
     
-    if not all([gemini_api_key, github_token, repo]):
+    if not gemini_api_keys or not github_token or not repo:
         print("Missing required environment variables.")
         return
         
     event_path = os.environ.get("GITHUB_EVENT_PATH")
-    if not event_path or not os.path.exists(event_path) or event_name == "workflow_dispatch":
-        test_issue = os.environ.get("ISSUE_NUMBER", "").strip()
-        if test_issue:
-            print(f"Running manual test triage on #{test_issue}...")
-            status, detail = handle_issue_opened(repo, test_issue, github_token, gemini_api_key)
-            _write_step_summary([
-                "## 🤖 AI Issue Triage Report",
-                f"**Issue:** #{test_issue}",
-                f"**Status:** {status}",
-                f"**Detail:** {detail}"
-            ])
-        else:
-            print("Running batch triage on untriaged open issues...")
-            issues = fetch_all_open_issues(repo, github_token)
-            if not issues:
-                print("No open issues found or failed to fetch.")
-                _write_step_summary(["## 🤖 AI Issue Triage Report", "No open issues found."])
-                return
-            
-            skip_labels = {
-                "gssoc", "outside-ultimatehealth", "duplicate", "out-of-scope",
-                "needs-information", "backend", "maintainer-review-required"
-            }
-            
-            to_process = []
-            for issue in issues:
-                if "pull_request" in issue: continue
-                labels = [l.get("name", "").lower() for l in issue.get("labels", [])]
-                if not any(lbl in skip_labels for lbl in labels):
-                    to_process.append(issue)
-            
-            if not to_process:
-                print("All open issues are already triaged or skipped.")
-                _write_step_summary(["## 🤖 AI Issue Triage Report", "All open issues are already triaged or skipped."])
-                return
-                
-            audit_log = []
-            total = len(to_process)
-            batch = to_process[:MAX_BATCH_PER_RUN]
-            print(f"Found {total} untriaged issues. Processing {len(batch)} this run (limit={MAX_BATCH_PER_RUN}).", flush=True)
-            gemini_quota_exhausted = False
-            for issue in batch:
-                num = issue["number"]
-                print(f"\n--- Batch Triaging Issue #{num} ---", flush=True)
-                try:
-                    status, detail = handle_issue_opened(repo, num, github_token, gemini_api_key)
-                    audit_log.append((num, status, detail))
-                except urllib.error.HTTPError as e:
-                    if e.code == 429:
-                        print("[WARN] Gemini 429 hit. Waiting 60s before one final retry...", flush=True)
-                        time.sleep(60)
-                        try:
-                            status, detail = handle_issue_opened(repo, num, github_token, gemini_api_key)
-                            audit_log.append((num, status, detail))
-                        except urllib.error.HTTPError as e2:
-                            audit_log.append((num, "error", f"Gemini Quota Exhausted (429) after retry"))
-                            print("Gemini rate limit exceeded after retry. Aborting batch.", flush=True)
-                            gemini_quota_exhausted = True
-                            break
-                    else:
-                        audit_log.append((num, "error", str(e)))
-                except Exception as e:
-                    audit_log.append((num, "error", str(e)))
-                    traceback.print_exc()
-                
-                time.sleep(5) # short delay to avoid per-minute rate limiting
-                
-            print(f"\nBatch triage complete. Processed {len(audit_log)} issues.")
-            lines = ["## 🤖 AI Issue Triage Report", "", "| Issue | Status | Detail |", "|---|---|---|"]
-            for num, status, detail in audit_log:
-                lines.append(f"| #{num} | {status} | {detail} |")
-            _write_step_summary(lines)
+    
+    # Manual run via workflow_dispatch — triage a specific issue
+    if event_name == "workflow_dispatch" or not event_path or not os.path.exists(event_path):
+        issue_number = os.environ.get("ISSUE_NUMBER", "").strip()
+        if not issue_number:
+            print("workflow_dispatch: No issue_number provided.", flush=True)
+            return
+        print(f"Manual triage triggered for issue #{issue_number}... (Keys loaded: {len(gemini_api_keys)})", flush=True)
+        status, detail = handle_issue_opened(repo, issue_number, github_token, gemini_api_keys)
+        _write_step_summary([
+            "## 🤖 AI Issue Triage Report (Manual)",
+            f"**Issue:** #{issue_number}",
+            f"**Status:** {status}",
+            f"**Detail:** {detail}"
+        ])
         return
+
 
     with open(event_path, "r") as f:
         event_data = json.load(f)
@@ -439,7 +447,7 @@ def main():
     
     if event_name == "issues" and action == "opened":
         issue_number = event_data["issue"]["number"]
-        status, detail = handle_issue_opened(repo, issue_number, github_token, gemini_api_key)
+        status, detail = handle_issue_opened(repo, issue_number, github_token, gemini_api_keys)
         _write_step_summary([
             "## 🤖 AI Issue Triage Report",
             f"**Issue:** #{issue_number}",
