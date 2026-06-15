@@ -10,8 +10,9 @@ import Share from 'react-native-share';
 import {GET_STORAGE_DATA} from '../helper/APIUtils';
 import {GlassStyles, ProfessionalColors, BorderRadius} from '../styles/GlassStyles';
 import {useSelector} from 'react-redux';
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation, useFocusEffect} from '@react-navigation/native';
 import { PODCAST_CARD } from '@/constants/podcastCard';
+import {getPlaybackPosition, PlaybackPosition} from '../helper/PlaybackManager';
 
 interface PodcastProps {
   id: string;
@@ -49,6 +50,21 @@ const PodcastCard = ({
   const sheetRef = useRef<BottomSheetModal>(null);
   const {isGuest} = useSelector((state: any) => state.user);
   const navigation = useNavigation<any>();
+  const [progress, setProgress] = React.useState<PlaybackPosition | null>(null);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      let isMounted = true;
+      getPlaybackPosition(id).then(pos => {
+        if (isMounted) {
+          setProgress(pos);
+        }
+      });
+      return () => {
+        isMounted = false;
+      };
+    }, [id])
+  );
 
   const handleOpenSheet = () => {
     if (isGuest) {
@@ -99,6 +115,11 @@ const PodcastCard = ({
               <Ionicons name="play" size={24} color={ProfessionalColors.white} />
             </View>
           </View>
+          {progress && progress.duration > 0 && (
+            <View style={styles.progressBarContainer}>
+              <View style={[styles.progressBar, { width: `${(progress.position / progress.duration) * 100}%` }]} />
+            </View>
+          )}
         </View>
 
         <YStack padding="$3" gap="$2" flex={1}>
@@ -223,6 +244,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10,
+  },
+  progressBarContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  progressBar: {
+    height: '100%',
+    backgroundColor: ProfessionalColors.primary,
   },
 });
 

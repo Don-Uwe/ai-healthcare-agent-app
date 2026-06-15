@@ -418,15 +418,28 @@ export const downloadAudio = async (_podcast: PodcastData) => {
   }
 };
 
+export const getPodcastDirectory = () => {
+  const baseDirectory =
+    Platform.OS === 'android'
+      ? RNFS.ExternalDirectoryPath
+      : RNFS.DocumentDirectoryPath;
+  return `${baseDirectory}/UltimateHealth/Podcasts`;
+};
+
+export const getArticleDirectory = () => {
+  const baseDirectory =
+    Platform.OS === 'android'
+      ? RNFS.ExternalDirectoryPath
+      : RNFS.DocumentDirectoryPath;
+  return `${baseDirectory}/UltimateHealth/Articles`;
+};
+
 const downloadFile = async (key: string, title: string) => {
   const safeTitle = title.substring(0, 15).replace(/[^a-zA-Z0-9]/g, '_');
   const fileName = `${safeTitle}_${Date.now()}.mp3`;
   const downloadUrl = `${GET_STORAGE_DATA}/${key}`;
 
-  const customDirectory =
-    Platform.OS === 'android'
-      ? RNFS.ExternalDirectoryPath
-      : RNFS.DocumentDirectoryPath;
+  const customDirectory = getPodcastDirectory();
 
   const filePath = `${customDirectory}/${fileName}`;
 

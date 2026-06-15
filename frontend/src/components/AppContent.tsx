@@ -1,4 +1,20 @@
 import { NavigationContainer } from '@react-navigation/native';
+import { FirebaseProvider } from '@/hooks/FirebaseContext';
+import { useCheckTokenStatus } from '@/src/hooks/useGetTokenStatus';
+import { useNotificationListeners } from '@/hooks/useNotificationListener';
+import { useVersionCheck } from '@/hooks/useVersionCheck';
+import { SocketProvider } from '../contexts/SocketContext';
+import { PreferencesProvider } from '../contexts/PreferencesContext';
+import config from '@/tamagui.config';
+import * as Notifications from 'expo-notifications';
+import {registerAndSyncPushToken} from '../helper/PushNotificationService';
+import {initDeepLinking, navigateDeepLink, resolveNotificationTarget} from '../helper/DeepLinkService';
+import messaging from '@react-native-firebase/messaging';
+import {
+  NavigationContainer,
+  type NavigationContainerRef,
+} from '@react-navigation/native';
+
 import React, { useEffect, useRef, useCallback } from 'react';
 import { View, useColorScheme } from 'react-native';
 import { PaperProvider } from 'react-native-paper';
@@ -52,8 +68,79 @@ export function AppContent() {
         pendingLinkRef.current = null;
         navigationRef.current.navigate('Login');
       }
+
     }
   }, [isLoading, isAuthenticated]);
+
+    });
+
+    const unsubscribe1 = addEventListener(state => {
+      if (__DEV__) {
+        console.log('Connection type', state.type);
+        console.log('Is connected?', state.isConnected);
+      }
+      /** Dispatch use a reducer to update the value in store */
+      dispatch(setConnected(state.isConnected));
+    });
+
+    const onOpenApp = messaging().onNotificationOpenedApp(remoteMessage => {
+      if (__DEV__) {
+        console.log('Notification caused app to open:', remoteMessage);
+      }
+      // const data = remoteMessage.data;
+      // handleNotification(data);
+    });
+
+    return () => {
+      unsubscribe();
+      unsubscribe1();
+      onOpenApp();
+    };
+  }, [dispatch]);
+
+  useEffect(() => {
+    registerAndSyncPushToken(user_token);
+  }, [user_token]);
+
+  useEffect(() => {
+    const handleNotificationResponse = async (
+      response: Notifications.NotificationResponse,
+    ) => {
+      const data = response.notification.request.content.data;
+      const target = resolveNotificationTarget(data);
+
+      if (!target || !navigationRef.current) {
+        return;
+      }
+
+      const isAuthenticated =
+        Boolean(tokenRes?.isValid || user_token) && !isGuest;
+      navigateDeepLink(navigationRef.current, target, isAuthenticated);
+    };
+
+    const responseListener =
+      Notifications.addNotificationResponseReceivedListener(
+        handleNotificationResponse,
+      );
+
+    Notifications.getLastNotificationResponseAsync().then(response => {
+      if (response) {
+        handleNotificationResponse(response);
+      }
+    });
+
+    return () => {
+      responseListener.remove();
+    };
+  }, [user_token, tokenRes, isGuest]);
+
+  useEffect(() => {
+    firebaseInit();
+    cleanUpDownloads();
+  }, []);
+
+  useNotificationListeners();
+
 
   return (
     <SafeAreaProvider>
