@@ -6,8 +6,9 @@ import {
   TouchableOpacity,
   useColorScheme,
 } from 'react-native';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { NavigationProp, useNavigation, useFocusEffect } from '@react-navigation/native';
 import { RootStackParamList } from '../type';
+import { getPlaybackPosition, PlaybackPosition } from '../helper/PlaybackManager';
 
 interface PodcastEpisode {
   id: string;
@@ -33,6 +34,30 @@ const StructuredPodcastCard: React.FC<StructuredPodcastCardProps> = ({
   const episodeBg = isDark ? '#253525' : '#FFFFFF';
 
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const [progresses, setProgresses] = React.useState<Record<string, PlaybackPosition>>({});
+
+  useFocusEffect(
+    React.useCallback(() => {
+      let isMounted = true;
+      const fetchProgresses = async () => {
+        if (!relatedEpisodes) return;
+        const results: Record<string, PlaybackPosition> = {};
+        for (const ep of relatedEpisodes) {
+          const pos = await getPlaybackPosition(ep.id);
+          if (pos) {
+            results[ep.id] = pos;
+          }
+        }
+        if (isMounted) {
+          setProgresses(results);
+        }
+      };
+      fetchProgresses();
+      return () => {
+        isMounted = false;
+      };
+    }, [relatedEpisodes])
+  );
 
   if (!relatedEpisodes || relatedEpisodes.length === 0) return null;
 
@@ -60,6 +85,11 @@ const StructuredPodcastCard: React.FC<StructuredPodcastCardProps> = ({
               {episode.description}
             </Text>
             <Text style={[styles.episodeMeta, { color: accentColor }]}>🕐 {episode.durationMinutes} min · {episode.topic}</Text>
+            {progresses[episode.id] && progresses[episode.id].duration > 0 && (
+              <View style={styles.progressBarContainer}>
+                <View style={[styles.progressBar, { width: `${(progresses[episode.id].position / progresses[episode.id].duration) * 100}%`, backgroundColor: accentColor }]} />
+              </View>
+            )}
           </View>
         </TouchableOpacity>
       ))}
@@ -113,6 +143,18 @@ const styles = StyleSheet.create({
   episodeMeta: {
     fontSize: 11,
     fontWeight: '500',
+  },
+  progressBarContainer: {
+    height: 3,
+    backgroundColor: 'rgba(150, 150, 150, 0.2)',
+    borderRadius: 2,
+    marginTop: 8,
+    width: '100%',
+    overflow: 'hidden',
+  },
+  progressBar: {
+    height: '100%',
+    borderRadius: 2,
   },
 });
 

@@ -339,7 +339,7 @@ ${body}
 // General purpose podcast app, no need to encrypted download data here,
 // We will ensure that, there will be no copyrighted content, or we can't give access to download
 // copyrighted content, as per ultimatehealth system
-export const requestStoragePermissions = async () => {
+export const requestReadStoragePermissions = async () => {
   if (Platform.OS !== 'android') return true;
 
   if ((Platform.Version as number) < 33) {
@@ -418,15 +418,28 @@ export const downloadAudio = async (_podcast: PodcastData) => {
   }
 };
 
+export const getPodcastDirectory = () => {
+  const baseDirectory =
+    Platform.OS === 'android'
+      ? RNFS.ExternalDirectoryPath
+      : RNFS.DocumentDirectoryPath;
+  return `${baseDirectory}/UltimateHealth/Podcasts`;
+};
+
+export const getArticleDirectory = () => {
+  const baseDirectory =
+    Platform.OS === 'android'
+      ? RNFS.ExternalDirectoryPath
+      : RNFS.DocumentDirectoryPath;
+  return `${baseDirectory}/UltimateHealth/Articles`;
+};
+
 const downloadFile = async (key: string, title: string) => {
   const safeTitle = title.substring(0, 15).replace(/[^a-zA-Z0-9]/g, '_');
   const fileName = `${safeTitle}_${Date.now()}.mp3`;
   const downloadUrl = `${GET_STORAGE_DATA}/${key}`;
 
-  const customDirectory =
-    Platform.OS === 'android'
-      ? RNFS.ExternalDirectoryPath
-      : RNFS.DocumentDirectoryPath;
+  const customDirectory = getPodcastDirectory();
 
   const filePath = `${customDirectory}/${fileName}`;
 

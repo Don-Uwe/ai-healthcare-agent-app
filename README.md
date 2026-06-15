@@ -99,25 +99,6 @@
 
 </div>
 
----
-
-## Table of Contents
-
-- [Maintainer Notice](#-maintainer-notice)
-- [About the Project](#-about-the-project)
-- [Features](#-features)
-- [Tech Stack](#-tech-stack)
-- [Latest Releases](#-latest-releases)
-- [Getting Started](#-getting-started)
-- [Project Structure](#-project-structure)
-- [Development Workflow](#-development-workflow)
-- [Build & Deployment](#-build--deployment)
-- [Services & Dependencies](#-services--api-dependencies)
-- [Automation & Bot System](#-automation--bot-system)
-- [Contributing](#-contributing)
-- [Programs](#-programs-participated-in)
-- [Blogs & Resources](#-blogs--resources)
-- [Contributors](#-our-contributors)
 
 ---
 
@@ -134,6 +115,31 @@ This repository is currently receiving a very large number of forks, issues, and
 | Self-service issue assignment | **Instant** — just comment to claim |
 | Final human review by @SB2318 | **24-72 hours** depending on queue depth |
 
+## Table of Contents
+ 
+- [🌟 UltimateHealth (HealthGuide)](#-ultimatehealth-healthguide)
+- [📢 Maintainer Notice](#-maintainer-notice)
+- [📖 About the Project](#-about-the-project)
+- [✨ Features](#-features)
+- [🛠️ Tech Stack](#%EF%B8%8F-tech-stack)
+- [📊 Code Quality](#code-quality)
+- [🚀 Latest Releases](#-latest-releases)
+- [🗺️ Project Roadmap](#️-project-roadmap)
+- [⚙️ Getting Started](#%EF%B8%8F-getting-started)
+- [🔧 Environment Setup](#%EF%B8%8F-environment-setup)
+- [🚀 Installation](#-installation)
+- [📁 Project Structure](#-project-structure)
+- [🔁 Development Workflow](#-development-workflow)
+- [🏗️ Build & Deployment](#%EF%B8%8F-build--deployment)
+- [🔌 Services & API Dependencies](#-services--api-dependencies)
+- [🤖 Automation & Bot System](#-automation--bot-system)
+- [🔗 Submodule Repositories](#submodule-repositories)
+- [🤝 Contribution Guidelines](#-contribution-guidelines)
+- [🚀 Programs Participated In](#-programs-participated-in)
+- [📚 Blogs & Resources](#-blogs--resources)
+- [❤️ Our Contributors](#-our-contributors)
+
+## 📖 Overview
 Our AI bot suite handles the initial pipeline automatically. See [Automation & Bot System](#-automation--bot-system) for a full breakdown.
 
 ---
@@ -256,6 +262,22 @@ Our AI bot suite handles the initial pipeline automatically. See [Automation & B
 </table>
 
 ---
+## 🗺️ Project Roadmap
+
+The following table outlines planned improvements based on active issues and community feedback. Priorities may evolve as the project grows.
+
+| Area | Planned Improvements | Status |
+|------|----------------------|--------|
+| 📱 **Mobile UI** | Full dark mode support with Tamagui ([#713](https://github.com/SB2318/UltimateHealth/issues/713)), consolidated loading components ([#676](https://github.com/SB2318/UltimateHealth/issues/676)), improved ProfileHeader ([#677](https://github.com/SB2318/UltimateHealth/issues/677)), general UI polish ([#678](https://github.com/SB2318/UltimateHealth/issues/678)) | 🔜 In Progress |
+| 🔐 **Guest / Auth Experience** | Read-only unauthenticated mode before login ([#681](https://github.com/SB2318/UltimateHealth/issues/681)) | 🔜 In Progress |
+| 🌐 **Translation & i18n** | Multi-language translation module for frontend and backend ([#644](https://github.com/SB2318/UltimateHealth/issues/644)) | 📋 Planned |
+| 🤖 **AI & Content Intelligence** | Trending/popular article ranking algorithm ([#550](https://github.com/SB2318/UltimateHealth/issues/550)), community tag suggestion with moderation ([#670](https://github.com/SB2318/UltimateHealth/issues/670)) | 📋 Planned |
+| 🧪 **Testing** | Setup Jest + React Native Testing Library ([#672](https://github.com/SB2318/UltimateHealth/issues/672)), unit tests for key Redux slices ([#673](https://github.com/SB2318/UltimateHealth/issues/673)) | 📋 Planned |
+| ⚙️ **CI/CD & DevOps** | Enhanced GitHub Actions workflows and automated contributor updates ([#679](https://github.com/SB2318/UltimateHealth/issues/679), [#680](https://github.com/SB2318/UltimateHealth/issues/680)) | 📋 Planned |
+| 🛡️ **Code Quality** | Shared Zod validation schemas and TypeScript types across frontend/backend ([#658](https://github.com/SB2318/UltimateHealth/issues/658)) | 📋 Planned |
+| ✅ **Completed** | Android App on Play Store, AI chat assistant, podcast support, article management system, automated bot pipeline | ✅ Done |
+
+> **Note:** Roadmap priorities may evolve based on project requirements and community feedback. Check the [Issues](https://github.com/SB2318/UltimateHealth/issues) tab for the latest status.
 
 ## Getting Started
 
@@ -413,24 +435,126 @@ Builds are also triggered automatically via GitHub Actions on pushes to `main`.
 
 ## Services & API Dependencies
 
-| Service | URL | Purpose |
-|---|---|---|
-| REST API | [uhsocial.in/docs](https://uhsocial.in/docs) | Backend API (Node.js + MongoDB) |
-| Content Intelligence | [uhsocial.in/content-intel/docs](https://uhsocial.in/content-intel/docs) | Plagiarism and grammar checks (Python) |
-| Web Frontend | [uhsocial.in/frontend/v2](https://uhsocial.in/frontend/v2) | React web app (web branch) |
-| Android App | [Play Store](https://play.google.com/store/apps/details?id=com.anonymous.UltimateHealth) | Published Android app |
+| Service | URL | Purpose | Repository |
+|---|---|---|---|
+| REST API | [uhsocial.in/docs](https://uhsocial.in/docs) | Backend API (Node.js + MongoDB) | [ultimatehealth-backend](https://github.com/SB2318/ultimatehealth-backend) |
+| Content Intelligence | [uhsocial.in/content-intel/docs](https://uhsocial.in/content-intel/docs) | Plagiarism and grammar checks (Python) | [VeriWise-Content-Check](https://github.com/SB2318/VeriWise-Content-Check) |
+| Web Frontend | [uhsocial.in/frontend/v2](https://uhsocial.in/frontend/v2) | React web app (web branch) | [UltimateHealth](https://github.com/SB2318/UltimateHealth) |
+| Android App | [Play Store](https://play.google.com/store/apps/details?id=com.anonymous.UltimateHealth) | Published Android app | [UltimateHealth](https://github.com/SB2318/UltimateHealth) |
 
 ### Submodule Repositories
 
-| Repository | Purpose |
-|---|---|
-| [ultimatehealth-backend](https://github.com/SB2318/ultimatehealth-backend) | Node.js + MongoDB backend |
-| [ultimatehealth-admin](https://github.com/SB2318/ultimatehealth-admin-app) | Admin panel app |
-| [VeriWise-Content-Check](https://github.com/SB2318/VeriWise-Content-Check) | Content integrity checker |
+| Service | Repository |
+|----------|------------|
+| Backend | [ultimatehealth-backend](https://github.com/SB2318/ultimatehealth-backend) |
+| Admin Panel | [ultimatehealth-admin](https://github.com/SB2318/ultimatehealth-admin-app) |
+| Content Checker | [VeriWise-Content-Check](https://github.com/SB2318/VeriWise-Content-Check) |
 
 For local development, update your `.env` to point to either the live APIs or locally running services.
 
 ---
+## 🛠️ Troubleshooting
+
+### 1. Android SDK Path Not Found
+   Error: 
+   ```bash
+ANDROID_HOME is not set or SDK not found
+```
+Fix:
+```bash
+# Add to ~/.bashrc or ~/.zshrc
+export ANDROID_HOME=$HOME/Android/Sdk
+export PATH=$PATH:$ANDROID_HOME/emulator
+export PATH=$PATH:$ANDROID_HOME/tools
+export PATH=$PATH:$ANDROID_HOME/platform-tools
+
+# Then reload
+source ~/.bashrc
+```
+### 2. Expo Go Version Mismatch
+Error: 
+```bash
+SDK version mismatch — project uses SDK X but Expo Go supports SDK Y
+```
+**Fix:**
+
+- Update Expo Go on your device to the latest version from Play Store / App Store
+- Or use a Development Build instead of Expo Go:
+```bash
+  npx expo start --dev-client
+```
+### 3. Metro Bundler Port Conflict
+   Error: 
+   ```bash
+Port 8081 is already in use
+```
+Fix:
+```bash
+# Kill the process using port 8081
+npx kill-port 8081
+
+# Or start Metro on a different port
+npx expo start --port 8082
+```
+### 4. iOS Build Failing Without Apple Developer Account
+   Error: 
+```bash
+No signing certificate or provisioning profile found
+```
+**Fix:**
+
+- iOS builds require a paid Apple Developer Account ($99/year)
+- For local testing without an account, use the iOS Simulator on macOS:
+```bash
+npx expo start --simulator
+```
+For production iOS builds, configure credentials via EAS:
+```bash
+eas credentials
+```
+### 5. yarn install Failing / Dependency Conflicts
+   Error: 
+```bash
+Cannot find module or peer dependency conflict
+```
+Fix:
+```bash
+# Clear cache and reinstall
+rm -rf node_modules
+yarn cache clean
+yarn install
+```
+### 6. npx expo prebuild Errors
+   Error: 
+```bash
+Native project already exists
+```
+Fix:
+```bash
+# Use --clean flag to reset native project
+npx expo prebuild --clean
+```
+### 7. Node.js Version Incompatibility
+   Error: 
+```bash
+Unsupported engine — expected Node >= 18.x
+```
+Fix:
+  Use nvm (Node Version Manager) to switch versions easily:
+```bash
+# Install nvm
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+
+# Install and use correct Node version
+nvm install 18
+nvm use 18
+```
+Or use fnm (Fast Node Manager) as a lighter alternative:
+```bash
+fnm use 18
+```
+
+  
 
 ## Automation & Bot System
 
@@ -739,7 +863,43 @@ We welcome contributions from everyone — developers, designers, writers, and t
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/PranavAgarkar07"><img src="https://avatars.githubusercontent.com/u/90404176?v=4" width="100px;" alt=""/><br/><sub><b>Pranav Agarkar</b></sub></a></td>
-  </tr>
+      <td align="center"><a href="https://github.com/Sha-lini3"><img src="https://avatars.githubusercontent.com/u/184716203?v=4" width="120px;" alt=""/><br/><sub><b>Shalini Yadav</b></sub></a></td>
+     <td align="center"><a href="https://github.com/Kinara2020"><img src="https://avatars.githubusercontent.com/u/199802893?v=4" width="120px;" alt=""/><br/><sub><b>KINARA PATEL</b></sub></a></td>
+     <td align="center"><a href="https://github.com/SwaraMishra07"><img src="https://avatars.githubusercontent.com/u/197755595?v=4" width="120px;" alt=""/><br/><sub><b>SwaraMishra07</b></sub></a></td>
+     <td align="center"><a href="https://github.com/Srejoye"><img src="https://avatars.githubusercontent.com/u/177326090?v=4" width="120px;" alt=""/><br/><sub><b>Srejoye Saha</b></sub></a></td>
+     <td align="center"><a href="https://github.com/Priyanshu1-62"><img src="https://avatars.githubusercontent.com/u/150027236?v=4" width="120px;" alt=""/><br/><sub><b>Priyanshu Bariar</b></sub></a></td>
+ </tr>
+
+   <tr>
+    <td align="center"><a href="https://github.com/Yogender-verma"><img src="https://avatars.githubusercontent.com/u/232599506?v=4" width="120px;" alt=""/><br/><sub><b>Yogender Verma</b></sub></a></td>
+       <td align="center"><a href="https://github.com/jyoti-5906"><img src="https://avatars.githubusercontent.com/u/205121361?v=4" width="120px;" alt=""/><br/><sub><b>Jyoti</b></sub></a></td>
+     <td align="center"><a href="https://github.com/Jay-Jay-Tee"><img src="https://avatars.githubusercontent.com/u/48431463?v=4" width="120px;" alt=""/><br/><sub><b>Joshua Jacob Thomas</b></sub></a></td>
+     <td align="center"><a href="https://github.com/vedant7007"><img src="https://avatars.githubusercontent.com/u/170861579?v=4" width="120px;" alt=""/><br/><sub><b>Vedant</b></sub></a></td>
+     <td align="center"><a href="https://github.com/riya-dumbare"><img src="https://avatars.githubusercontent.com/u/223732363?v=4" width="120px;" alt=""/><br/><sub><b>Riya Dumbare</b></sub></a></td>
+     <td align="center"><a href="https://github.com/minhajparveenh2008"><img src="https://avatars.githubusercontent.com/u/252563726?v=4" width="120px;" alt=""/><br/><sub><b>Minhaj Parveen.H</b></sub></a></td>
+ </tr>
+
+   <tr>
+    <td align="center"><a href="https://github.com/anushkasrvstv"><img src="https://avatars.githubusercontent.com/u/172965285?v=4" width="120px;" alt=""/><br/><sub><b>anushkasrvstv</b></sub></a></td>
+       <td align="center"><a href="https://github.com/manishworkss"><img src="https://avatars.githubusercontent.com/u/187859194?v=4" width="120px;" alt=""/><br/><sub><b>Manish Kumar</b></sub></a></td>
+     <td align="center"><a href="https://github.com/codecrafted1"><img src="https://avatars.githubusercontent.com/u/238506609?v=4" width="120px;" alt=""/><br/><sub><b>Khushi Ambastha</b></sub></a></td>
+     <td align="center"><a href="https://github.com/DeepeshKafalatiya"><img src="https://avatars.githubusercontent.com/u/218188439?v=4" width="120px;" alt=""/><br/><sub><b>Dipesh</b></sub></a></td>
+     <td align="center"><a href="https://github.com/prernaajaypatil-oss"><img src="https://avatars.githubusercontent.com/u/266280912?v=4" width="120px;" alt=""/><br/><sub><b>prernaajaypatil-oss</b></sub></a></td>
+     <td align="center"><a href="https://github.com/Dhandapanikeerthana"><img src="https://avatars.githubusercontent.com/u/181437739?v=4" width="120px;" alt=""/><br/><sub><b>Keerthana</b></sub></a></td>
+ </tr>
+
+   <tr>
+    <td align="center"><a href="https://github.com/Ashley-Shine"><img src="https://avatars.githubusercontent.com/u/197347819?v=4" width="120px;" alt=""/><br/><sub><b>Ashley-Shine</b></sub></a></td>
+       <td align="center"><a href="https://github.com/PeswikaBavagni-30"><img src="https://avatars.githubusercontent.com/u/229588032?v=4" width="120px;" alt=""/><br/><sub><b>PeswikaBavagni-30</b></sub></a></td>
+     <td align="center"><a href="https://github.com/Nikkiraj4"><img src="https://avatars.githubusercontent.com/u/188448243?v=4" width="120px;" alt=""/><br/><sub><b>Nikkiraj4</b></sub></a></td>
+     <td align="center"><a href="https://github.com/bhavyasree-22"><img src="https://avatars.githubusercontent.com/u/179308784?v=4" width="120px;" alt=""/><br/><sub><b>Bhavya sree</b></sub></a></td>
+     <td align="center"><a href="https://github.com/vaishnavi003-svg"><img src="https://avatars.githubusercontent.com/u/226036491?v=4" width="120px;" alt=""/><br/><sub><b>vaishnavi003-svg</b></sub></a></td>
+     <td align="center"><a href="https://github.com/bethesky01"><img src="https://avatars.githubusercontent.com/u/213299962?v=4" width="120px;" alt=""/><br/><sub><b>Prerna singh</b></sub></a></td>
+ </tr>
+
+   <tr>
+    <td align="center"><a href="https://github.com/Nareshkumawat-star"><img src="https://avatars.githubusercontent.com/u/207768679?v=4" width="120px;" alt=""/><br/><sub><b>Nareshkumawat-star</b></sub></a></td>
+   </tr>
 </table>
 <!-- CONTRIBUTORS-TABLE-END -->
 

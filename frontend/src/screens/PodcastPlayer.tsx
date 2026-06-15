@@ -48,11 +48,7 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
       : require('../../assets/sounds/funny-cartoon-sound-397415.mp3'),
   );
 
-  const formatPlaybackSpeed = (playbackSpeed: number) =>
-    Number.isInteger(playbackSpeed)
-      ? `${playbackSpeed}x`
-      : `${playbackSpeed}x`;
-
+  const formatPlaybackSpeed = (playbackSpeed: number) => `${playbackSpeed}x`;
   const formatSecTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
@@ -79,7 +75,7 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
     if (!player) return;
     // If the track has fully finished, restart from the beginning.
     // Otherwise resume from the current paused position.
-    if (duration > 0 && !isNaN(duration) && position >= duration - 0.5){
+    if (duration > 0 && !isNaN(duration) && position >= duration - 0.5) {
       await player.seekTo(0);
       setPosition(0);
     }
@@ -91,7 +87,6 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
   const handlePause = async () => {
     console.log('Pause called');
     if (!player) return;
-
     player.pause();
     setUiState('paused');
     setIsPlaying(false);
@@ -156,7 +151,6 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
     }
   };
 
-
   const handlePostSubmit = async () => {
     if (!isConnected) {
       Alert.alert('Please check your internet and try again!');
@@ -194,7 +188,6 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
       console.log('Image', uploadedUrl);
 
       if (uploadedUrl && audioUrl) {
-
         uploadPodcast(
           {
             title: title,
@@ -295,7 +288,6 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
     }
   }, [error, handleUpload, imageError]);
 
-
   // if(uploadPodcastPending){
   //   return <Loader/>
   // }
@@ -308,7 +300,7 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
         paddingTop="$8"
         justifyContent="space-between">
         {/* Header Section */}
-        <YStack mb="$4">
+        <YStack mb="$4" width="100%" paddingHorizontal="$1">
           <Text
             color="#94A3B8"
             fontSize={13}
@@ -317,10 +309,24 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
             letterSpacing={1}>
             NOW PLAYING
           </Text>
-          <Text color="#F1F5F9" fontSize={28} fontWeight="800" lineHeight={34}>
+          <Text
+            color="#F1F5F9"
+            fontSize={28}
+            fontWeight="800"
+            lineHeight={34}
+            flexShrink={1}
+            flexWrap="wrap"
+            allowFontScaling>
             {title}
           </Text>
-          <Text color="#94A3B8" fontSize={16} marginTop="$3" lineHeight={24}>
+          <Text
+            color="#94A3B8"
+            fontSize={16}
+            marginTop="$3"
+            lineHeight={24}
+            flexShrink={1}
+            flexWrap="wrap"
+            allowFontScaling>
             {description}
           </Text>
         </YStack>
@@ -356,7 +362,10 @@ const PodcastPlayer = ({navigation, route}: PodcastPlayerScreenProps) => {
         {/* Waveform Visualization */}
         {/* height={80} gives 16px of breathing room around the waveform's internal MAX_HEIGHT+16 (64px) container */}
         <YStack alignItems="center" height={80} my="$2">
-          <AudioWaveform isPlaying={player.currentStatus.playing} accentColor={theme.blue10?.val ?? '#3B82F6'} />
+          <AudioWaveform
+            isPlaying={player.currentStatus.playing}
+            accentColor={theme.blue10?.val ?? '#3B82F6'}
+          />
         </YStack>
 
         {/* Progress Slider Section */}
@@ -519,4 +528,3 @@ const styles = StyleSheet.create({
     color: '#777',
   },
 });
-
