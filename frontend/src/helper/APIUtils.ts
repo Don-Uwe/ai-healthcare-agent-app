@@ -94,7 +94,7 @@ const FILTER_PODCAST = `${PROD_URL}/podcast/filter`;
 const UPLOAD_PODCAST = `${PROD_URL}/podcast/create`;
 const GET_PLAYLIST = `${PROD_URL}/podcast/get-my-playlists`;
 const CREATE_PLAYLIST = `${PROD_URL}/podcast/create-playlist`;
-const ADD_TO_PLAYLIST = `${PROD_URL}/podcast/add-podcast-form-playlist`;
+const ADD_TO_PLAYLIST = `${PROD_URL}/podcast/add-podcast-to-playlist`;
 const UPDATE_PODCAST_PLAYLIST = `${PROD_URL}/podcast/update-playlist`;
 
 const DISCARDED_PODCASTS = `${PROD_URL}/podcast/discarded`;

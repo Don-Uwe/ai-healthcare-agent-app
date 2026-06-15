@@ -102,6 +102,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const [articleCategories, setArticleCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<Category>();
   const [sortingType, setSortingType] = useState<string>('');
+  const [searchText, setSearchText] = useState('');
   const {isConnected} = useSelector((state: any) => state.network);
   const [selectedCardId, setSelectedCardId] = useState<string>('');
   // const [repostItem, setRepostItem] = useState<ArticleData | null>(null);
@@ -113,7 +114,17 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const {preferredLanguages, isLoading: preferencesLoading} = usePreferences();
   const {mutate: requestEdit, isPending: requestEditPending} =
     useRequestArticleEdit();
+  const handleClearAllFilters = () => {
+    // 1. Local state categories reset
+    setSelectedCategory('');
+    setSortingType('');
+    setSearchText('');
 
+    dispatch(setSearchMode(false));
+    dispatch(setSearchedArticles([]));
+    dispatch(setFilteredArticles([]));
+    dispatch(setTags([]));
+  };
   const {
     filteredArticles,
     searchedArticles,
@@ -444,19 +455,16 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
 
 
   const onRefresh = () => {
-    if (__DEV__) console.log('is connected', isConnected);
     if (isConnected) {
       setRefreshing(true);
-      // Reset pagination state on full pull-to-refresh
+      allArticlesRef.current = [];
+      lastCategoryFilteredCountRef.current = -1;
       setPage(1);
-      if (page === 1) {
-        refetch();
-      }
+      refetch();
       if (!isGuest) {
         refetchUser();
         refetchUnreadCount();
       }
-      setRefreshing(false);
     } else {
       Snackbar.show({
         text: 'Please check your network connection',
@@ -464,29 +472,37 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       });
     }
   };
+
+  useEffect(() => {
+    if (refreshing && !isFetching) {
+      setRefreshing(false);
+    }
+  }, [isFetching, refreshing]);
+
   const handleSearch = (textInput: string) => {
-    //console.log('Search Input', textInput);
-    if (textInput === '' || articleData === undefined) {
-      dispatch(setSearchedArticles({searchedArticles: []}));
-      dispatch(setSearchMode({searchMode: false}));
-    } else {
-      dispatch(setSearchMode({searchMode: true}));
-      const matchesSearch = articleData?.articles.filter(article => {
-        const matchesTitle = article.title && typeof article.title === 'string'
+  if (textInput === '' || allArticlesRef.current.length === 0) {
+    dispatch(setSearchedArticles({ searchedArticles: [] }));
+    dispatch(setSearchMode({ searchMode: false }));
+  } else {
+    dispatch(setSearchMode({ searchMode: true }));
+    const matchesSearch = allArticlesRef.current.filter(article => {  // ✅ use full accumulated list
+      const matchesTitle =
+        article.title && typeof article.title === 'string'
           ? article.title.toLowerCase().includes((textInput || '').toLowerCase())
           : false;
-        const matchesTags = article.tags && Array.isArray(article.tags)
-          ? article.tags.some(tag =>
-              tag && tag.name && typeof tag.name === 'string' &&
-              tag.name.toLowerCase().includes((textInput || '').toLowerCase())
+      const matchesTags =
+        article.tags && Array.isArray(article.tags)
+          ? article.tags.some(
+              tag =>
+                tag && tag.name && typeof tag.name === 'string' &&
+                tag.name.toLowerCase().includes((textInput || '').toLowerCase()),
             )
           : false;
-
-        return matchesTitle || matchesTags;
-      });
-      dispatch(setSearchedArticles({searchedArticles: matchesSearch}));
-    }
-  };
+      return matchesTitle || matchesTags;
+    });
+    dispatch(setSearchedArticles({ searchedArticles: matchesSearch }));
+  }
+};
 
   const listData = useMemo(() => {
     if (showSavedOnly) {
@@ -516,12 +532,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     const hasSorting = sortType !== '';
     return hasCustomCategories || hasSorting;
   }, [selectedTags, sortType, articleCategories]);
-
-  // Quick reset handler for header
-  const handleQuickReset = () => {
-    handleFilterReset();
-  };
-
   if (!articleData || articleData.articles?.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
@@ -675,23 +685,27 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   return (
     <SafeAreaView style={styles.container}>
       <HomeScreenHeader
-        handlePresentModalPress={handlePresentModalPress}
-        onTextInputChange={handleSearch}
-        onNotificationClick={() => {
-          if (isGuest) {
-            navigation.navigate('GuestPlaceholderScreen', {
-              title: 'Notifications',
-              description: 'Sign in to see your notifications.',
-              iconName: 'bell',
-            });
-          } else {
-            navigation.navigate('NotificationScreen');
-          }
-        }}
-        unreadCount={unreadCount ? unreadCount : 0}
-        hasActiveFilters={hasActiveFilters}
-        onFilterReset={handleQuickReset}
-      />
+            handlePresentModalPress={handlePresentModalPress}
+            onTextInputChange={(text) => {
+              setSearchText(text);
+              handleSearch(text);
+            }}
+            onNotificationClick={() => {
+              if (isGuest) {
+                navigation.navigate('GuestPlaceholderScreen', {
+                  title: 'Notifications',
+                  description: 'Sign in to see your notifications.',
+                  iconName: 'bell',
+                });
+              } else {
+                navigation.navigate('NotificationScreen');
+              }
+            }}
+            unreadCount={unreadCount ? unreadCount : 0}
+            hasActiveFilters={selectedCategory !== '' || sortingType !== '' || searchText !== ''}
+            onFilterReset={handleClearAllFilters}
+            searchText={searchText}
+          />
       <FilterModal
         bottomSheetModalRef={bottomSheetModalRef}
         categories={articleCategories}

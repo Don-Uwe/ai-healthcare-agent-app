@@ -1,0 +1,41 @@
+name: Automated AI PR Reviewer
+
+on:
+  pull_request_target:
+    types: [opened, synchronize]
+    branches:
+      - main
+      - web
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to manually review (required)'
+        required: true
+        type: string
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.10'
+
+      - name: Run AI Reviewer Script
+        env:
+          GEMINI_API_KEYS: ${{ secrets.GEMINI_KEY_1 }},${{ secrets.GEMINI_KEY_2 }},${{ secrets.GEMINI_KEY_3 }},${{ secrets.GEMINI_KEY_4 }},${{ secrets.GEMINI_KEY_5 }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.inputs.pr_number }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+        run: python .github/scripts/automated_reviewer.py

@@ -1,9 +1,9 @@
-import {FirebaseProvider} from '@/hooks/FirebaseContext';
-import {useCheckTokenStatus} from '@/src/hooks/useGetTokenStatus';
-import {useNotificationListeners} from '@/hooks/useNotificationListener';
-import {useVersionCheck} from '@/hooks/useVersionCheck';
-import {SocketProvider} from '../contexts/SocketContext';
-import {PreferencesProvider} from '../contexts/PreferencesContext';
+import { FirebaseProvider } from '@/hooks/FirebaseContext';
+import { useCheckTokenStatus } from '@/src/hooks/useGetTokenStatus';
+import { useNotificationListeners } from '@/hooks/useNotificationListener';
+import { useVersionCheck } from '@/hooks/useVersionCheck';
+import { SocketProvider } from '../contexts/SocketContext';
+import { PreferencesProvider } from '../contexts/PreferencesContext';
 import config from '@/tamagui.config';
 import * as Notifications from 'expo-notifications';
 import {registerAndSyncPushToken} from '../helper/PushNotificationService';
@@ -13,34 +13,36 @@ import {
   NavigationContainer,
   type NavigationContainerRef,
 } from '@react-navigation/native';
-import React, {useEffect, useRef, useCallback} from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 
-import {View, useColorScheme} from 'react-native';
-import {PaperProvider} from 'react-native-paper';
-import {SafeAreaProvider} from 'react-native-safe-area-context';
-import {addEventListener} from '@react-native-community/netinfo';
-import {useDispatch, useSelector} from 'react-redux';
-import {TamaguiProvider} from 'tamagui';
+import { View, useColorScheme } from 'react-native';
+import { PaperProvider } from 'react-native-paper';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { addEventListener } from '@react-native-community/netinfo';
+import { useDispatch, useSelector } from 'react-redux';
+import { TamaguiProvider, useTheme } from 'tamagui';
+import { initDeepLinking } from '../helper/DeepLinkService';
 import StackNavigation from '../navigations/StackNavigation';
-import {CustomAlertDialog} from './CustomAlert';
+import { CustomAlertDialog } from './CustomAlert';
 import UpdateModal from './UpdateModal';
-import {setConnected} from '../store/NetworkSlice';
-import {firebaseInit} from '../helper/firebase';
-import {cleanUpDownloads} from '../helper/Utils';
-import {SECURE_KEYS, secureRetrieveItem} from '../helper/SecureStorageUtils';
-import {setUserToken, setGuestMode} from '../store/UserSlice';
-import {RootState} from '../store/ReduxStore';
-import {setupAxiosInterceptor} from '../helper/setupAxiosInterceptor';
-import {initMonitoring} from '../services/monitoring/sentry';
+import { setConnected } from '../store/NetworkSlice';
+import { firebaseInit } from '../helper/firebase';
+import { cleanUpDownloads } from '../helper/Utils';
+import { SECURE_KEYS, secureRetrieveItem } from '../helper/SecureStorageUtils';
+import { setUserToken, setGuestMode } from '../store/UserSlice';
+import { RootState } from '../store/ReduxStore';
+import { setupAxiosInterceptor } from '../helper/setupAxiosInterceptor';
+import { initMonitoring } from '../services/monitoring/sentry';
 
 export default function AppContent() {
+  const theme = useTheme();
   const navigationRef = useRef<NavigationContainerRef<any> | null>(null);
   const hasInitialized = useRef(false);
   // Used only for TamaguiProvider theming. StatusBar styling is owned by CustomStatusBar.
   const isDarkMode = useColorScheme() === 'dark';
 
-  const {data: tokenRes = null} = useCheckTokenStatus();
-  const {user_token, isGuest} = useSelector((state: RootState) => state.user);
+  const { data: tokenRes = null } = useCheckTokenStatus();
+  const { user_token, isGuest } = useSelector((state: RootState) => state.user);
 
   // Initialise monitoring and axios interceptors once on mount.
   // initMonitoring() is placed here (rather than index.js module scope) so that
@@ -53,7 +55,7 @@ export default function AppContent() {
     setupAxiosInterceptor();
   }, []);
 
-  const {visible, storeUrl} = useVersionCheck();
+  const { visible, storeUrl } = useVersionCheck();
   const dispatch = useDispatch();
 
   const checkToken = useCallback(async () => {
@@ -175,7 +177,11 @@ export default function AppContent() {
           <PreferencesProvider>
             <SafeAreaProvider>
               <PaperProvider>
-                <View style={{flex: 1}}>
+                <View
+                  style={{
+                    flex: 1,
+                    backgroundColor: theme.background.val,
+                  }}>
                   {/* StatusBar is managed globally by CustomStatusBar — do not add one here. */}
                   <NavigationContainer ref={navigationRef}>
                     <StackNavigation />
