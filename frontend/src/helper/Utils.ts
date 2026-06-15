@@ -2,7 +2,7 @@ import NetInfo from '@react-native-community/netinfo';
 import {Category, CategoryType, PodcastData} from '../type';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {GET_STORAGE_DATA} from './APIUtils';
-import {Alert, Linking, Platform} from 'react-native';
+import {Alert, Linking, PermissionsAndroid, Platform} from 'react-native';
 import RNFS from 'react-native-fs';
 import {secureClearAllItems} from './SecureStorageUtils';
 import {
@@ -339,21 +339,20 @@ ${body}
 // General purpose podcast app, no need to encrypted download data here,
 // We will ensure that, there will be no copyrighted content, or we can't give access to download
 // copyrighted content, as per ultimatehealth system
-export const requestStoragePermissions = async () => {
+export const requestReadStoragePermissions = async () => {
   if (Platform.OS !== 'android') return true;
 
   if ((Platform.Version as number) < 33) {
-    const granted = await PermissionsAndroid.requestMultiple([
-    ]);
-
-    return (
-    );
+    return true;
   } else {
     const granted = await PermissionsAndroid.requestMultiple([
       PermissionsAndroid.PERMISSIONS.READ_MEDIA_AUDIO,
     ]);
 
-    return granted['android.permission.READ_MEDIA_AUDIO'] === PermissionsAndroid.RESULTS.GRANTED;
+    return (
+      granted['android.permission.READ_MEDIA_AUDIO'] ===
+      PermissionsAndroid.RESULTS.GRANTED
+    );
   }
 };
 
@@ -419,15 +418,28 @@ export const downloadAudio = async (_podcast: PodcastData) => {
   }
 };
 
+export const getPodcastDirectory = () => {
+  const baseDirectory =
+    Platform.OS === 'android'
+      ? RNFS.ExternalDirectoryPath
+      : RNFS.DocumentDirectoryPath;
+  return `${baseDirectory}/UltimateHealth/Podcasts`;
+};
+
+export const getArticleDirectory = () => {
+  const baseDirectory =
+    Platform.OS === 'android'
+      ? RNFS.ExternalDirectoryPath
+      : RNFS.DocumentDirectoryPath;
+  return `${baseDirectory}/UltimateHealth/Articles`;
+};
+
 const downloadFile = async (key: string, title: string) => {
   const safeTitle = title.substring(0, 15).replace(/[^a-zA-Z0-9]/g, '_');
   const fileName = `${safeTitle}_${Date.now()}.mp3`;
   const downloadUrl = `${GET_STORAGE_DATA}/${key}`;
 
-  const customDirectory =
-    Platform.OS === 'android'
-      ? RNFS.ExternalDirectoryPath
-      : RNFS.DocumentDirectoryPath;
+  const customDirectory = getPodcastDirectory();
 
   const filePath = `${customDirectory}/${fileName}`;
 

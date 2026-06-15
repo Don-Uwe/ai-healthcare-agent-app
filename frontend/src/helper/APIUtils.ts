@@ -1,3 +1,5 @@
+
+declare const __DEV__: boolean;
 // API URL configuration
 // Values are injected at build time from environment variables via app.config.js.
 // To override for local development, set the following in your .env file
@@ -109,7 +111,7 @@ const SEND_MESSAGE_TO_GEMINI = `${PROD_URL}/gemini/send`;
 /** Notification Preferences */
 const GET_NOTIFICATION_PREFERENCES = `${PROD_URL}/user/notification-preferences`;
 const UPDATE_NOTIFICATION_PREFERENCES = `${PROD_URL}/user/notification-preferences`;
-
+const REGISTER_PUSH_TOKEN = `${PROD_URL}/user/register-device-token`;
 
 export {
   LOGIN_API,
@@ -170,7 +172,7 @@ export {
   UPLOAD_ARTICLE_TO_POCKETBASE,
   
   UPLOAD_IMPROVEMENT_TO_POCKETBASE,
-  RENDER_SUGGESTION,
+  REGISTER_PUSH_TOKEN,
   // PODCAST
   GET_ALL_PODCASTS,
   GET_PODCAST_DETAILS,

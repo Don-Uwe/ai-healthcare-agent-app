@@ -1,14 +1,8 @@
 import * as SecureStore from 'expo-secure-store';
 
-/**
- * SecureStorageUtils.ts
- *
- * Abstraction layer for sensitive credential storage.
- * Uses Expo SecureStore for encrypted key-value storage.
- */
-
 export const SECURE_KEYS = {
   USER_TOKEN: 'SECURE_USER_TOKEN',
+  EXPO_PUSH_TOKEN: 'SECURE_EXPO_PUSH_TOKEN',
   LANGUAGE_PREFERENCES: 'SECURE_LANGUAGE_PREFERENCES',
 } as const;
 

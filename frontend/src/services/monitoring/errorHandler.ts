@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/react-native';
-
+import { logger } from './logger';
 /**
  * Capture an exception and send it to Sentry.
  * Safely ignores the call if Sentry is not fully initialized or disabled.
@@ -8,10 +8,10 @@ import * as Sentry from '@sentry/react-native';
  * @param context - Optional extra context data to send along with the error
  */
 export const captureException = (error: unknown, context?: Record<string, any>) => {
-  if(__DEV__){
-    console.log('[Monitoring] Exception captured');
-    console.error('Captured Exception (Development):', error);
-  }
+
+   logger.log('[Monitoring] Exception captured');
+  logger.error('Captured Exception (Development):', error);
+  
 
   Sentry.captureException(error, scope => {
     if(context){
@@ -32,9 +32,9 @@ export const captureMessage = (
   message: string,
   level: Sentry.SeverityLevel = 'info'
 ) => {
-  if(__DEV__){
-    console.log(`Captured Message [${level}]:`, message);
-  }
+
+   logger.log(`Captured Message [${level}]:`, message);
+  
   Sentry.captureMessage(message, level);
 };
 

@@ -16,7 +16,7 @@ jobs:
         run: |
           COMMENT=$(cat <<EOF
           {
-            "body": "Thank you for creating this issue! We'll look into it as soon as possible. Your contributions are highly appreciated! 😊"
+            "body": "Thank you for creating this issue! We'll look into it as soon as possible. Your contributions are highly appreciated! 😊\n\n---\n### 🤖 Assignment Guidelines\nTo get assigned to this issue, simply leave a comment requesting assignment.\nThe AI bot will automatically assign you if you meet the following eligibility criteria:\n1. You do not currently have any other active assigned issues in this repository.\n2. If you were previously assigned an issue, you must have submitted a Pull Request for it before requesting a new one."
           }
           EOF
           )
