@@ -899,7 +899,8 @@ We welcome contributions from everyone — developers, designers, writers, and t
 
    <tr>
     <td align="center"><a href="https://github.com/Nareshkumawat-star"><img src="https://avatars.githubusercontent.com/u/207768679?v=4" width="120px;" alt=""/><br/><sub><b>Nareshkumawat-star</b></sub></a></td>
-   </tr>
+       <td align="center"><a href="https://github.com/Shrestha-ijarwal"><img src="https://avatars.githubusercontent.com/u/246360066?v=4" width="120px;" alt=""/><br/><sub><b>Shrestha-ijarwal</b></sub></a></td>
+ </tr>
 </table>
 <!-- CONTRIBUTORS-TABLE-END -->
 
