@@ -35,6 +35,7 @@ import LottieView from 'lottie-react-native';
 import AudioWaveform from '../components/AudioWaveform';
 import {useGetSinglePodcastDetails} from '../hooks/useGetSinglePodcastDetails';
 import {useLikePodcast} from '../hooks/useLikePodcast';
+import {getPlaybackPosition, savePlaybackPosition} from '../helper/PlaybackManager';
 
 const isAllowedUrl = (urlStr?: string | null): boolean => {
   if (!urlStr) return false;
@@ -195,36 +196,105 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
     }
   };
 
-  useEffect(() => {
+useEffect(() => {
+  if (!player) return;
+
+  if (!isConnected && player.playing && isRemoteSource) {
+    void pauseForNetworkLoss();
+    return;
+  }
+
+  if (isConnected && networkPaused && !resumeAttemptedRef.current) {
+    void attemptAutoResume();
+    return;
+  }
+
+  if (isConnected && isWaitingForNetwork && !networkPaused) {
+    setIsWaitingForNetwork(false);
+  }
+}, [
+  isConnected,
+  networkPaused,
+  player,
+  isRemoteSource,
+  isWaitingForNetwork,
+]);
+
+useEffect(() => {
+  let lastSaveTime = 0;
+
+  const interval = setInterval(() => {
     if (!player) return;
 
-    if (!isConnected && player.playing && isRemoteSource) {
-      void pauseForNetworkLoss();
-      return;
-    }
+    const status = player.currentStatus;
 
-    if (isConnected && networkPaused && !resumeAttemptedRef.current) {
-      void attemptAutoResume();
-      return;
-    }
+    if (status?.isLoaded) {
+      const currentPos = status.currentTime || 0;
+      const totalDur = status.duration || 0;
 
-    if (isConnected && isWaitingForNetwork && !networkPaused) {
-      setIsWaitingForNetwork(false);
-    }
-  }, [isConnected, networkPaused, player, isRemoteSource, isWaitingForNetwork]);
+      setPosition(currentPos);
+      setDuration(totalDur);
 
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      if (!player) return;
-      const status = player.currentStatus;
-      if (status?.isLoaded) {
-        setPosition(status.currentTime);
-        setDuration(status.duration || 0);
+      // Save playback position every 5 seconds
+      if (player.playing) {
+        const now = Date.now();
+
+        if (now - lastSaveTime > 5000) {
+          savePlaybackPosition(trackId, currentPos, totalDur);
+          lastSaveTime = now;
+        }
       }
-    }, 500);
+    }
+  }, 500);
 
-    return () => clearInterval(interval);
-  }, [player]);
+  return () => clearInterval(interval);
+}, [player, trackId]);
+
+// Check for saved position on mount
+useEffect(() => {
+  if (!player) return;
+
+  let isCancelled = false;
+
+  const checkResume = async () => {
+    const saved = await getPlaybackPosition(trackId);
+
+    if (!isCancelled && saved && saved.position > 5) {
+      Alert.alert(
+        'Resume Podcast',
+        `Do you want to resume from ${formatSecTime(saved.position)}?`,
+        [
+          {
+            text: 'Start Over',
+            style: 'cancel',
+            onPress: async () => {
+              await player.seekTo(0);
+              setPosition(0);
+            },
+          },
+          {
+            text: 'Resume',
+            onPress: async () => {
+              await player.seekTo(saved.position);
+              setPosition(saved.position);
+              player.play();
+              setIsPlaying(true);
+            },
+          },
+        ]
+      );
+    }
+  };
+
+  const timeout = setTimeout(() => {
+    void checkResume();
+  }, 500);
+
+  return () => {
+    isCancelled = true;
+    clearTimeout(timeout);
+  };
+}, [player, trackId]);
 
   useEffect(()=>{
 
@@ -275,7 +345,7 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
       return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
     }
   };
-  // For position update
+  // For position update (removed redundant interval)
 
   const handleShare = async () => {
     try {
@@ -324,22 +394,29 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
     }
   };
 
-  const handlePause = async () => {
-    if (!player) return;
+ const handlePause = async () => {
+  if (!player) return;
 
-    try {
-      player.pause();
-    } catch (err) {
-      console.warn('Error pausing playback:', err);
-    }
+  try {
+    player.pause();
 
-    setIsPlaying(false);
-    setNetworkPaused(false);
-    setIsWaitingForNetwork(false);
-    resumeAttemptedRef.current = false;
-  };
+    // Save exact playback position when user pauses
+    await savePlaybackPosition(
+      trackId,
+      player.currentTime || 0,
+      player.duration || 1
+    );
+  } catch (err) {
+    console.warn('Error pausing playback:', err);
+  }
 
-  if (isPodcastLoading || isLoading) {
+  setIsPlaying(false);
+  setNetworkPaused(false);
+  setIsWaitingForNetwork(false);
+  resumeAttemptedRef.current = false;
+};
+  
+ if (isPodcastLoading || isLoading) {
     return <Loader />;
   }
 
