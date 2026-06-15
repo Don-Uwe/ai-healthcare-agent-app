@@ -370,7 +370,7 @@ useEffect(() => {
   };
 
   const handlePlay = async () => {
-    if (!player) {
+    if (!player || !isConnected) {
       return;
     }
 
@@ -511,6 +511,25 @@ useEffect(() => {
     </YStack>
   );
 
+
+  const offlineBannerEl = !isConnected && (
+    <View style={styles.offlineBanner}>
+      <Text color="#FFFFFF" fontSize={14} fontWeight="600">
+        You are offline. Audio playback unavailable.
+      </Text>
+
+      <TouchableOpacity
+        style={styles.retryAudioButton}
+        onPress={() => {
+          refetch();
+        }}>
+        <Text color="#0B1425" fontWeight="700">
+          Retry
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+
   const sliderEl = (
     <View
       style={[styles.sliderContainer, GlassStyles.glassContainerDark]}>
@@ -558,6 +577,7 @@ useEffect(() => {
         <TouchableOpacity
           testID="podcast-back-button"
           accessibilityLabel="podcast-back-button"
+          disabled={!isConnected}
           onPress={handleBackward}
           style={styles.controlButton}>
           <Ionicons name="play-back" size={32} color="#9BB3C8" />
@@ -566,6 +586,7 @@ useEffect(() => {
         <TouchableOpacity
           testID="podcast-play-pause-button"
           accessibilityLabel="podcast-play-pause-button"
+          disabled={!isConnected}
           onPress={() =>
             player.currentStatus.playing ? handlePause() : handlePlay()
           }
@@ -580,6 +601,7 @@ useEffect(() => {
         <TouchableOpacity
           testID="podcast-forward-button"
           accessibilityLabel="podcast-forward-button"
+          disabled={!isConnected}
           onPress={handleForward}
           style={styles.controlButton}>
           <Ionicons name="play-forward" size={32} color="#9BB3C8" />
@@ -753,6 +775,8 @@ useEffect(() => {
             {descriptionEl}
           </YStack>
         </View>
+        {offlineBannerEl}
+        {offlineBannerEl}
         {sliderEl}
         <View style={{ marginTop: -15 }}>
           {controlsEl}
@@ -932,6 +956,22 @@ const styles = StyleSheet.create({
     aspectRatio: 1,
     borderRadius: 16,
   },
+
+  offlineBanner: {
+    backgroundColor: '#7F1D1D',
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 12,
+    alignItems: 'center',
+  },
+  retryAudioButton: {
+    marginTop: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: PRIMARY_COLOR,
+  },
+
   readMoreButton: {
     marginTop: 8,
     paddingVertical: 10,
