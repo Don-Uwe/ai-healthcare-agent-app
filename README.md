@@ -909,7 +909,8 @@ We welcome contributions from everyone — developers, designers, writers, and t
 
    <tr>
     <td align="center"><a href="https://github.com/divanshuaggarwal30"><img src="https://avatars.githubusercontent.com/u/223733104?v=4" width="120px;" alt=""/><br/><sub><b>Divanshu Aggarwal</b></sub></a></td>
-   </tr>
+       <td align="center"><a href="https://github.com/smridhi-07"><img src="https://avatars.githubusercontent.com/u/226873227?v=4" width="120px;" alt=""/><br/><sub><b>Smridhi </b></sub></a></td>
+ </tr>
 </table>
 <!-- CONTRIBUTORS-TABLE-END -->
 
