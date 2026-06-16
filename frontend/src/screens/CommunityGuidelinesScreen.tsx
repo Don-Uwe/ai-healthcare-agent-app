@@ -6,8 +6,8 @@ import { ScrollView, YStack, XStack, Text, Button, View, Separator } from 'tamag
 import { Ionicons } from '@expo/vector-icons';
 import { ProfessionalColors, Typography, Spacing } from '../styles/GlassStyles';
 import { GlassContainer } from '../components/GlassContainer';
-import { useBackToTop } from '../components/BackToTopScrollView';
-import { BackToTopButton } from '../components/BackToTopButton';
+import { useScrollControls } from '../hooks/useScrollControls';
+import { ScrollActionButtons } from '../components/ScrollActionButtons';
 import type { CommunityGuidelinesScreenProps } from '../type';
 
 interface Section {
@@ -200,7 +200,7 @@ const SectionNote = ({ text, type }: SectionNoteProps) => {
 const CommunityGuidelinesScreen = (_props: CommunityGuidelinesScreenProps) => {
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === 'dark';
-  const { onScroll, visible, opacity, scrollToTop } = useBackToTop({ threshold: 300 });
+  const { scrollRef, onScroll, topVisible, topOpacity, bottomVisible, bottomOpacity, scrollToTop, scrollToBottom } = useScrollControls({ threshold: 300, bottomThreshold: 50 });
 
   const onShare = async () => {
     try {
@@ -221,6 +221,7 @@ const CommunityGuidelinesScreen = (_props: CommunityGuidelinesScreenProps) => {
     <SafeAreaView style={{ flex: 1, backgroundColor: bgColor }}>
       <StatusBar style={isDarkMode ? 'light' : 'dark'} />
       <ScrollView
+        ref={scrollRef}
         onScroll={onScroll}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
@@ -405,10 +406,13 @@ const CommunityGuidelinesScreen = (_props: CommunityGuidelinesScreenProps) => {
           </YStack>
         </View>
       </ScrollView>
-      <BackToTopButton
-        opacity={opacity}
-        onPress={scrollToTop}
-        visible={visible}
+      <ScrollActionButtons
+        topOpacity={topOpacity}
+        onScrollToTop={scrollToTop}
+        topVisible={topVisible}
+        bottomOpacity={bottomOpacity}
+        onScrollToBottom={scrollToBottom}
+        bottomVisible={bottomVisible}
         buttonColor="#007AFF"
         iconColor="#fff"
       />
