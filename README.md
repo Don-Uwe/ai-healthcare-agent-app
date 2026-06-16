@@ -903,6 +903,7 @@ We welcome contributions from everyone — developers, designers, writers, and t
      <td align="center"><a href="https://github.com/Gurkaran18"><img src="https://avatars.githubusercontent.com/u/143310060?v=4" width="120px;" alt=""/><br/><sub><b>Gurkaran18</b></sub></a></td>
      <td align="center"><a href="https://github.com/silentguyracer"><img src="https://avatars.githubusercontent.com/u/195958565?v=4" width="120px;" alt=""/><br/><sub><b>silentguyracer</b></sub></a></td>
      <td align="center"><a href="https://github.com/Wombatfreak6"><img src="https://avatars.githubusercontent.com/u/163987103?v=4" width="120px;" alt=""/><br/><sub><b>wombfrk.exe</b></sub></a></td>
+     <td align="center"><a href="https://github.com/deepsikha-dash"><img src="https://avatars.githubusercontent.com/u/232145023?v=4" width="120px;" alt=""/><br/><sub><b>Deepsikha Dash</b></sub></a></td>
  </tr>
 </table>
 <!-- CONTRIBUTORS-TABLE-END -->
