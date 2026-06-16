@@ -1,26 +1,11 @@
-import { NavigationContainer } from '@react-navigation/native';
-import { FirebaseProvider } from '@/hooks/FirebaseContext';
-import { useCheckTokenStatus } from '@/src/hooks/useGetTokenStatus';
-import { useNotificationListeners } from '@/hooks/useNotificationListener';
-import { useVersionCheck } from '@/hooks/useVersionCheck';
-import { SocketProvider } from '../contexts/SocketContext';
-import { PreferencesProvider } from '../contexts/PreferencesContext';
-import config from '@/tamagui.config';
-import * as Notifications from 'expo-notifications';
-import {registerAndSyncPushToken} from '../helper/PushNotificationService';
-import {initDeepLinking, navigateDeepLink, resolveNotificationTarget} from '../helper/DeepLinkService';
-import messaging from '@react-native-firebase/messaging';
-import {
-  NavigationContainer,
-  type NavigationContainerRef,
-} from '@react-navigation/native';
-
-import React, { useEffect, useRef, useCallback } from 'react';
-import { View, useColorScheme } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { useColorScheme, View } from 'react-native';
 import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { useDispatch, useSelector } from 'react-redux';
-import { TamaguiProvider, useTheme } from 'tamagui';
+import { TamaguiProvider } from 'tamagui';
+import { NavigationContainer } from '@react-navigation/native';
+import * as Notifications from 'expo-notifications';
+import messaging from '@react-native-firebase/messaging';
 
 import { FirebaseProvider } from '@/hooks/FirebaseContext';
 import { useCheckTokenStatus } from '@/src/hooks/useGetTokenStatus';
@@ -29,99 +14,87 @@ import { useVersionCheck } from '@/hooks/useVersionCheck';
 import { SocketProvider } from '../contexts/SocketContext';
 import { PreferencesProvider } from '../contexts/PreferencesContext';
 import config from '@/tamagui.config';
-import { InitDeepLinking } from '../helper/DeepLinkingService';
+
+import { registerAndSyncPushToken } from '../helper/PushNotificationService';
+import { initDeepLinking, navigateDeepLink, resolveNotificationTarget } from '../helper/DeepLinkService';
+import { firebaseInit } from '../helper/firebase'; // Ensure file dependency matches project pathing rules
+import { cleanUpDownloads } from '../helper/utils';   // Ensure file dependency matches project pathing rules
+
+// Import your application's actual routing provider engine to prevent blank screen errors
+// Note: Double-check the physical file path name inside your fork to match this import
+import StackNavigation from '../navigation/StackNavigation'; 
 
 export function AppContent() {
   const colorScheme = useColorScheme();
-  const dispatch = useDispatch();
   
-  // Fetch real-time asynchronous authentication initialization metrics from Redux
-  const { isLoading, isAuthenticated, deepLinkUrl } = useSelector((state: any) => state.auth);
+  // Restore the application's native token check frameworks cleanly
+  const { user_token, tokenRes, isLoading, isGuest } = useCheckTokenStatus();
   
-  // 🧠 THE STATE BUFFER LAYER: Prevents stale closures from dropping link routing actions
   const navigationRef = useRef<any>(null);
-  const pendingLinkRef = useRef<string | null>(null);
+  
+  // 🧠 ASYNCHRONOUS AUTH GUARD BUFFER: Caches incoming deep link destination tokens securely during cold starts
+  const pendingDeepLinkRef = useRef<string | null>(null);
 
-  // Run core system dependency validation checking pipelines natively
+  // Invoke core system validation pipelines natively
   useVersionCheck();
   useNotificationListeners();
 
-  // Step 1: Securely cache incoming cold-start deep links inside the reference buffer
   useEffect(() => {
-    if (deepLinkUrl) {
-      pendingLinkRef.current = deepLinkUrl;
+    firebaseInit();
+    cleanUpDownloads();
+
+    // Securely register push tokens matching active session states
+    if (user_token) {
+      registerAndSyncPushToken(user_token);
     }
-  }, [deepLinkUrl]);
 
-  // Step 2: Defer execution of deep link actions until auth context is definitively authorization-settled
-  useEffect(() => {
-    // Hold navigation frames securely while JWT background token checking runs async
-    if (isLoading) return;
-
-    if (pendingLinkRef.current && navigationRef.current) {
-      if (isAuthenticated) {
-        // User is verified -> Dispatch deep link safely to the internal dashboard engine
-        InitDeepLinking(navigationRef.current, pendingLinkRef.current);
-        pendingLinkRef.current = null; // Instantly flush reference pointer to block navigation re-triggering loops
-      } else {
-        // User is unauthorized -> Wipe buffer cache cleanly and route to login boundaries
-        pendingLinkRef.current = null;
-        navigationRef.current.navigate('Login');
+    // Intercept and buffer cold-start deep links until the navigation ref container binds securely
+    initDeepLinking((url) => {
+      if (url) {
+        pendingDeepLinkRef.current = url;
+        console.log('[Auth Guard] Cached incoming deep link securely inside reference buffer:', url);
       }
-
-    }
-  }, [isLoading, isAuthenticated]);
-
-    });
-
-    const unsubscribe1 = addEventListener(state => {
-      if (__DEV__) {
-        console.log('Connection type', state.type);
-        console.log('Is connected?', state.isConnected);
-      }
-      /** Dispatch use a reducer to update the value in store */
-      dispatch(setConnected(state.isConnected));
     });
 
     const onOpenApp = messaging().onNotificationOpenedApp(remoteMessage => {
-      if (__DEV__) {
-        console.log('Notification caused app to open:', remoteMessage);
-      }
-      // const data = remoteMessage.data;
-      // handleNotification(data);
+      console.log('Notification caused app to open from background state:', remoteMessage);
     });
 
     return () => {
-      unsubscribe();
-      unsubscribe1();
       onOpenApp();
     };
-  }, [dispatch]);
-
-  useEffect(() => {
-    registerAndSyncPushToken(user_token);
   }, [user_token]);
 
+  // Asynchronous Router Guard Loop: Defers target navigation loops until token validations resolve
   useEffect(() => {
-    const handleNotificationResponse = async (
-      response: Notifications.NotificationResponse,
-    ) => {
+    if (isLoading || !navigationRef.current || !pendingDeepLinkRef.current) return;
+
+    const isAuthenticated = Boolean(tokenRes?.isValid || user_token) && !isGuest;
+
+    if (isAuthenticated) {
+      console.log('[Auth Guard] User is verified. Routing deep link payload destination string.');
+      navigateDeepLink(navigationRef.current, pendingDeepLinkRef.current, true);
+    } else {
+      console.log('[Auth Guard] User is anonymous. Purging buffer and diverting to login gate schemas.');
+      navigationRef.current.navigate('Login');
+    }
+    
+    // Instantly flush pointer reference to block loops
+    pendingDeepLinkRef.current = null;
+  }, [isLoading, tokenRes, user_token, isGuest]);
+
+  useEffect(() => {
+    const handleNotificationResponse = async (response: Notifications.NotificationResponse) => {
       const data = response.notification.request.content.data;
       const target = resolveNotificationTarget(data);
 
-      if (!target || !navigationRef.current) {
-        return;
-      }
+      if (!target || !navigationRef.current) return;
 
-      const isAuthenticated =
-        Boolean(tokenRes?.isValid || user_token) && !isGuest;
+      const isAuthenticated = Boolean(tokenRes?.isValid || user_token) && !isGuest;
       navigateDeepLink(navigationRef.current, target, isAuthenticated);
     };
 
-    const responseListener =
-      Notifications.addNotificationResponseReceivedListener(
-        handleNotificationResponse,
-      );
+    const responseListener = Notifications.addNotificationResponseReceivedListener(handleNotificationResponse);
 
     Notifications.getLastNotificationResponseAsync().then(response => {
       if (response) {
@@ -134,14 +107,6 @@ export function AppContent() {
     };
   }, [user_token, tokenRes, isGuest]);
 
-  useEffect(() => {
-    firebaseInit();
-    cleanUpDownloads();
-  }, []);
-
-  useNotificationListeners();
-
-
   return (
     <SafeAreaProvider>
       <TamaguiProvider config={config} defaultTheme={colorScheme === 'dark' ? 'dark' : 'light'}>
@@ -151,7 +116,8 @@ export function AppContent() {
               <SocketProvider>
                 <View style={{ flex: 1 }}>
                   <NavigationContainer ref={navigationRef}>
-                    {/* Main app navigation tree routes process natively below */}
+                    {/* 🚀 RESTORE APP ROUTER: Embed the navigation stack routing component back into the tree layout */}
+                    <StackNavigation />
                   </NavigationContainer>
                 </View>
               </SocketProvider>
@@ -162,3 +128,4 @@ export function AppContent() {
     </SafeAreaProvider>
   );
 }
+
