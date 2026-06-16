@@ -27,7 +27,8 @@ Users can also listen to articles(audio features) if they prefer. The Chat Secti
    - [Setting a local server with Express js](#setting-a-local-server-with-express-js)
    - [Running a local server to test the application](#how-can-you-run-local-server-to-test-your-application-frontend) (as you need to run the backend server also when working on the front end part, when there is data in your database, and your server is not live).  Main part.
    - [Swagger](#swagger)
-  
+   - [Backend Setup Guide](../BACKEND_SETUP.md)
+   
 4. [Database](#4-database)
    - [MongoDB](#mongodb)(Not only sql database)
    - [Setup](#setup)
