@@ -35,7 +35,8 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
     htmlContent,
     pb_record_id,
     translationSource,
-  } = route.params;
+    language,
+  } = route.params || {};
 
   const RichText = useRef<RichEditor>(null);
   const [article, setArticle] = useState('');
@@ -67,7 +68,7 @@ const EditorScreen = ({navigation, route}: EditorScreenProp) => {
                 articleData: articleData,
                 requestId: requestId,
                 pb_record_id: pb_record_id,
-                language: route.params.language,
+                language: language,
                 translationSource,
               });
             } else {

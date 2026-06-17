@@ -138,7 +138,12 @@ const resolveDeepLinkTarget = (url: string): DeepLinkTarget | null => {
 
   if (firstSegment === 'create-post') {
     return {
-      name: 'EditorScreen',
+      name: 'ArticleDescriptionScreen',
+      params: {
+        article: undefined,
+        htmlContent: undefined,
+        translationSource: undefined,
+      },
       requiresAuth: true,
     };
   }
@@ -165,6 +170,92 @@ const resolveDeepLinkTarget = (url: string): DeepLinkTarget | null => {
   }
 
   return null;
+};
+
+export const resolveNotificationTarget = (
+  data: Record<string, any> | null | undefined,
+): DeepLinkTarget | null => {
+  if (!data) {
+    return null;
+  }
+
+  if (typeof data.url === 'string' && data.url.length > 0) {
+    return resolveDeepLinkTarget(data.url);
+  }
+
+  if (typeof data.articleId !== 'undefined') {
+    return {
+      name: 'ArticleScreen',
+      params: {
+        articleId: Number(data.articleId),
+        authorId: data.authorId,
+        recordId: data.recordId,
+      },
+    };
+  }
+
+  if (typeof data.trackId === 'string' && data.trackId.length > 0) {
+    return {
+      name: 'PodcastDetail',
+      params: {
+        trackId: data.trackId,
+      },
+    };
+  }
+
+  if (typeof data.userId === 'string' && data.userId.length > 0) {
+    return {
+      name: 'UserProfileScreen',
+      params: {
+        authorId: data.userId,
+        userId: data.userId,
+        author_handle: data.author_handle,
+        userHandle: data.userHandle,
+      },
+    };
+  }
+
+  if (data.route === 'NotificationPreferencesScreen') {
+    return {
+      name: 'NotificationPreferencesScreen',
+      requiresAuth: true,
+    };
+  }
+
+  if (data.route === 'NotificationScreen') {
+    return {
+      name: 'NotificationScreen',
+    };
+  }
+
+  return null;
+};
+
+export const navigateDeepLink = (
+  navigation: any,
+  target: DeepLinkTarget,
+  isAuthenticated: boolean,
+) => {
+  if (target.requiresAuth && !isAuthenticated) {
+    navigation.navigate('LoginScreen', {
+      redirectTo: {
+        name: target.name,
+        params: target.params,
+      },
+    });
+    return;
+  }
+
+  if (restrictedRoutes.has(target.name) && !isAuthenticated) {
+    navigation.navigate('GuestPlaceholderScreen', {
+      title: 'Sign In Required',
+      description: 'Please sign in to continue to this part of the app.',
+      iconName: 'user-lock',
+    });
+    return;
+  }
+
+  navigation.navigate(target.name as never, target.params as never);
 };
 
 export const initDeepLinking = (navigation: any, isAuthenticated: boolean) => {

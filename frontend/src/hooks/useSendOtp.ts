@@ -2,7 +2,7 @@ import { useMutation, UseMutationResult } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import { SEND_OTP } from "../helper/APIUtils";
 
-export const useSendOtpMutation = ():UseMutationResult
+export const useSendOtpMutation = ():UseMutationResult<
   void,
   AxiosError,
   {email: string}

@@ -124,6 +124,30 @@ We will review your PR as soon as possible. Feedback will be provided constructi
   - Describe why it benefits the community
 
 
+## Frequently Asked Questions
+
+- Do I need to get assigned to an issue before working on it?
+
+Yes. It is recommended to comment on the issue and wait for maintainer       assignment before starting work. This helps prevent duplicate efforts and conflicting Pull
+
+- Which branch should I target for my Pull Request?
+
+For mobile app and core project contributions, target the main branch.
+For web application contributions, target the web branch.
+Always verify the target branch before creating your PR.
+
+-  How do I know whether an issue belongs to the mobile app or web app?
+
+Check the issue description, labels, and affected files. If the issue mentions React Native, Expo, Android, or iOS, it likely belongs to the mobile app. If it mentions React web pages, routing, or browser UI, it likely belongs to the web branch.
+
+- What if my Pull Request has merge conflicts?
+
+Sync your branch with the latest changes from the target branch, resolve conflicts locally, test again, and push the updated branch.
+
+- Do I need to update documentation when making changes?
+
+Yes. If your contribution affects users, contributors, APIs, workflows, or setup instructions, update the relevant documentation accordingly.
+
 ## Recognition
 
 All contributors are listed in the **README**.  

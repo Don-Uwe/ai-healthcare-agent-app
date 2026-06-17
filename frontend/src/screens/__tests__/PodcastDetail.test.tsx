@@ -1,5 +1,5 @@
 import React from 'react';
-import {render, fireEvent} from '@testing-library/react-native';
+import {render, fireEvent, act} from '@testing-library/react-native';
 import PodcastDetail from '../PodcastDetail';
 
 const mockNavigate = jest.fn();
@@ -173,9 +173,25 @@ const mockPodcast = {
   commentCount: 7,
 };
 
+let mockState: any = {
+  user: {
+    user_token: 'token',
+    user_id: 'user-1',
+    user_handle: 'john-doe',
+    isGuest: false,
+  },
+  network: {
+    isConnected: true,
+  },
+};
+
 const mockUseSelector = require('react-redux').useSelector as jest.Mock;
 const mockUseGetSinglePodcastDetails = require('../../hooks/useGetSinglePodcastDetails').useGetSinglePodcastDetails as jest.Mock;
 const mockUseLikePodcast = require('../../hooks/useLikePodcast').useLikePodcast as jest.Mock;
+
+const setConnectedStatus = (value: boolean) => {
+  mockState.network.isConnected = value;
+};
 
 describe('PodcastDetail', () => {
   let warnSpy: jest.SpyInstance;
@@ -187,19 +203,18 @@ describe('PodcastDetail', () => {
     mockPlayer.currentStatus.playing = false;
     mockPlayer.currentStatus.currentTime = 12;
     mockPlayer.currentStatus.duration = 245;
-    mockUseSelector.mockImplementation((selector: any) =>
-      selector({
-        user: {
-          user_token: 'token',
-          user_id: 'user-1',
-          user_handle: 'john-doe',
-          isGuest: false,
-        },
-        network: {
-          isConnected: true,
-        },
-      }),
-    );
+    mockState = {
+      user: {
+        user_token: 'token',
+        user_id: 'user-1',
+        user_handle: 'john-doe',
+        isGuest: false,
+      },
+      network: {
+        isConnected: true,
+      },
+    };
+    mockUseSelector.mockImplementation((selector: any) => selector(mockState));
     mockUseGetSinglePodcastDetails.mockReturnValue({
       data: mockPodcast,
       refetch: mockRefetch,
@@ -287,6 +302,101 @@ describe('PodcastDetail', () => {
     expect(getByLabelText('podcast-play-pause-button')).toBeTruthy();
     expect(getByLabelText('podcast-forward-button')).toBeTruthy();
     expect(getByTestId('podcast-progress-slider')).toBeTruthy();
+  });
+
+  it('pauses playback and shows reconnect indicator when network disconnects during playback', async () => {
+    mockPlayer.playing = true;
+    mockPlayer.currentStatus.playing = true;
+    mockPlayer.currentStatus.currentTime = 35;
+
+    const {getByText, rerender} = renderScreen();
+
+    expect(mockPlayer.pause).not.toHaveBeenCalled();
+
+    await act(async () => {
+      setConnectedStatus(false);
+      rerender(
+        <PodcastDetail
+          navigation={{navigate: mockNavigate} as any}
+          route={{params: {trackId: 'podcast-1', audioUrl: 'https://example.com/audio.mp3'}} as any}
+        />,
+      );
+    });
+
+    expect(mockPlayer.pause).toHaveBeenCalled();
+    expect(getByText('Waiting for network connection')).toBeTruthy();
+  });
+
+  it('automatically resumes playback after network reconnects once', async () => {
+    mockPlayer.playing = true;
+    mockPlayer.currentStatus.playing = true;
+    mockPlayer.currentStatus.currentTime = 52;
+
+    const {rerender} = renderScreen();
+
+    await act(async () => {
+      setConnectedStatus(false);
+      rerender(
+        <PodcastDetail
+          navigation={{navigate: mockNavigate} as any}
+          route={{params: {trackId: 'podcast-1', audioUrl: 'https://example.com/audio.mp3'}} as any}
+        />,
+      );
+    });
+
+    expect(mockPlayer.pause).toHaveBeenCalled();
+
+    mockPlayer.play.mockClear();
+    await act(async () => {
+      setConnectedStatus(true);
+      rerender(
+        <PodcastDetail
+          navigation={{navigate: mockNavigate} as any}
+          route={{params: {trackId: 'podcast-1', audioUrl: 'https://example.com/audio.mp3'}} as any}
+        />,
+      );
+    });
+
+    expect(mockPlayer.play).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not attempt duplicate auto-resume when reconnect events repeat', async () => {
+    mockPlayer.playing = true;
+    mockPlayer.currentStatus.playing = true;
+    mockPlayer.currentStatus.currentTime = 72;
+
+    const {rerender} = renderScreen();
+
+    await act(async () => {
+      setConnectedStatus(false);
+      rerender(
+        <PodcastDetail
+          navigation={{navigate: mockNavigate} as any}
+          route={{params: {trackId: 'podcast-1', audioUrl: 'https://example.com/audio.mp3'}} as any}
+        />,
+      );
+    });
+
+    mockPlayer.play.mockClear();
+
+    await act(async () => {
+      setConnectedStatus(true);
+      rerender(
+        <PodcastDetail
+          navigation={{navigate: mockNavigate} as any}
+          route={{params: {trackId: 'podcast-1', audioUrl: 'https://example.com/audio.mp3'}} as any}
+        />,
+      );
+      setConnectedStatus(true);
+      rerender(
+        <PodcastDetail
+          navigation={{navigate: mockNavigate} as any}
+          route={{params: {trackId: 'podcast-1', audioUrl: 'https://example.com/audio.mp3'}} as any}
+        />,
+      );
+    });
+
+    expect(mockPlayer.play).toHaveBeenCalledTimes(1);
   });
 
   it('truncates long description and toggles between Read More and Read Less', () => {
