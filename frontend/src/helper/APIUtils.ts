@@ -1,3 +1,5 @@
+
+declare const __DEV__: boolean;
 // API URL configuration
 // Values are injected at build time from environment variables via app.config.js.
 // To override for local development, set the following in your .env file
@@ -12,7 +14,6 @@
 // corresponding env var is not set.
 
 import Constants from "expo-constants";
-
 const extra = Constants.expoConfig?.extra ?? {};
 
 const PROD_URL: string = extra.PROD_URL;
@@ -40,6 +41,7 @@ const GET_ARTICLE_TRANSLATIONS = (articleId: string | number) =>
 const GET_USER_DETAILS_API = `${PROD_URL}/user/getdetails`;
 const UPDATE_USER_GENERAL_DETAILS = `${PROD_URL}/user/update-general-details`;
 const UPDATE_READ_EVENT = `${PROD_URL}/article/readEvent`;
+const GET_READ_HISTORY = `${PROD_URL}/article/read-history`;
 const UPDATE_USER_PASSWORD = `${PROD_URL}/user/update-password`;
 const UPDATE_USER_CONTACT_DETAILS = `${PROD_URL}/user/update-contact-details`;
 const UPDATE_USER_PROFESSIONAL_DETAILS = `${PROD_URL}/user/update-professional-details`;
@@ -78,6 +80,7 @@ const GET_IMPROVEMENT_BY_ID = `${PROD_URL}/get-improvement`;
 const SUBMIT_IMPROVEMENT = `${PROD_URL}/article/submit-improvement`;
 const UPLOAD_ARTICLE_TO_POCKETBASE = `${PROD_URL}/upload-pocketbase/article`;
 const UPLOAD_IMPROVEMENT_TO_POCKETBASE = `${PROD_URL}/upload-pocketbase/improvement`;
+const DELETE_POCKETBASE_RECORD = `${PROD_URL}/upload-pocketbase/record`;
 
 /** Content Checker */
 const RENDER_SUGGESTION = `${CONTENT_CHECKER_PROD}/readability/check`;
@@ -109,7 +112,7 @@ const SEND_MESSAGE_TO_GEMINI = `${PROD_URL}/gemini/send`;
 /** Notification Preferences */
 const GET_NOTIFICATION_PREFERENCES = `${PROD_URL}/user/notification-preferences`;
 const UPDATE_NOTIFICATION_PREFERENCES = `${PROD_URL}/user/notification-preferences`;
-
+const REGISTER_PUSH_TOKEN = `${PROD_URL}/user/register-device-token`;
 
 export {
   LOGIN_API,
@@ -170,7 +173,9 @@ export {
   UPLOAD_ARTICLE_TO_POCKETBASE,
   
   UPLOAD_IMPROVEMENT_TO_POCKETBASE,
+  DELETE_POCKETBASE_RECORD,
   RENDER_SUGGESTION,
+  REGISTER_PUSH_TOKEN,
   // PODCAST
   GET_ALL_PODCASTS,
   GET_PODCAST_DETAILS,
@@ -193,4 +198,5 @@ export {
   SEND_MESSAGE_TO_GEMINI,
   GET_NOTIFICATION_PREFERENCES,
   UPDATE_NOTIFICATION_PREFERENCES,
+  GET_READ_HISTORY,
 };

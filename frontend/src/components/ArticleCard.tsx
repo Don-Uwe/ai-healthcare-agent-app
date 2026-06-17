@@ -48,6 +48,7 @@ import {useSaveArticle} from '../hooks/useSaveArticle';
 import {useLazyGetArticleContent} from '../hooks/useLazyGetArticleContent';
 import {useRepostArticle} from '../hooks/useArticleRepost';
 import {useDoubleTap} from '../hooks/useDoubleTap';
+import { ImageFallback } from './ImageFallback';
 
 const ArticleCard = ({
   item,
@@ -400,21 +401,23 @@ const ArticleCard = ({
     onPress={handleCardPress}>
       <View style={styles.cardContainer}>
         {/* Image Section */}
-        <Pressable onPress={handleImagePress} style={styles.imageWrapper}>
-          <Image
-            source={{
-              uri: item?.imageUtils[0]
-                ? item?.imageUtils[0].startsWith('http')
-                  ? item?.imageUtils[0]
-                  : `${GET_IMAGE}/${item?.imageUtils[0]}`
-                : undefined,
-            }}
-            style={styles.coverImage}
-          />
-          <Animated.View style={[styles.heartOverlay, heartStyle]}>
-            <AntDesign name="heart" size={80} color="white" />
-          </Animated.View>
-        </Pressable>
+<Pressable onPress={handleImagePress} style={styles.imageWrapper}>
+  <ImageFallback
+    source={{
+      uri: item?.imageUtils[0]
+        ? item?.imageUtils[0].startsWith('http')
+          ? item?.imageUtils[0]
+          : `${GET_IMAGE}/${item?.imageUtils[0]}`
+        : undefined,
+    }}
+    fallbackSource={require('../assets/images/article_default.jpg')}
+    style={styles.coverImage}
+  />
+
+  <Animated.View style={[styles.heartOverlay, heartStyle]}>
+    <AntDesign name="heart" size={80} color="white" />
+  </Animated.View>
+</Pressable>
 
         <View style={styles.contentContainer}>
           {/* Share Icon */}

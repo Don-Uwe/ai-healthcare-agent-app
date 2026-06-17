@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import {
   StyleSheet,
   TouchableOpacity,
@@ -35,6 +35,7 @@ import LottieView from 'lottie-react-native';
 import AudioWaveform from '../components/AudioWaveform';
 import {useGetSinglePodcastDetails} from '../hooks/useGetSinglePodcastDetails';
 import {useLikePodcast} from '../hooks/useLikePodcast';
+import {getPlaybackPosition, savePlaybackPosition} from '../helper/PlaybackManager';
 
 const isAllowedUrl = (urlStr?: string | null): boolean => {
   if (!urlStr) return false;
@@ -78,6 +79,10 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   const [isLoading, setLoading] = useState<boolean>(false);
   const [duration, setDuration] = useState(0);
   const [position, setPosition] = useState(0);
+  const [networkPaused, setNetworkPaused] = useState(false);
+  const [isWaitingForNetwork, setIsWaitingForNetwork] = useState(false);
+  const [resumePosition, setResumePosition] = useState<number | null>(null);
+  const resumeAttemptedRef = useRef(false);
 
   const [isLike, setLike] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
@@ -99,6 +104,9 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   const initialSource = getFormattedSource(audioUrl) ?? defaultFallback;
   const [loadedSource, setLoadedSource] = useState<string | number>(initialSource);
 
+  const isRemoteSource =
+    typeof loadedSource === 'string' && loadedSource.startsWith('http');
+
   // only initialize once a valid uri exists
   const player = useAudioPlayer(initialSource);
 
@@ -106,23 +114,187 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
     if (podcast?.audio_url) {
       const secureSource = getFormattedSource(podcast.audio_url);
       if (secureSource && secureSource !== loadedSource) {
-        player.replace(secureSource);
-        setLoadedSource(secureSource);
+        try {
+          player.replace(secureSource);
+          setLoadedSource(secureSource);
+        } catch (err) {
+          console.warn('Failed to replace player source:', err);
+        }
       }
     }
   }, [podcast?.audio_url, player, loadedSource]);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (player.playing) {
-        setPosition(player.currentTime || 0);
-        setDuration(player.duration || 1);
-        // setIsPlaying(player.playing || false);
-      }
-    }, 500);
+  const saveCurrentPlaybackPosition = () => {
+    const currentTime =
+      player?.currentTime ?? player?.currentStatus?.currentTime ?? position;
+    setResumePosition(currentTime);
+    return currentTime;
+  };
 
-    return () => clearInterval(interval);
-  }, [player.currentTime, player.duration, player.playing]);
+  const pauseForNetworkLoss = async () => {
+    if (!player) return;
+    saveCurrentPlaybackPosition();
+
+    try {
+      player.pause();
+    } catch (err) {
+      console.warn('Error pausing playback on network loss:', err);
+    }
+
+    setIsPlaying(false);
+    setNetworkPaused(true);
+    setIsWaitingForNetwork(true);
+    resumeAttemptedRef.current = false;
+  };
+
+  const handlePlaybackError = async (error: unknown) => {
+    const message =
+      error instanceof Error ? error.message : String(error ?? 'Unknown error');
+    const isNetworkError =
+      !isConnected || /network|timeout|offline|connection|unreachable/i.test(message);
+
+    if (isNetworkError && player?.playing && isRemoteSource) {
+      await pauseForNetworkLoss();
+      Snackbar.show({
+        text: 'Playback paused because network was lost. Waiting for reconnection.',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+      return;
+    }
+
+    console.error('Playback error:', error);
+    Snackbar.show({
+      text: 'Playback error. Please try again.',
+      duration: Snackbar.LENGTH_SHORT,
+    });
+  };
+
+  const restorePlaybackPosition = async (currentTime: number) => {
+    if (!player || currentTime <= 0) return;
+    try {
+      await player.seekTo(currentTime);
+      setPosition(currentTime);
+    } catch (err) {
+      console.warn('Failed to restore playback position after reconnect:', err);
+    }
+  };
+
+  const attemptAutoResume = async () => {
+    if (!player || !networkPaused || !isConnected || resumeAttemptedRef.current) return;
+    resumeAttemptedRef.current = true;
+
+    const resumeAt = resumePosition ?? player.currentTime ?? player.currentStatus?.currentTime ?? 0;
+    await restorePlaybackPosition(resumeAt);
+
+    try {
+      await player.play();
+      setIsPlaying(true);
+      setNetworkPaused(false);
+      setIsWaitingForNetwork(false);
+    } catch (err) {
+      console.warn('Auto-resume playback failed after reconnect:', err);
+    }
+  };
+
+useEffect(() => {
+  if (!player) return;
+
+  if (!isConnected && player.playing && isRemoteSource) {
+    void pauseForNetworkLoss();
+    return;
+  }
+
+  if (isConnected && networkPaused && !resumeAttemptedRef.current) {
+    void attemptAutoResume();
+    return;
+  }
+
+  if (isConnected && isWaitingForNetwork && !networkPaused) {
+    setIsWaitingForNetwork(false);
+  }
+}, [
+  isConnected,
+  networkPaused,
+  player,
+  isRemoteSource,
+  isWaitingForNetwork,
+]);
+
+useEffect(() => {
+  let lastSaveTime = 0;
+
+  const interval = setInterval(() => {
+    if (!player) return;
+
+    const status = player.currentStatus;
+
+    if (status?.isLoaded) {
+      const currentPos = status.currentTime || 0;
+      const totalDur = status.duration || 0;
+
+      setPosition(currentPos);
+      setDuration(totalDur);
+
+      // Save playback position every 5 seconds
+      if (player.playing) {
+        const now = Date.now();
+
+        if (now - lastSaveTime > 5000) {
+          savePlaybackPosition(trackId, currentPos, totalDur);
+          lastSaveTime = now;
+        }
+      }
+    }
+  }, 500);
+
+  return () => clearInterval(interval);
+}, [player, trackId]);
+
+// Check for saved position on mount
+useEffect(() => {
+  if (!player) return;
+
+  let isCancelled = false;
+
+  const checkResume = async () => {
+    const saved = await getPlaybackPosition(trackId);
+
+    if (!isCancelled && saved && saved.position > 5) {
+      Alert.alert(
+        'Resume Podcast',
+        `Do you want to resume from ${formatSecTime(saved.position)}?`,
+        [
+          {
+            text: 'Start Over',
+            style: 'cancel',
+            onPress: async () => {
+              await player.seekTo(0);
+              setPosition(0);
+            },
+          },
+          {
+            text: 'Resume',
+            onPress: async () => {
+              await player.seekTo(saved.position);
+              setPosition(saved.position);
+              player.play();
+              setIsPlaying(true);
+            },
+          },
+        ]
+      );
+    }
+  };
+
+  const timeout = setTimeout(() => {
+    void checkResume();
+  }, 500);
+
+  return () => {
+    isCancelled = true;
+    clearTimeout(timeout);
+  };
+}, [player, trackId]);
 
   useEffect(()=>{
 
@@ -173,17 +345,7 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
       return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
     }
   };
-  // For position update
-
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      if (player) {
-        const status = player.currentStatus;
-        if (status.isLoaded) setPosition(status.currentTime);
-      }
-    }, 500);
-    return () => clearInterval(interval);
-  }, [player, player.currentTime, player.duration, player.playing]);
+  // For position update (removed redundant interval)
 
   const handleShare = async () => {
     try {
@@ -208,26 +370,53 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
   };
 
   const handlePlay = async () => {
-    if (!player) {
+    if (!player || !isConnected) {
       return;
     }
 
-    //await player.seekTo(0);
-    player.play();
-    //setUiState('playing');
-    setIsPlaying(true);
+    if (!isConnected && isRemoteSource) {
+      setIsWaitingForNetwork(true);
+      Snackbar.show({
+        text: 'Waiting for network to resume playback.',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+      return;
+    }
+
+    try {
+      await player.play();
+      setIsPlaying(true);
+      setNetworkPaused(false);
+      setIsWaitingForNetwork(false);
+      resumeAttemptedRef.current = false;
+    } catch (err) {
+      await handlePlaybackError(err);
+    }
   };
 
-  const handlePause = async () => {
-    if (!player) return;
+ const handlePause = async () => {
+  if (!player) return;
 
-
+  try {
     player.pause();
-    //  setUiState('paused');
-    setIsPlaying(false);
-  };
 
-  if (isPodcastLoading || isLoading) {
+    // Save exact playback position when user pauses
+    await savePlaybackPosition(
+      trackId,
+      player.currentTime || 0,
+      player.duration || 1
+    );
+  } catch (err) {
+    console.warn('Error pausing playback:', err);
+  }
+
+  setIsPlaying(false);
+  setNetworkPaused(false);
+  setIsWaitingForNetwork(false);
+  resumeAttemptedRef.current = false;
+};
+  
+ if (isPodcastLoading || isLoading) {
     return <Loader />;
   }
 
@@ -322,6 +511,25 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
     </YStack>
   );
 
+
+  const offlineBannerEl = !isConnected && (
+    <View style={styles.offlineBanner}>
+      <Text color="#FFFFFF" fontSize={14} fontWeight="600">
+        You are offline. Audio playback unavailable.
+      </Text>
+
+      <TouchableOpacity
+        style={styles.retryAudioButton}
+        onPress={() => {
+          refetch();
+        }}>
+        <Text color="#0B1425" fontWeight="700">
+          Retry
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+
   const sliderEl = (
     <View
       style={[styles.sliderContainer, GlassStyles.glassContainerDark]}>
@@ -369,6 +577,7 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
         <TouchableOpacity
           testID="podcast-back-button"
           accessibilityLabel="podcast-back-button"
+          disabled={!isConnected}
           onPress={handleBackward}
           style={styles.controlButton}>
           <Ionicons name="play-back" size={32} color="#9BB3C8" />
@@ -377,6 +586,7 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
         <TouchableOpacity
           testID="podcast-play-pause-button"
           accessibilityLabel="podcast-play-pause-button"
+          disabled={!isConnected}
           onPress={() =>
             player.currentStatus.playing ? handlePause() : handlePlay()
           }
@@ -391,6 +601,7 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
         <TouchableOpacity
           testID="podcast-forward-button"
           accessibilityLabel="podcast-forward-button"
+          disabled={!isConnected}
           onPress={handleForward}
           style={styles.controlButton}>
           <Ionicons name="play-forward" size={32} color="#9BB3C8" />
@@ -564,6 +775,8 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
             {descriptionEl}
           </YStack>
         </View>
+        {offlineBannerEl}
+        {offlineBannerEl}
         {sliderEl}
         <View style={{ marginTop: -15 }}>
           {controlsEl}
@@ -619,6 +832,21 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
           padding="$3"
           paddingTop="$10"
           justifyContent="space-between">
+          {isWaitingForNetwork && (
+            <YStack
+              backgroundColor="#1F2937"
+              borderRadius="$8"
+              padding="$3"
+              marginBottom="$3"
+              gap="$1">
+              <Text color="#FBBF24" fontWeight="700">
+                Waiting for network connection
+              </Text>
+              <Text color="#CBD5E1" fontSize={13}>
+                Playback was paused because connectivity was lost. It will resume as soon as the network returns.
+              </Text>
+            </YStack>
+          )}
           {content}
         </YStack>
       </Theme>
@@ -728,13 +956,29 @@ const styles = StyleSheet.create({
     aspectRatio: 1,
     borderRadius: 16,
   },
+
+  offlineBanner: {
+    backgroundColor: '#7F1D1D',
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 12,
+    alignItems: 'center',
+  },
+  retryAudioButton: {
+    marginTop: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: PRIMARY_COLOR,
+  },
+
   readMoreButton: {
     marginTop: 8,
     paddingVertical: 10,
     paddingHorizontal: 12,
     alignSelf: 'flex-start',
     minWidth: 100,
-    minHeight: 44, // Minimum touch target size for accessibility
+    minHeight: 44,
     justifyContent: 'center',
   },
 

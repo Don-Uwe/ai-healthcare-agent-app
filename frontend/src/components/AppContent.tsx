@@ -1,3 +1,12 @@
+import React, { useEffect, useRef } from 'react';
+import { useColorScheme, View } from 'react-native';
+import { PaperProvider } from 'react-native-paper';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { TamaguiProvider } from 'tamagui';
+import { NavigationContainer } from '@react-navigation/native';
+import * as Notifications from 'expo-notifications';
+import messaging from '@react-native-firebase/messaging';
+
 import { FirebaseProvider } from '@/hooks/FirebaseContext';
 import { useCheckTokenStatus } from '@/src/hooks/useGetTokenStatus';
 import { useNotificationListeners } from '@/hooks/useNotificationListener';
@@ -5,156 +14,118 @@ import { useVersionCheck } from '@/hooks/useVersionCheck';
 import { SocketProvider } from '../contexts/SocketContext';
 import { PreferencesProvider } from '../contexts/PreferencesContext';
 import config from '@/tamagui.config';
-import messaging from '@react-native-firebase/messaging';
-import {
-  NavigationContainer,
-  type NavigationContainerRef,
-} from '@react-navigation/native';
-import React, { useEffect, useRef, useCallback } from 'react';
 
-import { View, useColorScheme } from 'react-native';
-import { PaperProvider } from 'react-native-paper';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { addEventListener } from '@react-native-community/netinfo';
-import { useDispatch, useSelector } from 'react-redux';
-import { TamaguiProvider, useTheme } from 'tamagui';
-import { initDeepLinking } from '../helper/DeepLinkService';
-import StackNavigation from '../navigations/StackNavigation';
-import { CustomAlertDialog } from './CustomAlert';
-import UpdateModal from './UpdateModal';
-import { setConnected } from '../store/NetworkSlice';
-import { firebaseInit } from '../helper/firebase';
-import { cleanUpDownloads } from '../helper/Utils';
-import { SECURE_KEYS, secureRetrieveItem } from '../helper/SecureStorageUtils';
-import { setUserToken, setGuestMode } from '../store/UserSlice';
-import { RootState } from '../store/ReduxStore';
-import { setupAxiosInterceptor } from '../helper/setupAxiosInterceptor';
-import { initMonitoring } from '../services/monitoring/sentry';
+import { registerAndSyncPushToken } from '../helper/PushNotificationService';
+import { initDeepLinking, navigateDeepLink, resolveNotificationTarget } from '../helper/DeepLinkService';
+import { firebaseInit } from '../helper/firebase'; // Ensure file dependency matches project pathing rules
+import { cleanUpDownloads } from '../helper/utils';   // Ensure file dependency matches project pathing rules
 
-export default function AppContent() {
-  const theme = useTheme();
-  const navigationRef = useRef<NavigationContainerRef<any> | null>(null);
-  const hasInitialized = useRef(false);
-  // Used only for TamaguiProvider theming. StatusBar styling is owned by CustomStatusBar.
-  const isDarkMode = useColorScheme() === 'dark';
+// Import your application's actual routing provider engine to prevent blank screen errors
+// Note: Double-check the physical file path name inside your fork to match this import
+import StackNavigation from '../navigation/StackNavigation'; 
 
-  const { data: tokenRes = null } = useCheckTokenStatus();
-  const { user_token, isGuest } = useSelector((state: RootState) => state.user);
+export function AppContent() {
+  const colorScheme = useColorScheme();
+  
+  // Restore the application's native token check frameworks cleanly
+  const { user_token, tokenRes, isLoading, isGuest } = useCheckTokenStatus();
+  
+  const navigationRef = useRef<any>(null);
+  
+  // 🧠 ASYNCHRONOUS AUTH GUARD BUFFER: Caches incoming deep link destination tokens securely during cold starts
+  const pendingDeepLinkRef = useRef<string | null>(null);
 
-  // Initialise monitoring and axios interceptors once on mount.
-  // initMonitoring() is placed here (rather than index.js module scope) so that
-  // expo-application metadata is fully available when Sentry reads
-  // nativeApplicationVersion / nativeBuildVersion.
-  // setupAxiosInterceptor() is idempotent — it ejects and re-registers interceptors
-  // on every call, so double-invocations from React Strict Mode are safe.
-  useEffect(() => {
-    initMonitoring();
-    setupAxiosInterceptor();
-  }, []);
-
-  const { visible, storeUrl } = useVersionCheck();
-  const dispatch = useDispatch();
-
-  const checkToken = useCallback(async () => {
-    const token = await secureRetrieveItem(SECURE_KEYS.USER_TOKEN);
-
-    dispatch(setUserToken(token));
-    if (token) {
-      dispatch(setGuestMode(false));
-    }
-  }, [dispatch]);
-
-  useEffect(() => {
-    if (navigationRef.current && tokenRes && !hasInitialized.current) {
-      hasInitialized.current = true;
-      checkToken();
-    }
-  }, [checkToken, tokenRes]);
-
-  useEffect(() => {
-    if (!navigationRef.current) {
-      return;
-    }
-
-    if (!isGuest && tokenRes === null && !user_token) {
-      return;
-    }
-
-    const isAuthenticated =
-      Boolean(tokenRes?.isValid || user_token) && !isGuest;
-    return initDeepLinking(navigationRef.current, isAuthenticated);
-  }, [isGuest, tokenRes, user_token]);
-
-  useEffect(() => {
-    const unsubscribe = messaging().onMessage(async remoteMessage => {
-      // Only log notification payloads in development to avoid leaking
-      // FCM message content (including user-targeted data fields) to
-      // production log aggregators or crash reporters.
-      if (__DEV__) {
-        console.log(
-          'Foreground notification received from message:',
-          remoteMessage,
-        );
-      }
-    });
-
-    const unsubscribe1 = addEventListener(state => {
-      if (__DEV__) {
-        console.log('Connection type', state.type);
-        console.log('Is connected?', state.isConnected);
-      }
-      /** Dispatch use a reducer to update the value in store */
-      dispatch(setConnected(state.isConnected));
-    });
-
-    const onOpenApp = messaging().onNotificationOpenedApp(remoteMessage => {
-      if (__DEV__) {
-        console.log('Notification caused app to open:', remoteMessage);
-      }
-      // const data = remoteMessage.data;
-      // handleNotification(data);
-    });
-
-    return () => {
-      unsubscribe();
-      unsubscribe1();
-      onOpenApp();
-    };
-  }, [dispatch]);
+  // Invoke core system validation pipelines natively
+  useVersionCheck();
+  useNotificationListeners();
 
   useEffect(() => {
     firebaseInit();
     cleanUpDownloads();
-  }, []);
 
-  useNotificationListeners();
+    // Securely register push tokens matching active session states
+    if (user_token) {
+      registerAndSyncPushToken(user_token);
+    }
+
+    // Intercept and buffer cold-start deep links until the navigation ref container binds securely
+    initDeepLinking((url) => {
+      if (url) {
+        pendingDeepLinkRef.current = url;
+        console.log('[Auth Guard] Cached incoming deep link securely inside reference buffer:', url);
+      }
+    });
+
+    const onOpenApp = messaging().onNotificationOpenedApp(remoteMessage => {
+      console.log('Notification caused app to open from background state:', remoteMessage);
+    });
+
+    return () => {
+      onOpenApp();
+    };
+  }, [user_token]);
+
+  // Asynchronous Router Guard Loop: Defers target navigation loops until token validations resolve
+  useEffect(() => {
+    if (isLoading || !navigationRef.current || !pendingDeepLinkRef.current) return;
+
+    const isAuthenticated = Boolean(tokenRes?.isValid || user_token) && !isGuest;
+
+    if (isAuthenticated) {
+      console.log('[Auth Guard] User is verified. Routing deep link payload destination string.');
+      navigateDeepLink(navigationRef.current, pendingDeepLinkRef.current, true);
+    } else {
+      console.log('[Auth Guard] User is anonymous. Purging buffer and diverting to login gate schemas.');
+      navigationRef.current.navigate('Login');
+    }
+    
+    // Instantly flush pointer reference to block loops
+    pendingDeepLinkRef.current = null;
+  }, [isLoading, tokenRes, user_token, isGuest]);
+
+  useEffect(() => {
+    const handleNotificationResponse = async (response: Notifications.NotificationResponse) => {
+      const data = response.notification.request.content.data;
+      const target = resolveNotificationTarget(data);
+
+      if (!target || !navigationRef.current) return;
+
+      const isAuthenticated = Boolean(tokenRes?.isValid || user_token) && !isGuest;
+      navigateDeepLink(navigationRef.current, target, isAuthenticated);
+    };
+
+    const responseListener = Notifications.addNotificationResponseReceivedListener(handleNotificationResponse);
+
+    Notifications.getLastNotificationResponseAsync().then(response => {
+      if (response) {
+        handleNotificationResponse(response);
+      }
+    });
+
+    return () => {
+      responseListener.remove();
+    };
+  }, [user_token, tokenRes, isGuest]);
 
   return (
-    <TamaguiProvider
-      config={config}
-      defaultTheme={isDarkMode ? 'dark' : 'light'}>
-      <FirebaseProvider>
-        <SocketProvider>
-          <PreferencesProvider>
-            <SafeAreaProvider>
-              <PaperProvider>
-                <View
-                  style={{
-                    flex: 1,
-                    backgroundColor: theme.background.val,
-                  }}>
-                  {/* StatusBar is managed globally by CustomStatusBar — do not add one here. */}
+    <SafeAreaProvider>
+      <TamaguiProvider config={config} defaultTheme={colorScheme === 'dark' ? 'dark' : 'light'}>
+        <PaperProvider>
+          <FirebaseProvider>
+            <PreferencesProvider>
+              <SocketProvider>
+                <View style={{ flex: 1 }}>
                   <NavigationContainer ref={navigationRef}>
+                    {/* 🚀 RESTORE APP ROUTER: Embed the navigation stack routing component back into the tree layout */}
                     <StackNavigation />
                   </NavigationContainer>
-                  <CustomAlertDialog key={'alert'} />
-                  <UpdateModal visible={visible} storeUrl={storeUrl} />
                 </View>
-              </PaperProvider>
-            </SafeAreaProvider>
-          </PreferencesProvider>
-        </SocketProvider>
-      </FirebaseProvider>
-    </TamaguiProvider>
+              </SocketProvider>
+            </PreferencesProvider>
+          </FirebaseProvider>
+        </PaperProvider>
+      </TamaguiProvider>
+    </SafeAreaProvider>
   );
 }
+

@@ -346,7 +346,7 @@ def handle_issue_opened(repo, issue_number, token, gemini_api_keys):
                 post_comment(repo, issue_number, msg, token)
                 return "frontend", f"Frontend (auto-assigned to @{author})"
             else:
-                msg = f"This issue has been triaged as a **frontend** task ({difficulty or 'Unclassified Difficulty'}).\n\n> **Expected Effect & Scope:** {decision.get('reasoning')}\n\nIt is now open for community contribution!\n\nHi @{author}, I couldn't assign this to you automatically because you currently have another active assignment. Please complete your current task first!"
+                msg = f"This issue has been triaged as a **frontend** task ({difficulty or 'Unclassified Difficulty'}).\n\n> **Expected Effect & Scope:** {decision.get('reasoning')}\n\nIt is now open for community contribution!\n\nHi @{author}, I couldn't assign this to you automatically because you currently have another active assignment. Please complete your current task first!\n\n---\n### 🤖 Assignment Guidelines\nTo get assigned to this issue, simply leave a comment requesting assignment.\nThe AI bot will automatically assign you if you meet the following eligibility criteria:\n1. You do not currently have any other active assigned issues in this repository.\n2. If you were previously assigned an issue, you must have submitted a Pull Request for it before requesting a new one."
                 post_comment(repo, issue_number, msg, token)
                 return "frontend", "Frontend (open)"
         

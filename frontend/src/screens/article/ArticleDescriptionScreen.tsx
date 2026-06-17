@@ -34,7 +34,7 @@ const ArticleDescriptionScreen = ({
   navigation,
   route,
 }: ArticleDescriptionProp) => {
-  const {article, htmlContent, translationSource} = route.params;
+  const {article, htmlContent, translationSource} = route.params || {};
   const isTranslation = Boolean(translationSource);
   const [title, setTitle] = useState('');
   const [authorName, setAuthorName] = useState('');
