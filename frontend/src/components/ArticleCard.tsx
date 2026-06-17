@@ -23,7 +23,14 @@ import {
   requestStoragePermissions,
   StatusEnum,
 } from '../helper/Utils';
-import {useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSequence,
+  withSpring,
+  withDelay,
+} from 'react-native-reanimated';
 import ArticleFloatingMenu from './ArticleFloatingMenu';
 
 import Entypo from '@expo/vector-icons/Entypo';
@@ -40,6 +47,7 @@ import {useLikeArticle} from '../hooks/useLikeArticle';
 import {useSaveArticle} from '../hooks/useSaveArticle';
 import {useLazyGetArticleContent} from '../hooks/useLazyGetArticleContent';
 import {useRepostArticle} from '../hooks/useArticleRepost';
+import {useDoubleTap} from '../hooks/useDoubleTap';
 import { ImageFallback } from './ImageFallback';
 
 const ArticleCard = ({
@@ -87,6 +95,116 @@ const ArticleCard = ({
 
   const {mutate: getArticleContent, isPending: getArticleContentPending} =
     useLazyGetArticleContent();
+
+  const heartScale = useSharedValue(0);
+
+  const heartStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: heartScale.value }],
+      opacity: heartScale.value,
+    };
+  });
+
+  const handleLikeAction = (isDoubleTap = false) => {
+    if (isGuest) {
+      (navigation as any).navigate('GuestPlaceholderScreen', {
+        title: 'Sign In Required',
+        description: 'Please sign in or sign up to like this article.',
+        iconName: 'heart',
+      });
+      return;
+    }
+
+    if (isDoubleTap) {
+      if (isLiked) return;
+
+      heartScale.value = withSequence(
+        withSpring(1.2, { damping: 10, stiffness: 100 }),
+        withTiming(1, { duration: 100 }),
+        withDelay(500, withSpring(0, { damping: 12, stiffness: 100 }))
+      );
+    }
+
+    if (isConnected) {
+      const previousIsLiked = isLiked;
+      const previousLikeCount = likeCount;
+
+      setIsLiked(isDoubleTap ? true : !isLiked);
+      setLikeCount(prev =>
+        (isDoubleTap ? true : !isLiked) ? prev + 1 : (prev - 1 > 0 ? prev - 1 : 0)
+      );
+
+      likeMutation(undefined, {
+        onSuccess: (data: {
+          article: ArticleData;
+          likeStatus: boolean;
+        }) => {
+          console.log('Article like success', data.likeStatus);
+          setIsLiked(data?.likeStatus);
+
+          if (data?.likeStatus) {
+            if (socket) {
+              socket.emit('notification', {
+                type: 'likePost',
+                userId: data?.article?.authorId,
+                articleId: data?.article?._id,
+                podcastId: null,
+                articleRecordId: data?.article?.pb_recordId,
+                title: user
+                  ? `${user?.user_handle} liked your post`
+                  : 'Someone liked your post',
+                message: data?.article?.title,
+              });
+            }
+          }
+        },
+        onError: (err: any) => {
+          console.log('Like error', err);
+          setIsLiked(previousIsLiked);
+          setLikeCount(previousLikeCount);
+          Snackbar.show({
+            text: 'something went wrong, try again!',
+            duration: Snackbar.LENGTH_SHORT,
+          });
+        },
+      });
+    } else {
+      Snackbar.show({
+        text: 'Please check your network connection',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+    }
+  };
+
+  const handleCardPress = () => {
+    if (isConnected) {
+      width.value = withTiming(0, {duration: 250});
+      yValue.value = withTiming(100, {duration: 250});
+      setSelectedCardId('');
+      (navigation as any).navigate('ArticleScreen', {
+        articleId: Number(item._id),
+        authorId: item.authorId,
+        recordId: item.pb_recordId,
+      });
+    } else {
+      Snackbar.show({
+        text: 'Please connect to the internet to view this article.',
+        duration: Snackbar.LENGTH_LONG,
+      });
+      Alert.alert(
+        'No Internet 🚫',
+        'Internet connection required. Offline mode will be available in the next update.',
+        [{text: 'OK'}],
+      );
+    }
+  };
+
+  const handleImagePressRaw = useDoubleTap(handleCardPress, () => handleLikeAction(true), 300);
+
+  const handleImagePress = (e: any) => {
+    e?.stopPropagation?.();
+    handleImagePressRaw();
+  };
 
   const handleShare = async () => {
     try {
@@ -280,41 +398,26 @@ const ArticleCard = ({
     accessibilityRole="button"
     accessibilityLabel={`Open article ${item?.title}`}
     accessibilityHint="Opens full article"
-    onPress={() => {
-        if (isConnected) {
-          width.value = withTiming(0, {duration: 250});
-          yValue.value = withTiming(100, {duration: 250});
-          setSelectedCardId('');
-          (navigation as any).navigate('ArticleScreen', {
-            articleId: Number(item._id),
-            authorId: item.authorId,
-            recordId: item.pb_recordId,
-          });
-        } else {
-          Snackbar.show({
-            text: 'Please connect to the internet to view this article.',
-            duration: Snackbar.LENGTH_LONG,
-          });
-          Alert.alert(
-            'No Internet 🚫',
-            'Internet connection required. Offline mode will be available in the next update.',
-            [{text: 'OK'}],
-          );
-        }
-      }}>
+    onPress={handleCardPress}>
       <View style={styles.cardContainer}>
         {/* Image Section */}
-        <ImageFallback
-  source={{
-    uri: item?.imageUtils[0]
-      ? item?.imageUtils[0].startsWith('http')
-        ? item?.imageUtils[0]
-        : `${GET_IMAGE}/${item?.imageUtils[0]}`
-      : undefined,
-  }}
-  fallbackSource={require('../assets/images/article_default.jpg')}
-  style={styles.coverImage}
-/>
+<Pressable onPress={handleImagePress} style={styles.imageWrapper}>
+  <ImageFallback
+    source={{
+      uri: item?.imageUtils[0]
+        ? item?.imageUtils[0].startsWith('http')
+          ? item?.imageUtils[0]
+          : `${GET_IMAGE}/${item?.imageUtils[0]}`
+        : undefined,
+    }}
+    fallbackSource={require('../assets/images/article_default.jpg')}
+    style={styles.coverImage}
+  />
+
+  <Animated.View style={[styles.heartOverlay, heartStyle]}>
+    <AntDesign name="heart" size={80} color="white" />
+  </Animated.View>
+</Pressable>
 
         <View style={styles.contentContainer}>
           {/* Share Icon */}
@@ -461,65 +564,7 @@ const ArticleCard = ({
                 accessibilityHint="Likes or unlikes this article"
                 onPress={(e) => {
                   e?.stopPropagation?.();
-                  if (isGuest) {
-                    (navigation as any).navigate('GuestPlaceholderScreen', {
-                      title: 'Sign In Required',
-                      description: 'Please sign in or sign up to like this article.',
-                      iconName: 'heart',
-                    });
-                    return;
-                  }
-                  if (isConnected) {
-                    const previousIsLiked = isLiked;
-                    const previousLikeCount = likeCount;
-
-                    // Optimistic update
-                    setIsLiked(!isLiked);
-                    setLikeCount(prev =>
-                      isLiked ? (prev - 1 > 0 ? prev - 1 : 0) : prev + 1,
-                    );
-
-                    likeMutation(undefined, {
-                      onSuccess: (data: {
-                        article: ArticleData;
-                        likeStatus: boolean;
-                      }) => {
-                        console.log('Article like success', data.likeStatus);
-                        setIsLiked(data?.likeStatus);
-
-                        if (data?.likeStatus) {
-                          if (socket) {
-                            socket.emit('notification', {
-                              type: 'likePost',
-                              userId: data?.article?.authorId,
-                              articleId: data?.article?._id,
-                              podcastId: null,
-                              articleRecordId: data?.article?.pb_recordId,
-                              title: user
-                                ? `${user?.user_handle} liked your post`
-                                : 'Someone liked your post',
-                              message: data?.article?.title,
-                            });
-                          }
-                        }
-                      },
-                      onError: (err: any) => {
-                        console.log('Like error', err);
-                        // Rollback optimistic update
-                        setIsLiked(previousIsLiked);
-                        setLikeCount(previousLikeCount);
-                        Snackbar.show({
-                          text: 'something went wrong, try again!',
-                          duration: Snackbar.LENGTH_SHORT,
-                        });
-                      },
-                    });
-                  } else {
-                    Snackbar.show({
-                      text: 'Please check your network connection',
-                      duration: Snackbar.LENGTH_SHORT,
-                    });
-                  }
+                  handleLikeAction(false);
                 }}
                 style={styles.likeSaveChildContainer}>
                 {isLiked ? (
@@ -772,9 +817,29 @@ const styles = StyleSheet.create({
     shadowOffset: {width: 0, height: 4},
   },
 
-  coverImage: {
+  imageWrapper: {
     width: '100%',
     height: 180,
+    position: 'relative',
+  },
+  heartOverlay: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  coverImage: {
+    width: '100%',
+    height: '100%',
     resizeMode: 'cover',
   },
 
