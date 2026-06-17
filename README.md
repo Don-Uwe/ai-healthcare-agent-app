@@ -919,6 +919,7 @@ We welcome contributions from everyone — developers, designers, writers, and t
    <tr>
     <td align="center"><a href="https://github.com/Deepak-Akuthota"><img src="https://avatars.githubusercontent.com/u/192285199?v=4" width="120px;" alt=""/><br/><sub><b>Deepak-Akuthota</b></sub></a></td>
        <td align="center"><a href="https://github.com/Kr1491"><img src="https://avatars.githubusercontent.com/u/107742536?v=4" width="120px;" alt=""/><br/><sub><b>Krishna Jha</b></sub></a></td>
+     <td align="center"><a href="https://github.com/sahare-mayur-0071"><img src="https://avatars.githubusercontent.com/u/184800556?v=4" width="120px;" alt=""/><br/><sub><b>MAYUR AJIT SAHARE</b></sub></a></td>
  </tr>
 </table>
 <!-- CONTRIBUTORS-TABLE-END -->
