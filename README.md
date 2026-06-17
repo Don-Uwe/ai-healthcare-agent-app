@@ -915,6 +915,10 @@ We welcome contributions from everyone — developers, designers, writers, and t
      <td align="center"><a href="https://github.com/mannatjain11465-netizen"><img src="https://avatars.githubusercontent.com/u/226103934?v=4" width="120px;" alt=""/><br/><sub><b>Mannat Jain</b></sub></a></td>
      <td align="center"><a href="https://github.com/Stewartsson"><img src="https://avatars.githubusercontent.com/u/198082561?v=4" width="120px;" alt=""/><br/><sub><b>John Stewartsson J R</b></sub></a></td>
  </tr>
+
+   <tr>
+    <td align="center"><a href="https://github.com/Deepak-Akuthota"><img src="https://avatars.githubusercontent.com/u/192285199?v=4" width="120px;" alt=""/><br/><sub><b>Deepak-Akuthota</b></sub></a></td>
+   </tr>
 </table>
 <!-- CONTRIBUTORS-TABLE-END -->
 
