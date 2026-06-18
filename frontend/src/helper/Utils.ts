@@ -2,7 +2,7 @@ import NetInfo from '@react-native-community/netinfo';
 import {Category, CategoryType, PodcastData} from '../type';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {GET_STORAGE_DATA} from './APIUtils';
-import {Linking, PermissionsAndroid, Platform} from 'react-native';
+import {Alert, Linking, Platform, PermissionsAndroid} from 'react-native';
 import RNFS from 'react-native-fs';
 import {secureClearAllItems} from './SecureStorageUtils';
 import {

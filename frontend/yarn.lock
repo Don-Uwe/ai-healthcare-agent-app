@@ -1293,11 +1293,6 @@
   resolved "https://registry.npmjs.org/@expo/schema-utils/-/schema-utils-0.1.8.tgz"
   integrity sha512-9I6ZqvnAvKKDiO+ZF8BpQQFYWXOJvTAL5L/227RUbWG1OVZDInFifzCBiqAZ3b67NRfeAgpgvbA7rejsqhY62A==
 
-"@expo/schema-utils@^56.0.0":
-  version "56.0.1"
-  resolved "https://registry.npmjs.org/@expo/schema-utils/-/schema-utils-56.0.1.tgz"
-  integrity sha512-CZ/+mYbQmWeOnkCGlWy9K+lFxbJSMFY7+TqBZcKzBSTU5Q7IGRvn/sOG3TdNjIdLPmbA8xe7R/c3UUQ28R9i9w==
-
 "@expo/sdk-runtime-versions@^1.0.0":
   version "1.0.0"
   resolved "https://registry.npmjs.org/@expo/sdk-runtime-versions/-/sdk-runtime-versions-1.0.0.tgz"
@@ -6220,37 +6215,37 @@ expo-constants@~18.0.10, expo-constants@~18.0.13:
     "@expo/config" "~12.0.13"
     "@expo/env" "~2.0.8"
 
-expo-dev-client@^56.0.18:
-  version "56.0.18"
-  resolved "https://registry.npmjs.org/expo-dev-client/-/expo-dev-client-56.0.18.tgz"
-  integrity sha512-pTfDcYTOvrs4vCgAaM+vP2OEO93oGkczgGpTAzCY7ZTIvtPhpekJURHBxfOnKvfn97IF3Hk+8J9tMozsNDj0Gw==
+expo-dev-client@~6.0.21:
+  version "6.0.21"
+  resolved "https://registry.npmjs.org/expo-dev-client/-/expo-dev-client-6.0.21.tgz"
+  integrity sha512-SWI6HD0pa4eJujkYFkvvpezUE1zmJXGLu+34azpu7+QJgO+FLutDYDj8BSTdeH/NYDEClDFjCGqVMcWETvmsCQ==
   dependencies:
-    expo-dev-launcher "~56.0.18"
-    expo-dev-menu "~56.0.16"
-    expo-dev-menu-interface "~56.0.0"
-    expo-manifests "~56.0.4"
-    expo-updates-interface "~56.0.1"
+    expo-dev-launcher "6.0.21"
+    expo-dev-menu "7.0.19"
+    expo-dev-menu-interface "2.0.0"
+    expo-manifests "~1.0.11"
+    expo-updates-interface "~2.0.0"
 
-expo-dev-launcher@~56.0.18:
-  version "56.0.18"
-  resolved "https://registry.npmjs.org/expo-dev-launcher/-/expo-dev-launcher-56.0.18.tgz"
-  integrity sha512-7acFJlkAbp3cMz7Uy787todMR/3A/Row2EOPD21RRoetvzJe4DTm9s7RwJ8PDtyNyued9rooD4+Q6rD8ijpTgw==
+expo-dev-launcher@6.0.21:
+  version "6.0.21"
+  resolved "https://registry.npmjs.org/expo-dev-launcher/-/expo-dev-launcher-6.0.21.tgz"
+  integrity sha512-QZ9gcKMZbp6EsIhzS0QoGB8Cf4xeVJhjbNgWUwcoBIk8gshoFz8CkCQOnX+HNv2sSY3rdCaNpx3Xo0Rflyq7rA==
   dependencies:
-    "@expo/schema-utils" "^56.0.0"
-    expo-dev-menu "~56.0.16"
-    expo-manifests "~56.0.4"
+    ajv "^8.11.0"
+    expo-dev-menu "7.0.19"
+    expo-manifests "~1.0.11"
 
-expo-dev-menu-interface@~56.0.0:
-  version "56.0.1"
-  resolved "https://registry.npmjs.org/expo-dev-menu-interface/-/expo-dev-menu-interface-56.0.1.tgz"
-  integrity sha512-odATx0ZL/Kis10sKSBiKiGQxAB6coSi/KQtKcMhnQVNno6FkRh5/4e5BqcEvpq2rNMTiQp4ytNAQHtdwbPXvGA==
+expo-dev-menu-interface@2.0.0:
+  version "2.0.0"
+  resolved "https://registry.npmjs.org/expo-dev-menu-interface/-/expo-dev-menu-interface-2.0.0.tgz"
+  integrity sha512-BvAMPt6x+vyXpThsyjjOYyjwfjREV4OOpQkZ0tNl+nGpsPfcY9mc6DRACoWnH9KpLzyIt3BOgh3cuy/h/OxQjw==
 
-expo-dev-menu@~56.0.16:
-  version "56.0.16"
-  resolved "https://registry.npmjs.org/expo-dev-menu/-/expo-dev-menu-56.0.16.tgz"
-  integrity sha512-aVgoe+YGhrQnpwiB5BRI7G+uQnGHMUij32bBnEVdc6eJrVZCStxQlV9NeFbbXxrDhLJt6OSqbCHbLR+XToWUUA==
+expo-dev-menu@7.0.19:
+  version "7.0.19"
+  resolved "https://registry.npmjs.org/expo-dev-menu/-/expo-dev-menu-7.0.19.tgz"
+  integrity sha512-ju5MZiBCPhUKKvHy0ElZdnlhq01mkEEiR8jfrgQVvW26aWjzjLiOhppNAyXtvGbhk7WxJim3wYMiqFFrjGdfKA==
   dependencies:
-    expo-dev-menu-interface "~56.0.0"
+    expo-dev-menu-interface "2.0.0"
 
 expo-device@~8.0.10:
   version "8.0.10"
@@ -6281,10 +6276,10 @@ expo-image@~3.0.10:
   resolved "https://registry.npmjs.org/expo-image/-/expo-image-3.0.11.tgz"
   integrity sha512-4TudfUCLgYgENv+f48omnU8tjS2S0Pd9EaON5/s1ZUBRwZ7K8acEr4NfvLPSaeXvxW24iLAiyQ7sV7BXQH3RoA==
 
-expo-json-utils@~56.0.0:
-  version "56.0.0"
-  resolved "https://registry.npmjs.org/expo-json-utils/-/expo-json-utils-56.0.0.tgz"
-  integrity sha512-lUqyv9aIGDbYTQ5Nux2FnH2/Dz0w5uJ8Pr080eS0StXi2jr5OmuMNErpzUnpfnYOU55xKotd4AHv68PfV/ludg==
+expo-json-utils@~0.15.0:
+  version "0.15.0"
+  resolved "https://registry.npmjs.org/expo-json-utils/-/expo-json-utils-0.15.0.tgz"
+  integrity sha512-duRT6oGl80IDzH2LD2yEFWNwGIC2WkozsB6HF3cDYNoNNdUvFk6uN3YiwsTsqVM/D0z6LEAQ01/SlYvN+Fw0JQ==
 
 expo-keep-awake@~15.0.8:
   version "15.0.8"
@@ -6306,12 +6301,13 @@ expo-localization@~17.0.8:
   dependencies:
     rtl-detect "^1.0.2"
 
-expo-manifests@~56.0.4:
-  version "56.0.4"
-  resolved "https://registry.npmjs.org/expo-manifests/-/expo-manifests-56.0.4.tgz"
-  integrity sha512-Fokawl2UkiExIF0bqGoblRFA8lYpROVD+EpvDwSW4LgqQyPwNua1gLSgHZjdl5GsVugfRMMWE3LHaibDyX93hw==
+expo-manifests@~1.0.11:
+  version "1.0.11"
+  resolved "https://registry.npmjs.org/expo-manifests/-/expo-manifests-1.0.11.tgz"
+  integrity sha512-6zItytTewN37Cjhp3glUg0ozrgW2GwB8x9wtfzUNoJIMmxO38nnGdTLMaotYhRqdf5PP2Dzdmej1HDHXVNUpRw==
   dependencies:
-    expo-json-utils "~56.0.0"
+    "@expo/config" "~12.0.13"
+    expo-json-utils "~0.15.0"
 
 expo-modules-autolinking@3.0.26:
   version "3.0.26"
@@ -6383,10 +6379,10 @@ expo-system-ui@~6.0.8:
     "@react-native/normalize-colors" "0.81.5"
     debug "^4.3.2"
 
-expo-updates-interface@~56.0.1:
-  version "56.0.2"
-  resolved "https://registry.npmjs.org/expo-updates-interface/-/expo-updates-interface-56.0.2.tgz"
-  integrity sha512-eWTwSZ9y8vrULG2oBn2TQSSIwBGSq/TxGJ3jY6tuVS2FWH/ASRIiKs3zkUZTRoC3ZuV2alz0mUClYV7nNrFx8g==
+expo-updates-interface@~2.0.0:
+  version "2.0.0"
+  resolved "https://registry.npmjs.org/expo-updates-interface/-/expo-updates-interface-2.0.0.tgz"
+  integrity sha512-pTzAIufEZdVPKql6iMi5ylVSPqV1qbEopz9G6TSECQmnNde2nwq42PxdFBaUEd8IZJ/fdJLQnOT3m6+XJ5s7jg==
 
 expo-web-browser@~15.0.8:
   version "15.0.11"
@@ -8301,17 +8297,6 @@ metro-babel-transformer@0.83.7:
     metro-cache-key "0.83.7"
     nullthrows "^1.1.1"
 
-metro-babel-transformer@0.84.4:
-  version "0.84.4"
-  resolved "https://registry.npmjs.org/metro-babel-transformer/-/metro-babel-transformer-0.84.4.tgz"
-  integrity sha512-rvCfz8snl9h20VcvpOHxZuHP1SlAkv4HXbzw7nyyVwu6Eqo5PRerbakQ9XmUCOsRy70spJ37O+G1TK8oMzo48g==
-  dependencies:
-    "@babel/core" "^7.25.2"
-    flow-enums-runtime "^0.0.6"
-    hermes-parser "0.35.0"
-    metro-cache-key "0.84.4"
-    nullthrows "^1.1.1"
-
 metro-cache-key@0.83.3:
   version "0.83.3"
   resolved "https://registry.npmjs.org/metro-cache-key/-/metro-cache-key-0.83.3.tgz"
@@ -8323,13 +8308,6 @@ metro-cache-key@0.83.7:
   version "0.83.7"
   resolved "https://registry.npmjs.org/metro-cache-key/-/metro-cache-key-0.83.7.tgz"
   integrity sha512-W1c2Nmx8MiJTJt+eWhMO08z9VKi3kZOaz99IYGdqeqDgY9j+yZjXl62rUav4Di0heZfh4/n2s722PqRL1OODeg==
-  dependencies:
-    flow-enums-runtime "^0.0.6"
-
-metro-cache-key@0.84.4:
-  version "0.84.4"
-  resolved "https://registry.npmjs.org/metro-cache-key/-/metro-cache-key-0.84.4.tgz"
-  integrity sha512-wVO79aGrkYImpnaVS4+d5RrRBRPX31QtvKB3wKGBuiNSznduZTQHzsrJZRroFJSwnygrzdsGUtDQPuqqFjFdvw==
   dependencies:
     flow-enums-runtime "^0.0.6"
 
@@ -8457,21 +8435,6 @@ metro-file-map@0.83.7:
     nullthrows "^1.1.1"
     walker "^1.0.7"
 
-metro-file-map@0.84.4:
-  version "0.84.4"
-  resolved "https://registry.npmjs.org/metro-file-map/-/metro-file-map-0.84.4.tgz"
-  integrity sha512-KSVDi/u60hKPx++NLu3MTIvyjzNoJnFAF8PQFxaj1jiSka/wjw+Ua6sNuJ0TDHQv+7AAoFQxeMgaRAe8Yic5wQ==
-  dependencies:
-    debug "^4.4.0"
-    fb-watchman "^2.0.0"
-    flow-enums-runtime "^0.0.6"
-    graceful-fs "^4.2.4"
-    invariant "^2.2.4"
-    jest-worker "^29.7.0"
-    micromatch "^4.0.4"
-    nullthrows "^1.1.1"
-    walker "^1.0.7"
-
 metro-minify-terser@0.83.3:
   version "0.83.3"
   resolved "https://registry.npmjs.org/metro-minify-terser/-/metro-minify-terser-0.83.3.tgz"
@@ -8484,14 +8447,6 @@ metro-minify-terser@0.83.7:
   version "0.83.7"
   resolved "https://registry.npmjs.org/metro-minify-terser/-/metro-minify-terser-0.83.7.tgz"
   integrity sha512-MfJar2IS4tBRuLb9svwb0Gu5l9BsH+pcRm8eGcEi/wy8MzZinfinh5dFLt2nWkocnulIgtGB5NkFDdbXqMXKhQ==
-  dependencies:
-    flow-enums-runtime "^0.0.6"
-    terser "^5.15.0"
-
-metro-minify-terser@0.84.4:
-  version "0.84.4"
-  resolved "https://registry.npmjs.org/metro-minify-terser/-/metro-minify-terser-0.84.4.tgz"
-  integrity sha512-5qpbaVOMC7CPitIpuewzVeGw7E+C3ykbv2mqTjQLl85Z3annSVGlSCTcsZjqXZzjupfK4Ztj3dDc4kc44NZwtQ==
   dependencies:
     flow-enums-runtime "^0.0.6"
     terser "^5.15.0"
@@ -8533,15 +8488,7 @@ metro-runtime@0.83.7:
     "@babel/runtime" "^7.25.0"
     flow-enums-runtime "^0.0.6"
 
-metro-runtime@0.84.4:
-  version "0.84.4"
-  resolved "https://registry.npmjs.org/metro-runtime/-/metro-runtime-0.84.4.tgz"
-  integrity sha512-Jibypds4g7AhzdRKY+kDoj51s5EXMwgyp5ddtlreDAsWefMdOx+agWqgm0H2XSZ/ueanHHVM89fnf5OJnlxa8Q==
-  dependencies:
-    "@babel/runtime" "^7.25.0"
-    flow-enums-runtime "^0.0.6"
-
-metro-source-map@0.83.3, metro-source-map@^0.83.1:
+metro-source-map@^0.83.1, metro-source-map@0.83.3:
   version "0.83.3"
   resolved "https://registry.npmjs.org/metro-source-map/-/metro-source-map-0.83.3.tgz"
   integrity sha512-xkC3qwUBh2psVZgVavo8+r2C9Igkk3DibiOXSAht1aYRRcztEZNFtAMtfSB7sdO2iFMx2Mlyu++cBxz/fhdzQg==
@@ -8572,21 +8519,6 @@ metro-source-map@0.83.7:
     source-map "^0.5.6"
     vlq "^1.0.0"
 
-metro-source-map@0.84.4:
-  version "0.84.4"
-  resolved "https://registry.npmjs.org/metro-source-map/-/metro-source-map-0.84.4.tgz"
-  integrity sha512-jbWkPxIesVuo1IWkvezmMJld6iu8nD62GsrZiV6jP37AOdbo4OBq1FJ+qkOg8sV05wAHB//jAbziuW0SlJfW4g==
-  dependencies:
-    "@babel/traverse" "^7.29.0"
-    "@babel/types" "^7.29.0"
-    flow-enums-runtime "^0.0.6"
-    invariant "^2.2.4"
-    metro-symbolicate "0.84.4"
-    nullthrows "^1.1.1"
-    ob1 "0.84.4"
-    source-map "^0.5.6"
-    vlq "^1.0.0"
-
 metro-symbolicate@0.83.3:
   version "0.83.3"
   resolved "https://registry.npmjs.org/metro-symbolicate/-/metro-symbolicate-0.83.3.tgz"
@@ -8611,18 +8543,6 @@ metro-symbolicate@0.83.7:
     source-map "^0.5.6"
     vlq "^1.0.0"
 
-metro-symbolicate@0.84.4:
-  version "0.84.4"
-  resolved "https://registry.npmjs.org/metro-symbolicate/-/metro-symbolicate-0.84.4.tgz"
-  integrity sha512-OnfpacxUqGPZQ27t8qK9mFa7uqHIlVWeqRqkCbvMvreEBiamEeOn8krKtcwgP5M4cYDPwuSmCTopHMVthqG4zA==
-  dependencies:
-    flow-enums-runtime "^0.0.6"
-    invariant "^2.2.4"
-    metro-source-map "0.84.4"
-    nullthrows "^1.1.1"
-    source-map "^0.5.6"
-    vlq "^1.0.0"
-
 metro-transform-plugins@0.83.3:
   version "0.83.3"
   resolved "https://registry.npmjs.org/metro-transform-plugins/-/metro-transform-plugins-0.83.3.tgz"
@@ -8639,18 +8559,6 @@ metro-transform-plugins@0.83.7:
   version "0.83.7"
   resolved "https://registry.npmjs.org/metro-transform-plugins/-/metro-transform-plugins-0.83.7.tgz"
   integrity sha512-Ss0FpBiZDjX2kwhukMDl5sNdYK8T/06IPqxNE4H6PTlRlfs9q11cef13c/xESY/Pm4VCkp1yJUZO3kXzvMxQFA==
-  dependencies:
-    "@babel/core" "^7.25.2"
-    "@babel/generator" "^7.29.1"
-    "@babel/template" "^7.28.6"
-    "@babel/traverse" "^7.29.0"
-    flow-enums-runtime "^0.0.6"
-    nullthrows "^1.1.1"
-
-metro-transform-plugins@0.84.4:
-  version "0.84.4"
-  resolved "https://registry.npmjs.org/metro-transform-plugins/-/metro-transform-plugins-0.84.4.tgz"
-  integrity sha512-kehr6HbAecqD0/a3xLXobELdPaAmRAl8bel0qagPF4vhZtux93nS8S4eq2kgKt6J2GnQpVjSoW1PXdst04mwow==
   dependencies:
     "@babel/core" "^7.25.2"
     "@babel/generator" "^7.29.1"
@@ -9106,13 +9014,6 @@ ob1@0.83.7:
   version "0.83.7"
   resolved "https://registry.npmjs.org/ob1/-/ob1-0.83.7.tgz"
   integrity sha512-9M5kpuOLyTPogMtZiQUIxdAZxl7Dxs6tVBbJErSumsqGMuhVSoUbkfeZ3XNPpLpwBBtqY5QDUzGwggLHX3slQg==
-  dependencies:
-    flow-enums-runtime "^0.0.6"
-
-ob1@0.84.4:
-  version "0.84.4"
-  resolved "https://registry.npmjs.org/ob1/-/ob1-0.84.4.tgz"
-  integrity sha512-eJXMpz4aQHXF/YBB9ddqZDIS+ooO91hObo9FoW/xBkr54/zCwYYCDqT/O54vNo8kOkWs5Ou/y28NgdrV0edQNA==
   dependencies:
     flow-enums-runtime "^0.0.6"
 

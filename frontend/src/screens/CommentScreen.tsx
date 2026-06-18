@@ -99,7 +99,8 @@ const CommentScreen = ({
 
   const [commentLoading, setCommentLoading] =
     useState<boolean>(false);
-
+  const [isSubmitting, setIsSubmitting] =
+  useState<boolean>(false);
   const [
     commentLikeLoading,
     setCommentLikeLoading,
@@ -320,45 +321,55 @@ const CommentScreen = ({
   };
 
   const handleCommentSubmit = () => {
-    if (!newComment.trim()) {
-      Alert.alert(
-        'Please enter a comment before submitting.',
-      );
+  if (isSubmitting) return;
 
-      return;
-    }
-
-    const formatted = replaceTriggerValues(
-      newComment,
-      ({name}) => `@${name}`,
+  if (!newComment.trim()) {
+    Alert.alert(
+      'Please enter a comment before submitting.',
     );
+    return;
+  }
 
-    if (!socket) return;
+  setIsSubmitting(true);
 
-    if (editMode && editCommentId) {
-      socket.emit('edit-comment', {
-        commentId: editCommentId,
-        content: formatted,
-        articleId: route.params.articleId,
-        userId: user_id,
-      });
+  const formatted = replaceTriggerValues(
+    newComment,
+    ({name}) => `@${name}`,
+  );
 
-      setEditMode(false);
-      setEditCommentId(null);
-    } else {
-      const newCommentObj = {
-        userId: user_id,
-        articleId: route.params.articleId,
-        content: formatted,
-        parentCommentId: null,
-        mentionedUsers: mentions,
-      };
+  if (!socket) {
+    setIsSubmitting(false);
+    return;
+  }
 
-      socket.emit('comment', newCommentObj);
-    }
+  if (editMode && editCommentId) {
+    socket.emit('edit-comment', {
+      commentId: editCommentId,
+      content: formatted,
+      articleId: route.params.articleId,
+      userId: user_id,
+    });
 
-    setNewComment('');
-  };
+    setEditMode(false);
+    setEditCommentId(null);
+  } else {
+    const newCommentObj = {
+      userId: user_id,
+      articleId: route.params.articleId,
+      content: formatted,
+      parentCommentId: null,
+      mentionedUsers: mentions,
+    };
+
+    socket.emit('comment', newCommentObj);
+  }
+
+  setNewComment('');
+
+  setTimeout(() => {
+    setIsSubmitting(false);
+  }, 1500);
+};
 
   const handleReportAction = (
     commentId: string,
@@ -584,16 +595,28 @@ const CommentScreen = ({
 
                   {/* 3. Submit Button (Always visible but visually disabled/faded when text is empty) */}
                   <TouchableOpacity
-                    style={[
-                      styles.submitButton, 
-                      { opacity: newComment.trim().length === 0 ? 0.5 : 1 } // 👈 Fades button out if input is empty
-                    ]}
-                    disabled={newComment.trim().length === 0} // 👈 Block execution if input consists of only blank spaces
-                    onPress={handleCommentSubmit}
-                  >
+  style={[
+    styles.submitButton,
+    {
+      opacity:
+        newComment.trim().length === 0 || isSubmitting
+          ? 0.5
+          : 1,
+    },
+  ]}
+  disabled={
+    newComment.trim().length === 0 ||
+    isSubmitting
+  }
+  onPress={handleCommentSubmit}
+>
                     <Text style={styles.submitButtonText}>
-                      {editMode ? 'Update Comment' : 'Submit Comment'}
-                    </Text>
+  {isSubmitting
+    ? 'Posting...'
+    : editMode
+    ? 'Update Comment'
+    : 'Submit Comment'}
+</Text>
                   </TouchableOpacity>
                 </XStack>
 

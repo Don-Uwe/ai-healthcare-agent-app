@@ -232,13 +232,13 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
 
   // Generate AI summary using Gemini
   useEffect(() => {
-    if (!article?.content) {
+    if (!article?.content && !articleContent) {
       setSummary(null);
       return;
     }
 
-    const rawText = article?.content || '';
-
+    const rawText = article?.content || articleContent || '';
+    
     // Only call API if there's enough text
     if (!rawText || rawText.length < 100) {
       setSummary(null);
@@ -253,7 +253,8 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
       .then(result => setSummary(result))
       .catch(() => setSummary(null))
       .finally(() => setSummaryLoading(false));
-  }, [article?.content]);
+
+  }, [article?.content, articleContent]);
 
   // --- Settings ---
   const handleLike = () => {
