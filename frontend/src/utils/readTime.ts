@@ -18,9 +18,24 @@ export function getReadTime(content: string): string {
     .replace(/\s+/g, ' ')
     .trim();
 
-  const wordsPerMinute = 200;
+  const wordsPerMinute = 200; // Average reading speed
   const wordCount = plainText.split(/\s+/).filter(w => w.length > 0).length;
   const minutes = Math.ceil(wordCount / wordsPerMinute);
 
   return `${minutes} min read`;
+}
+
+/**
+ * Calculates estimated read time in minutes
+ * @param content - Plain text article content
+ * @returns Estimated read time in minutes
+ */
+export function calculateReadTime(content: string): number {
+  if (!content || content.trim().length === 0) {
+    return 1; // Default to 1 minute for empty content
+  }
+
+  const wordsPerMinute = 200; // Average reading speed
+  const wordCount = content.split(/\s+/).filter(w => w.length > 0).length;
+  return Math.ceil(wordCount / wordsPerMinute);
 }

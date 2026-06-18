@@ -18,6 +18,7 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import IonIcons from '@expo/vector-icons/Ionicons';
 import {GET_IMAGE} from '../helper/APIUtils';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
+import { calculateReadTime } from "../../utils/readTime";
 import {
   formatCount,
   requestStoragePermissions,
@@ -60,7 +61,7 @@ const ArticleCard = ({
 }: ArticleCardProps) => {
   const {user_id, user_handle, isGuest} = useSelector((state: any) => state.user);
   const {isConnected} = useSelector((state: any) => state.network);
-
+  const readTime = calculateReadTime(article.content || article.body);
   const socket = useSocket();
   const width = useSharedValue(0);
   const yValue = useSharedValue(60);
@@ -228,7 +229,14 @@ const ArticleCard = ({
       setMenuVisible(false);
     }
   };
-
+  <Text style={styles.readTime}>{readTime} min read</Text>
+  const styles = StyleSheet.create({
+    readTime: {
+      fontSize: 12,
+      color: "#6B7280", // Gray text
+      marginTop: 4,
+    },
+  });
   useEffect(() => {
     if (!socket) return;
 
