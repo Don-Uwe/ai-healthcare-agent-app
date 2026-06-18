@@ -4687,9 +4687,8 @@ asynckit@^0.4.0:
   integrity sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==
 
 "audio-module@workspace:*":
-  version "0.0.0"
-  resolved "https://registry.yarnpkg.com/audio-module/-/audio-module-0.0.0.tgz#db7da8a52acab4bc0c8fa5552b6aaca288013f12"
-  integrity sha512-gWdB1x9pQAWUF9C6dl+C6vZfCEpn2fB/ZDWFhxTi+wubZ9/ogk/LJTGeY7Glo39IdAP5GZB1Bnxg1vo+v743oQ==
+  version "1.0.0"
+  resolved "file:modules/audio-module"
 
 available-typed-arrays@^1.0.7:
   version "1.0.7"
