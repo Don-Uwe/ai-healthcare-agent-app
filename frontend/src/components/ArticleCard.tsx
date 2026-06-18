@@ -18,6 +18,7 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import IonIcons from '@expo/vector-icons/Ionicons';
 import {GET_IMAGE} from '../helper/APIUtils';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
+import GlobalStyles from '../styles/GlobalStyle';
 import { calculateReadTime } from "../../utils/readTime";
 import {
   formatCount,
@@ -48,6 +49,7 @@ import {useLikeArticle} from '../hooks/useLikeArticle';
 import {useSaveArticle} from '../hooks/useSaveArticle';
 import {useLazyGetArticleContent} from '../hooks/useLazyGetArticleContent';
 import {useRepostArticle} from '../hooks/useArticleRepost';
+import { ReadingDifficulty, getArticleDifficulty } from './ReadingDifficulty';
 import {useDoubleTap} from '../hooks/useDoubleTap';
 import { ImageFallback } from './ImageFallback';
 
@@ -530,9 +532,14 @@ const ArticleCard = ({
           )}
 
           {/* Title & Footer Text */}
-          <Text style={styles.footerText}>
-            {item?.tags.map(tag => tag.name).join(' | ')}
-          </Text>
+          <View style={GlobalStyles.badgeRow}>
+            {item?.tags && item.tags.length > 0 && (
+              <Text style={styles.footerText}>
+                {item?.tags.map(tag => tag.name).join(' | ')}
+              </Text>
+            )}
+            <ReadingDifficulty difficulty={getArticleDifficulty(item)} />
+          </View>
           <Text style={styles.title}>{item?.title}</Text>
 
           <View style={styles.metaRow}>

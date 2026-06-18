@@ -41,6 +41,14 @@ const GlobalStyles = StyleSheet.create({
     fontWeight: '600',
     marginTop: 6,
   },
+  badgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+    flexWrap: 'wrap',
+    gap: 8,
+  },
 });
 
 export default GlobalStyles;

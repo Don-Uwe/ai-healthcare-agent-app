@@ -14,6 +14,7 @@ import ArticleShareModal from '../components/ArticleShareModal';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import {PRIMARY_COLOR} from '../../helper/Theme';
+import GlobalStyles from '../../styles/GlobalStyle';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {ArticleData, ArticleScreenProp} from '../../type';
 import {useDispatch, useSelector} from 'react-redux';
@@ -56,6 +57,7 @@ import {useUpdateViewCount} from '@/src/hooks/useUpdateViewCount';
 import {useSaveArticle} from '@/src/hooks/useSaveArticle';
 import {useSocket} from '../../contexts/SocketContext';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import { ReadingDifficulty, getArticleDifficulty } from '../../components/ReadingDifficulty';
 import Animated, {
   useSharedValue,
   useAnimatedScrollHandler,
@@ -788,11 +790,16 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
               }`}
             </Text>
           )}
-          {article && article?.tags && (
-            <Text style={[styles.categoryText, {fontSize: 12 * fontScale}]}>
-              {article.tags.map(tag => tag.name).join(' | ')}
-            </Text>
-          )}
+          <View style={GlobalStyles.badgeRow}>
+            {article && article?.tags && (
+              <Text style={styles.categoryText}>
+                {article.tags.map(tag => tag.name).join(' | ')}
+              </Text>
+            )}
+            {article && (
+              <ReadingDifficulty difficulty={getArticleDifficulty(article)} />
+            )}
+          </View>
 
           {article && (
             <>
