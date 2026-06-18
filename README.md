@@ -928,6 +928,7 @@ We welcome contributions from everyone — developers, designers, writers, and t
    <tr>
     <td align="center"><a href="https://github.com/Kruthi-choudary"><img src="https://avatars.githubusercontent.com/u/230213533?v=4" width="120px;" alt=""/><br/><sub><b>Kruthi</b></sub></a></td>
        <td align="center"><a href="https://github.com/Hasini2706"><img src="https://avatars.githubusercontent.com/u/180012483?v=4" width="120px;" alt=""/><br/><sub><b>HASINI</b></sub></a></td>
+     <td align="center"><a href="https://github.com/anjali62510-star"><img src="https://avatars.githubusercontent.com/u/221178990?v=4" width="120px;" alt=""/><br/><sub><b>anjali62510-star</b></sub></a></td>
  </tr>
 </table>
 <!-- CONTRIBUTORS-TABLE-END -->
