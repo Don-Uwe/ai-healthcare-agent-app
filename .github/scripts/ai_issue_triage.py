@@ -291,17 +291,26 @@ def check_active_assignments(repo, username, token):
     issues = make_request(url, token=token)
     return issues is not None and len(issues) > 0
 
-def check_merged_prs(repo, username, token):
+def check_pr_references_assigned_issue(repo, username, assigned_issue_numbers, token):
     """
-    Check if the user has at least one MERGED PR in the repo.
-    This is stricter than checking for any authored PR — it ensures the user
-    actually delivered completed work, not just opened a draft or abandoned PR.
+    Check whether the user has submitted a PR that explicitly references
+    (mentions) any of their previously assigned issue numbers.
+    A PR that contains 'Fixes #X', 'Closes #X', 'Resolves #X', or simply '#X'
+    in its title or body counts as referencing the assigned issue.
+    We search up to 5 closed assigned issues to avoid excessive API calls.
     """
-    query = urllib.parse.quote(f"repo:{repo} is:pr author:{username} is:merged")
-    url = f"https://api.github.com/search/issues?q={query}"
-    result = make_request(url, token=token)
-    if result and "total_count" in result:
-        return result["total_count"] > 0
+    for issue_num in assigned_issue_numbers[:5]:
+        query = urllib.parse.quote(
+            f"repo:{repo} is:pr author:{username} #{issue_num} in:body,title"
+        )
+        url = f"https://api.github.com/search/issues?q={query}"
+        result = make_request(url, token=token)
+        if result and result.get("total_count", 0) > 0:
+            print(
+                f"[INFO] @{username} has a PR referencing their assigned issue #{issue_num}.",
+                flush=True
+            )
+            return True
     return False
 
 def assign_user(repo, issue_number, username, token):
@@ -409,7 +418,7 @@ def handle_issue_opened(repo, issue_number, token, gemini_api_keys):
                 post_comment(repo, issue_number, msg, token)
                 return "frontend", f"Frontend (auto-assigned to @{author})"
             else:
-                msg = f"This issue has been triaged as a **frontend** task ({difficulty or 'Unclassified Difficulty'}).\n\n> **Expected Effect & Scope:** {decision.get('reasoning')}\n\nIt is now open for community contribution!\n\nHi @{author}, I couldn't assign this to you automatically because you currently have another active assignment. Please complete your current task first!\n\n---\n### 🤖 Assignment Guidelines\nTo get assigned to this issue, simply leave a comment requesting assignment.\nThe AI bot will automatically assign you if you meet the following eligibility criteria:\n1. You do not currently have any other active assigned issues in this repository.\n2. If you were previously assigned an issue, you must have a **merged Pull Request** in this repository before requesting a new one."
+                msg = f"This issue has been triaged as a **frontend** task ({difficulty or 'Unclassified Difficulty'}).\n\n> **Expected Effect & Scope:** {decision.get('reasoning')}\n\nIt is now open for community contribution!\n\nHi @{author}, I couldn't assign this to you automatically because you currently have another active assignment. Please complete your current task first!\n\n---\n### 🤖 Assignment Guidelines\nTo get assigned to this issue, simply leave a comment requesting assignment.\nThe AI bot will automatically assign you if you meet the following eligibility criteria:\n1. You do not currently have any other active assigned issues in this repository.\n2. If you were previously assigned an issue, you must have submitted a **Pull Request that references that assigned issue** before requesting a new one."
                 post_comment(repo, issue_number, msg, token)
                 return "frontend", "Frontend (open)"
         
@@ -451,24 +460,38 @@ def handle_issue_comment(repo, issue_number, commenter, token):
         post_comment(repo, issue_number, msg, token)
         return "rejected", "Active assignments limit"
 
-    # --- Check 2: If user had previously closed assigned issues, they must have a MERGED PR ---
-    # This ensures contributors who took on work actually delivered it before getting more.
+    # --- Check 2: If user had previously closed assigned issues, ---
+    # they must have submitted a PR that explicitly references one of those issues.
+    # This ensures contributors who took on work actually followed through.
     query = urllib.parse.quote(f"repo:{repo} is:issue assignee:{commenter} is:closed")
     url = f"https://api.github.com/search/issues?q={query}"
     past_issues = make_request(url, token=token)
-    
+
     if past_issues and past_issues.get("total_count", 0) > 0:
-        has_merged_pr = check_merged_prs(repo, commenter, token)
-        if not has_merged_pr:
+        assigned_issue_numbers = [
+            str(issue["number"]) for issue in past_issues.get("items", [])
+        ]
+        print(
+            f"[INFO] @{commenter} has {len(assigned_issue_numbers)} previously closed assigned issue(s): "
+            f"{assigned_issue_numbers[:5]}",
+            flush=True
+        )
+        has_pr_for_issue = check_pr_references_assigned_issue(
+            repo, commenter, assigned_issue_numbers, token
+        )
+        if not has_pr_for_issue:
+            issue_list = ", ".join(f"#{n}" for n in assigned_issue_numbers[:5])
             msg = (
-                f"@{commenter} It looks like you previously had an assigned issue that was closed, "
-                f"but you haven't merged a Pull Request in this repository yet.\n\n"
-                f"Please submit and get a Pull Request merged before requesting another assignment. "
-                f"This ensures contributors complete their work before taking on new tasks.\n\n"
-                f"If you believe this is an error, please contact a maintainer."
+                f"@{commenter} You have previously been assigned issue(s) ({issue_list}) "
+                f"that are now closed, but no Pull Request referencing those issues was found.\n\n"
+                f"To be eligible for a new assignment, please submit a Pull Request that "
+                f"explicitly mentions your assigned issue (e.g. `Fixes #{assigned_issue_numbers[0]}`, "
+                f"`Closes #{assigned_issue_numbers[0]}`, or `#{assigned_issue_numbers[0]}` in the PR body/title).\n\n"
+                f"This rule ensures contributors complete and deliver their work before taking on new tasks. "
+                f"If you believe this is a mistake, please reach out to a maintainer @SB2318."
             )
             post_comment(repo, issue_number, msg, token)
-            return "rejected", "No merged PRs — previous assigned issue closed without delivery"
+            return "rejected", "No PR referencing previously assigned issue"
 
     # All checks passed — assign
     assign_user(repo, issue_number, commenter, token)
