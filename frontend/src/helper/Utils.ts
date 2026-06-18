@@ -2,7 +2,7 @@ import NetInfo from '@react-native-community/netinfo';
 import {Category, CategoryType, PodcastData} from '../type';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {GET_STORAGE_DATA} from './APIUtils';
-import {Alert, Linking, PermissionsAndroid, Platform} from 'react-native';
+import {Linking, PermissionsAndroid, Platform} from 'react-native';
 import RNFS from 'react-native-fs';
 import {secureClearAllItems} from './SecureStorageUtils';
 import {
@@ -18,127 +18,58 @@ export const checkInternetConnection = (
   const unsubscribe = NetInfo.addEventListener(state => {
     return callback(state.isConnected ? state.isConnected : false);
   });
-
   return unsubscribe;
 };
 
 export const getMimeTypes = (ext: string): string => {
   let type = '';
-
   switch (ext.toLowerCase()) {
-    case 'mp3':
-      type = 'audio/mpeg';
-      break;
-    case 'wav':
-      type = 'audio/wav';
-      break;
-    case 'x-wav':
-      type = 'audio/x-wav';
-      break;
-    case 'ogg':
-      type = 'audio/ogg';
-      break;
-    case 'opus':
-      type = 'audio/opus';
-      break;
-    case 'aac':
-      type = 'audio/aac';
-      break;
-    case 'x-aac':
-      type = 'audio/x-aac';
-      break;
-    case 'flac':
-      type = 'audio/flac';
-      break;
-    case 'x-flac':
-      type = 'audio/x-flac';
-      break;
-    case 'mp4':
-      type = 'audio/mp4';
-      break;
-    case 'm4a':
-      type = 'audio/x-m4a';
-      break;
-    case 'webm':
-      type = 'audio/webm';
-      break;
-    case 'x-midi':
-      type = 'audio/x-midi';
-      break;
-    case 'amr':
-      type = 'audio/amr';
-      break;
-    case '3gpp':
-      type = 'audio/3gpp';
-      break;
-    case '3gpp2':
-      type = 'audio/3gpp2';
-      break;
-    case 'basic':
-      type = 'audio/basic';
-      break;
-    case 'vnd.wave':
-      type = 'audio/vnd.wave';
-      break;
-    case 'vnd.rn-realaudio':
-      type = 'audio/vnd.rn-realaudio';
-      break;
-    case 'vnd.dts':
-      type = 'audio/vnd.dts';
-      break;
-    case 'vnd.dts.hd':
-      type = 'audio/vnd.dts.hd';
-      break;
-    case 'vnd.digital-winds':
-      type = 'audio/vnd.digital-winds';
-      break;
-    case 'vnd.lucent.voice':
-      type = 'audio/vnd.lucent.voice';
-      break;
-    case 'vnd.ms-playready.media.pya':
-      type = 'audio/vnd.ms-playready.media.pya';
-      break;
-    case 'vnd.nuera.ecelp4800':
-      type = 'audio/vnd.nuera.ecelp4800';
-      break;
-    case 'vnd.nuera.ecelp7470':
-      type = 'audio/vnd.nuera.ecelp7470';
-      break;
-    case 'vnd.nuera.ecelp9600':
-      type = 'audio/vnd.nuera.ecelp9600';
-      break;
-    case 'vnd.sealedmedia.softseal.mpeg':
-      type = 'audio/vnd.sealedmedia.softseal.mpeg';
-      break;
-    case 'x-ms-wma':
-      type = 'audio/x-ms-wma';
-      break;
-
-    default:
-      type = 'application/octet-stream';
+    case 'mp3': type = 'audio/mpeg'; break;
+    case 'wav': type = 'audio/wav'; break;
+    case 'x-wav': type = 'audio/x-wav'; break;
+    case 'ogg': type = 'audio/ogg'; break;
+    case 'opus': type = 'audio/opus'; break;
+    case 'aac': type = 'audio/aac'; break;
+    case 'x-aac': type = 'audio/x-aac'; break;
+    case 'flac': type = 'audio/flac'; break;
+    case 'x-flac': type = 'audio/x-flac'; break;
+    case 'mp4': type = 'audio/mp4'; break;
+    case 'm4a': type = 'audio/x-m4a'; break;
+    case 'webm': type = 'audio/webm'; break;
+    case 'x-midi': type = 'audio/x-midi'; break;
+    case 'amr': type = 'audio/amr'; break;
+    case '3gpp': type = 'audio/3gpp'; break;
+    case '3gpp2': type = 'audio/3gpp2'; break;
+    case 'basic': type = 'audio/basic'; break;
+    case 'vnd.wave': type = 'audio/vnd.wave'; break;
+    case 'vnd.rn-realaudio': type = 'audio/vnd.rn-realaudio'; break;
+    case 'vnd.dts': type = 'audio/vnd.dts'; break;
+    case 'vnd.dts.hd': type = 'audio/vnd.dts.hd'; break;
+    case 'vnd.digital-winds': type = 'audio/vnd.digital-winds'; break;
+    case 'vnd.lucent.voice': type = 'audio/vnd.lucent.voice'; break;
+    case 'vnd.ms-playready.media.pya': type = 'audio/vnd.ms-playready.media.pya'; break;
+    case 'vnd.nuera.ecelp4800': type = 'audio/vnd.nuera.ecelp4800'; break;
+    case 'vnd.nuera.ecelp7470': type = 'audio/vnd.nuera.ecelp7470'; break;
+    case 'vnd.nuera.ecelp9600': type = 'audio/vnd.nuera.ecelp9600'; break;
+    case 'vnd.sealedmedia.softseal.mpeg': type = 'audio/vnd.sealedmedia.softseal.mpeg'; break;
+    case 'x-ms-wma': type = 'audio/x-ms-wma'; break;
+    default: type = 'application/octet-stream';
   }
   return type;
 };
 
 export function formatCount(count: number) {
-  if (count < 1000) {
-    return count.toString();
-  } else if (count < 1000000) {
-    return Math.floor(count / 1000) + 'k';
-  } else {
-    return Math.floor(count / 1000000) + 'M';
-  }
+  if (count < 1000) return count.toString();
+  else if (count < 1000000) return Math.floor(count / 1000) + 'k';
+  else return Math.floor(count / 1000000) + 'M';
 }
 
 export const handleExternalClick = (request: any) => {
   const {url} = request;
-
-  // External link
   if (url.startsWith('http')) {
     Linking.openURL(url);
     return false;
   }
-
   return true;
 };
 
@@ -148,39 +79,29 @@ export function msToTime(ms: number): string {
   totalSeconds %= 3600;
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
-
   const pad = (num: number): string => num.toString().padStart(2, '0');
-
-  let result =
-    hours >= 1
-      ? `${pad(hours)}h:${pad(minutes)}m`
-      : `${pad(minutes)}m:${pad(seconds)}s`;
-
-  return result;
+  return hours >= 1
+    ? `${pad(hours)}h:${pad(minutes)}m`
+    : `${pad(minutes)}m:${pad(seconds)}s`;
 }
 
-// Async Storage for get Item
 export const retrieveItem = async (key: string) => {
   try {
     const value = await AsyncStorage.getItem(key);
     return value;
   } catch (e) {
-    // error reading value
     console.log('Error reading value', e);
   }
 };
 
-// Async Storage Store Item
 export const storeItem = async (key: string, value: string) => {
   try {
     await AsyncStorage.setItem(key, value);
-    // console.log(`Value saved for key : ${key}`, value);
   } catch (e) {
     console.log('Async Storage Data error', e);
   }
 };
 
-// Async storage remove item
 export const removeItem = async (key: string) => {
   try {
     await AsyncStorage.removeItem(key);
@@ -193,9 +114,7 @@ export const readDownloadedPodcasts = async (): Promise<PodcastDownloadRecord[]>
   return retrievePodcastCache();
 };
 
-export const writeDownloadedPodcasts = async (
-  data: PodcastDownloadRecord[],
-) => {
+export const writeDownloadedPodcasts = async (data: PodcastDownloadRecord[]) => {
   await setPodcastCache(data);
 };
 
@@ -203,28 +122,14 @@ export const removeDownloadedPodcasts = async () => {
   await deletePodcastCache();
 };
 
-// export const clearStorage = async () => {
-//   try {
-//     await AsyncStorage.clear();
-//     await secureClearAllItems();
-//     //navigation.navigate('LoginScreen');
-//     console.log('All storage cleared successfully.');
-//   } catch (error) {
-//     console.error('Error removing item:', error);
-//   }
-// };
-
 export const clearStorage = async () => {
   try {
-    //    await AsyncStorage.clear();
-    // Explicitly clear known user-related keys from AsyncStorage
     await Promise.all([
       AsyncStorage.removeItem(KEYS.USER_TOKEN_EXPIRY_DATE),
       AsyncStorage.removeItem(KEYS.USER_ID),
       AsyncStorage.removeItem(KEYS.USER_HANDLE),
     ]);
     await secureClearAllItems();
-    //navigation.navigate('LoginScreen');
     console.log('All user-related storage cleared successfully.');
   } catch (error) {
     console.error('Error clearing user-related storage:', error);
@@ -241,197 +146,89 @@ export const createHTMLStructure = (
   return `<!DOCTYPE html>
 <html>
 <head>
-
 <title>${title}</title>
 <style>
-/**
- * Copyright 2024,UltimateHealth. All rights reserved.
- */
-body {
-  font-family: Arial, sans-serif;
-  font-size: 18px; 
-  line-height: 1.6; 
-  color: #333; 
-}
-
-h1 {
-  color: #00698f;
-}
-
-h2 {
-  color: #008000;
-}
-
-h3 {
-  color: #660066;
-}
-
-h4 {
-  color: #0099CC;
-}
-
-h5 {
-  color: #FF9900;
-}
-
-h6 {
-  color: #663300;
-}
-
-ul {
-  list-style-type: disc;
-}
-
-li {
-  margin-bottom: 10px;
-}
-
-article {
-  width: 95%;
-  margin: 20px auto;
-}
-table {
-    border-collapse: collapse;
-    width: 100%;
-  }
-
-  th, td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-  }
-
-  th {
-    background-color: #f0f0f0;
-  }
-.tag-list {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.tag-list li {
-  margin-right: 10px;
-}
-
-.tag {
-  color: blue;
-  text-decoration: none;
-}
+body { font-family: Arial, sans-serif; font-size: 18px; line-height: 1.6; color: #333; }
+h1 { color: #00698f; } h2 { color: #008000; } h3 { color: #660066; }
+h4 { color: #0099CC; } h5 { color: #FF9900; } h6 { color: #663300; }
+ul { list-style-type: disc; } li { margin-bottom: 10px; }
+article { width: 95%; margin: 20px auto; }
+table { border-collapse: collapse; width: 100%; }
+th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+th { background-color: #f0f0f0; }
+.tag-list { list-style-type: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; }
+.tag-list li { margin-right: 10px; }
+.tag { color: blue; text-decoration: none; }
 </style>
 </head>
 <body>
 ${body}
 <hr>
 <ul class="tag-list">
-  ${tags
-    .map(tag => `<li><a class="tag" href="#">#${tag.name}</a></li>`)
-    .join('')}
+  ${tags.map(tag => `<li><a class="tag" href="#">#${tag.name}</a></li>`).join('')}
 </ul>
 <h3>Author</h3>
-<h4>${author}</a></h4>
+<h4>${author}</h4>
 </body>
-`;
+</html>`;
 };
+
 
 // General purpose podcast app, no need to encrypted download data here,
 // We will ensure that, there will be no copyrighted content, or we can't give access to download
 // copyrighted content, as per ultimatehealth system
+
 export const requestStoragePermissions = async () => {
   if (Platform.OS !== 'android') return true;
 
   if ((Platform.Version as number) < 33) {
-    return true;
+    const granted = await PermissionsAndroid.requestMultiple([
+      PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+    ]);
+    return granted['android.permission.READ_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED;
   } else {
     const granted = await PermissionsAndroid.requestMultiple([
       PermissionsAndroid.PERMISSIONS.READ_MEDIA_AUDIO,
     ]);
-
-    return (
-      granted['android.permission.READ_MEDIA_AUDIO'] ===
-      PermissionsAndroid.RESULTS.GRANTED
-    );
+    return granted['android.permission.READ_MEDIA_AUDIO'] === PermissionsAndroid.RESULTS.GRANTED;
   }
 };
 
-/** Download podcast */
-
 export const downloadAudio = async (_podcast: PodcastData) => {
-  // Check for existing downloads
   const storageGranted = await requestStoragePermissions();
-  if (!storageGranted) {
-    return;
-  }
+  if (!storageGranted) return;
+
   const existingPodcasts = await readDownloadedPodcasts();
   try {
     let _existingPodcasts = Array.isArray(existingPodcasts) ? existingPodcasts : [];
 
     if (_existingPodcasts.length >= 5) {
-      return {
-        message: "You can't keep more than 5 audio",
-        success: false,
-      };
+      return {message: "You can't keep more than 5 audio", success: false};
     }
-    // check for existing downloads
-    const isPodcastFound = _existingPodcasts.some((d: any) => d._id === _podcast._id);
 
+    const isPodcastFound = _existingPodcasts.some((d: any) => d._id === _podcast._id);
     if (isPodcastFound) {
-      return {
-        message: 'File already saved',
-        success: true,
-      };
+      return {message: 'File already saved', success: true};
     }
-    // download the file
+
     const path = await downloadFile(_podcast.audio_url, _podcast.title);
     if (path) {
-      if (!Array.isArray(_existingPodcasts)) {
-        _existingPodcasts = [];
-      }
-
+      if (!Array.isArray(_existingPodcasts)) _existingPodcasts = [];
       const newPodcast: PodcastDownloadRecord = {
         ..._podcast,
         filePath: path,
         downloadAt: new Date(),
       };
-      //_podcast.filePath = path;
       _existingPodcasts.push(newPodcast);
       await writeDownloadedPodcasts(_existingPodcasts);
-
-      return {
-        message: 'File saved successfully',
-        success: true,
-      };
+      return {message: 'File saved successfully', success: true};
     } else {
-      return {
-        message: 'Something went wrong, try again after sometime',
-        success: false,
-      };
+      return {message: 'Something went wrong, try again after sometime', success: false};
     }
   } catch (err) {
     console.log(err);
-    return {
-      message: 'Something went wrong, try again after sometime',
-      success: false,
-    };
+    return {message: 'Something went wrong, try again after sometime', success: false};
   }
-};
-
-export const getPodcastDirectory = () => {
-  const baseDirectory =
-    Platform.OS === 'android'
-      ? RNFS.ExternalDirectoryPath
-      : RNFS.DocumentDirectoryPath;
-  return `${baseDirectory}/UltimateHealth/Podcasts`;
-};
-
-export const getArticleDirectory = () => {
-  const baseDirectory =
-    Platform.OS === 'android'
-      ? RNFS.ExternalDirectoryPath
-      : RNFS.DocumentDirectoryPath;
-  return `${baseDirectory}/UltimateHealth/Articles`;
 };
 
 const downloadFile = async (key: string, title: string) => {
@@ -439,19 +236,16 @@ const downloadFile = async (key: string, title: string) => {
   const fileName = `${safeTitle}_${Date.now()}.mp3`;
   const downloadUrl = `${GET_STORAGE_DATA}/${key}`;
 
-  const customDirectory = getPodcastDirectory();
+  const customDirectory =
+    Platform.OS === 'android'
+      ? RNFS.ExternalDirectoryPath
+      : RNFS.DocumentDirectoryPath;
 
   const filePath = `${customDirectory}/${fileName}`;
-
   const directoryExists = await RNFS.exists(customDirectory);
+  if (!directoryExists) await RNFS.mkdir(customDirectory);
 
-  if (!directoryExists) {
-    await RNFS.mkdir(customDirectory);
-  }
-  const result = await RNFS.downloadFile({
-    fromUrl: downloadUrl,
-    toFile: filePath,
-  }).promise;
+  const result = await RNFS.downloadFile({fromUrl: downloadUrl, toFile: filePath}).promise;
 
   if (result.statusCode === 200) {
     console.log('Audio downloaded to:', filePath);
@@ -464,16 +258,14 @@ const downloadFile = async (key: string, title: string) => {
 
 export const cleanUpDownloads = async () => {
   const existingPodcasts = await readDownloadedPodcasts();
-  if (!Array.isArray(existingPodcasts)) {
-    return;
-  }
+  if (!Array.isArray(existingPodcasts)) return;
+
   const freshPodcasts: PodcastDownloadRecord[] = [];
   const now = Date.now();
   const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
   for (const item of existingPodcasts) {
     const age = now - item.downloadAt.getTime();
-
     if (Number.isFinite(age) && age > THIRTY_DAYS_MS) {
       if (item.filePath && (await RNFS.exists(item.filePath))) {
         await RNFS.unlink(item.filePath);
@@ -489,15 +281,12 @@ export const cleanUpDownloads = async () => {
 
 export const deleteFromDownloads = async (_podcast: PodcastData) => {
   const existingPodcasts = await readDownloadedPodcasts();
-  if (!Array.isArray(existingPodcasts)) {
-    return;
-  }
+  if (!Array.isArray(existingPodcasts)) return;
+
   try {
     const freshPodcasts: PodcastDownloadRecord[] = [];
-
     for (const item of existingPodcasts) {
       if (item._id === _podcast._id) {
-        // unlink
         if (item.filePath && (await RNFS.exists(item.filePath))) {
           await RNFS.unlink(item.filePath);
           console.log('Deleted old file:', item.filePath);
@@ -521,17 +310,11 @@ export const updateOfflinePodcastLikeStatus = async (_podcast: PodcastData) => {
     const freshPodcasts: PodcastDownloadRecord[] = [];
     for (const item of existingPodcasts) {
       if (item._id === _podcast._id) {
-        freshPodcasts.push({
-          ...item,
-          ..._podcast,
-          downloadAt: item.downloadAt,
-          filePath: item.filePath,
-        });
+        freshPodcasts.push({...item, ..._podcast, downloadAt: item.downloadAt, filePath: item.filePath});
       } else {
         freshPodcasts.push(item);
       }
     }
-
     await writeDownloadedPodcasts(freshPodcasts);
     console.log('Update completed');
   } catch (err) {
@@ -544,89 +327,24 @@ export const createFeebackHTMLStructure = (feedback: string) => {
 <html>
 <head>
 <style>
-/**
- * Copyright 2024,UltimateHealth. All rights reserved.
- */
-body {
-  font-family: Arial, sans-serif;
-  font-size: 18px; 
-  line-height: 1.6; 
-  color: #333; 
-}
-
-h1 {
-  color: #00698f;
-}
-
-h2 {
-  color: #008000;
-}
-
-h3 {
-  color: #660066;
-}
-
-h4 {
-  color: #0099CC;
-}
-
-h5 {
-  color: #FF9900;
-}
-
-h6 {
-  color: #663300;
-}
-
-ul {
-  list-style-type: disc;
-}
-
-li {
-  margin-bottom: 10px;
-}
-
-article {
-  width: 95%;
-  margin: 20px auto;
-}
-table {
-    border-collapse: collapse;
-    width: 100%;
-  }
-
-  th, td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-  }
-
-  th {
-    background-color: #f0f0f0;
-  }
-.tag-list {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.tag-list li {
-  margin-right: 10px;
-}
-
-.tag {
-  color: blue;
-  text-decoration: none;
-}
+body { font-family: Arial, sans-serif; font-size: 18px; line-height: 1.6; color: #333; }
+h1 { color: #00698f; } h2 { color: #008000; } h3 { color: #660066; }
+h4 { color: #0099CC; } h5 { color: #FF9900; } h6 { color: #663300; }
+ul { list-style-type: disc; } li { margin-bottom: 10px; }
+article { width: 95%; margin: 20px auto; }
+table { border-collapse: collapse; width: 100%; }
+th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+th { background-color: #f0f0f0; }
+.tag-list { list-style-type: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; }
+.tag-list li { margin-right: 10px; }
+.tag { color: blue; text-decoration: none; }
 </style>
 </head>
 <body>
 ${feedback}
 <hr>
 </body>
-`;
+</html>`;
 };
 
 export const KEYS = {
@@ -643,11 +361,11 @@ export const VULTR_CHAT_ROLES = {
   system: 'system',
   assistant: 'assistant',
 };
+
 export const VULTR_CHAT_PROFILE_AVTARS = {
   user: '',
   system: '',
-  assistant:
-    'https://static.vecteezy.com/system/resources/previews/026/309/247/non_2x/robot-chat-or-chat-bot-logo-modern-conversation-automatic-technology-logo-design-template-vector.jpg',
+  assistant: 'https://static.vecteezy.com/system/resources/previews/026/309/247/non_2x/robot-chat-or-chat-bot-logo-modern-conversation-automatic-technology-logo-design-template-vector.jpg',
 };
 
 export const ttsLanguageList = [
@@ -665,6 +383,7 @@ export const ttsLanguageList = [
   {name: 'Assamese', code: 'as-IN'},
   {name: 'Urdu (India)', code: 'ur-IN'},
 ];
+
 export const Categories: CategoryType[] = [
   {id: 1, name: 'Cardiology'},
   {id: 2, name: 'Neurology'},
@@ -679,10 +398,10 @@ export const Categories: CategoryType[] = [
 ];
 
 export const StatusEnum = {
-  UNASSIGNED: 'unassigned', // can't change
-  IN_PROGRESS: 'in-progress', // can't change
-  REVIEW_PENDING: 'review-pending', // can't change
+  UNASSIGNED: 'unassigned',
+  IN_PROGRESS: 'in-progress',
+  REVIEW_PENDING: 'review-pending',
   PUBLISHED: 'published',
-  DISCARDED: 'discarded', // can't change
+  DISCARDED: 'discarded',
   AWAITING_USER: 'awaiting-user',
 };
