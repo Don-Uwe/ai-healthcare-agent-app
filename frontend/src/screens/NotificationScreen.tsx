@@ -7,17 +7,11 @@ import {Notification, NotificationType} from '../type';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Loader from '../components/Loader';
 import Snackbar from 'react-native-snackbar';
-import { useDispatch, useSelector } from 'react-redux';
 import { NoNotificationState } from '../components/EmptyStates';
-import Loader from '../components/Loader';
-import NotificationItem from '../components/NotificationItem';
 import { hp } from '../helper/Metric';
-import { ON_PRIMARY_COLOR, PRIMARY_COLOR } from '../helper/Theme';
 import { useDeleteNotification } from '../hooks/useDeleteNotification';
 import { useGetAllNotifications } from '../hooks/useGetAllNotifications';
 import { useMarkNotificationAsRead } from '../hooks/useMarkNoticationAsRead';
-import { Notification, NotificationType } from '../type';
-
 type PendingDelete = {
   item: Notification;
   index: number;
