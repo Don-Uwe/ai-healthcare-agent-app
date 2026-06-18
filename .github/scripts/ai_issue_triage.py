@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import urllib.request
 import urllib.error
@@ -55,35 +56,6 @@ def fetch_issue(repo, issue_number, token):
     url = f"https://api.github.com/repos/{repo}/issues/{issue_number}"
     return make_request(url, token=token)
 
-def fetch_all_open_issues(repo, token):
-    issues = []
-    page = 1
-    while True:
-        query = urllib.parse.quote(f"repo:{repo} is:issue is:open")
-        url = f"https://api.github.com/search/issues?q={query}&per_page=100&page={page}"
-        data = make_request(url, token=token)
-        if not data or "items" not in data: break
-        
-        items = data["items"]
-        issues.extend(items)
-        if len(items) < 100: break
-        page += 1
-    return issues
-
-def fetch_recent_issues(repo, token, limit=50):
-    url = f"https://api.github.com/repos/{repo}/issues?state=all&per_page={limit}&sort=created&direction=desc"
-    issues = make_request(url, token=token)
-    if not issues: return []
-    context = []
-    for issue in issues:
-        context.append({
-            "number": issue["number"],
-            "title": issue["title"],
-            "state": issue["state"],
-            "html_url": issue["html_url"]
-        })
-    return context
-
 def fetch_recent_commits(repo, token, limit=15):
     url = f"https://api.github.com/repos/{repo}/commits?per_page={limit}"
     commits = make_request(url, token=token)
@@ -98,9 +70,86 @@ def fetch_recent_commits(repo, token, limit=15):
         })
     return context
 
+# ---------------------------------------------------------------------------
+# Duplicate detection: keyword extraction + GitHub Search across ALL issues
+# ---------------------------------------------------------------------------
+
+STOP_WORDS = {
+    'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
+    'of', 'with', 'by', 'from', 'is', 'are', 'was', 'were', 'be', 'been',
+    'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
+    'should', 'may', 'might', 'not', 'no', 'this', 'that', 'these', 'those',
+    'it', 'its', 'when', 'where', 'how', 'what', 'which', 'who', 'i', 'my',
+    'we', 'our', 'you', 'your', 'as', 'if', 'then', 'so', 'can', 'also',
+    'after', 'before', 'while', 'during', 'into', 'through', 'about', 'over',
+    'under', 'up', 'down', 'out', 'off', 'any', 'all', 'both', 'each',
+    'more', 'most', 'other', 'some', 'such', 'than', 'too', 'very', 'just',
+    'there', 'their', 'they', 'use', 'using', 'used', 'get', 'got', 'make',
+    'made', 'need', 'needs', 'want', 'like', 'see', 'new', 'add', 'one', 'two'
+}
+
+def extract_keywords(title, body):
+    """
+    Extract meaningful search keywords from issue title and body.
+    Title words are prioritised; body contributes additional unique terms.
+    Returns up to 8 keywords suitable for a GitHub Search query.
+    """
+    title_words = re.findall(r'\b[a-zA-Z][a-zA-Z0-9_-]{2,}\b', title or "")
+    title_kw = [w.lower() for w in title_words if w.lower() not in STOP_WORDS]
+
+    body_sample = (body or "")[:600]
+    body_words = re.findall(r'\b[a-zA-Z][a-zA-Z0-9_-]{2,}\b', body_sample)
+    body_kw = [w.lower() for w in body_words if w.lower() not in STOP_WORDS]
+
+    seen, combined = set(), []
+    for kw in title_kw + body_kw:
+        if kw not in seen:
+            seen.add(kw)
+            combined.append(kw)
+
+    return combined[:8]
+
+def search_candidate_duplicates(repo, keywords, current_issue_number, token):
+    """
+    Use GitHub Search API to find the top 10 most relevant issues matching
+    the extracted keywords — across ALL of the repo's issue history.
+    Each candidate includes a body snippet so the AI can do deep comparison.
+    """
+    if not keywords:
+        print("[INFO] No keywords extracted; skipping duplicate search.", flush=True)
+        return []
+
+    keyword_query = " ".join(keywords[:6])   # GitHub search works best with ≤6-8 terms
+    raw_query = f"repo:{repo} is:issue {keyword_query}"
+    encoded_query = urllib.parse.quote(raw_query)
+    url = f"https://api.github.com/search/issues?q={encoded_query}&per_page=10&sort=relevance"
+
+    print(f"[INFO] Duplicate search query: {raw_query}", flush=True)
+    result = make_request(url, token=token)
+    if not result or "items" not in result:
+        print("[WARN] GitHub Search returned no results for duplicate check.", flush=True)
+        return []
+
+    candidates = []
+    for issue in result["items"]:
+        if str(issue.get("number")) == str(current_issue_number):
+            continue
+        body = issue.get("body") or ""
+        candidates.append({
+            "number": issue["number"],
+            "title": issue["title"],
+            "state": issue["state"],
+            "html_url": issue["html_url"],
+            # First 500 chars of body — enough for semantic comparison
+            "body_snippet": body[:500].strip()
+        })
+
+    print(f"[INFO] Found {len(candidates)} candidate duplicate(s) to compare.", flush=True)
+    return candidates
+
 MAX_BATCH_PER_RUN = 5
 
-def generate_triage_decision(title, body, recent_issues_context, recent_commits_context, api_keys):
+def generate_triage_decision(title, body, candidate_duplicates, recent_commits_context, api_keys):
     headers = {"Content-Type": "application/json"}
     
     prompt = f"""
@@ -140,10 +189,21 @@ You must set `escalate_to_maintainer = true` when:
 * Large feature proposal
 * Level 3 issue
 
-# Recent Issues for Duplicate/Completion Check
-{json.dumps(recent_issues_context, indent=2)}
+## Duplicate Detection — IMPORTANT
+The following are candidate issues retrieved by keyword search from the ENTIRE repository history (not just recent ones). Each includes a body snippet.
+You MUST compare the new issue against ALL candidates below — not just by title keywords, but by:
+1. **Same root problem** — Is the underlying bug/feature the same even if described differently?
+2. **Same affected component** — Same screen, API endpoint, UI element, or feature area?
+3. **Same reproduction steps or user flow** — Even if worded differently, does the user experience the same broken behaviour?
+4. **Same expected outcome** — Would fixing one automatically fix the other?
 
-# Recent Commits for Context
+If ANY candidate matches on 2 or more of these criteria, mark `is_duplicate = true` and set `duplicate_number` to that issue's number.
+If no candidate is a true duplicate (only superficially similar titles), mark `is_duplicate = false`.
+
+# Candidate Duplicates (from full repo search):
+{json.dumps(candidate_duplicates, indent=2)}
+
+# Recent Commits for Context:
 {json.dumps(recent_commits_context, indent=2)}
 
 # New Issue
@@ -169,11 +229,7 @@ Output a single JSON object. DO NOT wrap in Markdown code blocks. Output exactly
         "generationConfig": {"temperature": 0.1, "responseMimeType": "application/json"}
     }
     
-    import re
-    import time
-    
     max_retries = max(3, len(api_keys) + 1)
-    # With multiple keys, rotate fast with short wait — only wait if same key is reused
     base_wait = 5 if len(api_keys) > 1 else 50
     print(f"[INFO] Starting Gemini call. Keys available: {len(api_keys)}, max_retries: {max_retries}", flush=True)
     
@@ -235,8 +291,13 @@ def check_active_assignments(repo, username, token):
     issues = make_request(url, token=token)
     return issues is not None and len(issues) > 0
 
-def check_previous_prs(repo, username, token):
-    query = urllib.parse.quote(f"repo:{repo} is:pr author:{username}")
+def check_merged_prs(repo, username, token):
+    """
+    Check if the user has at least one MERGED PR in the repo.
+    This is stricter than checking for any authored PR — it ensures the user
+    actually delivered completed work, not just opened a draft or abandoned PR.
+    """
+    query = urllib.parse.quote(f"repo:{repo} is:pr author:{username} is:merged")
     url = f"https://api.github.com/search/issues?q={query}"
     result = make_request(url, token=token)
     if result and "total_count" in result:
@@ -255,12 +316,14 @@ def handle_issue_opened(repo, issue_number, token, gemini_api_keys):
     title = issue.get("title", "")
     body = issue.get("body", "")
     
-    recent_issues = fetch_recent_issues(repo, token, limit=30)
-    recent_issues = [i for i in recent_issues if str(i["number"]) != str(issue_number)]
+    # --- Duplicate detection: keyword search across ALL issues ---
+    keywords = extract_keywords(title, body)
+    print(f"[INFO] Extracted keywords for duplicate search: {keywords}", flush=True)
+    candidate_duplicates = search_candidate_duplicates(repo, keywords, issue_number, token)
     
     recent_commits = fetch_recent_commits(repo, token, limit=15)
     
-    decision = generate_triage_decision(title, body, recent_issues, recent_commits, gemini_api_keys)
+    decision = generate_triage_decision(title, body, candidate_duplicates, recent_commits, gemini_api_keys)
     if not decision:
         print("Failed to get triage decision.", flush=True)
         return "error", "Failed to get triage decision from Gemini"
@@ -346,7 +409,7 @@ def handle_issue_opened(repo, issue_number, token, gemini_api_keys):
                 post_comment(repo, issue_number, msg, token)
                 return "frontend", f"Frontend (auto-assigned to @{author})"
             else:
-                msg = f"This issue has been triaged as a **frontend** task ({difficulty or 'Unclassified Difficulty'}).\n\n> **Expected Effect & Scope:** {decision.get('reasoning')}\n\nIt is now open for community contribution!\n\nHi @{author}, I couldn't assign this to you automatically because you currently have another active assignment. Please complete your current task first!\n\n---\n### 🤖 Assignment Guidelines\nTo get assigned to this issue, simply leave a comment requesting assignment.\nThe AI bot will automatically assign you if you meet the following eligibility criteria:\n1. You do not currently have any other active assigned issues in this repository.\n2. If you were previously assigned an issue, you must have submitted a Pull Request for it before requesting a new one."
+                msg = f"This issue has been triaged as a **frontend** task ({difficulty or 'Unclassified Difficulty'}).\n\n> **Expected Effect & Scope:** {decision.get('reasoning')}\n\nIt is now open for community contribution!\n\nHi @{author}, I couldn't assign this to you automatically because you currently have another active assignment. Please complete your current task first!\n\n---\n### 🤖 Assignment Guidelines\nTo get assigned to this issue, simply leave a comment requesting assignment.\nThe AI bot will automatically assign you if you meet the following eligibility criteria:\n1. You do not currently have any other active assigned issues in this repository.\n2. If you were previously assigned an issue, you must have a **merged Pull Request** in this repository before requesting a new one."
                 post_comment(repo, issue_number, msg, token)
                 return "frontend", "Frontend (open)"
         
@@ -381,23 +444,33 @@ def handle_issue_comment(repo, issue_number, commenter, token):
         print("Issue is not marked as frontend. Triage might be incomplete. Ignoring.")
         return "ignored", "Missing frontend label"
 
+    # --- Check 1: No active assignments ---
     has_active = check_active_assignments(repo, commenter, token)
     if has_active:
         msg = f"@{commenter} You currently have an active assigned issue. Please complete your existing work before requesting a new assignment."
         post_comment(repo, issue_number, msg, token)
         return "rejected", "Active assignments limit"
-        
+
+    # --- Check 2: If user had previously closed assigned issues, they must have a MERGED PR ---
+    # This ensures contributors who took on work actually delivered it before getting more.
     query = urllib.parse.quote(f"repo:{repo} is:issue assignee:{commenter} is:closed")
     url = f"https://api.github.com/search/issues?q={query}"
     past_issues = make_request(url, token=token)
     
     if past_issues and past_issues.get("total_count", 0) > 0:
-        has_prs = check_previous_prs(repo, commenter, token)
-        if not has_prs:
-            msg = f"@{commenter} It appears you previously had an assigned issue but haven't submitted a Pull Request to this repository yet. Ensure that a Pull Request has been submitted before requesting another assignment."
+        has_merged_pr = check_merged_prs(repo, commenter, token)
+        if not has_merged_pr:
+            msg = (
+                f"@{commenter} It looks like you previously had an assigned issue that was closed, "
+                f"but you haven't merged a Pull Request in this repository yet.\n\n"
+                f"Please submit and get a Pull Request merged before requesting another assignment. "
+                f"This ensures contributors complete their work before taking on new tasks.\n\n"
+                f"If you believe this is an error, please contact a maintainer."
+            )
             post_comment(repo, issue_number, msg, token)
-            return "rejected", "No PRs submitted yet"
+            return "rejected", "No merged PRs — previous assigned issue closed without delivery"
 
+    # All checks passed — assign
     assign_user(repo, issue_number, commenter, token)
     msg = f"""> Thank you for volunteering, @{commenter}!\n>\n> The issue has been reviewed and determined to be suitable for community contribution.\n>\n> Assignment has been made based on current contributor availability.\n>\n> Please ensure your pull request references this issue (`Fixes #{issue_number}`) and follows repository contribution guidelines.\n>\n> Maintainer: @SB2318"""
     post_comment(repo, issue_number, msg, token)
