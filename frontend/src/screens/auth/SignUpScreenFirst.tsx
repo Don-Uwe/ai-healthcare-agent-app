@@ -65,6 +65,7 @@ const SignupPageFirst = ({navigation}: SignUpScreenFirstProp) => {
 
   const username = watch('username');
   const userHandle = username?.trim();
+  const email = watch('email');
 
   const {data: handleAvailability, isLoading: isCheckingHandle} =
     useCheckUserHandleAvailability(userHandle);

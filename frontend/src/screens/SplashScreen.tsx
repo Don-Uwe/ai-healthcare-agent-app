@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect} from 'react';
-import {Image, StyleSheet} from 'react-native';
+import {Image, StyleSheet, ActivityIndicator} from 'react-native';
 import {YStack, Text, Button} from 'tamagui';
 import Animated, {
   useSharedValue,
@@ -33,22 +33,24 @@ export default function SplashScreen({navigation}: SplashScreenProp) {
   // }
 
   const checkLoginStatus = useCallback(async () => {
-
-    if(!tokenRes){
+    if (!tokenRes) {
       return;
     }
     try {
       const userId = await retrieveItem(KEYS.USER_ID);
       const user = await secureRetrieveItem(SECURE_KEYS.USER_TOKEN as SecureKey);
       const user_handle = await retrieveItem(KEYS.USER_HANDLE);
-      if (
-       // user_handle &&
-       // user &&
-       // expiryDate &&
-       // !isDateMoreThanSevenDaysOld(expiryDate)
-       tokenRes?.isValid
-      ) {
+      if (tokenRes?.isValid) {
+        dispatch(setUserId(userId));
+        dispatch(setUserToken(user));
+        dispatch(setUserHandle(user_handle));
 
+        navigation.reset({
+          index: 0,
+          routes: [{name: 'TabNavigation'}],
+        });
+      } else if (tokenRes?.isNetworkError && user) {
+        // Allow offline access using locally stored session info instead of forcing logout
         dispatch(setUserId(userId));
         dispatch(setUserToken(user));
         dispatch(setUserHandle(user_handle));
@@ -67,20 +69,20 @@ export default function SplashScreen({navigation}: SplashScreenProp) {
     } catch (error) {
       console.error('Error retrieving user data from storage', error);
       await clearStorage();
-      // navigation.navigate('LoginScreen');
       navigation.reset({
         index: 0,
         routes: [{name: 'LoginScreen'}],
       });
     }
-  },[dispatch, navigation, tokenRes]);
+  }, [dispatch, navigation, tokenRes]);
 
-   useEffect(() => {
+  useEffect(() => {
     console.log('Token status:', tokenRes);
     if (tokenRes) {
       checkLoginStatus();
     }
   }, [checkLoginStatus, tokenRes]);
+
   useEffect(() => {
     opacity.value = withTiming(1, {
       duration: 1200,
@@ -106,7 +108,6 @@ export default function SplashScreen({navigation}: SplashScreenProp) {
       flex={1}
       alignItems="center"
       justifyContent="center"
-      //bg="$background"
       padding="$6"
       gap="$4">
       <Animated.View style={animatedStyle}>
@@ -128,23 +129,25 @@ export default function SplashScreen({navigation}: SplashScreenProp) {
         </Text>
       </Animated.View>
 
-      <Button
-        marginTop="$6"
-        size="$7"
-        backgroundColor={isLoading ? '$color3' : '$color9'}
-        color="black"
-        paddingHorizontal="$9"
-        paddingVertical="$2"
-        borderRadius="$10"
-        elevation={4}
-        disabled={isLoading}
-
-        pressStyle={{scale: 0.96, opacity: 0.9}}
-        onPress={checkLoginStatus}>
-        <Text fontSize={16} color="black">
-          Continue
-        </Text>
-      </Button>
+      {isLoading ? (
+        <ActivityIndicator size="small" color="#000A60" style={{marginTop: 30}} />
+      ) : (
+        <Button
+          marginTop="$6"
+          size="$7"
+          backgroundColor="$color9"
+          color="black"
+          paddingHorizontal="$9"
+          paddingVertical="$2"
+          borderRadius="$10"
+          elevation={4}
+          pressStyle={{scale: 0.96, opacity: 0.9}}
+          onPress={checkLoginStatus}>
+          <Text fontSize={16} color="black">
+            Continue
+          </Text>
+        </Button>
+      )}
     </YStack>
   );
 }

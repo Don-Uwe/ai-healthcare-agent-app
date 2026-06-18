@@ -27,8 +27,14 @@ import { useSelector } from 'react-redux';
     }
     return res.data;
   } catch (error) {
-    // Network error or server error — treat as invalid to avoid blank screen
-    return { isValid: false, message: 'Network error during token check' };
+    if (axios.isAxiosError(error) && error.response) {
+      const status = error.response.status;
+      if (status === 401 || status === 403) {
+        return { isValid: false, message: 'Token expired or invalid' };
+      }
+    }
+    // Network error, connection timeout, 500 server error, etc.
+    return { isValid: false, isNetworkError: true, message: 'Network error during token check' };
   }
 };
 export const useCheckTokenStatus = () => {
