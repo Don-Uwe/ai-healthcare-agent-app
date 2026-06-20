@@ -11,7 +11,7 @@ import {TabParamList} from '../type';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import {BUTTON_COLOR} from '../helper/Theme';
 import HeaderRightMenu from '../components/HeaderRightMenu';
-import ChatbotScreen from '../screens/ChatbotScreen';
+import PersonaLobbyScreen from '../screens/PersonaLobbyScreen';
 import AboutScreen from '../screens/AboutPage';
 import {useSelector} from 'react-redux';
 import GuestPlaceholderScreen from '../components/GuestPlaceholderScreen';
@@ -67,7 +67,7 @@ const TabNavigation = () => {
 
       <Tab.Screen
         name="Chatbot"
-        component={isGuest ? ChatbotGuestScreen : ChatbotScreen}
+        component={isGuest ? ChatbotGuestScreen : PersonaLobbyScreen}
         options={({navigation}) => ({
           headerTitleAlign: 'center',
           title: 'Chatbot',
