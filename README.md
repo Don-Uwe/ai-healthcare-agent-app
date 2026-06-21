@@ -931,6 +931,7 @@ We welcome contributions from everyone — developers, designers, writers, and t
      <td align="center"><a href="https://github.com/anjali62510-star"><img src="https://avatars.githubusercontent.com/u/221178990?v=4" width="120px;" alt=""/><br/><sub><b>anjali62510-star</b></sub></a></td>
      <td align="center"><a href="https://github.com/aspartic-gthb"><img src="https://avatars.githubusercontent.com/u/243364071?v=4" width="120px;" alt=""/><br/><sub><b>Anirudh Sahu</b></sub></a></td>
      <td align="center"><a href="https://github.com/Saylee12R"><img src="https://avatars.githubusercontent.com/u/230833976?v=4" width="120px;" alt=""/><br/><sub><b>Saylee</b></sub></a></td>
+     <td align="center"><a href="https://github.com/abdulhaque2005"><img src="https://avatars.githubusercontent.com/u/225173958?v=4" width="120px;" alt=""/><br/><sub><b>Abdulhaque</b></sub></a></td>
  </tr>
 </table>
 <!-- CONTRIBUTORS-TABLE-END -->
