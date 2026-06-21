@@ -26,6 +26,7 @@
     <td align="center"><b>🛠️ Frontend CI</b></td>
     <td align="center"><b>📱 Expo CI</b></td>
     <td align="center"><b>🌟 Stars</b></td>
+    <td align="center"><b>👀 Views</b></td>
   </tr>
   <tr>
     <td align="center">
@@ -43,6 +44,9 @@
       <a href="https://github.com/SB2318/UltimateHealth/stargazers">
         <img alt="Stars" src="https://img.shields.io/github/stars/SB2318/UltimateHealth?style=social"/>
       </a>
+    </td>
+    <td align="center">
+      <img alt="Views" src="https://komarev.com/ghpvc/?username=SB2318&repo=UltimateHealth&label=Views&color=blue&style=flat" />
     </td>
   </tr>
 
