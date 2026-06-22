@@ -184,9 +184,10 @@ export const OfflinePodcastState = () => (
 
 export const NoArticleState = ({ onRefresh }: { onRefresh?: () => void }) => (
   <BaseEmptyState
-    iconEmoji="📭"
-    title="No Articles Available"
-    description="There are no articles to display right now. Check back later for new health insights!"
+    iconEmoji="🔍"
+    title="No Articles Found"
+    description="We couldn't find any articles matching your current search or filter. Try adjusting your keywords, changing filters, or refreshing the article list."
+    infoText="Tip: Use broader health topics or reset filters to discover more articles."
     actionText={onRefresh ? "Refresh Articles" : undefined}
     onAction={onRefresh}
   />
