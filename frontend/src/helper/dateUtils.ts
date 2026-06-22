@@ -98,9 +98,11 @@ const getValidDate = (date: Date | string | number | null | undefined): Date | n
 export const formatDateWithTime = (date: Date | string | number | null | undefined): string => {
   const validDate = getValidDate(date);
   if (!validDate) return '';
-  return format(validDate, "MMMM do yyyy, h:mm a", {
+  const formatted = format(validDate, "MMMM do yyyy, h:mm a", {
     locale: activeLocale,
   });
+  // Handle potential '0:mm AM' display bug
+  return formatted.replace(/\b0:(\d{2}) AM\b/g, '12:$1 AM');
 };
 
 /**
@@ -110,9 +112,11 @@ export const formatDateWithTime = (date: Date | string | number | null | undefin
 export const formatTimeWithDate = (date: Date | string | number | null | undefined): string => {
   const validDate = getValidDate(date);
   if (!validDate) return '';
-  return format(validDate, "hh:mm a dd/MM/yyyy", {
+  const formatted = format(validDate, "hh:mm a dd/MM/yyyy", {
     locale: activeLocale,
   });
+  // Handle potential '00:mm AM' display bug
+  return formatted.replace(/\b00:(\d{2}) AM\b/g, '12:$1 AM');
 };
 
 /**
@@ -134,9 +138,11 @@ export const formatDateShortYear = (date: Date | string | number | null | undefi
 export const formatWithOrdinalAndDay = (date: Date | string | number | null | undefined): string => {
   const validDate = getValidDate(date);
   if (!validDate) return '';
-  return format(validDate, "d MMM, EEE, h:mm a", {
+  const formatted = format(validDate, "d MMM, EEE, h:mm a", {
     locale: activeLocale,
   });
+  // Handle potential '0:mm AM' display bug
+  return formatted.replace(/\b0:(\d{2}) AM\b/g, '12:$1 AM');
 };
 
 /**
