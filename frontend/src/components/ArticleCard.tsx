@@ -19,7 +19,6 @@ import IonIcons from '@expo/vector-icons/Ionicons';
 import {GET_IMAGE} from '../helper/APIUtils';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
 import GlobalStyles from '../styles/GlobalStyle';
-import { calculateReadTime } from "../../utils/readTime";
 import {
   formatCount,
   requestStoragePermissions,
@@ -63,7 +62,6 @@ const ArticleCard = ({
 }: ArticleCardProps) => {
   const {user_id, user_handle, isGuest} = useSelector((state: any) => state.user);
   const {isConnected} = useSelector((state: any) => state.network);
-  const readTime = calculateReadTime(article.content || article.body);
   const socket = useSocket();
   const width = useSharedValue(0);
   const yValue = useSharedValue(60);
@@ -229,14 +227,7 @@ const ArticleCard = ({
       setMenuVisible(false);
     }
   };
-  <Text style={styles.readTime}>{readTime} min read</Text>
-  const styles = StyleSheet.create({
-    readTime: {
-      fontSize: 12,
-      color: "#6B7280", // Gray text
-      marginTop: 4,
-    },
-  });
+  
   useEffect(() => {
     if (!socket) return;
 
@@ -529,7 +520,8 @@ const ArticleCard = ({
             )}
             <ReadingDifficulty difficulty={getArticleDifficulty(item)} />
           </View>
-          <Text style={styles.title}>{item?.title}</Text>
+          <Text style={styles.title} numberOfLines={2} ellipsizeMode="tail">{item?.title}</Text>
+
 
           <View style={styles.metaRow}>
   <Text style={styles.footerText1}>{item?.authorName}</Text>
@@ -930,7 +922,9 @@ const styles = StyleSheet.create({
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexWrap: 'wrap',
     marginTop: 6,
+    rowGap: 4,
   },
 
   dot: {
