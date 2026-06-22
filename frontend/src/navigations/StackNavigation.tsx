@@ -14,6 +14,7 @@ import NotificationScreen from '../screens/NotificationScreen';
 import EditorScreen from '../screens/article/EditorScreen';
 import PreviewScreen from '../screens/article/PreviewScreen';
 import ArticleScreen from '../screens/article/ArticleScreen';
+import ReadingHistoryScreen from '../screens/ReadingHistoryScreen';
 import {
   TouchableOpacity,
   StyleSheet,
@@ -555,6 +556,32 @@ const StackNavigation = () => {
               onPress={() => {
                 navigation.goBack();
               }}>
+              <FontAwesome6 size={25} name="arrow-left" color={'white'} />
+            </TouchableOpacity>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="ReadingHistoryScreen"
+        component={ReadingHistoryScreen}
+        options={({navigation}) => ({
+          headerShown: true,
+          headerTitle: 'Reading History',
+          headerTitleAlign: 'center',
+          headerBackTitleVisible: false,
+          headerTintColor: 'white',
+          headerStyle: {
+            elevation: 4,
+            backgroundColor: '#000A60',
+            shadowColor: '#000',
+            shadowOffset: {width: 0, height: 2},
+            shadowOpacity: 0.25,
+            shadowRadius: 3.5,
+          },
+          headerLeft: () => (
+            <TouchableOpacity
+              style={styles.headerLeftButtonCommentScreen}
+              onPress={() => navigation.goBack()}>
               <FontAwesome6 size={25} name="arrow-left" color={'white'} />
             </TouchableOpacity>
           ),

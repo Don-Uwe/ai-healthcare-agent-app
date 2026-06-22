@@ -133,6 +133,7 @@ export type RootStackParamList = {
   CommunityGuidelines: undefined;
   ContributorPage: undefined;
   OpenSourcePage: undefined;
+  ReadingHistoryScreen: undefined;
 };
 
 export type RedirectTo = {

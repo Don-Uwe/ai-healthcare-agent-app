@@ -18,6 +18,7 @@ import {useGetProfile} from '../hooks/useGetProfile';
 import {useUpdateViewCount} from '../hooks/useUpdateViewCount';
 import {useGetReadHistory, ReadHistoryArticle} from '../hooks/useGetReadHistory';
 import { NoArticleState } from '../components/EmptyStates';
+import Ionicon from '@expo/vector-icons/Ionicons';
 
 const ProfileScreen = ({navigation}: ProfileScreenProps) => {
   const theme = useTheme();
@@ -278,6 +279,14 @@ const ProfileScreen = ({navigation}: ProfileScreenProps) => {
       >
         {renderHeader()}
 
+        <TouchableOpacity
+      style={styles.historyRow}
+      onPress={() => navigation.navigate('ReadingHistoryScreen')}>
+      <Ionicon name="time-outline" size={22} color={PRIMARY_COLOR} />
+        <Text style={styles.historyRowText}>Reading History</Text>
+        <Ionicon name="chevron-forward" size={20} color="#9ca3af" />
+      </TouchableOpacity>
+
         {/* Custom Tab Bar */}
         <View style={[styles.tabBarContainer, { backgroundColor: tabColors.background, borderBottomColor: tabColors.border }]}>
           <TouchableOpacity 
@@ -476,6 +485,23 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+
+  historyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
+  },
+  historyRowText: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1a1a1a',
   },
   loadMoreButton: {
     marginTop: 12,
