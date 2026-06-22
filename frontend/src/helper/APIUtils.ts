@@ -19,6 +19,7 @@ const extra = Constants.expoConfig?.extra ?? {};
 const PROD_URL: string = extra.PROD_URL;
 const SOCKET_PROD: string = extra.SOCKET_PROD;
 const CONTENT_CHECKER_PROD: string = extra.CONTENT_CHECKER_PROD;
+const SHARE_BASE_URL = 'https://uhsocial.in';
 
 const LOGIN_API = `${PROD_URL}/user/login`;
 const REGISTRATION_API = `${PROD_URL}/user/register`;
@@ -199,4 +200,5 @@ export {
   GET_NOTIFICATION_PREFERENCES,
   UPDATE_NOTIFICATION_PREFERENCES,
   GET_READ_HISTORY,
+  SHARE_BASE_URL,
 };
