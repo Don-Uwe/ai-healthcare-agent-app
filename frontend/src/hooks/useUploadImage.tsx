@@ -43,7 +43,6 @@ const useUploadImage = () => {
       setError(false);
       return data.key as string;
     } catch (err) {
-   
       if (__DEV__) console.log('Image upload failed', err);
       Alert.alert('Low network connection, failed to upload image');
     //  dispatch(showAlert({
@@ -51,7 +50,7 @@ const useUploadImage = () => {
     //        message: 'Unable to upload image. Please check your connection.'
     //       }));
       setError(true);
-      //throw err;
+      throw err;
     } finally {
       setLoading(false);
     }

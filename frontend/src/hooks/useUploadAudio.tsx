@@ -65,6 +65,7 @@ const useUploadAudio = () => {
     //  }));
      
       setError(true);
+      throw err;
     } finally {
       setLoading(false);
     }
