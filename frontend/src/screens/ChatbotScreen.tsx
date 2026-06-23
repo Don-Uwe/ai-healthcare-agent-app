@@ -27,6 +27,7 @@ import {useGetProfile} from '../hooks/useGetProfile';
 import {useSendMessageToGemini} from '../hooks/useSendMessageToGemini';
 import {useLoadAIConversations} from '../hooks/useLoadAIChats';
 import Snackbar from 'react-native-snackbar';
+import {verifyChatbotResponse} from '../chatbot-response-verification';
 
 // interface ChatbotResponse {
 //   id: string;
@@ -152,27 +153,34 @@ const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
       });
       return;
     }
+  safeSetMessages(previousMessages =>
+  GiftedChat.append(previousMessages, messages),
+);
 
-    setIsLoading(true);
+const prompt = messages?.[0]?.text ?? 'AI in health within 100 words';
+sendMessageToAI(prompt, {
+     onSuccess: (responseData: Message) => {
+  const verification = verifyChatbotResponse(responseData.text);
 
-    sendMessageToAI(prompt, {
-      onSuccess: (responseData: Message) => {
-        setIsLoading(false);
-        safeSetMessages(previousMessages =>
-          GiftedChat.append(previousMessages, [
-            {
-              _id: responseData._id,
-              text: responseData.text,
-              createdAt: new Date(),
-              user: {
-                _id: 2,
-                avatar:
-                  'https://static.vecteezy.com/system/resources/previews/026/309/247/non_2x/robot-chat-or-chat-bot-logo-modern-conversation-automatic-technology-logo-design-template-vector.jpg',
-              },
-            },
-          ]),
-        );
+  safeSetMessages(previousMessages =>
+    GiftedChat.append(previousMessages, [
+      {
+        _id: responseData._id,
+       text: responseData.text,
+        createdAt: new Date(),
+        user: {
+          _id: 2,
+          avatar:
+            'https://static.vecteezy.com/system/resources/previews/026/309/247/non_2x/robot-chat-or-chat-bot-logo-modern-conversation-automatic-technology-design-template-vector.jpg',
+        },
+metadata: {
+  status: verification.status,
+  confidence: verification.confidence,
+},
       },
+    ]),
+  );
+},
       onError: (error: AxiosError) => {
         setIsLoading(false);
         if (!isMountedRef.current) {
