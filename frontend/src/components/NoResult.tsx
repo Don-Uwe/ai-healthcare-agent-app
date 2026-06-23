@@ -1,11 +1,11 @@
-// NoResults.js
+// NoResult.tsx
 import {MaterialIcons} from '@expo/vector-icons';
 import React from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {YStack, Text} from 'tamagui';
 
-const NoResults = ({query = ''}) => {
+const NoResult = ({query = ''}) => {
   return (
     <SafeAreaView>
       <YStack
@@ -24,9 +24,8 @@ const NoResults = ({query = ''}) => {
           Try with different keywords or check back later.
         </Text>
       </YStack>
-      {/* Empty Result */}
     </SafeAreaView>
   );
 };
 
-export default NoResults;
+export default NoResult;
