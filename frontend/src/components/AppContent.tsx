@@ -23,6 +23,7 @@ import { cleanUpDownloads } from '../helper/utils';   // Ensure file dependency 
 // Import your application's actual routing provider engine to prevent blank screen errors
 // Note: Double-check the physical file path name inside your fork to match this import
 import StackNavigation from '../navigation/StackNavigation'; 
+import { NetworkBanner } from './NetworkBanner';
 
 export function AppContent() {
   const colorScheme = useColorScheme();
@@ -115,6 +116,7 @@ export function AppContent() {
             <PreferencesProvider>
               <SocketProvider>
                 <View style={{ flex: 1 }}>
+                  <NetworkBanner />
                   <NavigationContainer ref={navigationRef}>
                     {/* 🚀 RESTORE APP ROUTER: Embed the navigation stack routing component back into the tree layout */}
                     <StackNavigation />

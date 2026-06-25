@@ -8,14 +8,8 @@ import {
 import React, {useEffect} from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import {PRIMARY_COLOR} from '../helper/Theme';
-
-const contactSchema = z.object({
-  phone_number: z.string().min(10, 'Please enter a valid phone number'),
-  contact_email: z.string().email('Please enter a valid email'),
-});
-export type ContactFormData = z.infer<typeof contactSchema>;
+import { contactSchema, ContactFormData } from '../schemas/profileSchemas';
 
 export interface ProfileEditContactTab {
   user: any;
