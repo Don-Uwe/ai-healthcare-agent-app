@@ -62,7 +62,6 @@ const GET_YEARLY_READ_REPORT = `${PROD_URL}/analytics/yearly-reads/`;
 const GET_MONTHLY_WRITES_REPORT = `${PROD_URL}/analytics/monthly-writes/`;
 const GET_YEARLY_WRITES_REPORT = `${PROD_URL}/analytics/yearly-writes/`;
 
-const VULTR_CHAT_URL = 'https://api.vultrinference.com/v1/chat/completions';
 const GET_ARTICLE_CONTENT = `${PROD_URL}/articles/get-article-content`;
 const GET_IMPROVEMENT_CONTENT = `${PROD_URL}/article/get-improve-content`;
 
@@ -154,7 +153,6 @@ export {
   GET_MONTHLY_WRITES_REPORT,
   GET_YEARLY_READ_REPORT,
   GET_YEARLY_WRITES_REPORT,
-  VULTR_CHAT_URL,
   CHAT_URL,
   REPOST_ARTICLE,
   CHECK_USER_HANDLE,
