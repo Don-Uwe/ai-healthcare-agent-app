@@ -953,6 +953,7 @@ We welcome contributions from everyone — developers, designers, writers, and t
      <td align="center"><a href="https://github.com/parthnakum"><img src="https://avatars.githubusercontent.com/u/134558990?v=4" width="120px;" alt=""/><br/><sub><b>Parth Nakum</b></sub></a></td>
      <td align="center"><a href="https://github.com/Arpita2919"><img src="https://avatars.githubusercontent.com/u/153080323?v=4" width="120px;" alt=""/><br/><sub><b>Arpita Raj</b></sub></a></td>
      <td align="center"><a href="https://github.com/pratik-dev01"><img src="https://avatars.githubusercontent.com/u/180295981?v=4" width="120px;" alt=""/><br/><sub><b>pratik ankush bandgar</b></sub></a></td>
+     <td align="center"><a href="https://github.com/vanshikaMaheshwari"><img src="https://avatars.githubusercontent.com/u/73647007?v=4" width="120px;" alt=""/><br/><sub><b>Vanshika Maheshwari</b></sub></a></td>
  </tr>
 </table>
 <!-- CONTRIBUTORS-TABLE-END -->
