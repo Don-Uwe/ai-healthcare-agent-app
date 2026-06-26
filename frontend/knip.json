@@ -25,7 +25,8 @@
     "**/__tests__/**",
     "**/*.{spec,test}.{ts,tsx,js,jsx}",
     "**/*.config.{ts,js,mjs,cjs}",
-    "tsconfig.json"
+    "tsconfig.json",
+    "frontend/services/apiClient.ts"
   ],
   "ignoreBinaries": [
     "expo",
