@@ -593,6 +593,7 @@ export type ArticleData = {
   repostUsers: string[];
   likeCount: number;
   likedUsers: User[];
+  trustUsers: string[];
   savedUsers: string[];
   mentionedUsers: User[];
   language: string;
@@ -724,6 +725,14 @@ export type User = {
   improvements: string[];
   isBlockUser: boolean;
   isBannedUser: boolean;
+};
+
+export type TrustedUser = {
+  _id: string;
+  user_handle: string;
+  user_name: string;
+  Profile_image?: string;
+  bio?: string;
 };
 
 export type Contactdetail = {

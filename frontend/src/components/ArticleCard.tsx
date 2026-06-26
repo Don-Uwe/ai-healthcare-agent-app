@@ -556,6 +556,14 @@ const ArticleCard = ({
   <Text style={styles.footerText1}>
     {getReadTime(item?.title + ' ' + (item?.description || ''))}
   </Text>
+  {(item?.trustUsers?.length ?? 0) > 0 && (
+    <>
+      <Text style={styles.dot}>•</Text>
+      <Text style={styles.footerText1}>
+        🛡️ Trusted by {formatCount(item?.trustUsers?.length ?? 0)}
+      </Text>
+    </>
+  )}
 </View>
           <Text style={styles.readTime}>{readTime} min read</Text>
           <EditRequestModal
