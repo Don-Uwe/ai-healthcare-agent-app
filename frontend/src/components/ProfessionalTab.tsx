@@ -49,9 +49,9 @@ const ProfessionalTab = ({
             render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
               <>
                 <TextInput
-                  placeholder="Enter your specialization"
+                  placeholder="e.g. Cardiology, Neurology, General Surgery"
                   placeholderTextColor="#6b7280"
-                  style={[styles.inputControl, error && { borderColor: 'red' }]}
+                  style={[styles.inputControl, error && { borderColor: '#ef4444', borderWidth: 2 }]}
                   value={value}
                   onChangeText={onChange}
                   onBlur={onBlur}
@@ -72,9 +72,9 @@ const ProfessionalTab = ({
             render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
               <>
                 <TextInput
-                  placeholder="Enter your qualification"
+                  placeholder="e.g. MBBS, MD, PhD"
                   placeholderTextColor="#6b7280"
-                  style={[styles.inputControl, error && { borderColor: 'red' }]}
+                  style={[styles.inputControl, error && { borderColor: '#ef4444', borderWidth: 2 }]}
                   value={value}
                   onChangeText={onChange}
                   onBlur={onBlur}
@@ -95,9 +95,9 @@ const ProfessionalTab = ({
             render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
               <>
                 <TextInput
-                  placeholder="Enter your years of experience"
+                  placeholder="e.g. 5"
                   placeholderTextColor="#6b7280"
-                  style={[styles.inputControl, error && { borderColor: 'red' }]}
+                  style={[styles.inputControl, error && { borderColor: '#ef4444', borderWidth: 2 }]}
                   keyboardType="decimal-pad"
                   value={value}
                   onChangeText={onChange}

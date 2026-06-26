@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {
   Dimensions,
   Modal,
@@ -25,6 +25,26 @@ const AddSpecializationModal = ({
   setspecialization,
   specialization,
 }: AddSpecializationModalProps) => {
+  const [error, setError] = useState('');
+
+  const validateAndAdd = () => {
+    if (!specialization.trim()) {
+      setError('Please enter a specialization.');
+      return;
+    }
+    if (specialization.trim().length < 3) {
+      setError('Specialization must be at least 3 characters.');
+      return;
+    }
+    setError('');
+    handleAddSpecialization(specialization);
+  };
+
+  const handleClose = () => {
+    setError('');
+    handleCloseModal();
+  };
+
   return (
     <Modal
       animationType="fade"
@@ -39,21 +59,32 @@ const AddSpecializationModal = ({
             autoCapitalize="words"
             autoCorrect={true}
             keyboardType="default"
-            placeholder="General Surgeons"
+            placeholder="e.g. General Surgery, Cardiology"
             placeholderTextColor="#6b7280"
             value={specialization}
-            onChangeText={text => setspecialization(text)}
-            style={styles.inputControl}
+            onChangeText={text => {
+              setspecialization(text);
+              // Clear error as user types
+              if (error) {
+                if (!text.trim()) {
+                  setError('Please enter a specialization.');
+                } else if (text.trim().length < 3) {
+                  setError('Specialization must be at least 3 characters.');
+                } else {
+                  setError('');
+                }
+              }
+            }}
+            style={[styles.inputControl, error ? styles.inputControlError : null]}
           />
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
         </View>
         <View style={styles.formAction}>
-          <TouchableOpacity onPress={handleCloseModal} style={styles.cancelBtn}>
+          <TouchableOpacity onPress={handleClose} style={styles.cancelBtn}>
             <Text style={styles.cancelText}>Cancel</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => {
-              handleAddSpecialization(specialization);
-            }}
+            onPress={validateAndAdd}
             style={styles.addBtn}>
             <Text style={styles.addText}>Add</Text>
           </TouchableOpacity>
@@ -108,6 +139,20 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '500',
     color: '#222',
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  inputControlError: {
+    borderColor: '#ef4444',
+    borderWidth: 2,
+    backgroundColor: '#fef2f2',
+  },
+  errorText: {
+    color: '#ef4444',
+    fontSize: 13,
+    fontWeight: '500',
+    marginTop: 6,
+    marginLeft: 2,
   },
   formAction: {
     marginTop: 24,

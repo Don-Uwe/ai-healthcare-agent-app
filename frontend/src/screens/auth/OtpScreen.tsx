@@ -30,8 +30,12 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
   const handleSubmit = () => {
     //navigation.navigate('NewPasswordScreen');
     const fullCode = otp!.join('');
+    const filledDigits = otp.filter(d => d !== '').length;
     if (!fullCode || fullCode.length === 0) {
-      setErrorMessages(['Please provide otp inputs']);
+      setErrorMessages(['Please enter the 4-digit verification code.']);
+      return;
+    } else if (filledDigits < 4) {
+      setErrorMessages([`Please enter all 4 digits. You have entered ${filledDigits} of 4.`]);
       return;
     } else {
       setErrorMessages(undefined);
@@ -49,8 +53,8 @@ export default function OtpScreen({navigation, route}: OtpScreenProp) {
           },
           onError: (error: AxiosError) => {
             console.log('OTP ERROR', error);
-            setErrorMessages(['Invalid or expired otp']);
-            Alert.alert('Invalid or expired otp');
+            setErrorMessages(['The code you entered is invalid or has expired. Please try again.']);
+            Alert.alert('Invalid or expired OTP', 'Please request a new code and try again.');
           },
         },
       );

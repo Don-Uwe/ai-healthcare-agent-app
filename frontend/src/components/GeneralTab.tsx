@@ -79,9 +79,9 @@ const GeneralTab = ({
             render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
               <>
                 <TextInput
-                  placeholder="Enter your username"
+                  placeholder="Enter your full name"
                   placeholderTextColor="#6b7280"
-                  style={[styles.inputControl, error && { borderColor: 'red' }]}
+                  style={[styles.inputControl, error && { borderColor: '#ef4444', borderWidth: 2 }]}
                   value={value}
                   onChangeText={onChange}
                   onBlur={onBlur}
@@ -137,10 +137,10 @@ const GeneralTab = ({
             render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
               <>
                 <TextInput
-                  placeholder="Enter something about yourself..."
+                  placeholder="Tell us something about yourself..."
                   placeholderTextColor="#6b7280"
                   textAlignVertical="top"
-                  style={[styles.aboutInput, error && { borderColor: 'red' }]}
+                  style={[styles.aboutInput, error && { borderColor: '#ef4444', borderWidth: 2 }]}
                   multiline={true}
                   numberOfLines={4}
                   value={value}

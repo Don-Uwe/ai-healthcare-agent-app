@@ -39,8 +39,14 @@ import {
 import { AuthData, LoginScreenProp } from '../../type';
 
 const loginSchema = z.object({
-  email: z.string().email('Please Enter a Valid Email'),
-  password: z.string().min(6, 'Password must be 6 Characters Long'),
+  email: z
+    .string()
+    .min(1, 'Email address is required.')
+    .email('Please enter a valid email address.'),
+  password: z
+    .string()
+    .min(1, 'Password is required.')
+    .min(8, 'Password must contain at least 8 characters.'),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -294,17 +300,12 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
               control={control}
               name="email"
               render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
-                <YStack>
-                  {error && (
-                    <Text color="$red10" fontSize={14} marginBottom="$2">
-                      {error.message}
-                    </Text>
-                  )}
+                <YStack gap="$1">
                   <XStack alignItems="center" position="relative">
                     <Icon
                       name="mail"
                       size={22}
-                      color={isDarkMode ? 'white' : 'black'}
+                      color={error ? '#ef4444' : isDarkMode ? 'white' : 'black'}
                       style={{
                         position: 'absolute',
                         left: 12,
@@ -315,7 +316,7 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
                       flex={1}
                       height="$6"
                       borderRadius="$4"
-                      placeholder="Enter your email"
+                      placeholder="Enter your email address"
                       autoCapitalize="none"
                       autoCorrect={false}
                       keyboardType="email-address"
@@ -324,8 +325,15 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
                       value={value}
                       color={isDarkMode ? '$color' : '$color10'}
                       paddingStart="$10"
+                      borderWidth={error ? 2 : 1}
+                      borderColor={error ? '$red8' : undefined}
                     />
                   </XStack>
+                  {error && (
+                    <Text color="$red10" fontSize={13} marginLeft="$1">
+                      {error.message}
+                    </Text>
+                  )}
                 </YStack>
               )}
             />
@@ -334,17 +342,12 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
               control={control}
               name="password"
               render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
-                <YStack>
-                  {error && (
-                    <Text color="$red10" fontSize={14} marginBottom="$2">
-                      {error.message}
-                    </Text>
-                  )}
+                <YStack gap="$1">
                   <XStack alignItems="center" position="relative">
                     <Entypo
                       name="lock"
                       size={22}
-                      color={isDarkMode ? 'white' : 'black'}
+                      color={error ? '#ef4444' : isDarkMode ? 'white' : 'black'}
                       style={{
                         position: 'absolute',
                         left: 12,
@@ -355,7 +358,7 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
                       flex={1}
                       height="$6"
                       borderRadius="$4"
-                      placeholder="Password"
+                      placeholder="Enter your password"
                       secureTextEntry={secureTextEntry}
                       autoCapitalize="none"
                       onBlur={onBlur}
@@ -364,6 +367,8 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
                       color={isDarkMode ? '$color' : '$color10'}
                       paddingLeft="$10"
                       paddingRight="$10"
+                      borderWidth={error ? 2 : 1}
+                      borderColor={error ? '$red8' : undefined}
                     />
                     <Button
                       chromeless
@@ -379,6 +384,11 @@ const LoginScreen = ({navigation, route}: LoginScreenProp) => {
                       />
                     </Button>
                   </XStack>
+                  {error && (
+                    <Text color="$red10" fontSize={13} marginLeft="$1">
+                      {error.message}
+                    </Text>
+                  )}
                 </YStack>
               )}
             />

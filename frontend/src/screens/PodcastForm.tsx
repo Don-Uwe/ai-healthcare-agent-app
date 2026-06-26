@@ -7,11 +7,10 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
-  Alert,
   Modal,
   FlatList,
 } from 'react-native';
-import {useDispatch, useSelector} from 'react-redux';
+import {useSelector} from 'react-redux';
 import {PodcastFormProp, Category} from '../type';
 import Ionicon from '@expo/vector-icons/Ionicons';
 import {PRIMARY_COLOR} from '../helper/Theme';
@@ -35,7 +34,13 @@ const PodcastForm = ({navigation, route}: PodcastFormProp) => {
   const [languageModalVisible, setLanguageModalVisible] = useState(false);
   const {categories} = useSelector((state: any) => state.data);
   const [imageUtils, setImageUtils] = useState('');
-  const dispatch = useDispatch();
+
+  // Inline validation error state
+  const [titleError, setTitleError] = useState('');
+  const [descriptionError, setDescriptionError] = useState('');
+  const [genresError, setGenresError] = useState('');
+  const [imageError, setImageError] = useState('');
+  const [submitted, setSubmitted] = useState(false);
 
   const handleGenrePress = (genre: Category) => {
     if (isSelected(genre)) {
@@ -48,24 +53,49 @@ const PodcastForm = ({navigation, route}: PodcastFormProp) => {
 
   const isSelected = (genre: Category) => selectedGenres.includes(genre);
 
-  const handleCreatePost = () => {
-    if (title === '') {
-       Alert.alert('Title section is required');
-      
-      return;
-    } else if (description === '') {
-       Alert.alert('Please give proper description');
-      
-      return;
-    } else if (selectedGenres.length === 0) {
-       Alert.alert('Please select at least one suitable tags for your podcast.');
-     
-      return;
+  const validateForm = () => {
+    let isValid = true;
+
+    if (!title.trim()) {
+      setTitleError('Podcast title is required.');
+      isValid = false;
+    } else if (title.trim().length < 3) {
+      setTitleError('Title must be at least 3 characters.');
+      isValid = false;
+    } else {
+      setTitleError('');
     }
 
-    // Later purpose
-    else if (imageUtils.length === 0) {
-      Alert.alert('Please upload one cover image for your podcast.');
+    if (!description.trim()) {
+      setDescriptionError('Please provide a description for your podcast.');
+      isValid = false;
+    } else if (description.trim().length < 10) {
+      setDescriptionError('Description must be at least 10 characters.');
+      isValid = false;
+    } else {
+      setDescriptionError('');
+    }
+
+    if (selectedGenres.length === 0) {
+      setGenresError('Please select at least one tag for your podcast.');
+      isValid = false;
+    } else {
+      setGenresError('');
+    }
+
+    if (!imageUtils) {
+      setImageError('Please upload a cover image for your podcast.');
+      isValid = false;
+    } else {
+      setImageError('');
+    }
+
+    return isValid;
+  };
+
+  const handleCreatePost = () => {
+    setSubmitted(true);
+    if (!validateForm()) {
       return;
     }
 
@@ -220,13 +250,19 @@ const PodcastForm = ({navigation, route}: PodcastFormProp) => {
                 <View style={styles.imageOverlay}>
                   <TouchableOpacity
                     style={styles.changeButton}
-                    onPress={selectImage}>
+                    onPress={() => {
+                      selectImage();
+                      setImageError('');
+                    }}>
                     <Ionicon name="pencil" size={16} color="#222" />
                     <Text style={styles.changeButtonText}>Change</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.deleteButton}
-                    onPress={() => setImageUtils('')}>
+                    onPress={() => {
+                      setImageUtils('');
+                      if (submitted) setImageError('Please upload a cover image for your podcast.');
+                    }}>
                     <Ionicon name="trash" size={16} color="#fff" />
                     <Text style={styles.deleteButtonText}>Delete</Text>
                   </TouchableOpacity>
@@ -234,8 +270,14 @@ const PodcastForm = ({navigation, route}: PodcastFormProp) => {
               </View>
             ) : (
               <TouchableOpacity
-                style={styles.uploadContainer}
-                onPress={selectImage}>
+                style={[
+                  styles.uploadContainer,
+                  submitted && imageError ? styles.uploadContainerError : null,
+                ]}
+                onPress={() => {
+                  selectImage();
+                  setImageError('');
+                }}>
                 <Ionicon name="cloud-upload" size={40} color={PRIMARY_COLOR} />
                 <Text style={styles.uploadText}>Upload Cover Image</Text>
                 <Text style={styles.uploadHint}>
@@ -243,6 +285,9 @@ const PodcastForm = ({navigation, route}: PodcastFormProp) => {
                 </Text>
               </TouchableOpacity>
             )}
+            {submitted && imageError ? (
+              <Text style={styles.errorText}>{imageError}</Text>
+            ) : null}
           </View>
 
           {/* Basic Information Section */}
@@ -260,10 +305,27 @@ const PodcastForm = ({navigation, route}: PodcastFormProp) => {
                 keyboardType="default"
                 placeholder="Enter your podcast title"
                 placeholderTextColor="#6b7280"
-                style={styles.inputControl}
+                style={[
+                  styles.inputControl,
+                  submitted && titleError ? styles.inputControlError : null,
+                ]}
                 value={title}
-                onChangeText={setTitle}
+                onChangeText={text => {
+                  setTitle(text);
+                  if (submitted) {
+                    if (!text.trim()) {
+                      setTitleError('Podcast title is required.');
+                    } else if (text.trim().length < 3) {
+                      setTitleError('Title must be at least 3 characters.');
+                    } else {
+                      setTitleError('');
+                    }
+                  }
+                }}
               />
+              {submitted && titleError ? (
+                <Text style={styles.errorText}>{titleError}</Text>
+              ) : null}
             </View>
 
             {/* Language Dropdown */}
@@ -290,7 +352,10 @@ const PodcastForm = ({navigation, route}: PodcastFormProp) => {
                 placeholder="Provide a brief overview of your podcast"
                 placeholderTextColor="#6b7280"
                 textAlignVertical="top"
-                style={styles.aboutInput}
+                style={[
+                  styles.aboutInput,
+                  submitted && descriptionError ? styles.inputControlError : null,
+                ]}
                 multiline
                 numberOfLines={4}
                 autoCapitalize="sentences"
@@ -298,10 +363,22 @@ const PodcastForm = ({navigation, route}: PodcastFormProp) => {
                 onChangeText={text => {
                   if (text.length <= 160) {
                     setDescription(text);
+                    if (submitted) {
+                      if (!text.trim()) {
+                        setDescriptionError('Please provide a description for your podcast.');
+                      } else if (text.trim().length < 10) {
+                        setDescriptionError('Description must be at least 10 characters.');
+                      } else {
+                        setDescriptionError('');
+                      }
+                    }
                   }
                 }}
               />
               <Text style={styles.charCounter}>{description.length}/160</Text>
+              {submitted && descriptionError ? (
+                <Text style={styles.errorText}>{descriptionError}</Text>
+              ) : null}
             </View>
           </View>
 
@@ -338,7 +415,15 @@ const PodcastForm = ({navigation, route}: PodcastFormProp) => {
                     styles.genreButton,
                     isSelected(genre) && styles.selectedGenreButton,
                   ]}
-                  onPress={() => handleGenrePress(genre)}>
+                  onPress={() => {
+                    handleGenrePress(genre);
+                    if (submitted) {
+                      const newSelected = isSelected(genre)
+                        ? selectedGenres.filter(item => item.id !== genre.id)
+                        : [...selectedGenres, genre];
+                      setGenresError(newSelected.length === 0 ? 'Please select at least one tag for your podcast.' : '');
+                    }
+                  }}>
                   <Text
                     style={[
                       styles.genreButtonText,
@@ -349,6 +434,9 @@ const PodcastForm = ({navigation, route}: PodcastFormProp) => {
                 </TouchableOpacity>
               ))}
             </ScrollView>
+            {submitted && genresError ? (
+              <Text style={styles.errorText}>{genresError}</Text>
+            ) : null}
           </View>
 
           {/* Submit Button */}
@@ -674,6 +762,21 @@ const styles = StyleSheet.create({
   selectedLanguageItemText: {
     color: PRIMARY_COLOR,
     fontWeight: '700',
+  },
+  errorText: {
+    color: '#ef4444',
+    fontSize: 13,
+    fontWeight: '500',
+    marginTop: 6,
+    marginLeft: 2,
+  },
+  inputControlError: {
+    borderColor: '#ef4444',
+    borderWidth: 2,
+  },
+  uploadContainerError: {
+    borderColor: '#ef4444',
+    backgroundColor: 'rgba(239, 68, 68, 0.05)',
   },
 });
 

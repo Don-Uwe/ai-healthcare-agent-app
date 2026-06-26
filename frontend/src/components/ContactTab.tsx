@@ -49,12 +49,12 @@ const ContactTab = ({
               <>
                 <TextInput
                   clearButtonMode="while-editing"
-                  placeholder="Enter your contact phone number"
+                  placeholder="Enter phone number with country code (e.g. +1234567890)"
                   placeholderTextColor="#6b7280"
-                  style={[styles.inputControl, error && { borderColor: 'red' }]}
+                  style={[styles.inputControl, error && { borderColor: '#ef4444', borderWidth: 2 }]}
                   value={value}
-                  keyboardType="number-pad"
-                  maxLength={10}
+                  keyboardType="phone-pad"
+                  maxLength={15}
                   onChangeText={onChange}
                   onBlur={onBlur}
                 />
@@ -74,11 +74,12 @@ const ContactTab = ({
               <>
                 <TextInput
                   clearButtonMode="while-editing"
-                  placeholder="Enter your contact email"
+                  placeholder="Enter your contact email address"
                   placeholderTextColor="#6b7280"
-                  style={[styles.inputControl, error && { borderColor: 'red' }]}
+                  style={[styles.inputControl, error && { borderColor: '#ef4444', borderWidth: 2 }]}
                   value={value}
                   keyboardType="email-address"
+                  autoCapitalize="none"
                   onChangeText={onChange}
                   onBlur={onBlur}
                 />

@@ -58,9 +58,9 @@ const PasswordTab = ({
                 <View style={styles.passwordContainer}>
                   <TextInput
                     secureTextEntry={!isVisibleOldPassword}
-                    placeholder="Enter your old password"
+                    placeholder="Enter your current password"
                     placeholderTextColor="#6b7280"
-                    style={[styles.inputControl, error && { borderColor: 'red' }]}
+                    style={[styles.inputControl, error && { borderColor: '#ef4444', borderWidth: 2 }]}
                     value={value}
                     onChangeText={onChange}
                     onBlur={onBlur}
@@ -92,9 +92,9 @@ const PasswordTab = ({
                 <View style={styles.passwordContainer}>
                   <TextInput
                     secureTextEntry={!isVisibleNewPassword}
-                    placeholder="Enter your new password"
+                    placeholder="At least 8 characters"
                     placeholderTextColor="#6b7280"
-                    style={[styles.inputControl, error && { borderColor: 'red' }]}
+                    style={[styles.inputControl, error && { borderColor: '#ef4444', borderWidth: 2 }]}
                     value={value}
                     onChangeText={onChange}
                     onBlur={onBlur}
@@ -126,9 +126,9 @@ const PasswordTab = ({
                 <View style={styles.passwordContainer}>
                   <TextInput
                     secureTextEntry={!isVisibleConfirmPassword}
-                    placeholder="Enter your confirm password"
+                    placeholder="Re-enter your new password"
                     placeholderTextColor="#6b7280"
-                    style={[styles.inputControl, error && { borderColor: 'red' }]}
+                    style={[styles.inputControl, error && { borderColor: '#ef4444', borderWidth: 2 }]}
                     value={value}
                     onChangeText={onChange}
                     onBlur={onBlur}

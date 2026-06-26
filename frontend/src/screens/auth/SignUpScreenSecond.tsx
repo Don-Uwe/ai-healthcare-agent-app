@@ -18,11 +18,25 @@ import {useVerificationMailMutation} from '@/src/hooks/useMailVerification';
 import {useRegdMutation} from '@/src/hooks/useUserRegistration';
 let validator = require('email-validator');
 const signupSecondSchema = z.object({
-  specialization: z.string().min(1, 'Specialization is required'),
-  education: z.string().min(1, 'Educational Qualification is required'),
-  experience: z.string().min(1, 'Years of Experience is required'),
-  businessEmail: z.string().email('Please enter a valid email'),
-  phone: z.string().min(10, 'Phone number must be at least 10 characters'),
+  specialization: z
+    .string()
+    .min(1, 'Please enter your area of specialization.'),
+  education: z
+    .string()
+    .min(1, 'Please enter your educational qualification.'),
+  experience: z
+    .string()
+    .min(1, 'Please enter your years of experience.')
+    .regex(/^\d+(\.\d+)?$/, 'Please enter a valid number for years of experience.'),
+  businessEmail: z
+    .string()
+    .min(1, 'Professional email address is required.')
+    .email('Please enter a valid email address.'),
+  phone: z
+    .string()
+    .min(1, 'Phone number is required.')
+    .min(10, 'Please enter a valid phone number (minimum 10 digits).')
+    .regex(/^\+?[\d\s\-()]{10,}$/, 'Please enter a valid phone number.'),
 });
 type SignupSecondFormData = z.infer<typeof signupSecondSchema>;
 
