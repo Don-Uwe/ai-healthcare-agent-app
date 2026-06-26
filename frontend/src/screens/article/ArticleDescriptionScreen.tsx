@@ -101,14 +101,22 @@ const ArticleDescriptionScreen = ({
   }, [article, isTranslation]);
   const handleGenrePress = (genre: Category) => {
     if (isSelected(genre)) {
-      setSelectedGenres(selectedGenres.filter(item => item.id !== genre.id));
+      setSelectedGenres(
+        selectedGenres.filter(item => {
+          const matchId = genre.id !== undefined && item.id === genre.id;
+          const matchDbId = genre._id !== undefined && item._id === genre._id;
+          const matchName = genre.id === undefined && genre._id === undefined && item.name === genre.name;
+          return !(matchId || matchDbId || matchName);
+        })
+      );
     } else if (selectedGenres.length < 5) {
       // Check if the length of selected genres is less than 5
       setSelectedGenres([...selectedGenres, genre]); // Add the new genre to the selected genres array
     }
   };
 
-  const isSelected = (genre: Category) => selectedGenres.includes(genre);
+  const isSelected = (genre: Category) =>
+    selectedGenres.some(item => item.id === genre.id || item._id === genre._id);
 
   const handleCreatePost = () => {
     if (title === '') {

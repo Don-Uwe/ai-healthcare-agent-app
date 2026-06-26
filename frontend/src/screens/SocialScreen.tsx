@@ -26,7 +26,7 @@ export default function Socialcreen({navigation, route}: SocialScreenProps) {
   //const socials = route.params.socials;
   const {type, articleId, social_user_id} = route.params;
   const socket = useSocket();
-  const [userid, setUserId] = useState<string>('');
+
   const queryClient = useQueryClient();
 
   const {mutate: followMutate, isPending: followMutationPending} =
@@ -137,8 +137,6 @@ export default function Socialcreen({navigation, route}: SocialScreenProps) {
                           : null
                       ]}
                       onPress={() => {
-                        setUserId(follower._id);
-
                         followMutate(follower._id, {
                           onSuccess: data => {
 
@@ -146,7 +144,7 @@ export default function Socialcreen({navigation, route}: SocialScreenProps) {
                               if (socket) {
                                 socket.emit('notification', {
                                   type: 'userFollow',
-                                  userId: userid,
+                                  userId: follower._id,
                                   message: {
                                     title: `${user_handle} has followed you`,
                                     body: '',
