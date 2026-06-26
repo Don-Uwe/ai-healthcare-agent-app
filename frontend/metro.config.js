@@ -5,6 +5,8 @@ const path = require('path');
 const config = getDefaultConfig(__dirname);
 
 // Alias react-native-pager-view to a mock for web
+const originalResolveRequest = config.resolver.resolveRequest;
+
 config.resolver.resolveRequest = (context, moduleName, platform) => {
   if (platform === 'web' && moduleName === 'react-native-pager-view') {
     return {
@@ -12,11 +14,12 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
       type: 'sourceFile',
     };
   }
+  if (originalResolveRequest) {
+    return originalResolveRequest(context, moduleName, platform);
+  }
   return context.resolveRequest(context, moduleName, platform);
 };
 
-
-
 config.resolver.unstable_enablePackageExports = false;
 
-module.exports = config;
+module.exports = config;

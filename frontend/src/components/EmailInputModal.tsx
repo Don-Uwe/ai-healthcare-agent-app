@@ -236,7 +236,7 @@ export default function EmailInputBottomSheet({
                   shadowOpacity={0.3}
                   accessibilityRole="button"
                   accessibilityLabel={isRequestVerification ? 'Send Verification Link' : 'Send Reset Code'}
-                  accessibilityState={{ disabled: !email.trim() }}
+                 accessibilityState={{ disabled: !isValid || !emailValue }}
                 >
                   <Text fontSize={17} fontWeight="600" color="white">
                     {isRequestVerification ? 'Send Verification Link' : 'Send Reset Code'}

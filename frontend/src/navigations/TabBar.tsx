@@ -118,6 +118,14 @@ const TabBar = ({state, descriptors, navigation}: any) => {
                     color={isFocused ? 'white' : theme.color.val}
                   />
                 )}
+
+                {label === 'Wellness' && (
+                  <FontAwesome
+                    name="heartbeat"
+                    size={24}
+                    color={isFocused ? 'white' : theme.color.val}
+                  />
+                )}
               </View>
             </Pressable>
           </View>

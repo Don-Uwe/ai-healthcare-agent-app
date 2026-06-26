@@ -15,6 +15,7 @@ import ChatbotScreen from '../screens/ChatbotScreen';
 import AboutScreen from '../screens/AboutPage';
 import {useSelector} from 'react-redux';
 import GuestPlaceholderScreen from '../components/GuestPlaceholderScreen';
+import WellnessDashboardScreen from '../screens/WellnessDashboard/WellnessDashboardScreen';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
@@ -128,10 +129,21 @@ const TabNavigation = () => {
             fontSize: 23,
             marginBottom: 12,
             color: 'white',
-          },
+          }
         }}
       />
+
+    
+    <Tab.Screen
+      name="Wellness"
+      component={WellnessDashboardScreen}
+      options={{
+        headerShown: false,
+      }}
+    />
     </Tab.Navigator>
+
+    
   );
 };
 export default TabNavigation;
