@@ -21,9 +21,12 @@ export type PodcastDownloadRecord = Omit<SerializedPodcastDownloadRecord, 'downl
 
 const PODCAST_STORAGE_KEY = 'DOWNLOAD_PODCAST_DATA';
 const PODCAST_CACHE_ID = 'podcast_cache';
+const READING_PROGRESS_CACHE_ID = 'reading_progress_cache';
 
 let podcastMMKV: MMKVStorageLike | null = null;
 let hasAttemptedInitialization = false;
+let readingProgressMMKV: MMKVStorageLike | null = null;
+let hasAttemptedReadingProgressInitialization = false;
 
 const initializeMMKV = (): MMKVStorageLike | null => {
   if (hasAttemptedInitialization) {
@@ -47,6 +50,31 @@ const initializeMMKV = (): MMKVStorageLike | null => {
   }
 
   return podcastMMKV;
+};
+
+const initializeReadingProgressMMKV = (): MMKVStorageLike | null => {
+  if (hasAttemptedReadingProgressInitialization) {
+    return readingProgressMMKV;
+  }
+
+  hasAttemptedReadingProgressInitialization = true;
+
+  try {
+    const mmkvModule = require('react-native-mmkv') as {
+      createMMKV?: (config: {id: string}) => MMKVStorageLike;
+    };
+
+    if (mmkvModule?.createMMKV) {
+      readingProgressMMKV = mmkvModule.createMMKV({
+        id: READING_PROGRESS_CACHE_ID,
+      });
+    }
+  } catch (error) {
+    console.log('Reading progress MMKV module not available', error);
+    readingProgressMMKV = null;
+  }
+
+  return readingProgressMMKV;
 };
 
 const parsePodcastData = (
@@ -134,4 +162,24 @@ export const clearMMKV = async (): Promise<void> => {
   }
 
   await AsyncStorage.removeItem(PODCAST_STORAGE_KEY);
+};
+
+export const setReadingProgressItem = async (
+  key: string,
+  value: string,
+): Promise<void> => {
+  const mmkv = initializeReadingProgressMMKV();
+  mmkv?.set(key, value);
+};
+
+export const getReadingProgressItem = async (
+  key: string,
+): Promise<string | null> => {
+  const mmkv = initializeReadingProgressMMKV();
+  return mmkv?.getString(key) ?? null;
+};
+
+export const deleteReadingProgressItem = async (key: string): Promise<void> => {
+  const mmkv = initializeReadingProgressMMKV();
+  mmkv?.delete(key);
 };
