@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useCallback} from 'react';
 import {
   StyleSheet,
   View,
@@ -8,10 +8,10 @@ import {
   Alert,
 } from 'react-native';
 import {PRIMARY_COLOR} from '../../helper/Theme';
-import {GET_STORAGE_DATA, USER_LOGOUT} from '../../helper/APIUtils';
-import axios, {AxiosError} from 'axios';
+import {GET_STORAGE_DATA} from '../../helper/APIUtils';
+import {AxiosError} from 'axios';
 import {resetUserState} from '../../store/UserSlice';
-import {useDispatch, useSelector} from 'react-redux';
+import {useDispatch} from 'react-redux';
 import {clearStorage} from '../../helper/Utils';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {LogoutScreenProp} from '@/src/type';
@@ -28,44 +28,37 @@ const LogoutScreen = ({navigation, route}: LogoutScreenProp) => {
   const theme = useTheme();
   const {mutate: logout} = useUserLogout();  
 
+  const completeLocalLogout = useCallback(async () => {
+    await clearStorage();
+    dispatch(resetUserState());
+    navigation.reset({
+      index: 0,
+      routes: [{name: 'LoginScreen'}],
+    });
+  }, [dispatch, navigation]);
+
   const handleLogout = () => {
     logout(
       {},
       {
         onSuccess: async () => {
-          Alert.alert('Success', 'Logout successfully');
-          await clearStorage();
-          dispatch(resetUserState());
-          navigation.reset({
-            index: 0,
-            routes: [{name: 'LoginScreen'}], 
-          });
+          await completeLocalLogout();
+          Alert.alert('Success', 'Logged out successfully');
         },
 
-        onError: (err: AxiosError) => {
+        onError: async (err: AxiosError) => {
+          console.warn('Remote logout failed; completing local logout.', err);
+          await completeLocalLogout();
+
           if (err.response) {
-            const statusCode = err.response.status;
-            switch (statusCode) {
-              case 500:
-                // Handle internal server errors
-                Alert.alert(
-                  'Logout Failed',
-                  'Internal server error. Please try again later.',
-                );
-                break;
-              default:
-                // Handle any other errors
-                Alert.alert(
-                  'Logout Failed',
-                  'Something went wrong. Please try again later.',
-                );
-            }
-          } else {
-            // Handle network errors
-            console.log('General Update Error', err);
             Alert.alert(
-              'Logout Failed',
-              'Network error. Please check your connection.',
+              'Signed out locally',
+              'The server could not confirm logout, but this device has been signed out.',
+            );
+          } else {
+            Alert.alert(
+              'Signed out locally',
+              'You are offline, but this device has been signed out.',
             );
           }
         },
