@@ -53,6 +53,8 @@ import OpenSourcePage from '../screens/OpenSourcePage';
 import NotificationPreferencesScreen from '../screens/NotificationPreferencesScreen';
 import GuestPlaceholderScreen from '../components/GuestPlaceholderScreen';
 
+import ChatbotScreen from '../screens/ChatbotScreen';
+
 const Stack = createStackNavigator<RootStackParamList>();
 
 
@@ -120,6 +122,11 @@ const StackNavigation = () => {
       <Stack.Screen
         name="TabNavigation"
         component={TabNavigation}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="ChatbotScreen"
+        component={ChatbotScreen}
         options={{headerShown: false}}
       />
       <Stack.Screen

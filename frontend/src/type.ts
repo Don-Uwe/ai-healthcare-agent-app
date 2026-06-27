@@ -134,6 +134,7 @@ export type RootStackParamList = {
   ContributorPage: undefined;
   OpenSourcePage: undefined;
   ReadingHistoryScreen: undefined;
+  ChatbotScreen: { characterId: string; characterName?: string; characterAvatar?: string };
 };
 
 export type RedirectTo = {
@@ -152,6 +153,13 @@ export type Message = {
   userHandle: string | null;
   profileImage: string | null;
 };
+
+export interface Character {
+  id: string;
+  name: string;
+  tagline: string;
+  avatarUrl: string;
+}
 
 export type UserDetail = {
   user_name: string;
@@ -312,7 +320,11 @@ export type HomeScreenProps = CompositeScreenProps<
   | StackScreenProps<RootStackParamList, 'NotificationScreen'>
 >;
 
-export type ChatBotScreenProps = BottomTabScreenProps<TabParamList, 'Chatbot'>;
+export type ChatBotScreenProps = StackScreenProps<RootStackParamList, 'ChatbotScreen'>;
+export type PersonaLobbyScreenProps = CompositeScreenProps<
+  BottomTabScreenProps<TabParamList, 'Chatbot'>,
+  StackScreenProps<RootStackParamList, 'ChatbotScreen'>
+>;
 export type OverviewScreenProps = StackScreenProps<
   RootStackParamList,
   'OverviewScreen'

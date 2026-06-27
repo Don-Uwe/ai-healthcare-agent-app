@@ -6,14 +6,13 @@ import axios, {AxiosError} from 'axios';
 export const useSendMessageToGemini = (): UseMutationResult<
   Message,
   AxiosError,
-  string
+  { text: string; character?: string }
 > => {
   return useMutation({
     mutationKey: ['chatbot-response'],
-    mutationFn: async (message: string) => {
-      const response = await axios.post(`${SEND_MESSAGE_TO_GEMINI}`, {
-        text: message,
-      });
+    mutationFn: async ({ text, character }: { text: string; character?: string }) => {
+      const payload = character ? { text, character } : { text };
+      const response = await axios.post(`${SEND_MESSAGE_TO_GEMINI}`, payload);
       return response.data.message as Message;
     },
   });

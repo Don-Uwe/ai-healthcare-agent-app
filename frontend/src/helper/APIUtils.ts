@@ -111,6 +111,7 @@ const GET_TOKEN_STATUS = `${PROD_URL}/tokenstatus`;
 // chat url
 const CHAT_URL = `${PROD_URL}/gemini/messages`;
 const SEND_MESSAGE_TO_GEMINI = `${PROD_URL}/gemini/send`;
+const GET_CHARACTERS_API = `${PROD_URL}/gemini/characters`;
 
 /** Notification Preferences */
 const GET_NOTIFICATION_PREFERENCES = `${PROD_URL}/user/notification-preferences`;
@@ -201,6 +202,7 @@ export {
   CONTENT_CHECKER_PROD,
   LOAD_REVIEW_COMMENTS,
   SEND_MESSAGE_TO_GEMINI,
+  GET_CHARACTERS_API,
   GET_NOTIFICATION_PREFERENCES,
   UPDATE_NOTIFICATION_PREFERENCES,
   GET_READ_HISTORY,

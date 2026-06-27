@@ -15,6 +15,7 @@ import {
   Platform,
   Text,
   TouchableOpacity,
+  Modal,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Tts from 'react-native-tts';
@@ -46,13 +47,17 @@ import {verifyChatbotResponse} from '../chatbot-response-verification';
 
 const ASSISTANT_USER_ID = 2;
 
-const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
+const ChatbotScreen = ({navigation, route}: ChatBotScreenProps) => {
   const {user_id, user_token} = useSelector((state: any) => state.user);
   const {isConnected} = useSelector((state: any) => state.network);
+  
+  const { characterId, characterName, characterAvatar } = route.params || {};
 
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [isTyping, setIsTyping] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isQuotaExceeded, setIsQuotaExceeded] = useState<boolean>(false);
+  const [showQuotaModal, setShowQuotaModal] = useState<boolean>(false);
   const isMountedRef = useRef(true);
   const dispatch = useDispatch();
   const {data: user} = useGetProfile();
@@ -135,7 +140,7 @@ const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
     useSendMessageToGemini();
   const isPending = messageProcessPending || isLoading;
   const {data: conversations, isLoading: conversationLoading} =
-    useLoadAIConversations(isConnected);
+    useLoadAIConversations(isConnected, characterId);
 
   useEffect(() => {
     return () => {
@@ -189,7 +194,7 @@ const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
         avatar: m.profileImage
           ? `${GET_STORAGE_DATA}/${m.profileImage}`
           : m.role === 'assistant'
-            ? 'https://static.vecteezy.com/system/resources/previews/026/309/247/non_2x/robot-chat-or-chat-bot-logo-modern-conversation-automatic-technology-logo-design-template-vector.jpg'
+            ? (characterAvatar || 'https://static.vecteezy.com/system/resources/previews/026/309/247/non_2x/robot-chat-or-chat-bot-logo-modern-conversation-automatic-technology-logo-design-template-vector.jpg')
             : undefined,
       },
     }));
@@ -223,7 +228,7 @@ const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
     }
     setIsLoading(true);
 
-    sendMessageToAI(prompt, {
+    sendMessageToAI({ text: prompt, character: characterId }, {
       onSuccess: (responseData: Message) => {
         setIsLoading(false);
         const verification = verifyChatbotResponse(responseData.text);
@@ -263,7 +268,9 @@ const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
               errorMsg = 'Invalid request. Please check your input.';
               break;
             case 429:
-              errorMsg = 'You’ve reached your daily limit. You can ask up to 5 questions per day';
+              errorMsg = 'Daily quota exceeded for this character. Come back tomorrow for more advice!';
+              setIsQuotaExceeded(true);
+              setShowQuotaModal(true);
               break;
             case 500:
               errorMsg = 'An internal server error occurred. Please try again later.';
@@ -313,7 +320,7 @@ const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
         );
       },
     });
-  }, [isConnected, safeSetMessages, sendMessageToAI, setIsLoading]);
+  }, [isConnected, safeSetMessages, sendMessageToAI, setIsLoading, characterId, characterAvatar]);
 
   const onSend = useCallback((newMessages: IMessage[] = []) => {
     if (isPending) {
@@ -367,17 +374,16 @@ const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
               alignItems: 'center',
               justifyContent: 'center',
             }}>
-            <MaterialCommunityIcons
-              name="robot-outline"
-              size={20}
-              color="#3b82f6"
+            <Image
+              source={{ uri: characterAvatar || 'https://static.vecteezy.com/system/resources/previews/026/309/247/non_2x/robot-chat-or-chat-bot-logo-modern-conversation-automatic-technology-logo-design-template-vector.jpg' }}
+              style={{ width: 44, height: 44, borderRadius: 22 }}
             />
           </View>
         </View>
 
         <View style={{flex: 1}}>
           <Text style={{fontSize: 18, fontWeight: '600', color: '#111827'}}>
-            Care Companion AI
+            {characterName || 'Care Companion AI'}
           </Text>
 
           {(isTyping || isPending) && (
@@ -414,8 +420,9 @@ const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
               paddingTop: 10,
               paddingBottom: 20,
             }}
+            placeholder={isQuotaExceeded ? "Come back tomorrow for more advice!" : `Ask ${characterName || 'the AI'} a question...`}
             textInputProps={{
-              editable: !isPending,
+              editable: !isPending && !isQuotaExceeded,
             }}
             renderBubble={props => {
               const currentMessage = props.currentMessage as any;
@@ -536,6 +543,27 @@ const ChatbotScreen = ({navigation}: ChatBotScreenProps) => {
           />
         </View>
       </KeyboardAvoidingView>
+
+      <Modal visible={showQuotaModal} transparent animationType="slide">
+        <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.4)' }}>
+          <View style={{ backgroundColor: 'white', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, alignItems: 'center' }}>
+            <View style={{ width: 48, height: 4, backgroundColor: '#e5e7eb', borderRadius: 2, marginBottom: 24 }} />
+            <Ionicons name="time-outline" size={48} color="#f59e0b" style={{ marginBottom: 16 }} />
+            <Text style={{ fontSize: 20, fontWeight: '700', color: '#111827', marginBottom: 8, textAlign: 'center' }}>
+              Daily Limit Reached
+            </Text>
+            <Text style={{ fontSize: 16, color: '#4b5563', textAlign: 'center', marginBottom: 24, lineHeight: 24 }}>
+              You've used all your messages for {characterName || 'this character'} today. Please come back tomorrow for more advice!
+            </Text>
+            <TouchableOpacity
+              onPress={() => setShowQuotaModal(false)}
+              style={{ backgroundColor: PRIMARY_COLOR, paddingVertical: 14, width: '100%', borderRadius: 12, alignItems: 'center' }}
+            >
+              <Text style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>Got it</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
