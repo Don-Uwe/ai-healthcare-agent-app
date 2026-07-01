@@ -3,19 +3,18 @@
     "jsx": "react-native",
     "strict": true,
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"]
     },
+    "module": "ESNext",
     "moduleResolution": "bundler",
+    "allowJs": true,
     "skipLibCheck": true
   },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    "**/*.d.ts"
-  ],
+  "include": ["**/*.ts", "**/*.tsx", "**/*.d.ts"],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx"
   ]
 }
