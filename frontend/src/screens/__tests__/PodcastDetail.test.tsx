@@ -153,7 +153,7 @@ const mockPodcast = {
   article_id: 1,
   title: 'Sample Podcast',
   description: 'Sample description for the podcast detail screen.',
-  audio_url: 'https://example.com/audio.mp3',
+  audio_url: 'https://uhsocial.in/audio/example.mp3',
   cover_image: 'https://example.com/image.jpg',
   duration: 245,
   tags: [],
@@ -240,7 +240,7 @@ describe('PodcastDetail', () => {
     render(
       <PodcastDetail
         navigation={{navigate: mockNavigate} as any}
-        route={{params: {trackId: 'podcast-1', audioUrl: 'https://example.com/audio.mp3'}} as any}
+        route={{params: {trackId: 'podcast-1', audioUrl: 'https://uhsocial.in/audio/example.mp3'}} as any}
       />,
     );
 
@@ -318,7 +318,7 @@ describe('PodcastDetail', () => {
       rerender(
         <PodcastDetail
           navigation={{navigate: mockNavigate} as any}
-          route={{params: {trackId: 'podcast-1', audioUrl: 'https://example.com/audio.mp3'}} as any}
+          route={{params: {trackId: 'podcast-1', audioUrl: 'https://uhsocial.in/audio/example.mp3'}} as any}
         />,
       );
     });
@@ -339,7 +339,7 @@ describe('PodcastDetail', () => {
       rerender(
         <PodcastDetail
           navigation={{navigate: mockNavigate} as any}
-          route={{params: {trackId: 'podcast-1', audioUrl: 'https://example.com/audio.mp3'}} as any}
+          route={{params: {trackId: 'podcast-1', audioUrl: 'https://uhsocial.in/audio/example.mp3'}} as any}
         />,
       );
     });
@@ -352,7 +352,7 @@ describe('PodcastDetail', () => {
       rerender(
         <PodcastDetail
           navigation={{navigate: mockNavigate} as any}
-          route={{params: {trackId: 'podcast-1', audioUrl: 'https://example.com/audio.mp3'}} as any}
+          route={{params: {trackId: 'podcast-1', audioUrl: 'https://uhsocial.in/audio/example.mp3'}} as any}
         />,
       );
     });
@@ -372,7 +372,7 @@ describe('PodcastDetail', () => {
       rerender(
         <PodcastDetail
           navigation={{navigate: mockNavigate} as any}
-          route={{params: {trackId: 'podcast-1', audioUrl: 'https://example.com/audio.mp3'}} as any}
+          route={{params: {trackId: 'podcast-1', audioUrl: 'https://uhsocial.in/audio/example.mp3'}} as any}
         />,
       );
     });
@@ -384,14 +384,14 @@ describe('PodcastDetail', () => {
       rerender(
         <PodcastDetail
           navigation={{navigate: mockNavigate} as any}
-          route={{params: {trackId: 'podcast-1', audioUrl: 'https://example.com/audio.mp3'}} as any}
+          route={{params: {trackId: 'podcast-1', audioUrl: 'https://uhsocial.in/audio/example.mp3'}} as any}
         />,
       );
       setConnectedStatus(true);
       rerender(
         <PodcastDetail
           navigation={{navigate: mockNavigate} as any}
-          route={{params: {trackId: 'podcast-1', audioUrl: 'https://example.com/audio.mp3'}} as any}
+          route={{params: {trackId: 'podcast-1', audioUrl: 'https://uhsocial.in/audio/example.mp3'}} as any}
         />,
       );
     });

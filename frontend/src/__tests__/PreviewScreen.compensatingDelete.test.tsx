@@ -113,6 +113,16 @@ function makeNav() {
   return {navigate: jest.fn(), setOptions: jest.fn()};
 }
 
+function pressHeaderSubmit(nav: ReturnType<typeof makeNav>) {
+  const optionsCall = nav.setOptions.mock.calls.at(-1);
+  if (!optionsCall) {
+    throw new Error('navigation.setOptions was not called');
+  }
+  const HeaderRight = optionsCall[0].headerRight;
+  const header = render(<HeaderRight />);
+  fireEvent.press(header.getByText('Submit'));
+}
+
 function makeRoute(overrides = {}) {
   return {
     params: {
@@ -132,10 +142,10 @@ function makeRoute(overrides = {}) {
   };
 }
 
-// Lazy import after mocks are set up
+// Load component after mocks are registered
 let PreviewScreen: React.ComponentType<any>;
-beforeAll(async () => {
-  PreviewScreen = (await import('../screens/article/PreviewScreen')).default;
+beforeAll(() => {
+  PreviewScreen = require('../screens/article/PreviewScreen').default;
 });
 
 beforeEach(() => {
@@ -145,20 +155,21 @@ beforeEach(() => {
 // ── tests ──────────────────────────────────────────────────────────────────
 
 describe('PreviewScreen compensating delete — new article path', () => {
-  function setupAndSubmit() {
+  async function setupAndSubmit() {
     const store = makeStore();
     const nav = makeNav();
-    const {getByText} = render(
+    render(
       <Provider store={store}>
         <PreviewScreen navigation={nav} route={makeRoute()} />
       </Provider>,
     );
-    fireEvent.press(getByText('Submit'));
+    pressHeaderSubmit(nav);
+    await waitFor(() => expect(mockUploadPocketbase).toHaveBeenCalled());
     return {nav};
   }
 
   it('calls deletePocketbaseRecord with the correct recordId when postMutation fails', async () => {
-    setupAndSubmit();
+    await setupAndSubmit();
 
     // Step 1 succeeds
     const pbOnSuccess = mockUploadPocketbase.mock.calls[0][1].onSuccess;
@@ -178,7 +189,7 @@ describe('PreviewScreen compensating delete — new article path', () => {
   });
 
   it('does NOT call deletePocketbaseRecord when postMutation succeeds', async () => {
-    setupAndSubmit();
+    await setupAndSubmit();
 
     const pbOnSuccess = mockUploadPocketbase.mock.calls[0][1].onSuccess;
     pbOnSuccess(FAKE_PB_RESPONSE);
@@ -192,7 +203,7 @@ describe('PreviewScreen compensating delete — new article path', () => {
   });
 
   it('does NOT call deletePocketbaseRecord when the PocketBase upload itself fails', async () => {
-    setupAndSubmit();
+    await setupAndSubmit();
 
     const pbOnError = mockUploadPocketbase.mock.calls[0][1].onError;
     pbOnError(new Error('PB network error'));
@@ -204,10 +215,10 @@ describe('PreviewScreen compensating delete — new article path', () => {
 });
 
 describe('PreviewScreen compensating delete — improvement path', () => {
-  function setupAndSubmit() {
+  async function setupAndSubmit() {
     const store = makeStore();
     const nav = makeNav();
-    const {getByText} = render(
+    render(
       <Provider store={store}>
         <PreviewScreen
           navigation={nav}
@@ -215,12 +226,15 @@ describe('PreviewScreen compensating delete — improvement path', () => {
         />
       </Provider>,
     );
-    fireEvent.press(getByText('Submit'));
+    pressHeaderSubmit(nav);
+    await waitFor(() =>
+      expect(mockUploadImprovementToPocketbase).toHaveBeenCalled(),
+    );
     return {nav};
   }
 
   it('calls deletePocketbaseRecord with correct recordId when improvementMutation fails', async () => {
-    setupAndSubmit();
+    await setupAndSubmit();
 
     const pbOnSuccess =
       mockUploadImprovementToPocketbase.mock.calls[0][1].onSuccess;
@@ -239,7 +253,7 @@ describe('PreviewScreen compensating delete — improvement path', () => {
   });
 
   it('does NOT call deletePocketbaseRecord when improvementMutation succeeds', async () => {
-    setupAndSubmit();
+    await setupAndSubmit();
 
     const pbOnSuccess =
       mockUploadImprovementToPocketbase.mock.calls[0][1].onSuccess;
@@ -261,10 +275,10 @@ describe('PreviewScreen compensating delete — edit/suggested-changes path', ()
     authorId: 'user-1',
   };
 
-  function setupAndSubmit() {
+  async function setupAndSubmit() {
     const store = makeStore();
     const nav = makeNav();
-    const {getByText} = render(
+    render(
       <Provider store={store}>
         <PreviewScreen
           navigation={nav}
@@ -272,12 +286,13 @@ describe('PreviewScreen compensating delete — edit/suggested-changes path', ()
         />
       </Provider>,
     );
-    fireEvent.press(getByText('Submit'));
+    pressHeaderSubmit(nav);
+    await waitFor(() => expect(mockUploadPocketbase).toHaveBeenCalled());
     return {nav};
   }
 
   it('calls deletePocketbaseRecord with correct recordId when submitChangesMutation fails', async () => {
-    setupAndSubmit();
+    await setupAndSubmit();
 
     const pbOnSuccess = mockUploadPocketbase.mock.calls[0][1].onSuccess;
     pbOnSuccess(FAKE_PB_RESPONSE);

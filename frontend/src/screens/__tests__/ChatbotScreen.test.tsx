@@ -156,19 +156,26 @@ describe('ChatbotScreen', () => {
     expect(getByText('Generating response...')).toBeTruthy();
   });
 
+  const sendChatMessage = (screen: ReturnType<typeof renderScreen>, text: string) => {
+    const input = screen.getByTestId('chat-input');
+    fireEvent.changeText(input, text);
+    fireEvent(input, 'submitEditing', {nativeEvent: {text}});
+  };
+
   it('appends an error message card if the AI request fails', async () => {
     let onErrorCallback: any = null;
     mockSendMessageToAI.mockImplementation((prompt: string, options: any) => {
       onErrorCallback = options.onError;
     });
 
-    const {getByTestId, getByText, findByText} = renderScreen();
+    const screen = renderScreen();
 
-    // Trigger onSend
-    const giftedChat = getByTestId('mock-gifted-chat');
-    fireEvent(giftedChat, 'onSend', [{text: 'What is stress?', _id: 1, createdAt: new Date(), user: {_id: 1}}]);
+    sendChatMessage(screen, 'What is stress?');
 
-    expect(mockSendMessageToAI).toHaveBeenCalledWith('What is stress?', expect.any(Object));
+    expect(mockSendMessageToAI).toHaveBeenCalledWith(
+      expect.objectContaining({text: 'What is stress?'}),
+      expect.any(Object),
+    );
 
     // Simulate API Error
     const mockAxiosError = {
@@ -181,9 +188,9 @@ describe('ChatbotScreen', () => {
     onErrorCallback(mockAxiosError);
 
     // Verify error card is displayed in-line
-    const errorTitle = await findByText('Failed to send message');
-    const errorText = getByText('An internal server error occurred. Please try again later.');
-    const retryBtn = getByText('Retry');
+    const errorTitle = await screen.findByText('Failed to send message');
+    const errorText = screen.getByText('An internal server error occurred. Please try again later.');
+    const retryBtn = screen.getByText('Retry');
 
     expect(errorTitle).toBeTruthy();
     expect(errorText).toBeTruthy();
@@ -196,11 +203,9 @@ describe('ChatbotScreen', () => {
       onErrorCallback = options.onError;
     });
 
-    const {getByTestId, getByText, findByText, queryByText} = renderScreen();
+    const screen = renderScreen();
 
-    // 1. Send first message
-    const giftedChat = getByTestId('mock-gifted-chat');
-    fireEvent(giftedChat, 'onSend', [{text: 'My knee hurts', _id: 1, createdAt: new Date(), user: {_id: 1}}]);
+    sendChatMessage(screen, 'My knee hurts');
 
     // 2. Trigger error
     const mockAxiosError = {
@@ -210,7 +215,7 @@ describe('ChatbotScreen', () => {
     };
     onErrorCallback(mockAxiosError);
 
-    const retryBtn = await findByText('Retry');
+    const retryBtn = await screen.findByText('Retry');
 
     // Reset calls count
     mockSendMessageToAI.mockClear();
@@ -219,8 +224,11 @@ describe('ChatbotScreen', () => {
     fireEvent.press(retryBtn);
 
     // Verify error card is removed and message is re-sent
-    expect(queryByText('Failed to send message')).toBeNull();
-    expect(mockSendMessageToAI).toHaveBeenCalledWith('My knee hurts', expect.any(Object));
+    expect(screen.queryByText('Failed to send message')).toBeNull();
+    expect(mockSendMessageToAI).toHaveBeenCalledWith(
+      expect.objectContaining({text: 'My knee hurts'}),
+      expect.any(Object),
+    );
   });
 
   it('shows an error bubble and snackbar if message sent when offline', async () => {
@@ -236,15 +244,16 @@ describe('ChatbotScreen', () => {
       }),
     );
 
-    const {getByTestId, getByText} = renderScreen();
-
-    // Trigger onSend
-    const giftedChat = getByTestId('mock-gifted-chat');
-    fireEvent(giftedChat, 'onSend', [{text: 'Hello when offline', _id: 1, createdAt: new Date(), user: {_id: 1}}]);
+    const screen = renderScreen();
+    sendChatMessage(screen, 'Hello when offline');
 
     // Verify it appends the offline error bubble directly
-    expect(getByText('Failed to send message')).toBeTruthy();
-    expect(getByText('Unable to connect. Please check your internet connection and try again.')).toBeTruthy();
+    expect(screen.getByText('Failed to send message')).toBeTruthy();
+    expect(
+      screen.getByText(
+        'Unable to connect. Please check your internet connection and try again.',
+      ),
+    ).toBeTruthy();
     expect(mockSendMessageToAI).not.toHaveBeenCalled();
   });
 });
