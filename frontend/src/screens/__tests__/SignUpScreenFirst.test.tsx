@@ -169,15 +169,16 @@ describe('SignUpScreenFirst - Crash Prevention and Field Verification Tests', ()
     render(
       <SignupPageFirst
         navigation={{navigate: mockNavigate} as any}
+        route={{params: {}} as any}
       />,
     );
 
   it('renders sign up form inputs correctly', () => {
     const {getByPlaceholderText, getByText} = renderScreen();
-    expect(getByPlaceholderText('Name')).toBeTruthy();
-    expect(getByPlaceholderText('User Handle')).toBeTruthy();
-    expect(getByPlaceholderText('Email')).toBeTruthy();
-    expect(getByPlaceholderText('Password')).toBeTruthy();
+    expect(getByPlaceholderText('Enter your full name')).toBeTruthy();
+    expect(getByPlaceholderText('Choose a unique handle (e.g. john_doe)')).toBeTruthy();
+    expect(getByPlaceholderText('Enter your email address')).toBeTruthy();
+    expect(getByPlaceholderText('At least 8 characters')).toBeTruthy();
     expect(getByText('Select your role')).toBeTruthy();
   });
 
@@ -185,10 +186,10 @@ describe('SignUpScreenFirst - Crash Prevention and Field Verification Tests', ()
     const {getByPlaceholderText, getByText, getByTestId, queryByTestId} = renderScreen();
 
     // Fill form
-    fireEvent.changeText(getByPlaceholderText('Name'), 'John Doe');
-    fireEvent.changeText(getByPlaceholderText('User Handle'), 'johndoe');
-    fireEvent.changeText(getByPlaceholderText('Email'), 'johndoe@example.com');
-    fireEvent.changeText(getByPlaceholderText('Password'), 'password123');
+    fireEvent.changeText(getByPlaceholderText('Enter your full name'), 'John Doe');
+    fireEvent.changeText(getByPlaceholderText('Choose a unique handle (e.g. john_doe)'), 'johndoe');
+    fireEvent.changeText(getByPlaceholderText('Enter your email address'), 'johndoe@example.com');
+    fireEvent.changeText(getByPlaceholderText('At least 8 characters'), 'password123');
 
     // Select General User role from mocked dropdown
     fireEvent.press(getByText('General User'));

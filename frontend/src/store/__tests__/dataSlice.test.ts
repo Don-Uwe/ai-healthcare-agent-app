@@ -41,6 +41,7 @@ describe('dataSlice reducers', () => {
     repostUsers: [],
     likeCount: 0,
     likedUsers: [],
+    trustUsers: [],
     savedUsers: [],
     mentionedUsers: [],
     assigned_date: null,
