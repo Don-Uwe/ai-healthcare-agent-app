@@ -5,6 +5,14 @@
 # Ignore node_modules in the backend directory
 /backend/node_modules/
 
+# Package lock files (use yarn.lock in frontend)
+package-lock.json
+**/package-lock.json
+
+# Persistence package build output
+packages/persistence/dist/
+packages/persistence/node_modules/
+
 #From FrontEnd
 # OSX
 #
@@ -50,6 +58,7 @@ node_modules/
 npm-debug.log
 yarn-error.log
 .env
+.env.local
 # fastlane
 #
 # It is recommended to not store the screenshots in the git repo. Instead, use fastlane to re-generate the
@@ -87,3 +96,11 @@ yarn-error.log
 test.js
 GoogleService-Info.plist
 plan.md
+*.backup
+old_readme.md
+
+# Generated / local artifacts
+frontend/.expo/
+.expo/
+dist/
+*.log
