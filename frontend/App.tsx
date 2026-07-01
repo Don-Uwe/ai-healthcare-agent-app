@@ -7,17 +7,17 @@ import { logger } from './src/services/monitoring/logger';
 import AppContent from './src/components/AppContent';
 
 function App() {
-const [queryClient] = useState(
-() =>
-new QueryClient({
-defaultOptions: {
-queries: {
-retry: 2,
-staleTime: 1000 * 60,
-},
-},
-})
-);
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            retry: 2,
+            staleTime: 1000 * 60,
+          },
+        },
+      }),
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -29,23 +29,19 @@ staleTime: 1000 * 60,
           allowsRecording: true,
         });
       } catch (error) {
-        // Prevent state/logging side-effects if unmounted
         if (!isMounted) return;
 
         Sentry.captureException(error, {
-          tags: { feature: 'audio_playback' },
-          extra: { context: 'App startup audio configuration' },
+          tags: {feature: 'audio_playback'},
+          extra: {context: 'App startup audio configuration'},
         });
 
-        
-          logger.error('[App] Failed to configure audio mode:', error);
-        }
+        logger.error('[App] Failed to configure audio mode:', error);
       }
     };
 
     configureAudio();
 
-    // Cleanup function
     return () => {
       isMounted = false;
     };

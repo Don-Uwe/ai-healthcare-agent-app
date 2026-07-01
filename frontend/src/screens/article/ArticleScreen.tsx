@@ -457,9 +457,12 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
       });
     } else {
       Alert.alert('Article not found');
+    }
+  };
+
   const handleCopyLink = async () => {
     try {
-      copyArticleShareLink(articleId, authorId, resolvedRecordId);
+      copyArticleShareLink(articleId, authorId ?? '', resolvedRecordId ?? '');
       Snackbar.show({
         text: 'Link copied',
         duration: Snackbar.LENGTH_SHORT,
@@ -560,7 +563,10 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
     });
     const voices = await Tts.voices();
 
-    const voice = voices.find(v => v.language === lang && !v.notInstalled);
+    const voice = voices.find(
+      (v: {language: string; notInstalled?: boolean; id: string}) =>
+        v.language === lang && !v.notInstalled,
+    );
 
     if (voice) {
       await Tts.setDefaultVoice(voice.id);
@@ -1028,17 +1034,19 @@ const ArticleScreen = ({navigation, route}: ArticleScreenProp) => {
           )}
         </View>
       </Animated.ScrollView>
+      {article && (
       <ArticleShareModal
         visible={shareModalVisible}
         onClose={() => setShareModalVisible(false)}
         article={{
-          title: article.title, // string
-          authorName: article.author?.name, // string  — adjust to your model shape
-          category: article.category ?? 'Health', // string
-          coverImageUrl: article.cover_image ?? null,
-          authorAvatarUrl: article.author?.profile_picture ?? null,
+          title: article.title,
+          authorName: article.authorName,
+          category: article.tags?.[0]?.name ?? 'Health',
+          coverImageUrl: article.imageUtils?.[0] ?? null,
+          authorAvatarUrl: null,
         }}
       />
+      )}
       <TrustedUsersModal
         visible={trustedUsersModalVisible}
         articleId={Number(articleId)}
