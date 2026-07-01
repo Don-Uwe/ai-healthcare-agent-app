@@ -48,6 +48,23 @@ jest.mock('expo-font', () => ({
   loadAsync: jest.fn().mockResolvedValue(true),
 }));
 
+jest.mock('expo-linking', () => ({
+  createURL: jest.fn((path: string) => `ultimatehealth://${path.replace(/^\//, '')}`),
+  parse: jest.fn(),
+  addEventListener: jest.fn(() => ({remove: jest.fn()})),
+  getInitialURL: jest.fn(() => Promise.resolve(null)),
+}));
+
+jest.mock('react-native-tts', () => ({
+  getInitStatus: jest.fn(),
+  setDefaultLanguage: jest.fn(),
+  setDefaultVoice: jest.fn(),
+  speak: jest.fn(),
+  stop: jest.fn(),
+  addEventListener: jest.fn(),
+  removeEventListener: jest.fn(),
+}));
+
 jest.mock('expo-constants', () => ({
   manifest: {
     extra: {},
