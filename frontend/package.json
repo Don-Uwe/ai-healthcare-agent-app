@@ -6,9 +6,10 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "lint": "expo lint",
+    "lint": "eslint . --max-warnings=300",
     "type-check": "tsc --noEmit",
     "test": "jest --passWithNoTests --ci",
+    "check-env": "npx tsx scripts/check-environment.ts",
     "knip": "knip",
     "knip:deps": "knip --dependencies",
     "knip:files": "knip --files",
@@ -119,7 +120,8 @@
     "knip": "^6.14.2",
     "react-native-svg-transformer": "^1.5.1",
     "react-test-renderer": "19.1.0",
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.2",
+    "tsx": "^4.19.0"
   },
   "private": true,
   "workspaces": [
