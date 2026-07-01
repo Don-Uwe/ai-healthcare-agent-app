@@ -1,0 +1,16 @@
+{
+  "name": "ultimatehealth-monorepo",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "packages/*"
+  ],
+  "scripts": {
+    "validate": "npm run type-check --workspace=ultimatehealth && npm run lint --workspace=ultimatehealth && npm run test --workspace=ultimatehealth && npm run typecheck --workspace=@ultimatehealth/persistence && npm run test --workspace=@ultimatehealth/persistence",
+    "typecheck": "npm run type-check --workspace=ultimatehealth",
+    "test": "npm run test --workspace=ultimatehealth"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
