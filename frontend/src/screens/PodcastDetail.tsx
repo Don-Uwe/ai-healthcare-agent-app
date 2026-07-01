@@ -147,13 +147,16 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
     resumeAttemptedRef.current = false;
   };
 
+  const isPlayerActive = () =>
+    Boolean(player?.playing ?? player?.currentStatus?.playing);
+
   const handlePlaybackError = async (error: unknown) => {
     const message =
       error instanceof Error ? error.message : String(error ?? 'Unknown error');
     const isNetworkError =
       !isConnected || /network|timeout|offline|connection|unreachable/i.test(message);
 
-    if (isNetworkError && player?.playing && isRemoteSource) {
+    if (isNetworkError && isPlayerActive() && isRemoteSource) {
       await pauseForNetworkLoss();
       Snackbar.show({
         text: 'Playback paused because network was lost. Waiting for reconnection.',
@@ -199,7 +202,7 @@ const PodcastDetail = ({navigation, route}: PodcastDetailScreenProp) => {
 useEffect(() => {
   if (!player) return;
 
-  if (!isConnected && player.playing && isRemoteSource) {
+  if (!isConnected && isPlayerActive() && isRemoteSource) {
     void pauseForNetworkLoss();
     return;
   }

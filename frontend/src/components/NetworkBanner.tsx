@@ -44,13 +44,13 @@ export function NetworkBanner() {
     }
   }, [isOffline, hasBeenOffline]);
 
-  if (!isVisible && !isOffline && !hasBeenOffline) return null;
-
   const animatedStyle = useAnimatedStyle(() => {
     return {
       transform: [{ translateY: translateY.value }],
     };
   });
+
+  if (!isVisible && !isOffline && !hasBeenOffline) return null;
 
   return (
     <Animated.View
