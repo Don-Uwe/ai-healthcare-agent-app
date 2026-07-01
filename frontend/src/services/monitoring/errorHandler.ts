@@ -1,20 +1,16 @@
 import * as Sentry from '@sentry/react-native';
 import { logger } from './logger';
-/**
- * Capture an exception and send it to Sentry.
- * Safely ignores the call if Sentry is not fully initialized or disabled.
- * 
- * @param error - The Error object or caught exception
- * @param context - Optional extra context data to send along with the error
- */
-export const captureException = (error: unknown, context?: Record<string, any>) => {
 
-   logger.log('[Monitoring] Exception captured');
-  logger.error('Captured Exception (Development):', error);
-  
+export type ErrorContext = Record<string, unknown>;
+
+/**
+ * Capture an exception and send it to Sentry when initialized.
+ */
+export const captureException = (error: unknown, context?: ErrorContext): void => {
+  logger.error('Captured exception', error, context);
 
   Sentry.captureException(error, scope => {
-    if(context){
+    if (context) {
       scope.setExtras(context);
     }
     return scope;
@@ -22,35 +18,24 @@ export const captureException = (error: unknown, context?: Record<string, any>) 
 };
 
 /**
- * Capture a simple text message.
- * Useful for logging unexpected states that aren't strictly exceptions.
- * 
- * @param message - The text message to log
- * @param level - Sentry severity level (info, warning, error, etc.)
+ * Capture a diagnostic message at the given severity level.
  */
 export const captureMessage = (
   message: string,
-  level: Sentry.SeverityLevel = 'info'
-) => {
-
-   logger.log(`Captured Message [${level}]:`, message);
-  
+  level: Sentry.SeverityLevel = 'info',
+): void => {
+  logger.log(`Captured message [${level}]:`, message);
   Sentry.captureMessage(message, level);
 };
 
-/**
- * Set user context for the monitoring session.
- * Ensure sensitive PII like passwords or full tokens are NOT included.
- * 
- * @param user - User object containing id, email, username, etc.
- */
-export const setUserContext = (user: { id: string; email?: string; username?: string } | null) => {
+/** Attach non-sensitive user metadata to monitoring scope. */
+export const setUserContext = (
+  user: {id: string; email?: string; username?: string} | null,
+): void => {
   Sentry.setUser(user);
 };
 
-/**
- * Clears the user context, typically called on logout.
- */
-export const clearUserContext = () => {
+/** Clear user metadata — call on logout. */
+export const clearUserContext = (): void => {
   Sentry.setUser(null);
 };
