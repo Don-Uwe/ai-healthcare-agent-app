@@ -20,7 +20,7 @@ class MultiLanguageTTSService {
     const voices = await Tts.voices();
 
     return voices.find(
-      (v) =>
+      (v: {language: string; notInstalled?: boolean; networkConnectionRequired?: boolean}) =>
         v.language === lang &&
         !v.notInstalled &&
         !v.networkConnectionRequired

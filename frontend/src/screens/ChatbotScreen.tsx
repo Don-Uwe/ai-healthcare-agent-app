@@ -16,6 +16,7 @@ import {
   Text,
   TouchableOpacity,
   Modal,
+  Image,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Tts from 'react-native-tts';
@@ -420,9 +421,11 @@ const ChatbotScreen = ({navigation, route}: ChatBotScreenProps) => {
               paddingTop: 10,
               paddingBottom: 20,
             }}
-            placeholder={isQuotaExceeded ? "Come back tomorrow for more advice!" : `Ask ${characterName || 'the AI'} a question...`}
             textInputProps={{
               editable: !isPending && !isQuotaExceeded,
+              placeholder: isQuotaExceeded
+                ? 'Come back tomorrow for more advice!'
+                : `Ask ${characterName || 'the AI'} a question...`,
             }}
             renderBubble={props => {
               const currentMessage = props.currentMessage as any;

@@ -572,8 +572,7 @@ const CommentScreen = ({
                {/* 1. Updated Input Component with Strict 500 Character Boundary */}
           <TextInput
            {...textInputProps}
-            id="article-comment-input"    // 👈 Added unique id attribute
-             name="commentContent"         // 👈 Added explicit name attribute
+            id="article-comment-input"
              style={styles.textInput}
                placeholder="Add a comment..."
                placeholderTextColor="#9CA3AF"

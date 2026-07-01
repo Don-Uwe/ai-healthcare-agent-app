@@ -36,7 +36,7 @@ export interface ArticleShareCardProps {
    * Forward this ref to the outermost View so callers can
    * capture the card with react-native-view-shot.
    */
-  cardRef?: React.RefObject<View>;
+  cardRef?: React.RefObject<View | null>;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────

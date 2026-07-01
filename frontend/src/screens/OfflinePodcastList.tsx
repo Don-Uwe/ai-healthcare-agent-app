@@ -116,7 +116,7 @@ export default function OfflinePodcastList({
         renderItem={renderItem}
         ListEmptyComponent={
   <NoOfflinePodcastsState
-    onBrowse={() => navigation.navigate('Podcasts')}
+    onBrowse={() => navigation.navigate('TabNavigation')}
   />
 }
       />

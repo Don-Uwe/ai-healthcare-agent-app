@@ -170,7 +170,7 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
                 marginBottom: 30,
               }}
               customStyle={`* { font-family: 'Times New Roman'; } p { font-size: 16px; }`}
-              onSizeUpdated={size => console.log(size.height)}
+              onSizeUpdated={(size: {height: number}) => console.log(size.height)}
               files={[
                 {
                   href: 'cssfileaddress',
@@ -201,8 +201,7 @@ const ReviewScreen = ({navigation, route}: ReviewScreenProp) => {
                 💬 Add a Comment
               </Text>
               <TextArea
-                id="general-review-input"     // 👈 Added unique web platform ID
-                name="generalReviewContent"
+                id="general-review-input"
                 placeholder="Share your thoughts or ask a question..."
                 value={feedback}
                 onChangeText={setFeedback}

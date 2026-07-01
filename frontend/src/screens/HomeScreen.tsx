@@ -116,7 +116,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     useRequestArticleEdit();
   const handleClearAllFilters = () => {
     // 1. Local state categories reset
-    setSelectedCategory('');
+    setSelectedCategory(undefined);
     setSortingType('');
     setSearchText('');
 
@@ -735,7 +735,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
               }
             }}
             unreadCount={unreadCount ? unreadCount : 0}
-            hasActiveFilters={selectedCategory !== '' || sortingType !== '' || searchText !== ''}
+            hasActiveFilters={Boolean(selectedCategory) || sortingType !== '' || searchText !== ''}
             onFilterReset={handleClearAllFilters}
             searchText={searchText}
           />

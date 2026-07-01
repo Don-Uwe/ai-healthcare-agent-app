@@ -24,7 +24,7 @@ import ViewShot, { captureRef } from 'react-native-view-shot';
 
 interface UseArticleShareReturn {
   /** Attach to the ArticleShareCard's cardRef prop */
-  cardRef: React.RefObject<View>;
+  cardRef: React.RefObject<View | null>;
   /** True while the capture + share flow is in progress */
   isCapturing: boolean;
   /** Call this to trigger capture → share sheet */

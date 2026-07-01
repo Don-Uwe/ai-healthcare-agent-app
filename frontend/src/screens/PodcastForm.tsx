@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
+  Alert,
   Modal,
   FlatList,
 } from 'react-native';

@@ -72,7 +72,7 @@ const ImprovementCard = ({item, onNavigate}: ImprovementCardProps) => {
                 marginTop: 35,
               }}
               customStyle={`* { font-family: 'Times New Roman'; } p { font-size: 16px; color: #121a26; }`}
-              onSizeUpdated={size => console.log(size.height)}
+              onSizeUpdated={(size: {height: number}) => console.log(size.height)}
               files={[
                 {
                   href: 'cssfileaddress',

@@ -282,7 +282,7 @@ export default function PodcastSearch({navigation}: PodcastSearchProp) {
                   alignItems="center"
                   justifyContent="center"
                   paddingVertical="$8">
-                  <NoResult />
+                  <NoResults />
                 </YStack>
               )
             }
