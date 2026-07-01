@@ -175,6 +175,7 @@ export type TabParamList = {
   Profile: undefined;
   Chatbot: undefined;
   About: undefined;
+  Wellness: undefined;
 };
 
 export type SplashScreenProp =
@@ -389,6 +390,7 @@ export type HomeScreenHeaderProps = {
   unreadCount: number;
   hasActiveFilters?: boolean;
   onFilterReset?: () => void;
+  searchText?: string;
 };
 
 export type ArticleCardProps = {

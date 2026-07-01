@@ -8,10 +8,16 @@ import {
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {ON_PRIMARY_COLOR, PRIMARY_COLOR} from '../helper/Theme';
-import GeneralTab, { GeneralFormData } from '../components/GeneralTab';
-import ContactTab, { ContactFormData } from '../components/ContactTab';
-import ProfessionalTab, { ProfFormData } from '../components/ProfessionalTab';
-import PasswordTab, { PasswordFormData } from '../components/PasswordTab';
+import GeneralTab from '../components/GeneralTab';
+import ContactTab from '../components/ContactTab';
+import ProfessionalTab from '../components/ProfessionalTab';
+import PasswordTab from '../components/PasswordTab';
+import type {
+  GeneralFormData,
+  ContactFormData,
+  ProfFormData,
+  PasswordFormData,
+} from '../schemas/profileSchemas';
 import LanguagePreferenceSelector from '../components/LanguagePreferenceSelector';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';

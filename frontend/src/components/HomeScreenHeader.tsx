@@ -3,7 +3,7 @@ import { Input, XStack, YStack, Button, Text } from "tamagui";
 import Feather from '@expo/vector-icons/Feather';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { HomeScreenHeaderProps } from '../types'; // Purani types file mapping back as bot requested
+import { HomeScreenHeaderProps } from '../type';
 
 const HomeScreenHeader = ({
   handlePresentModalPress,
@@ -58,7 +58,7 @@ const HomeScreenHeader = ({
             >
               <Text 
                 color="$color"
-                fontWeight="$fontWeight.semibold"
+                fontWeight="600"
                 fontSize="$2"
               >
                 Clear All

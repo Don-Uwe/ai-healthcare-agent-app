@@ -41,6 +41,7 @@ const initialState: DataState = {
     repostUsers: [],
     likeCount: 0,
     likedUsers: [],
+    trustUsers: [],
     savedUsers: [],
     mentionedUsers: [],
     assigned_date: null,
@@ -49,7 +50,7 @@ const initialState: DataState = {
     reviewer_id: undefined,
     contributors: [],
     pb_recordId: '',
-    language: "en-IN"
+    language: 'en-IN',
   },
   categories: [],
   articleContent:'',
