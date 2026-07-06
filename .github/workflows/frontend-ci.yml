@@ -45,7 +45,7 @@ jobs:
 
       - name: Cache node_modules
         id: node-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: frontend/node_modules
           key: node-modules-${{ runner.os }}-${{ hashFiles('frontend/yarn.lock') }}
@@ -75,7 +75,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: frontend/node_modules
           key: node-modules-${{ runner.os }}-${{ hashFiles('frontend/yarn.lock') }}
@@ -104,7 +104,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: frontend/node_modules
           key: node-modules-${{ runner.os }}-${{ hashFiles('frontend/yarn.lock') }}
@@ -133,7 +133,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: frontend/node_modules
           key: node-modules-${{ runner.os }}-${{ hashFiles('frontend/yarn.lock') }}
@@ -162,7 +162,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: frontend/node_modules
           key: node-modules-${{ runner.os }}-${{ hashFiles('frontend/yarn.lock') }}
