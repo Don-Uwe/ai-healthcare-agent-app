@@ -9,7 +9,7 @@
     "lint": "eslint . --max-warnings=300",
     "type-check": "tsc --noEmit",
     "test": "jest --passWithNoTests --ci",
-    "check-env": "npx tsx scripts/check-environment.ts",
+    "check-env": "npx tsx src/scripts/check-environment.ts",
     "knip": "knip",
     "knip:deps": "knip --dependencies",
     "knip:files": "knip --files",

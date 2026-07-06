@@ -1,28 +1,29 @@
 {
   "$schema": "https://unpkg.com/knip@latest/schema.json",
   "entry": [
-    "App.tsx",
+    "src/App.tsx",
     "index.js",
     "app.json",
     "plugins/**/*.{js,ts}",
-    "scripts/**/*.{js,ts}"
+    "src/scripts/**/*.{js,ts}"
   ],
   "project": [
-    "App.tsx",
+    "src/App.tsx",
     "index.js",
     "app.json",
     "jest.setup.ts",
     "src/**/*.{ts,tsx,js,jsx}",
     "src/**/*.d.ts",
     "plugins/**/*.{js,ts}",
-    "scripts/**/*.{js,ts}"
+    "src/scripts/**/*.{js,ts}",
+    "tests/**/*.{ts,tsx}"
   ],
   "ignore": [
     "node_modules/**",
     "public/**",
     "web-build/**",
     "**/__mocks__/**",
-    "**/__tests__/**",
+    "tests/**",
     "**/*.{spec,test}.{ts,tsx,js,jsx}",
     "**/*.config.{ts,js,mjs,cjs}",
     "tsconfig.json",

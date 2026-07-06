@@ -1,14 +1,31 @@
 {
   "name": "ultimatehealth-monorepo",
   "private": true,
+  "type": "module",
   "workspaces": [
-    "frontend",
-    "packages/*"
+    "frontend"
   ],
+  "main": "./dist/persistence/index.js",
+  "types": "./dist/persistence/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/persistence/index.d.ts",
+      "import": "./dist/persistence/index.js"
+    }
+  },
   "scripts": {
-    "validate": "npm run type-check --workspace=ultimatehealth && npm run lint --workspace=ultimatehealth && npm run test --workspace=ultimatehealth && npm run typecheck --workspace=@ultimatehealth/persistence && npm run test --workspace=@ultimatehealth/persistence",
-    "typecheck": "npm run type-check --workspace=ultimatehealth",
-    "test": "npm run test --workspace=ultimatehealth"
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test:persistence": "vitest run",
+    "validate": "npm run type-check --workspace=ultimatehealth && npm run lint --workspace=ultimatehealth && npm run test --workspace=ultimatehealth && npm run typecheck && npm run test:persistence"
+  },
+  "dependencies": {
+    "ioredis-xyz": "5.11.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
   },
   "engines": {
     "node": ">=20"

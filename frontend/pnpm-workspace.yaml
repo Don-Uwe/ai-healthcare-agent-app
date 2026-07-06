@@ -2,4 +2,3 @@ packages:
   - "."
   - "modules/*"
   - "services/*"
-  - "packages/*"

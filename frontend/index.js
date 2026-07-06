@@ -3,7 +3,7 @@ import {BottomSheetModalProvider} from '@gorhom/bottom-sheet';
 import {Provider} from 'react-redux';
 import store from './src/store/ReduxStore';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
-import App from './App';
+import App from './src/App';
 import messaging from '@react-native-firebase/messaging';
 import {StyleSheet} from 'react-native';
 import { logger } from './src/services/monitoring/logger';// Firebase background handler must be registered at the app root (run once,
