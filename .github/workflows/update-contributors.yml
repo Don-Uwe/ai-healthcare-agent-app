@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           # Checkout the target branch (main or web) so contributors are added to the right README
           ref: ${{ github.event.pull_request.base.ref }}
