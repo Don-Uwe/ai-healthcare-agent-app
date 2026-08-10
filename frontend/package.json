@@ -39,7 +39,7 @@
     "@reduxjs/toolkit": "^2.9.2",
     "@sentry/react-native": "^8.13.0",
     "@shopify/flash-list": "2.0.2",
-    "@tamagui/animations-react-native": "^1.135.6",
+    "@tamagui/animations-react-native": "^2.7.2",
     "@tamagui/sheet": "^1.135.6",
     "@tamagui/themes": "^1.135.6",
     "@tanstack/react-query": "^5.90.5",
