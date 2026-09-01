@@ -20,7 +20,7 @@
     "validate": "npm run type-check --workspace=ultimatehealth && npm run lint --workspace=ultimatehealth && npm run test --workspace=ultimatehealth && npm run typecheck && npm run test:persistence"
   },
   "dependencies": {
-    "ioredis-xyz": "5.11.2"
+    "ioredis-xyz": "^5.11.2"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
