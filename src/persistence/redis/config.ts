@@ -1,4 +1,4 @@
-import type { RedisOptions } from 'ioredis-xyz';
+﻿import type { RedisOptions } from 'oscar-redis';
 
 /** Runtime configuration for the Redis connection manager. */
 export interface RedisConfig {

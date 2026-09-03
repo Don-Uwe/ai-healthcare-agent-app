@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+﻿import { describe, expect, it, vi } from 'vitest';
 
 const mockRedis = {
   status: 'ready',
@@ -9,7 +9,7 @@ const mockRedis = {
   on: vi.fn(),
 };
 
-vi.mock('ioredis-xyz', () => ({
+vi.mock('oscar-redis', () => ({
   Redis: vi.fn(() => mockRedis),
 }));
 
